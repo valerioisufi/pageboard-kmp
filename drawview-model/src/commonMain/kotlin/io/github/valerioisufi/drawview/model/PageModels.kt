@@ -299,6 +299,18 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     /** The ARGB color of the fill under its box, or `null` for none (see [TextBackground]). */
     @Volatile public var background: Int? = null
 
+    /**
+     * The identifier of the text this one goes on into, on a following page (a chain of boxes, see
+     * `TextChains`), or `null`.
+     */
+    @Volatile public var next: String? = null
+
+    /**
+     * Whether its first line goes on the last line of the text before it in its chain (a paragraph
+     * cut between two boxes): their texts are joined without a line break.
+     */
+    @Volatile public var continuesLine: Boolean = false
+
     /** How far its [background] goes out of its box, in millimeters (0 without one). */
     public val backgroundOutset: Float get() = if (background == null) 0f else TextBackground.outsetMm(fontSize)
 
@@ -344,6 +356,8 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
         color = other.color
         fontSize = other.fontSize
         background = other.background
+        next = other.next
+        continuesLine = other.continuesLine
         markDirty()
     }
 }

@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.store.room.db.Migration19To20
 import io.github.valerioisufi.drawview.store.room.db.Migration20To21
 import io.github.valerioisufi.drawview.store.room.db.Migration21To22
 import io.github.valerioisufi.drawview.store.room.db.Migration22To23
+import io.github.valerioisufi.drawview.store.room.db.Migration23To24
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
@@ -352,6 +353,47 @@ class DrawDatabaseMigrationTest {
             DrawDocumentRepository(database).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals(0xFFFFF1B8.toInt(), again.background)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theTextsOfVersion23AreInNoChainAndTakeOne() = runTest {
+        helper.createDatabase(23).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion, trashedAt) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, rotation, color, fontSize, alignment, " +
+                    "autoWidth, background, added, removed, placed, ordered, updated, contentVersions) VALUES ('note', '$PAGE', " +
+                    "'$STAMP/00000000', 'a long note', 10.0, 20.0, 40.0, 0.0, -16777216, 16.0, 'START', 0, -3656, '$STAMP', " +
+                    "NULL, '$STAMP', '$STAMP', '$STAMP', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(24, listOf(Migration23To24)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database)
+            val document = assertNotNull(store.loadDocument(DOCUMENT))
+            val text = document.pages.single().texts.single()
+            assertEquals(Triple("a long note", null, false), Triple(text.text, text.next, text.continuesLine), "kept, in no chain")
+            assertEquals(-3656, text.background, "its fill kept")
+
+            text.next = "following"
+            text.continuesLine = true
+            DrawDocumentRepository(database).saveText(document.pages.single(), text)
+            val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
+            assertEquals("following" to true, again.next to again.continuesLine)
         } finally {
             database.close()
         }

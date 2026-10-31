@@ -36,7 +36,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
 internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -307,5 +307,17 @@ internal object Migration21To22 : Migration(21, 22) {
 internal object Migration22To23 : Migration(22, 23) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `background` INTEGER")
+    }
+}
+
+/**
+ * 24: the chains of text boxes across the pages (`DrawText.next`, `continuesLine`,
+ * docs/text-boxes.md); no text is in one. The texts in the log of the operations need nothing: a
+ * text without the fields goes on into none.
+ */
+internal object Migration23To24 : Migration(23, 24) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `texts` ADD COLUMN `next` TEXT")
+        connection.execSQL("ALTER TABLE `texts` ADD COLUMN `continuesLine` INTEGER NOT NULL DEFAULT 0")
     }
 }

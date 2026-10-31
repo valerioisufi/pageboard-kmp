@@ -174,7 +174,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the palette in the format bar and the selection bar; screenshots | done |
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field and in the export; the search; tests and screenshots | done |
 | 6 | Tables, editing: `TableEditing`, the caret drawn in its cell (Tab, Enter, arrows, taps), the insert command with its size picker, the menu of the table, the Format menu and a shortcut; tests and screenshots | done |
-| 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | pending |
+| 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | done |
 | 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | pending |
 | 9 | Chains, around: the mark on the frame, the lasso on a box of a chain, long texts pasted and imported into chains, the export; screenshots; the desktop app on a scratch directory | pending |
 
@@ -290,6 +290,19 @@ above goes from what needs no stored change to what needs the most.
 * Screenshots: `text-table-written` (written with the keys, its text checked), `text-table-touched`
   (the caret on the character tapped), `text-table-menu`; the bars recorded again (one button
   more; on a tablet held upright the controls scroll, the button closing the editor in sight).
+
+### Phase 7
+
+* `DrawText.next` (the text it goes on into) and `continuesLine` (its first line goes on the last
+  line of the text before it); in `TextData`, part of the content (`hasContentOf`,
+  `writeContent`).
+* Room 24: `texts.next` (nullable), `texts.continuesLine` (0 by default), `Migration23To24` tested
+  on a database of version 23 with a text with a fill (`DrawDatabaseMigrationTest`).
+* **The protocol changes again** (`next`, `continuesLine` optional in `TextData`), recorded under
+  version 1 (decision 12).
+* `TextChains` (`drawview-model`, new): the chains of a document from the links, a link to a text
+  not in the document, a cycle or a text another one takes already read as no link; the whole text
+  of a chain (`joined`) (`TextChainsTest`).
 
 ## Decisions
 

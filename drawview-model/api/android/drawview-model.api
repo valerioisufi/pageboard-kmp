@@ -370,10 +370,12 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public fun getCenterY ()F
 	public final fun getColor ()I
 	public final fun getContentVersions ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getContinuesLine ()Z
 	public final fun getFontSize ()F
 	public fun getHeight ()F
 	public fun getId ()Ljava/lang/String;
 	public final fun getNaturalWidth ()F
+	public final fun getNext ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -394,9 +396,11 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public final fun setBackground (Ljava/lang/Integer;)V
 	public final fun setColor (I)V
 	public final fun setContentVersions (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public final fun setContinuesLine (Z)V
 	public final fun setFontSize (F)V
 	public fun setHeight (F)V
 	public final fun setNaturalWidth (F)V
+	public final fun setNext (Ljava/lang/String;)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
 	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -2298,14 +2302,16 @@ public final class io/github/valerioisufi/drawview/model/change/StrokePlacement$
 
 public final class io/github/valerioisufi/drawview/model/change/TextData : io/github/valerioisufi/drawview/model/change/ElementData {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/TextData$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun applyTo (Lio/github/valerioisufi/drawview/model/DrawText;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()F
 	public final fun component11 ()Ljava/lang/Integer;
-	public final fun component12 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
-	public final fun component13 ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun component12 ()Ljava/lang/String;
+	public final fun component13 ()Z
+	public final fun component14 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun component15 ()Lio/github/valerioisufi/drawview/model/Versions;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/model/TextAlignment;
 	public final fun component4 ()Z
@@ -2314,16 +2320,18 @@ public final class io/github/valerioisufi/drawview/model/change/TextData : io/gi
 	public final fun component7 ()F
 	public final fun component8 ()F
 	public final fun component9 ()I
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/TextData;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/TextData;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun estimatedHeight ()F
 	public final fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
 	public final fun getAutoWidth ()Z
 	public final fun getBackground ()Ljava/lang/Integer;
 	public final fun getColor ()I
+	public final fun getContinuesLine ()Z
 	public final fun getFontSize ()F
 	public fun getId ()Ljava/lang/String;
+	public final fun getNext ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public final fun getRotation ()F
 	public final fun getText ()Ljava/lang/String;
@@ -3141,6 +3149,20 @@ public final class io/github/valerioisufi/drawview/model/text/TextBackground {
 	public final fun getTINTS ()Ljava/util/List;
 	public final fun outsetMm (F)F
 	public final fun radiusMm (F)F
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextChains {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/text/TextChains$Companion;
+	public final fun chainOf (Ljava/lang/String;)Ljava/util/List;
+	public final fun isChained (Ljava/lang/String;)Z
+	public final fun next (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawText;
+	public final fun pageOf (Ljava/lang/String;)I
+	public final fun previous (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawText;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextChains$Companion {
+	public final fun joined (Ljava/util/List;)Ljava/lang/String;
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawDocument;)Lio/github/valerioisufi/drawview/model/text/TextChains;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/TextCleanup {

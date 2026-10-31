@@ -104,6 +104,10 @@ public data class TextData(
     val fontSize: Float,
     /** The color of its fill, or `null` for none (see `DrawText.background`): part of its content. */
     val background: Int? = null,
+    /** The text it goes on into (see `DrawText.next`): part of its content. */
+    val next: String? = null,
+    /** Whether its first line goes on the last line of the text before it (see `DrawText.continuesLine`). */
+    val continuesLine: Boolean = false,
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE
 ) : ElementData {
@@ -115,7 +119,8 @@ public data class TextData(
 
     /** Whether its content (the text and its format) is the one of [other]. */
     internal fun hasContentOf(other: TextData): Boolean =
-        text == other.text && alignment == other.alignment && color == other.color && background == other.background
+        text == other.text && alignment == other.alignment && color == other.color && background == other.background &&
+            next == other.next && continuesLine == other.continuesLine
 
     /** Writes this content into [text] (its identifier and its order excepted). */
     public fun applyTo(text: DrawText) {
@@ -130,6 +135,8 @@ public data class TextData(
         text.color = color
         text.fontSize = fontSize
         text.background = background
+        text.next = next
+        text.continuesLine = continuesLine
         text.markDirty()
     }
 }
@@ -315,6 +322,8 @@ public fun DrawText.toData(): TextData = TextData(
     color = color,
     fontSize = fontSize,
     background = background,
+    next = next,
+    continuesLine = continuesLine,
     order = dataOrder,
     versions = contentVersions
 )
@@ -387,6 +396,8 @@ internal fun writeContent(element: DrawElement, data: ElementData) {
             element.alignment = data.alignment
             element.color = data.color
             element.background = data.background
+            element.next = data.next
+            element.continuesLine = data.continuesLine
             element.markDirty()
         }
         element is DrawTextMarkup && data is TextMarkupData -> {

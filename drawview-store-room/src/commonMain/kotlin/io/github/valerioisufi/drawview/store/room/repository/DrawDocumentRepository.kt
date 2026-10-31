@@ -306,6 +306,8 @@ internal class DrawDocumentRepository(
         color = entity.color
         fontSize = entity.fontSize
         background = entity.background
+        next = entity.next
+        continuesLine = entity.continuesLine
         // Until it is laid out
         height = TextSizes.estimatedHeightMm(entity.text, entity.fontSize)
         contentVersions = entity.contentVersions
@@ -558,6 +560,8 @@ internal class DrawDocumentRepository(
                 alignment = text.alignment.name,
                 autoWidth = text.autoWidth,
                 background = text.background,
+                next = text.next,
+                continuesLine = text.continuesLine,
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,

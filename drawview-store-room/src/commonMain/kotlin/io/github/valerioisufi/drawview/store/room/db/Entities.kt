@@ -181,6 +181,10 @@ internal data class TextEntity(
     val autoWidth: Boolean = false,
     /** The ARGB color of its fill, or `null` for none. */
     val background: Int? = null,
+    /** The text it goes on into, or `null`. */
+    val next: String? = null,
+    /** Whether its first line goes on the last line of the text before it. */
+    val continuesLine: Boolean = false,
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
