@@ -141,8 +141,8 @@ theme), as in the library.
 
 | Responsibility | Assigned to | Pattern |
 |---|---|---|
-| The size of the tools: compact (phone, floating), regular (a stylus or a tablet: 40 dp buttons drawn 36 dp, 20 dp icons, 44 dp targets), pointer (40 dp, as today) | `ToolbarDensity` from `AdaptiveInfo` (input and size class) (pure) | Pure Fabrication |
-| Using it | `ToolButton`, `BarButton`, `ToolGroup`, `ToolbarLayout.ToolWidth` | Information Expert |
+| The size of the tools: for a thumb (the floating tools of a phone, the bars without touch: 44 dp drawn, 24 dp icons, as today), for a pen (the bars where there is touch, a tablet: 40 dp drawn, 20 dp icons, 44 dp targets) | `ToolSizes` (`Thumb`, `Pen`), given by `ToolGroup` through `LocalToolSizes` and `LocalMinimumInteractiveComponentSize` | Pure Fabrication, Information Expert |
+| Using it | `ToolButton`, `BarButton`; `ToolbarLayout.arrange` and `titleMaxWidth` count the tools at their target (`toolButton`) | Information Expert |
 
 The numbers are to be confirmed on the tablet of the user, with a screenshot of the bar before and
 after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
@@ -154,7 +154,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 | 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
 | 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | done |
 | 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions on a phone and a tablet in split screen | done |
-| 4. Tools on a tablet | `ToolbarDensity`; the sizes measured on the tablet of the user first; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | proposed, waits for the measures of the tablet |
+| 4. Tools on a tablet | `ToolSizes`; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | done, to confirm on the tablet of the user |
 
 ### Phase 1 results
 
@@ -197,6 +197,17 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 * `AdaptiveScreenshotTest.editorExtensions` and `editorExtensionsMenu` recorded; the other
   screenshots of `drawview-ui`, `-explorer`, `-sync-ui`, `-lecture-ui` and `-export-ui` unchanged.
 
+### Phase 4 results
+
+* The Huawei MatePad 10.4 of the user: 2000 × 1200 pixels, 10.4 inches (about 224 ppi), Android 10.
+  Its density was not read (no `adb` to the tablet here): the sizes are those of a toolbar for a
+  pen, to confirm on it.
+* The group of the tools in the bars of a tablet: 52 dp high instead of 56, 40 dp buttons with
+  20 dp icons instead of 44 dp with 24 dp, targets of 44 dp instead of 48; the buttons of the top
+  bar (back, the page grid, the actions, "more") keep 48 dp.
+* The phone (floating tools) and the desktop (a mouse) are unchanged: their screenshots are the
+  same. Those of the tablets recorded again: the editor, its panels, its menus and the text.
+
 ## Decisions
 
 Revertible, taken alone:
@@ -206,6 +217,8 @@ Revertible, taken alone:
   A brand with a short form (only the mark) is left for later.
 * **The extensions of the editor stay composables**, shown elsewhere when they do not fit, not
   turned into commands: their shape is a decision of its own (see `CLAUDE.md`).
+* **The tools of a tablet for a pen: 40 dp drawn, 20 dp icons, 44 dp targets.** Smaller ones
+  (36 dp, as some apps for the iPad) are a change of two numbers in `ToolSizes.Pen`.
 * **The navigation bar stays hidden** where the status bar is kept: it gives room on every device
   with buttons, and comes back with a swipe.
 * **Android 10 is checked on the tablet of the user**, not on an emulator (a system image of about

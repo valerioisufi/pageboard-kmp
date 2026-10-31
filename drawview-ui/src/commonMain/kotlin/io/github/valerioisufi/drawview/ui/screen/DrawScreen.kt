@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.ui.screen
 
+import io.github.valerioisufi.drawview.ui.components.ToolSizes
 import io.github.valerioisufi.drawview.ui.editor.TEXT_TO_NOTES_COMMAND_ID
 import io.github.valerioisufi.drawview.ui.editor.TextImportSheet
 import io.github.valerioisufi.drawview.model.text.TextCleanup
@@ -255,8 +256,11 @@ private fun DrawScreenContent(
         ) { bottomInset ->
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 // Where the tools go, by the width of the editor and the buttons of its input
-                val window = currentAdaptiveInfo().window
+                val adaptive = currentAdaptiveInfo()
+                val window = adaptive.window
                 val button = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified } ?: 48.dp
+                // The tools in the bars sized for a pen where there is touch (see ToolGroup)
+                val toolButton = if (adaptive.input.hasTouch) ToolSizes.PenTarget else button
                 var extensionsWidth by remember { mutableStateOf(0.dp) }
                 val pdfTools = if (controller.tileManager.tileRenderer.pdfAdapter != null) 1 else 0
                 val textMarkupShown = pdfTools == 1 && hasPdfPages
@@ -269,10 +273,10 @@ private fun DrawScreenContent(
                 val extensionsInBar = extensionsWidth == 0.dp ||
                     ToolbarLayout.extensionsFit(maxWidth, button, extensionsWidth, buttons = if (floating) 2 else 3, decorWidth)
                 val barExtensionsWidth = if (extensionsInBar) extensionsWidth else button
-                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, barExtensionsWidth, toolCount, groups = 3, decorWidth)
+                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, barExtensionsWidth, toolCount, groups = 3, decorWidth, toolButton)
                 val showPageGrid = arrangement != ToolbarArrangement.FLOATING_TOOLS || ToolbarLayout.pageGridFits(maxWidth, button, barExtensionsWidth, decorWidth)
                 val toolsMaxWidth = (maxWidth - ToolbarLayout.topWidth(button, barExtensionsWidth, decorWidth = decorWidth)).coerceAtLeast(0.dp)
-                val titleMaxWidth = ToolbarLayout.titleMaxWidth(maxWidth, button, barExtensionsWidth, toolCount, groups = 3, decorWidth)
+                val titleMaxWidth = ToolbarLayout.titleMaxWidth(maxWidth, button, barExtensionsWidth, toolCount, groups = 3, decorWidth, toolButton)
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Column(

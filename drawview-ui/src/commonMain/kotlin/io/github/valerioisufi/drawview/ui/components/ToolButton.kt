@@ -20,11 +20,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -34,7 +36,27 @@ import io.github.valerioisufi.drawview.ui.command.CommandTooltip
 private val ToolShape = RoundedCornerShape(16.dp)
 
 /**
- * A button of the tools of the editor: 44 dp, rounded 16 dp, the primary container when [selected],
+ * The sizes of the buttons of the tools of the editor: the [button] drawn, the [icon] of a tool
+ * and the [barIcon] of a button of the bar among them (undo, redo, the imports).
+ */
+internal data class ToolSizes(val button: Dp, val icon: Dp, val barIcon: Dp) {
+    internal companion object {
+        /** For a thumb: the tools floating on a phone, and the bars of a window without touch. */
+        val Thumb: ToolSizes = ToolSizes(44.dp, 24.dp, 22.dp)
+
+        /** For a pen: the bars of a tablet, their targets [PenTarget] wide. */
+        val Pen: ToolSizes = ToolSizes(40.dp, 20.dp, 20.dp)
+
+        /** The target of a tool in the bars of a tablet: the minimum of Apple for a finger. */
+        val PenTarget: Dp = 44.dp
+    }
+}
+
+/** The sizes of the buttons of the tools around (see `ToolGroup`). */
+internal val LocalToolSizes = staticCompositionLocalOf { ToolSizes.Thumb }
+
+/**
+ * A button of the tools of the editor: 44 dp ([LocalToolSizes]), rounded 16 dp, the primary container when [selected],
  * the dot of its [ink] (the color the tool draws with). It supports a long click and the popover
  * of its settings ([dropDownMenu], shown while [expanded]); it takes the minimum interactive size
  * of the input around it (48 dp for a finger, see `AdaptiveRoot`).
@@ -59,12 +81,13 @@ internal fun ToolButton(
 ) {
     Box {
         val colors = MaterialTheme.colorScheme
+        val sizes = LocalToolSizes.current
         val button = @Composable {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier
                     .minimumInteractiveComponentSize()
-                    .size(44.dp)
+                    .size(sizes.button)
                     .clip(ToolShape)
                     .background(if (selected) colors.primaryContainer else Color.Transparent)
                     .combinedClickable(
@@ -81,7 +104,7 @@ internal fun ToolButton(
                         else -> colors.onSurfaceVariant
                     }
                 ) {
-                    Row(modifier = Modifier.size(24.dp), verticalAlignment = Alignment.CenterVertically) { content() }
+                    Row(modifier = Modifier.size(sizes.icon), verticalAlignment = Alignment.CenterVertically) { content() }
                 }
                 if (ink != null && selected) {
                     Box(

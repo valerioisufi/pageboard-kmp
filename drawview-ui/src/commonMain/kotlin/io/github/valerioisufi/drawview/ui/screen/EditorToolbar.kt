@@ -24,10 +24,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -78,6 +80,7 @@ import io.github.valerioisufi.drawview.ui.components.EraserPreview
 import io.github.valerioisufi.drawview.ui.components.FontSizeControl
 import io.github.valerioisufi.drawview.ui.components.HybridScale
 import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
+import io.github.valerioisufi.drawview.ui.components.LocalToolSizes
 import io.github.valerioisufi.drawview.ui.components.OptionCard
 import io.github.valerioisufi.drawview.ui.components.PopoverTitle
 import io.github.valerioisufi.drawview.ui.components.PresetCard
@@ -89,6 +92,7 @@ import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetButton
 import io.github.valerioisufi.drawview.ui.components.TextMarkupSample
 import io.github.valerioisufi.drawview.ui.components.ToolButton
+import io.github.valerioisufi.drawview.ui.components.ToolSizes
 import io.github.valerioisufi.drawview.ui.components.textMarkupKindLabel
 import io.github.valerioisufi.drawview.ui.editor.TextAlignmentButtons
 import io.github.valerioisufi.drawview.ui.generated.resources.*
@@ -172,10 +176,11 @@ internal object ToolbarLayout {
         extensionsWidth: Dp,
         tools: Int,
         groups: Int,
-        decorWidth: Dp = 0.dp
+        decorWidth: Dp = 0.dp,
+        toolButton: Dp = button
     ): ToolbarArrangement = when {
         width < WindowLayout.MediumWidth || heightClass == HeightClass.COMPACT -> ToolbarArrangement.FLOATING_TOOLS
-        topWidth(button, extensionsWidth, decorWidth = decorWidth) + toolsWidth(button, tools, groups) <= width -> ToolbarArrangement.ONE_BAR
+        topWidth(button, extensionsWidth, decorWidth = decorWidth) + toolsWidth(toolButton, tools, groups) <= width -> ToolbarArrangement.ONE_BAR
         else -> ToolbarArrangement.TWO_BARS
     }
 
@@ -184,8 +189,8 @@ internal object ToolbarLayout {
      * to [TitleMaxWidth], so that a long title never pushes the buttons after the tools out of
      * the bar.
      */
-    fun titleMaxWidth(width: Dp, button: Dp, extensionsWidth: Dp, tools: Int, groups: Int, decorWidth: Dp = 0.dp): Dp =
-        (width - topWidth(button, extensionsWidth, decorWidth = decorWidth) - toolsWidth(button, tools, groups) + TitleMinWidth)
+    fun titleMaxWidth(width: Dp, button: Dp, extensionsWidth: Dp, tools: Int, groups: Int, decorWidth: Dp = 0.dp, toolButton: Dp = button): Dp =
+        (width - topWidth(button, extensionsWidth, decorWidth = decorWidth) - toolsWidth(toolButton, tools, groups) + TitleMinWidth)
             .coerceIn(TitleMinWidth, TitleMaxWidth)
 
     /**
@@ -346,10 +351,11 @@ private fun documentSubtitle(controller: DrawViewController, location: String?, 
     return listOfNotNull(location, pluralStringResource(Res.plurals.editor_pages_count, total, total)).joinToString(" · ")
 }
 
-/** A button of the top bar running [command] (its label and shortcut in the tooltip). */
+/** A button of the top bar running [command] (its label and shortcut in the tooltip), its icon [iconSize] wide. */
 @Composable
-private fun BarButton(command: Command, icon: ImageVector, label: String = command.label(), selected: Boolean = false) {
+private fun BarButton(command: Command, icon: ImageVector, label: String = command.label(), selected: Boolean = false, iconSize: Dp = 22.dp) {
     DesignIconButton(
+        iconSize = iconSize,
         icon = icon,
         label = label,
         onClick = { command.performIfEnabled() },
@@ -360,9 +366,24 @@ private fun BarButton(command: Command, icon: ImageVector, label: String = comma
     )
 }
 
-/** The group of the tools: a pill of the container of the surfaces, the tools scrolled when they do not fit. */
+/**
+ * The group of the tools in the bars: a pill of the container of the surfaces, the tools scrolled
+ * when they do not fit; sized for a pen where there is touch (a tablet), with targets of
+ * [ToolSizes.PenTarget], as they are as now with a mouse.
+ */
 @Composable
 internal fun ToolGroup(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+    if (currentAdaptiveInfo().input.hasTouch) {
+        CompositionLocalProvider(LocalToolSizes provides ToolSizes.Pen, LocalMinimumInteractiveComponentSize provides ToolSizes.PenTarget) {
+            ToolGroupRow(modifier, content)
+        }
+    } else {
+        ToolGroupRow(modifier, content)
+    }
+}
+
+@Composable
+private fun ToolGroupRow(modifier: Modifier, content: @Composable RowScope.() -> Unit) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(22.dp))
@@ -450,8 +471,9 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
     // The tool whose settings are open (null = none)
     var openSettings by remember { mutableStateOf<Tool?>(null) }
 
-    BarButton(commands.undo, DrawViewIcons.Undo)
-    BarButton(commands.redo, DrawViewIcons.Redo)
+    val barIcon = LocalToolSizes.current.barIcon
+    BarButton(commands.undo, DrawViewIcons.Undo, iconSize = barIcon)
+    BarButton(commands.redo, DrawViewIcons.Redo, iconSize = barIcon)
     ToolDivider()
 
     ToolWithSettings(controller, Tool.INK_PEN, commands.pen, DrawViewIcons.Pen, openSettings, { openSettings = it }) {
@@ -488,8 +510,8 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
 
     if (withImports) {
         ToolDivider()
-        if (pdfImportAvailable) BarButton(commands.importPdf, DrawViewIcons.FileText)
-        BarButton(commands.importImage, DrawViewIcons.Image)
+        if (pdfImportAvailable) BarButton(commands.importPdf, DrawViewIcons.FileText, iconSize = barIcon)
+        BarButton(commands.importImage, DrawViewIcons.Image, iconSize = barIcon)
     }
 
     // The palette asked by a gesture of the stylus: the settings of the tool chosen (not the
