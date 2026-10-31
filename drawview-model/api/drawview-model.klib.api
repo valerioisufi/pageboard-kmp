@@ -3404,9 +3404,11 @@ final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighligh
 }
 
 final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.github.valerioisufi.drawview.model.text/ListNumbering|null[0]
+    final fun continuationIndentAt(kotlin/String, kotlin/Int): kotlin.ranges/IntRange? // io.github.valerioisufi.drawview.model.text/ListNumbering.continuationIndentAt|continuationIndentAt(kotlin.String;kotlin.Int){}[0]
     final fun format(kotlin/Int, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.format|format(kotlin.Int;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering){}[0]
     final fun glyphOf(io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.glyphOf|glyphOf(io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet){}[0]
     final fun items(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span>): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/ListNumbering.Item> // io.github.valerioisufi.drawview.model.text/ListNumbering.items|items(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.text.RichTextParser.Span>){}[0]
+    final fun textColumnOf(kotlin/String, io.github.valerioisufi.drawview.model.text/RichTextParser.Span): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.textColumnOf|textColumnOf(kotlin.String;io.github.valerioisufi.drawview.model.text.RichTextParser.Span){}[0]
 
     final enum class Bullet : kotlin/Enum<io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet> { // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet|null[0]
         enum entry CIRCLE // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.CIRCLE|null[0]

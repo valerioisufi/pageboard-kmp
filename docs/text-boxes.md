@@ -168,7 +168,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | Phase | What | Status |
 |---|---|---|
 | 1 | Lists, structure and look: continuation lines in the parser; `ListNumbering` (ordinals by position, `1.` / `a.` / `i.`, bullets by depth); labels in a column, numbers right-aligned, nested items at the text of their parent; tests of the parser and the numbering, screenshots of nested lists | done |
-| 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines, soft keyboards; tests of `RichTextEditing` and of the field | pending |
+| 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines; tests of `RichTextEditing` and of the field | done |
 | 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | pending |
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the command, the palette in the format bar and the selection bar, the Format menu; screenshots | pending |
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field (caret out of it) and in the export; `TextFlow` keeping tables; tests and screenshots | pending |
@@ -197,6 +197,21 @@ above goes from what needs no stored change to what needs the most.
   an item at its text. `MarkdownTextUtil.bulletGlyph`, `listPrefix`, `listPrefixWidthPx` removed.
 * Screenshots: `text-saved-nested-lists` (new), the lists of `markdown-text`, `text-import`,
   `lecture-outline`, `text-saved-code-list` recorded again (the labels in their column).
+
+### Phase 2
+
+* `RichTextEditing.lineBreakInItem` (Shift+Enter in an item: `\n` and the spaces of the column of
+  its text, the spaces after the caret dropped); `handleEnter` on a continuation line starts the
+  next item (the whole line when the caret is at its start); `handleConcealedDeletion` joins a
+  continuation line back on Backspace at its text; `keepCaretOutOfMarkers` keeps the caret out of
+  its hidden indent; the toggles of the lists take whole items (a continuation line goes to the
+  column of the new marker, or to the indent of its item out of the list); Tab and Shift+Tab move
+  an item with its lines.
+* `ListNumbering.textColumnOf`, `continuationIndentAt` (public: the editing is in `drawview-canvas`).
+* `TextEditorManager.lineBreakInItem`, called by the field on Shift+Enter; out of the items Shift+Enter
+  stays a plain line break.
+* Tests: `RichTextEditingTest` (five new), the field driven by the keys in
+  `text-list-line-break` (explorer, a screenshot and the text it writes).
 
 ## Decisions
 

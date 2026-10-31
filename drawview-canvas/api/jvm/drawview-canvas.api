@@ -557,6 +557,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun indent ()V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public final fun isEditing ()Z
+	public final fun lineBreakInItem ()Z
 	public final fun moveBy (FF)V
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
@@ -1106,6 +1107,7 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun inNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun lineBreakInItem (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

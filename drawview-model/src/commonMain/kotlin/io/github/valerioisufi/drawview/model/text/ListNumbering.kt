@@ -91,6 +91,27 @@ public object ListNumbering {
         return result
     }
 
+    /**
+     * The column of the text of [item] of [text] (its indent, its marker and the spaces after it, a
+     * tab counted as 2): where its continuation lines start.
+     */
+    public fun textColumnOf(text: String, item: Span): Int = RichTextParser.columnOf(text, item.start, item.contentStart)
+
+    /**
+     * The continuation line of a list item of [text] whose indent has [offset] (from the start of
+     * the line to its first character, both included), as the range of that indent; `null` for
+     * any other offset.
+     */
+    public fun continuationIndentAt(text: String, offset: Int): IntRange? {
+        val lineStart = text.lastIndexOf('\n', offset - 1) + 1
+        if (lineStart == 0) return null
+        var contentStart = lineStart
+        while (contentStart < text.length && (text[contentStart] == ' ' || text[contentStart] == '\t')) contentStart++
+        if (offset > contentStart) return null
+        val item = RichTextParser.parse(text).firstOrNull { it.kind == Kind.LIST_ITEM && it.start < lineStart && it.end >= contentStart && lineStart <= it.end }
+        return if (item != null) lineStart..contentStart else null
+    }
+
     /** The glyph of [bullet] (in a font that has it: the monospace font of the notes has all three). */
     public fun glyphOf(bullet: Bullet): String = when (bullet) {
         Bullet.DISC -> "•"

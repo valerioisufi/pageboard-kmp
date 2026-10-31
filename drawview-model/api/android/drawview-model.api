@@ -3016,9 +3016,11 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListNumbering;
+	public final fun continuationIndentAt (Ljava/lang/String;I)Lkotlin/ranges/IntRange;
 	public final fun format (ILio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)Ljava/lang/String;
 	public final fun glyphOf (Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;)Ljava/lang/String;
 	public final fun items (Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
+	public final fun textColumnOf (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)I
 }
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Bullet : java/lang/Enum {

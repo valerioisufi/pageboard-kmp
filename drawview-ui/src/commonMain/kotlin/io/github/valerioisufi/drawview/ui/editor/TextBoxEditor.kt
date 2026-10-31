@@ -166,7 +166,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     CompositionLocalProvider(LocalDensity provides unscaledDensity) {
-        // Tracks Shift+Enter on hardware keyboard to allow regular line breaks without list continuation
+        // Tracks Shift+Enter on a hardware keyboard out of the list items: a plain line break, no list continued
         var lastKeyWasShiftEnter by remember { mutableStateOf(false) }
 
         // The field where the text is on the page, turned with it around its middle; its frame and
@@ -220,6 +220,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                         }
                         if (event.key == Key.Enter || event.key == Key.NumPadEnter) {
                             if (event.isShiftPressed) {
+                                // In a list item, a line break inside it; elsewhere a plain one
+                                if (editor.lineBreakInItem()) return@onPreviewKeyEvent true
                                 lastKeyWasShiftEnter = true
                                 return@onPreviewKeyEvent false
                             }

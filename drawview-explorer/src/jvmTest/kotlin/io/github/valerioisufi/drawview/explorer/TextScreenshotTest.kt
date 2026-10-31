@@ -5,7 +5,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.withKeyDown
 import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
@@ -17,6 +21,7 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /**
  * Screenshots of the texts (docs/text-editing.md): a text being written, the texts as the page
@@ -127,6 +132,24 @@ class TextScreenshotTest {
             "1. Sixth\n1. Seventh\n1. Eighth\n1. Ninth\n1. Tenth, aligned with the ninth"
         write(viewModels, 20f, 20f, list, drawnWidthMm = 120f)
         save(viewModels)
+    }
+
+    /**
+     * A list written with the keys: Shift+Enter breaks the line inside the item (at its text),
+     * Enter on that line starts the next item.
+     */
+    @Test
+    fun textListLineBreakWritten() = capture("text-list-line-break", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 20f, "- Limits", drawnWidthMm = 120f)
+        onNode(hasSetTextAction()).performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.Enter) } }
+        onNode(hasSetTextAction()).performTextInput("the same item, on a line of its own")
+        onNode(hasSetTextAction()).performKeyInput { pressKey(Key.Enter) }
+        onNode(hasSetTextAction()).performTextInput("Continuity")
+        waitForIdle()
+        runOnIdle {
+            assertEquals("- Limits\n  the same item, on a line of its own\n- Continuity", viewModels.controller().textEditorManager.value.text)
+        }
     }
 
     /** A text selected: the frame of the selection. */

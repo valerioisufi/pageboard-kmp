@@ -473,6 +473,17 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         return true
     }
 
+    /**
+     * Handles Shift+Enter in a list item: a line break inside the item, the next line at its text.
+     * Returns `true` if handled (out of the items, a plain line break is the field's).
+     */
+    public fun lineBreakInItem(): Boolean {
+        if (!isEditing) return false
+        val result = RichTextEditing.lineBreakInItem(value) ?: return false
+        updateValue(result, smartNewline = false)
+        return true
+    }
+
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
     override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format), smartNewline = false)
 

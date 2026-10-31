@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.canvas.text
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import kotlin.math.max
 import kotlin.math.min
@@ -209,26 +210,33 @@ public object RichTextEditing {
         if (inCodeBlock(value)) return value
         val text = value.text
         val sel = value.selection
-        val selMin = min(sel.start, sel.end)
-        val selMax = max(sel.start, sel.end)
-
-        val firstLineStart = text.lastIndexOf('\n', selMin - 1) + 1
-        val lastLineEnd = if (selMax == selMin) {
-            text.indexOf('\n', selMin).let { if (it < 0) text.length else it }
-        } else {
-            val endBound = if (selMax > 0 && text[selMax - 1] == '\n') selMax - 1 else selMax
-            text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
+        val items = RichTextParser.parse(text).filter { it.kind == RichTextParser.Kind.LIST_ITEM }
+        // The whole items the selection touches: their continuation lines follow them
+        var (firstLineStart, lastLineEnd) = selectedLines(text, sel)
+        for (item in items) {
+            if (item.start < firstLineStart && item.end >= firstLineStart) firstLineStart = item.start
+            if (item.start <= lastLineEnd && item.end > lastLineEnd) lastLineEnd = item.end
         }
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
+        // The continuation lines, by the index of the line of their item
+        val itemOf = IntArray(lines.size) { -1 }
+        var offset = firstLineStart
+        var current = -1
+        for ((i, line) in lines.withIndex()) {
+            val item = items.firstOrNull { it.start < offset && offset <= it.end }
+            if (item == null) current = i else itemOf[i] = current
+            offset += line.length + 1
+        }
 
-        val parsed = lines.map { line ->
+        val parsed = lines.mapIndexed { i, line ->
             val indent = line.takeWhile { it == ' ' || it == '\t' }
             val rest = line.substring(indent.length)
             val numMatch = NUMBERED_MARKER.find(rest)
             val headMatch = HEADING_MARKER.find(rest)
             val (type, len) = when {
+                itemOf[i] >= 0 -> MarkerType.CONTINUATION to 0
                 rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ") -> {
                     var mLen = 2
                     while (mLen < rest.length && rest[mLen].isWhitespace()) mLen++
@@ -241,22 +249,26 @@ public object RichTextEditing {
             LineInfo(indent, type, len, rest.substring(len))
         }
 
-        val allSame = if (ordered) {
-            parsed.all { it.markerType == MarkerType.NUMBERED }
-        } else {
-            parsed.all { it.markerType == MarkerType.BULLET }
-        }
+        val heads = parsed.filter { it.markerType != MarkerType.CONTINUATION }
+        val allSame = heads.all { it.markerType == if (ordered) MarkerType.NUMBERED else MarkerType.BULLET }
 
-        val newLines = parsed.mapIndexed { index, lineInfo ->
-            if (allSame) {
-                lineInfo.indent + lineInfo.content
-            } else if (ordered) {
-                lineInfo.indent + "${index + 1}. " + lineInfo.content
-            } else {
-                lineInfo.indent + BULLET_PREFIX + lineInfo.content
+        // The new prefix of each line (its indent and its marker), the old one it replaces
+        val newPrefixes = ArrayList<String>(lines.size)
+        var number = 0
+        for ((i, info) in parsed.withIndex()) {
+            newPrefixes += when {
+                info.markerType == MarkerType.CONTINUATION -> {
+                    // At the text of its item as it is now, or at its indent out of the list
+                    val head = parsed[itemOf[i]]
+                    if (allSame) head.indent else " ".repeat(newPrefixes[itemOf[i]].length)
+                }
+                allSame -> info.indent
+                ordered -> info.indent + "${++number}. "
+                else -> info.indent + BULLET_PREFIX
             }
         }
-
+        val oldPrefixLengths = parsed.map { it.indent.length + it.markerLength }
+        val newLines = parsed.mapIndexed { i, info -> newPrefixes[i] + info.content }
         val newBlock = newLines.joinToString("\n")
 
         fun mapOffset(offset: Int): Int {
@@ -265,30 +277,21 @@ public object RichTextEditing {
             var oldPos = firstLineStart
             var newPos = firstLineStart
             for (i in lines.indices) {
-                val oldLine = lines[i]
-                val newLine = newLines[i]
-                val info = parsed[i]
-                val oldLineEnd = oldPos + oldLine.length
+                val oldLineEnd = oldPos + lines[i].length
                 if (offset <= oldLineEnd) {
-                    val inLineOffset = offset - oldPos
-                    val indentLen = info.indent.length
-                    val oldMarkerEnd = indentLen + info.markerLength
-                    val newMarkerEnd = if (allSame) {
-                        indentLen
-                    } else if (ordered) {
-                        indentLen + "${i + 1}. ".length
-                    } else {
-                        indentLen + BULLET_PREFIX.length
+                    val inLine = offset - oldPos
+                    val oldPrefix = oldPrefixLengths[i]
+                    val newPrefix = newPrefixes[i].length
+                    val keepsIndent = parsed[i].markerType != MarkerType.CONTINUATION && inLine < parsed[i].indent.length
+                    val mapped = when {
+                        keepsIndent -> inLine
+                        inLine <= oldPrefix -> newPrefix
+                        else -> newPrefix + (inLine - oldPrefix)
                     }
-                    val mappedInLine = when {
-                        inLineOffset < indentLen -> inLineOffset
-                        inLineOffset <= oldMarkerEnd -> newMarkerEnd
-                        else -> newMarkerEnd + (inLineOffset - oldMarkerEnd)
-                    }
-                    return (newPos + mappedInLine).coerceIn(newPos, newPos + newLine.length)
+                    return (newPos + mapped).coerceIn(newPos, newPos + newLines[i].length)
                 }
                 oldPos = oldLineEnd + 1
-                newPos = newPos + newLine.length + 1
+                newPos += newLines[i].length + 1
             }
             return newPos
         }
@@ -298,6 +301,23 @@ public object RichTextEditing {
             text = newText,
             selection = TextRange(mapOffset(sel.start), mapOffset(sel.end))
         )
+    }
+
+    /**
+     * Shift+Enter in a list item: a line break inside the item, the next line at its text (a
+     * continuation line, see [RichTextParser.Span]), the spaces after the caret dropped. `null` out
+     * of the list items (a plain line break) and in a block of code.
+     */
+    public fun lineBreakInItem(value: TextFieldValue): TextFieldValue? {
+        if (inCodeBlock(value)) return null
+        val start = min(value.selection.start, value.selection.end)
+        val end = max(value.selection.start, value.selection.end)
+        val text = value.text.substring(0, start) + value.text.substring(end)
+        val item = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && start >= it.contentStart && start <= it.end } ?: return null
+        var after = start
+        while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
+        val inserted = "\n" + " ".repeat(ListNumbering.textColumnOf(text, item))
+        return TextFieldValue(text.substring(0, start) + inserted + text.substring(after), TextRange(start + inserted.length))
     }
 
     /**
@@ -325,6 +345,20 @@ public object RichTextEditing {
         val lineEnd = if (nextNewline < 0) text.length else nextNewline
         val line = text.substring(lineStart, lineEnd)
         val cursorInLine = cursor - lineStart
+
+        // On a line break inside an item: the next item, the text after the caret in it
+        val continued = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.start < lineStart && lineStart <= it.end }
+        if (continued != null) {
+            var markerStart = continued.start
+            while (text[markerStart] == ' ' || text[markerStart] == '\t') markerStart++
+            val marker = if (continued.ordered) "${continued.number + 1}. " else text[markerStart] + " "
+            var after = cursor
+            while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
+            // At the start of the line: the next item takes the whole line
+            val before = if (text.substring(lineStart, cursor).isBlank()) text.substring(0, lineStart - 1) else text.substring(0, cursor)
+            val prefix = "\n" + text.substring(continued.start, markerStart) + marker
+            return TextFieldValue(before + prefix + text.substring(after), TextRange(before.length + prefix.length))
+        }
 
         val indent = line.takeWhile { it == ' ' || it == '\t' }
         val rest = line.substring(indent.length)
@@ -418,11 +452,17 @@ public object RichTextEditing {
      * [newValue] with its caret out of the markers of the list items, which are shown as their
      * bullet or number and are no place for the caret: a caret moved into a marker from the text of
      * its item goes to the end of the line before (backwards), any other to the text of the item.
+     * The same for the indent of a continuation line, hidden.
      * `null` when [newValue] needs no change (its text changed, a selection, no marker).
      */
     public fun keepCaretOutOfMarkers(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
         if (oldValue.text != newValue.text || !newValue.selection.collapsed) return null
         val caret = newValue.selection.start
+        ListNumbering.continuationIndentAt(newValue.text, caret)?.let { indent ->
+            if (caret == indent.last) return null
+            val backwards = oldValue.selection.collapsed && oldValue.selection.start == indent.last && caret < indent.last
+            return newValue.copy(selection = TextRange(if (backwards) indent.first - 1 else indent.last))
+        }
         val item = listItemMarkerAt(newValue.text, caret) ?: return null
         val backwards = oldValue.selection.collapsed && oldValue.selection.start == item.contentStart && caret < item.contentStart
         val target = if (backwards && item.start > 0) item.start - 1 else item.contentStart
@@ -432,7 +472,9 @@ public object RichTextEditing {
     /**
      * What a deletion of [oldValue] into [newValue] does when it deletes a character that is not
      * shown: Backspace at the start of the text of a list item deletes the last character of its
-     * marker, and takes the whole marker away instead; Backspace at the start of the code of a block
+     * marker, and takes the whole marker away instead; Backspace at the start of a continuation line
+     * of an item deletes a space of its hidden indent, and joins the line to the one before instead;
+     * Backspace at the start of the code of a block
      * deletes the line break of its opening fence (hidden while the code is written), and moves the
      * caret onto the fence instead, which shows it. `null` when [newValue] is not such a deletion.
      */
@@ -443,6 +485,10 @@ public object RichTextEditing {
         if (caret == 0 || newValue.text != old.removeRange(caret - 1, caret)) return null
         val spans = RichTextParser.parse(old)
         if (spans.any { it.kind == RichTextParser.Kind.CODE_BLOCK && it.contentStart == caret && it.start < caret }) return TextFieldValue(old, TextRange(caret - 1))
+        ListNumbering.continuationIndentAt(old, caret)?.let { indent ->
+            // The line break and the indent of a line break in an item, hidden: the line joined back
+            if (caret == indent.last) return TextFieldValue(old.removeRange(indent.first - 1, caret), TextRange(indent.first - 1))
+        }
         val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
         return TextFieldValue(old.removeRange(item.start, item.contentStart), TextRange(item.start))
     }
@@ -469,11 +515,26 @@ public object RichTextEditing {
         return value.copy(text = text.substring(0, start) + spaces + text.substring(start), selection = TextRange(start + spaces.length))
     }
 
+    /**
+     * The lines the selection covers, with the continuation lines of the list items it touches
+     * (out of the blocks of code): an item moves with its lines.
+     */
+    private fun selectedItemLines(text: String, selection: TextRange, inCode: Boolean): Pair<Int, Int> {
+        var (first, last) = selectedLines(text, selection)
+        if (inCode) return first to last
+        for (item in RichTextParser.parse(text)) {
+            if (item.kind != RichTextParser.Kind.LIST_ITEM) continue
+            if (item.start < first && item.end >= first) first = item.start
+            if (item.start <= last && item.end > last) last = item.end
+        }
+        return first to last
+    }
+
     /** Adds [width] spaces at the beginning of each line covered by the selection. */
     private fun indentLines(value: TextFieldValue, width: Int): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val (firstLineStart, lastLineEnd) = selectedLines(text, sel)
+        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, width == CODE_INDENT)
         val unit = " ".repeat(width)
 
         val block = text.substring(firstLineStart, lastLineEnd)
@@ -514,7 +575,7 @@ public object RichTextEditing {
     private fun outdentLines(value: TextFieldValue, width: Int): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val (firstLineStart, lastLineEnd) = selectedLines(text, sel)
+        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, width == CODE_INDENT)
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
@@ -565,7 +626,7 @@ public object RichTextEditing {
         val content: String
     )
 
-    private enum class MarkerType { NONE, BULLET, NUMBERED, HEADING }
+    private enum class MarkerType { NONE, BULLET, NUMBERED, HEADING, CONTINUATION }
 
     private val NUMBERED_MARKER = Regex("""^(\d+)\.[ \t]+""")
     private val HEADING_MARKER = Regex("""^#{1,6}[ \t]+""")

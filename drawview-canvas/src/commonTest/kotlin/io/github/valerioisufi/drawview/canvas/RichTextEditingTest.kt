@@ -365,4 +365,53 @@ class RichTextEditingTest {
         val deleted = TextFieldValue(text.removeRange(content - 1, content), TextRange(content - 1))
         assertEquals(TextFieldValue(text, TextRange(content - 1)), RichTextEditing.handleConcealedDeletion(TextFieldValue(text, TextRange(content)), deleted))
     }
+
+    @Test
+    fun shiftEnterBreaksTheLineInsideTheItem() {
+        val broken = RichTextEditing.lineBreakInItem(at("- first item", 7))!!
+        assertEquals("- first\n  item", broken.text, "the next line at the text of the item, the space dropped")
+        assertEquals(TextRange(10), broken.selection)
+        assertEquals("1. one\n   ", RichTextEditing.lineBreakInItem(at("1. one", 6))!!.text, "at the text of a numbered item")
+        assertEquals("- a\n  b\n  ", RichTextEditing.lineBreakInItem(at("- a\n  b", 7))!!.text, "again on a continuation line")
+        assertEquals(null, RichTextEditing.lineBreakInItem(at("plain", 2)), "a plain line break out of the lists")
+    }
+
+    @Test
+    fun enterOnALineBreakOfAnItemStartsTheNextItem() {
+        val next = RichTextEditing.handleEnter(at("- a\n  more", 10))!!
+        assertEquals("- a\n  more\n- ", next.text)
+        assertEquals(TextRange(13), next.selection)
+        assertEquals("1. a\n   b\n2. c", RichTextEditing.handleEnter(at("1. a\n   b c", 9))!!.text, "the text after the caret in the next item")
+        assertEquals("- a\n- b", RichTextEditing.handleEnter(at("- a\n  b", 6))!!.text, "at the start of the line: the line becomes the item")
+    }
+
+    @Test
+    fun backspaceAtTheStartOfALineBreakJoinsItBack() {
+        val old = at("- a\n  b", 6)
+        val joined = RichTextEditing.handleConcealedDeletion(old, TextFieldValue("- a\n b", TextRange(5)))!!
+        assertEquals("- ab", joined.text)
+        assertEquals(TextRange(3), joined.selection)
+    }
+
+    @Test
+    fun theCaretStaysOutOfTheIndentOfALineBreak() {
+        val text = "- a\n  b"
+        fun moved(from: Int, to: Int) = RichTextEditing.keepCaretOutOfMarkers(TextFieldValue(text, TextRange(from)), TextFieldValue(text, TextRange(to)))?.selection
+        assertEquals(TextRange(6), moved(0, 4), "to the text of the line")
+        assertEquals(TextRange(3), moved(6, 5), "backwards to the end of the line before")
+        assertEquals(null, moved(0, 6))
+    }
+
+    @Test
+    fun theListsKeepTheLineBreaksOfTheirItems() {
+        // Bullets to numbers: the line under the item at the text of the numbered item
+        val numbered = RichTextEditing.toggleNumberedList(TextFieldValue("- a\n  b\n- c", TextRange(0, 10)))
+        assertEquals("1. a\n   b\n2. c", numbered.text)
+        assertEquals("1. a\n   b\n- c", RichTextEditing.toggleNumberedList(at("- a\n  b\n- c", 1)).text, "the item of the caret with its line")
+        // Out of the list: the line at the indent of its item
+        assertEquals("a\nb\nc", RichTextEditing.toggleNumberedList(TextFieldValue(numbered.text, TextRange(0, numbered.text.length))).text)
+        // Tab moves the item with its lines
+        assertEquals("  - a\n    b", RichTextEditing.indent(at("- a\n  b", 2)).text)
+        assertEquals("- a\n  b", RichTextEditing.outdent(at("  - a\n    b", 4)).text)
+    }
 }
