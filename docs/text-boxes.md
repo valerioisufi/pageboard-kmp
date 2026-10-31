@@ -121,7 +121,7 @@ The search (`SearchText`) and the assistant read the source, so they are unchang
 | The notation of a table: rows, cells (their source ranges), alignments of the columns | `RichTextParser`: `Kind.TABLE` with `TableShape` (`drawview-model`) | Information Expert |
 | The edits of a table on the source: insert, add / delete rows and columns, align, move to a cell, keep the pipes aligned in the source | `TableEditing` (`drawview-canvas`, pure, on `TextFieldValue`) | Information Expert, Pure Fabrication |
 | Lay a table out: column widths (from the content, fitting the line), cells wrapped, row heights, rules | `TableLayout` (`drawview-ui`), an object of the presenter like `CodeBlockLayout`, for the canvas, the field and the export | High Cohesion, Protected Variations |
-| The grid while written: one field per cell over the table, the source of the table hidden in the main field; its edits written back into the source of the one `TextFieldValue` (one undo history, one draft) | `TableCellEditor` (`drawview-ui`) | Pure Fabrication, Indirection |
+| The grid while written: the table stays an object of the one field, its caret and selection drawn in the cell of the caret, the keys typed in the source of that cell (one `TextFieldValue`: one undo history, one draft) | `TextBoxEditor` with `TextEditorManager.tableCaret` (`drawview-ui`, `drawview-canvas`) | Indirection, Protected Variations |
 | The commands and the table bar shown with the caret in a table | `EditorCommands` (`insertTable`, `addRowAbove`, …) on `TextFormatTarget`; `TableBar` | Controller |
 | Keep a table whole when a long text is flowed | `TextFlow.blocksOf` | Information Expert |
 
@@ -173,7 +173,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | done |
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the palette in the format bar and the selection bar; screenshots | done |
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field and in the export; the search; tests and screenshots | done |
-| 6 | Tables, editing: `TableEditing`, `TableCellEditor` (cells, Tab, Enter, arrows, taps), the insert command with its size picker, the table bar, the Format menu and shortcuts; tests and screenshots | pending |
+| 6 | Tables, editing: `TableEditing`, the caret drawn in its cell (Tab, Enter, arrows, taps), the insert command with its size picker, the menu of the table, the Format menu and a shortcut; tests and screenshots | done |
 | 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | pending |
 | 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | pending |
 | 9 | Chains, around: the mark on the frame, the lasso on a box of a chain, long texts pasted and imported into chains, the export; screenshots; the desktop app on a scratch directory | pending |
@@ -266,6 +266,31 @@ above goes from what needs no stored change to what needs the most.
 * `TextFlow.blocksOf` needed nothing: a table has no blank line, it is one block.
 * Screenshots: `text-tables` (desktop, phone, tablet: saved and being written).
 
+### Phase 6
+
+* `TableEditing` (`drawview-canvas`, new, pure): the table and the cell of the caret; inserting a
+  table on lines of its own (a line after it, to leave it); Tab and Shift+Tab from cell to cell (a
+  row added after the last cell), Enter to the cell below, the arrows by a character in a cell and
+  across cells and out of the table; the rows, columns, alignments and the deletions, the table
+  written again one row a line; `keepInCells`: a `|` typed or pasted escaped, a line break pasted
+  a space, Backspace and Delete never taking a `|` (`TableEditingTest`).
+* The caret is never a separate field: the table stays one object of the field, whose cursor is
+  hidden while the caret is in a table; the caret (or the selection) and an outline of the cell
+  are drawn in the cell, the cell of the caret shows the source it touches (a formula being
+  written). A tap on a cell puts the caret on the character tapped. The keys typed go to the source
+  of the cell as in any text. Headings, lists and blocks of code are not applied in a table.
+* `TextFormatTarget.inTable`, `insertTable`, `applyTableAction`; `TextEditorManager.tableCaret`,
+  `tableNextCell`, `tableArrow` (Tab is `indent`, Enter `handleEnter`).
+* Commands: `format-table` (⌘⌥T, 3 × 3) and the ten commands of the table in the third section of
+  the menu Format; in the bar, the button of the table: out of a table a grid of 8 × 8 choosing the
+  size, in a table the menu of its commands (`TableButton`). Strings in the seven languages.
+* The presenter: an object (a table, a block of code) followed by the last line break of the text
+  ends its paragraph, the empty line after it is a paragraph of its own: it took the height of the
+  object (`theEmptyLineAfterATableIsALineOfTheText`).
+* Screenshots: `text-table-written` (written with the keys, its text checked), `text-table-touched`
+  (the caret on the character tapped), `text-table-menu`; the bars recorded again (one button
+  more; on a tablet held upright the controls scroll, the button closing the editor in sight).
+
 ## Decisions
 
 Taken by the user on 2026-10-31:
@@ -287,6 +312,8 @@ Taken alone, revertible:
 6. **The ordinal from the position** (CommonMark): the source keeps `1. 1. 1.` and shows `1. 2. 3.`;
    the number of the first item is kept as the start.
 7. **Cells without line breaks** (as in GitHub's notation); a long cell wraps.
+13. **The caret of a table is drawn by the editor** in the one field (not a field per cell): the
+    input methods, the undo and the drafts stay those of the text.
 8. **The parts of a chain are texts of their own** with a link to the next, not one text shared by
    several boxes: the sync, the search, the export and the conflicts of a text stay as they are.
 9. **The room of a box of a chain ends at the bottom margin of its page**, not at a height set by

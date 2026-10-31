@@ -7,11 +7,14 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.withKeyDown
 import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModelStoreOwner
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.TextPlacement
@@ -23,6 +26,7 @@ import java.util.TimeZone
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Screenshots of the texts (docs/text-editing.md): a text being written, the texts as the page
@@ -185,6 +189,67 @@ class TextScreenshotTest {
             save(viewModels)
             write(viewModels, 20f, 100f, "| Day | Topic |\n|--:|---|\n| 1 | Limits |\n| 2 | Continuity |\n\nWritten now", drawnWidthMm = 80f)
         }
+    }
+
+    /**
+     * A table written with the keys: inserted, its cells filled with Tab, a row added after the
+     * last cell, Enter to the cell below; the caret drawn in its cell, the cell outlined.
+     */
+    @Test
+    fun textTableWritten() = capture("text-table-written", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 20f, "Plan", drawnWidthMm = 120f)
+        runOnIdle { viewModels.controller().textEditorManager.insertTable(2, 2) }
+        val field = onNode(hasSetTextAction())
+        field.performTextInput("Day")
+        field.performKeyInput { pressKey(Key.Tab) }
+        field.performTextInput("Topic")
+        field.performKeyInput { pressKey(Key.Tab) }
+        field.performTextInput("1")
+        field.performKeyInput { pressKey(Key.Tab) }
+        field.performTextInput("Limits")
+        field.performKeyInput { pressKey(Key.Tab) }
+        field.performTextInput("2")
+        field.performKeyInput { pressKey(Key.Tab) }
+        field.performTextInput("Continuity, a | in it")
+        waitForIdle()
+        runOnIdle {
+            assertEquals(
+                "Plan\n| Day | Topic |\n| --- | --- |\n| 1 | Limits |\n| 2  | Continuity, a \\| in it  |\n",
+                viewModels.controller().textEditorManager.value.text
+            )
+        }
+    }
+
+    /** A table opened where a cell is touched: the caret on the character touched in that cell. */
+    @Test
+    fun textTableTouched() = capture("text-table-touched", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 20f, "| Day | Topic |\n| --- | --- |\n| 1 | Limits |", drawnWidthMm = 120f)
+        save(viewModels)
+        runOnIdle {
+            val controller = viewModels.controller()
+            val text = controller.document.pages[0].texts.single()
+            val word = controller.tileManager.tileRenderer.textAdapter!!.layout(text, TextTileAdapter.NO_PAPER)!!.words.first { it.text.trim() == "Limits" }
+            // In the word, past its first letter
+            controller.textEditorManager.startEditing(text, 0, caretAt = Offset(word.left + word.width * 0.4f, word.baseline - 1f))
+        }
+        waitForIdle()
+        runOnIdle {
+            val editor = viewModels.controller().textEditorManager
+            val start = editor.value.text.indexOf("Limits")
+            assertTrue(editor.value.selection.start in start + 1..start + 5, "in the word touched, in its cell")
+        }
+    }
+
+    /** The menu of the table of the caret: its rows, its columns, the alignment of its column. */
+    @Test
+    fun textTableMenu() = capture("text-table-menu", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 20f, "| a | b |\n| --- | --- |\n| c | d |", drawnWidthMm = 120f)
+        caretAfter(viewModels, "c")
+        onNodeWithContentDescription("Table").performClick()
+        waitForIdle()
     }
 
     /** A text selected: the frame of the selection. */

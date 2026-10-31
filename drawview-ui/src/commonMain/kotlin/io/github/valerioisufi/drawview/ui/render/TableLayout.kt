@@ -10,6 +10,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.text.TextPainter
@@ -99,10 +100,10 @@ internal class TableLayout<T>(
 
         /**
          * The table [table] of [text] laid out with [p] (its cells measured by its
-         * [Presentation.measureText]) on the width of its line; `null` when [p] measures nothing or
-         * has no width of line.
+         * [Presentation.measureText]) on the width of its line, the cell of [reveal] showing the source
+         * it touches; `null` when [p] measures nothing or has no width of line.
          */
-        fun <T> layout(text: String, table: Span, p: Presentation<T>): TableLayout<T>? {
+        fun <T> layout(text: String, table: Span, p: Presentation<T>, reveal: TextRange? = null): TableLayout<T>? {
             val measure = p.measureText ?: return null
             val lineWidth = p.lineWidthPx ?: return null
             val shape = TableShape.of(text, table)
@@ -114,7 +115,9 @@ internal class TableLayout<T>(
             // Each cell presented, the header in bold
             val shown = shape.rows.mapIndexed { row, cells ->
                 cells.map { range ->
-                    val presented = RichTextPresenter.present(text.substring(range.first, range.last + 1), cellPresentation)
+                    // The selection in the cell reveals its source there (a formula being written)
+                    val inCell = reveal?.takeIf { it.min >= range.first && it.max <= range.last + 1 }?.let { TextRange(it.start - range.first, it.end - range.first) }
+                    val presented = RichTextPresenter.present(text.substring(range.first, range.last + 1), cellPresentation, inCell)
                     val styled = if (row == 0) bold(presented.text) else presented.text
                     Triple(range, presented, styled)
                 }

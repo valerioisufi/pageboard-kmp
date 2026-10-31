@@ -531,6 +531,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager
 public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorManager : io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public fun applyTableAction (Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)V
 	public fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
 	public fun changeBackground (Ljava/lang/Integer;)V
 	public fun changeColor (I)V
@@ -552,12 +553,15 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
+	public fun getInTable ()Z
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
+	public final fun getTableCaret ()Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Caret;
 	public fun getTakesBackground ()Z
 	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter ()Z
 	public fun indent ()V
+	public fun insertTable (II)V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public final fun isEditing ()Z
 	public final fun lineBreakInItem ()Z
@@ -574,6 +578,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun startEditingSelectedText ()Z
 	public final fun startNewText (IFFZ)V
 	public static synthetic fun startNewText$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;IFFZILjava/lang/Object;)V
+	public final fun tableArrow (ZZZ)Z
+	public static synthetic fun tableArrow$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;ZZZILjava/lang/Object;)Z
+	public final fun tableNextCell (Z)Z
 	public final fun takeCaretRequest-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
@@ -586,6 +593,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 }
 
 public abstract interface class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
+	public fun applyTableAction (Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)V
 	public abstract fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
 	public fun changeBackground (Ljava/lang/Integer;)V
 	public abstract fun changeColor (I)V
@@ -600,8 +608,10 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
+	public fun getInTable ()Z
 	public fun getTakesBackground ()Z
 	public fun indent ()V
+	public fun insertTable (II)V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public fun outdent ()V
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
@@ -613,6 +623,7 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
+	public static fun applyTableAction (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)V
 	public static fun changeBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Ljava/lang/Integer;)V
 	public static fun getBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
@@ -621,8 +632,10 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun getInCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getInTable (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getTakesBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun insertTable (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;II)V
 	public static fun isActive (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
@@ -1143,6 +1156,46 @@ public final class io/github/valerioisufi/drawview/canvas/text/SelectionInput {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/SelectionInput;
 	public final fun link (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun surround (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/text/TableEditing {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/TableEditing;
+	public static final field MAX_SIZE I
+	public final fun apply (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun caretIn (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Caret;
+	public final fun caretIn (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Caret;
+	public final fun cellBelow (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun insert (Landroidx/compose/ui/text/input/TextFieldValue;II)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun keepInCells (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun moveHorizontally (Landroidx/compose/ui/text/input/TextFieldValue;Z)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun moveVertically (Landroidx/compose/ui/text/input/TextFieldValue;Z)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun nextCell (Landroidx/compose/ui/text/input/TextFieldValue;Z)Landroidx/compose/ui/text/input/TextFieldValue;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/text/TableEditing$Action : java/lang/Enum {
+	public static final field ADD_COLUMN_LEFT Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ADD_COLUMN_RIGHT Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ADD_ROW_ABOVE Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ADD_ROW_BELOW Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ALIGN_CENTER Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ALIGN_END Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field ALIGN_START Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field DELETE_COLUMN Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field DELETE_ROW Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static final field DELETE_TABLE Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/text/TableEditing$Caret {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/TableShape;II)V
+	public final fun getColumn ()I
+	public final fun getRow ()I
+	public final fun getShape ()Lio/github/valerioisufi/drawview/model/text/TableShape;
+	public final fun getSpan ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/tool/LassoMode : java/lang/Enum {

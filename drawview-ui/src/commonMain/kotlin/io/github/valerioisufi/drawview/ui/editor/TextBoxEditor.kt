@@ -32,6 +32,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
@@ -169,6 +171,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
     val codeTheme = remember(editor.color, paper) { CodeTheme.of(textColor, paper) }
+    // The cell of the caret when it is in a table, and the color of the caret
+    val tableCaret = editor.tableCaret
+    val accent = MaterialTheme.colorScheme.primary
     val currentShown by rememberUpdatedState(shown)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
@@ -216,6 +221,19 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     }
                 }
                 .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown && editor.inTable) {
+                        // In a table the caret goes from cell to cell (Tab: see indent)
+                        val moved = when (event.key) {
+                            Key.DirectionUp -> editor.tableArrow(up = true)
+                            Key.DirectionDown -> editor.tableArrow(down = true)
+                            Key.DirectionLeft -> !event.isShiftPressed && editor.tableArrow(left = true)
+                            Key.DirectionRight -> !event.isShiftPressed && editor.tableArrow()
+                            // Shift+Enter too: a cell holds no line break
+                            Key.Enter, Key.NumPadEnter -> editor.handleEnter()
+                            else -> false
+                        }
+                        if (moved) return@onPreviewKeyEvent true
+                    }
                     if (event.type == KeyEventType.KeyDown) {
                         if (event.key == Key.Tab) {
                             if (event.isShiftPressed) {
@@ -280,6 +298,32 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                         val origin = current.tableOrigin(table)
                         drawIntoCanvas { table.layout.draw(it, origin.x, origin.y) }
                     }
+                    // The cell of the caret in a table: its outline, the caret or the selection in it
+                    val cellCaret = tableCaret
+                    val table = cellCaret?.let { c -> shown.tables.firstOrNull { it.span.start == c.span.start } }
+                    val cell = table?.layout?.cells?.firstOrNull { it.row == cellCaret.row && it.column == cellCaret.column }
+                    if (table != null && cell != null) {
+                        val origin = current.tableOrigin(table) + Offset(cell.left, cell.top)
+                        val edges = table.layout
+                        val frameLeft = current.tableOrigin(table).x + edges.columnEdges[cell.column]
+                        val frameTop = current.tableOrigin(table).y + edges.rowEdges[cell.row]
+                        drawRect(
+                            accent,
+                            topLeft = Offset(frameLeft, frameTop),
+                            size = Size(edges.columnEdges[cell.column + 1] - edges.columnEdges[cell.column], edges.rowEdges[cell.row + 1] - edges.rowEdges[cell.row]),
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                        val length = cell.source.last + 1 - cell.source.first
+                        fun inCell(offset: Int) = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
+                        val selection = value.selection
+                        if (selection.collapsed) {
+                            val rect = cell.layout.getCursorRect(inCell(selection.start))
+                            drawRect(accent, topLeft = origin + rect.topLeft, size = Size(2.dp.toPx(), rect.height))
+                        } else {
+                            val path = cell.layout.getPathForRange(inCell(selection.min), inCell(selection.max))
+                            translate(origin.x, origin.y) { drawPath(path, accent.copy(alpha = 0.3f)) }
+                        }
+                    }
                     for ((formula, box) in shown.formulas.map { it to current.formulaRect(it) } + current.tableFormulas(shown.tables)) {
                         drawImage(
                             formula.image,
@@ -297,7 +341,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 lineHeight = TextUnit.Unspecified,
                 textAlign = editor.alignment.toTextAlign()
             ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            // In a table the caret is drawn in its cell (the table is one object of the field)
+            cursorBrush = SolidColor(if (tableCaret != null) Color.Transparent else MaterialTheme.colorScheme.primary),
             visualTransformation = { TransformedText(currentShown.text, currentShown.mapping) },
             onTextLayout = { result ->
                 layout = result
@@ -360,9 +405,17 @@ private data class CodeKey(val source: CodeBlockSource, val fontPx: Float, val c
 
 /**
  * The offset of the text written under [point] of the field when it is on a block of code drawn
- * away from the caret, or `null`.
+ * away from the caret or on a cell of a table, or `null`.
  */
 private fun codeOffsetAt(layout: TextLayoutResult, shown: PresentedText<*>, point: Offset): Int? {
+    // A cell of a table: the character tapped in it
+    for (table in shown.tables) {
+        val origin = layout.tableOrigin(table)
+        val cell = table.layout.cellAt(point - origin) ?: continue
+        val inCell = point - origin - Offset(cell.left, cell.top)
+        val shownOffset = cell.layout.getOffsetForPosition(inCell)
+        return cell.source.first + cell.presented.mapping.transformedToOriginal(shownOffset).coerceIn(0, cell.source.last + 1 - cell.source.first)
+    }
     for (block in shown.codeBlocks) {
         val (left, top) = layout.codeBlockOrigin(block)
         if (point.y < top || point.y > top + block.layout.heightPx || point.x < left || point.x > left + block.layout.widthPx) continue

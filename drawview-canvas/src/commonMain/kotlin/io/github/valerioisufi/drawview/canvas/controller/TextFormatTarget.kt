@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.canvas.controller
 
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
+import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.model.TextAlignment
 
 /**
@@ -17,6 +18,15 @@ public interface TextFormatTarget {
     public fun changeFontSize(size: Float)
     public fun changeColor(argb: Int)
     public fun changeAlignment(newAlignment: TextAlignment)
+
+    /** Whether the caret of the text being written is in a table (see [TableEditing]). */
+    public val inTable: Boolean get() = false
+
+    /** Inserts a table of [rows] rows (its header included) and [columns] columns at the caret. */
+    public fun insertTable(rows: Int, columns: Int) {}
+
+    /** [action] on the table of the caret. */
+    public fun applyTableAction(action: TableEditing.Action) {}
 
     /** Whether the boxes take a fill (see `DrawText.background`): the texts, not the style of a new one. */
     public val takesBackground: Boolean get() = false

@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
 import io.github.valerioisufi.drawview.canvas.text.InlineFormatting
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
+import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.canvas.text.SelectionInput
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -443,7 +444,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         }
         val applied = when {
             surrounded != null -> surrounded
-            textChanged && smartNewline -> RichTextEditing.handleSmartNewline(value, newValue)
+            textChanged && smartNewline -> TableEditing.keepInCells(value, newValue)
+                ?: RichTextEditing.handleSmartNewline(value, newValue)
                 ?: RichTextEditing.handleConcealedDeletion(value, newValue)
                 ?: newValue
             textChanged -> newValue
@@ -475,7 +477,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      */
     public fun handleEnter(): Boolean {
         if (!isEditing) return false
-        val result = RichTextEditing.handleEnter(value) ?: return false
+        val result = TableEditing.cellBelow(value) ?: RichTextEditing.handleEnter(value) ?: return false
         updateValue(result, smartNewline = false)
         return true
     }
@@ -491,29 +493,85 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         return true
     }
 
+    /** The table of the caret, its cell (see [TableEditing.caretIn]); read once per value. */
+    public val tableCaret: TableEditing.Caret?
+        get() {
+            if (!isEditing) return null
+            val current = value
+            if (current != tableValue) {
+                tableCaretRead = TableEditing.caretIn(current)
+                tableValue = current
+            }
+            return tableCaretRead
+        }
+    private var tableValue: TextFieldValue? = null
+    private var tableCaretRead: TableEditing.Caret? = null
+
+    override val inTable: Boolean get() = tableCaret != null
+
+    override fun insertTable(rows: Int, columns: Int): Unit = updateValue(TableEditing.insert(value, rows, columns), smartNewline = false)
+
+    override fun applyTableAction(action: TableEditing.Action) {
+        updateValue(TableEditing.apply(value, action) ?: return, smartNewline = false)
+    }
+
+    /**
+     * Moves the caret of a table: to the next cell or the previous one (Tab, Shift+Tab, [backwards]),
+     * a row added after the last one. Returns `true` if the caret is in a table.
+     */
+    public fun tableNextCell(backwards: Boolean): Boolean {
+        val result = TableEditing.nextCell(value, backwards) ?: return false
+        updateValue(result, smartNewline = false)
+        return true
+    }
+
+    /** Moves the caret of a table by an arrow ([up], [down], [left] or right). Returns `true` if the caret is in a table. */
+    public fun tableArrow(up: Boolean = false, down: Boolean = false, left: Boolean = false): Boolean {
+        val result = when {
+            up || down -> TableEditing.moveVertically(value, up)
+            else -> TableEditing.moveHorizontally(value, left)
+        } ?: return false
+        updateValue(result, smartNewline = false)
+        return true
+    }
+
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
     override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format), smartNewline = false)
 
     /** Makes the line of the caret a heading, or plain text again. */
-    override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value), smartNewline = false)
+    override fun toggleHeading() {
+        // The lines of a table are its rows: no heading, list or block of code in them
+        if (!inTable) updateValue(RichTextEditing.toggleHeading(value), smartNewline = false)
+    }
 
     /** Puts the lines of the selection in a block of code, or takes the block of the selection out of its fences. */
-    override fun toggleCodeBlock(): Unit = updateValue(RichTextEditing.toggleCodeBlock(value), smartNewline = false)
+    override fun toggleCodeBlock() {
+        if (!inTable) updateValue(RichTextEditing.toggleCodeBlock(value), smartNewline = false)
+    }
 
     /** Asks for the numbers of the lines of the block of code of the selection, or not any more. */
     override fun toggleLineNumbers(): Unit = updateValue(RichTextEditing.toggleLineNumbers(value), smartNewline = false)
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
-    override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)
+    override fun toggleBulletList() {
+        if (!inTable) updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)
+    }
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
-    override fun toggleNumberedList(): Unit = updateValue(RichTextEditing.toggleNumberedList(value), smartNewline = false)
+    override fun toggleNumberedList() {
+        if (!inTable) updateValue(RichTextEditing.toggleNumberedList(value), smartNewline = false)
+    }
 
     /** Adds 2 spaces of indentation to the lines of the selection. */
-    override fun indent(): Unit = updateValue(RichTextEditing.indent(value), smartNewline = false)
+    override fun indent() {
+        // In a table, Tab goes to the next cell
+        if (!tableNextCell(backwards = false)) updateValue(RichTextEditing.indent(value), smartNewline = false)
+    }
 
     /** Removes up to 2 spaces of indentation from the lines of the selection. */
-    override fun outdent(): Unit = updateValue(RichTextEditing.outdent(value), smartNewline = false)
+    override fun outdent() {
+        if (!tableNextCell(backwards = true)) updateValue(RichTextEditing.outdent(value), smartNewline = false)
+    }
 
     override fun changeFontSize(size: Float) {
         val clamped = TextSizes.clamp(size)

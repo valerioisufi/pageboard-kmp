@@ -236,7 +236,7 @@ internal object RichTextPresenter {
         // The tables laid out as grids (the spans in them are presented by their cells)
         val tableAt = HashMap<Int, Pair<Span, TableLayout<T>>>()
         for (span in spans) {
-            if (span.kind == Kind.TABLE) TableLayout.layout(text, span, p)?.let { tableAt[span.start] = span to it }
+            if (span.kind == Kind.TABLE) TableLayout.layout(text, span, p, reveal)?.let { tableAt[span.start] = span to it }
         }
         var tableEnd = -1
         val errors = mutableListOf<Span>()
@@ -322,6 +322,8 @@ internal object RichTextPresenter {
 
         var i = 0
         var lineStart = true
+        // Where the last object taking its line ends in the source
+        var objectEnd = -1
         while (i < text.length) {
             val writing = written.firstOrNull { (span, _) -> i >= span.contentStart && i <= span.contentEnd }
             if (writing != null && i == writing.first.contentEnd) bottomOf(writing.first, writing.second)
@@ -384,6 +386,7 @@ internal object RichTextPresenter {
                 val descent = p.struts.room.descent * p.fontSizePx
                 rooms += Room(offset, lineWidth * LINE_FILL, layout.heightPx - descent, descent)
                 tables += PresentedTable(offset, layout, span)
+                objectEnd = span.end
                 i = span.end
                 continue
             }
@@ -394,6 +397,7 @@ internal object RichTextPresenter {
                 val descent = p.struts.room.descent * p.fontSizePx
                 rooms += Room(offset, lineWidth * LINE_FILL, layout.heightPx - descent, descent)
                 codeBlocks += PresentedCodeBlock(offset, layout, span.contentStart, blockLeft.getValue(span.start))
+                objectEnd = span.end
                 i = span.end
                 continue
             }
@@ -436,6 +440,13 @@ internal object RichTextPresenter {
             if (writing != null && c != '\n' && !hidden[i]) column++
             when {
                 c == '\n' && hidden[i] -> shown.hide(i)
+                c == '\n' && i == text.lastIndex && i == objectEnd -> {
+                    // The empty line after a line break takes the room of its paragraph, an object's:
+                    // the object's paragraph ends, the empty line is one of its own
+                    shown.keep(i, LINE_BREAK)
+                    shown.endParagraph()
+                    shown.insert(LINE_BREAK.toString(), i + 1)
+                }
                 c == '\n' && i == text.lastIndex -> shown.keep(i, '\n')
                 c == '\n' -> {
                     shown.keep(i, LINE_BREAK)

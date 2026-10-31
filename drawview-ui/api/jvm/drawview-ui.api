@@ -750,6 +750,17 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getPlacement_previous (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_spot (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getStylus_mode_activated (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_column_left (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_column_right (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete_column (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete_row (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_row_above (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_row_below (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -767,6 +778,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_table (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_highlight (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

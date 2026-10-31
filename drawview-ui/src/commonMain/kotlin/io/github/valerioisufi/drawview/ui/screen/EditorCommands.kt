@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.controller.PageManager
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
+import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -84,6 +85,17 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_table
+import io.github.valerioisufi.drawview.ui.generated.resources.table_row_above
+import io.github.valerioisufi.drawview.ui.generated.resources.table_row_below
+import io.github.valerioisufi.drawview.ui.generated.resources.table_column_left
+import io.github.valerioisufi.drawview.ui.generated.resources.table_column_right
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_row
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_column
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_start
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_center
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -514,6 +526,33 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.inNumberedList == true }
     ) { textTarget?.toggleNumberedList() }
 
+    /** Inserts a table of three rows and three columns (the bar offers its size, see `TableButton`). */
+    val table = Command(
+        "format-table", label(Res.string.text_editor_action_table), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.Grid) },
+        shortcuts = listOf(Shortcut(Key.T, primary = true, alt = true)),
+        isEnabled = { formatsText && textTarget?.inTable == false },
+        isChecked = { textTarget?.inTable == true }
+    ) { textTarget?.insertTable(3, 3) }
+
+    val tableRowAbove = tableAction(TableEditing.Action.ADD_ROW_ABOVE, Res.string.table_row_above)
+    val tableRowBelow = tableAction(TableEditing.Action.ADD_ROW_BELOW, Res.string.table_row_below)
+    val tableColumnLeft = tableAction(TableEditing.Action.ADD_COLUMN_LEFT, Res.string.table_column_left)
+    val tableColumnRight = tableAction(TableEditing.Action.ADD_COLUMN_RIGHT, Res.string.table_column_right)
+    val tableAlignStart = tableAction(TableEditing.Action.ALIGN_START, Res.string.table_align_start)
+    val tableAlignCenter = tableAction(TableEditing.Action.ALIGN_CENTER, Res.string.table_align_center)
+    val tableAlignEnd = tableAction(TableEditing.Action.ALIGN_END, Res.string.table_align_end)
+    val tableDeleteRow = tableAction(TableEditing.Action.DELETE_ROW, Res.string.table_delete_row)
+    val tableDeleteColumn = tableAction(TableEditing.Action.DELETE_COLUMN, Res.string.table_delete_column)
+    val tableDelete = tableAction(TableEditing.Action.DELETE_TABLE, Res.string.table_delete)
+
+    /** The commands on the table of the caret, in their sections (the menu of the table, the menu Format). */
+    val tableActions: List<List<Command>> = listOf(
+        listOf(tableRowAbove, tableRowBelow, tableColumnLeft, tableColumnRight),
+        listOf(tableAlignStart, tableAlignCenter, tableAlignEnd),
+        listOf(tableDeleteRow, tableDeleteColumn, tableDelete)
+    )
+
     val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, DrawViewIcons.AlignLeft, Key.L)
     val alignCenter = alignment(TextAlignment.CENTER, Res.string.text_align_center, DrawViewIcons.AlignCenter, Key.C)
     val alignEnd = alignment(TextAlignment.END, Res.string.text_align_end, DrawViewIcons.AlignRight, Key.R)
@@ -532,9 +571,18 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, formula,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
-    )
+    ) + tableActions.flatten()
+
+    /** The command doing [action] on the table of the caret, in the third section of the menu Format. */
+    private fun tableAction(action: TableEditing.Action, title: StringResource) = Command(
+        id = "table-${action.name.lowercase().replace('_', '-')}",
+        label = label(title),
+        group = CommandGroup.FORMAT,
+        section = 3,
+        isEnabled = { textTarget?.inTable == true }
+    ) { textTarget?.applyTableAction(action) }
 
     /** The command adding or removing [format] around the selection of the text being written. */
     private fun characterFormat(format: Format, title: StringResource, icon: ImageVector, shortcut: Shortcut) = Command(

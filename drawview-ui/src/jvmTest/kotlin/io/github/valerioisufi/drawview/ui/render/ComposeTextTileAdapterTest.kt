@@ -108,6 +108,14 @@ class ComposeTextTileAdapterTest {
         assertTrue(assertNotNull(adapter.layout(text("Plain"), TextTileAdapter.NO_PAPER)).boxes.isEmpty(), "no fill, no background")
     }
 
+    @Test
+    fun theEmptyLineAfterATableIsALineOfTheText() {
+        fun height(content: String) = assertNotNull(adapter.measure(text(content, width = 120f))).height
+        val table = "| Day | Topic |\n| --- | --- |\n| 1 | Limits |"
+        assertEquals(height(table) + height("x"), height(table + "\n"), 0.01f, "one line more, not the room of the table again")
+        assertEquals(height(table + "\nafter"), height(table + "\n"), 0.01f)
+    }
+
     /** The words of [text] that are not spaces, with their text trimmed. */
     private fun words(text: DrawText) = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words.filter { it.text.isNotBlank() }
 

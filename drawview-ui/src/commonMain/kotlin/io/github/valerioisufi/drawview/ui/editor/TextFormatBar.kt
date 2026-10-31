@@ -26,7 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The formatting bar of the texts: for the text being written, the formats of its characters
  * (bold, italic, strikethrough, code, block of code and, in a block, its line numbers, heading,
- * lists, formula), then their style (see
+ * lists, table, formula), then their style (see
  * [TextStyleControls]) and the button closing the editor ([onDone]). The buttons run the
  * [commands] of the editor, whose tooltips they show.
  *
@@ -52,6 +52,7 @@ internal fun TextFormatBar(
             FormatButton(commands.heading, DrawViewIcons.Heading)
             FormatButton(commands.bulletList, DrawViewIcons.List)
             FormatButton(commands.numberedList, DrawViewIcons.ListOrdered)
+            TableButton(target, commands)
             FormatButton(commands.formula, DrawViewIcons.Sigma)
             BarDivider()
         }
