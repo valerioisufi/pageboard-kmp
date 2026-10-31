@@ -161,24 +161,58 @@ class RichTextPresenterTest {
         assertEquals(14f, presented.text.spanStyles.first { it.item.fontSize.isSp }.item.fontSize.value, 0.01f)
     }
 
+    /** [shown] without the struts of the objects. */
+    private fun visible(shown: String) = shown.filterNot { it == '\uFFFC' || it == '\u2060' }
+
     @Test
-    fun aListItemShowsItsBulletAndHangsItsLines() {
+    fun aListItemShowsItsLabelInItsColumnAndHangsItsLines() {
         val presented = present("- Item 1\n  * Item 2\n1. Numbered")
-        assertEquals("• Item 1​  ◦ Item 2​1. Numbered", presented.shown)
-        val (first, nested) = presented.text.paragraphStyles.map { it.item.textIndent!! }
+        assertEquals("•Item 1\u200B◦Item 2\u200B1.Numbered", visible(presented.shown))
+        val (first, nested, numbered) = presented.text.paragraphStyles.map { it.item.textIndent!! }
         assertEquals(0.sp, first.firstLine)
         assertTrue(first.restLine.value > 0f)
         assertTrue(nested.restLine.value > first.restLine.value, "a nested item hangs further")
-        // The marker is not a place of the caret: its offsets go to the text of the item, and back
+        assertTrue(numbered.restLine.value > 0f)
+        // The marker is not a place of the caret: its offsets go to the text of the item
         val mapping = presented.mapping
-        assertEquals(listOf(2, 2, 2), (0..2).map(mapping::originalToTransformed))
-        assertEquals(listOf(2, 2, 2), (0..2).map(mapping::transformedToOriginal))
+        val text = presented.shown.indexOf("Item 1")
+        assertEquals(listOf(text, text, text), (0..2).map(mapping::originalToTransformed))
+        assertEquals(2, mapping.transformedToOriginal(0))
+        // The bullets in the monospace font
+        val bullet = presented.shown.indexOf('•')
+        assertTrue(presented.text.spanStyles.any { it.start <= bullet && it.end > bullet && it.item.fontFamily == FontFamily.Monospace })
+    }
+
+    @Test
+    fun aNestedItemStartsAtTheTextOfItsParent() {
+        val presented = present("- a\n  - b\n    - c")
+        val indents = presented.text.paragraphStyles.map { it.item.textIndent!!.restLine.value }
+        assertTrue(indents[1] > indents[0] && indents[2] > indents[1])
+        // Each level by the width of the column of its parent and the gap: the same step twice
+        assertEquals(indents[1] - indents[0], indents[2] - indents[1], 0.01f)
+    }
+
+    @Test
+    fun theNumbersFollowThePlaceOfTheItemsAndTheirLevel() {
+        val presented = present("1. a\n1. b\n   1. c\n   1. d\n      1. e\n1. f")
+        assertEquals("1.a\u200B2.b\u200Ba.c\u200Bb.d\u200Bi.e\u200B3.f", visible(presented.shown))
+        assertEquals("•x\u200B1.y\u200B▪z", visible(present("- x\n  1. y\n    - z").shown), "a numbered list under a bullet is in numbers, the bullets by their depth")
+    }
+
+    @Test
+    fun theLinesOfAnItemAreAtItsText() {
+        val presented = present("- first\n  more of it\nafter")
+        assertEquals("•first\u200Bmore of it\u200Bafter", visible(presented.shown))
+        val (item, line, after) = presented.text.paragraphStyles.map { it.item.textIndent }
+        assertEquals(item!!.restLine, line!!.firstLine, "the line break in the item at its text")
+        assertEquals(item.restLine, line.restLine)
+        assertTrue(after == null || after.firstLine.value == 0f, "the next paragraph out of the list")
     }
 
     @Test
     fun boldInAListItem() {
         val presented = present("- Item with **bold** text")
-        assertEquals("• Item with bold text", presented.shown)
+        assertEquals("•Item with bold text", visible(presented.shown))
         val bold = presented.shown.indexOf("bold")
         assertTrue(presented.text.spanStyles.any { bold >= it.start && bold + 4 <= it.end && it.item.fontWeight == FontWeight.Bold })
     }

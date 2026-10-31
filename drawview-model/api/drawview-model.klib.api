@@ -3403,6 +3403,55 @@ final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighligh
     final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text.code/CodeToken> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.github.valerioisufi.drawview.model.text/ListNumbering|null[0]
+    final fun format(kotlin/Int, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.format|format(kotlin.Int;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering){}[0]
+    final fun glyphOf(io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.glyphOf|glyphOf(io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet){}[0]
+    final fun items(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span>): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/ListNumbering.Item> // io.github.valerioisufi.drawview.model.text/ListNumbering.items|items(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.text.RichTextParser.Span>){}[0]
+
+    final enum class Bullet : kotlin/Enum<io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet> { // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet|null[0]
+        enum entry CIRCLE // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.CIRCLE|null[0]
+        enum entry DISC // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.DISC|null[0]
+        enum entry SQUARE // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.SQUARE|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet> // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet> // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet.values|values#static(){}[0]
+    }
+
+    final enum class Numbering : kotlin/Enum<io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering> { // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering|null[0]
+        enum entry DECIMAL // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.DECIMAL|null[0]
+        enum entry LOWER_ALPHA // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.LOWER_ALPHA|null[0]
+        enum entry LOWER_ROMAN // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.LOWER_ROMAN|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering> // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering> // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.values|values#static(){}[0]
+    }
+
+    final class Item { // io.github.valerioisufi.drawview.model.text/ListNumbering.Item|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?){}[0]
+
+        final val bullet // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet|{}bullet[0]
+            final fun <get-bullet>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet.<get-bullet>|<get-bullet>(){}[0]
+        final val depth // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.depth|{}depth[0]
+            final fun <get-depth>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.depth.<get-depth>|<get-depth>(){}[0]
+        final val label // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.label|{}label[0]
+            final fun <get-label>(): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.label.<get-label>|<get-label>(){}[0]
+        final val list // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.list|{}list[0]
+            final fun <get-list>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.list.<get-list>|<get-list>(){}[0]
+        final val numbering // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.numbering|{}numbering[0]
+            final fun <get-numbering>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.numbering.<get-numbering>|<get-numbering>(){}[0]
+        final val parent // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent|{}parent[0]
+            final fun <get-parent>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent.<get-parent>|<get-parent>(){}[0]
+        final val span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span|{}span[0]
+            final fun <get-span>(): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span.<get-span>|<get-span>(){}[0]
+    }
+}
+
 final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.github.valerioisufi.drawview.model.text/RichTextParser|null[0]
     final val LINE_NUMBERS // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS|{}LINE_NUMBERS[0]
         final fun <get-LINE_NUMBERS>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS.<get-LINE_NUMBERS>|<get-LINE_NUMBERS>(){}[0]

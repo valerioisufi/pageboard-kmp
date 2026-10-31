@@ -1,0 +1,159 @@
+package io.github.valerioisufi.drawview.model.text
+
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
+
+/**
+ * The places of the list items of a text in their lists: the item each one is nested in, and the
+ * label it shows. The source keeps its markers as written; the labels follow the structure:
+ *
+ * * An item is nested in the item before it whose marker is less indented, in the same list: a
+ *   list goes on over blank lines and the blocks of code under its items, and ends at a line of
+ *   other text.
+ * * The items of a list with the same parent and the same kind (bulleted or numbered) are
+ *   siblings. A numbered item shows its ordinal among its siblings from the number of the first
+ *   one (CommonMark: `1. 1. 1.` shows `1.`, `2.`, `3.`), as a number, a letter or a Roman numeral
+ *   by the numbered items it is nested in (`1.`, `a.`, `i.`, then again). A bulleted item shows a
+ *   disc, a circle or a square by its depth.
+ */
+public object ListNumbering {
+
+    /** The bullet of a bulleted item. */
+    public enum class Bullet { DISC, CIRCLE, SQUARE }
+
+    /** The numbering of a numbered item. */
+    public enum class Numbering { DECIMAL, LOWER_ALPHA, LOWER_ROMAN }
+
+    /**
+     * A list item of a text: its [span], its [depth] (0 for an item nested in none), the index of
+     * its [parent] in the items (-1 for none), the [list] of its siblings (an index shared by them)
+     * and its [label]; [bullet] or [numbering] says how the label is drawn.
+     */
+    public class Item(
+        public val span: Span,
+        public val depth: Int,
+        public val parent: Int,
+        public val list: Int,
+        public val label: String,
+        public val bullet: Bullet?,
+        public val numbering: Numbering?
+    )
+
+    /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
+    public fun items(text: String, spans: List<Span>): List<Item> {
+        val listItems = spans.filter { it.kind == Kind.LIST_ITEM }
+        if (listItems.isEmpty()) return emptyList()
+        // What belongs to a list besides its items: the blocks of code under them
+        val underItems = spans.filter { it.kind == Kind.CODE_BLOCK && it.listItem != null }.sortedBy { it.start }
+        val result = ArrayList<Item>(listItems.size)
+        val indents = IntArray(listItems.size)
+        // The items open, the innermost last (indices in the result)
+        val open = ArrayList<Int>()
+        // The siblings counted: by the index of their parent (-1 for the top), the last list and its count
+        class Siblings(val list: Int, val ordered: Boolean, val first: Int, var count: Int)
+        val siblings = HashMap<Int, Siblings>()
+        var lists = 0
+        var previousEnd = -1
+        for ((index, span) in listItems.withIndex()) {
+            if (previousEnd >= 0 && breaksList(text, previousEnd, span.start, underItems)) {
+                open.clear()
+                siblings.clear()
+            }
+            val indent = RichTextParser.columnOf(text, span.start, markerStart(text, span))
+            indents[index] = indent
+            while (open.isNotEmpty() && indents[open.last()] >= indent) {
+                siblings.remove(open.removeAt(open.lastIndex))
+            }
+            val parent = open.lastOrNull() ?: -1
+            val previous = siblings[parent]
+            val group = if (previous != null && previous.ordered == span.ordered) {
+                previous.count++
+                previous
+            } else {
+                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, 0).also { siblings[parent] = it }
+            }
+            val depth = open.size
+            val label: String
+            var bullet: Bullet? = null
+            var numbering: Numbering? = null
+            if (span.ordered) {
+                val numberedAbove = open.count { result[it].span.ordered }
+                numbering = Numbering.entries[numberedAbove % Numbering.entries.size]
+                label = format(group.first + group.count, numbering) + "."
+            } else {
+                bullet = Bullet.entries[depth % Bullet.entries.size]
+                label = glyphOf(bullet)
+            }
+            result += Item(span, depth, parent, group.list, label, bullet, numbering)
+            open += index
+            previousEnd = span.end
+        }
+        return result
+    }
+
+    /** The glyph of [bullet] (in a font that has it: the monospace font of the notes has all three). */
+    public fun glyphOf(bullet: Bullet): String = when (bullet) {
+        Bullet.DISC -> "•"
+        Bullet.CIRCLE -> "◦"
+        Bullet.SQUARE -> "▪"
+    }
+
+    /** [number] written in [numbering]: `3`, `c`, `iii`; a number below 1 as a number. */
+    public fun format(number: Int, numbering: Numbering): String = when {
+        number < 1 || numbering == Numbering.DECIMAL -> number.toString()
+        numbering == Numbering.LOWER_ALPHA -> alpha(number)
+        else -> roman(number)
+    }
+
+    /** `a` … `z`, `aa` … `az`, `ba`…: the letters of spreadsheets. */
+    private fun alpha(number: Int): String {
+        val out = StringBuilder()
+        var n = number
+        while (n > 0) {
+            n--
+            out.append('a' + n % 26)
+            n /= 26
+        }
+        return out.reverse().toString()
+    }
+
+    private fun roman(number: Int): String {
+        if (number >= 4000) return number.toString()
+        val out = StringBuilder()
+        var n = number
+        for ((value, letters) in ROMAN) {
+            while (n >= value) {
+                out.append(letters)
+                n -= value
+            }
+        }
+        return out.toString()
+    }
+
+    private val ROMAN = listOf(
+        1000 to "m", 900 to "cm", 500 to "d", 400 to "cd", 100 to "c", 90 to "xc",
+        50 to "l", 40 to "xl", 10 to "x", 9 to "ix", 5 to "v", 4 to "iv", 1 to "i"
+    )
+
+    /** Where the marker of [item] starts: after the spaces of its line. */
+    private fun markerStart(text: String, item: Span): Int {
+        var k = item.start
+        while (k < item.contentStart && (text[k] == ' ' || text[k] == '\t')) k++
+        return k
+    }
+
+    /**
+     * Whether a line of other text is between [from] (the end of an item) and [to] (the start of
+     * the next one): a line not blank, out of the blocks of code under the items.
+     */
+    private fun breaksList(text: String, from: Int, to: Int, underItems: List<Span>): Boolean {
+        var lineStart = from
+        while (lineStart < to) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0 || it > to) to else it }
+            val covered = RichTextParser.isIn(underItems, lineStart)
+            if (!covered && text.substring(lineStart, lineEnd).isNotBlank()) return true
+            lineStart = lineEnd + 1
+        }
+        return false
+    }
+}

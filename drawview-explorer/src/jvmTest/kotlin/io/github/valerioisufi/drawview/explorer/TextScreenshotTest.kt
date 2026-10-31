@@ -115,6 +115,20 @@ class TextScreenshotTest {
         save(viewModels)
     }
 
+    /**
+     * Nested lists saved on the page: the bullets by depth, the numbers by position and level
+     * (`1.`, `a.`, `i.`) right-aligned in their column, a line break inside an item.
+     */
+    @Test
+    fun textSavedNestedLists() = capture("text-saved-nested-lists", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        val list = "- Limits\n  - one-sided\n    - from the left\n- Continuity\n  a line break in the item\n" +
+            "1. First\n1. Second\n   1. nested\n   1. again\n      1. deeper\n      1. and more\n1. Third\n1. Fourth\n1. Fifth\n" +
+            "1. Sixth\n1. Seventh\n1. Eighth\n1. Ninth\n1. Tenth, aligned with the ninth"
+        write(viewModels, 20f, 20f, list, drawnWidthMm = 120f)
+        save(viewModels)
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
     fun textSelected() = WINDOWS.forEach { window ->

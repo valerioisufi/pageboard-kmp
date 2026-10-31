@@ -83,7 +83,8 @@ class ComposeTextTileAdapterTest {
         val bulletText = text("- First bullet item\n- Second bullet item")
         val layout = assertNotNull(adapter.layout(bulletText, TextTileAdapter.NO_PAPER))
         val firstWord = layout.words.first()
-        assertEquals("• ", firstWord.text)
+        assertEquals("•", firstWord.text.trim())
+        assertTrue(layout.words[1].left - (firstWord.left + firstWord.width) > 0f, "a gap between the bullet and the text")
 
         val longItem = text("- " + "word ".repeat(30).trim(), width = 40f)
         val longLayout = assertNotNull(adapter.layout(longItem, TextTileAdapter.NO_PAPER))

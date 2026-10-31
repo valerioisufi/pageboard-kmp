@@ -3014,6 +3014,42 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
 	public final fun recognize (Ljava/util/List;F)Lio/github/valerioisufi/drawview/model/shape/Shape;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/ListNumbering {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListNumbering;
+	public final fun format (ILio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)Ljava/lang/String;
+	public final fun glyphOf (Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;)Ljava/lang/String;
+	public final fun items (Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Bullet : java/lang/Enum {
+	public static final field CIRCLE Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public static final field DISC Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public static final field SQUARE Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Item {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)V
+	public final fun getBullet ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public final fun getDepth ()I
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getList ()I
+	public final fun getNumbering ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public final fun getParent ()I
+	public final fun getSpan ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Numbering : java/lang/Enum {
+	public static final field DECIMAL Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public static final field LOWER_ALPHA Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public static final field LOWER_ROMAN Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/RichTextParser;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;

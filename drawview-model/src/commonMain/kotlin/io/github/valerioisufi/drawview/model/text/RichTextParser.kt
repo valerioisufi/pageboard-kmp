@@ -23,6 +23,9 @@ public object RichTextParser {
      * A part of a text written with the notation: from [start] to [end] (the delimiters
      * included), its content from [contentStart] to [contentEnd].
      *
+     * A list item goes from the start of its line to the end of its last continuation line (see
+     * [ListNumbering] for its place in its list).
+     *
      * A block of code goes from the start of the line of its opening fence to the end of the line
      * of its closing fence (or of the text, when no fence closes it); its content is the lines
      * between them, without the line breaks around it.
@@ -104,7 +107,58 @@ public object RichTextParser {
             val number = numberStr.toIntOrNull() ?: 1
             candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = true, number = number)
         }
+        withContinuations(text, candidates, verbatim)
         return nest(candidates)
+    }
+
+    /**
+     * The list items of [candidates] taking their continuation lines: the lines right after an
+     * item (or after one of its continuation lines), not blank, indented at least to the text of
+     * the item, that are not an item themselves nor in a block of code ([verbatim]). An item and
+     * its continuation lines are one paragraph: a line break inside an item.
+     */
+    private fun withContinuations(text: String, candidates: MutableList<Span>, verbatim: List<Span>) {
+        val itemStarts = HashSet<Int>()
+        for (span in candidates) if (span.kind == Kind.LIST_ITEM) itemStarts += span.start
+        val blocks = verbatim.filter { it.kind == Kind.CODE_BLOCK }.sortedBy { it.start }
+        for ((index, item) in candidates.withIndex()) {
+            if (item.kind != Kind.LIST_ITEM) continue
+            val column = columnOf(text, item.start, item.contentStart)
+            var end = item.end
+            while (end < text.length) {
+                val lineStart = end + 1
+                if (lineStart > text.length || lineStart in itemStarts || isIn(blocks, lineStart)) break
+                val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+                var k = lineStart
+                while (k < lineEnd && (text[k] == ' ' || text[k] == '\t')) k++
+                if (k == lineEnd || columnOf(text, lineStart, k) < column) break
+                end = lineEnd
+            }
+            if (end != item.end) candidates[index] = item.copy(end = end, contentEnd = end)
+        }
+    }
+
+    /** Whether [offset] is in one of [spans], sorted by start and not overlapping. */
+    internal fun isIn(spans: List<Span>, offset: Int): Boolean {
+        var low = 0
+        var high = spans.size - 1
+        while (low <= high) {
+            val middle = (low + high) ushr 1
+            val span = spans[middle]
+            when {
+                offset < span.start -> high = middle - 1
+                offset >= span.end -> low = middle + 1
+                else -> return true
+            }
+        }
+        return false
+    }
+
+    /** The column of [offset] in its line starting at [lineStart] of [text], a tab counted as 2. */
+    internal fun columnOf(text: String, lineStart: Int, offset: Int): Int {
+        var column = 0
+        for (k in lineStart until offset) column += if (text[k] == '\t') 2 else 1
+        return column
     }
 
     /**

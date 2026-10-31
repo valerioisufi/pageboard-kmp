@@ -36,9 +36,14 @@ class RichTextParserBoundsTest {
             "*a* ", "**a** ", "~~a~~ ", "\\*", "`a` ", "# a b\n", "- a\n", "  1. a\n", "\$a\$ ",
             // Formulas never closed on one line, display formulas on one line and on lines of their own
             "\$a ", "\$\$a\$\$", "\$\$a\$\$\n",
-            "- **a** *b* ~~c~~ `d` \$e\$ \\* \$f\n## g \$\$h\$\$\n"
+            "- **a** *b* ~~c~~ `d` \$e\$ \\* \$f\n## g \$\$h\$\$\n",
+            // Items with their continuation lines
+            "- a\n  b\n", "1. a\n   b\n   c\n", "- a\n  b\n  - c\n    d\n"
         )
         for (pattern in patterns) assertLinear(pattern)
+        // One item over the whole text
+        val long = "- a\n" + "  b\n".repeat(MIB / 4)
+        assertTrue(measureTime { ListNumbering.items(long, RichTextParser.parse(long)) } < BOUND)
     }
 
     @Test

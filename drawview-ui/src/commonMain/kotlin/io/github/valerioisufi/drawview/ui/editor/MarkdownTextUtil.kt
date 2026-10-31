@@ -102,35 +102,6 @@ public object MarkdownTextUtil {
     /** A formula rendered: its [image], [widthPx] x [heightPx], its baseline at [baselineRatio] of its height. */
     public class RenderedFormula<T>(public val image: T, public val widthPx: Float, public val heightPx: Float, public val baselineRatio: Float)
 
-    /** The bullet glyph for a list item of [level]. */
-    internal fun bulletGlyph(level: Int): String = when (level % 3) {
-        0 -> "•"
-        1 -> "◦"
-        else -> "▪"
-    }
-
-    /** The prefix formatted for a list item [span] drawn on the canvas. */
-    internal fun listPrefix(span: Span): String {
-        val indent = "  ".repeat(span.level)
-        return if (span.ordered) {
-            "$indent${span.number}. "
-        } else {
-            "$indent${bulletGlyph(span.level)} "
-        }
-    }
-
-    /** The approximate width in pixels of the prefix of [span] at [fontSizePx]. */
-    internal fun listPrefixWidthPx(span: Span, fontSizePx: Float): Float {
-        val indentPx = span.level * 0.7f * fontSizePx
-        val markerPx = if (span.ordered) {
-            (span.number.toString().length * 0.55f + 0.65f) * fontSizePx
-        } else {
-            0.95f * fontSizePx
-        }
-        return indentPx + markerPx
-    }
-
-
     /** Size of the formulas in the line, and of the display ones (`$$`), relative to the text. */
     private const val INLINE_SCALE = 1.1f
     private const val DISPLAY_SCALE = 1.2f

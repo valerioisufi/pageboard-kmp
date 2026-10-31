@@ -45,8 +45,8 @@ Variations).
 
 ### Lists
 
-1. **Bullets drawn, not typed**: a filled disc, a ring, a filled square by level (repeating),
-   sized and centered on the x-height of the text, the same on every platform and font.
+1. **Bullets the same everywhere**: a disc, a circle, a square by level (repeating), from a
+   bundled font, never from a fallback of the system, without making their line higher.
 2. **Nested numbered lists**: numbers by level `1.` → `a.` → `i.` (repeating), counted by the
    position of the item among its siblings from the number of the first one (CommonMark), so that
    `1. 1. 1.` shows `1. 2. 3.`; the source keeps the digits.
@@ -108,7 +108,7 @@ Variations).
 |---|---|---|
 | The structure of a list: items with their continuation lines, levels, siblings | `RichTextParser` (`drawview-model`): a `LIST_ITEM` span covers its continuation lines (lines indented to its text, not a marker themselves) | Information Expert |
 | The label of an item: its ordinal among its siblings, the style of its level (`1.`, `a.`, `i.`, disc, ring, square) | `ListNumbering` (`drawview-model`, new, pure): `labelOf(item, spans)` → `ListLabel` (`Bullet(shape)` / `Ordinal(text)`) | Pure Fabrication, Information Expert |
-| Lay the label out: a marker object in a column, numbers right-aligned, the text and the continuation lines indented at the text of the item | `RichTextPresenter` (`drawview-ui`): the marker as an object like a formula (a strut of the width of the column), drawn by `ListMarkerPainter` | High Cohesion, Polymorphism (the label) |
+| Lay the label out: in a column, right-aligned, the text and the continuation lines indented at the text of the item | `RichTextPresenter` (`drawview-ui`): the label as text between two struts (the room before it in its column, the gap after it), the bullets in the monospace font of the notes | High Cohesion |
 | Shift+Enter in an item, Enter on a continuation line, Backspace joining it | `RichTextEditing.lineBreakInItem`, `handleEnter`, `handleBackspace` (`drawview-canvas`); `TextBoxEditor` calls them | Information Expert, Controller |
 
 The search (`SearchText`) and the assistant read the source, so they are unchanged.
@@ -167,7 +167,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | Lists, structure and look: continuation lines in the parser; `ListNumbering` (ordinals by position, `1.` / `a.` / `i.`, shapes by level); markers drawn as objects in a column, numbers right-aligned, nested items at the text of their parent; tests of the parser and the numbering, screenshots of nested lists | pending |
+| 1 | Lists, structure and look: continuation lines in the parser; `ListNumbering` (ordinals by position, `1.` / `a.` / `i.`, bullets by depth); labels in a column, numbers right-aligned, nested items at the text of their parent; tests of the parser and the numbering, screenshots of nested lists | done |
 | 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines, soft keyboards; tests of `RichTextEditing` and of the field | pending |
 | 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | pending |
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the command, the palette in the format bar and the selection bar, the Format menu; screenshots | pending |
@@ -179,6 +179,24 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 
 Stages are independent: lists (1-2), backgrounds (3-4), tables (5-6), chains (7-9); the order
 above goes from what needs no stored change to what needs the most.
+
+## Results
+
+### Phase 1
+
+* `RichTextParser`: a `LIST_ITEM` takes its continuation lines (`withContinuations`: the next lines
+  not blank, indented at least to the text of the item, not an item nor in a block of code); the
+  lookups of the blocks are binary searches, the parse stays linear (`RichTextParserBoundsTest`).
+* `ListNumbering` (`drawview-model`, new): the parent of each item by the indent of its marker, the
+  lists broken by a line of other text (not by a blank line nor a block under an item), the
+  ordinal from the first number, `1.` / `a.` / `i.` by the numbered items above, the bullets by
+  depth (`ListNumberingTest`).
+* `RichTextPresenter`: the label between two struts (its room in the column of its list, its widest
+  label, and a gap of 0.4 em), the text at `textLeftPx`, a nested item at the text of its parent,
+  the continuation lines at the text of their item (their spaces hidden), the blocks of code under
+  an item at its text. `MarkdownTextUtil.bulletGlyph`, `listPrefix`, `listPrefixWidthPx` removed.
+* Screenshots: `text-saved-nested-lists` (new), the lists of `markdown-text`, `text-import`,
+  `lecture-outline`, `text-saved-code-list` recorded again (the labels in their column).
 
 ## Decisions
 
@@ -192,8 +210,12 @@ Taken by the user on 2026-10-31:
 
 Taken alone, revertible:
 
-5. **Bullets as shapes**, not glyphs: the glyphs `◦` and `▪` are missing or of another size in some
-   fonts.
+5. **Bullets in the monospace font of the notes** (Noto Sans Mono), not drawn as shapes: Noto Sans
+   lacks `◦` and `▪` (they came from a fallback font of each system), Noto Sans Mono has the three
+   with the vertical metrics of Noto Sans, so a line keeps its height; as text they reach the PDF
+   export with no new primitive. In another font (the panels of the application) they are made
+   smaller when its lines are lower. The circle and the square sit a little lower than the disc:
+   raising them would make their lines higher.
 6. **The ordinal from the position** (CommonMark): the source keeps `1. 1. 1.` and shows `1. 2. 3.`;
    the number of the first item is kept as the start.
 7. **Cells without line breaks** (as in GitHub's notation); a long cell wraps.

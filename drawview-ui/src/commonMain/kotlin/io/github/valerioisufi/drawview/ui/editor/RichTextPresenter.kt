@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
@@ -195,8 +196,9 @@ internal class SourceMapping(private val toShown: IntArray, private val toSource
  * * A block of code is an object taking its line. With the caret in its code, its code is written
  *   in the text, laid out as in the block (its fences hidden, struts for its top and its bottom);
  *   with the caret on a fence, its source is shown.
- * * A list item shows its bullet or its number instead of its marker, its paragraph indented so
- *   that its wrapped lines start under its text.
+ * * A list item shows its label (see [ListNumbering]) instead of its marker, right-aligned in the
+ *   column of the labels of its list, its paragraph indented so that its wrapped lines and its
+ *   continuation lines start under its text; a nested item starts at the text of its parent.
  */
 internal object RichTextPresenter {
 
@@ -219,7 +221,8 @@ internal object RichTextPresenter {
         val formulaAt = HashMap<Int, Pair<Span, MarkdownTextUtil.RenderedFormula<T>>>()
         val blockAt = HashMap<Int, Pair<Span, CodeBlockLayout>>()
         val blockLeft = HashMap<Int, Float>()
-        val listItemAt = HashMap<Int, Span>()
+        // The list items where their lines start, laid out in their columns
+        val lists = listLayout(text, spans, p)
         val errors = mutableListOf<Span>()
         val sources = mutableListOf<Span>()
         val written = mutableListOf<Pair<Span, CodeBlockLayout>>()
@@ -229,20 +232,20 @@ internal object RichTextPresenter {
         for (span in spans) {
             val touched = touched(span)
             when (span.kind) {
-                Kind.LIST_ITEM -> listItemAt[span.start] = span
+                Kind.LIST_ITEM -> Unit
                 Kind.CODE_BLOCK -> {
                     val layout = p.layoutCodeBlock
                     // The caret on a fence: the end of the opening line, or from the start of the closing one
                     val onFence = touched && (selMin!! < span.contentStart || selMax!! > span.contentEnd && span.contentEnd < span.end)
                     when {
                         !touched && layout != null && p.lineWidthPx != null -> {
-                            val left = codeBlockLeft(span, p)
+                            val left = codeBlockLeft(span, p, lists)
                             blockLeft[span.start] = left
                             blockAt[span.start] = span to layout(codeBlockSource(text, span, p.lineWidthPx - left))
                         }
                         touched && !onFence && layout != null && p.lineWidthPx != null && span.contentStart < span.contentEnd -> {
                             // Its code written as in the block, the fences hidden
-                            val left = codeBlockLeft(span, p)
+                            val left = codeBlockLeft(span, p, lists)
                             blockLeft[span.start] = left
                             written += span to layout(codeBlockSource(text, span, p.lineWidthPx - left))
                             sources += span
@@ -285,6 +288,8 @@ internal object RichTextPresenter {
         // The struts of the objects, styled last over every other style
         class Room(val offset: Int, val widthPx: Float, val ascentPx: Float, val descentPx: Float)
         val rooms = mutableListOf<Room>()
+        // The labels of the list items, where they are shown
+        val labels = mutableListOf<Pair<IntRange, ListItemLayout>>()
         val lineWidth = p.lineWidthPx ?: 0f
         val writtenBlocks = mutableListOf<WrittenCodeBlock>()
         /** The struts of a block whose code is written: the room of its bottom, after its last line. */
@@ -328,14 +333,28 @@ internal object RichTextPresenter {
             }
             if (lineStart) {
                 lineStart = false
-                val item = listItemAt[i]
+                val item = lists.itemAt[i]
                 if (item != null) {
-                    // The bullet or the number instead of the marker, the wrapped lines under the text
-                    val prefix = MarkdownTextUtil.listPrefix(item)
-                    shown.insert(prefix, item.contentStart)
-                    for (k in i until item.contentStart) shown.hide(k)
-                    shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = 0.sp, restLine = (prefixWidth(prefix, item, p) / p.density).sp))
-                    i = item.contentStart
+                    // The label in its column instead of the marker, the wrapped lines under the text
+                    val leading = shown.insert(OBJECT_CHARS, item.span.contentStart)
+                    rooms += Room(leading, item.labelLeftPx, 0f, 0f)
+                    val label = shown.insert(item.label, item.span.contentStart)
+                    labels += label until label + item.label.length to item
+                    val gap = shown.insert(OBJECT_CHARS, item.span.contentStart)
+                    rooms += Room(gap, item.textLeftPx - item.labelLeftPx - item.labelWidthPx, 0f, 0f)
+                    for (k in i until item.span.contentStart) shown.hide(k)
+                    shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = 0.sp, restLine = (item.textLeftPx / p.density).sp))
+                    i = item.span.contentStart
+                    continue
+                }
+                val continued = lists.continuationAt[i]
+                if (continued != null) {
+                    // A line break in the item: the line at its text, without a marker
+                    var k = i
+                    while (k < text.length && (text[k] == ' ' || text[k] == '\t')) shown.hide(k++)
+                    val left = (continued.textLeftPx / p.density).sp
+                    shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
+                    i = k
                     continue
                 }
             }
@@ -460,6 +479,13 @@ internal object RichTextPresenter {
             val end = mapping.originalToTransformed(block.end) + if (block.end < text.length && text[block.end] == '\n') 1 else 0
             if (end > written.offset) out.addStyle(codeStyle, written.offset, end)
         }
+        // The bullets in the monospace font, which has all three, small enough for the lines of the
+        // text to keep their height (a shift of the baseline would make them higher)
+        val bulletScale = bulletScale(p)
+        val bulletSize = if (bulletScale < 1f) (p.fontSizePx * bulletScale / p.density).sp else androidx.compose.ui.unit.TextUnit.Unspecified
+        for ((range, item) in labels) {
+            if (item.bullet != null) out.addStyle(SpanStyle(fontFamily = p.monospace, fontSize = bulletSize), range.first, range.last + 1)
+        }
         for (room in rooms) {
             for ((k, strut) in p.struts.styles(room.widthPx, room.ascentPx, room.descentPx, p.density).withIndex()) {
                 out.addStyle(strut, room.offset + k, room.offset + k + 1)
@@ -530,18 +556,77 @@ internal object RichTextPresenter {
         }
     }
 
-    /** The width of the [prefix] of the list item [item]: measured, or approximated. */
-    private fun prefixWidth(prefix: String, item: Span, p: Presentation<*>): Float =
-        p.measurePrefix?.invoke(prefix) ?: MarkdownTextUtil.listPrefixWidthPx(item, p.fontSizePx)
+    /**
+     * The list items of [text] laid out (see [ListNumbering]): each label right-aligned in the
+     * column of the labels of its list, the text after a gap, a nested item at the text of its
+     * parent.
+     */
+    private fun listLayout(text: String, spans: List<Span>, p: Presentation<*>): ListLayout {
+        val items = ListNumbering.items(text, spans)
+        if (items.isEmpty()) return ListLayout.EMPTY
+        fun widthOf(item: ListNumbering.Item): Float = if (item.bullet != null) {
+            BULLET_ADVANCE * bulletScale(p) * p.fontSizePx
+        } else {
+            p.measurePrefix?.invoke(item.label) ?: (item.label.length * ORDINAL_ADVANCE * p.fontSizePx)
+        }
+        val widths = FloatArray(items.size) { widthOf(items[it]) }
+        // The column of the labels of each list: its widest label
+        val columns = HashMap<Int, Float>()
+        for ((index, item) in items.withIndex()) columns[item.list] = max(columns[item.list] ?: 0f, widths[index])
+        val gap = LABEL_GAP * p.fontSizePx
+        val laidOut = ArrayList<ListItemLayout>(items.size)
+        for ((index, item) in items.withIndex()) {
+            val left = if (item.parent >= 0) laidOut[item.parent].textLeftPx else 0f
+            val column = columns.getValue(item.list)
+            // At most half the line to the text, so that the text keeps room
+            val textLeft = min(left + column + gap, (p.lineWidthPx ?: Float.MAX_VALUE) / 2f)
+            val labelLeft = (textLeft - gap - widths[index]).coerceAtLeast(0f)
+            laidOut += ListItemLayout(item.span, item.label, item.bullet, labelLeft, widths[index], textLeft)
+        }
+        val itemAt = HashMap<Int, ListItemLayout>()
+        val continuationAt = HashMap<Int, ListItemLayout>()
+        for (item in laidOut) {
+            itemAt[item.span.start] = item
+            var k = text.indexOf('\n', item.span.contentStart)
+            while (k in 0 until item.span.end) {
+                continuationAt[k + 1] = item
+                k = text.indexOf('\n', k + 1)
+            }
+        }
+        return ListLayout(itemAt, continuationAt)
+    }
+
+    /**
+     * The size of the bullets relative to the text: 1, or less in a font whose lines are lower
+     * than those of the monospace font, so that a bullet does not make its line higher.
+     */
+    private fun bulletScale(p: Presentation<*>): Float =
+        minOf(1f, p.struts.room.ascent / MONO_ASCENT, p.struts.room.descent / MONO_DESCENT)
+
+    /** A list item laid out: its [label] ([labelWidthPx] wide) from [labelLeftPx], its text from [textLeftPx]. */
+    private class ListItemLayout(
+        val span: Span,
+        val label: String,
+        val bullet: ListNumbering.Bullet?,
+        val labelLeftPx: Float,
+        val labelWidthPx: Float,
+        val textLeftPx: Float
+    )
+
+    /** The list items of a text by the start of their lines: their first lines, their continuation lines. */
+    private class ListLayout(val itemAt: Map<Int, ListItemLayout>, val continuationAt: Map<Int, ListItemLayout>) {
+        companion object {
+            val EMPTY = ListLayout(emptyMap(), emptyMap())
+        }
+    }
 
     /**
      * Where the block of code [span] starts from the left of its line: at the text of its list
      * item, the block keeping half the line at least.
      */
-    private fun codeBlockLeft(span: Span, p: Presentation<*>): Float =
+    private fun codeBlockLeft(span: Span, p: Presentation<*>, lists: ListLayout): Float =
         span.listItem?.let { item ->
-            val prefix = MarkdownTextUtil.listPrefix(item)
-            min(prefixWidth(prefix, item, p), (p.lineWidthPx ?: 0f) / 2f)
+            min(lists.itemAt[item.start]?.textLeftPx ?: 0f, (p.lineWidthPx ?: 0f) / 2f)
         } ?: 0f
 
     /** What the block of code [span] of [text] is laid out from, [widthPx] wide. */
@@ -568,6 +653,19 @@ internal object RichTextPresenter {
 
     /** Share of the line an object taking its line takes: all of it, without wrapping on a rounding. */
     private const val LINE_FILL = 0.999f
+
+    /** The advance of a bullet in the monospace font, per pixel of the size. */
+    private const val BULLET_ADVANCE = 0.6f
+
+    /** The room of the lines of the monospace font of the notes (Noto Sans Mono) above and below the baseline, per pixel of the size. */
+    private const val MONO_ASCENT = 1.069f
+    private const val MONO_DESCENT = 0.293f
+
+    /** The advance of a character of a label not measured, per pixel of the size. */
+    private const val ORDINAL_ADVANCE = 0.55f
+
+    /** The gap between a label and the text of its item, per pixel of the size. */
+    private const val LABEL_GAP = 0.4f
 
     /** The delimiters near the caret: faded. */
     private const val FADED_ALPHA = 0.45f
