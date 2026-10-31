@@ -85,6 +85,26 @@ void ink_stroke_builder_add_point(
 );
 
 /**
+ * Adds the inputs of a stroke at once: they are modeled as ink_stroke_builder_add_point would
+ * model them one by one, with the shape updated once after the last one.
+ * @param handle The builder handle.
+ * @param xs X coordinates in stroke space, one per input.
+ * @param ys Y coordinates in stroke space, one per input.
+ * @param pressures Stylus pressures (0.0 to 1.0), or negative values if not available.
+ * @param times_ms Timestamps in milliseconds (any monotonic origin).
+ * @param count Number of inputs in every array.
+ * @param tool_type One of InkToolType.
+ */
+void ink_stroke_builder_add_points(
+    InkStrokeBuilderHandle handle,
+    const float* xs, const float* ys,
+    const float* pressures,
+    const int64_t* times_ms,
+    int32_t count,
+    int32_t tool_type
+);
+
+/**
  * Notifies the builder that pointer inputs have completed (e.g. pointer up).
  */
 void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle);

@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.ink
 import io.github.valerioisufi.drawview.ink.cinterop.ink_create_brush
 import io.github.valerioisufi.drawview.ink.cinterop.ink_destroy_brush
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_add_point
+import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_add_points
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_clear
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_create
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_destroy
@@ -45,6 +46,24 @@ internal object CInteropInkApi : InkNativeApi {
 
     override fun addPoint(builderHandle: Long, x: Float, y: Float, pressure: Float, timeMs: Long, toolType: Int) {
         ink_stroke_builder_add_point(builderHandle.toCPointer<COpaque>(), x, y, pressure, timeMs, toolType)
+    }
+
+    override fun addPoints(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray, toolType: Int) {
+        val count = xs.size
+        if (count == 0 || ys.size < count || pressures.size < count || timesMs.size < count) return
+        xs.usePinned { x ->
+            ys.usePinned { y ->
+                pressures.usePinned { p ->
+                    timesMs.usePinned { t ->
+                        ink_stroke_builder_add_points(
+                            builderHandle.toCPointer<COpaque>(),
+                            x.addressOf(0), y.addressOf(0), p.addressOf(0), t.addressOf(0),
+                            count, toolType
+                        )
+                    }
+                }
+            }
+        }
     }
 
     override fun finishInputs(builderHandle: Long) {

@@ -42,6 +42,66 @@ static ink::StrokeInput::ToolType ToInkToolType(int32_t tool_type) {
     }
 }
 
+// The input that follows the inputs of the stroke for a point, at the time elapsed from the first
+// point and kept increasing; false for a point that repeats the last one, which is left out.
+static bool NextInput(
+    InkStrokeBuilderWrapper* builder,
+    float x, float y,
+    float pressure,
+    int64_t time_ms,
+    int32_t tool_type,
+    ink::StrokeInput& input,
+    int64_t& elapsed_out
+) {
+    if (builder->start_time_ms < 0) {
+        builder->start_time_ms = time_ms;
+    }
+
+    int64_t elapsed_ms = time_ms - builder->start_time_ms;
+    if (elapsed_ms < 0) elapsed_ms = 0;
+
+    if (builder->has_points) {
+        if (elapsed_ms < builder->last_time_ms) {
+            elapsed_ms = builder->last_time_ms;
+        }
+        // Avoid duplicate identical points with exact same timestamp
+        if (elapsed_ms == builder->last_time_ms && x == builder->last_x && y == builder->last_y) {
+            return false;
+        }
+        if (elapsed_ms == builder->last_time_ms) {
+            elapsed_ms = builder->last_time_ms + 1;
+        }
+    } else {
+        // Every input of a batch must share tool type and pressure availability:
+        // lock them on the first point of the stroke.
+        builder->tool_type = ToInkToolType(tool_type);
+        builder->has_pressure = pressure >= 0.0f && pressure <= 1.0f;
+    }
+
+    input = ink::StrokeInput();
+    input.tool_type = builder->tool_type;
+    input.position = ink::Point{x, y};
+    input.elapsed_time = ink::Duration32::Millis(static_cast<float>(elapsed_ms));
+    if (builder->stroke_unit_length_cm > 0.0f) {
+        input.stroke_unit_length = ink::PhysicalDistance::Centimeters(builder->stroke_unit_length_cm);
+    }
+    if (builder->has_pressure) {
+        input.pressure = std::clamp(pressure, 0.0f, 1.0f);
+    } else {
+        input.pressure = ink::StrokeInput::kNoPressure;
+    }
+    elapsed_out = elapsed_ms;
+    return true;
+}
+
+// Records a point taken as the last input of the stroke.
+static void Advance(InkStrokeBuilderWrapper* builder, float x, float y, int64_t elapsed_ms) {
+    builder->last_time_ms = elapsed_ms;
+    builder->last_x = x;
+    builder->last_y = y;
+    builder->has_points = true;
+}
+
 extern "C" {
 
 InkBrushHandle ink_create_brush(
@@ -124,43 +184,9 @@ void ink_stroke_builder_add_point(
     auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
     if (!builder->started) return;
 
-    if (builder->start_time_ms < 0) {
-        builder->start_time_ms = time_ms;
-    }
-
-    int64_t elapsed_ms = time_ms - builder->start_time_ms;
-    if (elapsed_ms < 0) elapsed_ms = 0;
-
-    if (builder->has_points) {
-        if (elapsed_ms < builder->last_time_ms) {
-            elapsed_ms = builder->last_time_ms;
-        }
-        // Avoid duplicate identical points with exact same timestamp
-        if (elapsed_ms == builder->last_time_ms && x == builder->last_x && y == builder->last_y) {
-            return;
-        }
-        if (elapsed_ms == builder->last_time_ms) {
-            elapsed_ms = builder->last_time_ms + 1;
-        }
-    } else {
-        // Every input of a batch must share tool type and pressure availability:
-        // lock them on the first point of the stroke.
-        builder->tool_type = ToInkToolType(tool_type);
-        builder->has_pressure = pressure >= 0.0f && pressure <= 1.0f;
-    }
-
     ink::StrokeInput input;
-    input.tool_type = builder->tool_type;
-    input.position = ink::Point{x, y};
-    input.elapsed_time = ink::Duration32::Millis(static_cast<float>(elapsed_ms));
-    if (builder->stroke_unit_length_cm > 0.0f) {
-        input.stroke_unit_length = ink::PhysicalDistance::Centimeters(builder->stroke_unit_length_cm);
-    }
-    if (builder->has_pressure) {
-        input.pressure = std::clamp(pressure, 0.0f, 1.0f);
-    } else {
-        input.pressure = ink::StrokeInput::kNoPressure;
-    }
+    int64_t elapsed_ms = 0;
+    if (!NextInput(builder, x, y, pressure, time_ms, tool_type, input, elapsed_ms)) return;
 
     ink::StrokeInputBatch real_batch;
     auto append_status = real_batch.Append(input);
@@ -174,12 +200,50 @@ void ink_stroke_builder_add_point(
         return;
     }
 
-    builder->last_time_ms = elapsed_ms;
-    builder->last_x = x;
-    builder->last_y = y;
-    builder->has_points = true;
+    Advance(builder, x, y, elapsed_ms);
 
     builder->stroke.UpdateShape(input.elapsed_time);
+}
+
+void ink_stroke_builder_add_points(
+    InkStrokeBuilderHandle handle,
+    const float* xs, const float* ys,
+    const float* pressures,
+    const int64_t* times_ms,
+    int32_t count,
+    int32_t tool_type
+) {
+    if (handle == nullptr || xs == nullptr || ys == nullptr || pressures == nullptr || times_ms == nullptr) return;
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    if (!builder->started || count <= 0) return;
+
+    // Restored if the inputs are not taken
+    const int64_t last_time_ms = builder->last_time_ms;
+    const float last_x = builder->last_x;
+    const float last_y = builder->last_y;
+    const bool has_points = builder->has_points;
+
+    ink::StrokeInputBatch real_batch;
+    ink::StrokeInput input;
+    int64_t elapsed_ms = 0;
+    for (int32_t i = 0; i < count; ++i) {
+        if (!NextInput(builder, xs[i], ys[i], pressures[i], times_ms[i], tool_type, input, elapsed_ms)) continue;
+        if (!real_batch.Append(input).ok()) continue;
+        Advance(builder, xs[i], ys[i], elapsed_ms);
+    }
+    if (real_batch.IsEmpty()) return;
+
+    ink::StrokeInputBatch predicted_batch;
+    auto enqueue_status = builder->stroke.EnqueueInputs(real_batch, predicted_batch);
+    if (!enqueue_status.ok()) {
+        builder->last_time_ms = last_time_ms;
+        builder->last_x = last_x;
+        builder->last_y = last_y;
+        builder->has_points = has_points;
+        return;
+    }
+
+    builder->stroke.UpdateShape(ink::Duration32::Millis(static_cast<float>(builder->last_time_ms)));
 }
 
 void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle) {

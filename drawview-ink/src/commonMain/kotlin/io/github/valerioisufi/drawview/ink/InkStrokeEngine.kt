@@ -66,6 +66,32 @@ public class InkStrokeEngine {
     }
 
     /**
+     * Adds the inputs of a stroke at once, modeled as [addInput] models them one by one: the
+     * native engine takes them in one call and updates the shape once.
+     */
+    internal fun addInputs(points: List<StrokePoint>, toolType: InputToolType) {
+        if (!isActive || points.isEmpty()) return
+        if (recordedPoints.isEmpty()) currentToolType = toolType
+        val from = recordedPoints.size
+        for (p in points) {
+            val t = if (p.timestampMs > 0L) p.timestampMs else {
+                syntheticClockMs += 16L
+                syntheticClockMs
+            }
+            recordedPoints.add(StrokePoint(p.x, p.y, p.pressure, t))
+        }
+        val native = delegate as? NativeStrokeEngineDelegate
+        if (native != null) {
+            native.addInputs(recordedPoints, from, currentToolType)
+        } else {
+            for (i in from until recordedPoints.size) {
+                val p = recordedPoints[i]
+                delegate.addInput(p.x, p.y, p.pressure, p.timestampMs, currentToolType)
+            }
+        }
+    }
+
+    /**
      * Adds an input and returns the updated mesh of the stroke in progress.
      */
     public fun addPoint(
@@ -132,9 +158,7 @@ public class InkStrokeEngine {
             val engine = InkStrokeEngine()
             return try {
                 engine.startStroke(brush, strokeUnitLengthCm)
-                for (p in points) {
-                    engine.addInput(p.x, p.y, p.pressure, p.timestampMs, toolType)
-                }
+                engine.addInputs(points, toolType)
                 engine.finishStroke()
             } finally {
                 engine.release()

@@ -61,6 +61,42 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoi
     );
 }
 
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoints(
+    JNIEnv* env, jclass,
+    jlong builder_handle,
+    jfloatArray xs, jfloatArray ys,
+    jfloatArray pressures,
+    jlongArray times_ms,
+    jint tool_type
+) {
+    static_assert(sizeof(jlong) == sizeof(int64_t), "jlong is 64 bits");
+    if (builder_handle == 0 || xs == nullptr || ys == nullptr || pressures == nullptr || times_ms == nullptr) {
+        return;
+    }
+    jsize count = env->GetArrayLength(xs);
+    if (env->GetArrayLength(ys) < count || env->GetArrayLength(pressures) < count || env->GetArrayLength(times_ms) < count) {
+        return;
+    }
+
+    jfloat* xs_ptr = env->GetFloatArrayElements(xs, nullptr);
+    jfloat* ys_ptr = env->GetFloatArrayElements(ys, nullptr);
+    jfloat* pressures_ptr = env->GetFloatArrayElements(pressures, nullptr);
+    jlong* times_ptr = env->GetLongArrayElements(times_ms, nullptr);
+    if (xs_ptr && ys_ptr && pressures_ptr && times_ptr) {
+        ink_stroke_builder_add_points(
+            reinterpret_cast<InkStrokeBuilderHandle>(builder_handle),
+            xs_ptr, ys_ptr, pressures_ptr,
+            reinterpret_cast<const int64_t*>(times_ptr),
+            static_cast<int32_t>(count), static_cast<int32_t>(tool_type)
+        );
+    }
+    // Read only
+    if (xs_ptr) env->ReleaseFloatArrayElements(xs, xs_ptr, JNI_ABORT);
+    if (ys_ptr) env->ReleaseFloatArrayElements(ys, ys_ptr, JNI_ABORT);
+    if (pressures_ptr) env->ReleaseFloatArrayElements(pressures, pressures_ptr, JNI_ABORT);
+    if (times_ptr) env->ReleaseLongArrayElements(times_ms, times_ptr, JNI_ABORT);
+}
+
 JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_finishInputs(
     JNIEnv*, jclass,
     jlong builder_handle

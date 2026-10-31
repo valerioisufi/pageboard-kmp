@@ -100,8 +100,9 @@ not a cost.
    index, a cache rebuilt by itself, may be chunked again once (its embeddings are kept by the hash
    of their text).
 2. **Nothing sent changes**: the protocol as it is, `ProtocolFormatTest` unchanged.
-3. **What is drawn stays the same**: the screenshots of `verifyRoborazziJvm` unchanged, the meshes
-   modeled in batch the same, bit for bit, as the ones modeled one by one.
+3. **What is drawn stays the same**: the screenshots of `verifyRoborazziJvm` unchanged. A stroke
+   modeled from its inputs at once has the shape of the one modeled input by input; the user
+   accepted that its edges may move by a few hundredths of a millimeter (phase 6, decision 12).
 4. **Measured**: every phase gives its numbers before and after (phase 0), written in this
    document; a change that gains nothing is not kept.
 5. **The stores of the applications keep working**: every new read of `DocumentStore` has a
@@ -227,11 +228,27 @@ void ink_stroke_builder_add_points(InkStrokeBuilderHandle handle, const float* x
 ```
 
 `InkStrokeModeller.buildMesh`, whose inputs are all known, gives them in one call (through JNI on
-Android and the desktop, cinterop on iOS) and the shape is updated once, after `FinishInputs`. The
-stroke being drawn keeps updating its shape at every input. The meshes must stay the same, bit for
-bit: Ink models the same inputs in the same order, but the test decides; if they differ, the user
-decides whether a stroke loaded may differ from the one drawn. The loaders model the pages at the
-same time, on `Dispatchers.Default`, each worker with its own engine.
+Android and the desktop, cinterop on iOS): the bridge turns them into inputs as
+`ink_stroke_builder_add_point` does (the same function, `NextInput`), enqueues them as one batch
+and updates the shape once, then once more after `FinishInputs`. It is how Ink models a stroke
+stored (`Stroke::RegenerateShape`). The stroke being drawn keeps updating its shape at every
+input.
+
+The meshes are not the same, bit for bit (`WholeStrokeModelingTest`). Without behaviors over time
+or distance (the marker, the highlighter, the eraser) the vertices are the same but for a
+rounding, on a grid of 0.01 mm the same shape. The pressure pen and the dashed line have such
+behaviors, and Ink simplifies their outline in another way when it has every input at once: for
+the strokes as written the edges of the pen move by 1% of its size at most (0.005 mm for a pen of
+0.3 mm, 0.03 mm for 2 mm, 0.07 mm for 8 mm), 3.5% in a random scribble; the dashes of the dashed
+line (the lasso, never stored) move along it, up to 14% of its size in a scribble. The user
+accepted it (decision 12). The inputs are what is stored and synchronized, so nothing stored or
+sent changes: a stroke just drawn keeps its mesh, and it may move by that much once the document
+is opened again, put back by undo, or received by another device.
+
+The Room store models the strokes of a document on every core as it loads it
+(`DrawDocumentRepository.loadDocument`): tasks of 64 strokes on `Dispatchers.Default`, each call
+with its own native builder, the strokes then put in their pages in order. A `StrokeModeller` is
+therefore called from several threads at once, which its KDoc now says.
 
 ## Phases
 
@@ -243,7 +260,7 @@ same time, on `Dispatchers.Default`, each worker with its own engine.
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
 | 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
 | 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
-| 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the pages modeled at the same time (test: the same meshes, bit for bit, on the JVM and the iOS simulator) | proposed |
+| 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the strokes of a document modeled on every core (test: the shape of every brush, as drawn, on the JVM and the iOS simulator) | done |
 | 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
 | 8 | The PDF pages kept loaded between their tiles and drawn with one copy; the texts drawn outside of the lock of the caches (if the measurer allows it) | proposed |
 
@@ -261,14 +278,14 @@ in `drawview-ink`, `TileBenchmark` in `drawview-canvas`).
 | Measure | Before | After | Phase |
 |---|---|---|---|
 | M1 statements per stroke committed, with the collectors of PencilNotes (200 notes) | 42.9 (20.0 queries, 8.2 ms of them) | | 1 |
-| M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | | 2 |
-| M2 indexing 101 notes from nothing | 2 min 53 s | | 2, 6 |
-| M2 a search pass with nothing changed | 46 ms | | — |
+| M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | 0.82 s (phase 6) | 2, 6 |
+| M2 indexing 101 notes from nothing | 2 min 53 s | 5.4 s (phase 6) | 2, 6 |
+| M2 a search pass with nothing changed | 46 ms | 43 ms | — |
 | M3 the thumbnail of a note changed on its last page | the opening of the whole note (M5) | | 3 |
 | M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each) | | 4 |
 | M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | | 4 |
-| M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | | 6 |
-| M5 a stroke of 120 inputs modeled, an engine for each / one for all | 0.93 ms / 0.93 ms | | 6 |
+| M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | 1.89 s (26 ms of queries) | 6 |
+| M5 a stroke of 120 inputs modeled from its inputs at once / input by input | 0.93 ms / 0.93 ms | 0.15 ms / 0.92 ms | 6 |
 | M6 the screen filled after a jump of 20 pages / a fling over 20 pages | 21 ms / 18 ms | | — |
 | M7 a tile of a page of 1,500 strokes, level 0 / level 2 | 10.4 ms / 2.1 ms | | 7 |
 | A tile of a PDF page | measured at the start of phase 8 | | 8 |
@@ -297,6 +314,15 @@ Taken alone, revertible:
    cost on the Mac (M6, M2 with nothing changed). They are left for later, for a device that
    shows one.
 10. **The order of the phases by what they gain** (above), not by their number.
+11. **The key-value store models its strokes on one thread**, as before: it loads a document under
+    its lock, and only the tests use it; the applications use the Room store.
+
+Decided by the user:
+
+12. **A stroke loaded may differ from the one drawn** (2026-10-31, phase 6): its edges move by a
+    few hundredths of a millimeter (above), for an opening 38 times faster (M5: 71.9 s, 15.8 s
+    with the strokes modeled on every core but input by input, 1.89 s with their inputs at
+    once).
 
 ## Left for later
 

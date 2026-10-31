@@ -17,6 +17,7 @@ internal interface InkNativeApi {
     fun createStrokeBuilder(): Long
     fun startStroke(builderHandle: Long, brushHandle: Long, strokeUnitLengthCm: Float)
     fun addPoint(builderHandle: Long, x: Float, y: Float, pressure: Float, timeMs: Long, toolType: Int)
+    fun addPoints(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray, toolType: Int)
     fun finishInputs(builderHandle: Long)
     fun clearStroke(builderHandle: Long)
     fun destroyStrokeBuilder(builderHandle: Long)
@@ -68,6 +69,26 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
         if (!started) return
         val p = if (toolType == InputToolType.STYLUS) pressure else -1f
         api.addPoint(builderHandle, x, y, p, timeMs, toolType.nativeId)
+    }
+
+    /** Adds [points] from the index [from] at once, as [addInput] would add them one by one. */
+    fun addInputs(points: List<StrokePoint>, from: Int, toolType: InputToolType) {
+        if (!started) return
+        val count = points.size - from
+        if (count <= 0) return
+        val xs = FloatArray(count)
+        val ys = FloatArray(count)
+        val pressures = FloatArray(count)
+        val times = LongArray(count)
+        val stylus = toolType == InputToolType.STYLUS
+        for (i in 0 until count) {
+            val p = points[from + i]
+            xs[i] = p.x
+            ys[i] = p.y
+            pressures[i] = if (stylus) p.pressure else -1f
+            times[i] = p.timestampMs
+        }
+        api.addPoints(builderHandle, xs, ys, pressures, times, toolType.nativeId)
     }
 
     override fun finishInputs() {

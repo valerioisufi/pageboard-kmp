@@ -47,6 +47,8 @@ import io.github.valerioisufi.drawview.store.room.db.StrokeInputCodec
 import io.github.valerioisufi.drawview.store.room.db.TextEntity
 import io.github.valerioisufi.drawview.store.room.db.TextMarkupEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -115,6 +117,11 @@ internal class DrawDocumentRepository(
             }
 
             val sortedPages = docWithPages.pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
+            // The strokes of all the pages modeled on every core, in the order of the pages
+            val strokes = sortedPages.flatMap { it.strokes }.chunked(STROKES_PER_TASK).map { chunk ->
+                async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } }
+            }.awaitAll().flatten()
+            var nextStroke = 0
             for (pageWithContent in sortedPages) {
                 val pageEntity = pageWithContent.page
                 val page = DrawPage(
@@ -132,7 +139,9 @@ internal class DrawDocumentRepository(
                 page.contentVersions = pageEntity.contentVersions
                 page.removalSaw = pageEntity.removalSaw
 
-                val elements = pageWithContent.strokes.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                val pageStrokes = strokes.subList(nextStroke, nextStroke + pageWithContent.strokes.size)
+                nextStroke += pageStrokes.size
+                val elements = pageStrokes +
                     pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
                     pageWithContent.images.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
                     pageWithContent.pdfs.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
@@ -594,3 +603,6 @@ internal class DrawDocumentRepository(
 
 /** The most values of a query at once (SQLite takes 999 at least). */
 private const val MAX_QUERY_ARGUMENTS = 500
+
+/** The strokes modeled by one task as a document is loaded: about 10 ms of work for Ink. */
+private const val STROKES_PER_TASK = 64

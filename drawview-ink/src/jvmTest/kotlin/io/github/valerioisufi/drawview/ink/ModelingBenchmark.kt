@@ -10,8 +10,9 @@ import kotlin.test.assertNotNull
 import kotlin.time.measureTime
 
 /**
- * The cost of modeling the strokes of a document as it is loaded (see `docs/performance.md`): a
- * native engine made for each stroke, as `InkStrokeModeller` does, against one engine for all.
+ * The cost of modeling the strokes of a document as it is loaded (see `docs/performance.md`): the
+ * inputs of a stroke given at once, as `InkStrokeModeller` gives them, against the inputs added one
+ * by one to one engine for all, as the editor adds them.
  */
 class ModelingBenchmark {
     private val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f)
@@ -24,13 +25,13 @@ class ModelingBenchmark {
         // Warm up
         strokes.take(200).forEach { assertNotNull(InkStrokeModeller.buildMesh(it, brush, InputToolType.STYLUS)) }
 
-        val fresh = measureTime {
+        val whole = measureTime {
             for (points in strokes) assertNotNull(InkStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS))
         }
-        report("M5 a stroke modeled by an engine of its own", "${fresh / STROKES}")
+        report("M5 a stroke modeled from its inputs at once", "${whole / STROKES}")
 
         val engine = InkStrokeEngine()
-        val reused = measureTime {
+        val oneByOne = measureTime {
             for (points in strokes) {
                 engine.startStroke(brush)
                 for (p in points) engine.addInput(p.x, p.y, p.pressure, p.timestampMs, InputToolType.STYLUS)
@@ -38,7 +39,7 @@ class ModelingBenchmark {
             }
         }
         engine.release()
-        report("M5 a stroke modeled by one engine for all", "${reused / STROKES}")
+        report("M5 a stroke modeled input by input", "${oneByOne / STROKES}")
     }
 
     private fun report(measure: String, value: String) = println("BENCHMARK $measure: $value")

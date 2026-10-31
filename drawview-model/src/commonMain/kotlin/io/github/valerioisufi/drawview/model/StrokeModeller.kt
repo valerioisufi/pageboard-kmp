@@ -7,6 +7,9 @@ package io.github.valerioisufi.drawview.model
  *
  * The meshes are local: the inputs are what is stored and synchronized, so two devices modeling
  * with different modellers still end up with the same document.
+ *
+ * It is called from several threads at once: the stores model the strokes of a document on every
+ * core as they load it.
  */
 public fun interface StrokeModeller {
     /** The mesh of the stroke of [points] drawn with [brush], or `null` when there is none. */
