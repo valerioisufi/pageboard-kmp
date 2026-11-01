@@ -27,6 +27,8 @@ struct InkStrokeBuilderWrapper {
     float stroke_unit_length_cm = 0.0f;
     ink::StrokeInput::ToolType tool_type = ink::StrokeInput::ToolType::kUnknown;
     bool has_pressure = false;
+    // Whether the shape holds predicted inputs (see ink_stroke_builder_predict)
+    bool has_prediction = false;
 };
 
 static ink::StrokeInput::ToolType ToInkToolType(int32_t tool_type) {
@@ -169,6 +171,7 @@ void ink_stroke_builder_start(
     builder->start_time_ms = -1;
     builder->last_time_ms = 0;
     builder->has_points = false;
+    builder->has_prediction = false;
     builder->started = true;
     builder->stroke_unit_length_cm = stroke_unit_length_cm;
 }
@@ -199,6 +202,8 @@ void ink_stroke_builder_add_point(
     if (!enqueue_status.ok()) {
         return;
     }
+    // Real inputs take the prediction away
+    builder->has_prediction = false;
 
     Advance(builder, x, y, elapsed_ms);
 
@@ -242,7 +247,52 @@ void ink_stroke_builder_add_points(
         builder->has_points = has_points;
         return;
     }
+    builder->has_prediction = false;
 
+    builder->stroke.UpdateShape(ink::Duration32::Millis(static_cast<float>(builder->last_time_ms)));
+}
+
+void ink_stroke_builder_predict(
+    InkStrokeBuilderHandle handle,
+    const float* xs, const float* ys,
+    const float* pressures,
+    const int64_t* times_ms,
+    int32_t count
+) {
+    if (handle == nullptr) return;
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    // Nothing to predict from before the first real input
+    if (!builder->started || !builder->has_points) return;
+
+    ink::StrokeInputBatch predicted_batch;
+    if (xs != nullptr && ys != nullptr && pressures != nullptr && times_ms != nullptr) {
+        int64_t last_ms = builder->last_time_ms;
+        float last_x = builder->last_x;
+        float last_y = builder->last_y;
+        for (int32_t i = 0; i < count; ++i) {
+            // After the last real input, and after one another
+            int64_t elapsed_ms = times_ms[i] - builder->start_time_ms;
+            if (elapsed_ms <= last_ms) elapsed_ms = last_ms + 1;
+            if (xs[i] == last_x && ys[i] == last_y) continue;
+
+            ink::StrokeInput input;
+            input.tool_type = builder->tool_type;
+            input.position = ink::Point{xs[i], ys[i]};
+            input.elapsed_time = ink::Duration32::Millis(static_cast<float>(elapsed_ms));
+            if (builder->stroke_unit_length_cm > 0.0f) {
+                input.stroke_unit_length = ink::PhysicalDistance::Centimeters(builder->stroke_unit_length_cm);
+            }
+            input.pressure = builder->has_pressure ? std::clamp(pressures[i], 0.0f, 1.0f) : ink::StrokeInput::kNoPressure;
+            if (!predicted_batch.Append(input).ok()) break;
+            last_ms = elapsed_ms;
+            last_x = xs[i];
+            last_y = ys[i];
+        }
+    }
+
+    ink::StrokeInputBatch real_batch;
+    if (!builder->stroke.EnqueueInputs(real_batch, predicted_batch).ok()) return;
+    builder->has_prediction = !predicted_batch.IsEmpty();
     builder->stroke.UpdateShape(ink::Duration32::Millis(static_cast<float>(builder->last_time_ms)));
 }
 
@@ -251,6 +301,13 @@ void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle) {
     auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
     if (!builder->started) return;
 
+    // The finished stroke has no prediction: an empty one takes it away (with nothing queued,
+    // UpdateShape after FinishInputs would leave the shape as it is)
+    if (builder->has_prediction) {
+        ink::StrokeInputBatch real_batch;
+        ink::StrokeInputBatch predicted_batch;
+        if (builder->stroke.EnqueueInputs(real_batch, predicted_batch).ok()) builder->has_prediction = false;
+    }
     builder->stroke.FinishInputs();
     builder->stroke.UpdateShape(ink::Duration32::Millis(static_cast<float>(builder->last_time_ms)));
 }
@@ -262,6 +319,7 @@ void ink_stroke_builder_clear(InkStrokeBuilderHandle handle) {
     builder->start_time_ms = -1;
     builder->last_time_ms = 0;
     builder->has_points = false;
+    builder->has_prediction = false;
     builder->started = false;
 }
 

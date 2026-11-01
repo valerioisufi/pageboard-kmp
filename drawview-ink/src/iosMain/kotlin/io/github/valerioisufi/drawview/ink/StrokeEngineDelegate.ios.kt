@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_outli
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_outlines
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_triangle_count
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_vertex_count
+import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_predict
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_start
 import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import kotlinx.cinterop.COpaque
@@ -59,6 +60,28 @@ internal object CInteropInkApi : InkNativeApi {
                             builderHandle.toCPointer<COpaque>(),
                             x.addressOf(0), y.addressOf(0), p.addressOf(0), t.addressOf(0),
                             count, toolType
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    override fun predict(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray) {
+        val count = xs.size
+        if (ys.size < count || pressures.size < count || timesMs.size < count) return
+        if (count == 0) {
+            ink_stroke_builder_predict(builderHandle.toCPointer<COpaque>(), null, null, null, null, 0)
+            return
+        }
+        xs.usePinned { x ->
+            ys.usePinned { y ->
+                pressures.usePinned { p ->
+                    timesMs.usePinned { t ->
+                        ink_stroke_builder_predict(
+                            builderHandle.toCPointer<COpaque>(),
+                            x.addressOf(0), y.addressOf(0), p.addressOf(0), t.addressOf(0),
+                            count
                         )
                     }
                 }

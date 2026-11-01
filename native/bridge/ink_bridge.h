@@ -105,6 +105,28 @@ void ink_stroke_builder_add_points(
 );
 
 /**
+ * Predicts the stroke beyond its last input with predicted inputs, modeled with the brush of the
+ * stroke and replaced by the next call to this function or by the next real inputs (which take the
+ * prediction away). They never become inputs of the stroke, and the geometry of the stroke once its
+ * inputs are finished has none of them. Inputs not after the last real one are left out; no input
+ * takes the prediction away.
+ *
+ * @param handle The builder handle.
+ * @param xs X coordinates in stroke space, one per predicted input.
+ * @param ys Y coordinates in stroke space, one per predicted input.
+ * @param pressures Stylus pressures (0.0 to 1.0), or negative values if not available.
+ * @param times_ms Timestamps in milliseconds, in the origin of the real inputs.
+ * @param count Number of inputs in every array (0: no prediction).
+ */
+void ink_stroke_builder_predict(
+    InkStrokeBuilderHandle handle,
+    const float* xs, const float* ys,
+    const float* pressures,
+    const int64_t* times_ms,
+    int32_t count
+);
+
+/**
  * Notifies the builder that pointer inputs have completed (e.g. pointer up).
  */
 void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle);

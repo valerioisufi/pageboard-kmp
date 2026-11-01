@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -105,7 +106,8 @@ internal class CanvasGestureHandler(
     private val controller: DrawViewController,
     private val engine: InkStrokeEngine,
     private val live: CanvasLiveState,
-    private val ink: LiveInkLayer
+    private val ink: LiveInkLayer,
+    private val predictor: InkPredictor
 ) {
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
@@ -508,6 +510,8 @@ internal class CanvasGestureHandler(
                 controller.inkLatencyMeter.strokeStarted()
             }
             addInkInput(change, position, change.uptimeMillis, change.pressure)
+            predictor.start()
+            predictor.record(position, change.uptimeMillis)
             ink.strokeChanged(engine, brush.color, pageIndex)
             reportActivity(position, inking = mode == Mode.INK)
             longPressCandidate = !isStylus
@@ -585,8 +589,11 @@ internal class CanvasGestureHandler(
                 if (!strokeSnapped) {
                     for (h in change.historical) {
                         addInkInput(change, h.position, h.uptimeMillis, change.pressure)
+                        predictor.record(h.position, h.uptimeMillis)
                     }
                     addInkInput(change, position, change.uptimeMillis, change.pressure)
+                    predictor.record(position, change.uptimeMillis)
+                    predictInk(change.pressure)
                     inkBrush?.let { ink.strokeChanged(engine, it.color, inkPageIndex) }
                     if (mode == Mode.INK) followHold(position, change.uptimeMillis)
                 }
@@ -1220,6 +1227,19 @@ internal class CanvasGestureHandler(
         if (mode == Mode.INK) controller.inkLatencyMeter.inputAdded(timeMs)
     }
 
+    /**
+     * Predicts the stroke in progress up to a frame beyond its last input, drawn with the [pressure]
+     * of that input (see [InkPredictor]): replaced at the next event, never an input of the stroke.
+     */
+    private fun predictInk(pressure: Float) {
+        val points = predictor.predict(PREDICTION_MS).mapNotNull { predicted ->
+            controller.viewport.screenToPageMm(inkPageIndex, predicted.position)?.let { StrokePoint(it.x, it.y, pressure, predicted.timeMs) }
+        }
+        // Also when nothing is predicted: an event without new inputs keeps the prediction before
+        engine.predict(points)
+        if (mode == Mode.INK) controller.inkLatencyMeter.predicted(points.lastOrNull()?.timestampMs ?: 0L)
+    }
+
     /** How far from the text of the PDFs a pointer of [type] may be to select or mark it, in pixels. */
     private fun textTolerancePx(type: PointerType): Float =
         (if (type == PointerType.Touch) 12f else 6f) * controller.viewport.density
@@ -1284,3 +1304,6 @@ private fun boxBetween(a: Offset, b: Offset) = Rect(minOf(a.x, b.x), minOf(a.y, 
 
 /** The least time between two reports of the activity during a gesture (a frame of a 60 Hz display). */
 private const val ACTIVITY_INTERVAL_MS = 16L
+
+/** How far ahead of its last input the stroke in progress is predicted: a frame of a 60 Hz display. */
+private const val PREDICTION_MS = 16L

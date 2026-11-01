@@ -138,11 +138,11 @@ too, from the same place.
 
 ### Prediction
 
-The bridge takes the predicted inputs with the real ones in one call
-(`ink_stroke_builder_add_points` with a predicted batch): Ink models them with the brush of the
-stroke and drops them at the next update, so the predicted tail looks like the stroke and never
-stays. `InkStrokeEngine.addInputs(real, predicted)` keeps `inputs` real; `finishStroke` and
-`cancelStroke` clear the prediction, so the mesh committed has none.
+The bridge takes the predicted inputs after the real ones of an event
+(`ink_stroke_builder_predict`): Ink models them with the brush of the stroke and drops them at the
+next update, so the predicted tail looks like the stroke and never stays.
+`InkStrokeEngine.predict(points)` keeps `inputs` real; `finishStroke` and `cancelStroke` clear the
+prediction, so the mesh committed has none.
 
 The gesture handler asks the `InkPredictor` after the real inputs of an event. The prediction
 reaches at most one frame ahead (the interval of the display), and none while the pen slows down to
@@ -201,7 +201,7 @@ device and an iPad with a Pencil to be measured).
 |---|---|---|
 | 0 | The measures: `InkLatencyMeter` and `DrawViewController.inkLatency` (ABI recorded on purpose), shown in the sample; `LiveInkBenchmark` (M1, the work of an input), the pen up on the UI thread (M2); in-app latency on the desktop, the Android emulator and the iOS simulator (M3), and on the MatePad with the video (M4, by the user); whether Compose gives the coalesced touches of the Pencil (M5, from its sources or an iPad) | Done; M3 on the desktop and M4 left to the user |
 | 1 | `LiveInkLayer` and `ComposeLiveInkLayer`: the stroke and the cursors in a canvas of their own, the outline taken once per frame, the activity reported once per frame; tests of the gestures as they are, screenshots | Done |
-| 2 | Prediction: the predicted batch in the bridge (JNI and cinterop), `InkStrokeEngine.addInputs(real, predicted)` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and `KalmanInkPredictor`; tests: nothing predicted is committed or sent, no tail on a hold, the shapes and the lasso as they are | proposed |
+| 2 | Prediction: the predicted batch in the bridge (JNI and cinterop), `InkStrokeEngine.predict` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and `KalmanInkPredictor`; tests: nothing predicted is committed or sent, no tail on a hold, the shapes and the lasso as they are | Done |
 | 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | proposed |
 | 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the MatePad (in-app and video) and on an emulator | proposed |
 | 5 | iOS: the predicted (and, after M5, coalesced) touches of the Pencil from a gesture recognizer; measured on an iPad | proposed |
@@ -270,6 +270,34 @@ device and an iPad with a Pencil to be measured).
   the frame itself is where the time goes, which only the front buffer (phase 4) skips.
 * On the emulator the same (13 to 15 ms before, 10 to 15 after, frames of 5 ms both); the first
   rounds after a cold boot of the emulator are no measure (a frame of 46 ms at the median).
+
+### Phase 2 results
+
+* `ink_stroke_builder_predict` (bridge, JNI, cinterop) gives Ink a predicted batch and updates the
+  shape; a real input takes the prediction away. Ink leaves the shape as it is in `UpdateShape` after
+  `FinishInputs` when nothing is queued, so the bridge takes the prediction away before finishing a
+  stroke: the mesh committed has no tail. Ink models the last real inputs of a stroke that was
+  predicted a little differently: up to a few hundredths of a millimeter at the end of a stroke of the
+  pressure pen, in the mesh of that session only (the inputs stored are the same).
+* `InkStrokeEngine.predict(points)` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and
+  `KalmanInkPredictor` (`drawview-canvas`): a Kalman filter per axis in dp, up to one frame (16 ms)
+  ahead, no prediction under 0.05 dp/ms or beyond where a pen slowing down would stop. The gesture
+  handler asks it after the real inputs of an event, for the pens and the lasso. The Kotlin
+  tessellator predicts nothing.
+* **The prediction, off-line** (`InkPredictorTest`, synthetic strokes with noise of a fifth of a dp,
+  at 240, 120 and 60 Hz): where the pen really is 16 ms after a sample, against the tip predicted and
+  against the last sample (what is drawn without prediction), in dp: handwriting 1.9 to 2.0 against
+  6.0 to 6.3 (95th percentile 3.2 to 3.5 against 8.7 to 9.0), a circle 0.9 to 1.0 against 6.5, a line
+  starting and stopping smoothly 0.9 to 1.1 against 8.1 to 8.7. A pen that stops is not drawn beyond
+  where it stays.
+* **M7** (Mac): an event costs 0.25 µs for the filter and 9.5 µs for Ink modeling the tail.
+* **M3**, emulator `MatePad_API29`, two rounds of five strokes each: tip age 8 to 10 ms before, -5 to
+  -7 ms after (95th percentile 10 to 22 ms before, -4 to 2 ms after), with 16 ms predicted; from an
+  input to its frame 12 to 15 ms before and after. The tip drawn stands for a moment 5 to 7 ms after
+  the frame: the display still shows it later, by the time the RenderThread and the compositor take.
+* The tests of the gestures (`InkPredictionGestureTest`): the tip beyond the pen while it moves, only
+  the inputs of the pen sent and committed; the tests of the shapes and of the lasso as they are.
+  `PredictionTest` (`drawview-ink`) passes on the JVM and on the iOS simulator.
 
 ## Decisions
 

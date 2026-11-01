@@ -93,6 +93,18 @@ public class InkStrokeEngine {
     }
 
     /**
+     * Predicts the stroke in progress beyond its last input with [points] (page millimeters, times
+     * after the last input, oldest first): Ink models them with the brush of the stroke, and the next
+     * inputs or the next prediction replace them. They never become [inputs], and the mesh of
+     * [finishStroke] has none of them. An empty list takes the prediction away. Without the native
+     * engine nothing is predicted.
+     */
+    public fun predict(points: List<StrokePoint>) {
+        if (!isActive || recordedPoints.isEmpty()) return
+        (delegate as? NativeStrokeEngineDelegate)?.predict(points, currentToolType)
+    }
+
+    /**
      * Adds an input and returns the updated mesh of the stroke in progress.
      */
     public fun addPoint(

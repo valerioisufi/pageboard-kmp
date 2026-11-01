@@ -11,6 +11,7 @@ public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine {
 	public final fun finishStroke ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public final fun getInputs ()Ljava/util/List;
 	public final fun isNative ()Z
+	public final fun predict (Ljava/util/List;)V
 	public final fun release ()V
 	public final fun startStroke (Lio/github/valerioisufi/drawview/model/BrushConfig;F)V
 	public static synthetic fun startStroke$default (Lio/github/valerioisufi/drawview/ink/InkStrokeEngine;Lio/github/valerioisufi/drawview/model/BrushConfig;FILjava/lang/Object;)V

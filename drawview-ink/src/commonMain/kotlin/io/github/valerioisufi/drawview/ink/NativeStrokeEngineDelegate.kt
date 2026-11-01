@@ -18,6 +18,7 @@ internal interface InkNativeApi {
     fun startStroke(builderHandle: Long, brushHandle: Long, strokeUnitLengthCm: Float)
     fun addPoint(builderHandle: Long, x: Float, y: Float, pressure: Float, timeMs: Long, toolType: Int)
     fun addPoints(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray, toolType: Int)
+    fun predict(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray)
     fun finishInputs(builderHandle: Long)
     fun clearStroke(builderHandle: Long)
     fun destroyStrokeBuilder(builderHandle: Long)
@@ -89,6 +90,25 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
             times[i] = p.timestampMs
         }
         api.addPoints(builderHandle, xs, ys, pressures, times, toolType.nativeId)
+    }
+
+    /** Predicts the stroke beyond its last input with [points] (none: no prediction), see `ink_stroke_builder_predict`. */
+    fun predict(points: List<StrokePoint>, toolType: InputToolType) {
+        if (!started) return
+        val count = points.size
+        val xs = FloatArray(count)
+        val ys = FloatArray(count)
+        val pressures = FloatArray(count)
+        val times = LongArray(count)
+        val stylus = toolType == InputToolType.STYLUS
+        for (i in 0 until count) {
+            val p = points[i]
+            xs[i] = p.x
+            ys[i] = p.y
+            pressures[i] = if (stylus) p.pressure else -1f
+            times[i] = p.timestampMs
+        }
+        api.predict(builderHandle, xs, ys, pressures, times)
     }
 
     override fun finishInputs() {

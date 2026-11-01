@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
@@ -34,8 +35,8 @@ import kotlinx.coroutines.cancel
 
 /**
  * The work of the stroke in progress (see `docs/ink-latency.md`): an input modeled, the shape taken
- * out of the engine and drawn as the stroke grows (M1), and the pen up committing a stroke over a
- * screen of tiles (M2).
+ * out of the engine and drawn as the stroke grows (M1), the pen up committing a stroke over a screen
+ * of tiles (M2), and the prediction of an event (M7).
  */
 class LiveInkBenchmark {
 
@@ -83,6 +84,38 @@ class LiveInkBenchmark {
             }
             engine.release()
         }
+    }
+
+    /** M7: the prediction of an event: the filter told a sample and asked, Ink modeling the tail. */
+    @Test
+    fun thePredictionOfAnEvent() {
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f)
+        val engine = InkStrokeEngine()
+        val predictor = KalmanInkPredictor { 2f }
+        val filter = mutableListOf<Duration>()
+        val modeling = mutableListOf<Duration>()
+        repeat(6) { round ->
+            engine.startStroke(brush)
+            predictor.start()
+            for (i in 0 until 960) {
+                val p = handwriting(i)
+                engine.addInput(p.x, p.y, p.pressure, p.timestampMs, InputToolType.STYLUS)
+                var predicted: List<PredictedPoint> = emptyList()
+                val a = measureTime {
+                    predictor.record(Offset(p.x * 16f, p.y * 16f), p.timestampMs)
+                    predicted = predictor.predict(16L)
+                }
+                val points = predicted.map { StrokePoint(it.position.x / 16f, it.position.y / 16f, p.pressure, it.timeMs) }
+                val b = measureTime { engine.predict(points) }
+                if (round > 0) {
+                    filter += a
+                    modeling += b
+                }
+            }
+            engine.finishStroke()
+        }
+        engine.release()
+        report("M7 the prediction of an event", "filter ${filter.median()}, Ink modeling the tail ${modeling.median()}")
     }
 
     /** M2: the pen up of a word (60 inputs) and of a long stroke (480 inputs) over a screen of tiles. */

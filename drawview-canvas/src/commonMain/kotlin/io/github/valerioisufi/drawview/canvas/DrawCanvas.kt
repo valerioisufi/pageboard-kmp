@@ -62,7 +62,8 @@ public fun DrawCanvas(
 
     val live = remember { CanvasLiveState() }
     val ink = remember { ComposeLiveInkLayer() }
-    val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live, ink) }
+    val predictor = remember(controller) { KalmanInkPredictor { controller.viewport.density } }
+    val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live, ink, predictor) }
     val labels = rememberTextMeasurer()
     val collaboratorsOverlay = remember { CollaboratorsOverlay() }
 

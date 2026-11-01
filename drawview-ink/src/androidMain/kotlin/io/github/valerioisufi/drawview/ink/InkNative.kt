@@ -47,6 +47,14 @@ internal object InkNative {
     )
 
     @JvmStatic
+    external fun predict(
+        builderHandle: Long,
+        xs: FloatArray, ys: FloatArray,
+        pressures: FloatArray,
+        timesMs: LongArray
+    )
+
+    @JvmStatic
     external fun finishInputs(builderHandle: Long)
 
     @JvmStatic
@@ -101,6 +109,9 @@ internal object JniInkApi : InkNativeApi {
 
     override fun addPoints(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray, toolType: Int) =
         InkNative.addPoints(builderHandle, xs, ys, pressures, timesMs, toolType)
+
+    override fun predict(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray) =
+        InkNative.predict(builderHandle, xs, ys, pressures, timesMs)
 
     override fun finishInputs(builderHandle: Long) = InkNative.finishInputs(builderHandle)
 
