@@ -128,7 +128,7 @@ public fun DrawCanvas(
             }
     ) {
         // Each canvas in a layer of its own: drawing one again leaves the other as it was recorded
-        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawContent(controller, animationTick, collaboratorsOverlay, labels) }
+        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawContent(controller, ink, animationTick, collaboratorsOverlay, labels) }
         Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawLive(controller, live, ink) }
         ink.Content()
     }
@@ -137,6 +137,7 @@ public fun DrawCanvas(
 /** The committed content of the canvas and what is drawn over it but the live state. */
 private fun DrawScope.drawContent(
     controller: DrawViewController,
+    ink: LiveInkLayer,
     animationTick: Long,
     collaboratorsOverlay: CollaboratorsOverlay,
     labels: TextMeasurer
@@ -177,6 +178,7 @@ private fun DrawScope.drawContent(
             skipPageKey = draggedPage?.renderKey
         )
     }
+    ink.tilesDrawn()
 
     // 3. Drop slot of the page being dragged
     if (draggedPage != null) {

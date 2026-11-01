@@ -33,6 +33,9 @@ internal interface LiveInkLayer {
     /** Draws the stroke where the layer draws in the frames of Compose, over the committed content. */
     fun draw(scope: DrawScope, controller: DrawViewController)
 
+    /** The frame being recorded has drawn the tiles, with the strokes committed so far. */
+    fun tilesDrawn() = Unit
+
     /** What the layer puts over the canvas to draw the stroke, if anything but the frames of Compose. */
     @Composable
     fun Content() = Unit

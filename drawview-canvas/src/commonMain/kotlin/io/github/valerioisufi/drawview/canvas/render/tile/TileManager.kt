@@ -70,6 +70,9 @@ public class TileManager(
     /** World Space size of each page used by its cached tiles (it changes with the window width). */
     private val pageWorldSizes = mutableMapOf<Long, Size>()
     private var bakeSequence = 0L
+
+    /** The cells on screen, in screen pixels, that the last frame had no tile for. */
+    private val blankCells = mutableListOf<Rect>()
     private val recentBakes = mutableMapOf<Long, MutableList<BakedElement>>()
 
     /** An element committed to a page and baked into its tiles: a stroke or a mark of the text of a PDF. */
@@ -145,6 +148,7 @@ public class TileManager(
         pageRects: List<Rect>,
         skipPageKey: Long? = null
     ) {
+        blankCells.clear()
         if (pageRects.isEmpty()) return
         tileCache.beginFrame()
 
@@ -243,6 +247,7 @@ public class TileManager(
                             drawTileBitmap(canvas, ancestor.bitmap, ancestor.key, pageWorldRect, cameraMatrix)
                             onScreen.drawn += DrawnTile(ancestor, pageWorldRect.size, cell)
                         } else {
+                            blankCells += tileScreenBounds
                             // What was on screen before the window was resized, under the sharper tiles
                             drawPreviousLayouts(canvas, onScreen, cell, pageWorldRect, cameraMatrix)
                             for (descendant in tileCache.findReadyDescendants(key)) {
@@ -686,6 +691,12 @@ public class TileManager(
         val region = Rect(mmRect.left / page.widthMm, mmRect.top / page.heightMm, mmRect.right / page.widthMm, mmRect.bottom / page.heightMm)
         return onScreen.drawn.none { it.coverage.overlaps(region) && it.tile.state != TileState.READY }
     }
+
+    /**
+     * Whether the last frame drew tiles of their own over all of [screenRect]: a cell waiting for
+     * its first tile, with no coarser one to stand in, may show nothing of what the page holds.
+     */
+    internal fun isScreenRegionDrawn(screenRect: Rect): Boolean = blankCells.none { it.overlaps(screenRect) }
 
     /**
      * Invalidates every tile of the page identified by [pageKey].

@@ -310,7 +310,15 @@ device and an iPad with a Pencil to be measured).
 * A translucent stroke stays in the frames of Compose, and so does every stroke without a surface, a
   renderer or an outline: `rememberLiveInkLayer` gives `ComposeLiveInkLayer` on iOS and the desktop.
 * The hand-off: at the pen up the last shape, without the prediction, is drawn in the buffer, which is
-  hidden 4 frames later. A stroke given up, or the lasso, hides it at once. A stroke that starts meanwhile
+  hidden once the tiles are known to show the stroke, not after a fixed count of frames (the first
+  version waited 4, and the user saw strokes disappear for a few frames at the pen up, sometimes in
+  some tiles only). The frame must have recorded the tiles with no cell of the stroke waiting for its
+  first tile (`TileManager.isScreenRegionDrawn`), the renderer must have submitted it
+  (`registerFrameCommitCallback`), and 3 frames must have passed for the compositor; after 30 frames
+  it is hidden anyway. On the MatePad, 45 strokes by `adb`: tiles recorded in 14 ms (max 21), frame
+  submitted in 32 ms (max 36), buffer hidden in 91 ms (max 95). Those strokes never showed a late
+  frame, so the cause seen by hand is not reproduced that way. A stroke given up, or the lasso, hides
+  it at once. A stroke that starts meanwhile
   keeps it. Recorded on the emulator at 60 fps (six strokes): a finished stroke never disappears; for 3
   frames its edges are antialiased twice (about 11% more dark pixels), then as they stay.
 * On Android 10 the library has no `USAGE_FRONT_BUFFER`, and hwui draws at most once per vsync (17 ms

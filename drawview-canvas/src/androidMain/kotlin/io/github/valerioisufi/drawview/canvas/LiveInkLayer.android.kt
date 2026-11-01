@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.graphics.lowlatency.CanvasFrontBufferedRenderer
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeOutline
@@ -42,6 +43,8 @@ internal actual fun rememberLiveInkLayer(controller: DrawViewController): LiveIn
 internal class FrontBufferedLiveInkLayer(private val controller: DrawViewController) : LiveInkLayer {
     private enum class Mode { NONE, FRONT_BUFFER, COMPOSE }
 
+    private enum class HandOffStep { NONE, AWAITING_TILES, AWAITING_COMMIT, REACHING_SCREEN }
+
     /** What the next pass of the renderer draws: the stroke as it is, and the part to draw again. */
     private class Frame(val outline: StrokeOutline, val color: Int, val transform: Matrix2D, val dirty: Rect)
 
@@ -61,13 +64,25 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
     /** All the stroke has covered in the buffer so far, in screen pixels. */
     private var strokeBounds: Rect? = null
 
-    /** Frames left before the buffer is hidden once the tiles show the stroke; 0: not waiting. */
+    private var surfaceView: SurfaceView? = null
+
+    /** Where the stroke ended is in its hand-off to the tiles. */
+    private var handOffStep = HandOffStep.NONE
+
+    /** Frames left before the buffer is hidden: to reach the screen, or to give up waiting. */
     private var handOffFrames = 0
 
     private val handOff = Choreographer.FrameCallback {
-        if (handOffFrames == 0) return@FrameCallback
+        if (handOffStep == HandOffStep.NONE) return@FrameCallback
         handOffFrames--
         if (handOffFrames > 0) scheduleHandOff() else hideBuffer()
+    }
+
+    private val frameCommitted = Runnable {
+        if (handOffStep == HandOffStep.AWAITING_COMMIT) {
+            handOffStep = HandOffStep.REACHING_SCREEN
+            handOffFrames = COMPOSITOR_FRAMES
+        }
     }
 
     private val callback = object : CanvasFrontBufferedRenderer.Callback<Unit> {
@@ -141,7 +156,8 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
                 } else {
                     // The last shape, without the prediction, until the tiles show it
                     draw(outline, bounds)
-                    handOffFrames = HAND_OFF_FRAMES
+                    handOffStep = HandOffStep.AWAITING_TILES
+                    handOffFrames = MAX_HAND_OFF_FRAMES
                     scheduleHandOff()
                 }
             }
@@ -149,6 +165,22 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
     }
 
     override fun draw(scope: DrawScope, controller: DrawViewController) = compose.draw(scope, controller)
+
+    /**
+     * The tiles recorded in this frame hold the stroke, unless a cell is still waiting for its first
+     * tile (it asks for another frame when it comes). The frame is known to be on its way only when
+     * the renderer has submitted it, which may take long for tiles to upload, and the callback for
+     * that belongs to the frame after this one: so one more is asked for.
+     */
+    override fun tilesDrawn() {
+        if (handOffStep != HandOffStep.AWAITING_TILES) return
+        val bounds = strokeBounds ?: return
+        if (!controller.tileManager.isScreenRegionDrawn(bounds.toCompose())) return
+        val view = surfaceView ?: return
+        handOffStep = HandOffStep.AWAITING_COMMIT
+        view.viewTreeObserver.registerFrameCommitCallback(frameCommitted)
+        view.postInvalidateOnAnimation()
+    }
 
     /**
      * The surface over the canvas: on top of the window, translucent, and given no touch (the
@@ -175,6 +207,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
 
     private fun attach(surfaceView: SurfaceView) {
         // Without the renderer the strokes stay in the frames of Compose
+        this.surfaceView = surfaceView
         renderer = runCatching { CanvasFrontBufferedRenderer(surfaceView, callback) }.getOrNull()
     }
 
@@ -183,6 +216,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
         surfaceReady = false
         renderer?.release(true)
         renderer = null
+        surfaceView = null
     }
 
     private fun draw(outline: StrokeOutline, dirty: Rect) {
@@ -199,6 +233,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
     }
 
     private fun cancelHandOff() {
+        handOffStep = HandOffStep.NONE
         handOffFrames = 0
         Choreographer.getInstance().removeFrameCallback(handOff)
     }
@@ -215,10 +250,13 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
         const val ANTIALIASING_MARGIN_PX = 2f
 
         /**
-         * Frames from the pen up to the buffer hidden: the frame of Compose that draws the tiles with
-         * the stroke, its turn in the compositor, and one more for a frame that comes late. A gap
-         * would show the stroke disappear; the stroke shown twice meanwhile is opaque.
+         * Frames from the frame with the tiles submitted to the buffer hidden: its turn in the
+         * compositor, and one more for a buffer not ready yet. A gap would show the stroke disappear;
+         * the stroke shown twice meanwhile is opaque.
          */
-        const val HAND_OFF_FRAMES = 4
+        const val COMPOSITOR_FRAMES = 3
+
+        /** Frames from the pen up after which the buffer is hidden anyway, to never stay over the canvas. */
+        const val MAX_HAND_OFF_FRAMES = 30
     }
 }
