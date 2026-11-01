@@ -238,6 +238,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
 	public final fun getEngines ()Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;
 	public final fun getHistoryManager ()Lio/github/valerioisufi/drawview/canvas/history/HistoryManager;
+	public final fun getInkLatency ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getLassoMode ()Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
 	public final fun getMediaManager ()Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;
 	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
@@ -264,6 +265,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getVersion ()I
 	public final fun getViewport ()Lio/github/valerioisufi/drawview/canvas/camera/Viewport;
 	public final fun isDrawingMode ()Z
+	public final fun isInkLatencyMeasured ()Z
 	public final fun isPageGridVisible ()Z
 	public final fun isReadOnly ()Z
 	public final fun isStylusOnlyMode ()Z
@@ -275,6 +277,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun selectTool (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;)V
 	public static synthetic fun selectTool$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V
 	public final fun setContextMenuPosition-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
+	public final fun setInkLatencyMeasured (Z)V
 	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
 	public final fun setPageGridVisible (Z)V
 	public final fun setPendingTextImport (Lio/github/valerioisufi/drawview/canvas/controller/TextImport;)V
@@ -341,6 +344,19 @@ public final class io/github/valerioisufi/drawview/canvas/controller/EditorClipb
 	public final fun getSystemText ()Ljava/lang/String;
 	public final fun setContent (Lio/github/valerioisufi/drawview/model/change/CopiedContent;)V
 	public final fun setSystemText (Ljava/lang/String;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/InkLatencyReport {
+	public static final field $stable I
+	public fun <init> (IIFFFFF)V
+	public final fun getFrames ()I
+	public final fun getInputToFrameMedianMs ()F
+	public final fun getInputToFrameP95Ms ()F
+	public final fun getInputs ()I
+	public final fun getPredictionMedianMs ()F
+	public final fun getTipAgeMedianMs ()F
+	public final fun getTipAgeP95Ms ()F
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/MediaManager {

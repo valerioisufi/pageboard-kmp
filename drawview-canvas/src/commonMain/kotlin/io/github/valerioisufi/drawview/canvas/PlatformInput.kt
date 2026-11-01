@@ -68,3 +68,9 @@ internal expect fun Modifier.trackpadInput(
  * pens as mice.
  */
 internal expect fun PointerEvent.isStylusButtonPressed(): Boolean
+
+/**
+ * The time now in the clock of the pointer events (`PointerInputChange.uptimeMillis`), in
+ * milliseconds: the uptime on Android and iOS, the time of the AWT events on the desktop.
+ */
+internal expect fun pointerClockMillis(): Long

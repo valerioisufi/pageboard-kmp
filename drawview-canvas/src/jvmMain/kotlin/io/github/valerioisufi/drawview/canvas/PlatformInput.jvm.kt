@@ -62,3 +62,6 @@ internal actual fun Modifier.trackpadInput(
         }
     }
 }
+
+/** Compose gives the pointer events the time of their AWT events (`InputEvent.getWhen`), wall-clock time. */
+internal actual fun pointerClockMillis(): Long = System.currentTimeMillis()

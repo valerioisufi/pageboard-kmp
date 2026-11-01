@@ -198,6 +198,7 @@ public fun DrawCanvas(
             val mmToScreen = controller.viewport.pageMmToScreen(live.livePageIndex)
             if (mmToScreen != null) {
                 drawIntoCanvas { canvas -> livePainter.draw(canvas, mesh, mmToScreen) }
+                controller.inkLatencyMeter.frameDrawn()
             }
         }
 

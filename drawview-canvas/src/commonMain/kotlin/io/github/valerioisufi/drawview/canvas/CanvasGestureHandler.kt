@@ -510,7 +510,10 @@ internal class CanvasGestureHandler(
             holdPosition = position
             holdTime = change.uptimeMillis
             engine.startStroke(brush)
-            if (mode == Mode.INK) strokeCount++
+            if (mode == Mode.INK) {
+                strokeCount++
+                controller.inkLatencyMeter.strokeStarted()
+            }
             addInkInput(change, position, change.uptimeMillis, change.pressure)
             live.setLiveMesh(engine.currentMesh(), pageIndex)
             reportActivity(position, inking = mode == Mode.INK)
@@ -538,6 +541,7 @@ internal class CanvasGestureHandler(
                 live.setLiveMesh(null, -1)
                 // Given up for the gesture: gone at once on the other devices too
                 if (mode == Mode.INK) {
+                    controller.inkStrokeEnded()
                     val position = pressed.firstOrNull { it.id == activePointer }?.position ?: downPosition
                     reportActivity(position, inking = false, strokeCancelled = true)
                 }
@@ -798,6 +802,7 @@ internal class CanvasGestureHandler(
                 val brush = inkBrush
                 live.setLiveMesh(null, -1)
                 if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
+                controller.inkStrokeEnded()
                 reportActivity(position, inking = false)
             }
 
@@ -922,6 +927,8 @@ internal class CanvasGestureHandler(
         if (mode != Mode.INK || !controller.shapeSnapper.snap(engine, inkPageIndex, brush, inkInputType)) return
         strokeSnapped = true
         strokeCount++
+        // The pen held still is no latency of the ink
+        controller.inkStrokeEnded()
         live.setLiveMesh(engine.currentMesh(), inkPageIndex)
         reportActivity(lastPosition, inking = true)
     }
@@ -1213,6 +1220,7 @@ internal class CanvasGestureHandler(
         }
         if (engine.inputs.isEmpty()) inkInputType = toolType
         engine.addInput(mm.x, mm.y, pressure, timeMs, toolType)
+        if (mode == Mode.INK) controller.inkLatencyMeter.inputAdded(timeMs)
     }
 
     /** How far from the text of the PDFs a pointer of [type] may be to select or mark it, in pixels. */

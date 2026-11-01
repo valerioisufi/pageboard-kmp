@@ -83,3 +83,6 @@ internal actual fun Modifier.trackpadInput(
 
 /** Compose reports the first button of a stylus as the primary one, the second as the secondary one. */
 internal actual fun PointerEvent.isStylusButtonPressed(): Boolean = buttons.isPrimaryPressed || buttons.isSecondaryPressed
+
+/** The `eventTime` of a `MotionEvent` is in the uptime of the system. */
+internal actual fun pointerClockMillis(): Long = android.os.SystemClock.uptimeMillis()

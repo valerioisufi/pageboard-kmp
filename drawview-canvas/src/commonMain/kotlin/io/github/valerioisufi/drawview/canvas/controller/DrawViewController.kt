@@ -200,6 +200,32 @@ public class DrawViewController(
         _messages.tryEmit(message)
     }
 
+    /** Measures the latency of the strokes drawn while [isInkLatencyMeasured]. */
+    internal val inkLatencyMeter = InkLatencyMeter()
+
+    private val inkLatencyState = MutableStateFlow<InkLatencyReport?>(null)
+    private var measuringInkLatency by mutableStateOf(false)
+
+    /**
+     * Whether the editor measures the latency of the ink, reported by [inkLatency] at the end of
+     * each stroke; off by default (the measure costs a little at every input and frame).
+     */
+    public var isInkLatencyMeasured: Boolean
+        get() = measuringInkLatency
+        set(value) {
+            measuringInkLatency = value
+            inkLatencyMeter.isEnabled = value
+            if (!value) inkLatencyState.value = null
+        }
+
+    /** The latency of the ink over the last stroke measured (see [isInkLatencyMeasured]); `null` before. */
+    public val inkLatency: StateFlow<InkLatencyReport?> = inkLatencyState.asStateFlow()
+
+    /** The stroke measured ended (drawn, or given up). */
+    internal fun inkStrokeEnded() {
+        inkLatencyMeter.strokeEnded()?.let { inkLatencyState.value = it }
+    }
+
     /** Set while a change whose elements are already drawn in the tiles is submitted. */
     private var changeAlreadyDrawn = false
     private val changeObserver = ChangeObserver(::onChangeCommitted)

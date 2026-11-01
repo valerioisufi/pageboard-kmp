@@ -54,7 +54,7 @@ fun App(
             elements = ElementRenderers(listOf(ShapeRenderer))
         )
     }
-    val shapes = remember { shapesExtension() }
+    val shapes = remember { shapesExtension() + inkLatencyExtension() }
     // The documents of the sample, in its data directory (see DrawViewStore)
     val documents = DrawViewStore.documents
     DrawViewTheme {
@@ -90,7 +90,7 @@ fun SampleDocumentWindow(
             elements = ElementRenderers(listOf(ShapeRenderer))
         )
     }
-    val shapes = remember { shapesExtension() }
+    val shapes = remember { shapesExtension() + inkLatencyExtension() }
     val documents = DrawViewStore.documents
     DrawViewTheme {
         val editorViewModel = viewModel(key = "sample-doc-$documentId") {
