@@ -555,8 +555,9 @@ These change or delete stored data, or need a plan of their own; they are for th
 9. **The scale of `TextBoxEditor` during a zoom** by a layer: the text being written must stay as
    the page draws it (`docs/text-parity.md`).
 10. **`org.gradle.parallel`** for the build.
-11. **The tiles rasterized the most needed first** (a scheduler cancelling the tiles no longer
-    shown), and the chunks to embed counted once per pass: no cost measured on the Mac (M6, M2).
+11. **The chunks to embed counted once per pass**: no cost measured on the Mac (M2). The tiles
+    rasterized the most needed first came with a device showing the cost, see
+    [tile-zoom-out.md](tile-zoom-out.md).
 12. **The version of the lectures without reading every record** at every pass (53 ms on the Mac
     for 60 lectures, decision 14): a version kept by `LectureLibrary` as it writes a record, or
     the records read once.

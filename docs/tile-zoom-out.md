@@ -84,7 +84,7 @@ fingers.
 |---|---|---|
 | 1 | The overviews: `OVERVIEW_LOD`, their budget in `TileCache`, the fallback of a cell; tests (an overview survives a cache full of level 4, a cell without its tile draws it, a stale one too); measured on the MatePad | Done |
 | 2 | `TileQueue`: priorities, what a frame stops wanting dropped; `isRasterizing` keeps its meaning; tests of the order and of the drop; `TileBenchmark` gets the zoom out; measured on the MatePad | Done |
-| 3 | Only if the measures show a gain: 3 workers instead of 2, measured with the frames on the UI thread | Proposed |
+| 3 | Only if the measures show a gain: 3 workers instead of 2, measured with the frames on the UI thread | Done: measured, no gain, 2 workers kept |
 
 The target, on the MatePad with the same script: no blank area once a page has its overview, the
 screen filled about as fast as its own tiles take (about 300 ms in the run of 926 ms), and the jobs
@@ -122,12 +122,22 @@ An overview takes 39 ms to rasterize at 400 strokes a page, 135 ms at 1,500.
 The frames stay at a median of 17 ms during the zoom out, with a 95th percentile of 18–34 ms.
 `TileBenchmark` measures the same zoom out on the Mac (M10): 17 ms.
 
+The number of workers, own tiles after the gesture at 1,500 strokes (3 runs each):
+
+| Workers | A | B | Frames, 95th percentile |
+|---|---|---|---|
+| 2 | 94–246 ms | 224–238 ms | 18–34 ms |
+| 3 | 127–161 ms | 255–260 ms | 33–48 ms |
+| 4 | 112–144 ms | 175–230 ms | 21–34 ms |
+
+No clear gain: the workers stay 2.
+
+Also on the MatePad, a new note of the sample written by `adb`: the strokes show, nothing fails. Not
+covered: a pinch of real fingers, real notes and PDF pages. These are left to a test by hand.
+
 ## Left for later
 
 * A budget following the size of the screen (`docs/performance.md`, "the tiles"), which would also
   keep the intermediate levels.
 * Sharper tiles during the gesture: while the levels pass, the workers still rasterize the level of
   the moment.
-* `feat/ink-latency` also changes `TileManager` (`blankCells`, `isScreenRegionDrawn`): whichever
-  branch lands second is rebased on the other, and a cell counts as blank there only without an
-  overview.
