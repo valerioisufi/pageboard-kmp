@@ -95,4 +95,30 @@ class TileScreenTest {
         }
         manager.cleanup()
     }
+
+    @Test
+    fun aCellWithoutItsTileShowsTheOverviewWithTheDescendantsOverIt() {
+        val manager = TileManager()
+        val doc = DrawDocument("doc", "Doc")
+        val pageKey = doc.pages[0].renderKey
+        fun tile(key: TileKey, color: Color) {
+            val bitmap = manager.tileCache.obtainBitmap()
+            Canvas(bitmap).drawRect(Rect(0f, 0f, 512f, 512f), Paint().apply { this.color = color })
+            manager.tileCache.put(Tile(key, bitmap, TileState.READY))
+        }
+        // As after a zoom in: the overview, and a tile of level 1, far from level 0 on screen
+        tile(TileKey(pageKey, TilePyramid.OVERVIEW_LOD, 0, 0), Color.Red)
+        tile(TileKey(pageKey, 1, 0, 0), Color.Black)
+
+        val screen = ImageBitmap(400, 400)
+        val canvas = Canvas(screen)
+        canvas.drawRect(Rect(0f, 0f, 400f, 400f), Paint().apply { color = Color.White })
+        manager.drawTiles(canvas, Matrix2D(), Rect(0f, 0f, 400f, 400f), doc, listOf(Rect(0f, 0f, 1024f, 1024f)))
+
+        val pixels = screen.toPixelMap()
+        // Inside the tile of level 1 (256 wide), and in the rest of the cell of level 0
+        assertEquals(Color.Black, pixels[100, 100])
+        assertEquals(Color.Red, pixels[350, 350])
+        manager.cleanup()
+    }
 }

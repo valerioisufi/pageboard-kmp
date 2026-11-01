@@ -200,6 +200,28 @@ public class TileManager(
             val pageWidth = pageWorldRect.width
             val pageHeight = pageWorldRect.height
 
+            val prefetchLocalLeft = (worldViewport.left - pageWorldRect.left).coerceIn(0f, pageWidth)
+            val prefetchLocalTop = (worldViewport.top - pageWorldRect.top).coerceIn(0f, pageHeight)
+            val prefetchLocalRight = (worldViewport.right - pageWorldRect.left).coerceIn(0f, pageWidth)
+            val prefetchLocalBottom = (worldViewport.bottom - pageWorldRect.top).coerceIn(0f, pageHeight)
+
+            // The overview of the page, the base of its cells at the next zoom out
+            TilePyramid.getPageIntersectingTileRange(
+                localLeft = prefetchLocalLeft,
+                localTop = prefetchLocalTop,
+                localRight = prefetchLocalRight,
+                localBottom = prefetchLocalBottom,
+                pageWidth = pageWidth,
+                pageHeight = pageHeight,
+                lod = TilePyramid.OVERVIEW_LOD
+            ).forEach { col, row ->
+                val key = TileKey(page.renderKey, TilePyramid.OVERVIEW_LOD, col, row)
+                val cached = tileCache.get(key)
+                if (cached == null || cached.state == TileState.STALE) {
+                    enqueueTile(key, document, page, pageWorldRect)
+                }
+            }
+
             if (isPageVisible) {
                 val localLeft = max(0f, worldViewport.left - pageWorldRect.left)
                 val localTop = max(0f, worldViewport.top - pageWorldRect.top)
@@ -248,13 +270,13 @@ public class TileManager(
                             onScreen.drawn += DrawnTile(ancestor, pageWorldRect.size, cell)
                         } else {
                             blankCells += tileScreenBounds
-                            // What was on screen before the window was resized, under the sharper tiles
-                            drawPreviousLayouts(canvas, onScreen, cell, pageWorldRect, cameraMatrix)
-                            for (descendant in tileCache.findReadyDescendants(key)) {
-                                drawTileBitmap(canvas, descendant.bitmap, descendant.key, pageWorldRect, cameraMatrix)
-                                val coverage = pageFraction(TilePyramid.getTilePageRect(descendant.key), pageWorldRect)
-                                onScreen.drawn += DrawnTile(descendant, pageWorldRect.size, coverage)
-                            }
+                        }
+                        // What was on screen before the window was resized, under the sharper tiles
+                        drawPreviousLayouts(canvas, onScreen, cell, pageWorldRect, cameraMatrix)
+                        for (descendant in tileCache.findReadyDescendants(key)) {
+                            drawTileBitmap(canvas, descendant.bitmap, descendant.key, pageWorldRect, cameraMatrix)
+                            val coverage = pageFraction(TilePyramid.getTilePageRect(descendant.key), pageWorldRect)
+                            onScreen.drawn += DrawnTile(descendant, pageWorldRect.size, coverage)
                         }
                         canvas.restore()
 
@@ -264,11 +286,6 @@ public class TileManager(
             }
 
             // Prefetch range
-            val prefetchLocalLeft = (worldViewport.left - pageWorldRect.left).coerceIn(0f, pageWidth)
-            val prefetchLocalTop = (worldViewport.top - pageWorldRect.top).coerceIn(0f, pageHeight)
-            val prefetchLocalRight = (worldViewport.right - pageWorldRect.left).coerceIn(0f, pageWidth)
-            val prefetchLocalBottom = (worldViewport.bottom - pageWorldRect.top).coerceIn(0f, pageHeight)
-
             val prefetchRange = TilePyramid.getPageIntersectingTileRange(
                 localLeft = prefetchLocalLeft,
                 localTop = prefetchLocalTop,

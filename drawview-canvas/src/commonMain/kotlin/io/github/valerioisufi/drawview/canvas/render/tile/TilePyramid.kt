@@ -22,6 +22,12 @@ internal object TilePyramid {
     const val MAX_LOD = 5
 
     /**
+     * Level of the overview of a page: a coarse tile kept for every page reached, drawn under the
+     * cells whose own tile is missing (one tile for a page laid out up to 2048 wide).
+     */
+    const val OVERVIEW_LOD = -2
+
+    /**
      * Largest magnification of the tiles on screen. A magnified tile is blurred, on dense screens
      * too, so the tiles are only shrunk, at the cost of up to twice the tiles of the nearest LOD;
      * the 5% leaves room for the rounding of the zoom.

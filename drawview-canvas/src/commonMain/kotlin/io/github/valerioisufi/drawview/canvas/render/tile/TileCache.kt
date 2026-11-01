@@ -11,7 +11,11 @@ import io.github.valerioisufi.drawview.platform.syncLock
  * beyond the budget: a viewport needing more tiles than the budget (a large screen zoomed just past
  * a change of LOD) would otherwise evict its own tiles and rasterize them again at every frame.
  *
- * @param maxMemoryBytes Maximum cache budget in bytes (default: 64 MB) for the tiles not in use.
+ * The overviews of the pages ([TilePyramid.OVERVIEW_LOD]) have a budget of their own: however many
+ * tiles a zoomed viewport keeps in use, they stay, to be drawn under the cells of the next zoom out.
+ *
+ * @param maxMemoryBytes Maximum cache budget in bytes (default: 64 MB) for the tiles not in use,
+ * overviews excluded.
  */
 public class TileCache(
     private val maxMemoryBytes: Int = 64 * 1024 * 1024
@@ -19,6 +23,7 @@ public class TileCache(
     private val lock = SyncLock()
     private val map = LinkedHashMap<TileKey, Tile>(32, 0.75f)
     private var currentMemoryBytes: Int = 0
+    private var overviewMemoryBytes: Int = 0
     private var frame = 0L
 
     /**
@@ -52,10 +57,14 @@ public class TileCache(
         syncLock(lock) {
             val old = map.remove(tile.key)
             if (old != null) {
-                currentMemoryBytes -= old.sizeInBytes
+                release(old)
             }
             map[tile.key] = tile
-            currentMemoryBytes += tile.sizeInBytes
+            if (tile.key.lod == TilePyramid.OVERVIEW_LOD) {
+                overviewMemoryBytes += tile.sizeInBytes
+            } else {
+                currentMemoryBytes += tile.sizeInBytes
+            }
             // Rasterized because a recent frame needed it
             tile.lastUsedFrame = frame
 
@@ -63,7 +72,17 @@ public class TileCache(
         }
     }
 
+    /** Takes [tile], removed from the map, out of the count of its budget. */
+    private fun release(tile: Tile) {
+        if (tile.key.lod == TilePyramid.OVERVIEW_LOD) {
+            overviewMemoryBytes -= tile.sizeInBytes
+        } else {
+            currentMemoryBytes -= tile.sizeInBytes
+        }
+    }
+
     private fun trimToSize() {
+        trimOverviews()
         if (currentMemoryBytes <= maxMemoryBytes) return
 
         // 1. Evict off-screen high-detail tiles first, from highest LOD down to LOD 1.
@@ -76,7 +95,7 @@ public class TileCache(
                 val entry = iterator.next()
                 if (frame > 0L && entry.value.lastUsedFrame >= frame - 1) continue
                 if (entry.key.lod == targetLod) {
-                    currentMemoryBytes -= entry.value.sizeInBytes
+                    release(entry.value)
                     iterator.remove()
                 }
             }
@@ -87,7 +106,20 @@ public class TileCache(
         while (iterator.hasNext() && currentMemoryBytes > maxMemoryBytes) {
             val entry = iterator.next()
             if (frame > 0L && entry.value.lastUsedFrame >= frame - 1) continue
-            currentMemoryBytes -= entry.value.sizeInBytes
+            if (entry.key.lod == TilePyramid.OVERVIEW_LOD) continue
+            release(entry.value)
+            iterator.remove()
+        }
+    }
+
+    /** Evicts the overviews seen longest ago, the ones in use excepted, down to their budget. */
+    private fun trimOverviews() {
+        val iterator = map.entries.iterator()
+        while (iterator.hasNext() && overviewMemoryBytes > MAX_OVERVIEW_MEMORY_BYTES) {
+            val entry = iterator.next()
+            if (entry.key.lod != TilePyramid.OVERVIEW_LOD) continue
+            if (frame > 0L && entry.value.lastUsedFrame >= frame - 1) continue
+            release(entry.value)
             iterator.remove()
         }
     }
@@ -100,19 +132,18 @@ public class TileCache(
     }
 
     /**
-     * Finds nearest ready ancestor tile (lower LOD) in pyramid hierarchy.
+     * Finds nearest ancestor tile (lower LOD) in pyramid hierarchy, ready or stale: a stale one is
+     * better than a blank cell.
      * Used for smooth hierarchical fallback (mipmap scaling) when target tile is rendering.
      */
-    internal fun findNearestAncestor(key: TileKey, maxGenerations: Int = 3): Tile? {
+    internal fun findNearestAncestor(key: TileKey): Tile? {
         var currentKey = key.getParentKey()
-        var generations = 0
-        while (generations < maxGenerations && currentKey.lod >= TilePyramid.MIN_LOD) {
+        while (currentKey.lod >= TilePyramid.MIN_LOD) {
             val candidate = get(currentKey)
-            if (candidate != null && candidate.state == TileState.READY) {
+            if (candidate != null && (candidate.state == TileState.READY || candidate.state == TileState.STALE)) {
                 return candidate
             }
             currentKey = currentKey.getParentKey()
-            generations++
         }
         return null
     }
@@ -160,7 +191,7 @@ public class TileCache(
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 if (entry.key.pageKey == pageKey) {
-                    currentMemoryBytes -= entry.value.sizeInBytes
+                    release(entry.value)
                     iterator.remove()
                 }
             }
@@ -189,7 +220,7 @@ public class TileCache(
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 if (entry.key.pageKey !in livePageKeys) {
-                    currentMemoryBytes -= entry.value.sizeInBytes
+                    release(entry.value)
                     iterator.remove()
                 }
             }
@@ -200,6 +231,12 @@ public class TileCache(
         syncLock(lock) {
             map.clear()
             currentMemoryBytes = 0
+            overviewMemoryBytes = 0
         }
+    }
+
+    private companion object {
+        /** The overviews of the last 16 pages seen, at a tile a page. */
+        const val MAX_OVERVIEW_MEMORY_BYTES = 16 * 1024 * 1024
     }
 }

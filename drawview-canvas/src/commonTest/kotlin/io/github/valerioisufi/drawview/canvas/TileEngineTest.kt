@@ -265,4 +265,46 @@ class TileEngineTest {
         assertTrue(cache.contains(deepDetailKey1), "Recent LOD 2 tile 1 should be present")
         assertTrue(cache.contains(deepDetailKey2), "Recent LOD 2 tile 2 should be present")
     }
+
+    @Test
+    fun overviewsSurviveACacheFullOfTilesInUse() {
+        val cache = TileCache(maxMemoryBytes = 4 * 512 * 512 * 4)
+        val overview = TileKey(0L, TilePyramid.OVERVIEW_LOD, 0, 0)
+        val base = TileKey(0L, 0, 0, 0)
+        cache.put(Tile(overview, cache.obtainBitmap(), TileState.READY))
+        cache.put(Tile(base, cache.obtainBitmap(), TileState.READY))
+
+        // Zoomed in: the tiles of a frame alone are beyond the budget
+        repeat(2) { cache.beginFrame() }
+        for (col in 0 until 6) {
+            cache.put(Tile(TileKey(0L, 4, col, 0), cache.obtainBitmap(), TileState.READY))
+        }
+
+        assertFalse(cache.contains(base))
+        assertTrue(cache.contains(overview))
+        // What the zoom out finds, from any cell of the page
+        assertEquals(overview, cache.findNearestAncestor(TileKey(0L, 3, 7, 7))?.key)
+    }
+
+    @Test
+    fun overviewsStayWithinTheirBudgetTheOldestLeavingFirst() {
+        val cache = TileCache()
+        fun overviewOf(page: Int) = TileKey(page.toLong(), TilePyramid.OVERVIEW_LOD, 0, 0)
+        repeat(20) { page ->
+            repeat(2) { cache.beginFrame() }
+            cache.put(Tile(overviewOf(page), cache.obtainBitmap(), TileState.READY))
+        }
+
+        assertEquals(16, cache.entryCount)
+        assertFalse(cache.contains(overviewOf(3)))
+        assertTrue(cache.contains(overviewOf(4)))
+    }
+
+    @Test
+    fun aStaleAncestorIsDrawnRatherThanNothing() {
+        val cache = TileCache()
+        val overview = TileKey(0L, TilePyramid.OVERVIEW_LOD, 0, 0)
+        cache.put(Tile(overview, cache.obtainBitmap(), TileState.STALE))
+        assertEquals(overview, cache.findNearestAncestor(TileKey(0L, 2, 1, 1))?.key)
+    }
 }
