@@ -37,6 +37,10 @@ kotlin {
             // Exposed by the public SyncLock typealias
             api(libs.atomicfu)
         }
+        androidMain.dependencies {
+            // The stroke in progress in a front buffer (docs/ink-latency.md)
+            implementation(libs.androidx.graphics.core)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

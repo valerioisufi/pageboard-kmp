@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /**
  * Real-time stroke modeller.
@@ -102,6 +103,16 @@ public class InkStrokeEngine {
     public fun predict(points: List<StrokePoint>) {
         if (!isActive || recordedPoints.isEmpty()) return
         (delegate as? NativeStrokeEngineDelegate)?.predict(points, currentToolType)
+    }
+
+    /**
+     * The rectangle of the stroke in progress that changed since the last call (or its start), in
+     * stroke units, the prediction taken away too: what a layer that keeps the stroke drawn must draw
+     * again. `null` when nothing changed, or without the native engine.
+     */
+    public fun takeUpdatedRegion(): Rect? {
+        if (!isActive) return null
+        return (delegate as? NativeStrokeEngineDelegate)?.takeUpdatedRegion()
     }
 
     /**

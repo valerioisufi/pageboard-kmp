@@ -127,6 +127,16 @@ void ink_stroke_builder_predict(
 );
 
 /**
+ * Gives the rectangle of the geometry added, changed or removed since the last call to this function
+ * (or the start of the stroke), and starts counting again.
+ *
+ * @param handle The builder handle.
+ * @param out_bounds Receives min x, min y, max x, max y in stroke space.
+ * @return 1 when the rectangle was written, 0 when nothing changed.
+ */
+int32_t ink_stroke_builder_take_updated_region(InkStrokeBuilderHandle handle, float* out_bounds);
+
+/**
  * Notifies the builder that pointer inputs have completed (e.g. pointer up).
  */
 void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle);

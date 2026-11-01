@@ -10,6 +10,7 @@ import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -63,6 +64,26 @@ class PredictionTest {
             plain.release()
             predicted.release()
         }
+    }
+
+    @Test
+    fun theRegionUpdatedCoversWhatChanged() {
+        val engine = engineWith(StrokeTool.MARKER)
+        if (!engine.isNative) return
+        assertNotNull(engine.takeUpdatedRegion(), "the stroke so far")
+        assertNull(engine.takeUpdatedRegion(), "nothing changed since")
+
+        val far = List(4) { i -> StrokePoint(30f + (i + 1) * 3f, 20f, 0.5f, 160L + (i + 1) * 4L) }
+        engine.predict(far)
+        val predicted = assertNotNull(engine.takeUpdatedRegion())
+        assertTrue(predicted.right > 40f, "the tail, up to ${predicted.right}")
+        assertTrue(predicted.left > 15f, "not the whole stroke, from ${predicted.left}")
+
+        // The tail taken away is part of what changed
+        engine.addInput(30.2f, 20f, 0.5f, 164L, InputToolType.STYLUS)
+        val replaced = assertNotNull(engine.takeUpdatedRegion())
+        assertTrue(replaced.right > 40f, "up to ${replaced.right}")
+        engine.release()
     }
 
     private fun engineWith(tool: StrokeTool): InkStrokeEngine = InkStrokeEngine().apply {

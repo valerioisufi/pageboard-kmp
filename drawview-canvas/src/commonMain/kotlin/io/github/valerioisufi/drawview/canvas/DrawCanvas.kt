@@ -61,7 +61,7 @@ public fun DrawCanvas(
     }
 
     val live = remember { CanvasLiveState() }
-    val ink = remember { ComposeLiveInkLayer() }
+    val ink = rememberLiveInkLayer(controller)
     val predictor = remember(controller) { KalmanInkPredictor { controller.viewport.density } }
     val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live, ink, predictor) }
     val labels = rememberTextMeasurer()
@@ -130,6 +130,7 @@ public fun DrawCanvas(
         // Each canvas in a layer of its own: drawing one again leaves the other as it was recorded
         Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawContent(controller, animationTick, collaboratorsOverlay, labels) }
         Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawLive(controller, live, ink) }
+        ink.Content()
     }
 }
 

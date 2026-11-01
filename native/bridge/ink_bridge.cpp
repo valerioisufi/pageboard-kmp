@@ -296,6 +296,21 @@ void ink_stroke_builder_predict(
     builder->stroke.UpdateShape(ink::Duration32::Millis(static_cast<float>(builder->last_time_ms)));
 }
 
+int32_t ink_stroke_builder_take_updated_region(InkStrokeBuilderHandle handle, float* out_bounds) {
+    if (handle == nullptr || out_bounds == nullptr) return 0;
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    if (!builder->started) return 0;
+
+    const auto rect = builder->stroke.GetUpdatedRegion().AsRect();
+    if (!rect.has_value()) return 0;
+    out_bounds[0] = rect->XMin();
+    out_bounds[1] = rect->YMin();
+    out_bounds[2] = rect->XMax();
+    out_bounds[3] = rect->YMax();
+    builder->stroke.ResetUpdatedRegion();
+    return 1;
+}
+
 void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle) {
     if (handle == nullptr) return;
     auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);

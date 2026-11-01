@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_trian
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_get_vertex_count
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_predict
 import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_start
+import io.github.valerioisufi.drawview.ink.cinterop.ink_stroke_builder_take_updated_region
 import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import kotlinx.cinterop.COpaque
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -86,6 +87,13 @@ internal object CInteropInkApi : InkNativeApi {
                     }
                 }
             }
+        }
+    }
+
+    override fun takeUpdatedRegion(builderHandle: Long, outBounds: FloatArray): Boolean {
+        if (outBounds.size < 4) return false
+        return outBounds.usePinned { out ->
+            ink_stroke_builder_take_updated_region(builderHandle.toCPointer<COpaque>(), out.addressOf(0)) != 0
         }
     }
 

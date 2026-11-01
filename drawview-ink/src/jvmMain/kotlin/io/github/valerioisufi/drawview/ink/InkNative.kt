@@ -55,6 +55,9 @@ internal object InkNative {
     )
 
     @JvmStatic
+    external fun takeUpdatedRegion(builderHandle: Long, outBounds: FloatArray): Boolean
+
+    @JvmStatic
     external fun finishInputs(builderHandle: Long)
 
     @JvmStatic
@@ -112,6 +115,9 @@ internal object JniInkApi : InkNativeApi {
 
     override fun predict(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray) =
         InkNative.predict(builderHandle, xs, ys, pressures, timesMs)
+
+    override fun takeUpdatedRegion(builderHandle: Long, outBounds: FloatArray): Boolean =
+        InkNative.takeUpdatedRegion(builderHandle, outBounds)
 
     override fun finishInputs(builderHandle: Long) = InkNative.finishInputs(builderHandle)
 

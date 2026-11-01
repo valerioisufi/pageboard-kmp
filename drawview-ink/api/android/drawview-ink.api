@@ -15,6 +15,7 @@ public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine {
 	public final fun release ()V
 	public final fun startStroke (Lio/github/valerioisufi/drawview/model/BrushConfig;F)V
 	public static synthetic fun startStroke$default (Lio/github/valerioisufi/drawview/ink/InkStrokeEngine;Lio/github/valerioisufi/drawview/model/BrushConfig;FILjava/lang/Object;)V
+	public final fun takeUpdatedRegion ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
 }
 
 public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine$Companion {

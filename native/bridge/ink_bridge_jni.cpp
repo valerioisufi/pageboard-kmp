@@ -131,6 +131,20 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_predic
     if (times_ptr) env->ReleaseLongArrayElements(times_ms, times_ptr, JNI_ABORT);
 }
 
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_takeUpdatedRegion(
+    JNIEnv* env, jclass,
+    jlong builder_handle,
+    jfloatArray out_bounds
+) {
+    if (builder_handle == 0 || out_bounds == nullptr || env->GetArrayLength(out_bounds) < 4) return JNI_FALSE;
+    jfloat bounds[4];
+    if (ink_stroke_builder_take_updated_region(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle), bounds) == 0) {
+        return JNI_FALSE;
+    }
+    env->SetFloatArrayRegion(out_bounds, 0, 4, bounds);
+    return JNI_TRUE;
+}
+
 JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_finishInputs(
     JNIEnv*, jclass,
     jlong builder_handle

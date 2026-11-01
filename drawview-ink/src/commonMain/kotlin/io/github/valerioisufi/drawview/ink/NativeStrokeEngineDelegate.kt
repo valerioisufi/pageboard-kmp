@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /**
  * Low level binding of the C API declared in `native/bridge/ink_bridge.h`. Handles are opaque
@@ -19,6 +20,7 @@ internal interface InkNativeApi {
     fun addPoint(builderHandle: Long, x: Float, y: Float, pressure: Float, timeMs: Long, toolType: Int)
     fun addPoints(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray, toolType: Int)
     fun predict(builderHandle: Long, xs: FloatArray, ys: FloatArray, pressures: FloatArray, timesMs: LongArray)
+    fun takeUpdatedRegion(builderHandle: Long, outBounds: FloatArray): Boolean
     fun finishInputs(builderHandle: Long)
     fun clearStroke(builderHandle: Long)
     fun destroyStrokeBuilder(builderHandle: Long)
@@ -109,6 +111,14 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
             times[i] = p.timestampMs
         }
         api.predict(builderHandle, xs, ys, pressures, times)
+    }
+
+    /** The rectangle of the geometry changed since the last call, in stroke units; `null` when nothing changed. */
+    fun takeUpdatedRegion(): Rect? {
+        if (!started) return null
+        val bounds = FloatArray(4)
+        if (!api.takeUpdatedRegion(builderHandle, bounds)) return null
+        return Rect(bounds[0], bounds[1], bounds[2], bounds[3])
     }
 
     override fun finishInputs() {

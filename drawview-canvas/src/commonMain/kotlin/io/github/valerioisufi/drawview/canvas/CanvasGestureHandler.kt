@@ -803,7 +803,7 @@ internal class CanvasGestureHandler(
                 if (activePointer == up.id && !strokeSnapped) addInkInput(up, position, up.uptimeMillis, up.pressure)
                 val mesh = engine.finishStroke()
                 val brush = inkBrush
-                ink.strokeEnded()
+                ink.strokeEnded(mesh)
                 if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
                 controller.inkStrokeEnded()
                 reportActivity(position, inking = false)
@@ -932,7 +932,7 @@ internal class CanvasGestureHandler(
         strokeCount++
         // The pen held still is no latency of the ink
         controller.inkStrokeEnded()
-        ink.strokeChanged(engine, brush.color, inkPageIndex)
+        ink.strokeChanged(engine, brush.color, inkPageIndex, replaced = true)
         reportActivity(lastPosition, inking = true)
     }
 

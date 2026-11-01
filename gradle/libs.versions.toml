@@ -8,6 +8,7 @@ android-cmake = "3.22.1"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
 androidx-core = "1.19.0"
+androidx-graphics = "1.0.4"
 androidx-splashscreen = "1.2.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0"
@@ -44,6 +45,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-graphics-core = { module = "androidx.graphics:graphics-core", version.ref = "androidx-graphics" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-splashscreen" }
 androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-testRunner" }

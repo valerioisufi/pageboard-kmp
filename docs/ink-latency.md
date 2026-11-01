@@ -202,9 +202,9 @@ device and an iPad with a Pencil to be measured).
 | 0 | The measures: `InkLatencyMeter` and `DrawViewController.inkLatency` (ABI recorded on purpose), shown in the sample; `LiveInkBenchmark` (M1, the work of an input), the pen up on the UI thread (M2); in-app latency on the desktop, the Android emulator and the iOS simulator (M3), and on the MatePad with the video (M4, by the user); whether Compose gives the coalesced touches of the Pencil (M5, from its sources or an iPad) | Done; M3 on the desktop and M4 left to the user |
 | 1 | `LiveInkLayer` and `ComposeLiveInkLayer`: the stroke and the cursors in a canvas of their own, the outline taken once per frame, the activity reported once per frame; tests of the gestures as they are, screenshots | Done |
 | 2 | Prediction: the predicted batch in the bridge (JNI and cinterop), `InkStrokeEngine.predict` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and `KalmanInkPredictor`; tests: nothing predicted is committed or sent, no tail on a hold, the shapes and the lasso as they are | Done |
-| 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | proposed |
-| 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the MatePad (in-app and video) and on an emulator | proposed |
-| 5 | iOS: the predicted (and, after M5, coalesced) touches of the Pencil from a gesture recognizer; measured on an iPad | proposed |
+| 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | Left for later: nothing to measure it on (the MatePad is Android 10) |
+| 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the MatePad (in-app and video) and on an emulator | Done; by hand with the M-Pencil left to the user |
+| 5 | iOS: the predicted (and, after M5, coalesced) touches of the Pencil from a gesture recognizer; measured on an iPad | Left for later: nothing to measure it on (no iPad with a Pencil); the Kalman filter of phase 2 predicts there |
 | 6 | The pen up: only the level of detail on screen baked on the UI thread, the others on the workers, if M2 shows a cost | Not needed: 0.14 to 0.43 ms (M2) |
 
 ### Phase 0 results
@@ -299,6 +299,44 @@ device and an iPad with a Pencil to be measured).
   the inputs of the pen sent and committed; the tests of the shapes and of the lasso as they are.
   `PredictionTest` (`drawview-ink`) passes on the JVM and on the iOS simulator.
 
+### Phase 4 results
+
+* `FrontBufferedLiveInkLayer` (`drawview-canvas`, Android): `CanvasFrontBufferedRenderer` of
+  `androidx.graphics:graphics-core` 1.0.4 in a `SurfaceView` over the canvas. At each event the outline
+  and the region Ink updated (`InkStrokeEngine.takeUpdatedRegion`, `ink_stroke_builder_take_updated_region`,
+  ABI of `drawview-ink` recorded on purpose) wait for the renderer, merged with what it has not drawn
+  yet; the pass clears the region and fills the stroke clipped to it. During a stroke the window draws
+  one frame, the one of the hand-off (`dumpsys SurfaceFlinger --latency`).
+* A translucent stroke stays in the frames of Compose, and so does every stroke without a surface, a
+  renderer or an outline: `rememberLiveInkLayer` gives `ComposeLiveInkLayer` on iOS and the desktop.
+* The hand-off: at the pen up the last shape, without the prediction, is drawn in the buffer, which is
+  hidden 4 frames later. A stroke given up, or the lasso, hides it at once. A stroke that starts meanwhile
+  keeps it. Recorded on the emulator at 60 fps (six strokes): a finished stroke never disappears; for 3
+  frames its edges are antialiased twice (about 11% more dark pixels), then as they stay.
+* On Android 10 the library has no `USAGE_FRONT_BUFFER`, and hwui draws at most once per vsync (17 ms
+  between passes on the MatePad); the buffer is ready 6.2 ms after the pass is recorded (90th percentile
+  7.8 ms).
+* **M8, the lead on the screen, on the MatePad** (the measure that shows the compositor, which the meter
+  does not): Compose draws a marker where the last input is, while the ink is drawn as it will be
+  shipped; a screenshot during a line at 1.29 px/ms (10 screenshots each, composited output, not the
+  scan-out of the panel) gives how far the tip of the ink is ahead of the marker. A temporary build, not
+  committed:
+
+  | The ink | Tip ahead of the marker | Gained on the ink as it was |
+  |---|---|---|
+  | Compose, no prediction (as it was) | -8 px | |
+  | Compose, prediction | +21 px | 22 ms |
+  | Front buffer, no prediction | +43 px | 40 ms |
+  | Front buffer, prediction (as shipped) | +64 px | 56 ms |
+
+  At the constant speed of a straight line, which favors the prediction. The -8 px are the modeler of
+  Ink, about 6 ms behind the input.
+* **M3 on the MatePad**: tip age 12 to 14 ms (phase 1), -3 to -6 ms now, with 16 ms predicted; the frames
+  of the window drop out of it.
+* Checked on the MatePad by adb: the ink shows during a stroke (a screenshot at its middle), the
+  highlighter, the eraser, the lasso; a finger swipe behaves as at phase 0. Not checked: the M-Pencil by
+  hand, its hovering, two fingers, the hold that makes a shape on the device (tested on the JVM).
+
 ## Decisions
 
 * **Every phase is measured and kept only if it gains**, as in `docs/performance.md`.
@@ -313,6 +351,10 @@ device and an iPad with a Pencil to be measured).
 * **Nothing stored or sent changes**: no migration, no change of the protocol.
 * **Phase 1 kept** (revertible): it gains on the work of an input (M1) and not on the latency
   measured (M3, M6), and the front buffer of phase 4 needs the layer apart.
+* **A translucent stroke stays in the frames of Compose** (revertible): the hand-off cannot be atomic
+  before Android 13, and a translucent stroke shown twice would flash darker.
+* **Phases 3 and 5 left for later** (revertible): the plan keeps what is measured to gain, and no device
+  of the user runs them; the Kalman filter already predicts on iOS and on Android 14.
 * **No phase 6** (revertible): the pen up costs 0.14 to 0.43 ms on the Mac (M2); a device that shows
   more can bring it back.
 
