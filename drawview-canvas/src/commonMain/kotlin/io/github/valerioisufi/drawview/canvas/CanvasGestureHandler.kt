@@ -36,22 +36,17 @@ import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
-import io.github.valerioisufi.drawview.model.StrokeMesh
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
 
 /**
- * Live (not yet committed) state of the canvas, drawn on top of the tiles.
+ * Live (not yet committed) state of the canvas other than the stroke in progress (see
+ * [LiveInkLayer]), drawn on top of the tiles.
  */
 internal class CanvasLiveState {
-    /** Incremented whenever the live layer changes. */
+    /** Incremented whenever the cursors change. */
     var tick by mutableIntStateOf(0)
-        private set
-
-    var liveMesh: StrokeMesh? = null
-        private set
-    var livePageIndex: Int = -1
         private set
 
     /** Eraser cursor (screen pixels) and radius in pixels. */
@@ -71,12 +66,6 @@ internal class CanvasLiveState {
 
     /** The box of a new text being drawn with the text tool (screen pixels), if any. */
     var textBoxDraft by mutableStateOf<Rect?>(null)
-
-    fun setLiveMesh(mesh: StrokeMesh?, pageIndex: Int) {
-        liveMesh = mesh
-        livePageIndex = pageIndex
-        tick++
-    }
 
     fun setEraserCursor(position: Offset?, radiusPx: Float) {
         if (eraserCursor == position && eraserRadiusPx == radiusPx) return
@@ -115,7 +104,8 @@ internal class CanvasLiveState {
 internal class CanvasGestureHandler(
     private val controller: DrawViewController,
     private val engine: InkStrokeEngine,
-    private val live: CanvasLiveState
+    private val live: CanvasLiveState,
+    private val ink: LiveInkLayer
 ) {
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
@@ -241,6 +231,9 @@ internal class CanvasGestureHandler(
     }
 
     private var lastEventTime = 0L
+
+    /** When the activity was last reported to the others (see [reportActivity]). */
+    private var lastActivityTime = Long.MIN_VALUE / 2
 
     private fun currentEventTime(): Long = lastEventTime
 
@@ -515,7 +508,7 @@ internal class CanvasGestureHandler(
                 controller.inkLatencyMeter.strokeStarted()
             }
             addInkInput(change, position, change.uptimeMillis, change.pressure)
-            live.setLiveMesh(engine.currentMesh(), pageIndex)
+            ink.strokeChanged(engine, brush.color, pageIndex)
             reportActivity(position, inking = mode == Mode.INK)
             longPressCandidate = !isStylus
             return
@@ -538,7 +531,7 @@ internal class CanvasGestureHandler(
         when (mode) {
             Mode.INK, Mode.LASSO -> {
                 engine.cancelStroke()
-                live.setLiveMesh(null, -1)
+                ink.strokeEnded()
                 // Given up for the gesture: gone at once on the other devices too
                 if (mode == Mode.INK) {
                     controller.inkStrokeEnded()
@@ -594,7 +587,7 @@ internal class CanvasGestureHandler(
                         addInkInput(change, h.position, h.uptimeMillis, change.pressure)
                     }
                     addInkInput(change, position, change.uptimeMillis, change.pressure)
-                    live.setLiveMesh(engine.currentMesh(), inkPageIndex)
+                    inkBrush?.let { ink.strokeChanged(engine, it.color, inkPageIndex) }
                     if (mode == Mode.INK) followHold(position, change.uptimeMillis)
                 }
             }
@@ -721,7 +714,10 @@ internal class CanvasGestureHandler(
 
             else -> {}
         }
-        if (mode != Mode.PAN && mode != Mode.PINCH && mode != Mode.IGNORED) reportActivity(position, inking = mode == Mode.INK)
+        // The others see the gesture at the rate of a display, not of the events of a stylus
+        if (mode != Mode.PAN && mode != Mode.PINCH && mode != Mode.IGNORED && change.uptimeMillis - lastActivityTime >= ACTIVITY_INTERVAL_MS) {
+            reportActivity(position, inking = mode == Mode.INK)
+        }
         lastPosition = position
     }
 
@@ -800,7 +796,7 @@ internal class CanvasGestureHandler(
                 if (activePointer == up.id && !strokeSnapped) addInkInput(up, position, up.uptimeMillis, up.pressure)
                 val mesh = engine.finishStroke()
                 val brush = inkBrush
-                live.setLiveMesh(null, -1)
+                ink.strokeEnded()
                 if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
                 controller.inkStrokeEnded()
                 reportActivity(position, inking = false)
@@ -809,7 +805,7 @@ internal class CanvasGestureHandler(
             Mode.LASSO -> {
                 val points = engine.inputs.toList()
                 engine.cancelStroke()
-                live.setLiveMesh(null, -1)
+                ink.strokeEnded()
                 val polygon = FloatArray(points.size * 2)
                 points.forEachIndexed { i, p ->
                     polygon[i * 2] = p.x
@@ -929,7 +925,7 @@ internal class CanvasGestureHandler(
         strokeCount++
         // The pen held still is no latency of the ink
         controller.inkStrokeEnded()
-        live.setLiveMesh(engine.currentMesh(), inkPageIndex)
+        ink.strokeChanged(engine, brush.color, inkPageIndex)
         reportActivity(lastPosition, inking = true)
     }
 
@@ -940,7 +936,7 @@ internal class CanvasGestureHandler(
         when (mode) {
             Mode.INK, Mode.LASSO -> {
                 engine.cancelStroke()
-                live.setLiveMesh(null, -1)
+                ink.strokeEnded()
                 if (mode == Mode.INK) reportActivity(downPosition, inking = false, strokeCancelled = true)
             }
             Mode.ERASE -> controller.eraserManager.commitGesture()
@@ -1188,6 +1184,7 @@ internal class CanvasGestureHandler(
      * drawn, or that it was given up ([strokeCancelled], see [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.activity]).
      */
     private fun reportActivity(screen: Offset, inking: Boolean, strokeCancelled: Boolean = false) {
+        lastActivityTime = lastEventTime
         val pageIndex = if (inking) inkPageIndex else controller.viewport.findPageIndexAtScreen(screen)
         val page = pageIndex?.let { controller.document.pages.getOrNull(it) }
         val mm = pageIndex?.let { controller.viewport.screenToPageMm(it, screen) }
@@ -1284,3 +1281,6 @@ internal class CanvasGestureHandler(
 
 /** The rectangle with the corners [a] and [b], wherever they are. */
 private fun boxBetween(a: Offset, b: Offset) = Rect(minOf(a.x, b.x), minOf(a.y, b.y), maxOf(a.x, b.x), maxOf(a.y, b.y))
+
+/** The least time between two reports of the activity during a gesture (a frame of a 60 Hz display). */
+private const val ACTIVITY_INTERVAL_MS = 16L

@@ -18,6 +18,7 @@ final class io.github.valerioisufi.drawview.ink/InkStrokeEngine { // io.github.v
     final fun addPoint(kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.model/InputToolType = ...): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.addPoint|addPoint(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long;io.github.valerioisufi.drawview.model.InputToolType){}[0]
     final fun cancelStroke() // io.github.valerioisufi.drawview.ink/InkStrokeEngine.cancelStroke|cancelStroke(){}[0]
     final fun currentMesh(): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.currentMesh|currentMesh(){}[0]
+    final fun currentOutline(): io.github.valerioisufi.drawview.model/StrokeOutline? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.currentOutline|currentOutline(){}[0]
     final fun finishStroke(): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.finishStroke|finishStroke(){}[0]
     final fun release() // io.github.valerioisufi.drawview.ink/InkStrokeEngine.release|release(){}[0]
     final fun startStroke(io.github.valerioisufi.drawview.model/BrushConfig, kotlin/Float = ...) // io.github.valerioisufi.drawview.ink/InkStrokeEngine.startStroke|startStroke(io.github.valerioisufi.drawview.model.BrushConfig;kotlin.Float){}[0]

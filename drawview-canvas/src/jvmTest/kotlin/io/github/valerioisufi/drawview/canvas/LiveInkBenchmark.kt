@@ -39,7 +39,10 @@ import kotlinx.coroutines.cancel
  */
 class LiveInkBenchmark {
 
-    /** M1: one input per event, as unbuffered stylus events come, over a stroke of 4 s at 240 Hz. */
+    /**
+     * M1: one input per event, as unbuffered stylus events come, over a stroke of 4 s at 240 Hz: the
+     * input modeled, the whole mesh or the outline alone taken out, the stroke drawn.
+     */
     @Test
     fun anInputOfTheStrokeInProgress() {
         for (tool in listOf(StrokeTool.PRESSURE_PEN, StrokeTool.MARKER, StrokeTool.HIGHLIGHTER)) {
@@ -50,6 +53,7 @@ class LiveInkBenchmark {
             val toScreen = Matrix2D().postScale(8f, 8f)
             val add = mutableMapOf<Int, MutableList<Duration>>()
             val mesh = mutableMapOf<Int, MutableList<Duration>>()
+            val outline = mutableMapOf<Int, MutableList<Duration>>()
             val draw = mutableMapOf<Int, MutableList<Duration>>()
             repeat(6) { round ->
                 engine.startStroke(brush)
@@ -58,18 +62,24 @@ class LiveInkBenchmark {
                     val a = measureTime { engine.addInput(p.x, p.y, p.pressure, p.timestampMs, InputToolType.STYLUS) }
                     var m: StrokeMesh? = null
                     val b = measureTime { m = engine.currentMesh() }
+                    val o = measureTime { engine.currentOutline() }
                     val c = measureTime { m?.let { painter.draw(canvas, it, toScreen) } }
                     // The first round warms up
                     if (round > 0 && i + 1 in BUCKETS) {
                         add.getOrPut(i + 1) { mutableListOf() } += a
                         mesh.getOrPut(i + 1) { mutableListOf() } += b
+                        outline.getOrPut(i + 1) { mutableListOf() } += o
                         draw.getOrPut(i + 1) { mutableListOf() } += c
                     }
                 }
                 engine.finishStroke()
             }
             for (bucket in BUCKETS) {
-                report("M1 $tool after $bucket inputs", "modeled ${add.getValue(bucket).median()}, taken out ${mesh.getValue(bucket).median()}, drawn ${draw.getValue(bucket).median()}")
+                report(
+                    "M1 $tool after $bucket inputs",
+                    "modeled ${add.getValue(bucket).median()}, mesh taken out ${mesh.getValue(bucket).median()}, " +
+                        "outline alone ${outline.getValue(bucket).median()}, drawn ${draw.getValue(bucket).median()}"
+                )
             }
             engine.release()
         }

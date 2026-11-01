@@ -22,14 +22,7 @@ internal actual class StrokeMeshPainter actual constructor() {
         val color = colorOverride ?: Color(mesh.color)
 
         val saveCount = androidCanvas.save()
-        if (transform != null) {
-            matrixValues[0] = transform.a; matrixValues[1] = transform.c; matrixValues[2] = transform.tx
-            matrixValues[3] = transform.b; matrixValues[4] = transform.d; matrixValues[5] = transform.ty
-            matrixValues[6] = 0f; matrixValues[7] = 0f; matrixValues[8] = 1f
-            androidMatrix.setValues(matrixValues)
-            androidCanvas.concat(androidMatrix)
-        }
-
+        concat(androidCanvas, transform)
         val outline = mesh.outline
         if (outline != null && !outline.isEmpty) {
             drawOutline(androidCanvas, outline, color)
@@ -37,6 +30,28 @@ internal actual class StrokeMeshPainter actual constructor() {
             drawTriangles(androidCanvas, mesh, color)
         }
         androidCanvas.restoreToCount(saveCount)
+    }
+
+    actual fun drawOutline(canvas: Canvas, outline: StrokeOutline, color: Color, transform: Matrix2D?) {
+        if (outline.isEmpty) return
+        drawOutline(canvas.nativeCanvas, outline, color, transform)
+    }
+
+    /** [drawOutline] on a canvas of Android, also the one of a front buffer. */
+    fun drawOutline(androidCanvas: android.graphics.Canvas, outline: StrokeOutline, color: Color, transform: Matrix2D?) {
+        val saveCount = androidCanvas.save()
+        concat(androidCanvas, transform)
+        drawOutline(androidCanvas, outline, color)
+        androidCanvas.restoreToCount(saveCount)
+    }
+
+    private fun concat(androidCanvas: android.graphics.Canvas, transform: Matrix2D?) {
+        if (transform == null) return
+        matrixValues[0] = transform.a; matrixValues[1] = transform.c; matrixValues[2] = transform.tx
+        matrixValues[3] = transform.b; matrixValues[4] = transform.d; matrixValues[5] = transform.ty
+        matrixValues[6] = 0f; matrixValues[7] = 0f; matrixValues[8] = 1f
+        androidMatrix.setValues(matrixValues)
+        androidCanvas.concat(androidMatrix)
     }
 
     /**

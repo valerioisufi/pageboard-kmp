@@ -7,6 +7,7 @@ public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine {
 	public static synthetic fun addPoint$default (Lio/github/valerioisufi/drawview/ink/InkStrokeEngine;FFFJLio/github/valerioisufi/drawview/model/InputToolType;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public final fun cancelStroke ()V
 	public final fun currentMesh ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun currentOutline ()Lio/github/valerioisufi/drawview/model/StrokeOutline;
 	public final fun finishStroke ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public final fun getInputs ()Ljava/util/List;
 	public final fun isNative ()Z

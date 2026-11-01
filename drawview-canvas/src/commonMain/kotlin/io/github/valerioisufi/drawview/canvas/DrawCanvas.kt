@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.canvas
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,11 +22,13 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.geometry.mapRect
@@ -41,6 +44,9 @@ import kotlinx.coroutines.flow.first
  * Full-featured vector drawing canvas: multi-resolution tiles for the committed content, live
  * layers for the stroke in progress and the selection, Google Ink stroke modelling and
  * framerate-independent camera spring physics.
+ *
+ * The stroke in progress and the cursors are drawn in a canvas of their own over the content
+ * (see [LiveInkLayer]): a change of the stroke does not draw the tiles again.
  */
 @Composable
 public fun DrawCanvas(
@@ -55,8 +61,8 @@ public fun DrawCanvas(
     }
 
     val live = remember { CanvasLiveState() }
-    val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live) }
-    val livePainter = remember { StrokeMeshPainter() }
+    val ink = remember { ComposeLiveInkLayer() }
+    val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live, ink) }
     val labels = rememberTextMeasurer()
     val collaboratorsOverlay = remember { CollaboratorsOverlay() }
 
@@ -103,7 +109,7 @@ public fun DrawCanvas(
         else -> PointerIcon.Crosshair
     }
 
-    Canvas(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .pointerHoverIcon(pointerIcon)
@@ -120,160 +126,173 @@ public fun DrawCanvas(
                 with(gestures) { run() }
             }
     ) {
-        // Observe every source of invalidation
-        @Suppress("UNUSED_VARIABLE") val v = controller.version
-        @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
-        @Suppress("UNUSED_VARIABLE") val tick = animationTick
-        @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
-        @Suppress("UNUSED_VARIABLE") val selectionVersion = controller.selectionManager.selectionVersion
-        val floatingPage = controller.pageManager.floatingPageRect
-        val document = controller.document
-        val theme = controller.themeColors
+        // Each canvas in a layer of its own: drawing one again leaves the other as it was recorded
+        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawContent(controller, animationTick, collaboratorsOverlay, labels) }
+        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawLive(controller, live, ink) }
+    }
+}
 
-        val matrix = controller.viewport.getRenderMatrix(Matrix2D())
-        val viewport = Rect(0f, 0f, size.width, size.height)
-        val visible = controller.viewport.visiblePages()
-        val draggedIndex = controller.pageManager.draggedPageIndex
-        val draggedPage = document.pages.getOrNull(draggedIndex)?.takeIf { floatingPage != null }
+/** The committed content of the canvas and what is drawn over it but the live state. */
+private fun DrawScope.drawContent(
+    controller: DrawViewController,
+    animationTick: Long,
+    collaboratorsOverlay: CollaboratorsOverlay,
+    labels: TextMeasurer
+) {
+    // Observe every source of invalidation
+    @Suppress("UNUSED_VARIABLE") val v = controller.version
+    @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
+    @Suppress("UNUSED_VARIABLE") val tick = animationTick
+    @Suppress("UNUSED_VARIABLE") val selectionVersion = controller.selectionManager.selectionVersion
+    val floatingPage = controller.pageManager.floatingPageRect
+    val document = controller.document
+    val theme = controller.themeColors
 
-        // 0. Desk background
-        drawRect(Color(theme.backgroundColor))
+    val matrix = controller.viewport.getRenderMatrix(Matrix2D())
+    val viewport = Rect(0f, 0f, size.width, size.height)
+    val visible = controller.viewport.visiblePages()
+    val draggedIndex = controller.pageManager.draggedPageIndex
+    val draggedPage = document.pages.getOrNull(draggedIndex)?.takeIf { floatingPage != null }
 
-        // 1. Paper sheets with their drop shadow (visible even before the tiles are ready)
-        for (pageInfo in visible) {
-            if (draggedPage != null && pageInfo.index == draggedIndex) continue
-            val page = document.pages.getOrNull(pageInfo.index) ?: continue
-            drawPaperSheet(pageInfo.rect, Color(page.background.backgroundColor))
+    // 0. Desk background
+    drawRect(Color(theme.backgroundColor))
+
+    // 1. Paper sheets with their drop shadow (visible even before the tiles are ready)
+    for (pageInfo in visible) {
+        if (draggedPage != null && pageInfo.index == draggedIndex) continue
+        val page = document.pages.getOrNull(pageInfo.index) ?: continue
+        drawPaperSheet(pageInfo.rect, Color(page.background.backgroundColor))
+    }
+
+    // 2. Committed content (multi-resolution tiles)
+    drawIntoCanvas { canvas ->
+        controller.tileManager.drawTiles(
+            canvas = canvas,
+            cameraMatrix = matrix,
+            viewportBounds = viewport,
+            document = document,
+            pageRects = controller.viewport.layout.pagesRectOnWindow,
+            skipPageKey = draggedPage?.renderKey
+        )
+    }
+
+    // 3. Drop slot of the page being dragged
+    if (draggedPage != null) {
+        visible.firstOrNull { it.index == draggedIndex }?.let { slot ->
+            drawRect(Color(0x1E000000), topLeft = slot.rect.topLeft, size = slot.rect.size)
+            drawRect(Color(theme.primaryColor), topLeft = slot.rect.topLeft, size = slot.rect.size, style = Stroke(width = 4f))
         }
+    }
 
-        // 2. Committed content (multi-resolution tiles)
-        drawIntoCanvas { canvas ->
-            controller.tileManager.drawTiles(
-                canvas = canvas,
-                cameraMatrix = matrix,
-                viewportBounds = viewport,
-                document = document,
-                pageRects = controller.viewport.layout.pagesRectOnWindow,
-                skipPageKey = draggedPage?.renderKey
-            )
-        }
+    // 4. Live selection, or the frame of the text being written (its field draws the text over it)
+    SelectionOverlay.drawSettling(this, controller)
+    controller.selectionManager.currentSelection?.let { selection ->
+        SelectionOverlay.draw(this, controller, selection, Color(theme.primaryColor))
+    }
+    if (controller.textEditorManager.isEditing && controller.isDrawingMode) {
+        SelectionOverlay.drawEditedText(this, controller, Color(theme.primaryColor))
+    }
 
-        // 3. Drop slot of the page being dragged
-        if (draggedPage != null) {
-            visible.firstOrNull { it.index == draggedIndex }?.let { slot ->
-                drawRect(Color(0x1E000000), topLeft = slot.rect.topLeft, size = slot.rect.size)
-                drawRect(Color(theme.primaryColor), topLeft = slot.rect.topLeft, size = slot.rect.size, style = Stroke(width = 4f))
+    // 4a. The guides of a box snapped to what is around it
+    val snaps = controller.snapManager
+    if (snaps.guides.isNotEmpty()) {
+        controller.viewport.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
+            for (guide in snaps.guides) {
+                val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from).toCompose() else mmToScreen.mapPoint(guide.from, guide.position).toCompose()
+                val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to).toCompose() else mmToScreen.mapPoint(guide.to, guide.position).toCompose()
+                drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.viewport.density)
             }
         }
+    }
 
-        // 4. Live selection, or the frame of the text being written (its field draws the text over it)
-        SelectionOverlay.drawSettling(this, controller)
-        controller.selectionManager.currentSelection?.let { selection ->
-            SelectionOverlay.draw(this, controller, selection, Color(theme.primaryColor))
-        }
-        if (controller.textEditorManager.isEditing && controller.isDrawingMode) {
-            SelectionOverlay.drawEditedText(this, controller, Color(theme.primaryColor))
-        }
+    // 4b. Text of the PDFs: passage being marked, selected text, selected mark
+    TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
 
-        // 4a. The guides of a box snapped to what is around it
-        val snaps = controller.snapManager
-        if (snaps.guides.isNotEmpty()) {
-            controller.viewport.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
-                for (guide in snaps.guides) {
-                    val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from).toCompose() else mmToScreen.mapPoint(guide.from, guide.position).toCompose()
-                    val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to).toCompose() else mmToScreen.mapPoint(guide.to, guide.position).toCompose()
-                    drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.viewport.density)
-                }
+    // 5. What the others are doing (texts written, elements moved, strokes drawn)
+    collaboratorsOverlay.drawWork(this, controller, labels)
+    collaboratorsOverlay.drawInk(this, controller, viewport)
+
+    // 6. Pointers of the others, with their names
+    collaboratorsOverlay.drawPointers(this, controller, labels)
+
+    // 7. Floating page while reordering
+    if (draggedPage != null && floatingPage != null) {
+        val worldRect = controller.viewport.layout.pagesRectOnWindow.getOrNull(draggedIndex)
+        drawPaperSheet(floatingPage, Color(draggedPage.background.backgroundColor), elevated = true)
+        if (worldRect != null) {
+            drawIntoCanvas { canvas ->
+                controller.tileManager.drawPageTiles(
+                    canvas, draggedPage, worldRect, floatingPage, controller.viewport.camera.getCurrentScale()
+                )
             }
         }
+        drawRect(Color(theme.primaryColor), topLeft = floatingPage.topLeft, size = floatingPage.size, style = Stroke(width = 4f))
+    }
 
-        // 4b. Text of the PDFs: passage being marked, selected text, selected mark
-        TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
-
-        // 5. What the others are doing (texts written, elements moved, strokes drawn), then the
-        //    stroke in progress here
-        collaboratorsOverlay.drawWork(this, controller, labels)
-        collaboratorsOverlay.drawInk(this, controller, viewport)
-        live.liveMesh?.let { mesh ->
-            val mmToScreen = controller.viewport.pageMmToScreen(live.livePageIndex)
-            if (mmToScreen != null) {
-                drawIntoCanvas { canvas -> livePainter.draw(canvas, mesh, mmToScreen) }
-                controller.inkLatencyMeter.frameDrawn()
+    // 8. Texts waiting to be placed: where they would go (the free space of their pages faintly
+    // shown), or under the mouse or the hovering stylus when no place is proposed
+    val placement = controller.placementManager
+    val placementRequest = placement.request
+    if (placementRequest != null) {
+        val primary = Color(theme.primaryColor)
+        for ((pageIndex, runs) in placement.freeSpace) {
+            val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: continue
+            for (run in runs) {
+                val frame = mmToScreen.mapRect(Rect(run.left, run.top, run.right, run.bottom))
+                drawRect(primary.copy(alpha = 0.05f), topLeft = frame.topLeft, size = frame.size)
             }
         }
-
-        // 6. Eraser cursor, and where the ink of a pen would land
-        live.eraserCursor?.let { cursor ->
-            if (controller.isDrawingMode) {
-                drawCircle(Color(0x33FF8DA1), radius = live.eraserRadiusPx, center = cursor)
-                drawCircle(Color(0xCCFF8DA1), radius = live.eraserRadiusPx, center = cursor, style = Stroke(width = 2f))
+        val spots = placement.spots
+        for ((index, item) in placementRequest.items.withIndex()) {
+            val spot = spots.getOrNull(index)
+            if (spot != null) {
+                if (!spot.newPageAfter) drawPlacementPreview(controller, item.preview, spot.pageIndex, spot.box, primary)
+                continue
+            }
+            val pointer = placement.pointer ?: continue
+            placement.targetAt(pointer)?.let { (pageIndex, topLeft) ->
+                val box = MmRect(topLeft.x, topLeft.y, topLeft.x + item.preview.width, topLeft.y + item.preview.height)
+                drawPlacementPreview(controller, item.preview, pageIndex, box, primary)
             }
         }
-        live.inkCursor?.let { cursor ->
-            if (controller.isDrawingMode && controller.toolManager.isInkTool) {
-                val ink = Color(live.inkCursorColor)
-                // At least a dot of a few pixels, ringed so that it shows on any background
-                val radius = live.inkCursorRadiusPx.coerceAtLeast(1.5f)
-                drawCircle(ink.copy(alpha = ink.alpha * 0.6f), radius = radius, center = cursor)
-                drawCircle(Color(0x99FFFFFF), radius = radius + 1f, center = cursor, style = Stroke(width = 1f))
-            }
-        }
+    }
+}
 
-        // 6b. Pointers of the others, with their names
-        collaboratorsOverlay.drawPointers(this, controller, labels)
+/**
+ * The live state over the content: the stroke in progress (when its layer draws in Compose), the
+ * cursor of the eraser and of the pens, the box of a new text.
+ */
+private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveState, ink: LiveInkLayer) {
+    @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
+    ink.draw(this, controller)
 
-        // 7. Floating page while reordering
-        if (draggedPage != null && floatingPage != null) {
-            val worldRect = controller.viewport.layout.pagesRectOnWindow.getOrNull(draggedIndex)
-            drawPaperSheet(floatingPage, Color(draggedPage.background.backgroundColor), elevated = true)
-            if (worldRect != null) {
-                drawIntoCanvas { canvas ->
-                    controller.tileManager.drawPageTiles(
-                        canvas, draggedPage, worldRect, floatingPage, controller.viewport.camera.getCurrentScale()
-                    )
-                }
-            }
-            drawRect(Color(theme.primaryColor), topLeft = floatingPage.topLeft, size = floatingPage.size, style = Stroke(width = 4f))
+    // Eraser cursor, and where the ink of a pen would land
+    live.eraserCursor?.let { cursor ->
+        if (controller.isDrawingMode) {
+            drawCircle(Color(0x33FF8DA1), radius = live.eraserRadiusPx, center = cursor)
+            drawCircle(Color(0xCCFF8DA1), radius = live.eraserRadiusPx, center = cursor, style = Stroke(width = 2f))
         }
+    }
+    live.inkCursor?.let { cursor ->
+        if (controller.isDrawingMode && controller.toolManager.isInkTool) {
+            val inkColor = Color(live.inkCursorColor)
+            // At least a dot of a few pixels, ringed so that it shows on any background
+            val radius = live.inkCursorRadiusPx.coerceAtLeast(1.5f)
+            drawCircle(inkColor.copy(alpha = inkColor.alpha * 0.6f), radius = radius, center = cursor)
+            drawCircle(Color(0x99FFFFFF), radius = radius + 1f, center = cursor, style = Stroke(width = 1f))
+        }
+    }
 
-        // 7b. Box of a new text being drawn with the text tool
-        live.textBoxDraft?.let { box ->
-            drawRect(Color(theme.primaryColor).copy(alpha = FrameStyle.FILL_ALPHA), topLeft = box.topLeft, size = box.size)
-            drawRect(
-                Color(theme.primaryColor),
-                topLeft = box.topLeft,
-                size = box.size,
-                style = Stroke(width = FrameStyle.STROKE_DP * controller.viewport.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
-            )
-        }
-
-        // 8. Texts waiting to be placed: where they would go (the free space of their pages faintly
-        // shown), or under the mouse or the hovering stylus when no place is proposed
-        val placement = controller.placementManager
-        val placementRequest = placement.request
-        if (placementRequest != null) {
-            val primary = Color(theme.primaryColor)
-            for ((pageIndex, runs) in placement.freeSpace) {
-                val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: continue
-                for (run in runs) {
-                    val frame = mmToScreen.mapRect(Rect(run.left, run.top, run.right, run.bottom))
-                    drawRect(primary.copy(alpha = 0.05f), topLeft = frame.topLeft, size = frame.size)
-                }
-            }
-            val spots = placement.spots
-            for ((index, item) in placementRequest.items.withIndex()) {
-                val spot = spots.getOrNull(index)
-                if (spot != null) {
-                    if (!spot.newPageAfter) drawPlacementPreview(controller, item.preview, spot.pageIndex, spot.box, primary)
-                    continue
-                }
-                val pointer = placement.pointer ?: continue
-                placement.targetAt(pointer)?.let { (pageIndex, topLeft) ->
-                    val box = MmRect(topLeft.x, topLeft.y, topLeft.x + item.preview.width, topLeft.y + item.preview.height)
-                    drawPlacementPreview(controller, item.preview, pageIndex, box, primary)
-                }
-            }
-        }
+    // Box of a new text being drawn with the text tool
+    live.textBoxDraft?.let { box ->
+        val primary = Color(controller.themeColors.primaryColor)
+        drawRect(primary.copy(alpha = FrameStyle.FILL_ALPHA), topLeft = box.topLeft, size = box.size)
+        drawRect(
+            primary,
+            topLeft = box.topLeft,
+            size = box.size,
+            style = Stroke(width = FrameStyle.STROKE_DP * controller.viewport.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
+        )
     }
 }
 

@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**
@@ -24,6 +25,12 @@ internal expect class StrokeMeshPainter() {
      * @param colorOverride color used instead of the mesh color (e.g. selection previews).
      */
     fun draw(canvas: Canvas, mesh: StrokeMesh, transform: Matrix2D? = null, colorOverride: Color? = null)
+
+    /**
+     * Fills [outline] with [color] on [canvas], antialiased with the non-zero rule, mapping its
+     * coordinates through [transform] when provided: the stroke in progress, without its triangles.
+     */
+    fun drawOutline(canvas: Canvas, outline: StrokeOutline, color: Color, transform: Matrix2D? = null)
 }
 
 /**

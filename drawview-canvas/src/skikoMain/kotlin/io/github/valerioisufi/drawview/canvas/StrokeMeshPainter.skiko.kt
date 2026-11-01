@@ -26,16 +26,7 @@ internal actual class StrokeMeshPainter actual constructor() {
         val color = colorOverride ?: Color(mesh.color)
 
         skiaCanvas.save()
-        if (transform != null) {
-            skiaCanvas.concat(
-                Matrix33(
-                    transform.a, transform.c, transform.tx,
-                    transform.b, transform.d, transform.ty,
-                    0f, 0f, 1f
-                )
-            )
-        }
-
+        concat(skiaCanvas, transform)
         val outline = mesh.outline
         if (outline != null && !outline.isEmpty) {
             drawOutline(skiaCanvas, outline, color)
@@ -43,6 +34,26 @@ internal actual class StrokeMeshPainter actual constructor() {
             drawTriangles(skiaCanvas, mesh, color)
         }
         skiaCanvas.restore()
+    }
+
+    actual fun drawOutline(canvas: Canvas, outline: StrokeOutline, color: Color, transform: Matrix2D?) {
+        if (outline.isEmpty) return
+        val skiaCanvas = canvas.skiaCanvas
+        skiaCanvas.save()
+        concat(skiaCanvas, transform)
+        drawOutline(skiaCanvas, outline, color)
+        skiaCanvas.restore()
+    }
+
+    private fun concat(skiaCanvas: org.jetbrains.skia.Canvas, transform: Matrix2D?) {
+        if (transform == null) return
+        skiaCanvas.concat(
+            Matrix33(
+                transform.a, transform.c, transform.tx,
+                transform.b, transform.d, transform.ty,
+                0f, 0f, 1f
+            )
+        )
     }
 
     /**

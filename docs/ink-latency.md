@@ -200,7 +200,7 @@ device and an iPad with a Pencil to be measured).
 | Phase | Content | Status |
 |---|---|---|
 | 0 | The measures: `InkLatencyMeter` and `DrawViewController.inkLatency` (ABI recorded on purpose), shown in the sample; `LiveInkBenchmark` (M1, the work of an input), the pen up on the UI thread (M2); in-app latency on the desktop, the Android emulator and the iOS simulator (M3), and on the MatePad with the video (M4, by the user); whether Compose gives the coalesced touches of the Pencil (M5, from its sources or an iPad) | Done; M3 on the desktop and M4 left to the user |
-| 1 | `LiveInkLayer` and `ComposeLiveInkLayer`: the stroke and the cursors in a canvas of their own, the outline taken once per frame, the activity reported once per frame; tests of the gestures as they are, screenshots | proposed |
+| 1 | `LiveInkLayer` and `ComposeLiveInkLayer`: the stroke and the cursors in a canvas of their own, the outline taken once per frame, the activity reported once per frame; tests of the gestures as they are, screenshots | Done |
 | 2 | Prediction: the predicted batch in the bridge (JNI and cinterop), `InkStrokeEngine.addInputs(real, predicted)` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and `KalmanInkPredictor`; tests: nothing predicted is committed or sent, no tail on a hold, the shapes and the lasso as they are | proposed |
 | 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | proposed |
 | 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the MatePad (in-app and video) and on an emulator | proposed |
@@ -244,6 +244,33 @@ device and an iPad with a Pencil to be measured).
   with their timestamps): the 240 Hz of the Pencil already reach the gesture; phase 5 needs the
   predicted touches only.
 
+### Phase 1 results
+
+* `LiveInkLayer` (`drawview-canvas`): the gesture handler tells it `strokeChanged(engine, color,
+  pageIndex)` and `strokeEnded()`; `ComposeLiveInkLayer` takes the shape from the engine when its
+  canvas draws, once per frame. `DrawCanvas` is a `Box` of two canvases, each in a `graphicsLayer`
+  of its own: the content (tiles, overlays, the collaborators) and the live state (the stroke, the
+  cursors of the eraser and of the pens, the box of a new text).
+* `InkStrokeEngine.currentOutline()` (ABI of `drawview-ink` recorded on purpose) gives the outline
+  alone; `StrokeMeshPainter.drawOutline` fills it. The Kotlin tessellator, without an outline, still
+  draws its triangles.
+* The activity for the others is reported at most every 16 ms of the events during a gesture (and at
+  its start and end), not at every event of the stylus.
+* **M1** (Mac): the outline alone costs half of the mesh (0.7 µs against 1.5 µs after 60 inputs,
+  7.3 µs against 15.9 µs after 960), and is taken once per frame instead of at every event: with
+  stylus events at 240 Hz on a 60 Hz display, 7 µs per frame instead of 64 µs after 960 inputs.
+* **M6** (Mac, `LiveInkFrameBenchmark`, a frame while drawing over a page of 400 strokes, recorded
+  and rasterized by Skia on the CPU): 1.80 ms before, 1.77 ms after. The raster of the tiles, which
+  both pay, dominates.
+* **M3 on the MatePad** (the tablet of the user, connected, two rounds of five strokes each, after a
+  warm-up): from an input to the frame that draws it 15 to 17 ms before and after (95th percentile
+  21 to 25, then 20 to 23 ms), tip age 12 to 14 ms before and after; the frames of the window
+  (`dumpsys gfxinfo`) 14 to 15 ms at the median before, 13 to 14 after, 17 to 22 ms at the 90th
+  percentile before, 17 after. Every frame of the editor nearly fills the 16.7 ms of the display:
+  the frame itself is where the time goes, which only the front buffer (phase 4) skips.
+* On the emulator the same (13 to 15 ms before, 10 to 15 after, frames of 5 ms both); the first
+  rounds after a cold boot of the emulator are no measure (a frame of 46 ms at the median).
+
 ## Decisions
 
 * **Every phase is measured and kept only if it gains**, as in `docs/performance.md`.
@@ -256,6 +283,8 @@ device and an iPad with a Pencil to be measured).
 * **The meter stays in the library, off by default** (revertible): a public flag and report, so
   that any device can be measured again, at the price of a small public API.
 * **Nothing stored or sent changes**: no migration, no change of the protocol.
+* **Phase 1 kept** (revertible): it gains on the work of an input (M1) and not on the latency
+  measured (M3, M6), and the front buffer of phase 4 needs the layer apart.
 * **No phase 6** (revertible): the pen up costs 0.14 to 0.43 ms on the Mac (M2); a device that shows
   more can bring it back.
 

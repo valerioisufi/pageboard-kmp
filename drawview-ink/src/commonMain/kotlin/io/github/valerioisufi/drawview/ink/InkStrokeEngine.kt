@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.STROKE_UNIT_LENGTH_CM_MM
 import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.StrokePoint
 
 /**
@@ -112,6 +113,16 @@ public class InkStrokeEngine {
     public fun currentMesh(): StrokeMesh? {
         if (!isActive) return null
         return delegate.currentMesh(currentBrush, emptyList(), currentToolType)
+    }
+
+    /**
+     * Outline of the stroke in progress alone, without its triangles: what the stroke drawn live
+     * needs, taken out of the engine at less cost than [currentMesh]. `null` when there is none, or
+     * when the modeller gives no outline (the Kotlin tessellator): [currentMesh] draws it then.
+     */
+    public fun currentOutline(): StrokeOutline? {
+        if (!isActive) return null
+        return delegate.currentOutline()?.takeUnless { it.isEmpty }
     }
 
     /**
