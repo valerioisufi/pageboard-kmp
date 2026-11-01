@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.store.testing.SyntheticDocuments
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -52,6 +53,28 @@ class TileBenchmark {
         val flung = showUntilFilled(fling, document, rects, at(rects, 20))
         report("M6 the screen filled after a fling over 20 pages", "$flung")
         fling.cleanup()
+    }
+
+    /** The screen after a zoom out across 4 levels in 300 ms, from a viewport zoomed by 16 (`docs/tile-zoom-out.md`). */
+    @Test
+    fun fillingTheScreenAfterAZoomOut() {
+        val document = SyntheticDocuments.notebook(pages = 8, strokesPerPage = 1_500, modeller = InkStrokeModeller)
+        val rects = CalcPage(density = 2f).apply { calcPagesRectOnWindow(document.pages, viewport) }.pagesRectOnWindow.toList()
+        fun zoomed(scale: Float) = Matrix2D()
+            .postScale(scale, scale)
+            .postTranslate(viewport.center.x * (1f - scale), viewport.center.y * (1f - scale))
+
+        val manager = TileManager()
+        val canvas = Canvas(ImageBitmap(64, 64))
+        showUntilFilled(manager, document, rects, zoomed(1f))
+        showUntilFilled(manager, document, rects, zoomed(16f))
+        val frames = 19
+        for (frame in 1..frames) {
+            manager.drawTiles(canvas, zoomed(16f / 2f.pow(4f * frame / frames)), viewport, document, rects)
+            Thread.sleep(FRAME_MS)
+        }
+        report("M10 the screen filled after a zoom out across 4 levels", "${showUntilFilled(manager, document, rects, zoomed(1f))}")
+        manager.cleanup()
     }
 
     /** A tile of a page of 1,500 strokes, at the levels of detail 0 and 2. */

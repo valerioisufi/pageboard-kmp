@@ -24,10 +24,8 @@ import io.github.valerioisufi.drawview.platform.syncLock
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -62,10 +60,10 @@ public class TileManager(
 
     /** Dedicated 2-thread worker for background tile rasterization. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val tileWorkerDispatcher = Dispatchers.Default.limitedParallelism(2)
+    internal val tileWorkerDispatcher = Dispatchers.Default.limitedParallelism(TILE_WORKERS)
 
     private val lock = SyncLock()
-    private val activeTileJobs = mutableMapOf<TileKey, Job>()
+    private val tileQueue = TileQueue(maxWorkers = TILE_WORKERS)
     private val pageGenerations = mutableMapOf<Long, Int>()
     /** World Space size of each page used by its cached tiles (it changes with the window width). */
     private val pageWorldSizes = mutableMapOf<Long, Size>()
@@ -158,6 +156,7 @@ public class TileManager(
         val worldViewport = screenToWorld.mapRect(viewportBounds)
 
         // 2. Determine current scale and LOD
+        tileQueue.beginFrame()
         val currentScale = cameraMatrix.a
         val targetLod = TilePyramid.calculateLod(currentScale)
         val tileSize = TilePyramid.getTileWorldSize(targetLod)
@@ -216,9 +215,10 @@ public class TileManager(
                 lod = TilePyramid.OVERVIEW_LOD
             ).forEach { col, row ->
                 val key = TileKey(page.renderKey, TilePyramid.OVERVIEW_LOD, col, row)
-                val cached = tileCache.get(key)
-                if (cached == null || cached.state == TileState.STALE) {
-                    enqueueTile(key, document, page, pageWorldRect)
+                // Stale, it is refreshed when it is drawn, not at every change of the page written
+                if (tileCache.get(key) == null) {
+                    val priority = if (isPageVisible) TilePriority.PageOverview else TilePriority.Margin
+                    enqueueTile(key, priority, document, page, pageWorldRect)
                 }
             }
 
@@ -241,14 +241,19 @@ public class TileManager(
 
                 visibleRange.forEach { col, row ->
                     val key = TileKey(page.renderKey, targetLod, col, row)
-                    val cell = pageFraction(TilePyramid.getTilePageRect(key), pageWorldRect)
+                    val cellPageRect = TilePyramid.getTilePageRect(key)
+                    val cell = pageFraction(cellPageRect, pageWorldRect)
+                    // The center of the screen first
+                    val dx = pageWorldRect.left + cellPageRect.center.x - worldViewport.center.x
+                    val dy = pageWorldRect.top + cellPageRect.center.y - worldViewport.center.y
+                    val order = dx * dx + dy * dy
                     val tile = tileCache.get(key)
 
                     if (tile != null && (tile.state == TileState.READY || tile.state == TileState.STALE)) {
                         drawTileBitmap(canvas, tile.bitmap, key, pageWorldRect, cameraMatrix)
                         onScreen.drawn += DrawnTile(tile, pageWorldRect.size, cell)
                         if (tile.state == TileState.STALE) {
-                            enqueueTile(key, document, page, pageWorldRect)
+                            enqueueTile(key, TilePriority.OnScreen, document, page, pageWorldRect, order)
                         }
                     } else {
                         // Hierarchical Mipmap Fallback
@@ -268,6 +273,9 @@ public class TileManager(
                         if (ancestor != null) {
                             drawTileBitmap(canvas, ancestor.bitmap, ancestor.key, pageWorldRect, cameraMatrix)
                             onScreen.drawn += DrawnTile(ancestor, pageWorldRect.size, cell)
+                            if (ancestor.state == TileState.STALE) {
+                                enqueueTile(ancestor.key, TilePriority.Refresh, document, page, pageWorldRect)
+                            }
                         } else {
                             blankCells += tileScreenBounds
                         }
@@ -280,7 +288,7 @@ public class TileManager(
                         }
                         canvas.restore()
 
-                        enqueueTile(key, document, page, pageWorldRect)
+                        enqueueTile(key, TilePriority.OnScreen, document, page, pageWorldRect, order)
                     }
                 }
             }
@@ -301,11 +309,13 @@ public class TileManager(
                 val key = TileKey(page.renderKey, targetLod, col, row)
                 val cached = tileCache.get(key)
                 if (cached == null || cached.state == TileState.STALE) {
-                    enqueueTile(key, document, page, pageWorldRect)
+                    enqueueTile(key, TilePriority.Margin, document, page, pageWorldRect)
                 }
             }
             onScreen.endFrame()
         }
+        tileQueue.endFrame()
+        startTileWorkers()
     }
 
     /**
@@ -425,14 +435,7 @@ public class TileManager(
                 pageGenerations[pageKey] = (pageGenerations[pageKey] ?: 0) + 1
                 recentBakes.remove(pageKey)
                 // The queued tiles would be rasterized for the old layout, delaying the new ones
-                val jobs = activeTileJobs.entries.iterator()
-                while (jobs.hasNext()) {
-                    val (key, job) = jobs.next()
-                    if (key.pageKey == pageKey) {
-                        job.cancel()
-                        jobs.remove()
-                    }
-                }
+                tileQueue.removePage(pageKey)
                 true
             } else {
                 false
@@ -456,34 +459,42 @@ public class TileManager(
      * Whether tiles are being rasterized: the pages on screen may still be drawn without them (a
      * screenshot test waits for them).
      */
-    public val isRasterizing: Boolean get() = syncLock(lock) { activeTileJobs.isNotEmpty() }
+    public val isRasterizing: Boolean get() = tileQueue.isBusy
 
     /**
-     * Enqueues a tile for background rasterization on the dedicated worker dispatcher.
+     * Asks the workers for a tile, in the frame being drawn.
+     *
+     * @param order Which tile comes first within [priority], the lowest first.
      */
-    internal fun enqueueTile(
+    private fun enqueueTile(
         key: TileKey,
+        priority: TilePriority,
         document: DrawDocument,
         page: DrawPage,
-        pageWorldRect: Rect
+        pageWorldRect: Rect,
+        order: Float = 0f
     ) {
-        val job = syncLock(lock) {
-            if (activeTileJobs.containsKey(key)) return
-            // Started once registered: a job ending at once still finds itself registered
-            scope.launch(tileWorkerDispatcher, start = CoroutineStart.LAZY) {
-                try {
-                    rasterizeTile(key, document, page, pageWorldRect)
-                } finally {
-                    // A cancelled job still running must not unregister the one replacing it
-                    val self = coroutineContext[Job]
-                    syncLock(lock) {
-                        if (activeTileJobs[key] === self) activeTileJobs.remove(key)
+        tileQueue.ask(key, priority, order) { rasterizeTile(key, document, page, pageWorldRect) }
+    }
+
+    /** Starts the workers the tiles asked for need, on the dedicated worker dispatcher. */
+    private fun startTileWorkers() {
+        while (tileQueue.addWorker()) {
+            scope.launch(tileWorkerDispatcher) {
+                while (true) {
+                    val request = tileQueue.next() ?: break
+                    try {
+                        request.work()
+                    } catch (failure: Throwable) {
+                        tileQueue.retireWorker()
+                        throw failure
+                    } finally {
+                        tileQueue.finished(request.key)
                     }
+                    onInvalidate()
                 }
-                onInvalidate()
-            }.also { activeTileJobs[key] = it }
+            }
         }
-        job.start()
     }
 
     /**
@@ -752,9 +763,8 @@ public class TileManager(
     }
 
     internal fun invalidateAll() {
+        tileQueue.clear()
         syncLock(lock) {
-            activeTileJobs.values.forEach { it.cancel() }
-            activeTileJobs.clear()
             for (renderKey in pageGenerations.keys.toList()) {
                 pageGenerations[renderKey] = (pageGenerations[renderKey] ?: 0) + 1
             }
@@ -772,13 +782,17 @@ public class TileManager(
 
     internal fun cleanup() {
         scope.cancel()
+        tileQueue.clear()
         syncLock(lock) {
-            activeTileJobs.values.forEach { it.cancel() }
-            activeTileJobs.clear()
             recentBakes.clear()
         }
         pageTiles.clear()
         tileCache.clear()
         tileRenderer.pdfAdapter?.close()
+    }
+
+    private companion object {
+        /** How many tiles are rasterized at the same time. */
+        const val TILE_WORKERS = 2
     }
 }

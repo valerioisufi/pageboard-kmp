@@ -83,7 +83,7 @@ fingers.
 | Phase | What | Status |
 |---|---|---|
 | 1 | The overviews: `OVERVIEW_LOD`, their budget in `TileCache`, the fallback of a cell; tests (an overview survives a cache full of level 4, a cell without its tile draws it, a stale one too); measured on the MatePad | Done |
-| 2 | `TileQueue`: priorities, what a frame stops wanting dropped; `isRasterizing` keeps its meaning; tests of the order and of the drop; `TileBenchmark` gets the zoom out; measured on the MatePad | Proposed |
+| 2 | `TileQueue`: priorities, what a frame stops wanting dropped; `isRasterizing` keeps its meaning; tests of the order and of the drop; `TileBenchmark` gets the zoom out; measured on the MatePad | Done |
 | 3 | Only if the measures show a gain: 3 workers instead of 2, measured with the frames on the UI thread | Proposed |
 
 The target, on the MatePad with the same script: no blank area once a page has its overview, the
@@ -110,14 +110,17 @@ for levels no longer shown down to the ones already running.
 Same probe and script, on the MatePad. "Own tiles" is the time after the end of the gesture until
 every cell on screen has its own tile.
 
-| Run | Before: blank, own tiles | Phase 1: blank, own tiles |
-|---|---|---|
-| A, 400 strokes (3 runs) | 30–45%, 123–176 ms | **0%**, 107–175 ms |
-| B, 400 strokes (2 runs) | 19–20%, 143–157 ms | **0%**, 142–143 ms |
-| A, 1,500 strokes | 88%, 926 ms | **0%**, 874 ms |
-| B, 1,500 strokes | 63%, 777 ms | **0%**, 777 ms |
+| Run | Before: blank, own tiles | Phase 1: blank, own tiles | Phase 2: blank, own tiles | Jobs for levels no longer shown, before and after phase 2 |
+|---|---|---|---|---|
+| A, 400 strokes (3 runs) | 30–45%, 123–176 ms | **0%**, 107–175 ms | 0%, **76–92 ms** | 46–88 → 0 |
+| B, 400 strokes (2 runs) | 19–20%, 143–157 ms | **0%**, 142–143 ms | 0%, **94–95 ms** | 27–34 → 0 |
+| A, 1,500 strokes | 88%, 926 ms | **0%**, 874 ms | 0%, **94–246 ms** (4 runs) | 174 → 0–1 |
+| B, 1,500 strokes | 63%, 777 ms | **0%**, 777 ms | 0%, **224–288 ms** (4 runs) | 133 → 0 |
 
 An overview takes 39 ms to rasterize at 400 strokes a page, 135 ms at 1,500.
+
+The frames stay at a median of 17 ms during the zoom out, with a 95th percentile of 18–34 ms.
+`TileBenchmark` measures the same zoom out on the Mac (M10): 17 ms.
 
 ## Left for later
 
