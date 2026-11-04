@@ -149,7 +149,22 @@ public class SelectionFrame(
             val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return null
             val box = Rect(editor.boxX, editor.boxY, editor.boxX + editor.boxWidth, editor.boxY + editor.boxHeight)
             return of(mmToScreen, box, editor.rotation, controller.viewport.density, sideHandles = true, transformable = false)
+                ?.handlesWithin(controller.viewport.height, editor.rotation)
                 ?.chained(editor.chainComesFrom, editor.chainGoesOn)
+        }
+
+        /**
+         * This frame with its side handles at the middle of the part of their edges within a canvas
+         * [height] high, so that a box taller than the canvas keeps them in sight; a turned frame
+         * keeps them at the middle of its edges.
+         */
+        private fun SelectionFrame.handlesWithin(height: Float, rotation: Float): SelectionFrame {
+            if (rotation != 0f || height <= 0f) return this
+            val top = corners[0].y.coerceAtLeast(0f)
+            val bottom = corners[3].y.coerceAtMost(height)
+            if (top >= bottom) return this
+            val middle = (top + bottom) / 2f
+            return SelectionFrame(corners, rotationHandle, rotationStemBase, sideHandles.map { Offset(it.x, middle) }, scalesFromCorners, mmToScreen, chainedAbove, chainedBelow)
         }
 
         /** This frame marked as going on from a box before it ([above]) and into one after it ([below]). */

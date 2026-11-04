@@ -15,17 +15,20 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.SelectionFrame
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import kotlin.math.roundToInt
@@ -57,7 +60,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
     val density = LocalDensity.current
     val imeBottom = WindowInsets.ime.getBottom(density)
     val keyboardController = LocalSoftwareKeyboardController.current
-    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var caret by remember { mutableStateOf<CaretPlace?>(null) }
     // Height of the formatting bar: the edited text is kept above it
     var barHeightPx by remember { mutableIntStateOf(0) }
     val atBottom = currentAdaptiveInfo().window.isCompact || imeBottom > 0
@@ -67,9 +70,10 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val containerWidthPx = constraints.maxWidth.toFloat()
         val containerHeightPx = constraints.maxHeight.toFloat()
 
-        TextBoxEditor(controller, onLayout = { layout = it })
+        TextBoxEditor(controller, onCaret = { caret = it })
 
         // On a phone the bar lies on the keyboard, the whole width
         val docked = currentAdaptiveInfo().window.isCompact
@@ -88,27 +92,36 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
             modifier = barModifier.onSizeChanged { barHeightPx = it.height }
         )
 
-        // Keeps the edited text above the software keyboard and the formatting bar. Not keyed on
-        // the layout itself, which changes at every zoom step: it would fight a pinch
-        val lineCount = layout?.lineCount ?: 0
-        LaunchedEffect(editor.value.text, lineCount, imeBottom, containerHeightPx, barHeightPx, atBottom) {
-            val current = layout ?: return@LaunchedEffect
-            if (current.lineCount == 0) return@LaunchedEffect
-            val top = controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY)?.y ?: return@LaunchedEffect
-            val textBottom = top + current.getLineBottom(current.lineCount - 1)
-            // A bar at the bottom sits 8 dp above the keyboard; the frame extends below the last line
-            val marginPx = if (atBottom) {
-                maxOf(with(density) { 80.dp.toPx() }, barHeightPx + with(density) { 40.dp.toPx() })
-            } else {
-                with(density) { 40.dp.toPx() }
-            }
-            val safeBottom = containerHeightPx - imeBottom - marginPx
-            if (textBottom > safeBottom) {
+        // Keeps the caret in sight, above the software keyboard and the formatting bar. Keyed on
+        // the text and the caret, not on their place, which changes at every movement of the
+        // camera: it would fight a pan or a pinch
+        val currentCaret by rememberUpdatedState(caret)
+        var textRevealed by remember { mutableStateOf<String?>(null) }
+        LaunchedEffect(caret?.text, caret?.selection, imeBottom, containerWidthPx, containerHeightPx, barHeightPx, atBottom) {
+            val place = currentCaret ?: return@LaunchedEffect
+            // A drag selecting is not followed, its text not changing
+            val selecting = !place.selection.collapsed && place.text == textRevealed
+            textRevealed = place.text
+            if (selecting) return@LaunchedEffect
+            val origin = controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY) ?: return@LaunchedEffect
+            val turned = Matrix2D().postRotate(editor.rotation)
+            val start = turned.mapPoint(place.rect.left, place.rect.top)
+            val end = turned.mapPoint(place.rect.right, place.rect.bottom)
+            val onScreen = Rect(
+                origin.x + minOf(start.x, end.x), origin.y + minOf(start.y, end.y),
+                origin.x + maxOf(start.x, end.x), origin.y + maxOf(start.y, end.y)
+            )
+            // A bar at the bottom sits 8 dp above the keyboard; one by the frame comes to the bottom
+            // of the canvas when the frame takes it all
+            val below = with(density) { if (atBottom) maxOf(80.dp.toPx(), barHeightPx + 40.dp.toPx()) else barHeightPx + 24.dp.toPx() }
+            val visible = Rect(0f, 0f, containerWidthPx, containerHeightPx - imeBottom - below)
+            val pan = with(density) { CaretReveal.panFor(onScreen, visible, marginX = CARET_MARGIN_X.toPx(), marginY = CARET_MARGIN_Y.toPx()) }
+            if (pan != Offset.Zero) {
                 var previous = 0f
-                Animatable(0f).animateTo(textBottom - safeBottom, tween(durationMillis = 250)) {
+                Animatable(0f).animateTo(1f, tween(durationMillis = 250)) {
                     val step = value - previous
                     previous = value
-                    controller.viewport.panBy(0f, -step)
+                    controller.viewport.panBy(pan.x * step, pan.y * step)
                 }
             }
         }
@@ -146,3 +159,7 @@ private fun Modifier.besideEditedText(controller: DrawViewController): Modifier 
 }
 
 private val BAR_GAP = 12.dp
+
+/** The room kept between the caret and the edges of what is visible of the canvas. */
+private val CARET_MARGIN_X = 24.dp
+private val CARET_MARGIN_Y = 16.dp

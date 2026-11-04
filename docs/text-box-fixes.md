@@ -120,7 +120,7 @@ Android or iOS. "Read" means read in the code only.
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
 | The field laid out at the size of the box, out of the constraints of the canvas | `TextBoxEditor` (`drawview-ui`) | Information Expert |
-| How much to pan so that a rectangle is in a visible area, on both axes | `CaretReveal` (`drawview-canvas`, new, pure) | Pure Fabrication |
+| How much to pan so that a rectangle is in a visible area, on both axes | `CaretReveal` (`drawview-ui`, new, pure) | Pure Fabrication |
 | The caret followed: its rectangle from the layout, the room left by the bar and the keyboard | `TextEditorOverlay` (`drawview-ui`) | Controller |
 | The handles on the visible part of the edge | `SelectionFrame.ofEditedText` (`drawview-canvas`) | Information Expert |
 | Touch over the field given to the camera, after the slop or at the second finger | `TextBoxEditor`, with the pan and zoom of `CameraController` | Indirection, Low Coupling |
@@ -183,7 +183,7 @@ the next character does.
 | Phase | What | Status |
 |---|---|---|
 | 1 | The field at the size of the box: tests in the explorer (the bounds of the field and of the frame, the same height written and saved at 250%, no scroll inside), screenshot of a box larger than the window | done |
-| 2 | `CaretReveal`, the caret followed on both axes, the handles on the visible edge: tests of the pure function, of typing on the first line of a tall box and at the end of a wide line, of a pan not undone | planned |
+| 2 | `CaretReveal`, the caret followed on both axes, the handles on the visible edge: tests of the pure function, of typing on the first line of a tall box and at the end of a wide line, of a pan not undone | done |
 | 3 | Touch over the field: pan, pinch, tap and long press unchanged, the middle button; tests with injected touch; tried on the tablet | planned |
 | 4 | Tables: `keepInCells` with a selection (in a cell, across cells), deletions across cells, `\r`; `TableEditingTest` | planned |
 | 5 | `PastedText`, in the field and on the canvas: tests on texts from a PDF, a web page, a chat, code, verses, Markdown; a real Ctrl+V in the explorer; one undo | planned |

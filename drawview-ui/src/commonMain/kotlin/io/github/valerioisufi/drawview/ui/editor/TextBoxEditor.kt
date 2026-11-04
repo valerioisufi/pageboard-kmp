@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -67,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
@@ -100,10 +103,10 @@ import org.jetbrains.compose.resources.stringResource
  * of [controller]; the height it lays the text out is reported to it. Its frame is the one of a
  * selection, drawn by the canvas (see `SelectionFrame.ofEditedText`).
  *
- * @param onLayout the layout of the text, in pixels of the screen from the top of the box.
+ * @param onCaret where the caret is, once the text it is in has been laid out.
  */
 @Composable
-internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayoutResult) -> Unit) {
+internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace) -> Unit) {
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
@@ -369,7 +372,6 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             visualTransformation = { TransformedText(currentShown.text, currentShown.mapping) },
             onTextLayout = { result ->
                 layout = result
-                onLayout(result)
                 editor.reportLayoutHeight(result.size.height / currentScale)
                 // The caret on the character the user touched
                 editor.takeCaretRequest()?.let { local ->
@@ -410,6 +412,27 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         focusRequester.requestFocus()
         keyboardController?.show()
     }
+
+    val laidOut = layout?.takeIf { it.layoutInput.text.text == shown.text.text }
+    if (laidOut != null) {
+        val rect = caretRect(laidOut, shown, tableCaret, value.selection.end)
+        SideEffect { onCaret(CaretPlace(value.text, value.selection, rect)) }
+    }
+}
+
+/**
+ * The caret at [offset] of the text written, in pixels from the top-left corner of the field; in a
+ * table it is drawn in its cell, of a layout of its own.
+ */
+private fun caretRect(layout: TextLayoutResult, shown: PresentedText<*>, tableCaret: TableEditing.Caret?, offset: Int): Rect {
+    val table = tableCaret?.let { caret -> shown.tables.firstOrNull { it.span.start == caret.span.start } }
+    val cell = table?.layout?.cells?.firstOrNull { it.row == tableCaret.row && it.column == tableCaret.column }
+    if (table != null && cell != null) {
+        val length = cell.source.last + 1 - cell.source.first
+        val inCell = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
+        return cell.layout.getCursorRect(inCell).translate(layout.tableOrigin(table) + Offset(cell.left, cell.top))
+    }
+    return layout.getCursorRect(shown.mapping.originalToTransformed(offset).coerceIn(0, layout.layoutInput.text.length))
 }
 
 /**
