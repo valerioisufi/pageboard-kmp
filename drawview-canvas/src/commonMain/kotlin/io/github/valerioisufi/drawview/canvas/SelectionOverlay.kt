@@ -27,6 +27,7 @@ import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.text.TextChains
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -136,7 +137,8 @@ public class SelectionFrame(
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
             val frame = of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
             val text = selection.texts.singleOrNull()?.takeIf { selection.isSingleText } ?: return frame
-            return frame?.chained(controller.document.pages.any { page -> page.texts.any { it.next == text.id } }, text.next != null)
+            val chains = TextChains.of(controller.document)
+            return frame?.chained(chains.previous(text.id) != null, chains.next(text.id) != null)
         }
 
         /**

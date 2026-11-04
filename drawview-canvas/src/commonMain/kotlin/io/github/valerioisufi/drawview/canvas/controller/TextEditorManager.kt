@@ -27,6 +27,7 @@ import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.RemoveElements
+import io.github.valerioisufi.drawview.model.change.RemovePage
 import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
@@ -110,7 +111,10 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     private var chainContinuesLine: Boolean = false
 
     /** Whether the text written goes on into a box after it (see [TextChains]). */
-    public val chainGoesOn: Boolean get() = isEditing && chainNext != null
+    public val chainGoesOn: Boolean get() = isEditing && goesOnInChain
+
+    /** Whether the text written goes on into a box of the document, read when the editor opens (a link to none is no link). */
+    private var goesOnInChain: Boolean = false
 
     /** Whether the text written goes on from a box before it, read when the editor opens. */
     public var chainComesFrom: Boolean = false
@@ -277,6 +281,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         chainNext = item?.next
         chainContinuesLine = item?.continuesLine == true
         chainComesFrom = item != null && TextChains.of(controller.document).previous(item.id) != null
+        goesOnInChain = item != null && TextChains.of(controller.document).next(item.id) != null
         alignment = item?.alignment ?: defaults.alignment
         caretRequest = caretAt
         newTextId = newElementId()
@@ -363,12 +368,16 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             return
         }
 
-        // A text below the bottom of its page, or in a chain: flowed into its boxes
-        if (value.text.isNotBlank() && flowChain(caret = null)) return
+        // A text below the bottom of its page, or in a chain: flowed into its boxes (emptied, the
+        // text of those after it comes back to it)
+        val after = if (existing != null) followingInChain(existing) else emptyList()
+        if ((value.text.isNotBlank() || after.any { it.text.isNotBlank() }) && flowChain(caret = null)) return
 
         if (value.text.isBlank()) {
-            existing?.let { controller.hiddenElements.setDragged(listOf(it.id), false) }
-            if (existing != null) controller.session.submit(RemoveElements.of(itemPage, listOf(existing)))
+            if (existing != null) {
+                controller.hiddenElements.setDragged(listOf(existing.id), false)
+                controller.session.submit(emptiedChange(existing, itemPage, after))
+            }
             resetSession()
             return
         }
@@ -788,6 +797,53 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         return controller.measureText(probe)?.height ?: TextSizes.estimatedHeightMm(text, fontSize)
     }
 
+    /** The boxes after [item] in its chain. */
+    private fun followingInChain(item: DrawText): List<DrawText> {
+        val chain = TextChains.of(controller.document).chainOf(item.id)
+        return chain.drop(chain.indexOfFirst { it.id == item.id } + 1)
+    }
+
+    /**
+     * The change removing the box [existing] of [page], emptied, with the empty boxes [after] it: the
+     * box before it no longer goes on into it, and the pages they leave blank go too.
+     */
+    private fun emptiedChange(existing: DrawText, page: DrawPage, after: List<DrawText>): DocumentChange {
+        val previous = TextChains.of(controller.document).previous(existing.id)
+        val changes = mutableListOf<DocumentChange>()
+        if (previous != null) {
+            val pageOfPrevious = controller.document.pages.first { p -> p.texts.any { it.id == previous.id } }
+            changes += UpdateTexts(pageOfPrevious.id, listOf(previous.toData().copy(order = null, next = null)))
+            changes += removedBoxes(listOf(existing) + after)
+        } else {
+            changes += RemoveElements.of(page, listOf(existing))
+            changes += removedBoxes(after)
+        }
+        return if (changes.size == 1) changes[0] else CompositeChange(changes)
+    }
+
+    /**
+     * The change removing [boxes], boxes a chain no longer reaches, with the pages they leave blank:
+     * with nothing else on them, and the paper of the document. They go to the trash, and one undo
+     * brings them back.
+     */
+    private fun removedBoxes(boxes: List<DrawText>): List<DocumentChange> {
+        val pages = controller.document.pages
+        val changes = mutableListOf<DocumentChange>()
+        var remaining = pages.size
+        for (page in pages) {
+            val removed = boxes.filter { box -> page.texts.any { it.id == box.id } }
+            if (removed.isEmpty()) continue
+            changes += RemoveElements.of(page, removed)
+            val blank = page.strokes.isEmpty() && page.images.isEmpty() && page.pdfs.isEmpty() && page.markups.isEmpty() && page.customElements.isEmpty() &&
+                page.texts.size == removed.size && !page.hasCustomBackground
+            if (blank && remaining > 1) {
+                changes += RemovePage(page.id)
+                remaining--
+            }
+        }
+        return changes
+    }
+
     /**
      * After a change of the text: when its lines go below the bottom margin of its page, the text
      * flows into the next boxes of its chain (a chain begins), and the caret goes where it is.
@@ -817,12 +873,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         // Turned, or moved to another page while written: saved as a text alone
         if (rotation != 0f || existing != null && itemPageIndex != pageIndex) return false
         val chains = TextChains.of(controller.document)
-        val following = existing?.let { item ->
-            val chain = chains.chainOf(item.id)
-            chain.drop(chain.indexOfFirst { it.id == item.id } + 1)
-        }.orEmpty()
+        val following = existing?.let(::followingInChain).orEmpty()
         val base = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page)
-        val tail = value.text + following.joinToString("") { (if (it.continuesLine) "" else "\n") + it.text }
+        // A box emptied leaves no line of its own before the text coming back to it
+        val tail = (value.text + following.joinToString("") { (if (it.continuesLine) "" else "\n") + it.text })
+            .let { if (value.text.isBlank()) it.substring(value.text.length).removePrefix("\n") else it }
         val pageOf = { text: DrawText -> pages[chains.pageOf(text.id)] }
         val lastPageIndex = following.lastOrNull()?.let { chains.pageOf(it.id) } ?: pageIndex
         val rooms = listOf(ChainFlow.Room(base.width, roomBottom(page) - base.y)) +
@@ -860,8 +915,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
                 changes += AddElements.of(newPage, listOf(data.toElement()))
             }
         }
-        // The boxes the text no longer reaches
-        for (box in following.drop(pieces.size - 1)) changes += RemoveElements.of(pageOf(box), listOf(box))
+        // The boxes the text no longer reaches, and the pages they leave blank
+        changes += removedBoxes(following.drop(pieces.size - 1))
 
         existing?.let {
             controller.hiddenElements.setDragged(listOf(it.id), false)

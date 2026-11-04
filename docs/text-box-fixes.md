@@ -190,7 +190,7 @@ the next character does.
 | 3 | Touch over the field: pan, pinch, tap and long press unchanged, the middle button; tests with injected touch; tried on the tablet | done, not yet tried on the tablet |
 | 4 | Tables: `keepInCells` with a selection (in a cell, across cells), deletions across cells, `\r`; `TableEditingTest` | done |
 | 5 | `PastedText`, in the field and on the canvas: tests on texts from a PDF, a web page, a chat, code, verses, Markdown; a real Ctrl+V in the explorer; one undo | done |
-| 6 | Chains kept whole: a box emptied flows the chain, no link to nothing saved, the chevron read through `TextChains`, the blank page removed in the same step, a page with content kept; `TextChainEditingTest`, undo and a page with a stroke included | planned |
+| 6 | Chains kept whole: a box emptied flows the chain, no link to nothing saved, the chevron read through `TextChains`, the blank page removed in the same step, a page with content kept; `TextChainEditingTest`, undo and a page with a stroke included | done |
 | 7 | Flowing without interruptions: no blank lines flowing, no new session, no `showPage`; tests of keys typed across a flow, of the focus kept, of the caret in sight; tried on the tablet with the soft keyboard | planned |
 
 Each phase: the checks of `CLAUDE.md`, the screenshots of the explorer and of the ui, the desktop

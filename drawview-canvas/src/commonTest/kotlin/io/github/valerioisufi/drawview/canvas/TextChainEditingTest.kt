@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextChains
 import kotlin.test.Test
@@ -81,10 +82,85 @@ class TextChainEditingTest {
         editor.startEditing(first, 0)
         editor.type(lines(1, 2))
         editor.finishEditing()
-        // The two lines of the second box came back, the second box removed
+        // The two lines of the second box came back, the second box removed with the page made for it
         assertEquals(lines(1, 2) + "\n" + lines(5, 6), first.text)
-        assertTrue(controller.document.pages[1].texts.isEmpty())
+        assertEquals(1, controller.document.pages.size)
         assertNull(first.next)
+    }
+
+    @Test
+    fun theLastBoxEmptiedGoesWithItsPageAndOneUndoBringsThemBack() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 6))
+        editor.finishEditing()
+        val first = controller.document.pages[0].texts.single()
+        val second = controller.document.pages[1].texts.single()
+        editor.startEditing(second, 1)
+        editor.type("")
+        editor.finishEditing()
+        assertEquals(1, controller.document.pages.size)
+        assertNull(first.next, "no link to a box removed")
+        controller.undo()
+        assertEquals(2, controller.document.pages.size)
+        assertEquals(lines(5, 6), controller.document.pages[1].texts.single().text)
+        assertEquals(second.id, controller.document.pages[0].texts.single().next)
+    }
+
+    @Test
+    fun aPageWithSomethingElseOnItStays() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 6))
+        editor.finishEditing()
+        val page = controller.document.pages[1]
+        controller.session.submit(AddElements.of(page, listOf(DrawText().also { it.text = "Mine"; it.x = 20f; it.y = 200f })))
+        val second = page.texts.first { it.text != "Mine" }
+        editor.startEditing(second, 1)
+        editor.type("")
+        editor.finishEditing()
+        assertEquals(2, controller.document.pages.size)
+        assertEquals(listOf("Mine"), controller.document.pages[1].texts.map { it.text })
+    }
+
+    @Test
+    fun aBoxEmptiedInTheMiddleKeepsTheChainWhole() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 35))
+        editor.finishEditing()
+        assertEquals(3, controller.document.pages.size)
+        val first = controller.document.pages[0].texts.single()
+        val middle = controller.document.pages[1].texts.single()
+        editor.startEditing(middle, 1)
+        editor.type("")
+        editor.finishEditing()
+        // The lines of the last box come back to the one emptied, the last one goes with its page
+        assertEquals(2, controller.document.pages.size)
+        assertEquals(middle.id, first.next)
+        assertEquals(lines(33, 35), controller.document.pages[1].texts.single().text)
+        assertNull(controller.document.pages[1].texts.single().next)
+        assertEquals(listOf(first.id, middle.id), TextChains.of(controller.document).chainOf(first.id).map { it.id })
+    }
+
+    @Test
+    fun backspaceInAnEmptyLastBoxLeavesNoTraceOfIt() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 5))
+        editor.type("")
+        assertTrue(editor.isEditing)
+        val second = controller.document.pages.getOrNull(1)?.texts?.firstOrNull()
+        assertTrue(second != null, "the second box written is open")
+        assertTrue(editor.backspaceIntoPreviousBox())
+        assertEquals(1, controller.document.pages.size)
+        assertEquals(0, editor.activeTextPageIndex)
+        assertFalse(editor.chainGoesOn, "no mark of a chain going on")
+        assertNull(controller.document.pages[0].texts.single().next)
     }
 
     @Test
