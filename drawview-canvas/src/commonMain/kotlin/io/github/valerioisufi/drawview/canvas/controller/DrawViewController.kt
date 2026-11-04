@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.canvas.CanvasGestureHandler
 import io.github.valerioisufi.drawview.canvas.DrawThemeColors
 import io.github.valerioisufi.drawview.canvas.camera.Viewport
 import io.github.valerioisufi.drawview.canvas.geometry.mapOffset
@@ -358,6 +359,9 @@ public class DrawViewController(
     // ==========================================================
     // Rendering requests
     // ==========================================================
+
+    /** The gestures of the canvas shown, for what moves the camera over the elements above it (see `canvasGesturesOverField`). */
+    internal var canvasGestures: CanvasGestureHandler? = null
 
     /**
      * Requests a canvas redraw. Safe to call from any thread: requests are coalesced and applied

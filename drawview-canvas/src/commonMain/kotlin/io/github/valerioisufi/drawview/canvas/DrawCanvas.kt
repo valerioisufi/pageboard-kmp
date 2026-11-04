@@ -71,6 +71,11 @@ public fun DrawCanvas(
         onDispose { engine.release() }
     }
 
+    DisposableEffect(controller, gestures) {
+        controller.canvasGestures = gestures
+        onDispose { if (controller.canvasGestures === gestures) controller.canvasGestures = null }
+    }
+
     // Physics animation loop and auto-scroll while dragging near the edges. No frame is asked for
     // while nothing moves by itself: a page only looked at lets the device sleep
     var animationTick by remember { mutableStateOf(0L) }

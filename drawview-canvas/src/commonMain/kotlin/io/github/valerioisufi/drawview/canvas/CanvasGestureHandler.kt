@@ -239,7 +239,26 @@ internal class CanvasGestureHandler(
 
     private fun currentEventTime(): Long = lastEventTime
 
-    private fun AwaitPointerEventScope.handle(event: PointerEvent, touchSlop: Float, doubleTapTimeout: Long) {
+    /**
+     * The gesture of the [pressed] pointers, started over an element above the canvas, becomes a pan
+     * or a pinch of the canvas (see [canvasGesturesOverField]).
+     */
+    fun takeOver(pressed: List<PointerInputChange>) {
+        val first = pressed[0]
+        activePointer = first.id
+        activeType = first.type
+        downPosition = first.position
+        lastPosition = first.position
+        movedBeyondSlop = true
+        longPressCandidate = false
+        velocityTracker.resetTracking()
+        velocityTracker.addPosition(first.uptimeMillis, first.position)
+        startPan()
+        if (pressed.size >= 2) onAdditionalPointer(pressed)
+        pressed.forEach { it.consume() }
+    }
+
+    fun AwaitPointerEventScope.handle(event: PointerEvent, touchSlop: Float, doubleTapTimeout: Long) {
         val changes = event.changes
         changes.firstOrNull()?.let { lastEventTime = it.uptimeMillis }
         freeGesture = event.keyboardModifiers.isAltPressed

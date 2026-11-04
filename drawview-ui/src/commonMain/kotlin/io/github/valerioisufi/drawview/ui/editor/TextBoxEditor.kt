@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.canvasGesturesOverField
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
@@ -218,6 +219,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     transformOrigin = TransformOrigin(0f, 0f)
                 }
                 .focusRequester(focusRequester)
+                // The fingers, a wheel and the middle button move the canvas over the field too
+                .canvasGesturesOverField(controller)
                 // A tap on a block of code puts the caret on the character tapped (the field would
                 // put it at an end of the character standing for the block)
                 .pointerInput(Unit) {

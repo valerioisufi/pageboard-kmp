@@ -123,7 +123,7 @@ Android or iOS. "Read" means read in the code only.
 | How much to pan so that a rectangle is in a visible area, on both axes | `CaretReveal` (`drawview-ui`, new, pure) | Pure Fabrication |
 | The caret followed: its rectangle from the layout, the room left by the bar and the keyboard | `TextEditorOverlay` (`drawview-ui`) | Controller |
 | The handles on the visible part of the edge | `SelectionFrame.ofEditedText` (`drawview-canvas`) | Information Expert |
-| Touch over the field given to the camera, after the slop or at the second finger | `TextBoxEditor`, with the pan and zoom of `CameraController` | Indirection, Low Coupling |
+| The gestures moving the camera given to the canvas from over the field: a finger past the slop, a second finger, a wheel, a trackpad, the middle button | `canvasGesturesOverField` (`drawview-canvas`, new, public), on `CanvasGestureHandler` | Indirection, Low Coupling |
 | A paste recognized in a change of the value | `TextEditorManager.updateValue`, as `SelectionInput` and `keepInCells` | Controller |
 | A pasted text normalized (pure, the same on every device) | `PastedText` (`drawview-model`, new), sharing the rules of `TextCleanup` | Pure Fabrication, High Cohesion |
 | The cells kept whole for a selection replaced or deleted | `TableEditing.keepInCells` (`drawview-canvas`) | Information Expert |
@@ -149,10 +149,13 @@ selecting is not followed). A box wider than the window scrolls sideways.
 
 ### Touch over the field
 
-A `pointerInput` at the `Initial` pass of the field, for `PointerType.Touch` only, lets a tap and a
-long press go to the field; beyond the slop it consumes the gesture and moves the camera, with the
-fling of `CanvasGestureHandler`; a second finger makes it a pinch. The handles of the selection of
-the field are not under it. The middle button of a mouse pans likewise.
+`canvasGesturesOverField`, at the `Initial` pass of the field, lets a tap and a long press go to the
+field; a finger past the slop, or a second finger, becomes a pan or a pinch of the canvas
+(`CanvasGestureHandler.takeOver`), its fling and its limits the ones of any gesture there. A wheel, a
+trackpad and the middle button of a mouse go to the canvas as well: a field as large as its box
+would otherwise leave them nowhere to go. A sibling sharing the events is not possible: Compose asks
+the deepest node hit, which is inside the field. The function is public (the field is in
+`drawview-ui`), the only addition to the API of `drawview-canvas`.
 
 ### Pasting
 
@@ -184,7 +187,7 @@ the next character does.
 |---|---|---|
 | 1 | The field at the size of the box: tests in the explorer (the bounds of the field and of the frame, the same height written and saved at 250%, no scroll inside), screenshot of a box larger than the window | done |
 | 2 | `CaretReveal`, the caret followed on both axes, the handles on the visible edge: tests of the pure function, of typing on the first line of a tall box and at the end of a wide line, of a pan not undone | done |
-| 3 | Touch over the field: pan, pinch, tap and long press unchanged, the middle button; tests with injected touch; tried on the tablet | planned |
+| 3 | Touch over the field: pan, pinch, tap and long press unchanged, the middle button; tests with injected touch; tried on the tablet | done, not yet tried on the tablet |
 | 4 | Tables: `keepInCells` with a selection (in a cell, across cells), deletions across cells, `\r`; `TableEditingTest` | planned |
 | 5 | `PastedText`, in the field and on the canvas: tests on texts from a PDF, a web page, a chat, code, verses, Markdown; a real Ctrl+V in the explorer; one undo | planned |
 | 6 | Chains kept whole: a box emptied flows the chain, no link to nothing saved, the chevron read through `TextChains`, the blank page removed in the same step, a page with content kept; `TextChainEditingTest`, undo and a page with a stroke included | planned |
