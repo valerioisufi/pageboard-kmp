@@ -535,8 +535,8 @@ final class io.github.valerioisufi.drawview.agent/ExternalAgents { // io.github.
     final val tools // io.github.valerioisufi.drawview.agent/ExternalAgents.tools|{}tools[0]
         final fun <get-tools>(): io.github.valerioisufi.drawview.agent/DocumentTools // io.github.valerioisufi.drawview.agent/ExternalAgents.tools.<get-tools>|<get-tools>(){}[0]
 
-    final suspend fun decide(kotlin/String, kotlin.collections/Set<kotlin/Int>) // io.github.valerioisufi.drawview.agent/ExternalAgents.decide|decide(kotlin.String;kotlin.collections.Set<kotlin.Int>){}[0]
-    final suspend fun plan(io.github.valerioisufi.drawview.agent/Proposal): io.github.valerioisufi.drawview.agent/ProposalPlan? // io.github.valerioisufi.drawview.agent/ExternalAgents.plan|plan(io.github.valerioisufi.drawview.agent.Proposal){}[0]
+    final suspend fun decide(kotlin/String, kotlin.collections/Set<kotlin/Int>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ...) // io.github.valerioisufi.drawview.agent/ExternalAgents.decide|decide(kotlin.String;kotlin.collections.Set<kotlin.Int>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>){}[0]
+    final suspend fun plan(io.github.valerioisufi.drawview.agent/Proposal, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ...): io.github.valerioisufi.drawview.agent/ProposalPlan? // io.github.valerioisufi.drawview.agent/ExternalAgents.plan|plan(io.github.valerioisufi.drawview.agent.Proposal;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>){}[0]
     final suspend fun staleItems(io.github.valerioisufi.drawview.agent/Proposal): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.drawview.agent/ExternalAgents.staleItems|staleItems(io.github.valerioisufi.drawview.agent.Proposal){}[0]
 }
 

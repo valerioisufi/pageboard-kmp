@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.agent.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
@@ -34,14 +36,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.agent.AGENT_TEXT_COLOR
 import io.github.valerioisufi.drawview.agent.AgentConnection
 import io.github.valerioisufi.drawview.agent.AgentGrants
+import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
 import io.github.valerioisufi.drawview.agent.PlacementWarning
+import io.github.valerioisufi.drawview.agent.PlannedPiece
 import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalEntry
 import io.github.valerioisufi.drawview.agent.ProposalItem
+import io.github.valerioisufi.drawview.agent.ProposalPlan
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_accept_selected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_clients
@@ -65,11 +71,14 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_s
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_accepted
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_rejected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_stale
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_place_chosen
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_placing
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_reject_all
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_empty
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_from
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_show
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_show_on_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_chain
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_far
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_narrowed
@@ -78,6 +87,10 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warnin
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_end
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_split
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.PlacementItem
+import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
+import io.github.valerioisufi.drawview.canvas.controller.PlacementSpot
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -99,6 +112,9 @@ import org.jetbrains.compose.resources.stringResource
 public class AgentReviewUi(private val agents: ExternalAgents) {
     private val openPanels = mutableStateSetOf<String>()
     private var accessOf by mutableStateOf<String?>(null)
+
+    /** The places the user chose for the items of a proposal, until it is decided. */
+    private val chosenPlaces = mutableStateMapOf<String, Map<Int, List<ChosenPlace>>>()
 
     private fun accessCommand(documentId: String) = Command(
         id = "external_models",
@@ -166,25 +182,81 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             onDispose { controller.session.removeObserver(observer) }
         }
         var stale by remember { mutableStateOf<Map<String, Set<Int>>>(emptyMap()) }
-        var warnings by remember { mutableStateOf<Map<String, Map<Int, List<PlacementWarning>>>>(emptyMap()) }
+        var plans by remember { mutableStateOf<Map<String, ProposalPlan>>(emptyMap()) }
         LaunchedEffect(all, changes) {
             val waiting = proposals.filter { it.isWaiting }
             stale = waiting.associate { it.id to agents.staleItems(it) }
             // A plan takes time on the thread of the document: not at every stroke
             delay(PLAN_DELAY_MS)
-            warnings = waiting.associate { proposal ->
-                proposal.id to agents.plan(proposal)?.items.orEmpty().withIndex()
-                    .filter { it.value.warnings.isNotEmpty() }
-                    .associate { it.index to it.value.warnings }
-            }
+            plans = waiting.mapNotNull { proposal -> agents.plan(proposal)?.let { proposal.id to it } }.toMap()
         }
+        val placing = stringResource(Res.string.agent_placing)
         ReviewList(
             proposals = proposals,
             staleItems = stale,
-            warnings = warnings,
-            onDecide = { id, accepted -> scope.launch { agents.decide(id, accepted) } },
+            warnings = plans.mapValues { (_, plan) ->
+                plan.items.withIndex().filter { it.value.warnings.isNotEmpty() }.associate { it.index to it.value.warnings }
+            },
+            shown = plans.mapValues { (_, plan) ->
+                plan.items.indices.filterTo(mutableSetOf()) { plan.items[it].pieces.isNotEmpty() }
+            },
+            chosen = chosenPlaces.mapValues { it.value.keys },
+            onShow = { id, index ->
+                agents.proposals.find(id)?.let { proposal -> scope.launch { show(proposal, index, controller, placing) } }
+            },
+            onDecide = { id, accepted ->
+                val chosen = chosenPlaces.remove(id).orEmpty()
+                scope.launch { agents.decide(id, accepted, chosen) }
+            },
             modifier = Modifier.fillMaxWidth()
         )
+    }
+
+    /**
+     * Shows the text of an item where it would go: a new text to look at, move and confirm, what it
+     * replaces by going to its box. Nothing is applied until the proposal is.
+     */
+    private suspend fun show(proposal: Proposal, index: Int, controller: DrawViewController, label: String) {
+        val plan = agents.plan(proposal, chosenPlaces[proposal.id].orEmpty()) ?: return
+        val pieces = plan.items.getOrNull(index)?.pieces.orEmpty()
+        val pages = controller.document.pages
+        if (proposal.entries.getOrNull(index)?.item !is ProposalItem.InsertText) {
+            val piece = pieces.firstOrNull() ?: return
+            val page = pages.indexOfFirst { it.id == piece.pageId }
+            if (page >= 0) controller.pageManager.jumpToPage(page, piece.box)
+            return
+        }
+        val items = pieces.mapNotNull { piece ->
+            val spot = spotOf(piece, plan, pages.map { it.id }) ?: return@mapNotNull null
+            val preview = DrawText().apply {
+                text = piece.markdown
+                width = piece.box.width
+                height = piece.box.height
+                color = AGENT_TEXT_COLOR
+                fontSize = piece.fontSize
+                markDirty()
+            }
+            PlacementItem(preview, listOf(spot))
+        }
+        if (items.size != pieces.size || items.isEmpty()) return
+        controller.placementManager.start(
+            PlacementRequest(
+                items = items,
+                label = label,
+                onPlace = { spots ->
+                    val places = spots.map { ChosenPlace(if (it.newPageAfter) null else pages.getOrNull(it.pageIndex)?.id, it.box) }
+                    chosenPlaces[proposal.id] = chosenPlaces[proposal.id].orEmpty() + (index to places)
+                }
+            )
+        )
+    }
+
+    /** The place of [piece] for the editor: on its page, or on a new page after the last page there is. */
+    private fun spotOf(piece: PlannedPiece, plan: ProposalPlan, pageIds: List<String>): PlacementSpot? {
+        if (!piece.isOnNewPage) return pageIds.indexOf(piece.pageId).takeIf { it >= 0 }?.let { PlacementSpot(it, piece.box) }
+        val position = plan.pageOrder.indexOf(piece.pageId)
+        val before = (position - 1 downTo 0).firstOrNull { plan.pageOrder[it] in pageIds } ?: return null
+        return PlacementSpot(pageIds.indexOf(plan.pageOrder[before]), piece.box, position - before)
     }
 
     private companion object {
@@ -199,7 +271,10 @@ internal fun ReviewList(
     staleItems: Map<String, Set<Int>>,
     onDecide: (String, Set<Int>) -> Unit,
     modifier: Modifier = Modifier,
-    warnings: Map<String, Map<Int, List<PlacementWarning>>> = emptyMap()
+    warnings: Map<String, Map<Int, List<PlacementWarning>>> = emptyMap(),
+    shown: Map<String, Set<Int>> = emptyMap(),
+    chosen: Map<String, Set<Int>> = emptyMap(),
+    onShow: (String, Int) -> Unit = { _, _ -> }
 ) {
     val waiting = proposals.filter { it.isWaiting }
     val decided = proposals.filterNot { it.isWaiting }.asReversed()
@@ -216,7 +291,15 @@ internal fun ReviewList(
         }
         for (proposal in waiting) {
             androidx.compose.runtime.key(proposal.id) {
-                ProposalCard(proposal, staleItems[proposal.id].orEmpty(), warnings[proposal.id].orEmpty(), onDecide)
+                ProposalCard(
+                    proposal,
+                    staleItems[proposal.id].orEmpty(),
+                    warnings[proposal.id].orEmpty(),
+                    shown[proposal.id].orEmpty(),
+                    chosen[proposal.id].orEmpty(),
+                    onShow,
+                    onDecide
+                )
             }
         }
         if (decided.isNotEmpty()) {
@@ -234,7 +317,15 @@ internal fun ReviewList(
 
 /** A proposal waiting: each item with a box, on by default but when stale. */
 @Composable
-private fun ProposalCard(proposal: Proposal, stale: Set<Int>, warnings: Map<Int, List<PlacementWarning>>, onDecide: (String, Set<Int>) -> Unit) {
+private fun ProposalCard(
+    proposal: Proposal,
+    stale: Set<Int>,
+    warnings: Map<Int, List<PlacementWarning>>,
+    shown: Set<Int>,
+    chosen: Set<Int>,
+    onShow: (String, Int) -> Unit,
+    onDecide: (String, Set<Int>) -> Unit
+) {
     val unchecked = remember(proposal.id) { mutableStateSetOf<Int>() }
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -257,7 +348,14 @@ private fun ProposalCard(proposal: Proposal, stale: Set<Int>, warnings: Map<Int,
                         enabled = !isStale,
                         onCheckedChange = { checked -> if (checked) unchecked -= index else unchecked += index }
                     )
-                    EntryContent(entry, isStale, warnings[index].orEmpty(), Modifier.weight(1f).padding(top = 12.dp))
+                    EntryContent(
+                        entry,
+                        isStale,
+                        warnings[index].orEmpty(),
+                        isChosen = index in chosen,
+                        onShow = if (index in shown && !isStale) ({ onShow(proposal.id, index) }) else null,
+                        modifier = Modifier.weight(1f).padding(top = 12.dp)
+                    )
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -275,7 +373,14 @@ private fun ProposalCard(proposal: Proposal, stale: Set<Int>, warnings: Map<Int,
 
 /** What an item does: the text as it is and as it would be. */
 @Composable
-private fun EntryContent(entry: ProposalEntry, stale: Boolean, warnings: List<PlacementWarning>, modifier: Modifier = Modifier) {
+private fun EntryContent(
+    entry: ProposalEntry,
+    stale: Boolean,
+    warnings: List<PlacementWarning>,
+    isChosen: Boolean,
+    onShow: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
     val item = entry.item
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(itemLabel(item), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
@@ -306,12 +411,28 @@ private fun EntryContent(entry: ProposalEntry, stale: Boolean, warnings: List<Pl
                 Text(
                     warningText(warning),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    color = if (warning.harmsThePage) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+        if (isChosen) {
+            Text(
+                stringResource(Res.string.agent_place_chosen),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        onShow?.let {
+            TextButton(onClick = it, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)) {
+                Text(stringResource(Res.string.agent_show_on_page), style = MaterialTheme.typography.labelMedium)
             }
         }
     }
 }
+
+/** Whether it would hide or lose something, rather than only be less than ideal. */
+private val PlacementWarning.harmsThePage: Boolean
+    get() = this is PlacementWarning.Overlaps || this is PlacementWarning.PastPageEnd || this is PlacementWarning.ChainOverflow
 
 /** What is wrong with where an item goes, in words. */
 @Composable

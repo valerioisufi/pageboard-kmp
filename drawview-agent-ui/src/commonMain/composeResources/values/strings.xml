@@ -34,4 +34,7 @@
     <string name="agent_warning_overlaps">Would cover other content of the page</string>
     <string name="agent_warning_past_end">Would pass the end of the page by %1$d mm</string>
     <string name="agent_warning_chain">Its part no longer fits its box: the next boxes do not move</string>
+    <string name="agent_show_on_page">Show on the page</string>
+    <string name="agent_place_chosen">Goes where you put it</string>
+    <string name="agent_placing">Text proposed by the model</string>
 </resources>

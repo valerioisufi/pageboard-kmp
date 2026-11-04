@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
@@ -473,6 +474,17 @@ class ProposalPlannerTest {
     }
 
     @Test
+    fun aShortTextBelowATextIsAsWideAsThePageAndNotTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText("Old text", y = 20f, width = 100f)
+
+        val planned = setup.plan(ProposalItem.InsertText("New")).items.single()
+
+        assertEquals(190f, planned.pieces.single().box.width)
+        assertTrue(planned.warnings.isEmpty(), "${planned.warnings}")
+    }
+
+    @Test
     fun aReplacedTextCoveringAnotherIsTold() = runTest {
         val setup = setup(this, backgroundScope)
         val text = setup.addText("Short", y = 20f)
@@ -630,5 +642,49 @@ class ProposalPlannerTest {
         val area = setup.readPage().getValue("ink_area").jsonObject
 
         assertTrue(area.number("x") <= 20f && area.number("y") <= 120f && area.number("width") >= 90f, "$area")
+    }
+
+    // ==========================================================
+    // The place chosen by the user
+    // ==========================================================
+
+    @Test
+    fun aPieceMovedBackFromANewPageAddsNoPage() = runTest {
+        val setup = setup(this, backgroundScope)
+        val long = (1..25).joinToString("\n\n") { "Paragraph $it" }
+        val item = ProposalItem.InsertText(long)
+        val page = setup.pageId()
+        val pieces = setup.plan(item).items.single().pieces
+        assertTrue(pieces.last().isOnNewPage)
+
+        val chosen = mapOf(0 to pieces.map { ChosenPlace(page, it.box) })
+        val planned = setup.open.edit { ProposalPlanner().plan(it.document, listOf(item), chosen) }.items.single()
+
+        assertEquals(0, planned.pagesAdded)
+        assertTrue(planned.pieces.all { it.pageId == page && it.next == null })
+    }
+
+    @Test
+    fun aPieceLeftOnANewPageGoesOnFromTheOneBefore() = runTest {
+        val setup = setup(this, backgroundScope)
+        val long = (1..25).joinToString("\n\n") { "Paragraph $it" }
+        val item = ProposalItem.InsertText(long)
+        val pieces = setup.plan(item).items.single().pieces
+
+        val moved = Rect(30f, 40f, 180f, 60f)
+        val page = setup.pageId()
+        val chosen = mapOf(0 to pieces.mapIndexed { index, piece ->
+            when {
+                index == 0 -> ChosenPlace(page, moved)
+                piece.isOnNewPage -> ChosenPlace(null, piece.box)
+                else -> ChosenPlace(page, piece.box)
+            }
+        })
+        val planned = setup.open.edit { ProposalPlanner().plan(it.document, listOf(item), chosen) }.items.single()
+
+        assertEquals(1, planned.pagesAdded)
+        assertEquals(moved, planned.pieces[0].box)
+        val last = planned.pieces.lastIndex
+        assertEquals(planned.pieces[last].textId, planned.pieces[last - 1].next)
     }
 }

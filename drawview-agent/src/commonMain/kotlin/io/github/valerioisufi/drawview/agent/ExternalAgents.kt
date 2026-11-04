@@ -28,8 +28,10 @@ public class ExternalAgents(
     /**
      * The user decided about the proposal [proposalId]: the items at [accepted] are applied as one
      * change, the others are rejected. Nothing happens if it is decided already.
+     *
+     * @param chosen the places the user chose for the pieces of the items, by index of an item.
      */
-    public suspend fun decide(proposalId: String, accepted: Set<Int>): Unit = decisions.withLock {
+    public suspend fun decide(proposalId: String, accepted: Set<Int>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): Unit = decisions.withLock {
         val proposal = proposals.find(proposalId)?.takeIf { it.isWaiting } ?: return
         val indexes = proposal.entries.indices.filter { it in accepted }
         val outcomes = MutableList(proposal.entries.size) { ItemOutcome.REJECTED }
@@ -42,7 +44,8 @@ public class ExternalAgents(
                 try {
                     val applied = open.edit { session ->
                         engines.editors?.settle(proposal.documentId)
-                        applier.apply(session, indexes.map { proposal.entries[it].item })
+                        val places = indexes.withIndex().mapNotNull { (position, index) -> chosen[index]?.let { position to it } }.toMap()
+                        applier.apply(session, indexes.map { proposal.entries[it].item }, places)
                     }
                     indexes.forEachIndexed { position, index ->
                         outcomes[index] = applied.outcomes[position]
@@ -69,12 +72,14 @@ public class ExternalAgents(
     /**
      * What [proposal] would do to its document as it is now; `null` when it cannot be opened, or holds
      * too much text to be planned before the user accepts it.
+     *
+     * @param chosen the places the user chose for the pieces of the items, by index of an item.
      */
-    public suspend fun plan(proposal: Proposal): ProposalPlan? {
+    public suspend fun plan(proposal: Proposal, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): ProposalPlan? {
         if (!ProposalLimits().canPlan(proposal.entries.map { it.item })) return null
         val open = documents.open(proposal.documentId) ?: return null
         try {
-            return open.edit { session -> planner.plan(session.document, proposal.entries.map { it.item }) }
+            return open.edit { session -> planner.plan(session.document, proposal.entries.map { it.item }, chosen) }
         } finally {
             documents.close(open)
         }

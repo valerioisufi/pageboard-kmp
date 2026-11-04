@@ -183,8 +183,11 @@ into millimeters by the size of the page.
 
 An item with warnings shows them in words in its card. The card of an `insert_text` has a button
 showing it on the page: a `PlacementRequest` with the pieces of the plan, so the user can look at
-the box, drag it and confirm the place, which is what is applied. `decide` gains the places chosen by
-the user, by item. A place chosen by the user is applied as chosen, and is not checked again.
+the box, drag it and confirm the place, which is what is applied. Confirming only keeps the place:
+nothing changes until the proposal is applied. `decide` gains the places chosen by the user, by item.
+A place chosen by the user is applied as chosen, and is not checked again. The panel stays open
+meanwhile, which suits the desktop, the only place the review is today (stage 2 will look at this on
+small screens).
 
 A `replace_text` with warnings shows them, and takes the user to its box. Moving a box is not an item
 of a proposal yet (`docs/agent-tools.md`, "Left for later").
@@ -209,7 +212,7 @@ the ones that matter most, and each phase can be left out of the ones after it.
 | 2 | `preview_proposal`, the plan in the answer of `propose` and the places in `proposal_status`; the warnings, with the check of `replace_text`; `pencilnotes preview`. Tests: a preview changes nothing and opens nothing, what a preview says is what `apply` does on the same page, each warning, a closed document answering `measured: false`, the largest proposal measured; the commands against the application on a scratch directory | done |
 | 3 | The geometry in `read_page`, `FreeSpace.largestAreas`. Tests: empty, full, PDF and scanned pages, texts at their measured height | done |
 | 4 | The warnings in the review panel. Tests: screenshots (`verifyRoborazziJvm`), a real editor | done |
-| 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, dragged, confirmed, undone at once; cancelled, nothing changes), the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
+| 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, confirmed, applied where it was, undone at once; cancelled, nothing changes; a place chosen is the one applied), a piece moved off a new page adds no page. The drag itself is the one of `PlacementManager`, tested in the canvas. The clicks in the window of the application are left to the user | done |
 
 ## Decisions
 
@@ -232,6 +235,11 @@ Those marked *revertible* were taken without the user.
    window for a preview. *Revertible.*
 9. **A place chosen by the user is not checked again**: it is their choice, and they see it.
    *Revertible.*
+
+10. **A text with no anchor prefers a wide place** to the first one (`BesideAnchor(null)`, not
+    `ReadingOrder`): seen in a real editor, a short text went into a narrow gap beside a text, with a
+    wide page free below it. The import and the review of the assistant keep filling the gaps.
+    *Revertible.*
 
 ## Left for later
 

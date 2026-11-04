@@ -100,14 +100,17 @@ class AgentReviewScreenshotTest {
         )
     )
 
+    private val shown = mapOf("one" to setOf(0, 2))
+    private val chosen = mapOf("one" to setOf(2))
+
     @Test
-    fun review() = capture("agent_review", 420, 860) {
-        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings)
+    fun review() = capture("agent_review", 420, 920) {
+        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings, shown = shown, chosen = chosen)
     }
 
     @Test
-    fun reviewDark() = capture("agent_review_dark", 420, 860, dark = true) {
-        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings)
+    fun reviewDark() = capture("agent_review_dark", 420, 920, dark = true) {
+        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings, shown = shown, chosen = chosen)
     }
 
     @Test

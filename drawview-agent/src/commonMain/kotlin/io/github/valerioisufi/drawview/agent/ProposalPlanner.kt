@@ -235,12 +235,12 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val page = pages[pageIndex]
         val fontSize = fontSizeFor(document, page)
         val usable = page.widthMm - 2 * FreeSpace.DEFAULT_PAGE_MARGIN_MM
-        val firstPlace = anchorRect?.let { anchor ->
-            if (item.place == InsertPlace.MARGIN) {
-                TextFlow.FirstPlace(InMargin(anchor), minOf(MARGIN_WIDTH_MM, usable), MARGIN_MIN_WIDTH_MM)
-            } else {
-                val room = page.widthMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM - max(anchor.left, FreeSpace.DEFAULT_PAGE_MARGIN_MM)
-                TextFlow.FirstPlace(BesideAnchor(anchor), max(room, textFlow.minWidthMm), textFlow.minWidthMm)
+        val firstPlace = when {
+            anchorRect == null -> TextFlow.FirstPlace(BesideAnchor(null), usable, textFlow.minWidthMm)
+            item.place == InsertPlace.MARGIN -> TextFlow.FirstPlace(InMargin(anchorRect), minOf(MARGIN_WIDTH_MM, usable), MARGIN_MIN_WIDTH_MM)
+            else -> {
+                val room = page.widthMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM - max(anchorRect.left, FreeSpace.DEFAULT_PAGE_MARGIN_MM)
+                TextFlow.FirstPlace(BesideAnchor(anchorRect), max(room, textFlow.minWidthMm), textFlow.minWidthMm)
             }
         }
         val pieces = textFlow.flow(
@@ -254,21 +254,22 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val ids = pieces.map { newElementId() }
         val newPages = mutableListOf<AddPage>()
         var lastPage = pageIndex
-        var pagesMade = 0
-        val planned = pieces.mapIndexed { index, piece ->
-            while (pagesMade < piece.newPage) {
+        val created = mutableMapOf<Int, PlannedPage>()
+        val targets = pieces.mapIndexed { index, piece ->
+            // The place the user chose counts, on a page of the document: a new page only when one is left there
+            val place = chosen?.getOrNull(index)
+            place?.pageId?.let { id -> pages.firstOrNull { it.id == id } } ?: if (piece.newPage == 0) page else created.getOrPut(piece.newPage) {
                 newPages += newPageAfter(pages, lastPage)
                 lastPage++
-                pagesMade++
+                pages[lastPage]
             }
-            val own = pages[if (piece.newPage == 0) pageIndex else lastPage]
-            // The place the user chose counts, on a page of the document
-            val place = chosen?.getOrNull(index)
-            val target = place?.pageId?.let { id -> pages.firstOrNull { it.id == id } } ?: own
-            val box = place?.box ?: piece.box
+        }
+        val planned = pieces.mapIndexed { index, piece ->
+            val target = targets[index]
+            val box = chosen?.getOrNull(index)?.box ?: piece.box
             target.boxes += box
-            // A piece going on onto a new page goes on from the piece before it: one text across the pages
-            val goesOn = pieces.getOrNull(index + 1)?.let { it.newPage > piece.newPage } == true
+            // A piece going on onto a later page goes on from the piece before it: one text across the pages
+            val goesOn = pieces.getOrNull(index + 1)?.let { it.newPage > piece.newPage } == true && pages.indexOf(targets[index + 1]) > pages.indexOf(target)
             PlannedPiece(ids[index], piece.text, target.id, target.model == null, box, fontSize, if (goesOn) ids[index + 1] else null)
         }
 
@@ -279,7 +280,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         item: ProposalItem.InsertText,
         pieces: List<TextFlow.Piece>,
         usable: Float,
-        firstPlace: TextFlow.FirstPlace?,
+        firstPlace: TextFlow.FirstPlace,
         anchor: Rect?
     ): List<PlacementWarning> = buildList {
         val first = pieces.firstOrNull() ?: return@buildList
@@ -291,7 +292,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
             if (distance > FAR_FROM_ANCHOR_MM) add(PlacementWarning.FarFromAnchor(distance))
         }
         if (pieces.size > 1) add(PlacementWarning.Split(pieces.size))
-        val wanted = minOf(firstPlace?.widthMm ?: usable, usable)
+        val wanted = minOf(firstPlace.widthMm, usable)
         if (first.box.width < wanted - NARROWED_MARGIN_MM) add(PlacementWarning.Narrowed(wanted))
     }
 

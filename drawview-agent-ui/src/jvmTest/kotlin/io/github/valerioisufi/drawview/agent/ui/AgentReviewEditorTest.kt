@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.agent.AgentEngines
+import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
 import io.github.valerioisufi.drawview.agent.ToolResult
@@ -17,6 +18,7 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddElements
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
@@ -30,6 +32,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -230,6 +233,67 @@ class AgentReviewEditorTest {
         }
         awaitPanel()
         awaitInRealTime { onAllNodesWithText("Would pass the end of the page", substring = true).fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    private fun DesktopComposeUiTest.showNewText() {
+        awaitInRealTime { onAllNodesWithText("Show on the page").fetchSemanticsNodes().size == 2 }
+        onAllNodesWithText("Show on the page")[1].performClick()
+    }
+
+    @Test
+    fun aTextIsShownOnThePageAndGoesWhereItIsPut() = scene { scene ->
+        val id = scene.proposeChanges()
+        awaitPanel()
+        showNewText()
+        val placement = scene.controller.placementManager
+        awaitInRealTime { placement.isActive }
+        // Shown, not applied
+        assertEquals(listOf("Old text"), scene.texts)
+        val box = assertNotNull(placement.spots.single()).box
+        assertEquals("Added by the model", assertNotNull(placement.request).items.single().preview.text)
+
+        assertTrue(placement.confirm())
+        waitForIdle()
+        assertEquals(listOf("Old text"), scene.texts)
+        awaitInRealTime { onAllNodesWithText("Goes where you put it").fetchSemanticsNodes().isNotEmpty() }
+
+        onNodeWithText("Apply selected").performClick()
+        awaitInRealTime { !scene.agents.proposals.find(id)!!.isWaiting }
+        val added = scene.controller.document.pages.flatMap { it.texts }.single { it.text == "Added by the model" }
+        assertEquals(box.left, added.x)
+        assertEquals(box.top, added.y)
+        scene.controller.historyManager.undo()
+        assertEquals(listOf("Old text"), scene.texts)
+    }
+
+    @Test
+    fun aTextShownAndCancelledChangesNothing() = scene { scene ->
+        val id = scene.proposeChanges()
+        awaitPanel()
+        showNewText()
+        val placement = scene.controller.placementManager
+        awaitInRealTime { placement.isActive }
+
+        placement.cancel()
+        waitForIdle()
+
+        assertEquals(listOf("Old text"), scene.texts)
+        assertTrue(scene.agents.proposals.find(id)!!.isWaiting)
+        assertTrue(onAllNodesWithText("Goes where you put it").fetchSemanticsNodes().isEmpty())
+    }
+
+    @Test
+    fun aPlaceChosenIsTheOneApplied() = scene { scene ->
+        val id = scene.proposeChanges()
+        val page = scene.controller.document.pages.first().id
+        runBlocking { scene.agents.decide(id, setOf(1), mapOf(1 to listOf(ChosenPlace(page, Rect(30f, 200f, 100f, 220f))))) }
+
+        val added = scene.controller.document.pages.flatMap { it.texts }.single { it.text == "Added by the model" }
+        assertEquals(30f, added.x)
+        assertEquals(200f, added.y)
+        assertEquals(70f, added.width)
+        scene.controller.historyManager.undo()
+        assertEquals(listOf("Old text"), scene.texts)
     }
 
     /** The heights of an editor; how long the largest preview takes is in `docs/agent-placement.md`. */
