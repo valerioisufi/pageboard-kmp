@@ -22,6 +22,8 @@ import io.github.valerioisufi.drawview.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import java.io.File
+import javax.swing.JOptionPane
+import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 
 fun main() {
@@ -29,6 +31,18 @@ fun main() {
     // unless another directory is given with -Ddrawview.dataDir=...
     if (System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
         System.setProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY, File(System.getProperty("user.home"), ".pencilnotes").absolutePath)
+    }
+
+    // One process on the database of a directory (see docs/agent-tools.md), to the end of main
+    val directoryLock = DataDirectoryLock.acquire(File(System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY)))
+    if (directoryLock == null) {
+        JOptionPane.showMessageDialog(
+            null,
+            "PencilNotes is already running on these notes.",
+            "PencilNotes",
+            JOptionPane.INFORMATION_MESSAGE
+        )
+        exitProcess(1)
     }
 
     // The menus in the bar of the system on macOS
@@ -40,6 +54,11 @@ fun main() {
     // The application icon in the macOS Dock
     DesktopAppIcon.setDockIcon(DesktopAppIcon.loadIconImage("/icons/icon_mac.png"))
 
+    directoryLock.use { runApplication() }
+}
+
+/** The windows of PencilNotes, until the last one is closed. */
+private fun runApplication() {
     application {
         val windowManager = rememberDesktopWindowManager()
         val appIcon = rememberDesktopIcon("/icons/icon.png")
