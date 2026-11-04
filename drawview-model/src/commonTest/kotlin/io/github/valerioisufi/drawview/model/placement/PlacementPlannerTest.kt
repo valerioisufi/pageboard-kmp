@@ -171,4 +171,33 @@ class PlacementPlannerTest {
         assertEquals(287f, best.bottom, 2.01f)
         assertEquals(10f, best.left)
     }
+
+    @Test
+    fun theLargestAreasOfAnEmptyPageAreThePageInsideItsMargins() {
+        val areas = FreeSpace(PageOccupancy(210f, 296f, emptyList())).largestAreas(8)
+        assertEquals(listOf(Rect(10f, 10f, 200f, 286f)), areas)
+    }
+
+    @Test
+    fun theLargestAreasGoAroundWhatThePageHoldsAndDoNotOverlap() {
+        val taken = Rect(20f, 140f, 200f, 160f)
+        val areas = FreeSpace(PageOccupancy(210f, 296f, listOf(taken))).largestAreas(8)
+
+        assertTrue(areas.size >= 2, "$areas")
+        assertTrue(areas.zipWithNext().all { (a, b) -> a.width * a.height >= b.width * b.height }, "the largest first: $areas")
+        assertTrue(areas.none { it.overlaps(taken) }, "$areas")
+        for (a in areas) for (b in areas) if (a !== b) assertFalse(a.overlaps(b), "$a, $b")
+        assertTrue(areas.all { it.width >= 20f && it.height >= 20f }, "$areas")
+    }
+
+    @Test
+    fun aPageTakenWholeHasNoArea() {
+        val whole = Rect(0f, 0f, 210f, 296f)
+        assertTrue(FreeSpace(PageOccupancy(210f, 296f, listOf(whole))).largestAreas(8).isEmpty())
+    }
+
+    @Test
+    fun theLargestAreasAreBoundedByTheirCount() {
+        assertEquals(1, FreeSpace(PageOccupancy(210f, 296f, listOf(Rect(20f, 140f, 200f, 160f)))).largestAreas(1).size)
+    }
 }

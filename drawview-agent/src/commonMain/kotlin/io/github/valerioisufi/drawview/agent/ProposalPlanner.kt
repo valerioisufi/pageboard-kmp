@@ -146,6 +146,14 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         return ProposalPlan(measure.isMeasured, planned, pages.map { it.id })
     }
 
+    /** The geometry of [page] for a model: how its texts are laid out, and where there is room. */
+    internal fun geometryOf(document: DrawDocument, page: DrawPage): PageGeometry {
+        val measure = TextMeasure(document.id, engines.editors)
+        val occupancy = occupancyOf(document, PlannedPage(page.id, page.orderKey, page.widthMm, page.heightMm, page.background, null, page), measure)
+        val boxes = page.texts.filter { it.removed == null }.associate { it.id to measure.boundsOf(it) }
+        return PageGeometry(measure.isMeasured, boxes, textFlow.planner.freeSpace(occupancy).largestAreas(MAX_FREE_AREAS))
+    }
+
     /** The indexes of [items] that would not be applied to [document] as it is now. */
     public fun staleItems(document: DrawDocument, items: List<ProposalItem>): Set<Int> {
         val pages = plannedPages(document)
@@ -369,6 +377,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         /** Named by [PlacementWarning.Overlaps] for a text an earlier item of the proposal placed. */
         public const val NEW_TEXT: String = "new_text"
 
+        private const val MAX_FREE_AREAS = 8
         private const val MARGIN_WIDTH_MM = 60f
         private const val MARGIN_MIN_WIDTH_MM = 30f
         private const val FAR_FROM_ANCHOR_MM = 30f
@@ -377,6 +386,15 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         private const val NARROWED_MARGIN_MM = 4f
     }
 }
+
+/**
+ * What [ProposalPlanner.geometryOf] tells of a page.
+ *
+ * @param isMeasured whether the heights come from an editor.
+ * @param textBoxes the box of each text shown.
+ * @param freeAreas the largest free rectangles, as the placement sees them.
+ */
+internal class PageGeometry(val isMeasured: Boolean, val textBoxes: Map<String, Rect>, val freeAreas: List<Rect>)
 
 /**
  * The heights of the texts of a document, as well as they can be told: laid out by its editor, or

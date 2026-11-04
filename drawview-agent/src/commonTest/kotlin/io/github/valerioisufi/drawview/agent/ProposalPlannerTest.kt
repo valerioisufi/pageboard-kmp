@@ -1,6 +1,12 @@
 package io.github.valerioisufi.drawview.agent
 
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.change.StrokeData
+import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
@@ -25,6 +31,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.float
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -519,5 +526,109 @@ class ProposalPlannerTest {
 
         assertTrue(warnings.any { it is PlacementWarning.ChainOverflow }, "$warnings")
         assertTrue(warnings.none { it is PlacementWarning.PastPageEnd }, "$warnings")
+    }
+
+    // ==========================================================
+    // What the model reads
+    // ==========================================================
+
+    private suspend fun Setup.readPage(): JsonObject = call("read_page", buildJsonObject { put("document", documentId) })
+
+    private fun JsonObject.number(name: String) = getValue(name).jsonPrimitive.float
+
+    @Test
+    fun anEmptyPageIsFreeInsideItsMargins() = runTest {
+        val setup = setup(this, backgroundScope)
+        val page = setup.readPage()
+        val area = page.getValue("free_areas").jsonArray.single().jsonObject
+        assertEquals(10f, area.number("x"))
+        assertEquals(10f, area.number("y"))
+        assertEquals(190f, area.number("width"))
+        assertEquals(276f, area.number("height"))
+        assertTrue("ink_area" !in page)
+        assertTrue(page.getValue("images").jsonArray.isEmpty())
+    }
+
+    @Test
+    fun theGeometryOfAPageIsRead() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText("Gauss", y = 100f)
+        val image = setup.open.edit { session ->
+            val page = session.document.pages[0]
+            val image = DrawImage().apply {
+                resourceId = "picture"
+                x = 30f; y = 200f; width = 50f; height = 40f
+            }
+            session.submit(AddElements.of(page, listOf(image)))
+            image
+        }
+
+        val page = setup.readPage()
+
+        val text = page.getValue("texts").jsonArray.single().jsonObject
+        assertEquals(16f, text.number("font_size"))
+        assertTrue(text.number("height") > 0f)
+        val read = page.getValue("images").jsonArray.single().jsonObject
+        assertEquals(image.id, read.getValue("id").jsonPrimitive.content)
+        assertEquals(40f, read.number("height"))
+        val areas = page.getValue("free_areas").jsonArray.map { it.jsonObject }
+        assertTrue(areas.size > 1)
+        assertTrue(areas.none { it.number("y") < 240f && it.number("y") + it.number("height") > 200f && it.number("x") < 80f && it.number("x") + it.number("width") > 30f }, "$areas")
+    }
+
+    @Test
+    fun aTextIsReadAtTheHeightOfItsWrappedLines() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText("word ".repeat(400), y = 15f)
+
+        val text = setup.readPage().getValue("texts").jsonArray.single().jsonObject
+
+        assertTrue(text.number("height") > 40f, "$text")
+    }
+
+    @Test
+    fun theHeightOfAnEditorIsReadAsItIs() = runTest {
+        val setup = setup(this, backgroundScope, AgentEngines(editors = Editors(inEditor = true)))
+        val text = setup.addText("word ".repeat(400), y = 15f)
+        setup.open.edit { text.height = 33f }
+
+        val page = setup.readPage()
+
+        assertEquals("true", page.getValue("measured").jsonPrimitive.content)
+        assertEquals(33f, page.getValue("texts").jsonArray.single().jsonObject.number("height"))
+    }
+
+    @Test
+    fun aPdfPageWithoutTextIsTakenWhole() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.open.edit { session ->
+            val page = session.document.pages[0]
+            session.submit(AddElements.of(page, listOf(DrawPdf().apply { resourceId = "scan" })))
+        }
+
+        val page = setup.readPage()
+
+        assertEquals(1, page.getValue("pdf_pages").jsonPrimitive.int)
+        assertTrue(page.getValue("free_areas").jsonArray.isEmpty())
+    }
+
+    @Test
+    fun handwritingIsReadAsAnArea() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.open.edit { session ->
+            val page = session.document.pages[0]
+            val stroke = StrokeData(
+                id = newElementId(),
+                points = (0 until 20).map { StrokePoint(x = 20f + it * 5f, y = 120f + (it % 2), pressure = 0.5f, timestampMs = it * 8L) },
+                tool = StrokeTool.PRESSURE_PEN,
+                size = 0.5f,
+                color = 0xFF000000.toInt()
+            ).toElement()
+            session.submit(AddElements.of(page, listOf(stroke)))
+        }
+
+        val area = setup.readPage().getValue("ink_area").jsonObject
+
+        assertTrue(area.number("x") <= 20f && area.number("y") <= 120f && area.number("width") >= 90f, "$area")
     }
 }

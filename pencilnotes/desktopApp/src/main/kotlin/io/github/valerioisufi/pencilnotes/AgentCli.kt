@@ -124,7 +124,17 @@ internal class AgentCli(
             val fields = entry.jsonObject
             output.println()
             output.println("## Text ${fields.text("id")}  base ${fields.text("base")}")
+            output.println("x ${fields.text("x")}, y ${fields.text("y")}, ${fields.text("width")} x ${fields.text("height")} mm, size ${fields.text("font_size")}")
             output.println(fields.text("markdown"))
+        }
+        val free = page.array("free_areas")
+        if (free.isNotEmpty()) {
+            output.println()
+            output.println("## Free areas")
+            for (area in free) {
+                val box = area.jsonObject
+                output.println("x ${box.text("x")}, y ${box.text("y")}, ${box.text("width")} x ${box.text("height")} mm")
+            }
         }
         page.text("pdf_text")?.let {
             output.println()

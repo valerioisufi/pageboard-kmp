@@ -2075,12 +2075,15 @@ final class io.github.valerioisufi.drawview.model.placement/FreeSpace { // io.gi
     final fun freeRuns(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.model.placement/FreeSpace.freeRuns|freeRuns(){}[0]
     final fun isFree(io.github.valerioisufi.drawview.model.geometry/Rect): kotlin/Boolean // io.github.valerioisufi.drawview.model.placement/FreeSpace.isFree|isFree(io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
     final fun isTaken(kotlin/Int, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.placement/FreeSpace.isTaken|isTaken(kotlin.Int;kotlin.Int){}[0]
+    final fun largestAreas(kotlin/Int, kotlin/Float = ...): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.model.placement/FreeSpace.largestAreas|largestAreas(kotlin.Int;kotlin.Float){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion|null[0]
         final const val DEFAULT_CELL_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CELL_MM|{}DEFAULT_CELL_MM[0]
             final fun <get-DEFAULT_CELL_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CELL_MM.<get-DEFAULT_CELL_MM>|<get-DEFAULT_CELL_MM>(){}[0]
         final const val DEFAULT_CLEARANCE_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CLEARANCE_MM|{}DEFAULT_CLEARANCE_MM[0]
             final fun <get-DEFAULT_CLEARANCE_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CLEARANCE_MM.<get-DEFAULT_CLEARANCE_MM>|<get-DEFAULT_CLEARANCE_MM>(){}[0]
+        final const val DEFAULT_MIN_AREA_SIDE_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_MIN_AREA_SIDE_MM|{}DEFAULT_MIN_AREA_SIDE_MM[0]
+            final fun <get-DEFAULT_MIN_AREA_SIDE_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_MIN_AREA_SIDE_MM.<get-DEFAULT_MIN_AREA_SIDE_MM>|<get-DEFAULT_MIN_AREA_SIDE_MM>(){}[0]
         final const val DEFAULT_PAGE_MARGIN_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_PAGE_MARGIN_MM|{}DEFAULT_PAGE_MARGIN_MM[0]
             final fun <get-DEFAULT_PAGE_MARGIN_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_PAGE_MARGIN_MM.<get-DEFAULT_PAGE_MARGIN_MM>|<get-DEFAULT_PAGE_MARGIN_MM>(){}[0]
     }

@@ -2768,6 +2768,7 @@ public final class io/github/valerioisufi/drawview/model/placement/FreeSpace {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/FreeSpace$Companion;
 	public static final field DEFAULT_CELL_MM F
 	public static final field DEFAULT_CLEARANCE_MM F
+	public static final field DEFAULT_MIN_AREA_SIDE_MM F
 	public static final field DEFAULT_PAGE_MARGIN_MM F
 	public fun <init> (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;FFF)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -2779,6 +2780,8 @@ public final class io/github/valerioisufi/drawview/model/placement/FreeSpace {
 	public final fun getRows ()I
 	public final fun isFree (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Z
 	public final fun isTaken (II)Z
+	public final fun largestAreas (IF)Ljava/util/List;
+	public static synthetic fun largestAreas$default (Lio/github/valerioisufi/drawview/model/placement/FreeSpace;IFILjava/lang/Object;)Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/drawview/model/placement/FreeSpace$Companion {

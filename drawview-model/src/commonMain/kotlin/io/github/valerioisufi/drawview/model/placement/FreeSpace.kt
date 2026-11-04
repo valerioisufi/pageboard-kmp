@@ -83,6 +83,52 @@ public class FreeSpace(
         }
     }
 
+    /**
+     * The largest free rectangles (page millimeters), the largest first and not overlapping: to tell
+     * where there is room. Those with a side under [minSideMm] are left out.
+     *
+     * @param count the most rectangles returned.
+     */
+    public fun largestAreas(count: Int, minSideMm: Float = DEFAULT_MIN_AREA_SIDE_MM): List<Rect> {
+        val minCells = max(1, ceil(minSideMm / cellMm).toInt())
+        val used = taken.copyOf()
+        val areas = mutableListOf<Rect>()
+        while (areas.size < count) {
+            val best = largestRectangle(used, minCells) ?: break
+            for (row in best.fromRow until best.toRow) for (column in best.fromColumn until best.toColumn) used[row * columns + column] = true
+            areas += Rect(best.fromColumn * cellMm, best.fromRow * cellMm, best.toColumn * cellMm, best.toRow * cellMm)
+        }
+        return areas
+    }
+
+    private class CellRectangle(val fromColumn: Int, val fromRow: Int, val toColumn: Int, val toRow: Int)
+
+    /** The largest rectangle of cells not [used] with both sides of at least [minCells], the first found of equals. */
+    private fun largestRectangle(used: BooleanArray, minCells: Int): CellRectangle? {
+        var best: CellRectangle? = null
+        var bestArea = 0
+        val heights = IntArray(columns + 1)
+        val stack = IntArray(columns + 2)
+        for (row in 0 until rows) {
+            for (column in 0 until columns) heights[column] = if (used[row * columns + column]) 0 else heights[column] + 1
+            var top = 0
+            for (column in 0..columns) {
+                val height = if (column == columns) 0 else heights[column]
+                while (top > 0 && heights[stack[top - 1]] > height) {
+                    val tall = heights[stack[--top]]
+                    val from = if (top == 0) 0 else stack[top - 1] + 1
+                    val width = column - from
+                    if (tall >= minCells && width >= minCells && tall * width > bestArea) {
+                        bestArea = tall * width
+                        best = CellRectangle(from, row + 1 - tall, column, row + 1)
+                    }
+                }
+                stack[top++] = column
+            }
+        }
+        return best
+    }
+
     private fun takenIn(fromColumn: Int, fromRow: Int, toColumn: Int, toRow: Int): Int {
         val w = columns + 1
         return sums[toRow * w + toColumn] - sums[fromRow * w + toColumn] - sums[toRow * w + fromColumn] + sums[fromRow * w + fromColumn]
@@ -92,6 +138,7 @@ public class FreeSpace(
         public const val DEFAULT_CELL_MM: Float = 2f
         public const val DEFAULT_CLEARANCE_MM: Float = 3f
         public const val DEFAULT_PAGE_MARGIN_MM: Float = 10f
+        public const val DEFAULT_MIN_AREA_SIDE_MM: Float = 20f
         private const val EPSILON = 1e-3f
     }
 }
