@@ -77,7 +77,7 @@ internal class CourseContextFile(val text: String = "")
 
 /**
  * A lecture of the workspace of lecture-eval, with the pages seen and the course context of its
- * copy in `<bench>/material/pencilnotes`: the requests of the assistant as it would have built them.
+ * copy in `<bench>/material/pencilnotes`, or else in the snapshot of the workspace: the requests of the assistant as it would have built them.
  */
 internal class BenchLecture(
     val prepared: PreparedLecture,
@@ -161,11 +161,11 @@ internal class BenchLecture(
         private const val MAX_REVIEW_IMAGES = 8
         private val json = Json { ignoreUnknownKeys = true }
 
-        /** The lecture [id] of [workspace], with its copy in [pencilnotes]; `null` when either is missing. */
+        /** The lecture [id] of [workspace], with its copy in [pencilnotes] or in the snapshot of [workspace]; `null` when either is missing. */
         fun read(workspace: File, pencilnotes: File, id: String): BenchLecture? {
             val preparedFile = File(workspace, "lectures/$id/prepared.json").takeIf { it.isFile } ?: return null
             val prepared = json.decodeFromString(PreparedLecture.serializer(), preparedFile.readText())
-            val documentDirectory = File(pencilnotes, "lectures/doc-${prepared.documentId}")
+            val documentDirectory = File(pencilnotes.takeIf { it.isDirectory } ?: File(workspace, "snapshot"), "lectures/doc-${prepared.documentId}")
             val lectureFile = File(documentDirectory, "$id/lecture.json").takeIf { it.isFile } ?: return null
             val recorded = json.decodeFromString(RecordedLecture.serializer(), lectureFile.readText())
             val context = File(documentDirectory, "context.json").takeIf { it.isFile }

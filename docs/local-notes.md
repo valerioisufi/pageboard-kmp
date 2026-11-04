@@ -143,11 +143,32 @@ that fails its check stops the plan there, with what was learned.
 
 | Phase | Content | Check | Status |
 |---|---|---|---|
-| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Not started |
+| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): stopped, the user chooses |
 | 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Not started |
 | 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Not started |
 | 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | Not started |
 | 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not started |
+
+### Phase 1 results (2026-11-04)
+
+* **The tools.** `NotesBench` takes `drawview.bench.noteLectures`, keeps a run by lecture and
+  configuration, and reads it back instead of paying again; `#<n>` labels a repetition. The grader
+  keeps every verdict and score, estimates (`--estimate`), stops at the cap (`--cap`, with
+  `<bench>/dollars.txt` shared with the runs) and refuses test without `--test`. The set of the notes
+  saved by the application is no longer graded: it comes from a prompt `main` has replaced.
+* **The downloads.** E4B and EmbeddingGemma 2 in `~/drawview-bench/models`, each verified by its SHA-256.
+* **The time, on the lecture of 2026-10-15** (`e4b-text`, 15 requests, 67 notes): 2,560 s in all, 171 s
+  a request, 214 s the longest. It keeps up with an interval of 300 s, but not with the 100 s of the
+  check. The bench of the models says why: on this JVM **the GPU of the PC cannot be used**, as
+  [docs/local-models.md](./local-models.md) already found, so E4B runs on the 24 processors. The
+  threshold of 100 s was set without looking at that, so this figure says more of the desktop JVM than
+  of what a computer with its GPU can do.
+* **2 answers of 15 could not be read** as the JSON of the notes (both broken at about 4,000 characters), so those 10 minutes wrote no note.
+  They count as failed in the runs of phase 2 as well.
+* **What it means for the runs.** The time does not change the notes, only how long they take: about
+  43 minutes a lecture here, so about 6 hours for the 4 dev lectures twice.
+* **Waiting for the user:** the runs here or on the Mac, and how to read the threshold of the time.
+  `GEMINI_API_KEY` is not set on this computer yet, and phase 2 needs it.
 
 ## Decisions
 

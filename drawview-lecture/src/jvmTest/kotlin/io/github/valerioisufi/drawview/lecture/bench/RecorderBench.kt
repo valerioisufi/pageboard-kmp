@@ -104,7 +104,7 @@ internal class RecorderBench(
         val usage = lecture.usage
         val notes = lecture.suggestions.map { BenchNote(it.atMs, it.pageIndex?.plus(1), it.kind.name, it.title, it.content) }
         val run = NotesRun(
-            "recorder", lectureId, settingsStore.settings.notesSeconds * 1000L, usage.requests, 0, millis,
+            "recorder", lectureId, settingsStore.settings.notesSeconds * 1000L, usage.requests, 0, millis, 0L,
             usage.promptTokens, usage.outputTokens, usage.promptByModality, usage.cachedTokens, lecture.outline, notes
         )
         bench.output("notes/recorder.json").writeText(Json { prettyPrint = true }.encodeToString(NotesRun.serializer(), run))

@@ -39,16 +39,19 @@ internal class NotesRun(
     val requests: Int,
     val failed: Int,
     val millis: Long,
+    val longestMillis: Long = 0,
     val promptTokens: Long,
     val outputTokens: Long,
     val promptByModality: Map<String, Long>,
     val cachedTokens: Long = 0,
     val outline: String,
-    val notes: List<BenchNote>
+    val notes: List<BenchNote>,
+    /** The run stopped at the cap of the dollars: it is not whole, and is not kept. */
+    val stopped: Boolean = false
 )
 
 /**
- * The live notes of a whole lecture of the workspace of lecture-eval, a request every
+ * The live notes of whole lectures of the workspace of lecture-eval, [lectureIds], a request every
  * [intervalMs], built as the assistant builds them ([LecturePrompts.chunkPrompt]), by each
  * configuration of [configs]:
  *
@@ -64,26 +67,38 @@ internal class NotesRun(
  * The audio never goes to a model: the lecture is transcribed on a computer (the transcript of
  * the workspace stands for it).
  *
- * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs].
+ * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs], and then
+ * with `#<n>`, a label for running it again.
  *
  * The notebook is the one of the student without the assistant ([BenchLecture.untouched]).
  *
- * Every run is written to `<bench>/answers/notes/<config>.json` (the notes, the tokens, the time),
- * the answers to `<config>.md`. The Gemini runs stop at [maxDollars], estimated from the tokens.
+ * Every run is written to `<bench>/answers/notes/<lecture>/<config>.json` (the notes, the tokens,
+ * the time), the answers to `<config>.md`, and a run already written is read back instead of being
+ * paid again. The Gemini runs stop at [maxDollars], estimated from the tokens and counted in
+ * `<bench>/dollars.txt`, which the grader of `tools/notes-bench` adds to as well; a run stopped
+ * there is not kept.
  */
 internal class NotesBench(
     private val bench: Bench,
     private val workspace: File,
     private val configs: List<String>,
     private val intervalMs: Long = 300_000L,
-    private val lectureId: String = "2026-10-15_09-48-14-2ce0b6",
+    private val lectureIds: List<String> = listOf("2026-10-15_09-48-14-2ce0b6"),
     private val maxDollars: Double = 1.2
 ) {
     private val settings = AssistantSettings(spokenLanguage = "it")
-    private val json = Json { prettyPrint = true }
-    private var spent = 0.0
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
+    private val ledger = File(bench.directory, "dollars.txt")
+    private var spent = ledger.takeIf { it.isFile }?.readText()?.trim()?.toDoubleOrNull() ?: 0.0
 
     suspend fun run(report: StringBuilder) {
+        for (lectureId in lectureIds) run(lectureId, report)
+    }
+
+    private suspend fun run(lectureId: String, report: StringBuilder) {
         report.appendLine("## The notes of a whole lecture").appendLine()
         val recorded = BenchLecture.read(workspace, File(bench.material, "pencilnotes"), lectureId)
         val lecture = recorded?.untouched()
@@ -95,23 +110,30 @@ internal class NotesBench(
             "`$lectureId` (${formatLectureTime(lecture.prepared.durationMs)}), without the assistant: ${lecture.prepared.notes.size} notes of the student " +
                 "(${recorded.prepared.notes.size - lecture.prepared.notes.size} inserted from the suggestions removed), no images of the pages."
         ).appendLine()
-        report.appendLine("| Configuration | Interval | Requests | Failed | Notes | Prompt tokens | Cached tokens | Output tokens | Time | Dollars |")
-            .appendLine("|---|---|---|---|---|---|---|---|---|---|")
+        report.appendLine("| Configuration | Interval | Requests | Failed | Notes | Prompt tokens | Cached tokens | Output tokens | Time | Longest | Dollars |")
+            .appendLine("|---|---|---|---|---|---|---|---|---|---|---|")
         for (config in configs) {
-            val run = run(config, lecture)
-            bench.output("notes/$config.json").writeText(json.encodeToString(NotesRun.serializer(), run))
+            val file = bench.output("notes/$lectureId/$config.json")
+            val run = if (file.isFile) json.decodeFromString(NotesRun.serializer(), file.readText()) else run(config, lecture)
+            if (run.stopped) {
+                report.appendLine("| $config | stopped at ${"%.2f".format(spent)} dollars, not kept | | | | | | | | | |")
+                println("notes $config: stopped at ${"%.2f".format(spent)} dollars")
+                continue
+            }
+            file.writeText(json.encodeToString(NotesRun.serializer(), run))
             report.appendLine(
                 "| $config | ${run.intervalMs / 1000} s | ${run.requests} | ${run.failed} | ${run.notes.size} | ${run.promptTokens} | ${run.cachedTokens} | ${run.outputTokens} | " +
-                    "${seconds(run.millis)} | ${"%.3f".format(dollars(config, run.promptTokens, run.cachedTokens, run.outputTokens))} |"
+                    "${seconds(run.millis)} | ${seconds(run.longestMillis)} | ${"%.3f".format(dollars(config, run.promptTokens, run.cachedTokens, run.outputTokens))} |"
             )
-            println("notes $config: ${run.requests} requests, ${run.notes.size} notes, ${seconds(run.millis)}")
+            println("notes $lectureId $config: ${run.requests} requests, ${run.notes.size} notes, ${seconds(run.millis)}, the longest ${seconds(run.longestMillis)}")
         }
         report.appendLine()
     }
 
     private suspend fun run(config: String, lecture: BenchLecture): NotesRun {
-        val name = config.substringBefore('@')
-        val intervalMs = config.substringAfter('@', "").toLongOrNull()?.times(1000) ?: intervalMs
+        val configured = config.substringBefore('#')
+        val name = configured.substringBefore('@')
+        val intervalMs = configured.substringAfter('@', "").toLongOrNull()?.times(1000) ?: intervalMs
         val cached = name.contains("-cached")
         val base = name.replace("-cached", "").replace("-medium", "")
         val settings = if (name.contains("-medium")) settings.copy(thinkingLevel = "medium") else settings
@@ -129,6 +151,8 @@ internal class NotesBench(
         var requests = 0
         var failed = 0
         var millis = 0L
+        var longestMillis = 0L
+        var stopped = false
         var promptTokens = 0L
         var outputTokens = 0L
         var cachedTokens = 0L
@@ -167,6 +191,7 @@ internal class NotesBench(
             } else {
                 if (spent >= maxDollars) {
                     answers.appendLine("### ${formatLectureTime(startMs)}: stopped at ${"%.2f".format(spent)} dollars\n")
+                    stopped = true
                     break
                 }
                 askGemini(gemini!!, prompt, model!!, answers, startMs, cache)?.let { answer ->
@@ -177,11 +202,13 @@ internal class NotesBench(
                         cachedTokens += usage.cachedTokens
                         usage.promptByModality.forEach { (modality, count) -> byModality[modality] = (byModality[modality] ?: 0L) + count }
                         spent += dollars(config, usage.promptTokens, usage.cachedTokens, usage.outputTokens)
+                        ledger.writeText(spent.toString())
                     }
                     answer.text
                 }
             }
             millis += start.elapsedNow().inWholeMilliseconds
+            longestMillis = maxOf(longestMillis, start.elapsedNow().inWholeMilliseconds)
             requests++
             val analysis: ChunkAnalysis? = text?.let {
                 try {
@@ -216,8 +243,8 @@ internal class NotesBench(
         }
         if (device) bench.loaded.unloadAll()
         cache?.clear(System.getenv("GEMINI_API_KEY").orEmpty())
-        bench.output("notes/$config.md").writeText(answers.toString())
-        return NotesRun(config, lectureId, intervalMs, requests, failed, millis, promptTokens, outputTokens, byModality, cachedTokens, outline, notes)
+        bench.output("notes/${lecture.id}/$config.md").writeText(answers.toString())
+        return NotesRun(config, lecture.id, intervalMs, requests, failed, millis, longestMillis, promptTokens, outputTokens, byModality, cachedTokens, outline, notes, stopped)
     }
 
     /** [prompt] answered by [model] of Gemini, repeated on a temporary error; `null` when it could not be. */
