@@ -138,9 +138,11 @@ public class DocumentTools internal constructor(
                     texts = page.texts.filter { it.removed == null }.sortedWith(compareBy({ it.y }, { it.x })).map {
                         TextEntry(it.id, it.text, it.x, it.y, it.width, it.next, it.base())
                     }
-                ) to page.pdfs.toList()
+                ) to page.pdfs.mapNotNull { pdf -> session.document.findResource(pdf.resourceId)?.let { it.path to pdf.pdfPageIndex } }
             }
-            val pdfText = engines.pdfText?.let { read -> pdfs.mapNotNull { read(documentId, it) }.joinToString("\n\n").ifEmpty { null } }
+            val pdfText = engines.pdfText?.let { read ->
+                pdfs.mapNotNull { (path, index) -> read(path, index) }.joinToString("\n\n").ifEmpty { null }
+            }
             val handwriting = engines.handwriting?.invoke(documentId, content.id)
             value(
                 json.encodeToJsonElement(content.copy(pdfText = pdfText, handwriting = handwriting, notice = UNTRUSTED_NOTICE))

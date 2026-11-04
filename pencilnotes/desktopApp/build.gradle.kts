@@ -21,6 +21,10 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
 
+    // The clients of the external models: the socket and the commands (docs/agent-tools.md)
+    implementation(project(":drawview-agent"))
+    implementation(libs.kotlinx.serialization.json)
+
     testImplementation(libs.kotlin.test)
 }
 

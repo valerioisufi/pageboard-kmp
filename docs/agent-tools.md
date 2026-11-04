@@ -255,7 +255,7 @@ One commit per phase on `feat/agent-tools`, with the checks of `CLAUDE.md`.
 |---|---|---|
 | 1 | `DataDirectoryLock` in the desktop application: a second copy told and closed; a test on a scratch directory that the lock is released when the holder dies | done |
 | 2 | `drawview-agent`: `DocumentTools` (reading), `ProposalApplier`, `ProposalBook`, `AgentAccess`, `AgentEngines`, `ExternalAgents`, on the in-memory store. Tests: every item, `base` stale, read-only document, chained text, one operation and one inverse for a batch, undo restoring the document, two sessions converging on an accepted batch. Module, `Module.md`, `api/`, Dokka | done |
-| 3 | `AgentEndpoint`, `AgentHost` on the socket, `AgentCli` and `pencilnotes mcp`, the setting turning it on. Tests: oversized and deeply nested messages, unknown methods, access off, path too long for a socket; the tools called by a real MCP client on a scratch directory | proposed |
+| 3 | `AgentEndpoint`, `AgentHost` on the socket, `AgentCli` and `pencilnotes mcp`, the setting turning it on. Tests: oversized and deeply nested messages, unknown methods, access off, path too long for a socket; the tools called by a real MCP client on a scratch directory (with phase 4, which turns the access on) | done |
 | 4 | `drawview-agent-ui`: the review panel, the grants, the document opened for a review, direct mode, wired in PencilNotes. Screenshots (`verifyRoborazziJvm`), the desktop application on a scratch directory | proposed |
 
 ### Stage 2: every device
@@ -285,9 +285,12 @@ Taken alone, revertible:
    can be added as items later.
 6. **Tools by meaning, not operations**: `DocumentChange` is the format of the log and travels between
    the devices. A public tool on it would make every change of that format a change for the clients.
-7. **MCP by hand**: `initialize`, `tools/list` and `tools/call` over JSON-RPC, on
-   `kotlinx.serialization`, for a small dependency and a parser of our own bounds. The official SDK is
-   the alternative if the subset grows. The version of the specification is checked in phase 3.
+7. **MCP by hand, both eras**: `tools/list` and `tools/call` over JSON-RPC, on
+   `kotlinx.serialization`, for a small dependency and a parser of our own bounds. The version in force
+   (2026-07-28) has no handshake: a request carries its version in its `_meta`, a result its
+   `resultType`, and `server/discover` is mandatory; a client opening with `initialize` (2025-11-25 and
+   earlier) is served as such, since many are still around. The official SDK is the alternative if
+   the subset grows.
 8. **The socket, the lock and the command line stay in the application**, not in a published module:
    they are the only parts needing JDK 16, and another application may want another way in.
 9. **One binary** for the application and the commands. A separate small launcher can come later if

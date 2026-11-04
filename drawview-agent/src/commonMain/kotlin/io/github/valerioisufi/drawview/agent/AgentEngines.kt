@@ -42,7 +42,7 @@ public data class AgentSearchHit(
  *
  * @param editors the editors, for the review and for the placement of a text as it is drawn.
  * @param search searches [documentIds] only.
- * @param pdfText the text of a PDF page, or `null` when it has none.
+ * @param pdfText the text of the page `pageIndex` of the PDF file at `path`, or `null` when it has none.
  * @param handwriting the transcription of the handwriting of a page, or `null` when there is none.
  * @param renderPage the page as a PNG, at most `maxSidePx` on its longest side, or `null`.
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
@@ -50,7 +50,7 @@ public data class AgentSearchHit(
 public class AgentEngines(
     public val editors: AgentEditors? = null,
     public val search: (suspend (query: String, documentIds: Set<String>, limit: Int) -> List<AgentSearchHit>)? = null,
-    public val pdfText: (suspend (documentId: String, pdf: DrawPdf) -> String?)? = null,
+    public val pdfText: (suspend (path: String, pageIndex: Int) -> String?)? = null,
     public val handwriting: (suspend (documentId: String, pageId: String) -> String?)? = null,
     public val renderPage: (suspend (documentId: String, pageId: String, maxSidePx: Int) -> ByteArray?)? = null,
     public val defaultTextSize: Float = 16f

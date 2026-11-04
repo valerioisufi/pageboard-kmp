@@ -26,15 +26,19 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 
-fun main() {
+fun main(args: Array<String>) {
     // PencilNotes keeps its notes apart from the other DrawView applications (~/.pencilnotes),
     // unless another directory is given with -Ddrawview.dataDir=...
     if (System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
         System.setProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY, File(System.getProperty("user.home"), ".pencilnotes").absolutePath)
     }
+    val dataDirectory = File(System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY))
+
+    // A command of the terminal: a client of the application, before anything of the interface starts
+    if (args.firstOrNull() in AgentCli.COMMANDS) exitProcess(AgentCli(dataDirectory).run(args.toList()))
 
     // One process on the database of a directory (see docs/agent-tools.md), to the end of main
-    val directoryLock = DataDirectoryLock.acquire(File(System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY)))
+    val directoryLock = DataDirectoryLock.acquire(dataDirectory)
     if (directoryLock == null) {
         JOptionPane.showMessageDialog(
             null,
@@ -54,11 +58,21 @@ fun main() {
     // The application icon in the macOS Dock
     DesktopAppIcon.setDockIcon(DesktopAppIcon.loadIconImage("/icons/icon_mac.png"))
 
-    directoryLock.use { runApplication() }
+    directoryLock.use {
+        // The external models on this machine, while the user keeps their access on
+        val agents = PencilNotesAgents()
+        val host = AgentHost(dataDirectory, agents.agents.access, agents.endpoint)
+        host.start()
+        try {
+            runApplication(agents)
+        } finally {
+            host.stop()
+        }
+    }
 }
 
 /** The windows of PencilNotes, until the last one is closed. */
-private fun runApplication() {
+private fun runApplication(agents: PencilNotesAgents) {
     application {
         val windowManager = rememberDesktopWindowManager()
         val appIcon = rememberDesktopIcon("/icons/icon.png")
@@ -100,7 +114,8 @@ private fun runApplication() {
                         commandHost = commands,
                         onOpenDocumentInNewWindow = { docId ->
                             windowManager.openDocument(docId)
-                        }
+                        },
+                        agents = agents
                     )
                     if (confirmExit) {
                         PencilNotesTheme {

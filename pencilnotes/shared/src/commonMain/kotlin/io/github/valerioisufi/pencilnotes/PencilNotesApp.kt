@@ -90,11 +90,13 @@ private val editorClipboard = EditorClipboard()
  * @param commandHost the commands of the screen shown, for the menu bar and the shortcuts of the
  *   window of the desktop.
  * @param onOpenDocumentInNewWindow opens the document in an independent desktop window when provided.
+ * @param agents the external models, on a platform that lets their clients in.
  */
 @Composable
 fun PencilNotesApp(
     commandHost: CommandHost = remember { CommandHost() },
-    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
+    agents: PencilNotesAgents? = null
 ) {
     PencilNotesTheme {
         val aboutAppInfo = AboutAppInfo(
@@ -157,7 +159,10 @@ fun PencilNotesApp(
             onOpenLecture = lectureAssistant::openLectureAt
         )
         // A text placed next to the pages it is about (the review of a lecture, a text imported)
-        SideEffect { contentSearch.value = search }
+        SideEffect {
+            contentSearch.value = search
+            agents?.contentSearch = search
+        }
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {

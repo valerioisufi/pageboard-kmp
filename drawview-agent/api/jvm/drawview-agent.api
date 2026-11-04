@@ -42,6 +42,24 @@ public abstract interface class io/github/valerioisufi/drawview/agent/AgentEdito
 	public abstract fun textHeight (Ljava/lang/String;Ljava/lang/String;FF)Ljava/lang/Float;
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentEndpoint {
+	public static final field CLIENT_INFO_KEY Ljava/lang/String;
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/AgentEndpoint$Companion;
+	public static final field MAX_MESSAGE_LENGTH I
+	public static final field PROTOCOL_VERSION Ljava/lang/String;
+	public static final field VERSION_KEY Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/ExternalAgents;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun connect ()Lio/github/valerioisufi/drawview/agent/AgentEndpointConnection;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentEndpoint$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection {
+	public final fun close ()V
+	public final fun handle (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public fun <init> ()V
 	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;F)V
