@@ -50,6 +50,7 @@ kotlin {
             implementation(project(":drawview-search-ui"))
             // The external models, where the application of a platform lets their clients in
             api(project(":drawview-agent"))
+            implementation(project(":drawview-agent-ui"))
             implementation(project(":drawview-ml-litert"))
             // The engines of the PDF pages and of the formulas
             implementation(project(":drawview-pdf"))

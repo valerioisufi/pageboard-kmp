@@ -7,7 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.CanvasGestureHandler
+import io.github.valerioisufi.drawview.canvas.platform.encodePng
 import io.github.valerioisufi.drawview.canvas.DrawThemeColors
 import io.github.valerioisufi.drawview.canvas.camera.Viewport
 import io.github.valerioisufi.drawview.canvas.geometry.mapOffset
@@ -48,9 +51,11 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
+import kotlin.math.ceil
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -62,6 +67,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Central state holder of an editing session: document, tools, history, selection, text editing,
@@ -385,6 +391,25 @@ public class DrawViewController(
 
     /** The size of [text] as the renderer lays it out, or `null` without a text adapter. */
     public fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
+
+    /**
+     * The page [pageId] as a PNG, drawn as this editor draws it, at most [maxSidePx] on its longest
+     * side; `null` when there is no such page.
+     */
+    public suspend fun renderPageImage(pageId: String, maxSidePx: Int): ByteArray? {
+        val page = document.pages.firstOrNull { it.id == pageId } ?: return null
+        val content = page.snapshotContent()
+        return withContext(Dispatchers.Default) {
+            val scale = maxSidePx / maxOf(content.widthMm, content.heightMm)
+            val width = ceil(content.widthMm * scale).toInt().coerceAtLeast(1)
+            val height = ceil(content.heightMm * scale).toInt().coerceAtLeast(1)
+            val bitmap = ImageBitmap(width, height)
+            tileManager.tileRenderer.renderPageContent(
+                Canvas(bitmap), document, content, Matrix2D().postScale(scale, scale), Rect(0f, 0f, width.toFloat(), height.toFloat())
+            )
+            encodePng(bitmap)
+        }
+    }
 
     /** The color of the paper of the page [pageIndex] (the backgrounds of the code of its texts are opaque on it). */
     internal fun paperOf(pageIndex: Int): Int = document.pages.getOrNull(pageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER

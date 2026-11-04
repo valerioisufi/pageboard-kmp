@@ -277,6 +277,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun onResourceAvailable (Lio/github/valerioisufi/drawview/model/DrawResource;)V
 	public final fun persist (Lkotlin/jvm/functions/Function2;)V
 	public final fun redo ()V
+	public final fun renderPageImage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun requestRedraw ()V
 	public final fun selectTool (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;)V
 	public static synthetic fun selectTool$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="agent_command">External models…</string>
+    <string name="agent_review_title">Proposals</string>
+    <string name="agent_review_show">Show the proposals of external models</string>
+    <string name="agent_review_empty">No proposal is waiting. What a model proposes for this document shows here, and nothing changes until you accept it.</string>
+    <string name="agent_review_from">From %1$s</string>
+    <string name="agent_accept_selected">Apply selected</string>
+    <string name="agent_reject_all">Reject all</string>
+    <string name="agent_item_replace">Change a text</string>
+    <string name="agent_item_remove">Remove a text</string>
+    <string name="agent_item_insert">Add a text</string>
+    <string name="agent_item_insert_new_page">Add a text on a new page</string>
+    <string name="agent_item_add_page">Add a page</string>
+    <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
+    <string name="agent_outcome_accepted">Applied</string>
+    <string name="agent_outcome_rejected">Rejected</string>
+    <string name="agent_outcome_stale">Not applied: the text had changed</string>
+    <string name="agent_decided_title">Decided</string>
+    <string name="agent_access_title">External models</string>
+    <string name="agent_access_enable">Let clients in on this device</string>
+    <string name="agent_access_enable_note">Programs on this computer, like a coding assistant or a script, can read the documents you allow and propose changes. What they read goes to the model they use, under its terms.</string>
+    <string name="agent_access_document">Allow this document</string>
+    <string name="agent_access_document_note">A document can hold text written by others, even instructions meant to mislead a model: review what is proposed.</string>
+    <string name="agent_access_how">From a terminal, run “pencilnotes docs”. A client of the Model Context Protocol starts “pencilnotes mcp”.</string>
+    <string name="agent_access_clients">Connected</string>
+    <string name="agent_access_no_clients">No client is connected.</string>
+    <string name="agent_access_direct">Apply without review, while connected</string>
+    <string name="agent_close">Close</string>
+</resources>

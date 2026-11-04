@@ -441,6 +441,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController
     final fun updateStylusOnlyMode(kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.updateStylusOnlyMode|updateStylusOnlyMode(kotlin.Boolean){}[0]
     final fun updateTextDefaults(io.github.valerioisufi.drawview.model.text/TextDefaults) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.updateTextDefaults|updateTextDefaults(io.github.valerioisufi.drawview.model.text.TextDefaults){}[0]
     final suspend fun flushPersistence() // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.flushPersistence|flushPersistence(){}[0]
+    final suspend fun renderPageImage(kotlin/String, kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.renderPageImage|renderPageImage(kotlin.String;kotlin.Int){}[0]
 
     final enum class Message : kotlin/Enum<io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message> { // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message|null[0]
         enum entry IMPORT_IMAGE_FAILED // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.IMPORT_IMAGE_FAILED|null[0]

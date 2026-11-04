@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pencilnotes
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,11 @@ private fun runApplication(agents: PencilNotesAgents) {
         val windowManager = rememberDesktopWindowManager()
         val appIcon = rememberDesktopIcon("/icons/icon.png")
         var confirmExit by remember { mutableStateOf(false) }
+
+        // A proposal for a document in no editor: its review opens it
+        LaunchedEffect(agents) {
+            agents.reviewRequests.collect { windowManager.openDocument(it) }
+        }
 
         fun exit() {
             runBlocking {
@@ -159,7 +165,8 @@ private fun runApplication(agents: PencilNotesAgents) {
                                 }
                             },
                             commandHost = docCommands,
-                            onTitleChange = { docTitle = it }
+                            onTitleChange = { docTitle = it },
+                            agents = agents
                         )
                     }
                 }

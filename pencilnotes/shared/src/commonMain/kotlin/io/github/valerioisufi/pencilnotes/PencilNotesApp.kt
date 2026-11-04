@@ -165,8 +165,9 @@ fun PencilNotesApp(
         }
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
-        val editorExtension = remember(lectureAssistant, collaboration, export) {
-            lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
+        val editorExtension = remember(lectureAssistant, collaboration, export, agents) {
+            val extension = lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
+            agents?.let { extension + it.editorExtension } ?: extension
         }
         // The lectures of the documents deleted for good go with them (not of the ones in the trash)
         LaunchedEffect(lectureAssistant) {
@@ -270,7 +271,8 @@ fun PencilNotesDocumentWindow(
     documentId: String,
     onClose: () -> Unit,
     commandHost: CommandHost = remember { CommandHost() },
-    onTitleChange: (String) -> Unit = {}
+    onTitleChange: (String) -> Unit = {},
+    agents: PencilNotesAgents? = null
 ) {
     PencilNotesTheme {
         val documents = DrawViewStore.documents
@@ -302,7 +304,7 @@ fun PencilNotesDocumentWindow(
                     EditorSessionScreen(
                         session = session,
                         onClose = onClose,
-                        extension = export.editorExtension
+                        extension = agents?.let { export.editorExtension + it.editorExtension } ?: export.editorExtension
                     )
                 }
             }

@@ -216,6 +216,9 @@ internal class AgentCli(
                     val line = lines.readLine() ?: break
                     channel.writeLine(line)
                 }
+                // Nothing more to ask: what was asked is still answered
+                channel.shutdownOutput()
+                done.join()
             } catch (_: IOException) {
                 return EXIT_NOT_RUNNING
             }

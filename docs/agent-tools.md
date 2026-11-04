@@ -255,8 +255,8 @@ One commit per phase on `feat/agent-tools`, with the checks of `CLAUDE.md`.
 |---|---|---|
 | 1 | `DataDirectoryLock` in the desktop application: a second copy told and closed; a test on a scratch directory that the lock is released when the holder dies | done |
 | 2 | `drawview-agent`: `DocumentTools` (reading), `ProposalApplier`, `ProposalBook`, `AgentAccess`, `AgentEngines`, `ExternalAgents`, on the in-memory store. Tests: every item, `base` stale, read-only document, chained text, one operation and one inverse for a batch, undo restoring the document, two sessions converging on an accepted batch. Module, `Module.md`, `api/`, Dokka | done |
-| 3 | `AgentEndpoint`, `AgentHost` on the socket, `AgentCli` and `pencilnotes mcp`, the setting turning it on. Tests: oversized and deeply nested messages, unknown methods, access off, path too long for a socket; the tools called by a real MCP client on a scratch directory (with phase 4, which turns the access on) | done |
-| 4 | `drawview-agent-ui`: the review panel, the grants, the document opened for a review, direct mode, wired in PencilNotes. Screenshots (`verifyRoborazziJvm`), the desktop application on a scratch directory | proposed |
+| 3 | `AgentEndpoint`, `AgentHost` on the socket, `AgentCli` and `pencilnotes mcp`, the setting turning it on. Tests: oversized and deeply nested messages, unknown methods, access off, path too long for a socket; the commands and the messages of both eras of the protocol against the application on a scratch directory (with phase 4). A client of MCP that starts a model is left to the user | done |
+| 4 | `drawview-agent-ui`: the review panel, the grants, the document opened for a review, direct mode, wired in PencilNotes. Tests in a real editor (a proposal opens the panel, one undo takes it back, what is being written stays), screenshots (`verifyRoborazziJvm`), the desktop application on a scratch directory. The clicks in its window are left to the user | done |
 
 ### Stage 2: every device
 
@@ -298,8 +298,17 @@ Taken alone, revertible:
 10. **No hook in `EditorExtension`**: a panel and a command are enough, like the import of a text.
 11. **Blue for inserted text**: what a model wrote looks like what a model wrote (`docs/text-import.md`).
 
+12. **`render_page` needs an editor**: the page is drawn by the renderer of the editor of its document
+    (`DrawViewController.renderPageImage`, a new public function of the canvas); a closed document
+    answers that it cannot be drawn. The text adapter belongs to an editor.
+13. **The transcription of the handwriting is not given yet**: `HandwritingReader` is internal to
+    `drawview-lecture` and tied to its models, so `AgentEngines.handwriting` stays empty in PencilNotes;
+    a model reads handwriting from `render_page`.
+14. **The desktop only**: on Android and iOS `PencilNotesApp` gets no agents, until stage 2.
+
 ## Left for later
 
+* The transcription of the handwriting in `read_page`, from `drawview-lecture`.
 * A headless host working with the application closed.
 * Moving and removing strokes, moving elements, images added by a model.
 * Moving, removing and changing the format of pages.

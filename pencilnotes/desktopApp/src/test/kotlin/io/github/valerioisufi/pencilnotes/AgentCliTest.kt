@@ -190,6 +190,16 @@ class AgentCliTest {
     }
 
     @Test
+    fun theBridgeAnswersWhatWasAskedBeforeItsInputEnded() {
+        startHost()
+        val meta = """"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}"""
+        val messages = (1..20).joinToString("") { """{"jsonrpc":"2.0","id":$it,"method":"tools/list","params":{$meta}}""" + "\n" }
+        val result = run("mcp", input = messages.toByteArray())
+        assertEquals(AgentCli.EXIT_OK, result.code, result.errors)
+        assertEquals(20, result.output.lines().count { it.isNotBlank() })
+    }
+
+    @Test
     fun aLineTooLongEndsTheConnectionAndNothingElse() {
         startHost()
         val channel = SocketChannel.open(StandardProtocolFamily.UNIX)
