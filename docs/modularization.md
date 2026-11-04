@@ -81,7 +81,7 @@ until the release (see the release checklist at the end).
 2. Headless modules (no Compose): `drawview-platform`, `drawview-model`, `drawview-ink`,
    `drawview-store`, `drawview-store-room`, `drawview-sync-protocol`, `drawview-sync`,
    `drawview-sync-lan`, `drawview-sync-iroh`, `drawview-ml`, `drawview-ml-litert`,
-   `drawview-search`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
+   `drawview-search`, `drawview-agent`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
    observable state of its assistant (see Feature modules).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
@@ -122,6 +122,8 @@ until the release (see the release checklist at the end).
 | `drawview-ml-litert` | LiteRT-LM runtime of the local models (desktop, Android) | ml | no | LiteRT-LM |
 | `drawview-search` | search index (FTS5 and vectors), sources, indexer, engine, `NotesAnswerer` | ml, store | no | SQLite |
 | `drawview-search-ui` | `ContentSearch` of the library, PDF source, model settings, "Ask your notes" card | search, explorer, ui | yes | — |
+| `drawview-agent` | what an external model reads and proposes: tools, proposals, access, its messages (see [agent-tools.md](agent-tools.md)) | store | no | — |
+| `drawview-agent-ui` | the review of the proposals in the editor, the access of the clients | agent, session | yes | — |
 | `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf, latex | yes (graphics) | — |
 | `drawview-export-ui` | export dialog and extension | export, ui | yes | — |
 | `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, `-iroh` | Android shared libraries, one engine each | — | — | one each |

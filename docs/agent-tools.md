@@ -133,9 +133,9 @@ The items:
 
 | Item | Becomes | Its check when accepted |
 |---|---|---|
-| `replace_text(page, text, base, markdown)` | `UpdateTexts` | same `base` |
-| `remove_text(page, text, base)` | `RemoveElements` | same `base` |
-| `insert_text(page, markdown, after?)` | `AddElements`, `AddPage` for what does not fit | the page is there; placed when accepted |
+| `replace_text(text, base, markdown)` | `UpdateTexts` | same `base` |
+| `remove_text(text, base)` | `RemoveElements` | same `base` |
+| `insert_text(markdown, page?, new_page?)` | `AddElements`, `AddPage` for what does not fit | the page is there; placed when accepted |
 | `add_page(after?)` | `AddPage`, in the format of the page it follows (`docs/new-page-format.md`) | the page it follows is there |
 
 `base` is an opaque value made by the reading tools from `TextData.versions` and a hash of the text.
@@ -154,8 +154,10 @@ accepted items → their base checked → one CompositeChange → submit → one
 * **The review happens in the editor.** So there is always a `HistoryManager` when something is
   accepted. A proposal for a document that is not open asks the application to open it
   (`AgentEngines.openForReview`); the client gets `waiting` in any case.
-* **The text being written.** A proposal on a text open in the text editor is shown as stale until
-  it is closed: the two would otherwise replace each other.
+* **The text being written.** Accepting finishes the text being written and clears the selection
+  (`AgentEditors.settle`): a change made outside the editor does not tell them otherwise
+  (`DrawViewController` passes only the changes of other devices to them). What was just written is
+  a newer version of the text, so a proposal on it comes out stale and overwrites nothing.
 * **Inserted text** is in the blue of the assistant, as the notes of a model
   (`docs/text-import.md`), at the size of its page (`TextSizePolicy`). A replaced text keeps its color.
 * **Placement** is computed when accepted, on the page as it is then, by `TextFlow`, with the height
@@ -179,9 +181,10 @@ it stays a proposal. The grant ends with the connection. The panel shows what wa
   longer the socket goes in a private directory of the temporary directory, named by the hash of the
   data directory (phase 3 tests it).
 * **Per document.** A client names itself when it connects (not proof of anything: the name is for the
-  user). A document is reached when granted from the application, for this connection or until
-  revoked. A read of a document not granted answers an error, not a prompt: the prompts come from the
-  application's list, so that a client cannot flood the user with them.
+  user). A document is reached once the user allows it from its editor, until revoked. A read of a
+  document not allowed answers an error, not a prompt, so that a client cannot flood the user with
+  them. A command line opens one connection per command, so a grant for one connection would mean
+  nothing to it.
 * **The grants** are preferences of the application: a new key, read as "none" when absent. No existing
   format changes.
 * **Application closed:** the command fails with a clear message and its exit code. It does not start
@@ -251,7 +254,7 @@ One commit per phase on `feat/agent-tools`, with the checks of `CLAUDE.md`.
 | Phase | What | Status |
 |---|---|---|
 | 1 | `DataDirectoryLock` in the desktop application: a second copy told and closed; a test on a scratch directory that the lock is released when the holder dies | done |
-| 2 | `drawview-agent`: `DocumentTools` (reading), `ProposalApplier`, `ProposalBook`, `AgentAccess`, `AgentEngines`, on the in-memory store. Tests: every item, `base` stale, read-only document, chained text, one operation and one inverse for a batch, undo restoring the document, two sessions converging on an accepted batch. Module, `Module.md`, `api/`, Dokka | proposed |
+| 2 | `drawview-agent`: `DocumentTools` (reading), `ProposalApplier`, `ProposalBook`, `AgentAccess`, `AgentEngines`, `ExternalAgents`, on the in-memory store. Tests: every item, `base` stale, read-only document, chained text, one operation and one inverse for a batch, undo restoring the document, two sessions converging on an accepted batch. Module, `Module.md`, `api/`, Dokka | done |
 | 3 | `AgentEndpoint`, `AgentHost` on the socket, `AgentCli` and `pencilnotes mcp`, the setting turning it on. Tests: oversized and deeply nested messages, unknown methods, access off, path too long for a socket; the tools called by a real MCP client on a scratch directory | proposed |
 | 4 | `drawview-agent-ui`: the review panel, the grants, the document opened for a review, direct mode, wired in PencilNotes. Screenshots (`verifyRoborazziJvm`), the desktop application on a scratch directory | proposed |
 

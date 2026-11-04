@@ -73,7 +73,8 @@ These are in brief; the full version is in `docs/modularization.md`.
   - `drawview-platform`, `-model`, `-ink`, `-store`, `-store-room`;
   - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`;
   - `-ml`, `-ml-litert`, `-search` (the local models and the search in the notes, see
-    docs/local-models.md and docs/search.md).
+    docs/local-models.md and docs/search.md);
+  - `-agent` (what an external model reads and proposes, see docs/agent-tools.md).
 
   `drawview-lecture` keeps the Compose runtime only.
 - A native library ships with the module that uses it, and only with it: `drawview-native-*` on
