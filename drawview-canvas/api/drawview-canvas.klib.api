@@ -843,6 +843,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleHeading|toggleHeading(){}[0]
     final fun toggleLineNumbers() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleLineNumbers|toggleLineNumbers(){}[0]
     final fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleNumberedList|toggleNumberedList(){}[0]
+    final fun typedBeforeFlow(kotlin/Int, kotlin/String, androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.typedBeforeFlow|typedBeforeFlow(kotlin.Int;kotlin.String;androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue;kotlin.Boolean){}[0]
 }

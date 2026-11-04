@@ -48,10 +48,7 @@ import kotlin.math.roundToInt
 internal fun TextEditorOverlay(controller: DrawViewController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     if (!editor.isEditing || !controller.isDrawingMode) return
-    // Every editing session starts from a fresh state
-    key(editor.sessionId) {
-        TextEditorSession(controller, commands)
-    }
+    TextEditorSession(controller, commands)
 }
 
 @Composable
@@ -73,7 +70,11 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
         val containerWidthPx = constraints.maxWidth.toFloat()
         val containerHeightPx = constraints.maxHeight.toFloat()
 
-        TextBoxEditor(controller, onCaret = { caret = it })
+        // A field for each text written, with its own steps to undo; what is around it stays, the
+        // keyboard with it, when a text goes on into another box
+        key(editor.sessionId) {
+            TextBoxEditor(controller, onCaret = { caret = it })
+        }
 
         // On a phone the bar lies on the keyboard, the whole width
         val docked = currentAdaptiveInfo().window.isCompact

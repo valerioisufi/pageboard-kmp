@@ -183,6 +183,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     public val isEditing: Boolean get() = activeTextPageIndex >= 0
 
+    /** The session the text last flowed out of, into another box (see [typedBeforeFlow]). */
+    private var flowedFromSession: Int = -1
+
     /** The identifier of the text being written when it is a new one (the same for the others, see [reportDraft]). */
     private var newTextId = newElementId()
 
@@ -852,8 +855,29 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         if (!isEditing || rotation != 0f || value.text.isBlank()) return
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         val box = inItsRoom(draft(), page)
-        if (box.y + heightOf(value.text, box.width) <= roomBottom(page) + OVERFLOW_TOLERANCE_MM) return
+        // Blank lines at the end start no box: the next character does
+        if (box.y + heightOf(value.text.trimEnd('\n'), box.width) <= roomBottom(page) + OVERFLOW_TOLERANCE_MM) return
         flowChain(caret = value.selection.start)
+    }
+
+    /**
+     * What the field of the session [fieldSession] changed from the text [previous] it still had,
+     * after the text flowed into another box in the same frame (see [flowChain]): the same change
+     * at the caret of the box written now, so that no key is lost.
+     */
+    public fun typedBeforeFlow(fieldSession: Int, previous: String, newValue: TextFieldValue) {
+        if (!isEditing || fieldSession != flowedFromSession) return
+        val new = newValue.text
+        val shortest = minOf(previous.length, new.length)
+        var start = 0
+        while (start < shortest && previous[start] == new[start]) start++
+        var end = 0
+        while (end < shortest - start && previous[previous.length - 1 - end] == new[new.length - 1 - end]) end++
+        val inserted = new.substring(start, new.length - end)
+        val removed = previous.length - start - end
+        val caret = value.selection.min
+        val from = (caret - removed).coerceAtLeast(0)
+        updateValue(TextFieldValue(value.text.substring(0, from) + inserted + value.text.substring(caret), TextRange(from + inserted.length)))
     }
 
     /**
@@ -883,7 +907,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val rooms = listOf(ChainFlow.Room(base.width, roomBottom(page) - base.y)) +
             following.map { ChainFlow.Room(it.width, roomBottom(pageOf(it)) - it.y) }
         val extra = ChainFlow.Room(base.width, roomBottom(pages[lastPageIndex]) - CHAIN_MARGIN_MM)
-        val pieces = ChainFlow { text, width -> heightOf(text, width) }.flow(tail, rooms, extra)
+        val flowed = ChainFlow { text, width -> heightOf(text, width) }.flow(tail, rooms, extra)
+        // Saved with no caret to hold on them, blank lines at the end start no box
+        val pieces = if (caret == null) flowed.dropLastWhile { it.text.isBlank() }.ifEmpty { flowed.take(1) } else flowed
         if (pieces.size <= 1 && following.isEmpty()) return false
 
         val newPages = controller.pageManager.newPagesAfter(lastPageIndex, (pieces.size - 1 - following.size).coerceAtLeast(0))
@@ -938,19 +964,20 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
                 }
                 start += piece.text.length
             }
-            openAt(ids[target], (caret - start).coerceIn(0, pieces[target].text.length), reveal = target != 0)
+            val session = sessionId
+            openAt(ids[target], (caret - start).coerceIn(0, pieces[target].text.length))
+            flowedFromSession = session
         }
         return true
     }
 
-    /** Opens the editor on the text [id] with the caret at [offset]; with [reveal], its page shown. */
-    private fun openAt(id: String, offset: Int, reveal: Boolean) {
+    /** Opens the editor on the text [id] with the caret at [offset]: the interface brings the caret in sight. */
+    private fun openAt(id: String, offset: Int) {
         val pages = controller.document.pages
         val pageIndex = pages.indexOfFirst { page -> page.texts.any { it.id == id } }
         val text = pages.getOrNull(pageIndex)?.texts?.firstOrNull { it.id == id } ?: return
         startEditing(text, pageIndex)
         value = value.copy(selection = TextRange(offset.coerceIn(0, value.text.length)))
-        if (reveal && controller.viewport.mostVisiblePageIndex() != pageIndex) controller.viewport.showPage(pageIndex)
     }
 
     /**
@@ -964,11 +991,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val targetId = target.id
         if (forward) {
             finishEditing()
-            openAt(targetId, 0, reveal = true)
+            openAt(targetId, 0)
         } else {
             // Saved from the box before, so that the chain flows from there
             finishEditing()
-            openAt(targetId, Int.MAX_VALUE, reveal = true)
+            openAt(targetId, Int.MAX_VALUE)
         }
         return isEditing
     }
@@ -987,7 +1014,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         chainContinuesLine = true
         val previousId = previous.id
         finishEditing()
-        openAt(previousId, Int.MAX_VALUE, reveal = true)
+        openAt(previousId, Int.MAX_VALUE)
         if (joined && isEditing && value.text.isNotEmpty()) {
             val end = value.text.length
             updateValue(TextFieldValue(value.text.substring(0, end - 1), TextRange(end - 1)), smartNewline = false)

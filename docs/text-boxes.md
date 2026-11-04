@@ -394,7 +394,5 @@ Taken alone, revertible:
 - Checklists (`- [ ]`), still left for later from `docs/text-editing.md`.
 - Tables in the notes of the lecture assistant (its prompts).
 - The boxes of a chain while another box is written: drawn as they are until the text flows.
-- A keystroke typed in the frame during which the editor opens again on another box of a chain is
-  dropped (the field of the box before is not the one written any more).
 - The pieces of an imported text are joined with a blank line; chained, they are joined by one
   line break when the chain flows again.

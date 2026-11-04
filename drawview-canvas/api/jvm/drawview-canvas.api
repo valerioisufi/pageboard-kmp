@@ -614,6 +614,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun toggleHeading ()V
 	public fun toggleLineNumbers ()V
 	public fun toggleNumberedList ()V
+	public final fun typedBeforeFlow (ILjava/lang/String;Landroidx/compose/ui/text/input/TextFieldValue;)V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;Z)V
 }

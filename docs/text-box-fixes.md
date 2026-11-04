@@ -172,11 +172,13 @@ with the import sheet, where a preview shows them.
 
 ### Flowing
 
-A flow moves the text into the box of the caret without a new `sessionId`: the field stays, with its
-focus and its keyboard, and takes the new value and box. Its undo steps are cleared at that point (a
-step of another box means nothing here; the undo of the document has them). The guard of the stale
-field (phase 9 of `docs/text-boxes.md`) must still hold for what is in flight: the test types keys
-across a flow. `openAt` stops calling `showPage`: the new box is followed like any caret, animated.
+Only the field is made again for each box, `key(sessionId)` around it alone: its undo steps are those
+of its box, whose values mean nothing in another one. What is around it stays, so the keyboard is no
+longer hidden and shown: it is hidden only when the editor really closes. The field made again takes
+the focus in the same frame. `openAt` stops calling `showPage`: the new box is followed like any
+caret, animated. The field before may still send what it had, with the keys of the same frame:
+`TextEditorManager.typedBeforeFlow` applies only the difference to the box written now, so that no key
+is lost (the guard of phase 9 of `docs/text-boxes.md` dropped them).
 
 `flowIfOverflowing` measures the text without its final blank lines, so an Enter alone does not flow;
 the next character does.
@@ -191,7 +193,7 @@ the next character does.
 | 4 | Tables: `keepInCells` with a selection (in a cell, across cells), deletions across cells, `\r`; `TableEditingTest` | done |
 | 5 | `PastedText`, in the field and on the canvas: tests on texts from a PDF, a web page, a chat, code, verses, Markdown; a real Ctrl+V in the explorer; one undo | done |
 | 6 | Chains kept whole: a box emptied flows the chain, no link to nothing saved, the chevron read through `TextChains`, the blank page removed in the same step, a page with content kept; `TextChainEditingTest`, undo and a page with a stroke included | done |
-| 7 | Flowing without interruptions: no blank lines flowing, no new session, no `showPage`; tests of keys typed across a flow, of the focus kept, of the caret in sight; tried on the tablet with the soft keyboard | planned |
+| 7 | Flowing without interruptions: no blank lines flowing, no new session, no `showPage`; tests of keys typed across a flow, of the focus kept, of the caret in sight; tried on the tablet with the soft keyboard | done, not yet tried on the tablet |
 
 Each phase: the checks of `CLAUDE.md`, the screenshots of the explorer and of the ui, the desktop
 application on a scratch directory. Stages are independent: large boxes (1-3), pasting (4-5), chains

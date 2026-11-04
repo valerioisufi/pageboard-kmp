@@ -147,6 +147,42 @@ class TextChainEditingTest {
     }
 
     @Test
+    fun blankLinesAtTheEndStartNoBox() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 4) + "\n\n\n")
+        assertEquals(1, controller.document.pages.size)
+        assertEquals(0, editor.activeTextPageIndex)
+        editor.finishEditing()
+        assertEquals(1, controller.document.pages.size, "nor on closing")
+        assertNull(controller.document.pages[0].texts.single().next)
+    }
+
+    @Test
+    fun theKeysOfTheFrameOfAFlowGoOnInTheNewBox() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 4))
+        val fieldSession = editor.sessionId
+        val whole = lines(1, 5)
+        editor.type(whole)
+        assertEquals(1, editor.activeTextPageIndex, "the text flowed")
+        assertEquals("line 5", editor.value.text)
+        // The field of the first box still has the whole text: a key, then a Backspace, then two keys
+        editor.typedBeforeFlow(fieldSession, whole, TextFieldValue(whole + "a", TextRange(whole.length + 1)))
+        assertEquals("line 5a", editor.value.text)
+        editor.typedBeforeFlow(fieldSession, whole + "a", TextFieldValue(whole, TextRange(whole.length)))
+        assertEquals("line 5", editor.value.text)
+        editor.typedBeforeFlow(fieldSession, whole, TextFieldValue(whole + "bc", TextRange(whole.length + 2)))
+        assertEquals("line 5bc", editor.value.text)
+        // Not from any other field
+        editor.typedBeforeFlow(fieldSession - 1, whole, TextFieldValue(whole + "d", TextRange(whole.length + 1)))
+        assertEquals("line 5bc", editor.value.text)
+    }
+
+    @Test
     fun backspaceInAnEmptyLastBoxLeavesNoTraceOfIt() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
