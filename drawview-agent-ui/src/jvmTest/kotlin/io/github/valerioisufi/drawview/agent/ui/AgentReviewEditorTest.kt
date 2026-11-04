@@ -204,6 +204,34 @@ class AgentReviewEditorTest {
         assertEquals(listOf("Old text"), scene.texts)
     }
 
+    @Test
+    fun aTextThatWouldNotFitIsToldInTheReview() = scene { scene ->
+        val base = runBlocking {
+            scene.call("read_page", buildJsonObject { put("document", scene.documentId) })
+                .getValue("texts").jsonArray.first().jsonObject.getValue("base").jsonPrimitive.content
+        }
+        runBlocking {
+            scene.call(
+                "propose",
+                buildJsonObject {
+                    put("document", scene.documentId)
+                    put("title", "Far too long")
+                    put(
+                        "items",
+                        JsonArray(listOf(buildJsonObject {
+                            put("kind", "replace_text")
+                            put("text", scene.text.id)
+                            put("base", base)
+                            put("markdown", (1..200).joinToString("\n\n") { "Line $it" })
+                        }))
+                    )
+                }
+            )
+        }
+        awaitPanel()
+        awaitInRealTime { onAllNodesWithText("Would pass the end of the page", substring = true).fetchSemanticsNodes().isNotEmpty() }
+    }
+
     /** The heights of an editor; how long the largest preview takes is in `docs/agent-placement.md`. */
     @Test
     fun aPreviewInAnEditorIsMeasured() = scene { scene ->

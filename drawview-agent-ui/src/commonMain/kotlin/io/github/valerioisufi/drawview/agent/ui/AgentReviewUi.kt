@@ -38,6 +38,7 @@ import io.github.valerioisufi.drawview.agent.AgentConnection
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
+import io.github.valerioisufi.drawview.agent.PlacementWarning
 import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalEntry
 import io.github.valerioisufi.drawview.agent.ProposalItem
@@ -69,6 +70,13 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_from
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_show
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_review_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_chain
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_far
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_narrowed
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_new_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_overlaps
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_end
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_split
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
@@ -78,6 +86,8 @@ import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -156,15 +166,29 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             onDispose { controller.session.removeObserver(observer) }
         }
         var stale by remember { mutableStateOf<Map<String, Set<Int>>>(emptyMap()) }
+        var warnings by remember { mutableStateOf<Map<String, Map<Int, List<PlacementWarning>>>>(emptyMap()) }
         LaunchedEffect(all, changes) {
-            stale = proposals.filter { it.isWaiting }.associate { it.id to agents.staleItems(it) }
+            val waiting = proposals.filter { it.isWaiting }
+            stale = waiting.associate { it.id to agents.staleItems(it) }
+            // A plan takes time on the thread of the document: not at every stroke
+            delay(PLAN_DELAY_MS)
+            warnings = waiting.associate { proposal ->
+                proposal.id to agents.plan(proposal)?.items.orEmpty().withIndex()
+                    .filter { it.value.warnings.isNotEmpty() }
+                    .associate { it.index to it.value.warnings }
+            }
         }
         ReviewList(
             proposals = proposals,
             staleItems = stale,
+            warnings = warnings,
             onDecide = { id, accepted -> scope.launch { agents.decide(id, accepted) } },
             modifier = Modifier.fillMaxWidth()
         )
+    }
+
+    private companion object {
+        const val PLAN_DELAY_MS = 300L
     }
 }
 
@@ -174,7 +198,8 @@ internal fun ReviewList(
     proposals: List<Proposal>,
     staleItems: Map<String, Set<Int>>,
     onDecide: (String, Set<Int>) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    warnings: Map<String, Map<Int, List<PlacementWarning>>> = emptyMap()
 ) {
     val waiting = proposals.filter { it.isWaiting }
     val decided = proposals.filterNot { it.isWaiting }.asReversed()
@@ -191,7 +216,7 @@ internal fun ReviewList(
         }
         for (proposal in waiting) {
             androidx.compose.runtime.key(proposal.id) {
-                ProposalCard(proposal, staleItems[proposal.id].orEmpty(), onDecide)
+                ProposalCard(proposal, staleItems[proposal.id].orEmpty(), warnings[proposal.id].orEmpty(), onDecide)
             }
         }
         if (decided.isNotEmpty()) {
@@ -209,7 +234,7 @@ internal fun ReviewList(
 
 /** A proposal waiting: each item with a box, on by default but when stale. */
 @Composable
-private fun ProposalCard(proposal: Proposal, stale: Set<Int>, onDecide: (String, Set<Int>) -> Unit) {
+private fun ProposalCard(proposal: Proposal, stale: Set<Int>, warnings: Map<Int, List<PlacementWarning>>, onDecide: (String, Set<Int>) -> Unit) {
     val unchecked = remember(proposal.id) { mutableStateSetOf<Int>() }
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -232,7 +257,7 @@ private fun ProposalCard(proposal: Proposal, stale: Set<Int>, onDecide: (String,
                         enabled = !isStale,
                         onCheckedChange = { checked -> if (checked) unchecked -= index else unchecked += index }
                     )
-                    EntryContent(entry, isStale, Modifier.weight(1f).padding(top = 12.dp))
+                    EntryContent(entry, isStale, warnings[index].orEmpty(), Modifier.weight(1f).padding(top = 12.dp))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -250,7 +275,7 @@ private fun ProposalCard(proposal: Proposal, stale: Set<Int>, onDecide: (String,
 
 /** What an item does: the text as it is and as it would be. */
 @Composable
-private fun EntryContent(entry: ProposalEntry, stale: Boolean, modifier: Modifier = Modifier) {
+private fun EntryContent(entry: ProposalEntry, stale: Boolean, warnings: List<PlacementWarning>, modifier: Modifier = Modifier) {
     val item = entry.item
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(itemLabel(item), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
@@ -275,7 +300,29 @@ private fun EntryContent(entry: ProposalEntry, stale: Boolean, modifier: Modifie
                 color = MaterialTheme.colorScheme.error
             )
         }
+        // What was made on something changed goes nowhere: where it would go does not matter
+        if (!stale) {
+            for (warning in warnings) {
+                Text(
+                    warningText(warning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
+}
+
+/** What is wrong with where an item goes, in words. */
+@Composable
+private fun warningText(warning: PlacementWarning): String = when (warning) {
+    is PlacementWarning.FarFromAnchor -> stringResource(Res.string.agent_warning_far, warning.byMm.roundToInt())
+    PlacementWarning.MovedToNewPage -> stringResource(Res.string.agent_warning_new_page)
+    is PlacementWarning.Split -> stringResource(Res.string.agent_warning_split, warning.pieces)
+    is PlacementWarning.Narrowed -> stringResource(Res.string.agent_warning_narrowed)
+    is PlacementWarning.Overlaps -> stringResource(Res.string.agent_warning_overlaps)
+    is PlacementWarning.PastPageEnd -> stringResource(Res.string.agent_warning_past_end, warning.byMm.roundToInt())
+    is PlacementWarning.ChainOverflow -> stringResource(Res.string.agent_warning_chain)
 }
 
 @Composable

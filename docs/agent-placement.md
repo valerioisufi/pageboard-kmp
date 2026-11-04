@@ -208,7 +208,7 @@ the ones that matter most, and each phase can be left out of the ones after it.
 | 1 | `ProposalPlanner` and `TextMeasure` out of `ProposalApplier`, the plan seeing what earlier items removed or grew; `near`, `near_area`, `where`; `TextFlow.FirstPlace`, with the ABI of `drawview-model` and `drawview-agent` re-recorded. Tests: the place below and in the margin of a box and of an area, a box moved after the proposal, no room near the anchor, stale and refused references, removing then inserting on one page | done |
 | 2 | `preview_proposal`, the plan in the answer of `propose` and the places in `proposal_status`; the warnings, with the check of `replace_text`; `pencilnotes preview`. Tests: a preview changes nothing and opens nothing, what a preview says is what `apply` does on the same page, each warning, a closed document answering `measured: false`, the largest proposal measured; the commands against the application on a scratch directory | done |
 | 3 | The geometry in `read_page`, `FreeSpace.largestAreas`. Tests: empty, full, PDF and scanned pages, texts at their measured height | done |
-| 4 | The warnings in the review panel. Tests: screenshots (`verifyRoborazziJvm`), a real editor | proposed |
+| 4 | The warnings in the review panel. Tests: screenshots (`verifyRoborazziJvm`), a real editor | done |
 | 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, dragged, confirmed, undone at once; cancelled, nothing changes), the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
 
 ## Decisions

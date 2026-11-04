@@ -27,4 +27,11 @@
     <string name="agent_access_no_clients">No client is connected.</string>
     <string name="agent_access_direct">Apply without review, while connected</string>
     <string name="agent_close">Close</string>
+    <string name="agent_warning_far">Far from what it is about (%1$d mm)</string>
+    <string name="agent_warning_new_page">No room on its page: it begins on a new one</string>
+    <string name="agent_warning_split">Split into %1$d boxes</string>
+    <string name="agent_warning_narrowed">Made narrow for lack of room</string>
+    <string name="agent_warning_overlaps">Would cover other content of the page</string>
+    <string name="agent_warning_past_end">Would pass the end of the page by %1$d mm</string>
+    <string name="agent_warning_chain">Its part no longer fits its box: the next boxes do not move</string>
 </resources>

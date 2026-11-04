@@ -18,6 +18,7 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.agent.AgentConnection
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ItemOutcome
+import io.github.valerioisufi.drawview.agent.PlacementWarning
 import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalEntry
 import io.github.valerioisufi.drawview.agent.ProposalItem
@@ -92,14 +93,21 @@ class AgentReviewScreenshotTest {
         )
     )
 
+    private val warnings = mapOf(
+        "one" to mapOf(
+            0 to listOf(PlacementWarning.Overlaps(listOf("a")), PlacementWarning.PastPageEnd(9f)),
+            2 to listOf(PlacementWarning.MovedToNewPage, PlacementWarning.Split(2))
+        )
+    )
+
     @Test
-    fun review() = capture("agent_review", 420, 760) {
-        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> })
+    fun review() = capture("agent_review", 420, 860) {
+        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings)
     }
 
     @Test
-    fun reviewDark() = capture("agent_review_dark", 420, 760, dark = true) {
-        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> })
+    fun reviewDark() = capture("agent_review_dark", 420, 860, dark = true) {
+        ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings)
     }
 
     @Test

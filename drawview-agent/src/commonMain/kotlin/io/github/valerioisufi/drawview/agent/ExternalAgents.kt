@@ -66,8 +66,12 @@ public class ExternalAgents(
         }
     }
 
-    /** What [proposal] would do to its document as it is now; `null` when it cannot be opened. */
+    /**
+     * What [proposal] would do to its document as it is now; `null` when it cannot be opened, or holds
+     * too much text to be planned before the user accepts it.
+     */
     public suspend fun plan(proposal: Proposal): ProposalPlan? {
+        if (!ProposalLimits().canPlan(proposal.entries.map { it.item })) return null
         val open = documents.open(proposal.documentId) ?: return null
         try {
             return open.edit { session -> planner.plan(session.document, proposal.entries.map { it.item }) }
