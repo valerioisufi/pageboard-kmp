@@ -272,9 +272,24 @@ class TextScreenshotTest {
         waitForIdle()
     }
 
+    /** A box larger than the window at a high zoom: its lines where the page has them, its text filling the frame. */
+    @Test
+    fun textLargerThanWindow() = capture("text-larger-than-window", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        runOnIdle { viewModels.controller().viewport.camera.onDrag(0f, 0f, 2.5f, 600f, 450f) }
+        write(viewModels, 15f, 20f, (1..12).joinToString("\n") { "Line $it of a text wider than the window at this zoom, wrapped as on the page." }, drawnWidthMm = 180f)
+        runOnIdle {
+            val controller = viewModels.controller()
+            val editor = controller.textEditorManager
+            val corner = controller.viewport.pageMmToScreen(0)!!.mapPoint(editor.boxX, editor.boxY)
+            controller.viewport.panBy(40f - corner.x, 40f - corner.y)
+        }
+        waitForIdle()
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
-    fun textSelected() = WINDOWS.forEach { window ->
+    fun textSelected()= WINDOWS.forEach { window ->
         capture("text-selected", window, dark = false) { viewModels ->
             openNote(viewModels)
             write(viewModels, 20f, 30f, "Area of a circle: \$\\pi r^2\$")
