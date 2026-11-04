@@ -178,12 +178,15 @@ public object TableEditing {
      * Keeps a change of [oldValue] into [newValue] inside the cells of a table: a `|` typed or pasted
      * in a cell is escaped (`\|`), a line break pasted is a space and one typed goes to the cell
      * below, a deletion of a `|` or of a space around a cell (Backspace at the start of
-     * a cell, Delete at its end) moves the caret instead. `null` when the change needs nothing.
+     * a cell, Delete at its end) moves the caret instead, a longer one stops at the ends of the cell.
+     * A selection replaced or deleted keeps the shape of the tables it touches (see
+     * [replaceSelection]). `null` when the change needs nothing.
      */
     public fun keepInCells(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
         val old = oldValue.text
         val new = newValue.text
-        if (old == new || !oldValue.selection.collapsed) return null
+        if (old == new) return null
+        if (!oldValue.selection.collapsed) return replaceSelection(oldValue, newValue)
         val caret = oldValue.selection.start
         val inTable = caretIn(old, caret) ?: return null
         val cell = inTable.shape.rows[inTable.row][inTable.column]
@@ -193,16 +196,8 @@ public object TableEditing {
         if (inserted > 0 && new.startsWith(old.substring(0, caret)) && new.endsWith(old.substring(caret))) {
             val typed = new.substring(caret, caret + inserted)
             if (typed == "\n") return cellBelow(oldValue)
-            if ('|' !in typed && '\n' !in typed) return null
-            val kept = buildString {
-                for ((k, c) in typed.withIndex()) {
-                    when {
-                        c == '|' && (k == 0 || typed[k - 1] != '\\') -> append("\\|")
-                        c == '\n' -> append(' ')
-                        else -> append(c)
-                    }
-                }
-            }
+            if ('|' !in typed && '\n' !in typed && '\r' !in typed) return null
+            val kept = keptInCell(typed)
             return TextFieldValue(old.substring(0, caret) + kept + old.substring(caret), TextRange(caret + kept.length))
         }
         // A deletion out of the content of the cell: the caret moves to the cell before or after
@@ -212,7 +207,104 @@ public object TableEditing {
             if (backspace) return moveHorizontally(oldValue, left = true)
             if (delete) return moveHorizontally(oldValue, left = false)
         }
+        // A deletion of several characters (a word): up to the ends of the cell
+        if (new.length < old.length - 1) {
+            val removed = old.length - new.length
+            if (caret - removed >= 0 && new == old.removeRange(caret - removed, caret) && caret - removed < cell.first) {
+                val start = minOf(cell.first, caret)
+                return TextFieldValue(old.removeRange(start, caret), TextRange(start))
+            }
+            if (caret + removed <= old.length && new == old.removeRange(caret, caret + removed) && caret + removed > cell.last + 1) {
+                return TextFieldValue(old.removeRange(caret, maxOf(cell.last + 1, caret)), TextRange(caret))
+            }
+        }
         return null
+    }
+
+    /** [typed], text going in a cell: its pipes escaped, its line breaks spaces. */
+    private fun keptInCell(typed: String): String = buildString {
+        val text = typed.replace("\r\n", "\n").replace('\r', '\n')
+        for ((k, c) in text.withIndex()) {
+            when {
+                c == '|' && (k == 0 || text[k - 1] != '\\') -> append("\\|")
+                c == '\n' -> append(' ')
+                else -> append(c)
+            }
+        }
+    }
+
+    /**
+     * A selection of [oldValue] replaced by what [newValue] has in its place, the tables it touches
+     * only in part keeping their shape: in a table, the text goes in the cell of the start of the
+     * selection, kept in it, and the cells the selection covers are emptied. `null` when it touches
+     * no table, or only whole ones.
+     */
+    private fun replaceSelection(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        val old = oldValue.text
+        val new = newValue.text
+        val start = oldValue.selection.min
+        val end = oldValue.selection.max
+        val rest = old.substring(end)
+        if (!new.startsWith(old.substring(0, start)) || !new.endsWith(rest) || new.length < start + rest.length) return null
+        fun whole(span: Span) = start <= span.start && end >= span.end
+        val first = caretIn(old, start)?.takeIf { !whole(it.span) }
+        val last = caretIn(old, end)?.takeIf { end > it.span.start && !whole(it.span) }
+        if (first == null && last == null) return null
+        val inserted = new.substring(start, new.length - rest.length)
+        val kept = if (first != null) keptInCell(inserted) else inserted
+        fun cellOf(caret: Caret) = caret.shape.rows[caret.row][caret.column]
+        fun indexOf(caret: Caret) = caret.row * caret.shape.columns + caret.column
+        val prefix = first?.let { cellOf(it).let { cell -> old.substring(cell.first, start.coerceIn(cell.first, cell.last + 1)) } }.orEmpty()
+        val suffix = last?.let { cellOf(it).let { cell -> old.substring(end.coerceIn(cell.first, cell.last + 1), cell.last + 1) } }.orEmpty()
+        // The cells of a table written again from its cells, those from [from] to [to] (in the order of reading) emptied
+        fun written(caret: Caret, from: Int, to: Int, edit: (MutableList<MutableList<String>>) -> Unit): String {
+            val columns = caret.shape.columns
+            val cells = cellsOf(old, caret.shape).map { it.toMutableList() }.toMutableList()
+            for (index in from..to) cells[index / columns][index % columns] = ""
+            edit(cells)
+            return write(cells, caret.shape.alignments)
+        }
+        val sameTable = first != null && last != null && first.span.start == last.span.start
+        val text: String
+        val tableStart: Int
+        if (sameTable) {
+            val a = first!!
+            val b = last!!
+            if (indexOf(a) == indexOf(b)) {
+                // In one cell: nothing else of the table changes
+                val cell = cellOf(a)
+                val at = start.coerceIn(cell.first, cell.last + 1)
+                val to = end.coerceIn(cell.first, cell.last + 1)
+                return TextFieldValue(old.substring(0, at) + kept + old.substring(to), TextRange(at + kept.length))
+            }
+            val table = written(a, indexOf(a), indexOf(b)) { cells ->
+                cells[a.row][a.column] = prefix + kept
+                cells[b.row][b.column] = suffix
+            }
+            tableStart = a.span.start
+            text = old.substring(0, tableStart) + table + old.substring(a.span.end)
+        } else {
+            val head = if (first != null) {
+                old.substring(0, first.span.start) + written(first, indexOf(first), first.shape.rows.size * first.shape.columns - 1) { cells ->
+                    cells[first.row][first.column] = prefix + kept
+                }
+            } else {
+                old.substring(0, start) + kept
+            }
+            val tail = if (last != null) {
+                written(last, 0, indexOf(last)) { cells -> cells[last.row][last.column] = suffix } + old.substring(last.span.end)
+            } else {
+                rest
+            }
+            val glue = if ((first != null && !tail.startsWith("\n")) || (last != null && !head.endsWith("\n"))) "\n" else ""
+            text = head + glue + tail
+            if (first == null) return TextFieldValue(text, TextRange(start + kept.length))
+            tableStart = first.span.start
+        }
+        val caret = first!!
+        val shape = TableShape.of(text, tableAt(text, tableStart))
+        val cell = shape.rows[caret.row][caret.column]
+        return TextFieldValue(text, TextRange((cell.first + prefix.length + kept.length).coerceAtMost(cell.last + 1)))
     }
 
     /** Adds an empty row above or [below] the row of [caret] (below the header at least), the caret in its [column]. */

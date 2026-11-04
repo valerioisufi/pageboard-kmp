@@ -80,4 +80,55 @@ class TableEditingTest {
         val newline = TextFieldValue(table.replaceFirst("a", "a\n"), TextRange(table.indexOf('a') + 2))
         assertEquals(table.indexOf('c') + 1, TableEditing.keepInCells(at(table, table.indexOf('a') + 1), newline)!!.selection.start)
     }
+
+    /** [text] with what is between [from] and [to] (the ends of the first of each) selected and replaced by [inserted], as the field does it. */
+    private fun replacing(text: String, from: String, to: String, inserted: String): TextFieldValue? {
+        val start = text.indexOf(from)
+        val end = text.indexOf(to, start) + to.length
+        val old = TextFieldValue(text, TextRange(start, end))
+        val new = TextFieldValue(text.substring(0, start) + inserted + text.substring(end), TextRange(start + inserted.length))
+        return TableEditing.keepInCells(old, new)
+    }
+
+    @Test
+    fun aPasteOverASelectionInACellStaysInTheCell() {
+        val text = "| abc | b |\n| --- | --- |\n| c | d |\n"
+        assertEquals("| ax\\|y z^c | b |\n| --- | --- |\n| c | d |\n", shown(replacing(text, "b", "b", "x|y\r\nz")!!))
+    }
+
+    @Test
+    fun aPasteAtTheCaretOfACellLeavesNoCarriageReturn() {
+        val typed = TextFieldValue(table.replaceFirst("a", "ax\r\ny"), TextRange(table.indexOf('a') + 5))
+        assertEquals("| ax y^ | b |", shown(TableEditing.keepInCells(at(table, table.indexOf('a') + 1), typed)!!).lines()[0])
+    }
+
+    @Test
+    fun aSelectionAcrossTheCellsKeepsTheShapeOfTheTable() {
+        assertEquals("| ^  |   |\n| --- | --- |\n|   |   |\n", shown(replacing(table, "a", "d", "")!!))
+        assertEquals("| X^ |   |\n| --- | --- |\n|   | d |\n", shown(replacing(table, "a", "c", "X")!!))
+        // Across the row of the delimiters
+        assertEquals("| ^  |   |\n| --- | --- |\n| c | d |\n", shown(replacing(table, "a", "---", "")!!))
+    }
+
+    @Test
+    fun aSelectionFromOutsideATableKeepsWhatItLeavesOfIt() {
+        assertEquals("No^\n|   |   |\n| --- | --- |\n|   | d |\n", shown(replacing("Note\n$table", "te", "c", "")!!))
+        assertEquals("| a | b |\n| --- | --- |\n| c | ^  |\nter", shown(replacing(table.trimEnd() + "\nafter", "d", "af", "")!!))
+    }
+
+    @Test
+    fun aSelectionOutOfATableOrOfAWholeOneNeedsNothing() {
+        assertNull(replacing("Some text\n$table", "Some", "text", "X"))
+        assertNull(replacing("Note\n${table.trimEnd()}\nend", "| a", "| c | d |", ""))
+    }
+
+    @Test
+    fun aDeletionOfSeveralCharactersStopsAtTheEndsOfTheCell() {
+        val caret = table.indexOf('b') + 1
+        val word = TextFieldValue(table.removeRange(2, caret), TextRange(2))
+        assertEquals("| a | ^ |", shown(TableEditing.keepInCells(at(table, caret), word)!!).lines()[0])
+        val forward = table.indexOf('a')
+        val ahead = TextFieldValue(table.removeRange(forward, table.indexOf('b')), TextRange(forward))
+        assertEquals("| ^ | b |", shown(TableEditing.keepInCells(at(table, forward), ahead)!!).lines()[0])
+    }
 }
