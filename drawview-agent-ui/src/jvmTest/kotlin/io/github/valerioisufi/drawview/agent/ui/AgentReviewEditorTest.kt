@@ -204,6 +204,24 @@ class AgentReviewEditorTest {
         assertEquals(listOf("Old text"), scene.texts)
     }
 
+    /** The heights of an editor; how long the largest preview takes is in `docs/agent-placement.md`. */
+    @Test
+    fun aPreviewInAnEditorIsMeasured() = scene { scene ->
+        val answer = runBlocking {
+            scene.call(
+                "preview_proposal",
+                buildJsonObject {
+                    put("document", scene.documentId)
+                    put("items", JsonArray(listOf(buildJsonObject {
+                        put("kind", "insert_text")
+                        put("markdown", "New")
+                    })))
+                }
+            )
+        }
+        assertEquals("true", answer.getValue("measured").jsonPrimitive.content)
+    }
+
     @Test
     fun aPageIsDrawnForAModel() = scene { scene ->
         val page = scene.controller.document.pages.first().id

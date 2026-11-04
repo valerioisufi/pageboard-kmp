@@ -192,9 +192,10 @@ of a proposal yet (`docs/agent-tools.md`, "Left for later").
 ### Threats
 
 * A preview is a read of a document the user allowed, through `withDocument`: no new access.
-* A preview costs time on the thread of the document: the proposals of a connection are planned one
-  at a time, within `ProposalLimits` (200 items, 1 MiB of text). The largest proposal is measured in
-  phase 2, and a preview is refused above a bound if it would block the editor.
+* A preview costs time on the thread of the document: plans are made one at a time, whoever asks,
+  and only up to 32 KiB of text. Measured in a real editor on the Mac: 3 KiB in 170 ms, 14 KiB in
+  390 ms, 55 KiB in 1.1 s, with the code cold. Above the bound `preview_proposal` is refused and
+  `propose` answers without its plan; the text is still placed when the user accepts.
 * An area or a reference that makes no sense is refused or stale, never clamped into something else.
 
 ## Phases
@@ -205,7 +206,7 @@ the ones that matter most, and each phase can be left out of the ones after it.
 | Phase | What | Status |
 |---|---|---|
 | 1 | `ProposalPlanner` and `TextMeasure` out of `ProposalApplier`, the plan seeing what earlier items removed or grew; `near`, `near_area`, `where`; `TextFlow.FirstPlace`, with the ABI of `drawview-model` and `drawview-agent` re-recorded. Tests: the place below and in the margin of a box and of an area, a box moved after the proposal, no room near the anchor, stale and refused references, removing then inserting on one page | done |
-| 2 | `preview_proposal`, the plan in the answer of `propose` and the places in `proposal_status`; the warnings, with the check of `replace_text`; `pencilnotes preview`. Tests: a preview changes nothing and opens nothing, what a preview says is what `apply` does on the same page, each warning, a closed document answering `measured: false`, the largest proposal measured; the commands against the application on a scratch directory | proposed |
+| 2 | `preview_proposal`, the plan in the answer of `propose` and the places in `proposal_status`; the warnings, with the check of `replace_text`; `pencilnotes preview`. Tests: a preview changes nothing and opens nothing, what a preview says is what `apply` does on the same page, each warning, a closed document answering `measured: false`, the largest proposal measured; the commands against the application on a scratch directory | done |
 | 3 | The geometry in `read_page`, `FreeSpace.largestAreas`. Tests: empty, full, PDF and scanned pages, texts at their measured height | proposed |
 | 4 | The warnings in the review panel. Tests: screenshots (`verifyRoborazziJvm`), a real editor | proposed |
 | 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, dragged, confirmed, undone at once; cancelled, nothing changes), the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |

@@ -206,6 +206,7 @@ public final class io/github/valerioisufi/drawview/agent/ExternalAgents {
 	public final fun getAccess ()Lio/github/valerioisufi/drawview/agent/AgentAccess;
 	public final fun getProposals ()Lio/github/valerioisufi/drawview/agent/ProposalBook;
 	public final fun getTools ()Lio/github/valerioisufi/drawview/agent/DocumentTools;
+	public final fun plan (Lio/github/valerioisufi/drawview/agent/Proposal;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun staleItems (Lio/github/valerioisufi/drawview/agent/Proposal;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -385,17 +386,19 @@ public final class io/github/valerioisufi/drawview/agent/ProposalBook$Companion 
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalEntry {
-	public fun <init> (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;Ljava/util/List;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lio/github/valerioisufi/drawview/agent/ProposalItem;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/agent/ItemOutcome;
-	public final fun copy (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;)Lio/github/valerioisufi/drawview/agent/ProposalEntry;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalEntry;Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalEntry;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;Ljava/util/List;)Lio/github/valerioisufi/drawview/agent/ProposalEntry;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalEntry;Lio/github/valerioisufi/drawview/agent/ProposalItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/ItemOutcome;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalEntry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBefore ()Ljava/lang/String;
 	public final fun getItem ()Lio/github/valerioisufi/drawview/agent/ProposalItem;
 	public final fun getOutcome ()Lio/github/valerioisufi/drawview/agent/ItemOutcome;
+	public final fun getPlaced ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

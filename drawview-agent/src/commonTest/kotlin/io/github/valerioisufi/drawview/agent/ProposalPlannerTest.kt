@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocument
@@ -21,7 +22,10 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.float
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -270,5 +274,250 @@ class ProposalPlannerTest {
         assertTrue(onPage.isNotEmpty())
         assertTrue(onPage.all { it.box.top >= 150f }, "in reading order: ${onPage.map { it.box }}")
         assertTrue(pieces.any { it.isOnNewPage })
+    }
+
+    // ==========================================================
+    // What the model is told
+    // ==========================================================
+
+    private class Editors(private val inEditor: Boolean) : AgentEditors {
+        var opened = 0
+        override fun openForReview(documentId: String) { opened++ }
+        override fun settle(documentId: String): Boolean = inEditor
+        override fun isInEditor(documentId: String): Boolean = inEditor
+        override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? =
+            if (inEditor) markdown.lines().size * 5f else null
+        override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.drawview.model.DrawPdf): io.github.valerioisufi.drawview.model.PdfTextLayout? = null
+    }
+
+    private suspend fun Setup.preview(vararg items: JsonObject): JsonObject = call(
+        "preview_proposal",
+        buildJsonObject {
+            put("document", documentId)
+            put("items", JsonArray(items.toList()))
+        }
+    )
+
+    private fun insert(markdown: String) = buildJsonObject {
+        put("kind", "insert_text")
+        put("markdown", markdown)
+    }
+
+    private fun lines(count: Int) = (1..count).joinToString("\n") { "Line $it" }
+
+    /** As many lines as take [heightMm] at the size of the tests, without an editor. */
+    private fun linesOf(heightMm: Float) = lines((heightMm / TextSizes.estimatedLineHeightMm(16f)).toInt())
+
+    private suspend fun Setup.warningsOf(vararg items: ProposalItem) = plan(*items).items.last().warnings
+
+    @Test
+    fun aPreviewChangesNothingAndAsksNobody() = runTest {
+        val editors = Editors(inEditor = false)
+        val setup = setup(this, backgroundScope, AgentEngines(editors = editors))
+        val text = setup.addText("Gauss", y = 20f)
+        val operations = setup.open.edit { it.document.pages[0].texts.size }
+
+        val answer = setup.preview(near(text.id))
+
+        assertEquals(operations, setup.open.edit { it.document.pages[0].texts.size })
+        assertTrue(setup.agents.proposals.proposals.value.isEmpty())
+        assertEquals(0, editors.opened)
+        val item = answer.getValue("items").jsonArray.single().jsonObject
+        assertEquals("insert_text", item.getValue("kind").jsonPrimitive.content)
+        assertEquals(16f, item.getValue("font_size").jsonPrimitive.float)
+        assertEquals(setup.pageId(), item.getValue("pieces").jsonArray.single().jsonObject.getValue("page").jsonPrimitive.content)
+    }
+
+    @Test
+    fun whatAPreviewSaysIsWhatIsApplied() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("Gauss", y = 150f)
+        val long = (1..120).joinToString("\n\n") { "Paragraph $it" }
+
+        val said = setup.preview(near(text.id, long)).getValue("items").jsonArray.single().jsonObject.getValue("pieces").jsonArray
+        val id = setup.propose(near(text.id, long))
+        setup.agents.decide(id, setOf(0))
+
+        val placed = assertNotNull(setup.agents.proposals.find(id)).entries.single().placed
+        assertEquals(said.size, placed.size)
+        for ((piece, told) in placed.zip(said)) {
+            val box = told.jsonObject
+            assertEquals(piece.box.left, box.getValue("x").jsonPrimitive.float, 0.1f)
+            assertEquals(piece.box.top, box.getValue("y").jsonPrimitive.float, 0.1f)
+            assertEquals(piece.box.width, box.getValue("width").jsonPrimitive.float, 0.1f)
+        }
+        for (piece in placed) {
+            val added = setup.open.document.pages.first { it.id == piece.pageId }.texts.single { it.id == piece.textId }
+            assertEquals(piece.box.left, added.x)
+            assertEquals(piece.box.top, added.y)
+        }
+    }
+
+    @Test
+    fun theStatusTellsWhereTheTextWent() = runTest {
+        val setup = setup(this, backgroundScope)
+        val id = setup.propose(insert("New"))
+
+        val waiting = setup.call("proposal_status", buildJsonObject { put("proposal", id) })
+        assertTrue("placed" !in waiting)
+
+        setup.agents.decide(id, setOf(0))
+        val status = setup.call("proposal_status", buildJsonObject { put("proposal", id) })
+        val piece = status.getValue("placed").jsonArray.single().jsonArray.single().jsonObject
+        val added = setup.open.document.pages[0].texts.single()
+        assertEquals(added.id.isNotEmpty(), true)
+        assertEquals(setup.pageId(), piece.getValue("page").jsonPrimitive.content)
+        assertEquals(added.x, piece.getValue("x").jsonPrimitive.float, 0.1f)
+    }
+
+    @Test
+    fun aProposalAnswersItsPlan() = runTest {
+        val setup = setup(this, backgroundScope)
+        val answer = setup.call(
+            "propose",
+            buildJsonObject {
+                put("document", setup.documentId)
+                put("title", "A change")
+                put("items", JsonArray(listOf(insert("New"))))
+            }
+        )
+        assertEquals(1, answer.getValue("plan").jsonObject.getValue("items").jsonArray.size)
+    }
+
+    @Test
+    fun whetherTheHeightsAreMeasuredIsSaid() = runTest {
+        val closed = setup(this, backgroundScope, AgentEngines(editors = Editors(inEditor = false)))
+        assertEquals(false, closed.preview(insert("New")).getValue("measured").jsonPrimitive.boolean)
+        val none = setup(this, backgroundScope)
+        assertEquals(false, none.preview(insert("New")).getValue("measured").jsonPrimitive.boolean)
+        val open = setup(this, backgroundScope, AgentEngines(editors = Editors(inEditor = true)))
+        assertEquals(true, open.preview(insert("New")).getValue("measured").jsonPrimitive.boolean)
+    }
+
+    @Test
+    fun aPreviewOfWhatIsNotThereFails() = runTest {
+        val setup = setup(this, backgroundScope)
+        assertEquals(AgentErrorCode.NOT_FOUND, assertFailsWith<AgentToolException> { setup.preview(near("nothing")) }.code)
+        val other = setup(this, backgroundScope)
+        other.open.edit { }
+        other.agents.access.revoke(other.documentId)
+        assertEquals(AgentErrorCode.NOT_GRANTED, assertFailsWith<AgentToolException> { other.preview(insert("New")) }.code)
+    }
+
+    @Test
+    fun tooMuchTextIsNotPreviewedButCanBeProposed() = runTest {
+        val setup = setup(this, backgroundScope)
+        val items = (1..2).map { insert("x".repeat(20 * 1024)) }
+        assertEquals(AgentErrorCode.REFUSED, assertFailsWith<AgentToolException> { setup.preview(*items.toTypedArray()) }.code)
+        val answer = setup.call(
+            "propose",
+            buildJsonObject {
+                put("document", setup.documentId)
+                put("title", "A change")
+                put("items", JsonArray(items))
+            }
+        )
+        assertTrue("plan" !in answer)
+    }
+
+    @Test
+    fun aTextFarFromWhatItIsAboutIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText(linesOf(204f), y = 60f)
+        val about = setup.addText("At the end", y = 270f)
+
+        val warning = setup.warningsOf(ProposalItem.InsertText("A note", near = about.id)).filterIsInstance<PlacementWarning.FarFromAnchor>().single()
+
+        assertTrue(warning.byMm > 30f, "$warning")
+    }
+
+    @Test
+    fun aTextThatDoesNotFitItsPageIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText(linesOf(270f), y = 12f, x = 12f, width = 186f)
+
+        val warnings = setup.warningsOf(ProposalItem.InsertText("New", page = setup.pageId()))
+
+        assertTrue(PlacementWarning.MovedToNewPage in warnings, "$warnings")
+    }
+
+    @Test
+    fun aTextOnANewPageAskedForIsNotToldItMoved() = runTest {
+        val setup = setup(this, backgroundScope)
+        assertTrue(setup.warningsOf(ProposalItem.InsertText("New", newPage = true)).isEmpty())
+    }
+
+    @Test
+    fun aTextInSeveralBoxesIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        val long = (1..400).joinToString("\n\n") { "Paragraph $it" }
+        val warning = setup.warningsOf(ProposalItem.InsertText(long)).filterIsInstance<PlacementWarning.Split>().single()
+        assertTrue(warning.pieces > 1)
+    }
+
+    @Test
+    fun aTextMadeNarrowForLackOfRoomIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText(linesOf(270f), y = 12f, x = 12f, width = 90f)
+
+        val warning = setup.warningsOf(ProposalItem.InsertText("New")).filterIsInstance<PlacementWarning.Narrowed>().single()
+
+        assertEquals(190f, warning.fromMm)
+    }
+
+    @Test
+    fun aReplacedTextCoveringAnotherIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("Short", y = 20f)
+        val below = setup.addText("Below", y = 60f)
+        val base = setup.open.edit { it.document.findText(text.id)!!.second.base() }
+
+        val warnings = setup.warningsOf(ProposalItem.ReplaceText(text.id, base, lines(30)))
+
+        assertEquals(listOf(below.id), warnings.filterIsInstance<PlacementWarning.Overlaps>().single().with)
+    }
+
+    @Test
+    fun whatAReplacedTextCoveredAlreadyIsNotItsDoing() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("One\nTwo\nThree\nFour\nFive\nSix", y = 20f)
+        setup.addText("Under it", y = 25f)
+        val base = setup.open.edit { it.document.findText(text.id)!!.second.base() }
+
+        assertTrue(setup.warningsOf(ProposalItem.ReplaceText(text.id, base, lines(8))).none { it is PlacementWarning.Overlaps })
+    }
+
+    @Test
+    fun aReplacedTextPassingTheEndOfThePageIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("Short", y = 270f)
+        val base = setup.open.edit { it.document.findText(text.id)!!.second.base() }
+
+        val warning = setup.warningsOf(ProposalItem.ReplaceText(text.id, base, lines(10))).filterIsInstance<PlacementWarning.PastPageEnd>().single()
+
+        assertTrue(warning.byMm > 0f)
+    }
+
+    @Test
+    fun aBoxOfAChainThatNoLongerFitsIsTold() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.open.edit { session -> session.document.addPage() }
+        val second = setup.addText("Goes on", y = 12f, pageIndex = 1)
+        val first = setup.open.edit { session ->
+            val page = session.document.pages[0]
+            val text = DrawText().apply {
+                text = "Short"
+                x = 20f; y = 270f; width = 170f; height = 10f; fontSize = 16f
+                next = second.id
+            }
+            session.submit(AddElements.of(page, listOf(text)))
+            text
+        }
+        val base = setup.open.edit { it.document.findText(first.id)!!.second.base() }
+
+        val warnings = setup.warningsOf(ProposalItem.ReplaceText(first.id, base, lines(10)))
+
+        assertTrue(warnings.any { it is PlacementWarning.ChainOverflow }, "$warnings")
+        assertTrue(warnings.none { it is PlacementWarning.PastPageEnd }, "$warnings")
     }
 }

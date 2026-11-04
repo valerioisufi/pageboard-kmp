@@ -87,11 +87,13 @@ public enum class ItemOutcome(public val wireName: String) {
  * An item of a [Proposal].
  *
  * @param before the text it replaces or removes as it was when proposed, to show beside the new one.
+ * @param placed where its text went, once accepted.
  */
 public data class ProposalEntry(
     val item: ProposalItem,
     val before: String? = null,
-    val outcome: ItemOutcome = ItemOutcome.WAITING
+    val outcome: ItemOutcome = ItemOutcome.WAITING,
+    val placed: List<PlannedPiece> = emptyList()
 )
 
 /**

@@ -5,12 +5,15 @@ import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
@@ -22,6 +25,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.round
 
 /** What a tool answers. */
 public sealed interface ToolResult {
@@ -58,6 +62,11 @@ public class DocumentTools internal constructor(
     private val submit: suspend (Proposal, connection: String) -> Unit,
     private val limits: ProposalLimits = ProposalLimits()
 ) {
+    private val planner = ProposalPlanner(engines)
+
+    /** A plan takes time on the thread of the document: one at a time, whoever asks. */
+    private val planning = Mutex()
+
     /** The tools, those the application gives what they need for. */
     public val tools: List<AgentTool> = buildList {
         add(listDocuments())
@@ -65,6 +74,7 @@ public class DocumentTools internal constructor(
         add(readPage())
         if (engines.renderPage != null) add(renderPage())
         if (engines.search != null) add(search())
+        add(previewProposal())
         add(propose())
         add(proposalStatus())
     }
@@ -191,59 +201,89 @@ public class DocumentTools internal constructor(
         })
     }
 
+    private fun previewProposal() = AgentTool(
+        name = "preview_proposal",
+        description = "What a proposal would do, without proposing it: nothing changes and the user is not asked. For each item: where its text would go (page, box in millimeters), its font size, the pages it would add and warnings: far_from_anchor, moved_to_new_page, split, narrowed, overlaps, past_page_end, chain_overflow. When measured is false the document is in no editor, and the heights are estimates. The place is computed again when the user accepts.",
+        inputSchema = schema(required = listOf("document", "items")) {
+            string("document", "The id of the document.")
+            putJsonObject("items") { itemsSchema() }
+        }
+    ) { arguments, _ ->
+        val documentId = arguments.requiredString("document")
+        val items = arguments.items()
+        limits.checkItems(items)
+        if (!limits.canPlan(items)) throw AgentToolException(AgentErrorCode.REFUSED, "This is too much text to preview at once: use fewer items, or propose it.")
+        value(proposalJson.encodeToJsonElement(withDocument(documentId) { open -> planOf(open, items) }))
+    }
+
     private fun propose() = AgentTool(
         name = "propose",
-        description = "Proposes changes to a document; the user reviews them, and nothing changes until then. Answers the id of the proposal: follow it with proposal_status. Handwriting, images and PDF pages cannot be changed.",
+        description = "Proposes changes to a document; the user reviews them, and nothing changes until then. Answers the id of the proposal, to follow with proposal_status, and what it would do as preview_proposal says. Handwriting, images and PDF pages cannot be changed.",
         inputSchema = schema(required = listOf("document", "title", "items")) {
             string("document", "The id of the document.")
             string("title", "What the proposal does, in a few words, for the user.")
-            putJsonObject("items") {
-                put("type", "array")
-                put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs.")
-                putJsonObject("items") {
-                    put("type", "object")
-                    put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page.")
-                    putJsonObject("properties") {
-                        putJsonObject("kind") {
-                            put("type", "string")
-                            putJsonArray("enum") {
-                                add(JsonPrimitive("replace_text"))
-                                add(JsonPrimitive("remove_text"))
-                                add(JsonPrimitive("insert_text"))
-                                add(JsonPrimitive("add_page"))
-                            }
-                        }
-                    }
-                    putJsonArray("required") { add(JsonPrimitive("kind")) }
-                }
-            }
+            putJsonObject("items") { itemsSchema() }
         }
     ) { arguments, connection ->
         val documentId = arguments.requiredString("document")
         val title = arguments.requiredString("title")
-        val items = try {
-            proposalJson.decodeFromJsonElement(ListOfItems, arguments["items"] ?: throw SerializationException("no items"))
-        } catch (e: SerializationException) {
-            throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
-        } catch (e: IllegalArgumentException) {
-            throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
-        }
+        val items = arguments.items()
         limits.check(title, items)
+        var plan: PlanAnswer? = null
         val proposal = withDocument(documentId) { open ->
             val entries = open.edit { session ->
                 if (session.isReadOnly) throw AgentToolException(AgentErrorCode.REFUSED, "This document may only be read on this device.")
                 items.map { ProposalEntry(it, session.document.beforeOf(it)) }
             }
+            if (limits.canPlan(items)) plan = planOf(open, items)
             val name = access.connections.value.firstOrNull { it.id == connection }?.name ?: "A client"
             proposals.add(documentId, name, title.trim(), entries)
         }
         submit(proposal, connection)
-        value(proposalJson.encodeToJsonElement(proposals.find(proposal.id)!!.toStatus()))
+        value(proposalJson.encodeToJsonElement(proposals.find(proposal.id)!!.toStatus().copy(plan = plan)))
+    }
+
+    /** What [items] would do to the document of [open] now; fails when what they refer to is not there. */
+    private suspend fun planOf(open: OpenDocument, items: List<ProposalItem>): PlanAnswer = planning.withLock {
+        open.edit { session ->
+            items.forEach { session.document.beforeOf(it) }
+            planner.plan(session.document, items).toAnswer(items)
+        }
+    }
+
+    private fun JsonObject.items(): List<ProposalItem> = try {
+        proposalJson.decodeFromJsonElement(ListOfItems, this["items"] ?: throw SerializationException("no items"))
+    } catch (e: SerializationException) {
+        throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
+    } catch (e: IllegalArgumentException) {
+        throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
+    }
+
+    /** The schema of the items of a proposal. */
+    private fun JsonObjectBuilder.itemsSchema() {
+        put("type", "array")
+        put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs.")
+        putJsonObject("items") {
+            put("type", "object")
+            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page.")
+            putJsonObject("properties") {
+                putJsonObject("kind") {
+                    put("type", "string")
+                    putJsonArray("enum") {
+                        add(JsonPrimitive("replace_text"))
+                        add(JsonPrimitive("remove_text"))
+                        add(JsonPrimitive("insert_text"))
+                        add(JsonPrimitive("add_page"))
+                    }
+                }
+            }
+            putJsonArray("required") { add(JsonPrimitive("kind")) }
+        }
     }
 
     private fun proposalStatus() = AgentTool(
         name = "proposal_status",
-        description = "What became of a proposal: waiting, or the outcome of each item: accepted, rejected, or stale when the text changed after you read it (read it again and propose again).",
+        description = "What became of a proposal: waiting, or the outcome of each item: accepted, rejected, or stale when what it was made on changed after you read it (read it again and propose again). Once decided, placed gives the boxes where the text of each accepted item went.",
         inputSchema = schema(required = listOf("proposal")) { string("proposal", "The id answered by propose.") }
     ) { arguments, _ ->
         val proposal = proposals.find(arguments.requiredString("proposal"))
@@ -295,13 +335,25 @@ public class DocumentTools internal constructor(
  * @param maxItems how many items.
  * @param maxTextLength how many characters of text in an item.
  * @param maxTotalLength how many characters of text in all.
+ * @param maxPlannedLength how many characters of text may be planned for a client: more is proposed
+ *   without being previewed, and planned only when the user accepts it.
  */
 internal class ProposalLimits(
     private val maxItems: Int = 200,
     private val maxTextLength: Int = 64 * 1024,
     private val maxTotalLength: Int = 1024 * 1024,
-    private val maxTitleLength: Int = 200
+    private val maxTitleLength: Int = 200,
+    private val maxPlannedLength: Int = 32 * 1024
 ) {
+    /** Whether [items] are few enough to be planned for a client, on the thread of the document. */
+    fun canPlan(items: List<ProposalItem>): Boolean = items.sumOf { item ->
+        when (item) {
+            is ProposalItem.ReplaceText -> item.markdown.length
+            is ProposalItem.InsertText -> item.markdown.length
+            is ProposalItem.RemoveText, is ProposalItem.AddPage -> 0
+        }
+    } <= maxPlannedLength
+
     fun check(title: String, items: List<ProposalItem>) {
         if (title.isBlank() || title.length > maxTitleLength) refuse("A title of at most $maxTitleLength characters is needed.")
         checkItems(items)
@@ -388,8 +440,56 @@ private fun Proposal.toStatus() = ProposalStatus(
     id,
     documentId,
     if (isWaiting) "waiting" else "decided",
-    entries.map { it.outcome.wireName }
+    entries.map { it.outcome.wireName },
+    placed = if (isWaiting) null else entries.map { entry -> entry.placed.map { it.toEntry(null) } }
 )
+
+private fun ProposalPlan.toAnswer(items: List<ProposalItem>) = PlanAnswer(
+    isMeasured,
+    this.items.mapIndexed { index, planned ->
+        PlanItemEntry(
+            kind = items[index].wireKind,
+            text = (items[index] as? ProposalItem.ReplaceText)?.text,
+            stale = planned.isStale,
+            fontSize = planned.pieces.firstOrNull()?.fontSize,
+            pieces = planned.pieces.map { it.toEntry(pageOrder.indexOf(it.pageId)) },
+            pagesAdded = planned.pagesAdded,
+            warnings = planned.warnings.map { it.toEntry() }
+        )
+    }
+)
+
+private val ProposalItem.wireKind: String
+    get() = when (this) {
+        is ProposalItem.ReplaceText -> "replace_text"
+        is ProposalItem.RemoveText -> "remove_text"
+        is ProposalItem.InsertText -> "insert_text"
+        is ProposalItem.AddPage -> "add_page"
+    }
+
+/** A piece as a client reads it; a page the plan would add has no id for it until it is there. */
+private fun PlannedPiece.toEntry(pageIndex: Int?) = PieceEntry(
+    page = pageId.takeIf { !isOnNewPage || pageIndex == null },
+    pageIndex = pageIndex,
+    newPage = isOnNewPage,
+    x = box.left.tenths(),
+    y = box.top.tenths(),
+    width = box.width.tenths(),
+    height = box.height.tenths()
+)
+
+private fun PlacementWarning.toEntry(): WarningEntry = when (this) {
+    is PlacementWarning.FarFromAnchor -> WarningEntry("far_from_anchor", byMm = byMm.tenths())
+    PlacementWarning.MovedToNewPage -> WarningEntry("moved_to_new_page")
+    is PlacementWarning.Split -> WarningEntry("split", pieces = pieces)
+    is PlacementWarning.Narrowed -> WarningEntry("narrowed", fromMm = fromMm.tenths())
+    is PlacementWarning.Overlaps -> WarningEntry("overlaps", with = with)
+    is PlacementWarning.PastPageEnd -> WarningEntry("past_page_end", byMm = byMm.tenths())
+    is PlacementWarning.ChainOverflow -> WarningEntry("chain_overflow", byMm = byMm.tenths())
+}
+
+/** To the tenth of a millimeter: what a place can be told to. */
+private fun Float.tenths(): Float = round(this * 10f) / 10f
 
 private fun JsonObject.string(name: String): String? = (get(name) as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
 
@@ -487,5 +587,44 @@ private data class ProposalStatus(
     val proposal: String,
     val document: String,
     val state: String,
-    val items: List<String>
+    val items: List<String>,
+    val plan: PlanAnswer? = null,
+    val placed: List<List<PieceEntry>>? = null
+)
+
+@Serializable
+private data class PlanAnswer(
+    val measured: Boolean,
+    val items: List<PlanItemEntry>
+)
+
+@Serializable
+private data class PlanItemEntry(
+    val kind: String,
+    val text: String? = null,
+    val stale: Boolean,
+    @SerialName("font_size") val fontSize: Float? = null,
+    val pieces: List<PieceEntry>,
+    @SerialName("pages_added") val pagesAdded: Int,
+    val warnings: List<WarningEntry>
+)
+
+@Serializable
+private data class PieceEntry(
+    val page: String? = null,
+    @SerialName("page_index") val pageIndex: Int? = null,
+    @SerialName("new_page") val newPage: Boolean,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float
+)
+
+@Serializable
+private data class WarningEntry(
+    val code: String,
+    @SerialName("by_mm") val byMm: Float? = null,
+    @SerialName("from_mm") val fromMm: Float? = null,
+    val pieces: Int? = null,
+    val with: List<String>? = null
 )

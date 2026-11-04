@@ -22,6 +22,7 @@ public class ExternalAgents(
     public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received)
 
     private val applier = ProposalApplier(engines)
+    private val planner = ProposalPlanner(engines)
     private val decisions = Mutex()
 
     /**
@@ -32,6 +33,7 @@ public class ExternalAgents(
         val proposal = proposals.find(proposalId)?.takeIf { it.isWaiting } ?: return
         val indexes = proposal.entries.indices.filter { it in accepted }
         val outcomes = MutableList(proposal.entries.size) { ItemOutcome.REJECTED }
+        val placed = mutableMapOf<Int, List<PlannedPiece>>()
         if (indexes.isNotEmpty()) {
             val open = documents.open(proposal.documentId)
             if (open == null) {
@@ -42,13 +44,16 @@ public class ExternalAgents(
                         engines.editors?.settle(proposal.documentId)
                         applier.apply(session, indexes.map { proposal.entries[it].item })
                     }
-                    indexes.forEachIndexed { position, index -> outcomes[index] = applied.outcomes[position] }
+                    indexes.forEachIndexed { position, index ->
+                        outcomes[index] = applied.outcomes[position]
+                        applied.plan?.items?.get(position)?.let { placed[index] = it.pieces }
+                    }
                 } finally {
                     documents.close(open)
                 }
             }
         }
-        proposals.resolve(proposalId, outcomes)
+        proposals.resolve(proposalId, outcomes, placed)
     }
 
     /** The items of [proposal] that would not be applied as the document is now, to show them. */
@@ -56,6 +61,16 @@ public class ExternalAgents(
         val open = documents.open(proposal.documentId) ?: return proposal.entries.indices.toSet()
         try {
             return open.edit { session -> applier.staleItems(session.document, proposal.entries.map { it.item }) }
+        } finally {
+            documents.close(open)
+        }
+    }
+
+    /** What [proposal] would do to its document as it is now; `null` when it cannot be opened. */
+    public suspend fun plan(proposal: Proposal): ProposalPlan? {
+        val open = documents.open(proposal.documentId) ?: return null
+        try {
+            return open.edit { session -> planner.plan(session.document, proposal.entries.map { it.item }) }
         } finally {
             documents.close(open)
         }

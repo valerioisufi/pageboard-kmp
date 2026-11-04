@@ -140,6 +140,21 @@ class AgentCliTest {
     }
 
     @Test
+    fun aPreviewTellsWhereTheTextGoesAndProposesNothing() {
+        startHost()
+        val id = newDocument()
+        val file = File(directory, "items.json").apply { writeText("""[{"kind":"insert_text","markdown":"New"}]""") }
+
+        val preview = run("preview", id, "--file", file.path)
+
+        assertEquals(0, preview.code, preview.errors)
+        assertTrue("Item 0: insert_text" in preview.output, preview.output)
+        assertTrue("page 0: x " in preview.output, preview.output)
+        assertTrue(agents.proposals.proposals.value.isEmpty())
+        assertTrue("\"pieces\"" in run("preview", id, "--file", file.path, "--json").output)
+    }
+
+    @Test
     fun aProposalRejectedHasItsExitCode() {
         startHost()
         val id = newDocument()

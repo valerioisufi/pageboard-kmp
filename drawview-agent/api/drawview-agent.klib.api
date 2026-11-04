@@ -536,6 +536,7 @@ final class io.github.valerioisufi.drawview.agent/ExternalAgents { // io.github.
         final fun <get-tools>(): io.github.valerioisufi.drawview.agent/DocumentTools // io.github.valerioisufi.drawview.agent/ExternalAgents.tools.<get-tools>|<get-tools>(){}[0]
 
     final suspend fun decide(kotlin/String, kotlin.collections/Set<kotlin/Int>) // io.github.valerioisufi.drawview.agent/ExternalAgents.decide|decide(kotlin.String;kotlin.collections.Set<kotlin.Int>){}[0]
+    final suspend fun plan(io.github.valerioisufi.drawview.agent/Proposal): io.github.valerioisufi.drawview.agent/ProposalPlan? // io.github.valerioisufi.drawview.agent/ExternalAgents.plan|plan(io.github.valerioisufi.drawview.agent.Proposal){}[0]
     final suspend fun staleItems(io.github.valerioisufi.drawview.agent/Proposal): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.drawview.agent/ExternalAgents.staleItems|staleItems(io.github.valerioisufi.drawview.agent.Proposal){}[0]
 }
 
@@ -623,7 +624,7 @@ final class io.github.valerioisufi.drawview.agent/ProposalBook { // io.github.va
 }
 
 final class io.github.valerioisufi.drawview.agent/ProposalEntry { // io.github.valerioisufi.drawview.agent/ProposalEntry|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/ProposalItem, kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ...) // io.github.valerioisufi.drawview.agent/ProposalEntry.<init>|<init>(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/ProposalItem, kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ...) // io.github.valerioisufi.drawview.agent/ProposalEntry.<init>|<init>(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>){}[0]
 
     final val before // io.github.valerioisufi.drawview.agent/ProposalEntry.before|{}before[0]
         final fun <get-before>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalEntry.before.<get-before>|<get-before>(){}[0]
@@ -631,11 +632,14 @@ final class io.github.valerioisufi.drawview.agent/ProposalEntry { // io.github.v
         final fun <get-item>(): io.github.valerioisufi.drawview.agent/ProposalItem // io.github.valerioisufi.drawview.agent/ProposalEntry.item.<get-item>|<get-item>(){}[0]
     final val outcome // io.github.valerioisufi.drawview.agent/ProposalEntry.outcome|{}outcome[0]
         final fun <get-outcome>(): io.github.valerioisufi.drawview.agent/ItemOutcome // io.github.valerioisufi.drawview.agent/ProposalEntry.outcome.<get-outcome>|<get-outcome>(){}[0]
+    final val placed // io.github.valerioisufi.drawview.agent/ProposalEntry.placed|{}placed[0]
+        final fun <get-placed>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> // io.github.valerioisufi.drawview.agent/ProposalEntry.placed.<get-placed>|<get-placed>(){}[0]
 
     final fun component1(): io.github.valerioisufi.drawview.agent/ProposalItem // io.github.valerioisufi.drawview.agent/ProposalEntry.component1|component1(){}[0]
     final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalEntry.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.drawview.agent/ItemOutcome // io.github.valerioisufi.drawview.agent/ProposalEntry.component3|component3(){}[0]
-    final fun copy(io.github.valerioisufi.drawview.agent/ProposalItem = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ...): io.github.valerioisufi.drawview.agent/ProposalEntry // io.github.valerioisufi.drawview.agent/ProposalEntry.copy|copy(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome){}[0]
+    final fun component4(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> // io.github.valerioisufi.drawview.agent/ProposalEntry.component4|component4(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.agent/ProposalItem = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ...): io.github.valerioisufi.drawview.agent/ProposalEntry // io.github.valerioisufi.drawview.agent/ProposalEntry.copy|copy(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalEntry.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalEntry.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalEntry.toString|toString(){}[0]

@@ -17,6 +17,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -45,6 +46,7 @@ internal class AgentCli(
                 "docs" -> docs(args.drop(1))
                 "read" -> read(args.drop(1))
                 "search" -> search(args.drop(1))
+                "preview" -> preview(args.drop(1))
                 "propose" -> propose(args.drop(1))
                 "status" -> status(args.drop(1))
                 "mcp" -> mcp()
@@ -66,6 +68,7 @@ internal class AgentCli(
               pencilnotes docs [--json]
               pencilnotes read <document> [--page <n>] [--json]
               pencilnotes search "<text>" [--json]
+              pencilnotes preview <document> --file <items.json> [--json]
               pencilnotes propose <document> --file <items.json> [--title "<title>"]
               pencilnotes status <proposal> [--wait]
               pencilnotes mcp
@@ -151,20 +154,27 @@ internal class AgentCli(
         }
     }
 
+    private fun preview(args: List<String>): Int {
+        val parsed = Arguments(args)
+        val document = parsed.positional.firstOrNull() ?: return usage()
+        val path = parsed.option("--file") ?: return usage()
+        val items = readItems(File(path), path)
+        return connected { client ->
+            val answer = client.call("preview_proposal", buildJsonObject {
+                put("document", document)
+                put("items", items)
+            })
+            if (parsed.has("--json")) output.println(answer) else printPlan(answer, output)
+            EXIT_OK
+        }
+    }
+
     private fun propose(args: List<String>): Int {
         val parsed = Arguments(args)
         val document = parsed.positional.firstOrNull() ?: return usage()
         val path = parsed.option("--file") ?: return usage()
         val file = File(path)
-        val items = try {
-            if (file.length() > AgentEndpoint.MAX_MESSAGE_LENGTH) throw Failure("$path is too long.", EXIT_REFUSED)
-            Json.parseToJsonElement(file.readText()) as? JsonArray
-                ?: throw Failure("$path holds a JSON array of items.", EXIT_REFUSED)
-        } catch (e: IOException) {
-            throw Failure("Cannot read $path: ${e.message}", EXIT_USAGE)
-        } catch (e: SerializationException) {
-            throw Failure("$path is not JSON: ${e.message?.take(200)}", EXIT_REFUSED)
-        }
+        val items = readItems(file, path)
         return connected { client ->
             val answer = client.call("propose", buildJsonObject {
                 put("document", document)
@@ -172,9 +182,49 @@ internal class AgentCli(
                 put("items", items)
             })
             output.println(answer.text("proposal"))
+            (answer["plan"] as? JsonObject)?.let { printWarnings(it, errors) }
             EXIT_OK
         }
     }
+
+    /** The JSON array of items in [file]. */
+    private fun readItems(file: File, path: String): JsonArray = try {
+        if (file.length() > AgentEndpoint.MAX_MESSAGE_LENGTH) throw Failure("$path is too long.", EXIT_REFUSED)
+        Json.parseToJsonElement(file.readText()) as? JsonArray
+            ?: throw Failure("$path holds a JSON array of items.", EXIT_REFUSED)
+    } catch (e: IOException) {
+        throw Failure("Cannot read $path: ${e.message}", EXIT_USAGE)
+    } catch (e: SerializationException) {
+        throw Failure("$path is not JSON: ${e.message?.take(200)}", EXIT_REFUSED)
+    }
+
+    private fun printPlan(plan: JsonObject, to: PrintStream) {
+        if (plan["measured"]?.jsonPrimitive?.booleanOrNull == false) to.println("The document is in no editor: the heights are estimates.")
+        for ((index, entry) in plan.array("items").withIndex()) {
+            val item = entry.jsonObject
+            val stale = if (item["stale"]?.jsonPrimitive?.booleanOrNull == true) "  stale" else ""
+            val size = item.text("font_size")?.let { "  size $it" }.orEmpty()
+            to.println("Item $index: ${item.text("kind")}$size$stale")
+            for (piece in item.array("pieces")) {
+                val box = piece.jsonObject
+                val page = if (box["new_page"]?.jsonPrimitive?.booleanOrNull == true) "new page" else "page"
+                to.println("  $page ${box.text("page_index")}: x ${box.text("x")}, y ${box.text("y")}, ${box.text("width")} x ${box.text("height")} mm")
+            }
+            for (warning in item.array("warnings")) to.println("  warning: ${describe(warning.jsonObject)}")
+        }
+    }
+
+    private fun printWarnings(plan: JsonObject, to: PrintStream) {
+        for ((index, entry) in plan.array("items").withIndex()) {
+            for (warning in entry.jsonObject.array("warnings")) to.println("Item $index: ${describe(warning.jsonObject)}")
+        }
+    }
+
+    /** A warning in one line: its code and what it carries. */
+    private fun describe(warning: JsonObject): String =
+        warning.entries.joinToString(", ") { (name, value) ->
+            if (name == "code") value.jsonPrimitive.content else "$name $value"
+        }
 
     private fun status(args: List<String>): Int {
         val parsed = Arguments(args)
