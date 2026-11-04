@@ -381,7 +381,7 @@ internal class AgentCli(
         const val EXIT_NOT_ACCEPTED = 5
 
         /** The commands: what else is given to the application is not for this class. */
-        val COMMANDS = setOf("docs", "read", "search", "propose", "status", "mcp", "help", "--help")
+        val COMMANDS = setOf("docs", "read", "search", "preview", "propose", "status", "mcp", "help", "--help")
 
         /** The longest answer read back: a page drawn as an image, in Base64, fits. */
         private const val MAX_ANSWER_BYTES = 64 * 1024 * 1024

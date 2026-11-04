@@ -152,6 +152,8 @@ class AgentCliTest {
         assertTrue("page 0: x " in preview.output, preview.output)
         assertTrue(agents.proposals.proposals.value.isEmpty())
         assertTrue("\"pieces\"" in run("preview", id, "--file", file.path, "--json").output)
+        // The application takes it for a command, not for something to open
+        assertTrue("preview" in AgentCli.COMMANDS)
     }
 
     @Test
