@@ -3547,6 +3547,11 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     }
 }
 
+final object io.github.valerioisufi.drawview.model.text/PastedText { // io.github.valerioisufi.drawview.model.text/PastedText|null[0]
+    final fun clean(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.clean|clean(kotlin.String){}[0]
+    final fun normalized(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.normalized|normalized(kotlin.String){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.github.valerioisufi.drawview.model.text/RichTextParser|null[0]
     final val LINE_NUMBERS // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS|{}LINE_NUMBERS[0]
         final fun <get-LINE_NUMBERS>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS.<get-LINE_NUMBERS>|<get-LINE_NUMBERS>(){}[0]

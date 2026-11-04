@@ -76,9 +76,7 @@ public object TextCleanup {
             when {
                 isMarkdownLine(line) || item != null || previous == null || isMarkdownLine(previous) && !isItem(previous) -> out += item ?: line
                 // A line wrapped under the previous one (or under an item): joined, a word cut by a hyphen joined again
-                previous.endsWith("-") && previous.length > 1 && previous[previous.length - 2].isLetter() && line.firstOrNull()?.isLowerCase() == true ->
-                    out[out.lastIndex] = previous.dropLast(1) + line
-                else -> out[out.lastIndex] = "$previous $line"
+                else -> out[out.lastIndex] = joined(previous, line)
             }
         }
         if (out.size == 1) {
@@ -89,8 +87,16 @@ public object TextCleanup {
         return out.joinToString("\n")
     }
 
+    /** [line] wrapped under [previous] joined to it, a word cut by a hyphen joined again. */
+    internal fun joined(previous: String, line: String): String =
+        if (previous.endsWith("-") && previous.length > 1 && previous[previous.length - 2].isLetter() && line.firstOrNull()?.isLowerCase() == true) {
+            previous.dropLast(1) + line
+        } else {
+            "$previous $line"
+        }
+
     /** [line] as an item of a list ("- …", "1. …"), or `null` when it is not one. */
-    private fun itemOf(line: String): String? {
+    internal fun itemOf(line: String): String? {
         BULLET.matchEntire(line)?.let { return "- " + it.groupValues[1] }
         NUMBERED_ITEM.matchEntire(line)?.let { return it.groupValues[1] + ". " + it.groupValues[2] }
         return null

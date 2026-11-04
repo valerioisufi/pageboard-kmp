@@ -3099,6 +3099,12 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Numb
 	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/PastedText {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/PastedText;
+	public final fun clean (Ljava/lang/String;)Ljava/lang/String;
+	public final fun normalized (Ljava/lang/String;)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/RichTextParser;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;

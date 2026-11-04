@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.placement.TextFlow
+import io.github.valerioisufi.drawview.model.text.PastedText
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextCleanup
 import io.github.valerioisufi.drawview.model.text.TextDefaults
@@ -314,7 +315,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val defaults = controller.textDefaults
         val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
         val probe = TextData(
-            id = newElementId(), text = content, alignment = defaults.alignment, autoWidth = true,
+            id = newElementId(), text = PastedText.clean(content), alignment = defaults.alignment, autoWidth = true,
             x = 0f, y = 0f, width = most, color = defaults.color, fontSize = defaults.fontSize
         )
         val size = controller.measureText(probe.toElement())
@@ -454,7 +455,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         }
         val textChanged = newValue.text != value.text
         val surrounded = if (textChanged && smartNewline) {
-            SelectionInput.surround(value, newValue) ?: SelectionInput.link(value, newValue)
+            SelectionInput.surround(value, newValue) ?: SelectionInput.link(value, newValue) ?: cleanedPaste(newValue)
         } else {
             null
         }
@@ -479,6 +480,25 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             reportDraft()
             flowIfOverflowing()
         }
+    }
+
+    /**
+     * [newValue] with the text pasted in it cleaned (see [PastedText]), or `null` when it needs nothing.
+     * A paste is known by what it inserts: several characters with a line break, which an input
+     * method does not commit; in a block of code only its line endings change, in a table it is
+     * kept in its cell (see [TableEditing.keepInCells]).
+     */
+    private fun cleanedPaste(newValue: TextFieldValue): TextFieldValue? {
+        val start = value.selection.min
+        val rest = value.text.substring(value.selection.max)
+        val new = newValue.text
+        if (!new.startsWith(value.text.substring(0, start)) || !new.endsWith(rest) || new.length < start + rest.length + 2) return null
+        val pasted = new.substring(start, new.length - rest.length)
+        if ('\n' !in pasted && '\r' !in pasted) return null
+        if (TableEditing.caretIn(value) != null) return null
+        val clean = if (selectedCodeBlock != null) PastedText.normalized(pasted) else PastedText.clean(pasted)
+        if (clean == pasted) return null
+        return TextFieldValue(value.text.substring(0, start) + clean + rest, TextRange(start + clean.length))
     }
 
     /**
