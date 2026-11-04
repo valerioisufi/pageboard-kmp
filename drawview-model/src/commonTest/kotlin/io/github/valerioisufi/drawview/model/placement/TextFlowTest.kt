@@ -92,4 +92,27 @@ class TextFlowTest {
         assertTrue(pieces.all { it.newPage >= 1 })
         assertEquals((1..80).map { "line $it" }, pieces.flatMap { it.text.lines() })
     }
+
+    @Test
+    fun aFirstPlaceBeginsTheTextThereAndWhatFollowsStaysBelowIt() {
+        val taken = PageOccupancy(210f, 297f, listOf(Rect(20f, 150f, 190f, 160f)))
+        val first = TextFlow.FirstPlace(BesideAnchor(Rect(20f, 150f, 190f, 160f)), 170f, 60f)
+        val markdown = (1..200).joinToString("\n\n") { "Block $it" }
+
+        val pieces = TextFlow().flow(markdown, taken, empty(), first, ::heightOf)
+
+        assertTrue(pieces.first().box.top >= 160f, "below what it is about: ${pieces.first().box}")
+        assertTrue(pieces.filter { it.newPage == 0 }.all { it.box.top >= 160f })
+        assertTrue(pieces.any { it.newPage > 0 })
+    }
+
+    @Test
+    fun aFirstPlaceCountsOnlyOnTheFirstPage() {
+        val first = TextFlow.FirstPlace(BesideAnchor(Rect(20f, 150f, 190f, 160f)), 170f, 60f)
+
+        val pieces = TextFlow().flow("Alone", null, empty(), first, ::heightOf)
+
+        assertEquals(1, pieces.single().newPage)
+        assertEquals(10f, pieces.single().box.top)
+    }
 }

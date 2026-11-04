@@ -18,6 +18,9 @@ public interface AgentEditors {
      */
     public fun settle(documentId: String): Boolean
 
+    /** Whether the document [documentId] is in an editor: what is measured is then as it is drawn. */
+    public fun isInEditor(documentId: String): Boolean
+
     /**
      * The height in millimeters of [markdown] laid out on [widthMm] at [fontSize], as the editor of
      * [documentId] draws it, or `null` when it cannot be told.

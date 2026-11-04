@@ -308,11 +308,11 @@ Taken alone, revertible:
 
 ## Left for later
 
+* Where the text of a model goes, the preview and the warnings: `docs/agent-placement.md`.
 * The transcription of the handwriting in `read_page`, from `drawview-lecture`.
 * A headless host working with the application closed.
 * Moving and removing strokes, moving elements, images added by a model.
 * Moving, removing and changing the format of pages.
-* A proposal shown on the canvas, in place, rather than in a panel.
 * The socket reached from another device of the user (an agent on the Mac on the tablet's documents):
   the accepted changes already reach it by the sync when the document is shared.
 * The author of a change (a mark that it was written by a model): this would be a protocol change.

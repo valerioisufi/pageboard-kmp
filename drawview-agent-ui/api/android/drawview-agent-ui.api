@@ -16,6 +16,7 @@ public final class io/github/valerioisufi/drawview/agent/ui/ComposableSingletons
 public final class io/github/valerioisufi/drawview/agent/ui/SessionAgentEditors : io/github/valerioisufi/drawview/agent/AgentEditors {
 	public static final field $stable I
 	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public fun isInEditor (Ljava/lang/String;)Z
 	public fun openForReview (Ljava/lang/String;)V
 	public fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawPdf;)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
 	public final fun renderPage (Ljava/lang/String;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;

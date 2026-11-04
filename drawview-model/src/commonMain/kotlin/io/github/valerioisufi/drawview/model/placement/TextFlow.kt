@@ -22,6 +22,26 @@ public class TextFlow(
     public class Piece(public val text: String, public val newPage: Int, public val box: Rect)
 
     /**
+     * Where the text begins on the first page given to [flow], when it matters what it is about. The
+     * pieces after it on that page stay below it, so that it reads in order.
+     *
+     * @param policy what makes a place good for its first block.
+     * @param widthMm the width that block prefers.
+     * @param minWidthMm the narrowest it may be made.
+     */
+    public class FirstPlace(public val policy: PlacementPolicy, public val widthMm: Float, public val minWidthMm: Float)
+
+    /** Reading order below [above], a piece of the same text: a place above it would read before it. */
+    private class Below(private val above: Rect) : PlacementPolicy {
+        override fun cost(rect: Rect, block: PlacementBlock): Float =
+            ReadingOrder.cost(rect, block) + if (rect.top < above.bottom) ABOVE_COST else 0f
+
+        private companion object {
+            const val ABOVE_COST = 1e9f
+        }
+    }
+
+    /**
      * Places [markdown] on the free space of [first] (none: straight on new pages), then on new
      * pages of [newPage] (empty: their occupancy without content), each as wide as the page allows.
      *
@@ -33,6 +53,19 @@ public class TextFlow(
         first: PageOccupancy?,
         newPage: PageOccupancy,
         heightOf: (text: String, widthMm: Float) -> Float
+    ): List<Piece> = flow(markdown, first, newPage, null, heightOf)
+
+    /**
+     * As [flow] from the first free place, but beginning at [firstPlace] on [first].
+     *
+     * @param firstPlace where it begins on [first]; `null`: the first free place from the top.
+     */
+    public fun flow(
+        markdown: String,
+        first: PageOccupancy?,
+        newPage: PageOccupancy,
+        firstPlace: FirstPlace?,
+        heightOf: (text: String, widthMm: Float) -> Float
     ): List<Piece> {
         val pieces = mutableListOf<Piece>()
         var occupancy = first ?: newPage
@@ -41,8 +74,20 @@ public class TextFlow(
         while (pending.isNotEmpty()) {
             val block = pending.first()
             val width = occupancy.widthMm - 2 * planner.pageMarginMm
-            val single = PlacementBlock(width, minOf(minWidthMm, width)) { heightOf(block, it) }
-            val spot = planner.candidates(occupancy, single, ReadingOrder).firstOrNull()?.rect
+            val placed = pieces.lastOrNull()?.takeIf { it.newPage == pageNumber }
+            val begins = firstPlace != null && first != null && pageNumber == 0 && placed == null
+            val single = if (begins) {
+                PlacementBlock(minOf(firstPlace.widthMm, width), minOf(firstPlace.minWidthMm, width)) { heightOf(block, it) }
+            } else {
+                PlacementBlock(width, minOf(minWidthMm, width)) { heightOf(block, it) }
+            }
+            val policy = when {
+                begins -> firstPlace.policy
+                firstPlace != null && placed != null && pageNumber == 0 -> Below(placed.box)
+                else -> ReadingOrder
+            }
+            val below = placed?.box?.bottom?.takeIf { policy is Below }
+            val spot = planner.candidates(occupancy, single, policy).firstOrNull { below == null || it.rect.top >= below }?.rect
             if (spot == null) {
                 if (occupancy.boxes.isEmpty()) {
                     // Taller than an empty page: split between its lines, or cut where it ends

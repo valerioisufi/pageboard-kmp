@@ -453,6 +453,8 @@ class ExternalAgentsTest {
             return open
         }
 
+        override fun isInEditor(documentId: String): Boolean = open
+
         override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? = null
 
         override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.drawview.model.DrawPdf): io.github.valerioisufi.drawview.model.PdfTextLayout? = null

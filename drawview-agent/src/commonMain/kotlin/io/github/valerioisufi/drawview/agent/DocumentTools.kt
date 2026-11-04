@@ -202,7 +202,7 @@ public class DocumentTools internal constructor(
                 put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs.")
                 putJsonObject("items") {
                     put("type", "object")
-                    put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it. kind \"add_page\" (after?): adds a page.")
+                    put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page.")
                     putJsonObject("properties") {
                         putJsonObject("kind") {
                             put("type", "string")
@@ -303,8 +303,14 @@ internal class ProposalLimits(
     private val maxTitleLength: Int = 200
 ) {
     fun check(title: String, items: List<ProposalItem>) {
-        fun refuse(message: String): Nothing = throw AgentToolException(AgentErrorCode.REFUSED, message)
         if (title.isBlank() || title.length > maxTitleLength) refuse("A title of at most $maxTitleLength characters is needed.")
+        checkItems(items)
+    }
+
+    private fun refuse(message: String): Nothing = throw AgentToolException(AgentErrorCode.REFUSED, message)
+
+    /** The bounds of the items of a proposal, and what they refer to making sense among them. */
+    fun checkItems(items: List<ProposalItem>) {
         if (items.isEmpty()) refuse("A proposal needs at least one item.")
         if (items.size > maxItems) refuse("A proposal has at most $maxItems items.")
         var total = 0
@@ -328,6 +334,20 @@ internal class ProposalLimits(
             }
             if (target != null && !targets.add(target)) refuse("A text box can be changed by one item of a proposal only.")
         }
+        val removed = items.filterIsInstance<ProposalItem.RemoveText>().mapTo(mutableSetOf()) { it.text }
+        for (item in items.filterIsInstance<ProposalItem.InsertText>()) checkAnchor(item, removed)
+    }
+
+    private fun checkAnchor(item: ProposalItem.InsertText, removed: Set<String>) {
+        if (item.near != null) {
+            if (item.page != null || item.nearArea != null || item.newPage) refuse("near goes without page, near_area and new_page: the page is the one of the text box.")
+            if (item.near in removed) refuse("A text cannot go next to a text box the same proposal removes.")
+        }
+        if (item.nearArea != null) {
+            if (item.page == null) refuse("near_area needs the page it is on.")
+            if (item.newPage) refuse("near_area goes without new_page.")
+        }
+        if (item.place != null && item.near == null && item.nearArea == null) refuse("where needs near or near_area.")
     }
 }
 
@@ -338,7 +358,11 @@ private fun DrawDocument.beforeOf(item: ProposalItem): String? {
         is ProposalItem.ReplaceText -> (findText(item.text) ?: missing("text \"${item.text.take(64)}\"")).second.text
         is ProposalItem.RemoveText -> (findText(item.text) ?: missing("text \"${item.text.take(64)}\"")).second.text
         is ProposalItem.InsertText -> {
-            if (item.page != null && pages.none { it.id == item.page }) missing("page \"${item.page.take(64)}\"")
+            val page = item.page?.let { id -> pages.firstOrNull { it.id == id } ?: missing("page \"${id.take(64)}\"") }
+            if (item.near != null && findText(item.near) == null) missing("text \"${item.near.take(64)}\"")
+            if (item.nearArea != null && page != null && !item.nearArea.isInside(page.widthMm, page.heightMm)) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "near_area is outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
+            }
             null
         }
         is ProposalItem.AddPage -> {

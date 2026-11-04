@@ -16,6 +16,7 @@ final class io.github.valerioisufi.drawview.agent.ui/AgentReviewUi { // io.githu
 final class io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors : io.github.valerioisufi.drawview.agent/AgentEditors { // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors|null[0]
     constructor <init>(kotlin/Function1<kotlin/String, kotlin/Unit>) // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.<init>|<init>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
 
+    final fun isInEditor(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.isInEditor|isInEditor(kotlin.String){}[0]
     final fun openForReview(kotlin/String) // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.openForReview|openForReview(kotlin.String){}[0]
     final fun pdfLayout(kotlin/String, io.github.valerioisufi.drawview.model/DrawPdf): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.pdfLayout|pdfLayout(kotlin.String;io.github.valerioisufi.drawview.model.DrawPdf){}[0]
     final fun settle(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.settle|settle(kotlin.String){}[0]

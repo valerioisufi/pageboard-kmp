@@ -19,6 +19,41 @@ public final class io/github/valerioisufi/drawview/agent/AgentAccess {
 public final class io/github/valerioisufi/drawview/agent/AgentAccess$Companion {
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentArea {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/AgentArea$Companion;
+	public fun <init> (FFFF)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (FFFF)Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/AgentArea;FFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()F
+	public final fun getRect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public final fun isInside (FF)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/AgentArea$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/AgentArea$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/AgentArea;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentArea$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentConnection {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -36,6 +71,7 @@ public final class io/github/valerioisufi/drawview/agent/AgentConnection {
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/AgentEditors {
+	public abstract fun isInEditor (Ljava/lang/String;)Z
 	public abstract fun openForReview (Ljava/lang/String;)V
 	public abstract fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawPdf;)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
 	public abstract fun settle (Ljava/lang/String;)Z
@@ -145,9 +181,17 @@ public final class io/github/valerioisufi/drawview/agent/AgentToolException : ja
 }
 
 public final class io/github/valerioisufi/drawview/agent/AppliedProposal {
-	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/drawview/model/change/DocumentChange;)V
+	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/agent/ProposalPlan;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/agent/ProposalPlan;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getInverse ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
 	public final fun getOutcomes ()Ljava/util/List;
+	public final fun getPlan ()Lio/github/valerioisufi/drawview/agent/ProposalPlan;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ChosenPlace {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getPageId ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/agent/DocumentTools {
@@ -165,6 +209,19 @@ public final class io/github/valerioisufi/drawview/agent/ExternalAgents {
 	public final fun staleItems (Lio/github/valerioisufi/drawview/agent/Proposal;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/drawview/agent/InsertPlace : java/lang/Enum {
+	public static final field BELOW Lio/github/valerioisufi/drawview/agent/InsertPlace;
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/InsertPlace$Companion;
+	public static final field MARGIN Lio/github/valerioisufi/drawview/agent/InsertPlace;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/InsertPlace;
+	public static fun values ()[Lio/github/valerioisufi/drawview/agent/InsertPlace;
+}
+
+public final class io/github/valerioisufi/drawview/agent/InsertPlace$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ItemOutcome : java/lang/Enum {
 	public static final field ACCEPTED Lio/github/valerioisufi/drawview/agent/ItemOutcome;
 	public static final field REJECTED Lio/github/valerioisufi/drawview/agent/ItemOutcome;
@@ -174,6 +231,109 @@ public final class io/github/valerioisufi/drawview/agent/ItemOutcome : java/lang
 	public final fun getWireName ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ItemOutcome;
 	public static fun values ()[Lio/github/valerioisufi/drawview/agent/ItemOutcome;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/agent/PlacementWarning {
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$ChainOverflow : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public fun <init> (F)V
+	public final fun component1 ()F
+	public final fun copy (F)Lio/github/valerioisufi/drawview/agent/PlacementWarning$ChainOverflow;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$ChainOverflow;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$ChainOverflow;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getByMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$FarFromAnchor : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public fun <init> (F)V
+	public final fun component1 ()F
+	public final fun copy (F)Lio/github/valerioisufi/drawview/agent/PlacementWarning$FarFromAnchor;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$FarFromAnchor;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$FarFromAnchor;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getByMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$MovedToNewPage : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/PlacementWarning$MovedToNewPage;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Narrowed : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public fun <init> (F)V
+	public final fun component1 ()F
+	public final fun copy (F)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Narrowed;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$Narrowed;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Narrowed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFromMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps$Companion;
+	public static final field INK Ljava/lang/String;
+	public static final field PDF Ljava/lang/String;
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getWith ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$PastPageEnd : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public fun <init> (F)V
+	public final fun component1 ()F
+	public final fun copy (F)Lio/github/valerioisufi/drawview/agent/PlacementWarning$PastPageEnd;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$PastPageEnd;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$PastPageEnd;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getByMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Split : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Split;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/PlacementWarning$Split;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/PlacementWarning$Split;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPieces ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlannedItem {
+	public fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPagesAdded ()I
+	public final fun getPieces ()Ljava/util/List;
+	public final fun getWarnings ()Ljava/util/List;
+	public final fun isStale ()Z
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlannedPiece {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/geometry/Rect;FLjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/model/geometry/Rect;FLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getFontSize ()F
+	public final fun getMarkdown ()Ljava/lang/String;
+	public final fun getNext ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getTextId ()Ljava/lang/String;
+	public final fun isOnNewPage ()Z
 }
 
 public final class io/github/valerioisufi/drawview/agent/Proposal {
@@ -200,7 +360,8 @@ public final class io/github/valerioisufi/drawview/agent/ProposalApplier {
 	public fun <init> ()V
 	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEngines;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEngines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun apply (Lio/github/valerioisufi/drawview/model/change/DocumentSession;Ljava/util/List;)Lio/github/valerioisufi/drawview/agent/AppliedProposal;
+	public final fun apply (Lio/github/valerioisufi/drawview/model/change/DocumentSession;Ljava/util/List;Ljava/util/Map;)Lio/github/valerioisufi/drawview/agent/AppliedProposal;
+	public static synthetic fun apply$default (Lio/github/valerioisufi/drawview/agent/ProposalApplier;Lio/github/valerioisufi/drawview/model/change/DocumentSession;Ljava/util/List;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/AppliedProposal;
 	public final fun staleItems (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;)Ljava/util/Set;
 }
 
@@ -278,17 +439,23 @@ public final class io/github/valerioisufi/drawview/agent/ProposalItem$Companion 
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$InsertText : io/github/valerioisufi/drawview/agent/ProposalItem {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Lio/github/valerioisufi/drawview/agent/InsertPlace;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Lio/github/valerioisufi/drawview/agent/InsertPlace;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Z)Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public final fun component6 ()Lio/github/valerioisufi/drawview/agent/InsertPlace;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Lio/github/valerioisufi/drawview/agent/InsertPlace;)Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Lio/github/valerioisufi/drawview/agent/InsertPlace;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$InsertText;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMarkdown ()Ljava/lang/String;
+	public final fun getNear ()Ljava/lang/String;
+	public final fun getNearArea ()Lio/github/valerioisufi/drawview/agent/AgentArea;
 	public final fun getNewPage ()Z
 	public final fun getPage ()Ljava/lang/String;
+	public final fun getPlace ()Lio/github/valerioisufi/drawview/agent/InsertPlace;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -366,6 +533,27 @@ public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$ReplaceText$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalPlan {
+	public fun <init> (ZLjava/util/List;Ljava/util/List;)V
+	public final fun getItems ()Ljava/util/List;
+	public final fun getPageOrder ()Ljava/util/List;
+	public final fun isMeasured ()Z
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalPlanner {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalPlanner$Companion;
+	public static final field NEW_TEXT Ljava/lang/String;
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEngines;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEngines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun plan (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;Ljava/util/Map;)Lio/github/valerioisufi/drawview/agent/ProposalPlan;
+	public static synthetic fun plan$default (Lio/github/valerioisufi/drawview/agent/ProposalPlanner;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalPlan;
+	public final fun staleItems (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;)Ljava/util/Set;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalPlanner$Companion {
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/ToolResult {

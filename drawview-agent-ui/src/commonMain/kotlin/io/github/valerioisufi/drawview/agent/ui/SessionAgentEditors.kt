@@ -25,6 +25,8 @@ public class SessionAgentEditors(private val openDocument: (String) -> Unit) : A
         return true
     }
 
+    override fun isInEditor(documentId: String): Boolean = controllerOf(documentId) != null
+
     override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? {
         val controller = controllerOf(documentId) ?: return null
         val text = DrawText().apply {

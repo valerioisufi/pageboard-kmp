@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.agent
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -24,20 +25,52 @@ public sealed interface ProposalItem {
 
     /**
      * Adds [markdown] in the free space of the page [page] (`null`: the last one), going on onto new
-     * pages after it when it does not fit; [newPage]: straight on a new page after it.
+     * pages after it when it does not fit; [newPage]: straight on a new page after it. The place is
+     * computed by the application, on the page as it is when accepted (see `docs/agent-placement.md`).
+     *
+     * @param near the text box it is about, on whose page it goes: it is placed next to that box.
+     * @param nearArea the area of [page] it is about, for what has no box (handwriting, a figure).
+     * @param place how to use what it is about; `null`: below it.
      */
     @Serializable
     @SerialName("insert_text")
     public data class InsertText(
         val markdown: String,
         val page: String? = null,
-        @SerialName("new_page") val newPage: Boolean = false
+        @SerialName("new_page") val newPage: Boolean = false,
+        val near: String? = null,
+        @SerialName("near_area") val nearArea: AgentArea? = null,
+        @SerialName("where") val place: InsertPlace? = null
     ) : ProposalItem
 
     /** Adds a page after the page [after] (`null`: the last one), of its format. */
     @Serializable
     @SerialName("add_page")
     public data class AddPage(val after: String? = null) : ProposalItem
+}
+
+/** An area of a page in millimeters, from its top-left corner. */
+@Serializable
+public data class AgentArea(val x: Float, val y: Float, val width: Float, val height: Float) {
+    /** The area as a rectangle. */
+    public val rect: Rect get() = Rect(x, y, x + width, y + height)
+
+    /** Whether it is a real area, inside a page of this size. */
+    public fun isInside(pageWidthMm: Float, pageHeightMm: Float): Boolean =
+        listOf(x, y, width, height).all { it.isFinite() } && width > 0f && height > 0f &&
+            x >= 0f && y >= 0f && x + width <= pageWidthMm && y + height <= pageHeightMm
+}
+
+/** How a new text goes next to what it is about. */
+@Serializable
+public enum class InsertPlace {
+    /** Below it, or to its right when there is no room below. */
+    @SerialName("below")
+    BELOW,
+
+    /** Beside it, as a short note in the margin of a book. */
+    @SerialName("margin")
+    MARGIN
 }
 
 /** What became of an item of a proposal. */
