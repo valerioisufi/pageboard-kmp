@@ -509,4 +509,82 @@ class RichTextEditingTest {
         assertEquals(null, RichTextEditing.numberingStyleOf(level("1. x", 3)))
         assertEquals(1, RichTextEditing.numberingStartOf(level("plain", 2)))
     }
+
+    @Test
+    fun enterGoesOnInAQuoteAndLeavesItOnAnEmptyLine() {
+        val on = RichTextEditing.handleEnter(level("> one", 5))!!
+        assertEquals("> one\n> ", on.text)
+        assertEquals(TextRange(8), on.selection)
+        val split = RichTextEditing.handleEnter(level("> one two", 5))!!
+        assertEquals("> one\n> two", split.text)
+        val out = RichTextEditing.handleEnter(level("> one\n> ", 8))!!
+        assertEquals("> one\n", out.text)
+        assertEquals(TextRange(6), out.selection)
+        assertEquals(null, RichTextEditing.handleEnter(level("plain", 5)))
+        assertEquals(null, RichTextEditing.handleEnter(level(">5", 2)), ">5 is text")
+    }
+
+    @Test
+    fun enterGoesOnWithAListInAQuote() {
+        assertEquals("> 1. a\n> 2. ", RichTextEditing.handleEnter(level("> 1. a", 6))!!.text)
+        assertEquals("> - a\n> - ", RichTextEditing.handleEnter(level("> - a", 5))!!.text)
+        assertEquals("> a.  x\n> b.  ", RichTextEditing.handleEnter(level("> a.  x", 7))!!.text)
+        assertEquals("> ", RichTextEditing.handleEnter(level("> - ", 4))!!.text, "out of the list, in the quote")
+        assertEquals("> - a\n> - ", RichTextEditing.handleEnter(level("> - a\n>   - ", 12))!!.text, "one level out")
+        assertEquals("> - a\n>   b\n> - c", RichTextEditing.handleEnter(level("> - a\n>   b c", 11))!!.text, "from a line of an item")
+        assertEquals("> - a\n>   ", RichTextEditing.lineBreakInItem(level("> - a", 5))!!.text)
+    }
+
+    private fun backspaced(text: String, caret: Int) =
+        RichTextEditing.handleConcealedDeletion(level(text, caret), level(text.removeRange(caret - 1, caret), caret - 1))
+
+    @Test
+    fun backspaceTakesALineOutOfAQuote() {
+        val out = backspaced("> one\n> two", 8)!!
+        assertEquals("> one\ntwo", out.text)
+        assertEquals(TextRange(6), out.selection)
+        assertEquals("", backspaced("> ", 2)!!.text)
+        assertEquals("> x", backspaced("> - x", 4)!!.text, "an item: its marker first")
+        assertEquals(null, backspaced("> one", 4), "a letter")
+        assertEquals("> - ab", backspaced("> - a\n>   b", 10)?.text, "a line of an item joined back")
+    }
+
+    @Test
+    fun theCaretStaysOutOfTheMarkerOfAQuote() {
+        val text = "ab\n> cd"
+        assertEquals(TextRange(5), RichTextEditing.keepCaretOutOfMarkers(level(text, 7), level(text, 4))?.selection, "into it from the side")
+        assertEquals(TextRange(2), RichTextEditing.keepCaretOutOfMarkers(level(text, 5), level(text, 4))?.selection, "leftwards: the line before")
+        assertEquals(null, RichTextEditing.keepCaretOutOfMarkers(level(text, 7), level(text, 6)), "its text")
+    }
+
+    @Test
+    fun tabAndTheListButtonsWorkInAQuote() {
+        assertEquals("> - a\n>   - b", RichTextEditing.indent(level("> - a\n> - b", 10)).text)
+        assertEquals("> - a\n> - b", RichTextEditing.outdent(level("> - a\n>   - b", 12)).text)
+        assertEquals("> - a", RichTextEditing.indent(level("> - a", 4)).text, "the first item: nothing")
+        assertEquals("> - x", RichTextEditing.toggleBulletList(level("> x", 2)).text)
+        assertEquals("> 1. x", RichTextEditing.toggleNumberedList(level("> x", 2)).text)
+        assertEquals("> 1. x\n> 2. y", RichTextEditing.toggleNumberedList(level("> - x\n> - y", 3)).text, "the whole level")
+        assertEquals("> x", RichTextEditing.toggleBulletList(level("> - x", 4)).text, "and out")
+        assertTrue(RichTextEditing.inBulletList(level("> - x", 4)))
+        assertEquals("> # x".length, RichTextEditing.toggleHeading(level("> # x", 3)).text.length, "no heading in a quote")
+    }
+
+    @Test
+    fun theButtonOfTheQuoteMakesItAndTakesItAway() {
+        val made = RichTextEditing.toggleQuote(level("one", 2))
+        assertEquals("> one", made.text)
+        assertEquals(TextRange(4), made.selection)
+        assertTrue(RichTextEditing.inQuote(made))
+        val out = RichTextEditing.toggleQuote(made)
+        assertEquals("one", out.text)
+        assertEquals(TextRange(2), out.selection)
+        val lines = RichTextEditing.toggleQuote(TextFieldValue("a\nb\nc", TextRange(0, 3)))
+        assertEquals("> a\n> b\nc", lines.text)
+        assertEquals(TextRange(2, 7), lines.selection)
+        assertEquals("a\nb\nc", RichTextEditing.toggleQuote(lines).text)
+        assertEquals("> - a\n>   more\nb", RichTextEditing.toggleQuote(level("- a\n  more\nb", 2)).text, "an item with its lines")
+        assertEquals("> a\n> b", RichTextEditing.toggleQuote(TextFieldValue("> a\nb", TextRange(0, 5))).text, "only the lines without it")
+        assertEquals("```\nx\n```", RichTextEditing.toggleQuote(level("```\nx\n```", 5)).text, "no quote in code")
+    }
 }

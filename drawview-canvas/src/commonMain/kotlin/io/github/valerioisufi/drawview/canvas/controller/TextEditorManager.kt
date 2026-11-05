@@ -178,6 +178,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     override val inNumberedList: Boolean get() = isEditing && RichTextEditing.inNumberedList(value)
 
+    override val inQuote: Boolean get() = isEditing && RichTextEditing.inQuote(value)
+
     override val numberingStyle: NumberingStyle? get() = if (isEditing) RichTextEditing.numberingStyleOf(value) else null
 
     override val numberingStart: Int get() = if (isEditing) RichTextEditing.numberingStartOf(value) else 1
@@ -635,6 +637,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     /** Makes the lines of the selection numbered list items, or plain text again. */
     override fun toggleNumberedList() {
         if (!inTable) updateValue(RichTextEditing.toggleNumberedList(value), smartNewline = false)
+    }
+
+    /** Makes the lines of the selection lines of a block quote, or takes them out of it. */
+    override fun toggleQuote() {
+        if (!inTable) updateValue(RichTextEditing.toggleQuote(value), smartNewline = false)
     }
 
     /** The list of the selection in [style] from [start], made a numbered list if it is not one. */

@@ -62,6 +62,9 @@ public interface TextFormatTarget {
     /** Whether the lines of the selection are numbered list items. */
     public val inNumberedList: Boolean get() = false
 
+    /** Whether the lines of the selection are lines of a block quote. */
+    public val inQuote: Boolean get() = false
+
     /** The style of the numbered list of the selection (`null` for none, or a number by its level). */
     public val numberingStyle: NumberingStyle? get() = null
 
@@ -85,6 +88,9 @@ public interface TextFormatTarget {
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
     public fun toggleNumberedList() {}
+
+    /** Makes the lines of the selection lines of a block quote, or takes them out of it. */
+    public fun toggleQuote() {}
 
     /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
     public fun setNumbering(style: NumberingStyle?, start: Int) {}

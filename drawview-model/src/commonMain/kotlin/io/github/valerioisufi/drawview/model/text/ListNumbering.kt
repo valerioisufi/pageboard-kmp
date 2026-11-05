@@ -116,7 +116,8 @@ public object ListNumbering {
     public fun continuationIndentAt(text: String, offset: Int): IntRange? {
         val lineStart = text.lastIndexOf('\n', offset - 1) + 1
         if (lineStart == 0) return null
-        var contentStart = lineStart
+        // In a quote, its marker comes first on the line, hidden as the indent
+        var contentStart = lineStart + BlockQuote.markerLength(text, lineStart)
         while (contentStart < text.length && (text[contentStart] == ' ' || text[contentStart] == '\t')) contentStart++
         if (offset > contentStart) return null
         val item = RichTextParser.parse(text).firstOrNull { it.kind == Kind.LIST_ITEM && it.start < lineStart && it.end >= contentStart && lineStart <= it.end }

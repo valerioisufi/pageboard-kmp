@@ -52,6 +52,7 @@ internal fun TextFormatBar(
             FormatButton(commands.heading, DrawViewIcons.Heading)
             FormatButton(commands.bulletList, DrawViewIcons.List)
             NumberedListButton(target, commands)
+            FormatButton(commands.quote, DrawViewIcons.Quote)
             TableButton(target, commands)
             FormatButton(commands.formula, DrawViewIcons.Sigma)
             BarDivider()

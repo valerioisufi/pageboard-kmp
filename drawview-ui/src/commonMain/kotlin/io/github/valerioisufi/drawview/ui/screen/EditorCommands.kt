@@ -87,6 +87,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbering
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_quote
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_table
 import io.github.valerioisufi.drawview.ui.generated.resources.table_row_above
 import io.github.valerioisufi.drawview.ui.generated.resources.table_row_below
@@ -528,6 +529,15 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.inNumberedList == true }
     ) { textTarget?.toggleNumberedList() }
 
+    /** Makes the lines of the selection lines of a block quote, or takes them out of it. */
+    val quote = Command(
+        "format-quote", label(Res.string.text_editor_action_quote), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.Quote) },
+        shortcuts = listOf(Shortcut(Key.Q, primary = true, alt = true)),
+        isEnabled = { formatsText && textTarget?.inTable == false && textTarget?.inCodeBlock == false },
+        isChecked = { textTarget?.inQuote == true }
+    ) { textTarget?.toggleQuote() }
+
     /** Whether the picker of the styles of the numbered lists is open, in the formatting bar. */
     var numberingOpen: Boolean by mutableStateOf(false)
 
@@ -582,7 +592,7 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, numbering, formula, table,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, numbering, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 

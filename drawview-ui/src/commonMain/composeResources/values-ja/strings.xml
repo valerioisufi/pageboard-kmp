@@ -123,6 +123,7 @@
     <string name="numbering_start">開始番号</string>
     <string name="numbering_start_earlier">前の番号から開始</string>
     <string name="numbering_start_later">次の番号から開始</string>
+    <string name="text_editor_action_quote">引用</string>
     <string name="text_editor_action_table">表</string>
     <string name="table_row_above">上に行を挿入</string>
     <string name="table_row_below">下に行を挿入</string>

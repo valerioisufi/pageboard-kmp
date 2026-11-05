@@ -163,9 +163,20 @@ code, which has the mono font. The font has one weight: a symbol in bold text st
 | 2 | Headings: the six sizes, `ChainFlow` keeping a heading with what follows, `TextFlow` for what is imported, screenshots and tests | done |
 | 3 | Quotes in the notation: `BlockQuote`, `Kind.QUOTE`, the items in a quote, `ListNumbering`; old texts (`>5`, `a > b`), bounds of the parser | done |
 | 4 | Quotes drawn: presenter, bars, page, editor, PDF, assistant, flow across boxes; the search without the markers; `TextParityTest`; screenshots from quotes of the note | done |
-| 5 | Writing quotes: Enter, Backspace, Tab, the lists inside, `toggleQuote`, button, icon, shortcut, menu, the strings in 7 languages; the desktop app on a scratch directory | proposed |
+| 5 | Writing quotes: Enter, Backspace, Tab, the lists inside, `toggleQuote`, button, icon, shortcut, menu, the strings in 7 languages; the desktop app on a scratch directory | done |
 
 Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with its status here.
+
+### What was checked
+
+* On the JVM: the tests of the parser, of the lists in a quote, of the gestures, of the flow and of the
+  PDF, `TextParityTest` (the editor and the page draw quotes, levels, styles and symbols the same),
+  and the screenshots of the symbols, the levels, the quotes on the page and written, the button.
+* **Not by hand**: the Android and iOS apps were compiled, not run; the keyboard of a phone and the pen
+  on a tablet are left to the user.
+* `verifyRoborazziJvm` fails on three screenshots, none from this work: `text-saved-code` already on
+  3cc39770 (a scroll of 48 px); `text-chain-written` and `library-search`, when they fail, differ by
+  one column of pixels, the caret blinking.
 
 ## Decisions
 
@@ -176,10 +187,11 @@ Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with 
 3. **A blanked copy for the patterns**, rather than parsing each quote apart: the offsets stay those
    of the source and the items stay what they are for everyone reading them.
 4. **The marker hidden even with the caret on it**, as for the list items, not revealed as for the
-   headings: Backspace takes it away, and there is nothing to edit in it.
+   headings: Backspace takes it away, and there is nothing to edit in it. A `>` alone with the caret
+   right after it stays shown: it may become `>=` or `>5`, and would otherwise vanish while typed.
 5. **One symbols font**, rather than taking arrows from the mono font: it has no check marks, and its
    arrows are as wide as a column of code, large in a line of text.
-6. **The shortcut** ⌘⇧. is taken by a larger text, so ⌘⌥Q, to be checked against the others in phase 5.
+6. **The shortcut** is ⌘⌥Q: ⌘⇧. is taken by a larger text. On Windows and Linux Ctrl+Alt+Q.
 7. **The first three heading sizes stay**: a note must not change where it already works.
 
 ## Not in this plan

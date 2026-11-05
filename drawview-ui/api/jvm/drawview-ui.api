@@ -788,14 +788,15 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_editor_action_math (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_numbering (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_quote (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_table (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
+	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_highlight (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_underline (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -1049,6 +1050,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getPlay ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getPlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getQrCode ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getQuote ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getRedo ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getRefresh ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getRotateCcw ()Landroidx/compose/ui/graphics/vector/ImageVector;

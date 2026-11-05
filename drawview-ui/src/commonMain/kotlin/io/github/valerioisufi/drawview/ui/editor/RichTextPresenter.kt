@@ -270,7 +270,9 @@ internal object RichTextPresenter {
         // The list items where their lines start, laid out in their columns
         val lists = listLayout(text, spans, p)
         // The lines of the block quotes, by their start: the length of their markers
-        val quoteLines = if (p.quotes) quoteLinesOf(text, spans) else emptyMap()
+        // A `>` alone with the caret right after it may be the start of `>=` or `>5`: it stays as typed
+        fun beingTyped(quote: Span) = selMax != null && quote.start == quote.contentStart - 1 && quote.end == quote.contentStart && selMax == quote.end
+        val quoteLines = if (p.quotes) quoteLinesOf(text, spans.filterNot(::beingTyped)) else emptyMap()
         val quoteLeft = QUOTE_INDENT * p.fontSizePx
         // The tables laid out as grids (the spans in them are presented by their cells)
         val tableAt = HashMap<Int, Pair<Span, TableLayout<T>>>()
@@ -399,6 +401,9 @@ internal object RichTextPresenter {
                     i += marker
                     val left = (quoteLeft / p.density).sp
                     shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
+                    // An empty line of a quote: its paragraph, so that the caret stands at its text
+                    if (i >= text.length || text[i] == '\n') rooms += Room(shown.insert(OBJECT_CHARS, i), 0f, 0f, 0f)
+                    if (i >= text.length) break
                 }
                 val item = lists.itemAt[i]
                 if (item != null) {
@@ -578,7 +583,7 @@ internal object RichTextPresenter {
                 out.addStyle(strut, room.offset + k, room.offset + k + 1)
             }
         }
-        val quotes = if (!p.quotes) emptyList() else spans.filter { it.kind == Kind.QUOTE }.map { quote ->
+        val quotes = if (!p.quotes) emptyList() else spans.filter { it.kind == Kind.QUOTE && !beingTyped(it) }.map { quote ->
             mapping.originalToTransformed(quote.start) until max(mapping.originalToTransformed(quote.end), mapping.originalToTransformed(quote.start) + 1)
         }
         return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks, tables, quotes)

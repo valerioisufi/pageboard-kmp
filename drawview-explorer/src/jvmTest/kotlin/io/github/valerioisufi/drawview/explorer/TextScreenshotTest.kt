@@ -380,6 +380,19 @@ class TextScreenshotTest {
         write(viewModels, 20f, 30f, QUOTES, drawnWidthMm = 170f)
     }
 
+    /** A quote started by its button: the button on, the caret at its text. */
+    @Test
+    fun textQuoteButton() = capture("text-quote-button", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "A line made a quote", drawnWidthMm = 150f)
+        onNodeWithContentDescription("Quote").performClick()
+        waitForIdle()
+        assertEquals("> A line made a quote", viewModels.controller().textEditorManager.value.text)
+        runOnIdle { viewModels.controller().textEditorManager.handleEnter() }
+        waitForIdle()
+        assertEquals("> A line made a quote\n> ", viewModels.controller().textEditorManager.value.text)
+    }
+
     /** The six levels of the headings, told apart. */
     @Test
     fun textSavedHeadings() = capture("text-saved-headings", ReferenceWindow.DESKTOP, dark = false) { viewModels ->

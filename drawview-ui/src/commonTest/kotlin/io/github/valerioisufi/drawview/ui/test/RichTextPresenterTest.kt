@@ -59,6 +59,15 @@ class RichTextPresenterTest {
     }
 
     @Test
+    fun aMarkerBeingTypedStaysAsTyped() {
+        assertEquals(">", present(">", TextRange(1)).shown, "it may be the start of >=")
+        assertEquals(emptyList(), present(">", TextRange(1)).quotes)
+        assertEquals("", present("> ", TextRange(2)).shown.filterNot { RichTextPresenter.isInvisible(it) }, "with its space it is one")
+        assertEquals("", present(">").shown.filterNot { RichTextPresenter.isInvisible(it) }, "with the caret elsewhere it is one")
+        assertEquals(1, present("> ", TextRange(2)).quotes.size)
+    }
+
+    @Test
     fun aListInAQuoteShowsItsLabels() {
         val presented = present("> 1. one\n>    more\n> 2. two\n>\n> - three")
         val shown = presented.shown.filterNot { RichTextPresenter.isInvisible(it) }

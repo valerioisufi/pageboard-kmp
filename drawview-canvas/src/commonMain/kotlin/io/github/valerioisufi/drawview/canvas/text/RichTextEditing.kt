@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.canvas.text
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.valerioisufi.drawview.model.text.BlockQuote
 import io.github.valerioisufi.drawview.model.text.ListMarker
 import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.ListRenumbering
@@ -167,7 +168,7 @@ public object RichTextEditing {
         val (firstLineStart, lastLineEnd) = selectedLines(value.text, value.selection)
         val lines = value.text.substring(firstLineStart, lastLineEnd).split('\n')
         return lines.isNotEmpty() && lines.all { line ->
-            val rest = line.dropWhile { it == ' ' || it == '\t' }
+            val rest = line.substring(BlockQuote.markerLength(line, 0)).dropWhile { it == ' ' || it == '\t' }
             if (ordered) ListMarker.at(rest) != null else rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ")
         }
     }
@@ -181,6 +182,8 @@ public object RichTextEditing {
         val text = value.text
         val sel = value.selection
         val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1
+        // No heading in a quote, its marker first on the line
+        if (BlockQuote.markerLength(text, lineStart) > 0) return value
         var prefixEnd = lineStart
         while (prefixEnd < text.length && text[prefixEnd] == '#') prefixEnd++
         val isHeading = prefixEnd > lineStart && prefixEnd < text.length && text[prefixEnd] == ' '
@@ -235,7 +238,9 @@ public object RichTextEditing {
         }
 
         val parsed = lines.mapIndexed { i, line ->
-            val indent = line.takeWhile { it == ' ' || it == '\t' }
+            // The marker of a quote stays first on the line
+            val quote = BlockQuote.markerLength(line, 0)
+            val indent = line.substring(0, quote) + line.substring(quote).takeWhile { it == ' ' || it == '\t' }
             val rest = line.substring(indent.length)
             val numbered = ListMarker.at(rest)
             val headMatch = HEADING_MARKER.find(rest)
@@ -265,7 +270,8 @@ public object RichTextEditing {
                 info.markerType == MarkerType.CONTINUATION -> {
                     // At the text of its item as it is now, or at its indent out of the list
                     val head = parsed[itemOf[i]]
-                    if (allSame) head.indent else " ".repeat(newPrefixes[itemOf[i]].length)
+                    val quote = BlockQuote.markerLength(head.indent, 0)
+                    if (allSame) head.indent else head.indent.substring(0, quote) + " ".repeat(newPrefixes[itemOf[i]].length - quote)
                 }
                 allSame -> info.indent
                 ordered -> {
@@ -396,7 +402,8 @@ public object RichTextEditing {
         val item = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && start >= it.contentStart && start <= it.end } ?: return null
         var after = start
         while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
-        val inserted = "\n" + " ".repeat(ListNumbering.textColumnOf(text, item))
+        val quote = if (BlockQuote.isQuotedAt(text, item.start)) BlockQuote.MARKER else ""
+        val inserted = "\n" + quote + " ".repeat(ListNumbering.textColumnOf(text, item))
         return TextFieldValue(text.substring(0, start) + inserted + text.substring(after), TextRange(start + inserted.length))
     }
 
@@ -423,8 +430,12 @@ public object RichTextEditing {
         val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
         val nextNewline = text.indexOf('\n', cursor)
         val lineEnd = if (nextNewline < 0) text.length else nextNewline
-        val line = text.substring(lineStart, lineEnd)
-        val cursorInLine = cursor - lineStart
+        // The text of a line of a quote starts after its marker, which a new line takes too
+        val quoteLength = BlockQuote.markerLength(text, lineStart)
+        val quote = if (quoteLength > 0) BlockQuote.MARKER else ""
+        val textStart = lineStart + quoteLength
+        val line = text.substring(textStart, lineEnd)
+        val cursorInLine = (cursor - textStart).coerceAtLeast(0)
 
         // On a line break inside an item: the next item, the text after the caret in it
         val continued = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.start < lineStart && lineStart <= it.end }
@@ -435,8 +446,8 @@ public object RichTextEditing {
             var after = cursor
             while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
             // At the start of the line: the next item takes the whole line
-            val before = if (text.substring(lineStart, cursor).isBlank()) text.substring(0, lineStart - 1) else text.substring(0, cursor)
-            val prefix = "\n" + text.substring(continued.start, markerStart) + marker
+            val before = if (text.substring(textStart, cursor).isBlank()) text.substring(0, lineStart - 1) else text.substring(0, cursor)
+            val prefix = "\n" + quote + text.substring(continued.start, markerStart) + marker
             return TextFieldValue(before + prefix + text.substring(after), TextRange(before.length + prefix.length))
         }
 
@@ -452,7 +463,14 @@ public object RichTextEditing {
             else -> MarkerInfo(MarkerType.NONE, 0, 0, "")
         }
 
-        if (markerType == MarkerType.NONE) return null
+        if (markerType == MarkerType.NONE) {
+            if (quoteLength == 0) return null
+            // A line of a quote: an empty one leaves it, another goes on in it
+            if (line.isBlank()) return TextFieldValue(text.substring(0, lineStart) + text.substring(lineEnd), TextRange(lineStart))
+            val after = text.substring(cursor.coerceAtLeast(textStart)).trimStartSpaces()
+            val head = text.substring(0, cursor.coerceAtLeast(textStart)) + "\n" + quote
+            return TextFieldValue(head + after, TextRange(head.length))
+        }
 
         val markerEnd = indent.length + markerLen
         val content = rest.substring(markerLen)
@@ -460,9 +478,9 @@ public object RichTextEditing {
         // Empty list item: one level out, or out of the list by clearing the marker on this line
         if (content.isBlank()) {
             val items = ListNumbering.items(text, RichTextParser.parse(text))
-            items.firstOrNull { it.span.start == lineStart && it.parent >= 0 }?.let { return oneLevelOut(text, items, it) }
-            val newText = text.substring(0, lineStart) + text.substring(lineEnd)
-            return TextFieldValue(newText, TextRange(lineStart))
+            items.firstOrNull { it.span.start == textStart && it.parent >= 0 }?.let { return oneLevelOut(text, items, it) }
+            val newText = text.substring(0, textStart) + text.substring(lineEnd)
+            return TextFieldValue(newText, TextRange(textStart))
         }
 
         // Caret before the marker: regular newline above the item
@@ -476,9 +494,9 @@ public object RichTextEditing {
             "$indent$bulletMarker"
         }
 
-        val newLineBlock = beforeCursor + "\n" + nextPrefix + afterCursor
-        val newText = text.substring(0, lineStart) + newLineBlock + text.substring(lineEnd)
-        val newCursor = lineStart + beforeCursor.length + 1 + nextPrefix.length
+        val newLineBlock = beforeCursor + "\n" + quote + nextPrefix + afterCursor
+        val newText = text.substring(0, textStart) + newLineBlock + text.substring(lineEnd)
+        val newCursor = textStart + beforeCursor.length + 1 + quote.length + nextPrefix.length
         return TextFieldValue(newText, TextRange(newCursor))
     }
 
@@ -537,6 +555,10 @@ public object RichTextEditing {
     public fun keepCaretOutOfMarkers(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
         if (oldValue.text != newValue.text || !newValue.selection.collapsed) return null
         val caret = newValue.selection.start
+        quoteMarkerAt(newValue.text, caret)?.let { marker ->
+            val backwards = oldValue.selection.collapsed && oldValue.selection.start == marker.last && caret < marker.last
+            return newValue.copy(selection = TextRange(if (backwards && marker.first > 0) marker.first - 1 else marker.last))
+        }
         ListNumbering.continuationIndentAt(newValue.text, caret)?.let { indent ->
             if (caret == indent.last) return null
             val backwards = oldValue.selection.collapsed && oldValue.selection.start == indent.last && caret < indent.last
@@ -544,14 +566,16 @@ public object RichTextEditing {
         }
         val item = listItemMarkerAt(newValue.text, caret) ?: return null
         val backwards = oldValue.selection.collapsed && oldValue.selection.start == item.contentStart && caret < item.contentStart
-        val target = if (backwards && item.start > 0) item.start - 1 else item.contentStart
+        val lineStart = text0LineStart(newValue.text, item.start)
+        val target = if (backwards && lineStart > 0) lineStart - 1 else item.contentStart
         return newValue.copy(selection = TextRange(target))
     }
 
     /**
      * What a deletion of [oldValue] into [newValue] does when it deletes a character that is not
      * shown: Backspace at the start of the text of a list item deletes the last character of its
-     * marker, and takes the whole marker away instead (a nested item goes one level out); Backspace
+     * marker, and takes the whole marker away instead (a nested item goes one level out); at the
+     * start of the text of a line of a block quote, it takes the line out of the quote; Backspace
      * at the start of a continuation line
      * of an item deletes a space of its hidden indent, and joins the line to the one before instead;
      * Backspace at the start of the code of a block
@@ -569,7 +593,14 @@ public object RichTextEditing {
             // The line break and the indent of a line break in an item, hidden: the line joined back
             if (caret == indent.last) return TextFieldValue(old.removeRange(indent.first - 1, caret), TextRange(indent.first - 1))
         }
-        val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
+        val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret }
+        if (item == null) {
+            // At the start of the text of a line of a quote: the line out of it
+            val lineStart = text0LineStart(old, caret)
+            val marker = BlockQuote.markerLength(old, lineStart)
+            if (marker == 0 || caret != lineStart + marker || !inQuoteSpan(old, lineStart)) return null
+            return TextFieldValue(old.removeRange(lineStart, caret), TextRange(lineStart))
+        }
         val items = ListNumbering.items(old, spans)
         // A nested item goes one level out; one of the first level becomes text
         items.firstOrNull { it.span.start == item.start && it.parent >= 0 }?.let { return oneLevelOut(old, items, it) }
@@ -590,6 +621,92 @@ public object RichTextEditing {
         if (typed !in TYPED_MARKERS || inCodeBlock(oldValue)) return null
         if (RichTextParser.parse(oldValue.text).any { it.kind == RichTextParser.Kind.TABLE && caret - 1 in it.start..it.end }) return null
         return TextFieldValue(newValue.text.substring(0, caret) + " " + newValue.text.substring(caret), TextRange(caret + 1))
+    }
+
+    /** The start of the line of [offset] of [text]. */
+    private fun text0LineStart(text: String, offset: Int): Int = text.lastIndexOf('\n', offset - 1) + 1
+
+    /**
+     * The marker of a line of a block quote [offset] of [text] is in, from the start of the line to the
+     * start of its text, or `null`: the caret stays out of it, also at its end when a list item
+     * follows (see [listItemMarkerAt]).
+     */
+    private fun quoteMarkerAt(text: String, offset: Int): IntRange? {
+        val lineStart = text0LineStart(text, offset)
+        val length = BlockQuote.markerLength(text, lineStart)
+        if (length == 0 || offset >= lineStart + length) return null
+        if (!inQuoteSpan(text, lineStart)) return null
+        return lineStart..lineStart + length
+    }
+
+    /** Whether the line starting at [lineStart] of [text] is a line of a block quote: not one of a block of code. */
+    private fun inQuoteSpan(text: String, lineStart: Int): Boolean =
+        RichTextParser.parse(text).any { it.kind == RichTextParser.Kind.QUOTE && lineStart >= it.start && lineStart <= it.end }
+
+    /** Whether every line of the selection of [value] is a line of a block quote. */
+    public fun inQuote(value: TextFieldValue): Boolean {
+        if (inCodeBlock(value)) return false
+        val (first, last) = selectedLines(value.text, value.selection)
+        var lineStart = first
+        while (true) {
+            if (BlockQuote.markerLength(value.text, lineStart) == 0) return false
+            val next = value.text.indexOf('\n', lineStart)
+            if (next < 0 || next >= last) return true
+            lineStart = next + 1
+        }
+    }
+
+    /**
+     * Makes the lines of the selection of [value] lines of a block quote, or takes them out of it
+     * when they all are; a list item with its lines.
+     */
+    public fun toggleQuote(value: TextFieldValue): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val text = value.text
+        val removing = inQuote(value)
+        val (first, last) = selectedItemLines(text, value.selection, inCode = false)
+        val out = StringBuilder(text.length + 8)
+        out.append(text, 0, first)
+        // Where each line starts, and how much it changed before it
+        val starts = ArrayList<Int>()
+        val shifts = ArrayList<Int>()
+        var shift = 0
+        var lineStart = first
+        while (true) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0 || it > last) last else it }
+            starts += lineStart
+            val length = BlockQuote.markerLength(text, lineStart)
+            when {
+                removing -> {
+                    shift -= length
+                    shifts += -length
+                    out.append(text, lineStart + length, lineEnd)
+                }
+                length > 0 -> {
+                    shifts += 0
+                    out.append(text, lineStart, lineEnd)
+                }
+                else -> {
+                    shift += BlockQuote.MARKER.length
+                    shifts += BlockQuote.MARKER.length
+                    out.append(BlockQuote.MARKER).append(text, lineStart, lineEnd)
+                }
+            }
+            if (lineEnd >= last) break
+            out.append('\n')
+            lineStart = lineEnd + 1
+        }
+        out.append(text, last, text.length)
+        fun moved(offset: Int): Int {
+            if (offset < first) return offset
+            var total = 0
+            for ((index, start) in starts.withIndex()) {
+                if (offset < start) break
+                total += if (shifts[index] < 0) -minOf(-shifts[index], offset - start) else shifts[index]
+            }
+            return offset + total
+        }
+        return TextFieldValue(out.toString(), TextRange(moved(value.selection.start), moved(value.selection.end)))
     }
 
     /**
@@ -638,7 +755,8 @@ public object RichTextEditing {
     private fun firstItemOf(value: TextFieldValue): Pair<ListNumbering.Item, Boolean>? {
         val text = value.text
         val items = ListNumbering.items(text, RichTextParser.parse(text))
-        val (first, _) = selectedLines(text, value.selection)
+        val (lineStart, _) = selectedLines(text, value.selection)
+        val first = lineStart + BlockQuote.markerLength(text, lineStart)
         val index = items.indexOfFirst { it.span.start <= first && first <= it.span.end }
         if (index < 0) return null
         val item = items[index]
@@ -681,7 +799,9 @@ public object RichTextEditing {
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
-        val newLines = lines.map { "$unit$it" }
+        // After the marker of a quote, which stays first on the line
+        val quotes = lines.map { if (inCode) 0 else BlockQuote.markerLength(it, 0) }
+        val newLines = lines.mapIndexed { i, line -> line.substring(0, quotes[i]) + unit + line.substring(quotes[i]) }
         val newBlock = newLines.joinToString("\n")
 
         fun mapOffset(offset: Int): Int {
@@ -689,10 +809,10 @@ public object RichTextEditing {
             if (offset > lastLineEnd) return offset + (newBlock.length - block.length)
             var oldPos = firstLineStart
             var added = 0
-            for (line in lines) {
+            for ((i, line) in lines.withIndex()) {
                 val oldLineEnd = oldPos + line.length
                 if (offset <= oldLineEnd) {
-                    return offset + added + width
+                    return offset + added + if (offset - oldPos < quotes[i]) 0 else width
                 }
                 added += width
                 oldPos = oldLineEnd + 1
@@ -729,10 +849,13 @@ public object RichTextEditing {
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
-        val removedSpaces = lines.map { line ->
-            if (line.startsWith("\t")) 1 else line.takeWhile { it == ' ' }.length.coerceAtMost(width)
+        // After the marker of a quote, which stays first on the line
+        val quotes = lines.map { if (inCode) 0 else BlockQuote.markerLength(it, 0) }
+        val removedSpaces = lines.mapIndexed { i, line ->
+            val rest = line.substring(quotes[i])
+            if (rest.startsWith("\t")) 1 else rest.takeWhile { it == ' ' }.length.coerceAtMost(width)
         }
-        val newLines = lines.mapIndexed { i, line -> line.substring(removedSpaces[i]) }
+        val newLines = lines.mapIndexed { i, line -> line.substring(0, quotes[i]) + line.substring(quotes[i] + removedSpaces[i]) }
         val newBlock = newLines.joinToString("\n")
 
         fun mapOffset(offset: Int): Int {
@@ -746,7 +869,7 @@ public object RichTextEditing {
                 val oldLineEnd = oldPos + line.length
                 if (offset <= oldLineEnd) {
                     val inLine = offset - oldPos
-                    val newInLine = (inLine - rem).coerceAtLeast(0)
+                    val newInLine = if (inLine <= quotes[i]) inLine else (inLine - rem).coerceAtLeast(quotes[i])
                     return (oldPos - removedSoFar) + newInLine
                 }
                 removedSoFar += rem
@@ -761,6 +884,9 @@ public object RichTextEditing {
             selection = TextRange(mapOffset(sel.start), mapOffset(sel.end))
         )
     }
+
+    /** This text without the spaces and tabs it starts with. */
+    private fun String.trimStartSpaces(): String = trimStart(' ', '\t')
 
     private data class MarkerInfo(
         val type: MarkerType,
