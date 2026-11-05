@@ -166,7 +166,8 @@ internal class PresentedTable<T>(val offset: Int, val layout: TableLayout<T>, va
 /**
  * A formula of a presented text, its three characters from [offset]: its [image] ([widthPx] x
  * [heightPx], its baseline at [baselineRatio] of its height), its [latex] as rendered; a [block]
- * formula takes its line, drawn in its middle.
+ * formula takes its line, drawn in its middle. Its source ends at [sourceEnd] (before its closing
+ * delimiter): a tap on it puts the caret there.
  */
 internal class PresentedFormula<T>(
     val offset: Int,
@@ -175,8 +176,20 @@ internal class PresentedFormula<T>(
     val heightPx: Float,
     val baselineRatio: Float,
     val latex: String,
-    val block: Boolean
+    val block: Boolean,
+    val sourceEnd: Int = -1
 )
+
+/**
+ * What the caret is in whose source the page hides, to show in a strip by it (see
+ * docs/text-fidelity.md): the LaTeX of a formula, the address of a link. [source] is the part of the
+ * source shown (end exclusive), [anchor] where its formula or its link starts in the text shown;
+ * [caretIn] whether the caret is in that source (in the text of a link it is not).
+ */
+internal class HiddenSource(val kind: Kind, val source: IntRange, val anchor: Int, val caretIn: Boolean) {
+    /** The length of the source shown. */
+    val length: Int get() = source.last + 1 - source.first
+}
 
 /**
  * A block of code of a presented text, its three characters from [offset], taking its line: its
@@ -196,9 +209,9 @@ internal class WrittenCodeBlock(val offset: Int, val layout: CodeBlockLayout, va
  * A text as it is shown (see [RichTextPresenter]): the [text] laid out, the [mapping] of its
  * offsets and those of the source, its [formulas] and [codeBlocks] to draw over their characters,
  * its code in the line ([inlineCode]) and the blocks of code whose source is shown ([codeSources])
- * to draw on a background, the blocks whose code is written ([writtenBlocks]), the formula under
- * the caret ([formulaAtCaret]) whose source is shown, the block quotes ([quotes]: the part of the
- * text shown of each one) to draw a bar at their left.
+ * to draw on a background, the blocks whose code is written ([writtenBlocks]), the hidden source of
+ * what the caret is in ([hiddenAtCaret]), the block quotes ([quotes]: the part of the text shown of
+ * each one) to draw a bar at their left.
  */
 internal class PresentedText<T>(
     val text: AnnotatedString,
@@ -207,7 +220,7 @@ internal class PresentedText<T>(
     val codeBlocks: List<PresentedCodeBlock>,
     val inlineCode: List<MarkdownTextUtil.InlineCode>,
     val codeSources: List<IntRange>,
-    val formulaAtCaret: Span?,
+    val hiddenAtCaret: HiddenSource?,
     val writtenBlocks: List<WrittenCodeBlock> = emptyList(),
     val tables: List<PresentedTable<T>> = emptyList(),
     val quotes: List<IntRange> = emptyList()
@@ -242,19 +255,18 @@ internal class SourceMapping(
 /**
  * Presents the texts written with the notation of [RichTextParser], once for every place that
  * shows them: the canvas (the tiles and the export), [io.github.valerioisufi.drawview.ui.components.MarkdownText]
- * and the field of the editor. With nothing revealed, the editor shows the text exactly as the
- * canvas, character by character; the caret reveals the source of what it touches.
+ * and the field of the editor. The editor shows the text exactly as the canvas, character by
+ * character, wherever the caret is (but in the code of a block, see below); the source the page
+ * hides of what the caret is in goes in a strip by it ([PresentedText.hiddenAtCaret]).
  *
  * * Every line of the source is a paragraph, its line break shown as a zero-width space ending it
  *   (Compose adds an empty line around the line break of a paragraph); the last line break of a
  *   text stays one, for the empty line after it.
  * * The delimiters are hidden, with the caret too: the emphasis, the code in the line, the escapes,
- *   the `#` of a heading; the caret never stands in a marker or between an escape and what it
- *   escapes ([SourceMapping.caretMayStand]). The address of a link is shown, faded (its color
- *   only), when the caret touches the link.
- * * A formula is an object ([Struts]) drawn over its characters, or its source when the caret
- *   touches it or it cannot be rendered (in red then); alone on its lines, it takes its line. The
- *   source of a formula the caret touches keeps the room of the formula: its line does not move.
+ *   the `#` of a heading, the address of a link; the caret never stands in a marker or between an
+ *   escape and what it escapes ([SourceMapping.caretMayStand]).
+ * * A formula is an object ([Struts]) drawn over its characters, with the caret in it too, or its
+ *   source when it cannot be rendered (in red then); alone on its lines, it takes its line.
  * * A block of code is an object taking its line. With the caret in its code, its code is written
  *   in the text, laid out as in the block (its fences hidden, struts for its top and its bottom);
  *   with the caret on a fence, its source is shown.
@@ -273,10 +285,8 @@ internal object RichTextPresenter {
         val selMin = reveal?.let { min(it.start, it.end) }
         val selMax = reveal?.let { max(it.start, it.end) }
         fun touched(span: Span) = selMin != null && selMax != null && selMin <= span.end && selMax >= span.start
-        // The delimiters the caret reveals: only the address of a link it touches (see
-        // docs/text-fidelity.md); the emphasis, the code in the line, the escapes and the headings
-        // never, so that their lines do not move with the caret
-        fun revealed(span: Span) = span.kind == Kind.LINK && touched(span)
+        // The caret in a span, not at its ends
+        fun within(span: Span) = selMin != null && selMax != null && selMin > span.start && selMax < span.end
 
         // What each part of the source becomes
         val hidden = BooleanArray(text.length)
@@ -301,8 +311,7 @@ internal object RichTextPresenter {
         val errors = mutableListOf<Span>()
         val sources = mutableListOf<Span>()
         val written = mutableListOf<Pair<Span, CodeBlockLayout>>()
-        // The formulas whose source is shown, with the room they keep
-        val keptRoomAt = HashMap<Int, Pair<Span, MarkdownTextUtil.RenderedFormula<T>>>()
+        // The formula or the link the caret is in, whose source goes in the strip
         var atCaret: Span? = null
         for (span in spans) {
             if (span.start in tableAt) tableEnd = span.end
@@ -336,11 +345,8 @@ internal object RichTextPresenter {
                 Kind.FORMULA -> {
                     val rendered = p.renderFormula(MarkdownTextUtil.formulaSource(text, span), MarkdownTextUtil.formulaSizePx(span, p.fontSizePx))
                         ?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
-                    if (touched) {
-                        if (atCaret == null) atCaret = span
-                        if (rendered != null) keptRoomAt[span.start] = span to rendered
-                        continue
-                    }
+                    // Drawn as on the page with the caret in it too: its source goes in the strip
+                    if (within(span) && atCaret == null) atCaret = span
                     if (rendered == null) {
                         errors += span
                         continue
@@ -354,13 +360,16 @@ internal object RichTextPresenter {
                         while (i < text.length && text[i] != '\n' && text[i].isWhitespace()) hidden[i++] = true
                     }
                 }
-                else -> if (!revealed(span)) {
+                else -> {
+                    // Hidden with the caret too: the lines do not move with it (docs/text-fidelity.md)
                     for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
                     // The caret stands after the marker of a heading, never in it, and never
                     // between an escape and the character it escapes
                     when (span.kind) {
                         Kind.HEADING -> for (i in span.start until span.contentStart) noCaret[i] = true
                         Kind.ESCAPE -> for (delimiter in span.delimiters) for (i in delimiter) if (i + 1 <= text.length) noCaret[i + 1] = true
+                        // Its address goes in the strip, with the caret in its text or in it
+                        Kind.LINK -> if (atCaret == null && touched && selMin!! >= span.contentStart && selMax!! < span.end) atCaret = span
                         else -> Unit
                     }
                 }
@@ -369,6 +378,8 @@ internal object RichTextPresenter {
         val writtenSpans = written.map { it.first }.toHashSet()
 
         val shown = Shown(text.length, noCaret)
+        // The address of a link is edited in the strip: the caret in it keeps its own moves
+        for (span in spans) if (span.kind == Kind.LINK) shown.markObject(span.contentEnd + 1, span.end)
         val formulas = mutableListOf<PresentedFormula<T>>()
         val codeBlocks = mutableListOf<PresentedCodeBlock>()
         val tables = mutableListOf<PresentedTable<T>>()
@@ -488,22 +499,13 @@ internal object RichTextPresenter {
                     val fit = min(1f, p.lineWidthPx / rendered.widthPx)
                     val height = rendered.heightPx * fit
                     rooms += Room(offset, lineWidth * LINE_FILL, height * rendered.baselineRatio, height * (1f - rendered.baselineRatio))
-                    formulas += PresentedFormula(offset, rendered.image, rendered.widthPx * fit, height, rendered.baselineRatio, latex, block = true)
+                    formulas += PresentedFormula(offset, rendered.image, rendered.widthPx * fit, height, rendered.baselineRatio, latex, block = true, sourceEnd = span.contentEnd)
                 } else {
                     rooms += Room(offset, rendered.widthPx, rendered.heightPx * rendered.baselineRatio, rendered.heightPx * (1f - rendered.baselineRatio))
-                    formulas += PresentedFormula(offset, rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, latex, block = false)
+                    formulas += PresentedFormula(offset, rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, latex, block = false, sourceEnd = span.contentEnd)
                 }
                 i = span.end
                 continue
-            }
-            val kept = keptRoomAt[i]
-            if (kept != null) {
-                // The room of the formula before its source: its line keeps its height
-                val (span, rendered) = kept
-                val fit = if (span.block && p.lineWidthPx != null) min(1f, p.lineWidthPx / rendered.widthPx) else 1f
-                val height = rendered.heightPx * fit
-                val offset = shown.insert(OBJECT_CHARS, i)
-                rooms += Room(offset, 0f, height * rendered.baselineRatio, height * (1f - rendered.baselineRatio))
             }
             val c = text[i]
             if (writing != null && c == '\t' && !hidden[i]) {
@@ -561,7 +563,7 @@ internal object RichTextPresenter {
             if (span.kind == Kind.LIST_ITEM || span.kind == Kind.QUOTE || span.start in blockAt && span.kind == Kind.CODE_BLOCK) continue
             if (span.kind == Kind.FORMULA && (span.start in formulaAt || span in errorSpans)) continue
             // Faded where they are shown: the address of a link, the fences of a block whose source is shown
-            if (revealed(span) || span.kind == Kind.CODE_BLOCK && span in sources && span !in writtenSpans) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
+            if (span.kind == Kind.CODE_BLOCK && span in sources && span !in writtenSpans) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
             val content = when (span.kind) {
                 Kind.FORMULA -> SpanStyle(fontStyle = FontStyle.Italic, fontFamily = FontFamily.Serif, color = FORMULA_COLOR)
                 else -> MarkdownTextUtil.contentStyle(span, p.fontSizePx / p.density, p.monospace)
@@ -614,7 +616,16 @@ internal object RichTextPresenter {
         val quotes = if (!p.quotes) emptyList() else spans.filter { it.kind == Kind.QUOTE && !beingTyped(it) }.map { quote ->
             mapping.originalToTransformed(quote.start) until max(mapping.originalToTransformed(quote.end), mapping.originalToTransformed(quote.start) + 1)
         }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks, tables, quotes)
+        val hiddenAtCaret = atCaret?.let { span ->
+            if (span.kind == Kind.FORMULA) {
+                HiddenSource(Kind.FORMULA, span.contentStart until span.contentEnd, mapping.originalToTransformed(span.start), caretIn = true)
+            } else {
+                // The address of a link: between `](` and `)`
+                val address = (span.contentEnd + 2).coerceAtMost(span.end - 1) until (span.end - 1)
+                HiddenSource(Kind.LINK, address, mapping.originalToTransformed(span.contentStart), caretIn = selMin!! >= address.first && selMax!! <= address.last + 1)
+            }
+        }
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, hiddenAtCaret, writtenBlocks, tables, quotes)
     }
 
     /**
@@ -669,6 +680,11 @@ internal object RichTextPresenter {
             builder.append(WORD_JOINER)
             builder.append(OBJECT)
             return offset
+        }
+
+        /** The offsets from [from] to [until] of the source are inside an object: the caret keeps its own moves there. */
+        fun markObject(from: Int, until: Int) {
+            for (k in from.coerceAtLeast(0) until until.coerceAtMost(sourceLength + 1)) inObject[k] = true
         }
 
         /** Ends the paragraph being shown, after its line break. */

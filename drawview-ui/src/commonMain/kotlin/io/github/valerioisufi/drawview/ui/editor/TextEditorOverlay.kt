@@ -21,7 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -60,6 +62,8 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
     var caret by remember { mutableStateOf<CaretPlace?>(null) }
     // Height of the formatting bar: the edited text is kept above it
     var barHeightPx by remember { mutableIntStateOf(0) }
+    // Where the bar is on the canvas: the strip of a hidden source avoids it
+    var barBounds by remember { mutableStateOf<Rect?>(null) }
     val atBottom = currentAdaptiveInfo().window.isCompact || imeBottom > 0
 
     DisposableEffect(Unit) {
@@ -73,7 +77,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
         // A field for each text written, with its own steps to undo; what is around it stays, the
         // keyboard with it, when a text goes on into another box
         key(editor.sessionId) {
-            TextBoxEditor(controller, onCaret = { caret = it })
+            TextBoxEditor(controller, onCaret = { caret = it }, barBounds = { barBounds })
         }
 
         // On a phone the bar lies on the keyboard, the whole width
@@ -90,7 +94,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
             commands = commands,
             onDone = editor::finishEditing,
             docked = docked && atBottom,
-            modifier = barModifier.onSizeChanged { barHeightPx = it.height }
+            modifier = barModifier.onSizeChanged { barHeightPx = it.height }.onGloballyPositioned { barBounds = it.boundsInParent() }
         )
 
         // Keeps the caret in sight, above the software keyboard and the formatting bar. Keyed on

@@ -50,7 +50,8 @@ internal object CaretStops {
 
     /** [to], reached from [from]: on the next place shown in the direction of the move when shown where [from] is. */
     private fun settle(mapping: SourceMapping, from: Int, to: Int): Int {
-        if (mapping.insideObject(to)) return to
+        // Into an object, or out of one (its source is in the strip): a move of its own
+        if (mapping.insideObject(to) || mapping.insideObject(from)) return to
         val direction = (to - from).sign
         val at = mapping.originalToTransformed(from)
         var offset = to

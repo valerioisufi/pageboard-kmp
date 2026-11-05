@@ -70,6 +70,33 @@ class SeenDeletionTest {
     }
 
     @Test
+    fun aFormulaEmptiedGoesWithItsDelimiters() {
+        assertEquals(TextFieldValue("a  b", TextRange(2)), backspace("a \$x\$ b", "a \$x".length))
+        assertEquals(TextFieldValue("a \$y\$ b", TextRange(3)), backspace("a \$xy\$ b", "a \$x".length), "a character of its source")
+    }
+
+    @Test
+    fun aLinkTakesWhatIsSeenOfItsTextAndWhatIsWrittenOfItsAddress() {
+        val text = "Read [the guide](https://example.com) now"
+        // Right after it: the last letter of its text
+        assertEquals(TextFieldValue("Read [the guid](https://example.com) now", TextRange("Read [the guid".length)), backspace(text, text.indexOf(" now")))
+        // In its address, written in the strip: the character before the caret
+        val inAddress = text.indexOf(".com")
+        assertEquals(TextFieldValue(text.removeRange(inAddress - 1, inAddress), TextRange(inAddress - 1)), backspace(text, inAddress))
+        // Its whole text: with its address
+        assertEquals(TextFieldValue("Read  now", TextRange(5)), replace(text, TextRange(6, 15)))
+    }
+
+    @Test
+    fun backspaceGoesIntoAFormulaAfterItAndOutOfItAtTheStartOfItsSource() {
+        val text = "a \$x+1\$ b"
+        val after = TextFieldValue(text, TextRange("a \$x+1\$".length))
+        assertEquals(TextFieldValue(text, TextRange("a \$x+1".length)), RichTextEditing.handleConcealedDeletion(after, TextFieldValue(text.removeRange(6, 7), TextRange(6))))
+        val start = TextFieldValue(text, TextRange(3))
+        assertEquals(TextFieldValue(text, TextRange(2)), RichTextEditing.handleConcealedDeletion(start, TextFieldValue(text.removeRange(2, 3), TextRange(2))))
+    }
+
+    @Test
     fun backspaceAtTheStartOfAHeadingMakesItText() {
         val old = TextFieldValue("Intro\n## Title", TextRange("Intro\n## ".length))
         val new = TextFieldValue("Intro\n##Title", TextRange("Intro\n##".length))

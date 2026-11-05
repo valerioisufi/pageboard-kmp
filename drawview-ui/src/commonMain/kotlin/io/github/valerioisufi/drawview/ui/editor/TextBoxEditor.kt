@@ -1,18 +1,13 @@
 package io.github.valerioisufi.drawview.ui.editor
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -84,6 +79,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
@@ -121,9 +117,10 @@ import org.jetbrains.compose.resources.stringResource
  * selection, drawn by the canvas (see `SelectionFrame.ofEditedText`).
  *
  * @param onCaret where the caret is, once the text it is in has been laid out.
+ * @param barBounds where the formatting bar is on the canvas, which the strip of a hidden source avoids.
  */
 @Composable
-internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace) -> Unit) {
+internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace) -> Unit, barBounds: () -> Rect? = { null }) {
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
@@ -169,8 +166,27 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     // The code on the paper of its page, as the page draws it
     val paper by controller.document.observe { pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER }
     val value = editor.value
+    // The formula the caret is in: drawn in its place while its source is written, its last image
+    // kept while what is typed cannot be rendered
+    val writing = remember { FormulaBeingWritten() }
     val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
         formulaSizes.clear()
+        val selection = value.selection
+        val atCaret = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.FORMULA && selection.min > it.start && selection.max < it.end }
+        val caretLatex = atCaret?.let { MarkdownTextUtil.formulaSource(value.text, it) }
+        if (atCaret?.start != writing.start) writing.image = null
+        writing.start = atCaret?.start ?: -1
+        writing.invalid = false
+        fun room(latex: String, sizePx: Float): MarkdownTextUtil.RenderedFormula<ImageBitmap>? {
+            val rendered = roomImages.formula(latex, sizePx, editor.color)
+            val kept = if (latex == caretLatex) {
+                if (rendered != null) writing.image = rendered else writing.invalid = latexReady
+                rendered ?: writing.image
+            } else {
+                rendered
+            }
+            return kept?.also { formulaSizes[it.image] = sizePx }
+        }
         val presentation = Presentation(
             fontSizePx = fontSizePx,
             color = textColor,
@@ -195,7 +211,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 TableLayout.measureCell(codeMeasurer, cell, TextStyle(color = textColor, fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), cellWidth, alignment)
             },
             paperColor = paper
-        ) { latex, sizePx -> roomImages.formula(latex, sizePx, editor.color)?.also { formulaSizes[it.image] = sizePx } }
+        ) { latex, sizePx -> room(latex, sizePx) }
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
     // The presented text is what the field shows: a new one (a new size, the formulas ready) is
@@ -439,7 +455,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         fun inCell(offset: Int) = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
                         val selection = value.selection
                         if (selection.collapsed) {
-                            if (caretShown) {
+                            // In the source of a formula of the cell, the caret is in the strip
+                            if (caretShown && cell.presented.hiddenAtCaret?.caretIn != true) {
                                 val rect = cell.layout.getCursorRect(inCell(selection.start))
                                 with(TextCaret) { drawCaret(rect.translate(origin), TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
                             }
@@ -447,7 +464,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             val path = cell.layout.getPathForRange(inCell(selection.min), inCell(selection.max))
                             translate(origin.x, origin.y) { drawPath(path, accent.copy(alpha = 0.3f)) }
                         }
-                    } else if (caretShown && value.selection.collapsed) {
+                    } else if (caretShown && value.selection.collapsed && shown.hiddenAtCaret?.caretIn != true) {
+                        // In the source of a formula or of the address of a link, the caret is in the strip
                         // The caret of the text, as wide on the screen at every zoom
                         val rect = current.getCursorRect(shown.mapping.originalToTransformed(value.selection.start).coerceIn(0, current.layoutInput.text.length))
                         with(TextCaret) { drawCaret(rect, TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
@@ -490,32 +508,6 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             }
         )
 
-        // The formula under the caret, rendered above its line (or why it cannot be)
-        val atCaret = shown.formulaAtCaret
-        val current = layout
-        if (atCaret != null && current != null && latexReady && current.layoutInput.text.text == shown.text.text) {
-            val start = shown.mapping.originalToTransformed(atCaret.start).coerceIn(0, shown.text.length)
-            val anchorX = current.getHorizontalPosition(start, usePrimaryDirection = true)
-            val anchorY = current.getLineTop(current.getLineForOffset(start))
-            // At the size of the text on the screen, readable when the page is far
-            val previewPx = max(fontSizePx * screenPerLayout(), with(unscaledDensity) { MIN_PREVIEW_TEXT.toPx() })
-            val preview = remember(atCaret, value.text, previewPx, editor.color) {
-                screenImages.render(MarkdownTextUtil.formulaSource(value.text, atCaret), MarkdownTextUtil.formulaSizePx(atCaret, previewPx), editor.color)
-            }
-            FormulaPreview(
-                image = preview?.bitmap,
-                modifier = Modifier.layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    val gap = PREVIEW_GAP.roundToPx()
-                    layout(placeable.width, placeable.height) {
-                        val origin = controller.editedBoxOrigin()
-                        val k = screenPerLayout()
-                        placeable.place((origin.x + anchorX * k).roundToInt(), (origin.y + anchorY * k - placeable.height - gap).roundToInt().coerceAtLeast(0))
-                    }
-                }
-            )
-        }
-
         // The handles of a selection by touch, where the text is on the screen
         fun toScreen(point: Offset): Offset {
             val k = screenPerLayout()
@@ -531,6 +523,29 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
         }
         fun caretAt(offset: Int): Rect? = layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }
             ?.let { caretRect(it, currentShown, editor.tableCaret, offset) }
+
+        // The source the page hides of what the caret is in, in a strip by it: the text does not move
+        val cellAtCaret = tableCaret?.let { c ->
+            shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }
+        }
+        val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
+        if (hidden != null && layout?.layoutInput?.text?.text == shown.text.text) {
+            // In a cell, its offsets are those of the cell
+            val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
+            val length = hidden.length
+            fun inSource(range: TextRange) = TextRange((range.start - from).coerceIn(0, length), (range.end - from).coerceIn(0, length))
+            SourceStrip(
+                source = value.text.substring(from, (from + length).coerceAtMost(value.text.length)),
+                selection = if (hidden.caretIn) inSource(value.selection) else null,
+                composition = value.composition?.takeIf { hidden.caretIn }?.let(::inSource),
+                caretShown = caretShown,
+                anchor = { hiddenAnchor(layout, currentShown, editor.tableCaret)?.let { rect -> onScreen(rect, ::toScreen) } },
+                avoid = barBounds,
+                error = if (hidden.kind == RichTextParser.Kind.FORMULA && writing.invalid) stringResource(Res.string.text_editor_formula_invalid) else null,
+                onCaret = { change(editor.value.copy(selection = TextRange(from + it))) },
+                monospace = notesFonts.monospace
+            )
+        }
         TouchHandles(
             touch,
             value = { editor.value },
@@ -604,7 +619,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     if (laidOut != null) {
         // On the screen, from the corner of the box
         val k = screenPerLayout()
-        val rect = caretRect(laidOut, shown, tableCaret, value.selection.end).let { Rect(it.left * k, it.top * k, it.right * k, it.bottom * k) }
+        // In a hidden source, the caret followed is what it belongs to (the source is in the strip)
+        val inHidden = (shown.hiddenAtCaret ?: cellHidden(shown, tableCaret))?.caretIn == true
+        val inLayout = (if (inHidden) hiddenAnchor(laidOut, shown, tableCaret) else null) ?: caretRect(laidOut, shown, tableCaret, value.selection.end)
+        val rect = Rect(inLayout.left * k, inLayout.top * k, inLayout.right * k, inLayout.bottom * k)
         SideEffect { onCaret(CaretPlace(value.text, value.selection, rect)) }
     }
 }
@@ -645,10 +663,12 @@ private fun DrawViewController.editedBoxOrigin(): Point {
 private data class CodeKey(val source: CodeBlockSource, val fontPx: Float, val color: Int, val paper: Int)
 
 /**
- * The offset of the text written under [point] of the field when it is on a block of code drawn
- * away from the caret or on a cell of a table, or `null`.
+ * The offset of the text written under [point] of the field when it is on an object: on a formula,
+ * the end of its source (opened in the strip); on a block of code drawn away from the caret or on a
+ * cell of a table, the character there; else `null`.
  */
 private fun codeOffsetAt(layout: TextLayoutResult, shown: PresentedText<*>, point: Offset): Int? {
+    shown.formulas.firstOrNull { it.sourceEnd >= 0 && layout.formulaRect(it).contains(point) }?.let { return it.sourceEnd }
     // A cell of a table: the character tapped in it
     for (table in shown.tables) {
         val origin = layout.tableOrigin(table)
@@ -665,26 +685,46 @@ private fun codeOffsetAt(layout: TextLayoutResult, shown: PresentedText<*>, poin
     return null
 }
 
-/** The formula under the caret: its [image], or a word saying it cannot be read. */
-@Composable
-private fun FormulaPreview(image: ImageBitmap?, modifier: Modifier) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        shadowElevation = 4.dp,
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        if (image != null) {
-            Image(image, contentDescription = null, modifier = Modifier.padding(8.dp))
-        } else {
-            Text(
-                stringResource(Res.string.text_editor_formula_invalid),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-            )
-        }
+/**
+ * The formula the caret is in, from its [start]: its last [image] rendered, kept while what is
+ * typed in it cannot be rendered ([invalid]), so that its line does not change at every key.
+ */
+private class FormulaBeingWritten {
+    var start: Int = -1
+    var image: MarkdownTextUtil.RenderedFormula<ImageBitmap>? = null
+    var invalid: Boolean = false
+}
+
+/** The hidden source of the cell of the caret in a table ([tableCaret]), if the caret is in one. */
+private fun cellHidden(shown: PresentedText<*>, tableCaret: TableEditing.Caret?): HiddenSource? = tableCaret?.let { c ->
+    shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }?.presented?.hiddenAtCaret
+}
+
+/**
+ * What the hidden source of the caret belongs to, in the pixels of the layout: its formula, the start
+ * of its link (its line), the cell of the caret in a table; `null` when not laid out.
+ */
+private fun hiddenAnchor(layout: TextLayoutResult?, shown: PresentedText<*>, tableCaret: TableEditing.Caret?): Rect? {
+    if (layout == null || layout.layoutInput.text.text != shown.text.text) return null
+    val hidden = shown.hiddenAtCaret
+    if (hidden != null) {
+        if (hidden.kind == RichTextParser.Kind.FORMULA) shown.formulas.firstOrNull { it.offset == hidden.anchor }?.let { return layout.formulaRect(it) }
+        val at = hidden.anchor.coerceIn(0, layout.layoutInput.text.length)
+        val line = layout.getLineForOffset(at)
+        val x = layout.getHorizontalPosition(at, usePrimaryDirection = true)
+        return Rect(x, layout.getLineTop(line), x + 1f, layout.getLineBottom(line))
     }
+    val caret = tableCaret ?: return null
+    val table = shown.tables.firstOrNull { it.span.start == caret.span.start } ?: return null
+    val origin = layout.tableOrigin(table)
+    val edges = table.layout
+    return Rect(origin.x + edges.columnEdges[caret.column], origin.y + edges.rowEdges[caret.row], origin.x + edges.columnEdges[caret.column + 1], origin.y + edges.rowEdges[caret.row + 1])
+}
+
+/** [rect] of the layout of the field on the screen, its corners mapped by [toScreen] (the box may be turned). */
+private fun onScreen(rect: Rect, toScreen: (Offset) -> Offset): Rect {
+    val corners = listOf(rect.topLeft, rect.topRight, rect.bottomLeft, rect.bottomRight).map(toScreen)
+    return Rect(corners.minOf { it.x }, corners.minOf { it.y }, corners.maxOf { it.x }, corners.maxOf { it.y })
 }
 
 /** The blocks of code laid out kept by the editor. */
@@ -695,7 +735,3 @@ private val PASTE_PLAIN = Shortcut(Key.V, primary = true, shift = true)
 
 /** Ratio between the sizes the formulas of the editor are rendered at. */
 private const val SIZE_STEP = 1.08f
-
-/** The least size of the text of the formula shown above the caret. */
-private val MIN_PREVIEW_TEXT = 18.dp
-private val PREVIEW_GAP = 6.dp

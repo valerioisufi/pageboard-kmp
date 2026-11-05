@@ -123,7 +123,7 @@ class RichTextPresenterTest {
         val formula = presented.formulas.single()
         assertEquals(2, formula.offset)
         assertEquals(40f, formula.widthPx)
-        assertNull(presented.formulaAtCaret)
+        assertNull(presented.hiddenAtCaret)
         val mapping = presented.mapping
         assertEquals(listOf(0, 1, 2, 2, 2, 2, 2, 5, 6, 7), (0..9).map(mapping::originalToTransformed))
         assertEquals(listOf(0, 1, 2, 7, 7, 7, 8, 9), (0..7).map(mapping::transformedToOriginal), "a tap after the middle of a formula goes after it")
@@ -172,12 +172,17 @@ class RichTextPresenterTest {
     }
 
     @Test
-    fun theFormulaUnderTheCaretShowsItsSource() {
-        val presented = present("a \$x+1\$ b", reveal = TextRange(4))
-        assertEquals("a \uFFFC\u2060\uFFFC\$x+1\$ b", presented.shown, "after the struts keeping its room")
-        assertTrue(presented.formulas.isEmpty())
-        assertEquals(2, presented.formulaAtCaret?.start)
-        assertEquals(7, presented.mapping.originalToTransformed(4))
+    fun theFormulaUnderTheCaretStaysDrawnItsSourceForTheStrip() {
+        val text = "a \$x+1\$ b"
+        val presented = present(text, reveal = TextRange(4))
+        assertEquals(present(text).shown, presented.shown, "the same text shown: the line does not move")
+        assertEquals(2, presented.formulas.single().offset)
+        val hidden = presented.hiddenAtCaret!!
+        assertEquals("x+1", text.substring(hidden.source.first, hidden.source.last + 1))
+        assertTrue(hidden.caretIn)
+        // At its ends the caret is out of it
+        assertNull(present(text, reveal = TextRange(2)).hiddenAtCaret)
+        assertNull(present(text, reveal = TextRange(7)).hiddenAtCaret)
     }
 
     @Test
@@ -289,26 +294,28 @@ class RichTextPresenterTest {
     }
 
     @Test
-    fun theSourceOfAFormulaUnderTheCaretKeepsItsRoom() {
+    fun theCaretInAFormulaLeavesItAnObject() {
         val presented = present("a \$x\$ b", reveal = TextRange(3), struts = exact)
-        assertEquals("a \uFFFC\u2060\uFFFC\$x\$ b", presented.shown, "struts of no width before the source")
-        val above = presented.text.spanStyles.last { it.start == 2 }.item
-        assertEquals(24f, above.fontSize.value, 0.01f)
-        assertEquals(-24f, above.letterSpacing.value, 0.01f)
-        assertEquals(5, presented.mapping.originalToTransformed(2), "the caret before the source after the struts")
-        assertEquals(2, presented.mapping.transformedToOriginal(3))
+        assertEquals("a ￼⁠￼ b", presented.shown, "no source in the line")
+        assertTrue(presented.mapping.insideObject(3), "the caret in its source keeps its own moves")
     }
 
     @Test
-    fun aLinkUnderlinesItsTextAndHidesItsAddressAwayFromTheCaret() {
-        val hidden = present("Read [the guide](https://example.com) now")
+    fun aLinkUnderlinesItsTextAndHidesItsAddressWithTheCaretToo() {
+        val text = "Read [the guide](https://example.com) now"
+        val hidden = present(text)
         assertEquals("Read the guide now", hidden.shown)
         val guide = hidden.shown.indexOf("the guide")
         assertTrue(hidden.text.spanStyles.any { guide >= it.start && guide + 9 <= it.end && it.item.textDecoration?.contains(TextDecoration.Underline) == true })
 
-        val revealed = present("Read [the guide](https://example.com) now", reveal = TextRange(8))
-        assertEquals("Read [the guide](https://example.com) now", revealed.shown)
-        val address = revealed.shown.indexOf("](https://example.com)")
-        assertTrue(revealed.text.spanStyles.any { address >= it.start && address + 22 <= it.end && it.item.color.alpha < 0.5f })
+        // The caret in its text: the address for the strip, the caret not in it
+        val inText = present(text, reveal = TextRange(8))
+        assertEquals("Read the guide now", inText.shown)
+        val address = inText.hiddenAtCaret!!
+        assertEquals("https://example.com", text.substring(address.source.first, address.source.last + 1))
+        assertTrue(!address.caretIn)
+        // The caret in its address
+        assertTrue(present(text, reveal = TextRange(text.indexOf("example"))).hiddenAtCaret!!.caretIn)
+        assertTrue(inText.mapping.insideObject(text.indexOf("example")), "the address keeps the caret's own moves")
     }
 }

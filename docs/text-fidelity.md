@@ -316,7 +316,7 @@ rule for a focus lost.
 | 2 | One layout: the field at 20 px/mm in `PageScale`, the transformation keyed on the presented text, `TextCaret`; tests: the lines written and saved within half a pixel at 48%, 73%, 100%, 160% and 270%, the formulas and the headings in place after a zoom and after a new size, the caret 2 dp at three zooms, `TextParityTest` through the field at several zooms; on the tablet: the text sharp at 30% and 400%, and whether Compose's handles follow the layer | Done, not tried on the tablet |
 | 3 | The touches: `TouchSelection`, the handles and the toolbar on touch screens; tests with injected touches (a tap, a long press, the handles where the text is at two zooms, a handle dragged, a turned text); on the tablet with the pen and a finger | Done, not tried on the tablet |
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
-| 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | |
+| 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | |
 | 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | |
 
@@ -409,6 +409,32 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   (`TextBoxNotationTest`): across bold, code, strikethrough, italic and an escape, → and ← take one
   press per character seen, the text shown and the height of the field the same at every press;
   Backspace after a bold takes its last letter.
+
+### Phase 5 results
+
+* `RichTextPresenter` draws a formula as the page does with the caret in it too, and hides the
+  address of a link with the caret in the link; it tells the editor what the caret is in
+  (`HiddenSource`: the LaTeX of a formula, the address of a link, in the text or in a cell of a
+  table). The offsets of a formula and of the address of a link keep the caret's own moves
+  (`SourceMapping.insideObject`): the arrows go into the source, through it and out of it.
+* `SourceStrip`: the source in the monospace of the notes, above what it belongs to, below it when
+  the formatting bar or the edge of the window is there; the caret (blinking), the selection and the
+  composition of the field drawn in it, a tap in it putting the caret on the character tapped. The
+  caret of the text is not drawn while it is in the strip; the caret followed by `CaretReveal` is the
+  formula then. The preview of the rendered formula above the caret is gone: the formula in its
+  place is the preview.
+* A formula being written keeps its last image while its source cannot be rendered, "Invalid
+  formula" under the source in the strip; a formula that cannot be rendered at all is red source,
+  as on the page.
+* A click or a tap on a formula puts the caret at the end of its source. Backspace right after a
+  formula goes into it, at the start of its source out of it (`handleConcealedDeletion`); a formula
+  emptied goes with its `$`, a link whose text goes goes with its address, and in the address of a
+  link the characters go as they are (`SeenDeletion`).
+* Tests (`TextBoxSourceStripTest`, with MicroTeX): the caret in a long formula changes neither the
+  text shown nor the height of the field, the source in the strip; the arrows into the source,
+  through it, out of it and back; Backspace after a formula; a click on it; the caret in a link,
+  its address in the strip and not in the line. `RichTextPresenterTest` and `SeenDeletionTest`
+  for the rules.
 
 ## Decisions
 

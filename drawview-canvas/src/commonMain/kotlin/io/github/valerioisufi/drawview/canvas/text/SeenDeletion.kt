@@ -7,19 +7,20 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 
 /**
  * What a deletion takes from the text being written: what is seen. The delimiters of the emphasis,
- * of the code in the line and of the escapes are not shown (see docs/text-fidelity.md), so a key
- * or a selection taking one would break a format the user cannot see.
+ * of the code in the line, of the escapes, of the formulas and of the links are not shown (see
+ * docs/text-fidelity.md), so a key or a selection taking one would break a format the user cannot
+ * see.
  *
  * * Backspace or Delete next to delimiters takes the character seen beyond them.
  * * A selection deleted, or typed over, takes the characters it shows: the delimiters in it stay,
  *   the part of a format left keeping it (`**bo|ld** pla|in` → `**bo**in`), but those of a span
- *   whose whole content goes go with it.
- *
- * The links keep their own rules while their address is shown with the caret in them.
+ *   whose whole content goes go with it: a formula emptied goes, a link whose text goes goes with
+ *   its address.
+ * * In the address of a link, written in the strip, the characters go as they are.
  */
 internal object SeenDeletion {
 
-    private val KINDS = setOf(Kind.BOLD, Kind.ITALIC, Kind.STRIKE, Kind.CODE, Kind.ESCAPE)
+    private val KINDS = setOf(Kind.BOLD, Kind.ITALIC, Kind.STRIKE, Kind.CODE, Kind.ESCAPE, Kind.FORMULA, Kind.LINK)
 
     /**
      * [newValue], a deletion or a replacement made in [oldValue], as it takes what is seen; `null`
@@ -61,6 +62,8 @@ internal object SeenDeletion {
         // Inner spans first: a span emptied leaves its outer span emptied too
         val spans = RichTextParser.parse(old).filter { it.kind in KINDS }.sortedBy { it.end - it.start }
         if (spans.isEmpty()) return null
+        // In the address of a link (between `](` and `)`), what is deleted is what is written
+        if (spans.any { it.kind == Kind.LINK && from >= it.contentEnd + 2 && to <= it.end - 1 }) return null
         val delimiter = BooleanArray(old.length)
         for (span in spans) for (range in span.delimiters) for (i in range) delimiter[i] = true
 
