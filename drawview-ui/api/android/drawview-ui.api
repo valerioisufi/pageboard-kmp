@@ -533,6 +533,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/Drawab
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_commonMainKt {
+	public static final fun getNotes_symbols (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 	public static final fun getNoto_sans_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 	public static final fun getNoto_sans_bold_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 	public static final fun getNoto_sans_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
@@ -1111,11 +1112,12 @@ public final class io/github/valerioisufi/drawview/ui/theme/NotesFontFiles {
 public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getStrutAbove ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getStrutBelow ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getSymbols ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
 }
 

@@ -3768,6 +3768,13 @@ final object io.github.valerioisufi.drawview.model.text/TextSizes { // io.github
     final fun smaller(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextSizes.smaller|smaller(kotlin.Float){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.text/TextSymbols { // io.github.valerioisufi.drawview.model.text/TextSymbols|null[0]
+    final val RANGES // io.github.valerioisufi.drawview.model.text/TextSymbols.RANGES|{}RANGES[0]
+        final fun <get-RANGES>(): kotlin.collections/List<kotlin.ranges/CharRange> // io.github.valerioisufi.drawview.model.text/TextSymbols.RANGES.<get-RANGES>|<get-RANGES>(){}[0]
+
+    final fun isAt(kotlin/CharSequence, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/TextSymbols.isAt|isAt(kotlin.CharSequence;kotlin.Int){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model/FractionalIndex { // io.github.valerioisufi.drawview.model/FractionalIndex|null[0]
     final fun after(kotlin/String?, kotlin/Int): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.model/FractionalIndex.after|after(kotlin.String?;kotlin.Int){}[0]
     final fun between(kotlin/String?, kotlin/String?): kotlin/String // io.github.valerioisufi.drawview.model/FractionalIndex.between|between(kotlin.String?;kotlin.String?){}[0]

@@ -25,6 +25,7 @@ final enum class io.github.valerioisufi.drawview.canvas.render.tile/TextFace : k
     enum entry MONO // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.MONO|null[0]
     enum entry MONO_BOLD // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.MONO_BOLD|null[0]
     enum entry REGULAR // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.REGULAR|null[0]
+    enum entry SYMBOLS // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.SYMBOLS|null[0]
 
     final val entries // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.canvas.render.tile/TextFace> // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.entries.<get-entries>|<get-entries>#static(){}[0]

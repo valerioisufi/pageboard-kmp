@@ -327,6 +327,7 @@ public class ComposeTextTileAdapter(
         private val bold = BooleanArray(shown.length)
         private val italic = BooleanArray(shown.length)
         private val monospace = BooleanArray(shown.length) { mono }
+        private val symbol = BooleanArray(shown.length)
         private val strikethrough = BooleanArray(shown.length)
         private val underline = BooleanArray(shown.length)
         private val sizePx = FloatArray(shown.length) { baseSizePx }
@@ -338,6 +339,7 @@ public class ComposeTextTileAdapter(
                 val weight = style.fontWeight?.let { it.weight >= FontWeight.SemiBold.weight }
                 val slant = style.fontStyle?.let { it == FontStyle.Italic }
                 val family = style.fontFamily?.let { it == fonts.monospace || it == FontFamily.Monospace }
+                val symbols = style.fontFamily?.let { it == fonts.symbols }
                 val size = if (style.fontSize.isSp) style.fontSize.value else null
                 val argb = if (style.color.isSpecified) style.color.toArgb() else null
                 val strike = style.textDecoration?.let { it.contains(TextDecoration.LineThrough) }
@@ -346,6 +348,7 @@ public class ComposeTextTileAdapter(
                     if (weight != null) bold[i] = weight
                     if (slant != null) italic[i] = slant
                     if (family != null) monospace[i] = family
+                    if (symbols != null) symbol[i] = symbols
                     if (size != null) sizePx[i] = size
                     if (argb != null) color[i] = argb
                     if (strike != null) strikethrough[i] = strike
@@ -356,6 +359,7 @@ public class ComposeTextTileAdapter(
 
         fun at(index: Int): WordStyle {
             val face = when {
+                symbol[index] -> TextFace.SYMBOLS
                 monospace[index] -> if (bold[index]) TextFace.MONO_BOLD else TextFace.MONO
                 bold[index] -> if (italic[index]) TextFace.BOLD_ITALIC else TextFace.BOLD
                 else -> if (italic[index]) TextFace.ITALIC else TextFace.REGULAR
@@ -463,7 +467,8 @@ public class ComposeTextTileAdapter(
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             },
             measureText = { cell, cellWidth, alignment -> TableLayout.measureCell(measurer, cell, baseStyle, cellWidth, alignment) },
-            paperColor = paperColor
+            paperColor = paperColor,
+            symbols = fonts.symbols
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
                 formulaSizes[it.bitmap] = sizePx

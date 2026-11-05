@@ -155,6 +155,7 @@ private fun markdownContent(
         density = density.density,
         lineWidthPx = widthPx,
         monospace = fonts.monospace,
+        symbols = fonts.symbols,
         highlighter = engines.code,
         layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER, textFont) },
         measurePrefix = { prefix ->

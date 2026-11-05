@@ -119,9 +119,9 @@ private val THIRD_PARTY_LIBRARIES = listOf(
     ThirdPartyLicense(
         name = "Typography & Fonts",
         license = "SIL OFL 1.1 / Knuth License",
-        copyright = "Plus Jakarta Sans: Copyright © 2020 The Plus Jakarta Sans Project Authors.\nNoto Sans, Noto Sans Mono: Copyright © 2018 The Noto Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
-        purpose = "Application UI typography (Plus Jakarta Sans), text of the notes (Noto Sans, Noto Sans Mono) and LaTeX mathematical symbols.",
-        notice = "Plus Jakarta Sans, Noto Sans, Noto Sans Mono and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
+        copyright = "Plus Jakarta Sans: Copyright © 2020 The Plus Jakarta Sans Project Authors.\nNoto Sans, Noto Sans Mono, Noto Sans Math, Noto Sans Symbols 2: Copyright © 2018 The Noto Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
+        purpose = "Application UI typography (Plus Jakarta Sans), text of the notes (Noto Sans, Noto Sans Mono, and the symbols from Noto Sans Math and Noto Sans Symbols 2) and LaTeX mathematical symbols.",
+        notice = "Plus Jakarta Sans, the Noto fonts and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
     ),
     ThirdPartyLicense(
         name = "Lucide",

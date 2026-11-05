@@ -21,6 +21,7 @@ import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
+import io.github.valerioisufi.drawview.model.text.TextSymbols
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
@@ -111,7 +112,8 @@ internal class Struts(
  * laid out by [layoutCodeBlock], the prefixes of its list items measured by [measurePrefix] (`null`:
  * approximated), the cells of its tables laid out by [measureText] (in the style of the text, on a
  * width or on one line; `null`: the tables shown as their source), the color of its paper
- * ([paperColor], ARGB, of no alpha when not known), its formulas rendered by [renderFormula].
+ * ([paperColor], ARGB, of no alpha when not known), its symbols in [symbols] (`null`: in the fonts
+ * of each system), its formulas rendered by [renderFormula].
  */
 internal data class Presentation<T>(
     val fontSizePx: Float,
@@ -125,6 +127,7 @@ internal data class Presentation<T>(
     val measurePrefix: ((String) -> Float)? = null,
     val measureText: ((text: AnnotatedString, widthPx: Float?, alignment: TextAlignment) -> TextLayoutResult)? = null,
     val paperColor: Int = 0,
+    val symbols: FontFamily? = null,
     val renderFormula: (latex: String, fontSizePx: Float) -> MarkdownTextUtil.RenderedFormula<T>?
 )
 
@@ -519,6 +522,7 @@ internal object RichTextPresenter {
             val end = mapping.originalToTransformed(block.end) + if (block.end < text.length && text[block.end] == '\n') 1 else 0
             if (end > written.offset) out.addStyle(codeStyle, written.offset, end)
         }
+        symbolsIn(text, spans, p.symbols) { index -> style(SpanStyle(fontFamily = p.symbols), index, index + 1) }
         // The bullets in the monospace font, which has all three, small enough for the lines of the
         // text to keep their height (a shift of the baseline would make them higher)
         val bulletScale = bulletScale(p)
@@ -634,6 +638,22 @@ internal object RichTextPresenter {
             }
         }
         return ListLayout(itemAt, continuationAt)
+    }
+
+    /**
+     * Calls [symbol] for each character of [text] taken from the symbols font [font]: not in its code,
+     * which has a font of its own, nor in its formulas.
+     */
+    private inline fun symbolsIn(text: String, spans: List<Span>, font: FontFamily?, symbol: (Int) -> Unit) {
+        if (font == null) return
+        var next = 0
+        val verbatim = spans.filter { it.kind == Kind.CODE || it.kind == Kind.CODE_BLOCK || it.kind == Kind.FORMULA }
+        for (index in text.indices) {
+            if (!TextSymbols.isAt(text, index)) continue
+            while (next < verbatim.size && verbatim[next].end <= index) next++
+            if (next < verbatim.size && verbatim[next].start <= index) continue
+            symbol(index)
+        }
     }
 
     /**

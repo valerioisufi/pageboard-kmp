@@ -226,12 +226,12 @@ public object LatexEngine {
             renderFormula(latex, fontSizePx, colorArgb, paddingPx = 0f)?.let { FormulaImage(it.bitmap, it.baselineRatio) }
     }
 
-    /** The style of the text fonts of MicroTeX for [face] (`null` for the code faces). */
+    /** The style of the text fonts of MicroTeX for [face] (`null` for the code and the symbols). */
     private fun texStyle(face: TextFace): Int? = when (face) {
         TextFace.REGULAR -> 0
         TextFace.BOLD -> TexFont.BOLD
         TextFace.ITALIC -> TexFont.ITALIC
         TextFace.BOLD_ITALIC -> TexFont.BOLD or TexFont.ITALIC
-        TextFace.MONO, TextFace.MONO_BOLD -> null
+        TextFace.MONO, TextFace.MONO_BOLD, TextFace.SYMBOLS -> null
     }
 }

@@ -38,10 +38,12 @@ import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfSize
 import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.pdf.TrueTypeFont
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.model.text.TextSymbols
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -187,6 +189,28 @@ class PdfExporterTest {
         assertTrue((exported.at(background) and 0xFF) in 200..250, "a faint background, not the paper: ${(exported.at(background) and 0xFF)}")
         val similarity = inkOverlap(exported, editor, Rect(15f, 20f, 185f, 50f))
         assertTrue(similarity > 0.75f, "overlap of the ink $similarity")
+    }
+
+    @Test
+    fun theSymbolsAreRealText() = runBlocking {
+        val document = DrawDocument(title = "Simboli")
+        document.pages[0].add(DrawText().apply { text = "uno → due ↔ tre ≤ quattro ✔ **grassetto →**"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
+        val pdf = tempFile("symbols", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text")
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty()
+            assertTrue("→" in read && "↔" in read && "≤" in read && "✔" in read && "uno" in read, read)
+        }
+    }
+
+    @Test
+    fun theSymbolsFontHasWhatTextSymbolsSays() {
+        val font = TrueTypeFont(NOTES_FILES.getValue(TextFace.SYMBOLS))
+        for (range in TextSymbols.RANGES) for (c in range) assertTrue(font.covers(c.code), "U+" + c.code.toString(16))
+        val text = TrueTypeFont(NOTES_FILES.getValue(TextFace.REGULAR))
+        assertTrue(!text.covers('→'.code), "the text font has no arrows: if it does, the symbols must be looked at again")
     }
 
     @Test
@@ -508,7 +532,8 @@ class PdfExporterTest {
             TextFace.BOLD to "noto_sans_bold",
             TextFace.BOLD_ITALIC to "noto_sans_bold_italic",
             TextFace.MONO to "noto_sans_mono_regular",
-            TextFace.MONO_BOLD to "noto_sans_mono_bold"
+            TextFace.MONO_BOLD to "noto_sans_mono_bold",
+            TextFace.SYMBOLS to "notes_symbols"
         ).mapValues { (_, name) -> File("../drawview-ui/src/commonMain/composeResources/font/$name.ttf").readBytes() }
 
         /** The fonts of the notes, as the editor draws them. */
@@ -522,7 +547,8 @@ class PdfExporterTest {
             FontFamily(
                 PlatformFont("noto-mono", NOTES_FILES.getValue(TextFace.MONO), FontWeight.Normal),
                 PlatformFont("noto-mono-bold", NOTES_FILES.getValue(TextFace.MONO_BOLD), FontWeight.Bold)
-            )
+            ),
+            symbols = FontFamily(PlatformFont("notes-symbols", NOTES_FILES.getValue(TextFace.SYMBOLS)))
         )
 
         init {

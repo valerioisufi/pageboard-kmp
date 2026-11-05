@@ -558,7 +558,7 @@ final class io.github.valerioisufi.drawview.ui.theme/CanvasColors { // io.github
 }
 
 final class io.github.valerioisufi.drawview.ui.theme/NotesFonts { // io.github.valerioisufi.drawview.ui.theme/NotesFonts|null[0]
-    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ...) // io.github.valerioisufi.drawview.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?){}[0]
+    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ...) // io.github.valerioisufi.drawview.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?){}[0]
 
     final val monospace // io.github.valerioisufi.drawview.ui.theme/NotesFonts.monospace|{}monospace[0]
         final fun <get-monospace>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.drawview.ui.theme/NotesFonts.monospace.<get-monospace>|<get-monospace>(){}[0]
@@ -566,6 +566,8 @@ final class io.github.valerioisufi.drawview.ui.theme/NotesFonts { // io.github.v
         final fun <get-strutAbove>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutAbove.<get-strutAbove>|<get-strutAbove>(){}[0]
     final val strutBelow // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutBelow|{}strutBelow[0]
         final fun <get-strutBelow>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutBelow.<get-strutBelow>|<get-strutBelow>(){}[0]
+    final val symbols // io.github.valerioisufi.drawview.ui.theme/NotesFonts.symbols|{}symbols[0]
+        final fun <get-symbols>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.drawview.ui.theme/NotesFonts.symbols.<get-symbols>|<get-symbols>(){}[0]
     final val text // io.github.valerioisufi.drawview.ui.theme/NotesFonts.text|{}text[0]
         final fun <get-text>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.drawview.ui.theme/NotesFonts.text.<get-text>|<get-text>(){}[0]
 
@@ -1130,6 +1132,8 @@ final val io.github.valerioisufi.drawview.ui.generated.resources/name_error_exis
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.string).<get-name_error_exists>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.drawview.ui.generated.resources/name_error_exists.<get-name_error_exists>|<get-name_error_exists>@io.github.valerioisufi.drawview.ui.generated.resources.Res.string(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/name_error_invalid_chars // io.github.valerioisufi.drawview.ui.generated.resources/name_error_invalid_chars|@io.github.valerioisufi.drawview.ui.generated.resources.Res.string{}name_error_invalid_chars[0]
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.string).<get-name_error_invalid_chars>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.drawview.ui.generated.resources/name_error_invalid_chars.<get-name_error_invalid_chars>|<get-name_error_invalid_chars>@io.github.valerioisufi.drawview.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.drawview.ui.generated.resources/notes_symbols // io.github.valerioisufi.drawview.ui.generated.resources/notes_symbols|@io.github.valerioisufi.drawview.ui.generated.resources.Res.font{}notes_symbols[0]
+    final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.font).<get-notes_symbols>(): org.jetbrains.compose.resources/FontResource // io.github.valerioisufi.drawview.ui.generated.resources/notes_symbols.<get-notes_symbols>|<get-notes_symbols>@io.github.valerioisufi.drawview.ui.generated.resources.Res.font(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/noto_sans_bold // io.github.valerioisufi.drawview.ui.generated.resources/noto_sans_bold|@io.github.valerioisufi.drawview.ui.generated.resources.Res.font{}noto_sans_bold[0]
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.font).<get-noto_sans_bold>(): org.jetbrains.compose.resources/FontResource // io.github.valerioisufi.drawview.ui.generated.resources/noto_sans_bold.<get-noto_sans_bold>|<get-noto_sans_bold>@io.github.valerioisufi.drawview.ui.generated.resources.Res.font(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/noto_sans_bold_italic // io.github.valerioisufi.drawview.ui.generated.resources/noto_sans_bold_italic|@io.github.valerioisufi.drawview.ui.generated.resources.Res.font{}noto_sans_bold_italic[0]

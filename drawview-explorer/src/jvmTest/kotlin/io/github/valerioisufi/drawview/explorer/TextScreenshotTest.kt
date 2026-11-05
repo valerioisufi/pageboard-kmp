@@ -365,6 +365,14 @@ class TextScreenshotTest {
         }
     }
 
+    /** The symbols from their font: in the line, in bold, in a table, an emoji asked for left alone. */
+    @Test
+    fun textSavedSymbols() = capture("text-saved-symbols", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "RAM → UART ↔ CPU, a ≤ b ≠ c ⇒ d ✔ ✓ ✗ ★\n**Bold → ↔ ✔** and *italic → ↔*\n\n| Mode | Alternation |\n| :--- | :--- |\n| `panic0` | `0101` ↔ `1010` |\n\nAn emoji asked for: ↔\uFE0F", drawnWidthMm = 150f)
+        save(viewModels)
+    }
+
     /** The styles of the numbered lists on the page: a numbered list in bullets, each style, a list from another number. */
     @Test
     fun textSavedNumberingStyles() = capture("text-saved-numbering", ReferenceWindow.DESKTOP, dark = false) { viewModels ->

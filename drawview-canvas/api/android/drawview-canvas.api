@@ -986,6 +986,7 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/TextFace :
 	public static final field MONO Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
 	public static final field MONO_BOLD Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
 	public static final field REGULAR Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field SYMBOLS Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
 	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;

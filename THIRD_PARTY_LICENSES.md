@@ -24,7 +24,7 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 | **iroh** (with **ring**, **tokio** and the other Rust crates of the iroh bridge) | n0, Inc. and the authors of each crate | MIT or Apache 2.0 (iroh); MIT, Apache 2.0, ISC, BSD, Zlib, Unicode 3.0, CDLA-Permissive 2.0 (each crate: [`native/iroh-bridge/THIRD_PARTY_NOTICES.md`](native/iroh-bridge/THIRD_PARTY_NOTICES.md), in the artifacts of `drawview-sync-iroh` and `drawview-native-iroh`) | Connections between the devices over the internet, direct or through a relay (Desktop JVM, Android and iOS) |
 | **Plus Jakarta Sans Font** | The Plus Jakarta Sans Project Authors (Tokotype) | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
 | **Lucide** | Lucide Contributors, Cole Bemis (Feather) | [ISC License](#isc-license-lucide) | Icons of the interface |
-| **Noto Sans, Noto Sans Mono** | The Noto Project Authors | [SIL Open Font License 1.1](#sil-open-font-license-11) | Text of the notes (editor and exported PDFs) |
+| **Noto Sans, Noto Sans Mono, Noto Sans Math, Noto Sans Symbols 2** | The Noto Project Authors | [SIL Open Font License 1.1](#sil-open-font-license-11) | Text of the notes (editor and exported PDFs) |
 | **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
 | **Doublestroke Fonts**| Olaf Kummer | [Doublestroke License](#doublestroke-font-license) | Blackboard bold font for LaTeX formula rendering |
@@ -69,7 +69,7 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 > Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
 > The icons of the interface are generated from Lucide (`DrawViewIcons`).
 
-### Noto Sans and Noto Sans Mono
+### Noto Sans, Noto Sans Mono, Noto Sans Math and Noto Sans Symbols 2
 > Copyright 2018 The Noto Project Authors (https://github.com/googlei18n/noto-fonts)
 > Licensed under the SIL Open Font License, Version 1.1. Subsets of them are embedded in the exported PDFs.
 

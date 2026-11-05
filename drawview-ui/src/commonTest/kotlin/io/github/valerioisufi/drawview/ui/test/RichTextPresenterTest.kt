@@ -46,6 +46,22 @@ class RichTextPresenterTest {
     private val PresentedText<*>.shown get() = text.text
 
     @Test
+    fun theSymbolsAreInTheirFont() {
+        val symbols = FontFamily.Cursive
+        fun inFont(text: String): String {
+            val presented = RichTextPresenter.present(
+                text,
+                Presentation<String>(fontSizePx = 20f, color = Color.Black, struts = approximated, lineWidthPx = 300f, symbols = symbols) { _, _ -> null }
+            )
+            return presented.text.spanStyles.filter { it.item.fontFamily == symbols }.joinToString("") { presented.text.text.substring(it.start, it.end) }
+        }
+        assertEquals("→↔✔", inFont("a → b ↔ c ✔"))
+        assertEquals("", inFont("`a → b` e\n```\n→\n```"), "the code has its own font")
+        assertEquals("→", inFont("**a →** ↔\uFE0F"), "an emoji asked for stays one")
+        assertEquals("", inFont("plain text – dash × é"), "what the text font has")
+    }
+
+    @Test
     fun theDelimitersAndTheEscapesAreHidden() {
         val presented = present("**bold *both* too** costs \\\$5 and \\*not italic\\*")
         assertEquals("bold both too costs \$5 and *not italic*", presented.shown)

@@ -160,14 +160,15 @@ public class TextWord(
  */
 public class TextFormula(public val latex: String, public val color: Int, public val left: Float, public val top: Float, public val width: Float, public val height: Float)
 
-/** A face of the fonts of the notes: the text and its code (monospace), regular or bold, upright or italic. */
+/** A face of the fonts of the notes: the text and its code (monospace), regular or bold, upright or italic, and its symbols. */
 public enum class TextFace {
     REGULAR,
     ITALIC,
     BOLD,
     BOLD_ITALIC,
     MONO,
-    MONO_BOLD
+    MONO_BOLD,
+    SYMBOLS
 }
 
 /**

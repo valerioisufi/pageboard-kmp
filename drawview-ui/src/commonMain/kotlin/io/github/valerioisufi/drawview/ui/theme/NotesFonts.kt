@@ -8,6 +8,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.ui.generated.resources.notes_symbols
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_bold
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_bold_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_italic
@@ -27,13 +28,16 @@ import org.jetbrains.compose.resources.Font
  * @param strutAbove a font whose lines have all their room above the baseline, and [strutBelow]
  *   all below: the room of the formulas and of the blocks of code in the lines, exact with them
  *   (approximated with [text] without them).
+ * @param symbols the arrows and the other symbols [text] does not have (see `TextSymbols`); `null`:
+ *   from the fonts of each system.
  */
 @Immutable
 public class NotesFonts(
     public val text: FontFamily,
     public val monospace: FontFamily,
     public val strutAbove: FontFamily? = null,
-    public val strutBelow: FontFamily? = null
+    public val strutBelow: FontFamily? = null,
+    public val symbols: FontFamily? = null
 ) {
     public companion object {
         /** The fonts of the system: every platform draws the texts with its own. */
@@ -52,8 +56,9 @@ public fun rememberNotesFonts(): NotesFonts {
     val monoBold = Font(Res.font.noto_sans_mono_bold, FontWeight.Bold)
     val above = Font(Res.font.strut_above)
     val below = Font(Res.font.strut_below)
-    return remember(regular, italic, bold, boldItalic, mono, monoBold, above, below) {
-        NotesFonts(FontFamily(regular, italic, bold, boldItalic), FontFamily(mono, monoBold), FontFamily(above), FontFamily(below))
+    val symbols = Font(Res.font.notes_symbols)
+    return remember(regular, italic, bold, boldItalic, mono, monoBold, above, below, symbols) {
+        NotesFonts(FontFamily(regular, italic, bold, boldItalic), FontFamily(mono, monoBold), FontFamily(above), FontFamily(below), FontFamily(symbols))
     }
 }
 
@@ -68,6 +73,7 @@ public object NotesFontFiles {
             TextFace.BOLD_ITALIC -> "font/noto_sans_bold_italic.ttf"
             TextFace.MONO -> "font/noto_sans_mono_regular.ttf"
             TextFace.MONO_BOLD -> "font/noto_sans_mono_bold.ttf"
+            TextFace.SYMBOLS -> "font/notes_symbols.ttf"
         }
     )
 }

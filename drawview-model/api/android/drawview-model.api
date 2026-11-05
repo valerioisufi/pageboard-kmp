@@ -3340,6 +3340,12 @@ public final class io/github/valerioisufi/drawview/model/text/TextSizes {
 	public final fun smaller (F)F
 }
 
+public final class io/github/valerioisufi/drawview/model/text/TextSymbols {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextSymbols;
+	public final fun getRANGES ()Ljava/util/List;
+	public final fun isAt (Ljava/lang/CharSequence;I)Z
+}
+
 public final class io/github/valerioisufi/drawview/model/text/code/BuiltInCodeHighlighter : io/github/valerioisufi/drawview/model/text/code/CodeHighlighter {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/code/BuiltInCodeHighlighter;
 	public final fun getLanguages ()Ljava/util/Set;

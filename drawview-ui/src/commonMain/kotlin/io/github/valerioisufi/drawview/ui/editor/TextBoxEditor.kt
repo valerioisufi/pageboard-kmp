@@ -157,6 +157,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             density = unscaledDensity.density,
             lineWidthPx = widthPx.toFloat(),
             monospace = notesFonts.monospace,
+            symbols = notesFonts.symbols,
             highlighter = highlighter,
             layoutCodeBlock = { source ->
                 codeLayouts.getOrPut(CodeKey(source, fontSizePx, editor.color, paper)) {
