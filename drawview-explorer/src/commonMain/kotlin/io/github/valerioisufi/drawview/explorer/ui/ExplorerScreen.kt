@@ -44,6 +44,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
@@ -194,18 +199,27 @@ internal fun ExplorerScreen(
         viewModel.trashNoticeShown(notice)
     }
 
-    ExplorerBackHandler(
-        enabled = fabMenuExpanded || viewModel.canNavigateBack,
-        onBack = {
-            if (fabMenuExpanded) fabMenuExpanded = false else viewModel.navigateBack()
-        }
-    )
+    val backEnabled = fabMenuExpanded || viewModel.canNavigateBack
+    val onBack = {
+        if (fabMenuExpanded) fabMenuExpanded = false else viewModel.navigateBack()
+    }
+    ExplorerBackHandler(enabled = backEnabled, onBack = onBack)
 
     CompositionLocalProvider(LocalLibraryDrag provides drag, LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
         BoxWithConstraints(
             modifier = modifier
                 .background(MaterialTheme.colorScheme.background)
                 .then(if (onFilesDropped != null) Modifier.fileDropTarget(onFilesDropped) else Modifier)
+                // The Back key of Android moves the focus out one level at a time before it is a
+                // back: with the focus in the search it would take three presses to leave it
+                .onPreviewKeyEvent { event ->
+                    if (event.key != Key.Back || !backEnabled) return@onPreviewKeyEvent false
+                    if (event.type == KeyEventType.KeyUp) {
+                        runCatching { contentFocus.requestFocus() }
+                        onBack()
+                    }
+                    true
+                }
                 .focusRequester(contentFocus)
                 .focusable()
         ) {

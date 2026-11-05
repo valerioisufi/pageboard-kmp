@@ -74,6 +74,7 @@ clears the query (Seen). They clear it behind the port, though (see S1).
 | F2 | One scroll position for everything: new results or a folder open at the position of what was shown before. | Read |
 | F3 | Back from the editor the position is lost: `gridState` lives inside `if (session == null)`, and so is the place in the results. | Read |
 | F4 | The focus stays in the field after opening a folder (the keyboard stays up on a tablet). The Search key of the keyboard does nothing (`KeyboardActions()`). | Read |
+| F5 | The Back key of Android moves the focus out one level at a time before it is a back: leaving a search took three presses on the tablet, one more because of the focus target of F4. | Seen on the tablet |
 
 ### The search of the contents
 
@@ -166,6 +167,7 @@ clears the query (Seen). They clear it behind the port, though (see S1).
 * `gridState` moves up to `DocumentLibrary`, outside the editor branch (F3).
 * `navigate` clears the focus through the screen, and the Search key hides the keyboard, inside
   `SearchField` with no change to its signature (F4).
+* The screen takes the Back key before the focus does, while back has something to do (F5).
 
 ### The search of the contents
 

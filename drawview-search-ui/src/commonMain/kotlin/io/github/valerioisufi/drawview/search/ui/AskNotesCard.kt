@@ -176,7 +176,7 @@ public fun AskNotesCard(
                 }
             }
 
-            if (scope != null && answer == null && !isAnswering) {
+            if (scope != null && (hasLocalAnswerModel || canAskOnline) && answer == null && !isAnswering) {
                 Text(
                     text = stringResource(Res.string.search_ask_scope),
                     style = MaterialTheme.typography.bodySmall,

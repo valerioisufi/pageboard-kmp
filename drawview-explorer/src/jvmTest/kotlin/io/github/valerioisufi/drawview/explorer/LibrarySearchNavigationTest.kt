@@ -230,6 +230,24 @@ class LibrarySearchNavigationTest {
     }
 
     @Test
+    fun oneBackLeavesTheSearchWithTheFocusInIt() = library { viewModel ->
+        viewModel.showFolder(viewModel.rootFolders.first { it.name == "Physics" }.id)
+        waitForIdle()
+        search("mot")
+        onNode(hasSetTextAction() and isFocused()).assertExists()
+
+        onRoot().performKeyInput { pressKey(Key.Back) }
+        waitForIdle()
+        assertEquals("", viewModel.searchQuery)
+        assertEquals("Physics", viewModel.currentFolder?.name)
+        assertEquals(0, onAllNodes(hasSetTextAction() and isFocused()).fetchSemanticsNodes().size)
+
+        onRoot().performKeyInput { pressKey(Key.Back) }
+        waitForIdle()
+        assertNull(viewModel.currentFolder, "the next one leaves the folder")
+    }
+
+    @Test
     fun goingSomewhereTakesTheFocusFromTheSearch() = library { viewModel ->
         search("phys")
         onNode(hasSetTextAction() and isFocused()).assertExists()
