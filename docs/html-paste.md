@@ -105,7 +105,7 @@ schema, to a stored format or to the sync protocol.
 | 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
 | 3 | `htmlIn` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text, "Paste as plain text" on the canvas | done |
 | 4 | The field (`FormattedPasteClipboard`, `TextEditorManager.formattedPaste`, `PastedText.placed`), "Paste as plain text" in the field | done |
-| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari | planned |
+| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari. On Windows: the checks, Android builds, consumer checks. Left to the user: real copies from a browser and Word on each device, the iOS sources and the klib dump of `drawview-canvas` on the Mac | in progress |
 
 ## Decisions
 
