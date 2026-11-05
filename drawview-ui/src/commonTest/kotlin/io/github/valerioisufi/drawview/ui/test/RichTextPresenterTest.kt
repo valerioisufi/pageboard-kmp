@@ -270,12 +270,22 @@ class RichTextPresenterTest {
     }
 
     @Test
-    fun theDelimitersNearTheCaretAreFadedAtTheSizeOfTheirText() {
-        val presented = present("a **b** c", reveal = TextRange(4))
-        assertEquals("a **b** c", presented.shown)
-        val delimiter = presented.text.spanStyles.filter { it.start <= 2 && it.end >= 4 }.map { it.item }
-        assertTrue(delimiter.any { it.color.alpha < 0.5f }, "faded")
-        assertTrue(delimiter.none { it.fontSize.isSp }, "no size of their own")
+    fun theCaretRevealsNoDelimiter() {
+        // The layout of a text does not depend on the caret (docs/text-fidelity.md)
+        for (text in listOf("a **b** c", "a *b* c", "a ~~b~~ c", "a `b` c", "a \\* c", "## Title\nnext")) {
+            val still = present(text)
+            for (caret in 0..text.length) assertEquals(still.shown, present(text, reveal = TextRange(caret)).shown, "\"$text\" with the caret at $caret")
+        }
+    }
+
+    @Test
+    fun theCaretStandsNeitherInAMarkerNorInAnEscape() {
+        val heading = present("## Title")
+        assertTrue(!heading.mapping.caretMayStand(0) && !heading.mapping.caretMayStand(2) && heading.mapping.caretMayStand(3))
+        val item = present("- item")
+        assertTrue(!item.mapping.caretMayStand(1) && item.mapping.caretMayStand(2))
+        val escape = present("a \\* b")
+        assertTrue(escape.mapping.caretMayStand(2) && !escape.mapping.caretMayStand(3))
     }
 
     @Test

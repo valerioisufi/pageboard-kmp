@@ -216,11 +216,27 @@ internal class PresentedText<T>(
 /**
  * The offsets of a source and of the text presenting it, both ways: where each offset of the
  * source is shown ([toShown]: a hidden character at the next one shown), and which offset of the
- * source each offset shown stands for ([toSource]: a character added at the offset it goes with).
+ * source each offset shown stands for ([toSource]: a character added at the offset it goes with);
+ * the offsets where the caret may not stand ([noCaret]: in a marker of a line, a heading or an
+ * escape, not shown) and those inside an object (a formula, a block of code, a table: [inObject]).
  */
-internal class SourceMapping(private val toShown: IntArray, private val toSource: IntArray) : OffsetMapping {
+internal class SourceMapping(
+    private val toShown: IntArray,
+    private val toSource: IntArray,
+    private val noCaret: BooleanArray = BooleanArray(toShown.size),
+    private val inObject: BooleanArray = BooleanArray(toShown.size)
+) : OffsetMapping {
     override fun originalToTransformed(offset: Int): Int = toShown[offset.coerceIn(0, toShown.lastIndex)]
     override fun transformedToOriginal(offset: Int): Int = toSource[offset.coerceIn(0, toSource.lastIndex)]
+
+    /** The length of the source. */
+    val sourceLength: Int get() = toShown.lastIndex
+
+    /** Whether the caret may stand at [offset] of the source: not in a marker that is not shown. */
+    fun caretMayStand(offset: Int): Boolean = !noCaret[offset.coerceIn(0, noCaret.lastIndex)]
+
+    /** Whether [offset] of the source is inside an object, which the caret moves in by its own rules. */
+    fun insideObject(offset: Int): Boolean = inObject[offset.coerceIn(0, inObject.lastIndex)]
 }
 
 /**
@@ -232,8 +248,10 @@ internal class SourceMapping(private val toShown: IntArray, private val toSource
  * * Every line of the source is a paragraph, its line break shown as a zero-width space ending it
  *   (Compose adds an empty line around the line break of a paragraph); the last line break of a
  *   text stays one, for the empty line after it.
- * * The delimiters are hidden; shown faded (their color only) when the caret touches their span,
- *   the `#` of a heading only when the caret is on them or right after them.
+ * * The delimiters are hidden, with the caret too: the emphasis, the code in the line, the escapes,
+ *   the `#` of a heading; the caret never stands in a marker or between an escape and what it
+ *   escapes ([SourceMapping.caretMayStand]). The address of a link is shown, faded (its color
+ *   only), when the caret touches the link.
  * * A formula is an object ([Struts]) drawn over its characters, or its source when the caret
  *   touches it or it cannot be rendered (in red then); alone on its lines, it takes its line. The
  *   source of a formula the caret touches keeps the room of the formula: its line does not move.
@@ -255,15 +273,15 @@ internal object RichTextPresenter {
         val selMin = reveal?.let { min(it.start, it.end) }
         val selMax = reveal?.let { max(it.start, it.end) }
         fun touched(span: Span) = selMin != null && selMax != null && selMin <= span.end && selMax >= span.start
-        // The delimiters the caret reveals: those of the span it touches, of a heading only near its #
-        fun revealed(span: Span) = if (span.kind == Kind.HEADING) {
-            selMin != null && selMax != null && selMin <= span.contentStart && selMax >= span.start
-        } else {
-            touched(span)
-        }
+        // The delimiters the caret reveals: only the address of a link it touches (see
+        // docs/text-fidelity.md); the emphasis, the code in the line, the escapes and the headings
+        // never, so that their lines do not move with the caret
+        fun revealed(span: Span) = span.kind == Kind.LINK && touched(span)
 
         // What each part of the source becomes
         val hidden = BooleanArray(text.length)
+        // The offsets where the caret may not stand: in a marker that is not shown
+        val noCaret = BooleanArray(text.length + 1)
         val formulaAt = HashMap<Int, Pair<Span, MarkdownTextUtil.RenderedFormula<T>>>()
         val blockAt = HashMap<Int, Pair<Span, CodeBlockLayout>>()
         val blockLeft = HashMap<Int, Float>()
@@ -336,12 +354,21 @@ internal object RichTextPresenter {
                         while (i < text.length && text[i] != '\n' && text[i].isWhitespace()) hidden[i++] = true
                     }
                 }
-                else -> if (!revealed(span)) for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                else -> if (!revealed(span)) {
+                    for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                    // The caret stands after the marker of a heading, never in it, and never
+                    // between an escape and the character it escapes
+                    when (span.kind) {
+                        Kind.HEADING -> for (i in span.start until span.contentStart) noCaret[i] = true
+                        Kind.ESCAPE -> for (delimiter in span.delimiters) for (i in delimiter) if (i + 1 <= text.length) noCaret[i + 1] = true
+                        else -> Unit
+                    }
+                }
             }
         }
         val writtenSpans = written.map { it.first }.toHashSet()
 
-        val shown = Shown(text.length)
+        val shown = Shown(text.length, noCaret)
         val formulas = mutableListOf<PresentedFormula<T>>()
         val codeBlocks = mutableListOf<PresentedCodeBlock>()
         val tables = mutableListOf<PresentedTable<T>>()
@@ -380,7 +407,7 @@ internal object RichTextPresenter {
                 }
                 // The spaces of its list item taken off, the line at the code of the block, wrapped under its indent
                 var k = i
-                while (k < i + span.level && k < text.length && text[k] == ' ') shown.hide(k++)
+                while (k < i + span.level && k < text.length && text[k] == ' ') shown.hideMarker(k++)
                 column = 0
                 var leading = 0
                 var m = k
@@ -397,7 +424,7 @@ internal object RichTextPresenter {
                 lineStart = false
                 val marker = quoteLines[i]
                 if (marker != null) {
-                    for (k in i until i + marker) shown.hide(k)
+                    for (k in i until i + marker) shown.hideMarker(k)
                     i += marker
                     val left = (quoteLeft / p.density).sp
                     shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
@@ -414,7 +441,7 @@ internal object RichTextPresenter {
                     labels += label until label + item.label.length to item
                     val gap = shown.insert(OBJECT_CHARS, item.span.contentStart)
                     rooms += Room(gap, item.textLeftPx - item.labelLeftPx - item.labelWidthPx, 0f, 0f)
-                    for (k in i until item.span.contentStart) shown.hide(k)
+                    for (k in i until item.span.contentStart) shown.hideMarker(k)
                     shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = 0.sp, restLine = (item.textLeftPx / p.density).sp))
                     i = item.span.contentStart
                     continue
@@ -423,7 +450,7 @@ internal object RichTextPresenter {
                 if (continued != null) {
                     // A line break in the item: the line at its text, without a marker
                     var k = i
-                    while (k < text.length && (text[k] == ' ' || text[k] == '\t')) shown.hide(k++)
+                    while (k < text.length && (text[k] == ' ' || text[k] == '\t')) shown.hideMarker(k++)
                     val left = (continued.textLeftPx / p.density).sp
                     shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
                     i = k
@@ -533,7 +560,8 @@ internal object RichTextPresenter {
             open += span
             if (span.kind == Kind.LIST_ITEM || span.kind == Kind.QUOTE || span.start in blockAt && span.kind == Kind.CODE_BLOCK) continue
             if (span.kind == Kind.FORMULA && (span.start in formulaAt || span in errorSpans)) continue
-            if (revealed(span)) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
+            // Faded where they are shown: the address of a link, the fences of a block whose source is shown
+            if (revealed(span) || span.kind == Kind.CODE_BLOCK && span in sources && span !in writtenSpans) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
             val content = when (span.kind) {
                 Kind.FORMULA -> SpanStyle(fontStyle = FontStyle.Italic, fontFamily = FontFamily.Serif, color = FORMULA_COLOR)
                 else -> MarkdownTextUtil.contentStyle(span, p.fontSizePx / p.density, p.monospace)
@@ -593,10 +621,11 @@ internal object RichTextPresenter {
      * The text being shown and the offsets of its source: each character of the source kept,
      * hidden, or replaced by an object; characters inserted; its paragraphs.
      */
-    private class Shown(private val sourceLength: Int) {
+    private class Shown(private val sourceLength: Int, private val noCaret: BooleanArray) {
         val builder = AnnotatedString.Builder()
         private val toShown = IntArray(sourceLength + 1)
         private val toSource = ArrayList<Int>()
+        private val inObject = BooleanArray(sourceLength + 1)
 
         /** The style of the paragraph being shown (`null`: the default one). */
         var paragraph: ParagraphStyle? = null
@@ -614,6 +643,12 @@ internal object RichTextPresenter {
             toShown[i] = builder.length
         }
 
+        /** The character [i] of a marker of a line (a list item, a quote), not shown: the caret is never before it. */
+        fun hideMarker(i: Int) {
+            hide(i)
+            noCaret[i] = true
+        }
+
         /** [s], standing for the offset [at] of the source: where it starts. */
         fun insert(s: String, at: Int): Int {
             val offset = builder.length
@@ -626,6 +661,7 @@ internal object RichTextPresenter {
         fun obj(start: Int, end: Int): Int {
             val offset = builder.length
             for (k in start until end) toShown[k] = offset
+            for (k in start + 1 until end) inObject[k] = true
             toSource += start
             toSource += end
             toSource += end
@@ -647,7 +683,7 @@ internal object RichTextPresenter {
             if (builder.length > paragraphStart) endParagraph()
             toShown[sourceLength] = builder.length
             toSource += sourceLength
-            return SourceMapping(toShown, toSource.toIntArray())
+            return SourceMapping(toShown, toSource.toIntArray(), noCaret, inObject)
         }
     }
 

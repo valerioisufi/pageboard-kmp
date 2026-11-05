@@ -207,7 +207,18 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val tableCaret = editor.tableCaret
     val accent = MaterialTheme.colorScheme.primary
     val currentShown by rememberUpdatedState(shown)
+    // The source the shown text presents
+    val shownSource by rememberUpdatedState(value.text)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    /**
+     * Gives the editor what the user did: a move of the caret off what is not shown (see
+     * [CaretStops]), as the text is shown now.
+     */
+    fun change(newValue: TextFieldValue, smartNewline: Boolean = true) {
+        val current = editor.value
+        val stopped = if (current.text == shownSource) CaretStops.moved(current, newValue, currentShown.mapping) else null
+        editor.updateValue(stopped ?: newValue, smartNewline)
+    }
     /** The offset of the source under a point of the layout of the field, as it is shown now. */
     fun offsetAt(point: Offset): Int? {
         val current = layout ?: return null
@@ -258,9 +269,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 }
                 if (lastKeyWasShiftEnter) {
                     lastKeyWasShiftEnter = false
-                    editor.updateValue(newValue, smartNewline = false)
+                    change(newValue, smartNewline = false)
                 } else {
-                    editor.updateValue(newValue)
+                    change(newValue)
                 }
             },
             modifier = Modifier
@@ -287,7 +298,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     touch,
                     offsetAt = ::offsetAt,
                     value = { editor.value },
-                    onValue = { editor.updateValue(it) },
+                    onValue = { change(it) },
                     onTap = {
                         focusRequester.requestFocus()
                         keyboardController?.show()
@@ -306,7 +317,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         down.consume()
                         val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
                         up.consume()
-                        editor.updateValue(editor.value.copy(selection = TextRange(offset)))
+                        change(editor.value.copy(selection = TextRange(offset)))
                     }
                 }
                 .onPreviewKeyEvent { event ->
@@ -474,7 +485,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     val point = Offset(local.x * LAYOUT_SCALE, local.y * LAYOUT_SCALE)
                     val offset = codeOffsetAt(result, currentShown, point)
                         ?: currentShown.mapping.transformedToOriginal(result.getOffsetForPosition(point))
-                    editor.updateValue(editor.value.copy(selection = TextRange(offset)))
+                    change(editor.value.copy(selection = TextRange(offset)))
                 }
             }
         )
@@ -527,7 +538,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             toScreen = ::toScreen,
             toLayout = ::toLayout,
             offsetAt = ::offsetAt,
-            onValue = { editor.updateValue(it) },
+            onValue = { change(it) },
             color = LocalTextSelectionColors.current.handleColor
         )
 

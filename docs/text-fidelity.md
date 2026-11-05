@@ -210,15 +210,18 @@ presented text (Information Expert).
   too) landing on an offset that is not a stop goes on in its direction to the next stop. A caret
   put by a tap, among the offsets shown at the same place, takes the one inside the format on its
   left (typing goes on in the format on its left, as in the word processors), after the marker of
-  a list item, a quote or a heading. The source of a formula is made of stops (decision 3).
-  `TextEditorManager.updateValue` asks them through a port the field gives it
-  (`TextEditorManager.caretStops`), which replaces `keepCaretOutOfMarkers`.
-* Deletion of what is seen: `InlineFormatting.delete` (`drawview-canvas`) takes the characters
+  a list item, a quote or a heading. The source of a formula is made of stops (decision 3). The
+  field applies them to what it gives the editor (its keys, a mouse, the touches, the handles),
+  where the presented text is; `keepCaretOutOfMarkers` stays for the moves the editor makes itself
+  (changed in phase 4: proposed first as a port of `TextEditorManager`, which would have added to
+  the public API what only the field needs).
+* Deletion of what is seen: `SeenDeletion` (`drawview-canvas`, internal) takes the characters
   shown in a range and keeps the delimiters of a span unless its whole content goes, with it then.
   Backspace and Delete next to a hidden delimiter take the shown character beyond it. Applied by
   `updateValue` to Backspace, Delete, a cut, and a selection typed over. The markers keep their
-  rules (`handleConcealedDeletion`). Backspace right after a formula, or at the start of the code
-  of a block, goes into it: the strip shows its end.
+  rules (`handleConcealedDeletion`, which makes a heading text again with Backspace at its start).
+  Backspace right after a formula, or at the start of the code of a block, goes into it: the strip
+  shows its end.
 * `TextNavigation` (`drawview-ui`) moves the caret ↑ and ↓ by the layouts: the lines of the text,
   of the blocks of code and the rows of the tables in their order, keeping its column as Compose
   does; at the first and the last line of a box of a chain, into the box before or after as now.
@@ -289,8 +292,8 @@ rule for a focus lost.
 | The offset under a point | `TextHitTest` (`drawview-ui`) | Information Expert |
 | The touches on the text, the handles, the toolbar of the platform | `TouchSelection` (`drawview-ui`) | Controller, Indirection |
 | The presentation independent of the caret | `RichTextPresenter` (`drawview-ui`) | Information Expert |
-| Where the caret can stand | `CaretStops` (`drawview-ui`), through `TextEditorManager.caretStops` | Information Expert, Indirection |
-| Deleting what is seen | `InlineFormatting.delete` (`drawview-canvas`) | Information Expert |
+| Where the caret can stand | `CaretStops` (`drawview-ui`), applied by the field | Information Expert |
+| Deleting what is seen | `SeenDeletion` (`drawview-canvas`) | Information Expert, Pure Fabrication |
 | ↑ and ↓ through the lines and the objects | `TextNavigation` (`drawview-ui`) | Information Expert |
 | The hidden source of what the caret is in | `SourceStrip` (`drawview-ui`) | High Cohesion, Pure Fabrication |
 | The caret and the selection in a block of code | `CodeBlockLayout` (`drawview-ui`) | Information Expert, Polymorphism |
@@ -302,9 +305,8 @@ rule for a focus lost.
 * **Stored data and the protocol**: a text keeps its source; no migration, no format re-recorded.
 * **The page**: the tiles, the export, the thumbnails and `MarkdownText` draw as today; only the
   editor changes. `TextParityTest` stays the reference and is extended through the field.
-* **The public API**: `drawview-canvas` changes (`TextEditorManager.caretStops`,
-  `InlineFormatting.delete`, `keepCaretOutOfMarkers` removed), recorded in the commits;
-  `drawview-ui` keeps its public API (the new classes are internal).
+* **The public API**: unchanged so far (the new classes are internal); a public change, if a later
+  phase needs one, is recorded in its commit.
 
 ## Phases
 
@@ -313,7 +315,7 @@ rule for a focus lost.
 | 1 | Dead keys: the selection kept over a composition, surrounded at its commit; the controls of the bars not taking the focus; tests of the editor (a dead key over a selection, `è` composed over one, its undo) and of the bar pressed with a mouse (code, bold, formula) | Done, not tried on macOS |
 | 2 | One layout: the field at 20 px/mm in `PageScale`, the transformation keyed on the presented text, `TextCaret`; tests: the lines written and saved within half a pixel at 48%, 73%, 100%, 160% and 270%, the formulas and the headings in place after a zoom and after a new size, the caret 2 dp at three zooms, `TextParityTest` through the field at several zooms; on the tablet: the text sharp at 30% and 400%, and whether Compose's handles follow the layer | Done, not tried on the tablet |
 | 3 | The touches: `TouchSelection`, the handles and the toolbar on touch screens; tests with injected touches (a tap, a long press, the handles where the text is at two zooms, a handle dragged, a turned text); on the tablet with the pen and a finger | Done, not tried on the tablet |
-| 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings, escapes and links, `CaretStops`, `InlineFormatting.delete`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, `TextParityTest` with the caret at every offset (no line moves) | |
+| 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | |
 | 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | |
@@ -383,6 +385,30 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   ends; the end handle dragged two words further; a tap on a text turned by 20°. The gestures over
   the field (`TextBoxGesturesOverFieldTest`) are unchanged. A pen cannot be injected by the tests of
   the desktop: its drag is to be tried on the tablet.
+
+### Phase 4 results
+
+* `RichTextPresenter` reveals no delimiter of the emphasis, of the code in the line, of an escape,
+  nor the `#` of a heading: the text shown is the same with the caret at every offset. The address of
+  a link is still shown with the caret in the link, and the formulas and the blocks of code keep
+  their source under the caret, until phases 5 and 6.
+* `SourceMapping` tells where the caret may not stand (the markers of the list items, the quotes and
+  the headings, between an escape and what it escapes) and which offsets are inside an object.
+* `CaretStops` (`drawview-ui`), applied by the field to its keys, a mouse, the touches and the
+  handles: a move shown at the same place goes on in its direction; a caret takes the offset inside
+  the format on its left, a selection the offsets of what it shows (a word selected holds no
+  delimiter: the bar takes the format off it). Inside an object the offsets are left as they are.
+* `SeenDeletion` (`drawview-canvas`): Backspace after `**bold**` takes the `d`; Delete before it the
+  `b`; a selection across the end of a format keeps the delimiters of the part left; the last
+  character of a span, of an escape, of nested spans, takes their delimiters with it.
+  `handleConcealedDeletion` makes a heading text again with Backspace at the start of its text.
+* Tests: `CaretStopsTest` (the arrows across the delimiters, the caret put at the edges, a word and a
+  selection by Shift, the markers, an escape, the objects), `SeenDeletionTest`,
+  `RichTextPresenterTest` (nothing revealed at any offset, the places of the caret),
+  `TextParityTest` (a heading never shows its `#`), and in the editor with its keys
+  (`TextBoxNotationTest`): across bold, code, strikethrough, italic and an escape, → and ← take one
+  press per character seen, the text shown and the height of the field the same at every press;
+  Backspace after a bold takes its last letter.
 
 ## Decisions
 

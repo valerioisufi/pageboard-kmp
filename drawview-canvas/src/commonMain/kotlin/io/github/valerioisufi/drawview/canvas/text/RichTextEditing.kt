@@ -580,7 +580,8 @@ public object RichTextEditing {
      * of an item deletes a space of its hidden indent, and joins the line to the one before instead;
      * Backspace at the start of the code of a block
      * deletes the line break of its opening fence (hidden while the code is written), and moves the
-     * caret onto the fence instead, which shows it. `null` when [newValue] is not such a deletion.
+     * caret onto the fence instead, which shows it; at the start of the text of a heading, whose `#`
+     * are not shown, it makes the line text again. `null` when [newValue] is not such a deletion.
      */
     public fun handleConcealedDeletion(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
         val old = oldValue.text
@@ -589,6 +590,9 @@ public object RichTextEditing {
         if (caret == 0 || newValue.text != old.removeRange(caret - 1, caret)) return null
         val spans = RichTextParser.parse(old)
         if (spans.any { it.kind == RichTextParser.Kind.CODE_BLOCK && it.contentStart == caret && it.start < caret }) return TextFieldValue(old, TextRange(caret - 1))
+        spans.firstOrNull { it.kind == RichTextParser.Kind.HEADING && it.contentStart == caret && it.start < caret }?.let { heading ->
+            return TextFieldValue(old.removeRange(heading.start, heading.contentStart), TextRange(heading.start))
+        }
         ListNumbering.continuationIndentAt(old, caret)?.let { indent ->
             // The line break and the indent of a line break in an item, hidden: the line joined back
             if (caret == indent.last) return TextFieldValue(old.removeRange(indent.first - 1, caret), TextRange(indent.first - 1))

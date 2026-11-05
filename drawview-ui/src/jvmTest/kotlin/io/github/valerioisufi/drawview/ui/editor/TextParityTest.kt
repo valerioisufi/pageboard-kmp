@@ -262,11 +262,12 @@ class TextParityTest {
     }
 
     @Test
-    fun aHeadingShowsItsHashesOnlyNearThem() {
+    fun aHeadingNeverShowsItsHashes() {
         val source = "## Title\nnext"
         val text = text(source, TextAlignment.START)
-        assertEquals("Title", field(text, caret = source.indexOf("tle")).second.text.text.substringBefore('\u200B'))
-        assertEquals("## Title", field(text, caret = 2).second.text.text.substringBefore('\u200B'))
+        for (caret in listOf(0, 2, source.indexOf("tle"))) {
+            assertEquals("Title", field(text, caret = caret).second.text.text.substringBefore('\u200B'), "the caret at $caret")
+        }
         assertNoVerticalMove(source, caret = 2, from = 0)
     }
 

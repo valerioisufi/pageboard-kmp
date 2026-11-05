@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.canvas.geometry.toModel
 import io.github.valerioisufi.drawview.canvas.text.InlineFormatting
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
+import io.github.valerioisufi.drawview.canvas.text.SeenDeletion
 import io.github.valerioisufi.drawview.canvas.text.SelectionInput
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -594,6 +595,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
                 ?: RichTextEditing.handleSmartNewline(value, newValue)
                 ?: RichTextEditing.listFromTypedMarker(value, newValue)?.also { typedMarker = newValue to it }
                 ?: RichTextEditing.handleConcealedDeletion(value, newValue)
+                ?: SeenDeletion.of(value, newValue)
                 ?: newValue
             textChanged -> newValue
             else -> RichTextEditing.keepCaretOutOfMarkers(value, newValue) ?: newValue
