@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.search
 
+import io.github.valerioisufi.drawview.model.text.BlockQuote
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.TableShape
@@ -31,6 +32,15 @@ public fun cleanMarkdownForSearch(text: String): String {
             }
             Kind.LIST_ITEM -> for (i in span.start until span.contentStart) {
                 if (normalized[i] != '\n') hidden[i] = true
+            }
+            Kind.QUOTE -> {
+                var lineStart = span.start
+                while (lineStart <= span.end) {
+                    for (i in lineStart until lineStart + BlockQuote.markerLength(normalized, lineStart)) hidden[i] = true
+                    val next = normalized.indexOf('\n', lineStart)
+                    if (next < 0) break
+                    lineStart = next + 1
+                }
             }
             else -> for (range in span.delimiters) {
                 for (i in range) {

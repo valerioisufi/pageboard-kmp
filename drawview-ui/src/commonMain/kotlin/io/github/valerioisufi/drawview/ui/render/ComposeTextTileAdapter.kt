@@ -45,6 +45,8 @@ import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.drawview.ui.editor.QUOTE_BAR_ALPHA
+import io.github.valerioisufi.drawview.ui.editor.quoteBars
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.editor.PresentedCodeBlock
 import io.github.valerioisufi.drawview.ui.editor.PresentedFormula
@@ -118,7 +120,8 @@ public class ComposeTextTileAdapter(
 
     /**
      * A text laid out: its [layout], its [formulas] and [codeBlocks] over their characters, the
-     * backgrounds of its code in the line ([chips], in [chipColor]), the size each image of its
+     * backgrounds of its code in the line ([chips], in [chipColor]), the bars of its block quotes
+     * ([bars], in [barColor]), the size each image of its
      * formulas was rendered at ([formulaSizes], to render them again at the size they are drawn).
      */
     private class PreparedText(
@@ -128,7 +131,9 @@ public class ComposeTextTileAdapter(
         val chips: List<CodeChip>,
         val chipColor: Color,
         val formulaSizes: Map<ImageBitmap, Float>,
-        val tables: List<PresentedTable<ImageBitmap>>
+        val tables: List<PresentedTable<ImageBitmap>>,
+        val bars: List<CodeChip>,
+        val barColor: Color
     ) {
         /** The formulas of the text and of the cells of its tables, where they are drawn in its layout. */
         val allFormulas: List<Pair<PresentedFormula<ImageBitmap>, Rect>>
@@ -228,6 +233,7 @@ public class ComposeTextTileAdapter(
                     .toBox(TextBackground.radiusMm(text.fontSize) * scale, Color(fill), scale)
             }
             for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
+            for (bar in prepared.bars) boxes += bar.rect.translate(left, 0f).toBox(bar.radius, prepared.barColor, scale)
             addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
             val formulas = prepared.allFormulas.map { (formula, rect) ->
                 val box = rect.translate(left, 0f)
@@ -417,6 +423,12 @@ public class ComposeTextTileAdapter(
                 canvas.drawRoundRect(chip.rect.left, chip.rect.top, chip.rect.right, chip.rect.bottom, chip.radius, chip.radius, chipPaint)
             }
         }
+        if (prepared.bars.isNotEmpty()) {
+            chipPaint.color = prepared.barColor
+            for (bar in prepared.bars) {
+                canvas.drawRoundRect(bar.rect.left, bar.rect.top, bar.rect.right, bar.rect.bottom, bar.radius, bar.radius, chipPaint)
+            }
+        }
         TextPainter.paint(canvas, prepared.layout)
         for (block in prepared.codeBlocks) {
             val origin = prepared.layout.codeBlockOrigin(block)
@@ -485,7 +497,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables)
+        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables, layout.quoteBars(shown.quotes, fontPx), color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA))
     }
 
     public companion object {

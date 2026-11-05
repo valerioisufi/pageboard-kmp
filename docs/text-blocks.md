@@ -162,7 +162,7 @@ code, which has the mono font. The font has one weight: a symbol in bold text st
 | 1 | Symbols: the script and the font, `TextSymbols`, `NotesFonts.symbols`, the presenter, `TextFace.SYMBOLS` and the PDF, the screenshot of `↔`, an emoji left alone, the license listed in the application | done |
 | 2 | Headings: the six sizes, `ChainFlow` keeping a heading with what follows, `TextFlow` for what is imported, screenshots and tests | done |
 | 3 | Quotes in the notation: `BlockQuote`, `Kind.QUOTE`, the items in a quote, `ListNumbering`; old texts (`>5`, `a > b`), bounds of the parser | done |
-| 4 | Quotes drawn: presenter, bars, page, editor, PDF, assistant, flow across boxes; the search and the copy checked; screenshots of the 12 quotes of the note | proposed |
+| 4 | Quotes drawn: presenter, bars, page, editor, PDF, assistant, flow across boxes; the search without the markers; `TextParityTest`; screenshots from quotes of the note | done |
 | 5 | Writing quotes: Enter, Backspace, Tab, the lists inside, `toggleQuote`, button, icon, shortcut, menu, the strings in 7 languages; the desktop app on a scratch directory | proposed |
 
 Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with its status here.

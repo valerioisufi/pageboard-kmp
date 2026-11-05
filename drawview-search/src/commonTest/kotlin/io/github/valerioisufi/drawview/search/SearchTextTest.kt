@@ -16,4 +16,10 @@ class SearchTextTest {
     fun theMarkersOfTheListsGo() {
         assertEquals("one\n  more\ntwo", cleanMarkdownForSearch("- one\n  more\n- two"))
     }
+
+    @Test
+    fun theMarkersOfAQuoteAreNotWords() {
+        assertEquals("one two\nthree\nitem", cleanMarkdownForSearch("> one **two**\n> three\n> * item"))
+        assertEquals("a > b", cleanMarkdownForSearch("a > b"))
+    }
 }

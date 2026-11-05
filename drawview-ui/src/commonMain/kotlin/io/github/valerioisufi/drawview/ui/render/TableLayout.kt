@@ -107,7 +107,7 @@ internal class TableLayout<T>(
             val measure = p.measureText ?: return null
             val lineWidth = p.lineWidthPx ?: return null
             val shape = TableShape.of(text, table)
-            val cellPresentation = p.copy(lineWidthPx = null)
+            val cellPresentation = p.copy(lineWidthPx = null, quotes = false)
             val padSide = PADDING_SIDE * p.fontSizePx
             val padTop = PADDING_TOP * p.fontSizePx
             val rule = max(1f, RULE * p.fontSizePx)

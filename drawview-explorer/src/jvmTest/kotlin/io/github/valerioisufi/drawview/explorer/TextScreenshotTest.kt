@@ -365,6 +365,21 @@ class TextScreenshotTest {
         }
     }
 
+    /** Block quotes from the note that asked for them: formats, formulas, wrapped lines, lists, numbers, as written and while written. */
+    @Test
+    fun textSavedQuotes() = capture("text-saved-quotes", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, QUOTES, drawnWidthMm = 170f)
+        save(viewModels)
+    }
+
+    /** The same quotes in the editor: it shows them as the page does, the caret in a list in a quote. */
+    @Test
+    fun textWritingQuotes() = capture("text-writing-quotes", ReferenceWindow.DESKTOP, dark = true) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, QUOTES, drawnWidthMm = 170f)
+    }
+
     /** The six levels of the headings, told apart. */
     @Test
     fun textSavedHeadings() = capture("text-saved-headings", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
@@ -456,6 +471,9 @@ class TextScreenshotTest {
 
     private companion object {
         val WINDOWS = listOf(ReferenceWindow.PHONE, ReferenceWindow.TABLET_PORTRAIT, ReferenceWindow.DESKTOP)
+
+        /** Block quotes as the note `E06` has them, between plain text. */
+        const val QUOTES = "Before the quote.\n\n> **Obiettivo:** rendere il codice robusto, efficiente e leggibile tramite livelli di astrazione progressivi; introdurre gli strumenti di diagnostica a basso livello (*panic*).\n\n> **Registri banked e SPSR:** a differenza di x86, in alcune modalit\u00e0 lo stesso nome.\n> * FIQ: `R8`\u2013`R14` (l'handler non deve salvarli sullo stack). *Su AM335x la modalit\u00e0 FIQ \u00e8 disabilitata dal produttore: si usano solo IRQ.*\n> * `svc`, `abt`: solo `R13` (`SP`)\n>   * nested \$x^2\$\n>\n> 1. one\n>    its line\n> 2. two\n\nAfter the quote."
 
         /** A text with a block of code and code in the line. */
         const val CODE = "Squares:\n```kotlin\nfun squares(n: Int) = (1..n).map { it * it }\n\tval list = squares(10) // a comment\n```\nThen `run` it."

@@ -53,7 +53,7 @@ class TextParityTest {
     private val measurer = TextMeasurer(createFontFamilyResolver(), Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
     private val fontFiles = File("src/commonMain/composeResources/font")
     private fun font(name: String) = FontFamily(Font(File(fontFiles, "$name.ttf")))
-    private val fonts = NotesFonts(font("noto_sans_regular"), font("noto_sans_mono_regular"), font("strut_above"), font("strut_below"))
+    private val fonts = NotesFonts(font("noto_sans_regular"), font("noto_sans_mono_regular"), font("strut_above"), font("strut_below"), font("notes_symbols"))
 
     /** Formulas as MicroTeX would render them: taller when they have a fraction. */
     private val renderer = object : FormulaRenderer {
@@ -112,6 +112,7 @@ class TextParityTest {
             struts = fonts.struts(measurer),
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
+            symbols = fonts.symbols,
             highlighter = BuiltInCodeHighlighter,
             layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontSizePx, Color.Black, BuiltInCodeHighlighter, TextTileAdapter.NO_PAPER, fonts.text) },
             measurePrefix = { prefix ->
@@ -137,7 +138,7 @@ class TextParityTest {
             val origin = layout.codeBlockOrigin(block)
             Rect(origin.x, origin.y, origin.x + block.layout.widthPx, origin.y + block.layout.heightPx)
         }
-        val chips = layout.codeChips(shown.inlineCode).map { it.rect }
+        val chips = (layout.codeChips(shown.inlineCode) + layout.quoteBars(shown.quotes, layout.layoutInput.style.fontSize.value)).map { it.rect }
         return Drawn(lines, shown.formulas.map { layout.formulaRect(it) }, chips + blocks)
     }
 
@@ -192,6 +193,18 @@ class TextParityTest {
 
     @Test
     fun blockOfCode() = assertSame("Code:\n```kotlin\nfun f() = 1\n\tval g = 2\n```\nafter")
+
+    @Test
+    fun blockQuotes() = assertSame("Before\n> **A quote** long enough to wrap over the width of its box, twice or more, with `code`.\n> * an item long enough to wrap onto a second line of its box\n>   its line\n>   * nested\n>\n> 1. one\n\nAfter")
+
+    @Test
+    fun theLevelsOfTheHeadings() = assertSame("# 1\n## 2\n### 3\n#### 4\n##### 5\n###### 6\nText")
+
+    @Test
+    fun numberingStyles() = assertSame("a.  letters\nb.  more\n\nIV)  Roman\nV)  more\n  1.  decimal")
+
+    @Test
+    fun symbols() = assertSame("An arrow → and another ↔ with ≤ and ✔ long enough to wrap over the width of its box, twice or more.")
 
     @Test
     fun lists() = assertSame("- an item long enough to wrap onto a second line of its box\n  - a nested item\n1. a numbered item\n2. another")

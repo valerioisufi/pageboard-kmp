@@ -206,6 +206,22 @@ class PdfExporterTest {
     }
 
     @Test
+    fun aQuoteIsItsTextAndABar() = runBlocking {
+        val document = DrawDocument(title = "Citazioni")
+        document.pages[0].add(DrawText().apply { text = "> quoted **words**\n> * in a list"; x = 15f; y = 20f; width = 170f; height = 30f; fontSize = 24f })
+        val pdf = tempFile("quote", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
+            assertTrue("quoted words" in read && "in a list" in read && ">" !in read, read)
+        }
+        val exported = render(pdf, 0)
+        val editor = renderEditor(document, exported.width, exported.height)
+        val similarity = inkOverlap(exported, editor, Rect(15f, 20f, 185f, 50f))
+        assertTrue(similarity > 0.75f, "overlap of the ink $similarity")
+    }
+
+    @Test
     fun theSymbolsFontHasWhatTextSymbolsSays() {
         val font = TrueTypeFont(NOTES_FILES.getValue(TextFace.SYMBOLS))
         for (range in TextSymbols.RANGES) for (c in range) assertTrue(font.covers(c.code), "U+" + c.code.toString(16))

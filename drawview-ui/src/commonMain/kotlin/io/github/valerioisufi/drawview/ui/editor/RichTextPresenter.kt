@@ -17,12 +17,14 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.model.text.BlockQuote
 import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
 import io.github.valerioisufi.drawview.model.text.TextSymbols
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
+import io.github.valerioisufi.drawview.ui.render.CodeChip
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
@@ -45,6 +47,31 @@ internal class FontRoom(val ascent: Float, val descent: Float, val advance: Floa
             val baseline = line.getLineBaseline(0)
             return FontRoom((baseline - line.getLineTop(0)) / size, (line.getLineBottom(0) - baseline) / size, line.getBoundingBox(0).width / size)
         }
+    }
+}
+
+/** How far from the left a block quote starts its text, relative to the size of the text. */
+internal const val QUOTE_INDENT: Float = 0.9f
+
+/** How wide the bar of a block quote is, relative to the size of the text. */
+private const val QUOTE_BAR_WIDTH: Float = 0.15f
+
+/** How opaque the bar of a block quote is, of the color of its text. */
+internal const val QUOTE_BAR_ALPHA: Float = 0.3f
+
+/**
+ * The bars of the block [quotes] of a text in this layout, at the size [fontSizePx] of the text: at
+ * the left of the box, from the top of the first line of each one to the bottom of its last. They
+ * take no room; the canvas, the editor and the export draw them the same way.
+ */
+internal fun TextLayoutResult.quoteBars(quotes: List<IntRange>, fontSizePx: Float): List<CodeChip> {
+    if (quotes.isEmpty()) return emptyList()
+    val length = layoutInput.text.length
+    val width = fontSizePx * QUOTE_BAR_WIDTH
+    return quotes.map { quote ->
+        val top = getLineTop(getLineForOffset(quote.first.coerceIn(0, length)))
+        val bottom = getLineBottom(getLineForOffset(quote.last.coerceIn(0, length)))
+        CodeChip(Rect(0f, top, width, bottom), width / 2f)
     }
 }
 
@@ -113,7 +140,8 @@ internal class Struts(
  * approximated), the cells of its tables laid out by [measureText] (in the style of the text, on a
  * width or on one line; `null`: the tables shown as their source), the color of its paper
  * ([paperColor], ARGB, of no alpha when not known), its symbols in [symbols] (`null`: in the fonts
- * of each system), its formulas rendered by [renderFormula].
+ * of each system), its block quotes shown as such when [quotes] (not in the cells of a table, whose
+ * lines are not lines of a text), its formulas rendered by [renderFormula].
  */
 internal data class Presentation<T>(
     val fontSizePx: Float,
@@ -128,6 +156,7 @@ internal data class Presentation<T>(
     val measureText: ((text: AnnotatedString, widthPx: Float?, alignment: TextAlignment) -> TextLayoutResult)? = null,
     val paperColor: Int = 0,
     val symbols: FontFamily? = null,
+    val quotes: Boolean = true,
     val renderFormula: (latex: String, fontSizePx: Float) -> MarkdownTextUtil.RenderedFormula<T>?
 )
 
@@ -168,7 +197,8 @@ internal class WrittenCodeBlock(val offset: Int, val layout: CodeBlockLayout, va
  * offsets and those of the source, its [formulas] and [codeBlocks] to draw over their characters,
  * its code in the line ([inlineCode]) and the blocks of code whose source is shown ([codeSources])
  * to draw on a background, the blocks whose code is written ([writtenBlocks]), the formula under
- * the caret ([formulaAtCaret]) whose source is shown.
+ * the caret ([formulaAtCaret]) whose source is shown, the block quotes ([quotes]: the part of the
+ * text shown of each one) to draw a bar at their left.
  */
 internal class PresentedText<T>(
     val text: AnnotatedString,
@@ -179,7 +209,8 @@ internal class PresentedText<T>(
     val codeSources: List<IntRange>,
     val formulaAtCaret: Span?,
     val writtenBlocks: List<WrittenCodeBlock> = emptyList(),
-    val tables: List<PresentedTable<T>> = emptyList()
+    val tables: List<PresentedTable<T>> = emptyList(),
+    val quotes: List<IntRange> = emptyList()
 )
 
 /**
@@ -212,6 +243,8 @@ internal class SourceMapping(private val toShown: IntArray, private val toSource
  * * A list item shows its label (see [ListNumbering]) instead of its marker, right-aligned in the
  *   column of the labels of its list, its paragraph indented so that its wrapped lines and its
  *   continuation lines start under its text; a nested item starts at the text of its parent.
+ * * A line of a block quote has its marker hidden, also under the caret, and its paragraph indented
+ *   from the bar drawn at the left of the quote ([quoteBars]); a list in a quote starts there.
  */
 internal object RichTextPresenter {
 
@@ -236,6 +269,9 @@ internal object RichTextPresenter {
         val blockLeft = HashMap<Int, Float>()
         // The list items where their lines start, laid out in their columns
         val lists = listLayout(text, spans, p)
+        // The lines of the block quotes, by their start: the length of their markers
+        val quoteLines = if (p.quotes) quoteLinesOf(text, spans) else emptyMap()
+        val quoteLeft = QUOTE_INDENT * p.fontSizePx
         // The tables laid out as grids (the spans in them are presented by their cells)
         val tableAt = HashMap<Int, Pair<Span, TableLayout<T>>>()
         for (span in spans) {
@@ -253,7 +289,7 @@ internal object RichTextPresenter {
             if (span.start < tableEnd && span.kind != Kind.TABLE) continue
             val touched = touched(span)
             when (span.kind) {
-                Kind.LIST_ITEM -> Unit
+                Kind.LIST_ITEM, Kind.QUOTE -> Unit
                 Kind.CODE_BLOCK -> {
                     val layout = p.layoutCodeBlock
                     // The caret on a fence: the end of the opening line, or from the start of the closing one
@@ -357,6 +393,13 @@ internal object RichTextPresenter {
             }
             if (lineStart) {
                 lineStart = false
+                val marker = quoteLines[i]
+                if (marker != null) {
+                    for (k in i until i + marker) shown.hide(k)
+                    i += marker
+                    val left = (quoteLeft / p.density).sp
+                    shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
+                }
                 val item = lists.itemAt[i]
                 if (item != null) {
                     // The label in its column instead of the marker, the wrapped lines under the text
@@ -483,7 +526,7 @@ internal object RichTextPresenter {
         for (span in spans) {
             while (open.isNotEmpty() && open.last().end <= span.start) open.removeAt(open.lastIndex)
             open += span
-            if (span.kind == Kind.LIST_ITEM || span.start in blockAt && span.kind == Kind.CODE_BLOCK) continue
+            if (span.kind == Kind.LIST_ITEM || span.kind == Kind.QUOTE || span.start in blockAt && span.kind == Kind.CODE_BLOCK) continue
             if (span.kind == Kind.FORMULA && (span.start in formulaAt || span in errorSpans)) continue
             if (revealed(span)) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
             val content = when (span.kind) {
@@ -535,7 +578,10 @@ internal object RichTextPresenter {
                 out.addStyle(strut, room.offset + k, room.offset + k + 1)
             }
         }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks, tables)
+        val quotes = if (!p.quotes) emptyList() else spans.filter { it.kind == Kind.QUOTE }.map { quote ->
+            mapping.originalToTransformed(quote.start) until max(mapping.originalToTransformed(quote.end), mapping.originalToTransformed(quote.start) + 1)
+        }
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks, tables, quotes)
     }
 
     /**
@@ -620,7 +666,8 @@ internal object RichTextPresenter {
         val gap = LABEL_GAP * p.fontSizePx
         val laidOut = ArrayList<ListItemLayout>(items.size)
         for ((index, item) in items.withIndex()) {
-            val left = if (item.parent >= 0) laidOut[item.parent].textLeftPx else 0f
+            val outer = if (p.quotes && BlockQuote.isQuotedAt(text, item.span.start)) QUOTE_INDENT * p.fontSizePx else 0f
+            val left = if (item.parent >= 0) laidOut[item.parent].textLeftPx else outer
             val column = columns.getValue(item.list)
             // At most half the line to the text, so that the text keeps room
             val textLeft = min(left + column + gap, (p.lineWidthPx ?: Float.MAX_VALUE) / 2f)
@@ -633,11 +680,29 @@ internal object RichTextPresenter {
             itemAt[item.span.start] = item
             var k = text.indexOf('\n', item.span.contentStart)
             while (k in 0 until item.span.end) {
-                continuationAt[k + 1] = item
+                // In a quote, where the text of the line starts: its marker is hidden before
+                val marker = if (p.quotes) BlockQuote.markerLength(text, k + 1) else 0
+                continuationAt[k + 1 + marker] = item
                 k = text.indexOf('\n', k + 1)
             }
         }
         return ListLayout(itemAt, continuationAt)
+    }
+
+    /** The lines of the block quotes of [text], by their start: the length of their markers. */
+    private fun quoteLinesOf(text: String, spans: List<Span>): Map<Int, Int> {
+        val lines = HashMap<Int, Int>()
+        for (quote in spans) {
+            if (quote.kind != Kind.QUOTE) continue
+            var lineStart = quote.start
+            while (lineStart <= quote.end) {
+                lines[lineStart] = BlockQuote.markerLength(text, lineStart)
+                val next = text.indexOf('\n', lineStart)
+                if (next < 0) break
+                lineStart = next + 1
+            }
+        }
+        return lines
     }
 
     /**

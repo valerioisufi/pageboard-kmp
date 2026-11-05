@@ -46,6 +46,33 @@ class RichTextPresenterTest {
     private val PresentedText<*>.shown get() = text.text
 
     @Test
+    fun theMarkerOfAQuoteIsHiddenAndItsLinesIndented() {
+        val text = "before\n> **one**\n> two\nafter"
+        val presented = present(text)
+        assertEquals("before\u200Bone\u200Btwo\u200Bafter", presented.shown)
+        assertEquals("one\u200Btwo", presented.quotes.single().let { presented.shown.substring(it.first, it.last + 1) })
+        val indents = presented.text.paragraphStyles.map { it.item.textIndent?.restLine?.value ?: 0f }
+        assertEquals(listOf(0f, 18f, 18f, 0f), indents, "0.9 of a size of 20")
+        assertEquals("> two".length, text.substring(text.indexOf("> two")).substringBefore('\n').length)
+        assertEquals(presented.shown.indexOf("two"), presented.mapping.originalToTransformed(text.indexOf("> two")), "the marker stands at its text")
+        assertEquals(present(text, TextRange(text.indexOf("two"))).shown, presented.shown, "hidden under the caret too")
+    }
+
+    @Test
+    fun aListInAQuoteShowsItsLabels() {
+        val presented = present("> 1. one\n>    more\n> 2. two\n>\n> - three")
+        val shown = presented.shown.filterNot { RichTextPresenter.isInvisible(it) }
+        assertEquals("1.onemore2.two\u2022three", shown)
+    }
+
+    @Test
+    fun aQuoteInACellStaysAsItIsWritten() {
+        val presented = RichTextPresenter.present("> x", Presentation<String>(fontSizePx = 20f, color = Color.Black, struts = approximated, quotes = false) { _, _ -> null })
+        assertEquals("> x", presented.shown)
+        assertEquals(emptyList(), presented.quotes)
+    }
+
+    @Test
     fun theSymbolsAreInTheirFont() {
         val symbols = FontFamily.Cursive
         fun inFont(text: String): String {

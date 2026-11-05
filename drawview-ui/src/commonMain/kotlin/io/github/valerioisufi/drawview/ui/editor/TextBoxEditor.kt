@@ -317,6 +317,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             val bottom = current.getLineBottom(current.getLineForOffset(max(source.first, source.last)))
                             drawRoundRect(codeTheme.background, topLeft = Offset(0f, top), size = Size(size.width, bottom - top), cornerRadius = radius)
                         }
+                        for (bar in current.quoteBars(shown.quotes, fontSizePx)) {
+                            drawRoundRect(textColor.copy(alpha = textColor.alpha * QUOTE_BAR_ALPHA), topLeft = bar.rect.topLeft, size = bar.rect.size, cornerRadius = CornerRadius(bar.radius))
+                        }
                         for (chip in current.codeChips(shown.inlineCode)) {
                             drawRoundRect(codeTheme.background, topLeft = chip.rect.topLeft, size = chip.rect.size, cornerRadius = CornerRadius(chip.radius))
                         }

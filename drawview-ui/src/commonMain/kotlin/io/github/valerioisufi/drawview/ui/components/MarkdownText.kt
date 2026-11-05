@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.text.RichTextParser
+import io.github.valerioisufi.drawview.ui.editor.QUOTE_BAR_ALPHA
+import io.github.valerioisufi.drawview.ui.editor.quoteBars
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.editor.Presentation
 import io.github.valerioisufi.drawview.ui.editor.PresentedText
@@ -102,6 +104,9 @@ public fun MarkdownText(
                 }
                 for (chip in current.codeChips(content.inlineCode)) {
                     drawRoundRect(chipColor, topLeft = chip.rect.topLeft, size = chip.rect.size, cornerRadius = CornerRadius(chip.radius))
+                }
+                for (bar in current.quoteBars(content.quotes, current.layoutInput.style.fontSize.toPx())) {
+                    drawRoundRect(color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA), topLeft = bar.rect.topLeft, size = bar.rect.size, cornerRadius = CornerRadius(bar.radius))
                 }
                 drawContent()
                 for (block in content.codeBlocks) {
