@@ -37,9 +37,13 @@ fun Project.cargoExecutable(): String {
 fun cargoSearchPath(cargo: String): String =
     listOfNotNull(File(cargo).parentFile?.path, System.getenv("PATH")).joinToString(File.pathSeparator)
 
-/** The Rust crates of DrawView build here (`native/build/rust`), whatever module asks. */
+/**
+ * Where the Rust crates of DrawView build, whatever module asks: `rust.targetDir` in
+ * `local.properties` (one directory for the checkouts of this machine), else `native/build/rust`.
+ */
 val Project.rustTargetDirectory: File
-    get() = rootProject.layout.projectDirectory.dir("native/build/rust").asFile
+    get() = localProperty("rust.targetDir")?.let { rootProject.file(it) }
+        ?: rootProject.layout.projectDirectory.dir("native/build/rust").asFile
 
 /**
  * The version of Xcode (empty on another system): what compiles the native code of Apple targets,

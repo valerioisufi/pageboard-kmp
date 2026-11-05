@@ -78,7 +78,7 @@ Variations).
 |---|---|---|
 | 1 | The native tasks in the build cache, with the inputs they lacked | done |
 | 2 | `android.debug.abis`, one cargo task per variant | done |
-| 3 | `rust.targetDir` | to do |
+| 3 | `rust.targetDir` | done |
 
 ## Decisions
 

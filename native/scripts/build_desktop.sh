@@ -109,7 +109,8 @@ esac
 CARGO="$(sed -n 's/^rust\.cargo=//p' "$ROOT_DIR/local.properties" 2>/dev/null | tail -n 1)"
 [[ -n "$CARGO" ]] || CARGO="$(command -v cargo || true)"
 [[ -n "$CARGO" ]] || CARGO="$HOME/.cargo/bin/cargo"
-RUST_DIR="$NATIVE_DIR/build/rust"
+# Where cargo builds: given by Gradle (rustTargetDirectory), else the place of the checkout
+RUST_DIR="${DRAWVIEW_RUST_DIR:-$NATIVE_DIR/build/rust}"
 # rustc beside cargo (rustup)
 (cd "$NATIVE_DIR/iroh-bridge" && PATH="$(dirname "$CARGO"):$PATH" MACOSX_DEPLOYMENT_TARGET=13.0 CARGO_TARGET_DIR="$RUST_DIR" \
     "$CARGO" rustc --release --locked --lib --crate-type cdylib --target "$RUST_TARGET")

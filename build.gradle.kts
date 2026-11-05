@@ -338,6 +338,7 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     environment("DRAWVIEW_WHISPER_DIR", whisperSourceDir.get().asFile.absolutePath)
     environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
     environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
+    environment("DRAWVIEW_RUST_DIR", rustTargetDirectory.absolutePath)
     // JNI headers of the JDK running Gradle
     environment("JAVA_HOME", System.getProperty("java.home"))
     workingDir(nativeSourcesDir)
