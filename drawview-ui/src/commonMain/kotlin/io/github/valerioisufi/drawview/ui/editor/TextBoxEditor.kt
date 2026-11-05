@@ -222,6 +222,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     // The cell of the caret when it is in a table, and the color of the caret
     val tableCaret = editor.tableCaret
     val accent = MaterialTheme.colorScheme.primary
+    val selectionColor = LocalTextSelectionColors.current.backgroundColor
     val currentShown by rememberUpdatedState(shown)
     // The source the shown text presents
     val shownSource by rememberUpdatedState(value.text)
@@ -232,8 +233,14 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
      */
     fun change(newValue: TextFieldValue, smartNewline: Boolean = true) {
         val current = editor.value
-        val stopped = if (current.text == shownSource) CaretStops.moved(current, newValue, currentShown.mapping) else null
-        editor.updateValue(stopped ?: newValue, smartNewline)
+        if (current.text != shownSource) {
+            editor.updateValue(newValue, smartNewline)
+            return
+        }
+        // Off the fences of the blocks of code, then off what is not shown
+        val offFences = CodeBlockCaret.moved(current, newValue, currentShown) ?: newValue
+        val stopped = CaretStops.moved(current, offFences, currentShown.mapping) ?: offFences
+        editor.updateValue(stopped, smartNewline)
     }
     /** The offset of the source under a point of the layout of the field, as it is shown now. */
     fun offsetAt(point: Offset): Int? {
@@ -320,20 +327,26 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         keyboardController?.show()
                     }
                 )
-                // A click on a block of code puts the caret on the character clicked (the field would
-                // put it at an end of the character standing for the block)
+                // A click on an object (a block of code, a formula, a cell) puts the caret on the
+                // character clicked, and a drag from it selects through it (the field would take the
+                // object for one character)
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                        if (down.type != PointerType.Mouse) return@awaitEachGesture
+                        if (down.type != PointerType.Mouse || !down.pressed) return@awaitEachGesture
                         val current = layout ?: return@awaitEachGesture
                         val text = currentShown
                         if (current.layoutInput.text.text != text.text.text) return@awaitEachGesture
-                        val offset = codeOffsetAt(current, text, down.position) ?: return@awaitEachGesture
+                        val anchor = codeOffsetAt(current, text, down.position) ?: return@awaitEachGesture
                         down.consume()
-                        val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
-                        up.consume()
-                        change(editor.value.copy(selection = TextRange(offset)))
+                        change(editor.value.copy(selection = TextRange(anchor)))
+                        while (true) {
+                            val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                            change.consume()
+                            if (!change.pressed) break
+                            val end = offsetAt(change.position) ?: continue
+                            editor.updateValue(editor.value.copy(selection = TextRange(anchor, end)))
+                        }
                     }
                 }
                 .onPreviewKeyEvent { event ->
@@ -355,6 +368,23 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         if (moved) return@onPreviewKeyEvent true
                     }
                     val current = editor.value
+                    if (event.type == KeyEventType.KeyDown && current.selection.collapsed && !event.isShiftPressed && current.text == shownSource) {
+                        // Through the lines of a block of code and into it, as the block lays them out
+                        val laidOut = layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }
+                        val target = laidOut?.let {
+                            when (event.key) {
+                                Key.DirectionUp -> CodeBlockCaret.vertical(it, currentShown, current.selection.start, up = true, ::offsetAt)
+                                Key.DirectionDown -> CodeBlockCaret.vertical(it, currentShown, current.selection.start, up = false, ::offsetAt)
+                                Key.MoveHome -> CodeBlockCaret.lineEnd(currentShown, current.selection.start, start = true)
+                                Key.MoveEnd -> CodeBlockCaret.lineEnd(currentShown, current.selection.start, start = false)
+                                else -> null
+                            }
+                        }
+                        if (target != null) {
+                            change(current.copy(selection = TextRange(target)))
+                            return@onPreviewKeyEvent true
+                        }
+                    }
                     if (event.type == KeyEventType.KeyDown && current.selection.collapsed && !event.isShiftPressed && editor.inChain) {
                         // At the ends of a box of a chain the caret goes on into the box before or after
                         val atStart = current.selection.start == 0
@@ -406,31 +436,29 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             cornerRadius = CornerRadius(radius)
                         )
                     }
-                    // Under the text: the backgrounds of the code in the line and of the block of the caret
+                    // Under the text: the backgrounds of the code in the line and the bars of the quotes
                     if (current != null) {
-                        val radius = CornerRadius(CodeBlockLayout.cornerRadius(fontSizePx))
-                        for (source in shown.codeSources) {
-                            val top = current.getLineTop(current.getLineForOffset(source.first))
-                            val bottom = current.getLineBottom(current.getLineForOffset(max(source.first, source.last)))
-                            drawRoundRect(codeTheme.background, topLeft = Offset(0f, top), size = Size(size.width, bottom - top), cornerRadius = radius)
-                        }
                         for (bar in current.quoteBars(shown.quotes, fontSizePx)) {
                             drawRoundRect(textColor.copy(alpha = textColor.alpha * QUOTE_BAR_ALPHA), topLeft = bar.rect.topLeft, size = bar.rect.size, cornerRadius = CornerRadius(bar.radius))
                         }
                         for (chip in current.codeChips(shown.inlineCode)) {
                             drawRoundRect(codeTheme.background, topLeft = chip.rect.topLeft, size = chip.rect.size, cornerRadius = CornerRadius(chip.radius))
                         }
-                        // Around the code being written of a block: the rest of the block
-                        for (block in shown.writtenBlocks) {
-                            val top = current.getLineTop(current.getLineForOffset(block.offset))
-                            drawIntoCanvas { block.layout.drawChrome(it, block.leftPx, top) }
-                        }
                     }
                     drawContent()
                     if (current == null) return@drawWithContent
+                    val selection = value.selection
                     for (block in shown.codeBlocks) {
                         val origin = current.codeBlockOrigin(block)
                         drawIntoCanvas { block.layout.draw(it, origin.x, origin.y) }
+                        // The selection in its code, and the caret in it
+                        val from = max(selection.min, block.codeStart) - block.codeStart
+                        val to = minOf(selection.max, block.codeEnd) - block.codeStart
+                        if (to > from) translate(origin.x, origin.y) { drawPath(block.layout.selectionPath(from, to), selectionColor) }
+                        if (selection.collapsed && caretShown && block.holds(selection.start) && tableCaret == null) {
+                            val rect = block.layout.cursorRect(selection.start - block.codeStart).translate(origin)
+                            with(TextCaret) { drawCaret(rect, TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
+                        }
                     }
                     for (table in shown.tables) {
                         val origin = current.tableOrigin(table)
@@ -453,7 +481,6 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         )
                         val length = cell.source.last + 1 - cell.source.first
                         fun inCell(offset: Int) = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
-                        val selection = value.selection
                         if (selection.collapsed) {
                             // In the source of a formula of the cell, the caret is in the strip
                             if (caretShown && cell.presented.hiddenAtCaret?.caretIn != true) {
@@ -464,9 +491,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             val path = cell.layout.getPathForRange(inCell(selection.min), inCell(selection.max))
                             translate(origin.x, origin.y) { drawPath(path, accent.copy(alpha = 0.3f)) }
                         }
-                    } else if (caretShown && value.selection.collapsed && shown.hiddenAtCaret?.caretIn != true) {
-                        // In the source of a formula or of the address of a link, the caret is in the strip
-                        // The caret of the text, as wide on the screen at every zoom
+                    } else if (caretShown && value.selection.collapsed && shown.hiddenAtCaret?.caretIn != true && shown.codeBlocks.none { it.holds(value.selection.start) }) {
+                        // In a hidden source (a formula, the address of a link, a fence) the caret is in
+                        // the strip, in a block of code in the block; elsewhere the caret of the text,
+                        // as wide on the screen at every zoom
                         val rect = current.getCursorRect(shown.mapping.originalToTransformed(value.selection.start).coerceIn(0, current.layoutInput.text.length))
                         with(TextCaret) { drawCaret(rect, TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
                     }
@@ -645,6 +673,10 @@ private fun caretRect(layout: TextLayoutResult, shown: PresentedText<*>, tableCa
         val inCell = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
         return cell.layout.getCursorRect(inCell).translate(layout.tableOrigin(table) + Offset(cell.left, cell.top))
     }
+    // In the code of a block: in the block
+    shown.codeBlocks.firstOrNull { it.holds(offset) }?.let { block ->
+        return block.layout.cursorRect(offset - block.codeStart).translate(layout.codeBlockOrigin(block))
+    }
     return layout.getCursorRect(shown.mapping.originalToTransformed(offset).coerceIn(0, layout.layoutInput.text.length))
 }
 
@@ -680,7 +712,10 @@ private fun codeOffsetAt(layout: TextLayoutResult, shown: PresentedText<*>, poin
     for (block in shown.codeBlocks) {
         val (left, top) = layout.codeBlockOrigin(block)
         if (point.y < top || point.y > top + block.layout.heightPx || point.x < left || point.x > left + block.layout.widthPx) continue
-        return block.codeStart + block.layout.codeOffsetAt(Offset(point.x - left, point.y - top))
+        val inBlock = Offset(point.x - left, point.y - top)
+        // Its label: its opening fence, written in the strip
+        if (block.layout.labelRect?.contains(inBlock) == true && block.codeStart > block.start) return block.codeStart - 1
+        return block.codeStart + block.layout.codeOffsetAt(inBlock)
     }
     return null
 }
@@ -709,6 +744,10 @@ private fun hiddenAnchor(layout: TextLayoutResult?, shown: PresentedText<*>, tab
     val hidden = shown.hiddenAtCaret
     if (hidden != null) {
         if (hidden.kind == RichTextParser.Kind.FORMULA) shown.formulas.firstOrNull { it.offset == hidden.anchor }?.let { return layout.formulaRect(it) }
+        if (hidden.kind == RichTextParser.Kind.CODE_BLOCK) shown.codeBlocks.firstOrNull { it.offset == hidden.anchor }?.let { block ->
+            val origin = layout.codeBlockOrigin(block)
+            return Rect(origin.x, origin.y, origin.x + block.layout.widthPx, origin.y + block.layout.heightPx)
+        }
         val at = hidden.anchor.coerceIn(0, layout.layoutInput.text.length)
         val line = layout.getLineForOffset(at)
         val x = layout.getHorizontalPosition(at, usePrimaryDirection = true)

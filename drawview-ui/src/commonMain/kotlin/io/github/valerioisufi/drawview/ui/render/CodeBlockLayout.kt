@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.AnnotatedString
@@ -154,6 +155,30 @@ public class CodeBlockLayout internal constructor(
         }
         return low
     }
+
+    /** The offset drawn of the offset [offset] of the code. */
+    private fun shown(offset: Int): Int = shownOffsets[offset.coerceIn(0, shownOffsets.lastIndex)]
+
+    /** The caret before the character [offset] of the code, in the pixels of the block (from its top-left corner). */
+    internal fun cursorRect(offset: Int): Rect = code.getCursorRect(shown(offset)).translate(codeLeftPx, codeTopPx)
+
+    /** The selection of the code from [start] to [end], in the pixels of the block. */
+    internal fun selectionPath(start: Int, end: Int): Path = code.getPathForRange(shown(start), shown(end)).apply { translate(Offset(codeLeftPx, codeTopPx)) }
+
+    /** The number of the lines of the code laid out (its wrapped lines counted). */
+    internal val lineCount: Int get() = code.lineCount
+
+    /** The line of the code laid out the caret at [offset] of the code is on. */
+    internal fun lineOf(offset: Int): Int = code.getLineForOffset(shown(offset))
+
+    /** The offset of the code on its line [line] at [x] of the block: where a move up or down of the caret goes. */
+    internal fun offsetOnLine(line: Int, x: Float): Int {
+        val at = line.coerceIn(0, code.lineCount - 1)
+        return codeOffsetAt(Offset(x, codeTopPx + (code.getLineTop(at) + code.getLineBottom(at)) / 2f))
+    }
+
+    /** Where the label is, in the pixels of the block: `null` without a language. */
+    internal val labelRect: Rect? get() = label?.let { Rect(labelLeftPx, labelTopPx, labelLeftPx + it.size.width, labelTopPx + it.size.height) }
 
     /** Draws the block on [canvas], its top-left corner at [left], [top]. */
     internal fun draw(canvas: Canvas, left: Float, top: Float) {

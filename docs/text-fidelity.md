@@ -317,7 +317,7 @@ rule for a focus lost.
 | 3 | The touches: `TouchSelection`, the handles and the toolbar on touch screens; tests with injected touches (a tap, a long press, the handles where the text is at two zooms, a handle dragged, a turned text); on the tablet with the pen and a finger | Done, not tried on the tablet |
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
-| 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | |
+| 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | Done |
 | 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | |
 
 Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 needs 4; 6 needs 4 and
@@ -436,6 +436,30 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   its address in the strip and not in the line. `RichTextPresenterTest` and `SeenDeletionTest`
   for the rules.
 
+### Phase 6 results
+
+* `RichTextPresenter` keeps every block of code an object, with the caret in it too: the code
+  written as text in the field, its struts, its chrome drawn around it and its fences faded are gone
+  (`WrittenCodeBlock`, `codeSources`). The caret on the line of the opening fence gives it to the
+  strip (`HiddenSource` of kind `CODE_BLOCK`). `PresentedCodeBlock` tells the ends of the code and
+  of the block.
+* `CodeBlockLayout` draws the caret and the selection in its code (`cursorRect`, `selectionPath`),
+  and tells its lines (`lineOf`, `offsetOnLine`) and its label (`labelRect`).
+* `CodeBlockCaret`: ← and → step over the fences (from the line before into the first character of
+  the code, from the last one onto the line after, and back); ↑ and ↓ go through the lines of the
+  code as the block lays them out, into a block from the line above or below and out of it at the
+  place of the caret; Home and End go to the ends of the line of the code. On the opening fence,
+  opened by a click on the label or by Backspace at the start of the code, the caret moves as in
+  any text, in the strip.
+* A click on a block puts the caret on the character, a drag from it selects its code.
+* Tests (`TextBoxCodeBlockTest`, the walks of the starting point with the keys of the editor): → from
+  the line before goes into the code, never onto a fence, on to the line after, every press moving;
+  ← back the same; ↑ from the line below goes through both lines of the code and on to the line
+  above; ↓ through them from the line above; the text shown and the height of the field the same at
+  every press; Backspace at the start of the code opens the fence in the strip; a drag selects a part
+  of the code. `EditorCodeTest` and `TextParityTest`: a block the same with the caret anywhere, the
+  caret at the column of its code.
+
 ## Decisions
 
 Approved by the user on 2026-11-05 ("approvo il piano"), with the plan:
@@ -496,3 +520,11 @@ Taken alone, revertible:
   a character is typed in it.
 * A view of the whole source of a text on demand.
 * Scribble of the Apple Pencil in the field ([text-editing.md](text-editing.md)).
+* Text before a block of code at the very start of a text, or after one at its very end: the caret
+  does not stand on the line of the block outside its code (a character typed there would break
+  its fence), so a line is to be added first, by Enter at the end of the line before. A key that
+  writes the line itself.
+* The strip covers the line next to what it belongs to (above or below it); a place in the bar, on
+  small screens, if it gets in the way.
+* A selection drawn by a mouse from the text into a block of code, and Shift and the arrows across a
+  block: the field selects the block whole from outside it.

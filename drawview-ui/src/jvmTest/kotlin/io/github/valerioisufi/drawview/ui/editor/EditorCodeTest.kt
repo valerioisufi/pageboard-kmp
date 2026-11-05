@@ -70,22 +70,26 @@ class EditorCodeTest {
         val room = shown.text.spanStyles.last { it.start == 6 }.item
         assertEquals(maxOf((block.layout.heightPx - 6f) / 0.9f, 6f / 0.3f), room.fontSize.value, 0.01f)
         assertEquals(600f * 0.999f - room.fontSize.value, room.letterSpacing.value, 0.01f)
-        assertTrue(shown.codeSources.isEmpty())
         // The offsets of the block go to its characters
         assertEquals(6, shown.mapping.originalToTransformed(text.indexOf("fun")))
         assertEquals(text.indexOf("\nafter"), shown.mapping.transformedToOriginal(7))
     }
 
     @Test
-    fun theBlockWithTheCaretOnAFenceShowsItsSourceInItsColors() {
-        val shown = shown(text, caret = text.indexOf("```") + 2)
-        assertEquals(text.replace('\n', '\u200B'), shown.text.text, "the source as it is written, its lines paragraphs")
-        assertTrue(shown.codeBlocks.isEmpty())
-        assertEquals(text.indexOf("```") until text.indexOf("\nafter"), shown.codeSources.single())
-        val keyword = text.indexOf("fun")
-        assertTrue(shown.text.spanStyles.any { it.start == keyword && it.end == keyword + 3 && it.item.color == Color(0xFFCF222E) }, "the keyword in its color")
-        val fence = shown.text.spanStyles.first { it.start == text.indexOf("```") }.item
-        assertTrue(fence.color.alpha < 0.5f, "the fences faded")
+    fun theBlockWithTheCaretInItStaysABlockItsFenceInTheStrip() {
+        val still = shown(text, caret = text.length)
+        for (caret in listOf(text.indexOf("```") + 2, text.indexOf("f()"), text.indexOf("\n```\n") + 2)) {
+            val shown = shown(text, caret)
+            assertEquals(still.text.text, shown.text.text, "the caret at $caret: the block as on the page")
+            assertEquals(1, shown.codeBlocks.size)
+        }
+        // On the opening fence: its line in the strip
+        val onFence = shown(text, caret = text.indexOf("```") + 2).hiddenAtCaret!!
+        assertEquals("```kotlin", text.substring(onFence.source.first, onFence.source.last + 1))
+        // In the code: the block holds the caret, no strip
+        val inCode = shown(text, caret = text.indexOf("f()"))
+        assertTrue(inCode.codeBlocks.single().holds(text.indexOf("f()")))
+        assertEquals(null, inCode.hiddenAtCaret)
     }
 
     @Test

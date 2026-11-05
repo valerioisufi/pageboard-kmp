@@ -238,27 +238,21 @@ class TextParityTest {
     }
 
     @Test
-    fun theCodeOfABlockIsWrittenAsInTheBlock() {
+    fun aBlockOfCodeStaysABlockWithTheCaretInIt() {
         val source = "Code:\n```kotlin\nfun f() = 1\n\tval g = 2\n```\nafter"
-        val caret = source.indexOf("f()")
-        assertNoVerticalMove(source, caret, from = source.indexOf("after"))
-        // Its code on the lines of the block, the fences hidden, the rest of the block drawn around it
+        for (caret in listOf(source.indexOf("f()"), source.indexOf("val"), source.indexOf("```") + 1)) {
+            assertNoVerticalMove(source, caret, from = 0)
+            val text = text(source, TextAlignment.START)
+            assertEquals(field(text).second.text.text, field(text, caret).second.text.text, "the caret at $caret")
+        }
+        // The caret drawn in the code of the block, on its lines and columns
         val text = text(source, TextAlignment.START)
-        val (still, stillShown) = field(text)
-        val (layout, shown) = field(text, caret)
-        assertTrue("```" !in shown.text.text)
-        val block = stillShown.codeBlocks.single()
-        val top = still.codeBlockOrigin(block).y
-        val written = shown.writtenBlocks.single()
-        val chrome = layout.getLineTop(layout.getLineForOffset(written.offset))
-        assertEquals(top, chrome, LINE_ROUNDING_PX, "drawn from the top of the block")
-        // The code on the baselines of the code of the block drawn around it
-        val fn = layout.getLineForOffset(shown.mapping.originalToTransformed(caret))
-        assertEquals(chrome + block.layout.codeTopPx + block.layout.code.getLineBaseline(0), layout.getLineBaseline(fn), LINE_ROUNDING_PX, "the first line of code on its baseline in the block")
-        val v = layout.getLineForOffset(shown.mapping.originalToTransformed(source.indexOf("val")))
-        assertEquals(chrome + block.layout.codeTopPx + block.layout.code.getLineBaseline(1), layout.getLineBaseline(v), LINE_ROUNDING_PX, "the second one too")
-        val codeLeft = block.layout.codeLeftPx
-        assertEquals(codeLeft + 4 * block.layout.advancePx, layout.getHorizontalPosition(shown.mapping.originalToTransformed(source.indexOf("val")), true), TOLERANCE_PX, "after its tab, at the column of the block")
+        val (layout, shown) = field(text, source.indexOf("val"))
+        val block = shown.codeBlocks.single()
+        val rect = block.layout.cursorRect(source.indexOf("val") - block.codeStart)
+        assertEquals(block.layout.codeLeftPx + 4 * block.layout.advancePx, rect.left, TOLERANCE_PX, "after its tab, at the column of the block")
+        assertEquals(block.layout.codeTopPx + block.layout.code.getLineTop(1), rect.top, LINE_ROUNDING_PX, "on its second line")
+        assertTrue(layout.codeBlockOrigin(block).y > 0f)
     }
 
     @Test
