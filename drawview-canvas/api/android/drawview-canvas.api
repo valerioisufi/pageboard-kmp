@@ -599,6 +599,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
 	public fun outdent ()V
+	public final fun pasteMarkdown-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun pasteMarkdown-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V

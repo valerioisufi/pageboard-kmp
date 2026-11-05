@@ -55,6 +55,8 @@
     <string name="common_action_copy">Copia</string>
     <string name="common_action_delete">Elimina</string>
     <string name="common_action_paste">Incolla</string>
+    <string name="common_action_paste_plain">Incolla come testo semplice</string>
+    <string name="paste_equation_placeholder">[equazione]</string>
     <string name="context_menu_action_add_page">Aggiungi Pagina</string>
     <string name="context_menu_action_delete_page">Elimina Pagina</string>
     <string name="context_menu_action_reorder_page">Sposta Pagina</string>

@@ -18,6 +18,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-canvas"))
+            implementation(project(":drawview-html"))
             implementation(libs.navigationevent.compose)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

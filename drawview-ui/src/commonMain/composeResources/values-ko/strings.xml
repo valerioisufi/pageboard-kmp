@@ -47,6 +47,8 @@
     <string name="common_action_copy">복사</string>
     <string name="common_action_delete">삭제</string>
     <string name="common_action_paste">붙여넣기</string>
+    <string name="common_action_paste_plain">일반 텍스트로 붙여넣기</string>
+    <string name="paste_equation_placeholder">[수식]</string>
     <string name="context_menu_action_add_page">페이지 추가</string>
     <string name="context_menu_action_delete_page">페이지 삭제</string>
     <string name="context_menu_action_reorder_page">페이지 이동</string>

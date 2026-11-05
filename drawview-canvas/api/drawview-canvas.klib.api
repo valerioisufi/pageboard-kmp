@@ -844,6 +844,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun moveInChain(kotlin/Boolean): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.moveInChain|moveInChain(kotlin.Boolean){}[0]
     final fun moveTo(kotlin/Float, kotlin/Float, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.moveTo|moveTo(kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
     final fun outdent() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.outdent|outdent(){}[0]
+    final fun pasteMarkdown(kotlin/String, androidx.compose.ui.geometry/Offset? = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.pasteMarkdown|pasteMarkdown(kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun pasteText(kotlin/String, androidx.compose.ui.geometry/Offset? = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.pasteText|pasteText(kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun reportLayoutHeight(kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.reportLayoutHeight|reportLayoutHeight(kotlin.Float){}[0]
     final fun setNumbering(io.github.valerioisufi.drawview.model.text/NumberingStyle?, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.setNumbering|setNumbering(io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]

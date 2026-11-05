@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
+import io.github.valerioisufi.drawview.ui.editor.rememberClipboardText
 import io.github.valerioisufi.drawview.canvas.controller.PageManager
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
@@ -55,6 +56,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_cut
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_delete
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_paste
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_paste_plain
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_redo
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
 import io.github.valerioisufi.drawview.ui.generated.resources.context_menu_action_add_page
@@ -128,7 +130,8 @@ internal class EditorScreenActions(
 internal class EditorCommands internal constructor(
     private val controller: DrawViewController,
     private val clipboard: ClipboardManager,
-    private val actions: EditorScreenActions
+    private val actions: EditorScreenActions,
+    private val formattedText: () -> String? = { null }
 ) {
     private val writable = { !controller.isReadOnly }
 
@@ -213,6 +216,16 @@ internal class EditorCommands internal constructor(
         isEnabled = { controller.isDrawingMode && writable() }
     ) { pasteAt(null) }
 
+    /** A text of another application without its formatting: the same paste, reading its plain text. */
+    val pastePlain = Command(
+        "pastePlain", label(Res.string.common_action_paste_plain), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(DrawViewIcons.Clipboard) },
+        shortcuts = listOf(Shortcut(Key.V, primary = true, shift = true)),
+        isEnabled = { controller.isDrawingMode && writable() }
+    ) {
+        clipboard.getText()?.text?.takeIf { it.isNotBlank() }?.let { controller.textEditorManager.pasteText(it) }
+    }
+
     /**
      * Pastes what was copied last at [position] of the canvas (the page shown when `null`): a text
      * copied in another application becomes a new text; elements copied in any document are put
@@ -222,7 +235,12 @@ internal class EditorCommands internal constructor(
         val text = clipboard.getText()?.text
         val content = controller.clipboard.content
         if (!text.isNullOrBlank() && isNewerThanCopied(text)) {
-            controller.textEditorManager.pasteText(text, position)
+            val formatted = formattedText()
+            if (formatted != null) {
+                controller.textEditorManager.pasteMarkdown(formatted, position)
+            } else {
+                controller.textEditorManager.pasteText(text, position)
+            }
             return
         }
         when (content) {
@@ -635,7 +653,7 @@ internal class EditorCommands internal constructor(
     /** Every command, in the order of the menus. */
     val all: List<Command> = listOf(
         close, rename,
-        undo, redo, cut, copy, paste, delete,
+        undo, redo, cut, copy, paste, pastePlain, delete,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes,
         addPage, importPdf, importImage, importText,
         documentBackground,
@@ -689,6 +707,7 @@ internal fun rememberEditorCommands(
     canRename: Boolean = false
 ): EditorCommands {
     val clipboard = LocalClipboardManager.current
+    val clipboardText = rememberClipboardText()
     val close by rememberUpdatedState(onClose)
     val importPdf by rememberUpdatedState(onImportPdf)
     val importImage by rememberUpdatedState(onImportImage)
@@ -696,7 +715,7 @@ internal fun rememberEditorCommands(
     val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
     val showAbout by rememberUpdatedState(onShowAbout)
     val renamable by rememberUpdatedState(canRename)
-    return remember(controller, clipboard) {
+    return remember(controller, clipboard, clipboardText) {
         EditorCommands(
             controller = controller,
             clipboard = clipboard,
@@ -708,7 +727,8 @@ internal fun rememberEditorCommands(
                 editDocumentBackground = { editDocumentBackground() },
                 showAbout = { showAbout() },
                 canRename = { renamable }
-            )
+            ),
+            formattedText = clipboardText::markdown
         )
     }
 }

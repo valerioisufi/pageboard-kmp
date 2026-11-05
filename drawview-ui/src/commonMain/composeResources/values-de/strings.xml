@@ -47,6 +47,8 @@
     <string name="common_action_copy">Kopieren</string>
     <string name="common_action_delete">Löschen</string>
     <string name="common_action_paste">Einfügen</string>
+    <string name="common_action_paste_plain">Als reinen Text einfügen</string>
+    <string name="paste_equation_placeholder">[Gleichung]</string>
     <string name="context_menu_action_add_page">Seite hinzufügen</string>
     <string name="context_menu_action_delete_page">Seite löschen</string>
     <string name="context_menu_action_reorder_page">Seite verschieben</string>

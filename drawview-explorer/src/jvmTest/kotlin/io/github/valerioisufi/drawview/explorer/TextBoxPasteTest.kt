@@ -76,6 +76,14 @@ class TextBoxPasteTest {
     }
 
     @Test
+    fun aMarkdownPastedOnTheCanvasIsTakenAsItIs() = textBoxScene { controller ->
+        val markdown = "# Titolo\n\n- uno\n- **due**"
+        runOnIdle { controller.textEditorManager.pasteMarkdown(markdown, Offset(600f, 300f)) }
+        waitForIdle()
+        assertEquals(markdown, controller.document.pages[0].texts.single().text)
+    }
+
+    @Test
     fun aShortTextPastedOnTheCanvasIsCleaned() = textBoxScene { controller ->
         runOnIdle { controller.textEditorManager.pasteText(bullets, Offset(600f, 300f)) }
         waitForIdle()

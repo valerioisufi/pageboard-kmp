@@ -73,7 +73,7 @@ this notation, and small.
 | What Word copies rewritten as plain HTML | `WordHtml` (internal, `drawview-html`) | Polymorphism, Protected Variations |
 | A formula of KaTeX, MathJax or MathML read back as its source | `HtmlFormula` (internal, `drawview-html`) | Information Expert |
 | Characters of the source that would read as notation escaped | `MarkdownEscape` (internal, `drawview-html`), tested against `RichTextParser` | Information Expert |
-| The HTML of the clipboard, per platform | `expect fun Clipboard.readHtml()` (`drawview-ui`) | Polymorphism, Indirection |
+| The HTML of the clipboard, per platform | `expect fun htmlIn(clipboard)` (`drawview-ui`) | Polymorphism, Indirection |
 | What a paste contains: HTML converted, or plain text, for canvas and field alike | `ClipboardText` (`drawview-ui`) | Controller, Low Coupling |
 | The field pasting the converted text | a wrapping `Clipboard` provided to `BasicTextField` in `TextBoxEditor` | Indirection |
 
@@ -101,7 +101,7 @@ schema, to a stored format or to the sync protocol.
 |---|---|---|
 | 1 | Ksoup checked on the targets (`iosArm64`, `iosSimulatorArm64`, JVM, Android, with Kotlin 2.4.20); `drawview-html` with its `Module.md`, `api/` dump, Dokka and `THIRD_PARTY_LICENSES.md`; blocks, inline formats, `style`, escapes; every result read back with `RichTextParser` in the tests | done |
 | 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
-| 3 | `Clipboard.readHtml` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text | planned |
+| 3 | `htmlIn` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text, "Paste as plain text" on the canvas | done |
 | 4 | The field (wrapping `Clipboard`, `cleanedPaste`), "Paste as plain text" | planned |
 | 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari | planned |
 

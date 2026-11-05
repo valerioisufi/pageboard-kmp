@@ -318,6 +318,18 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      * selects it, so that it can be moved; one change.
      */
     public fun pasteText(content: String, atScreen: Offset? = null) {
+        paste(content, atScreen, isMarkdown = TextCleanup.looksLikeMarkdown(content), cleaned = PastedText.clean(content))
+    }
+
+    /**
+     * As [pasteText], for [markdown] written in the notation already (what another application
+     * copied with its formatting, see `docs/html-paste.md`): it is taken as it is.
+     */
+    public fun pasteMarkdown(markdown: String, atScreen: Offset? = null) {
+        paste(markdown, atScreen, isMarkdown = true, cleaned = markdown)
+    }
+
+    private fun paste(content: String, atScreen: Offset?, isMarkdown: Boolean, cleaned: String) {
         if (content.isBlank()) return
         if (isEditing) finishEditing()
         // The page under the point, or the page shown (the first one before the canvas is laid out)
@@ -326,14 +338,14 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         // A long text is imported: the student says where it goes (its sheet), then it is flowed
         if (content.length >= LONG_TEXT_CHARS && TextFlow.blocksOf(content).size > 1) {
-            controller.pendingTextImport = TextImport(content, pageIndex, isMarkdown = TextCleanup.looksLikeMarkdown(content))
+            controller.pendingTextImport = TextImport(content, pageIndex, isMarkdown = isMarkdown)
             return
         }
         val middle = controller.viewport.screenToPageMm(pageIndex, point) ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
         val defaults = controller.textDefaults
         val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
         val probe = TextData(
-            id = newElementId(), text = PastedText.clean(content), alignment = defaults.alignment, autoWidth = true,
+            id = newElementId(), text = cleaned, alignment = defaults.alignment, autoWidth = true,
             x = 0f, y = 0f, width = most, color = defaults.color, fontSize = defaults.fontSize
         )
         val size = controller.measureText(probe.toElement())

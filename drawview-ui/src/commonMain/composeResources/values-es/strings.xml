@@ -47,6 +47,8 @@
     <string name="common_action_copy">Copiar</string>
     <string name="common_action_delete">Eliminar</string>
     <string name="common_action_paste">Pegar</string>
+    <string name="common_action_paste_plain">Pegar como texto sin formato</string>
+    <string name="paste_equation_placeholder">[ecuación]</string>
     <string name="context_menu_action_add_page">Añadir Página</string>
     <string name="context_menu_action_delete_page">Eliminar Página</string>
     <string name="context_menu_action_reorder_page">Mover Página</string>
