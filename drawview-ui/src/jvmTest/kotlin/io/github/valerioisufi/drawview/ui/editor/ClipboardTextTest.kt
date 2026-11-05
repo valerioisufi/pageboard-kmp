@@ -41,6 +41,15 @@ class ClipboardTextTest {
     }
 
     @Test
+    fun theHeaderOfTheClipboardOfWindowsIsNotText() {
+        val header = "Version:0.9\r\nStartHTML:0000000163\r\nEndHTML:0000011225\r\nStartFragment:0000000199\r\nEndFragment:0000011189\r\nSourceURL:https://example.com/\r\n"
+        val copied = header + "<html><body><!--StartFragment--><b>a</b><!--EndFragment--></body></html>"
+        assertEquals("<b>a</b>", htmlIn(AwtClipboard(Copied(mapOf(DataFlavor.fragmentHtmlFlavor to copied)))))
+        assertEquals("<html><b>a</b></html>", withoutWindowsHeader(header + "<html><b>a</b></html>"))
+        assertEquals("<b>a</b>", withoutWindowsHeader("<b>a</b>"))
+    }
+
+    @Test
     fun aCopyOfPlainTextOrNothingHasNoHtml() {
         assertNull(htmlIn(AwtClipboard(StringSelection("plain"))))
         assertNull(htmlIn(AwtClipboard(null)))
