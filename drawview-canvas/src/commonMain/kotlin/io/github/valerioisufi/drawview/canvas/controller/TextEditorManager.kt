@@ -41,6 +41,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextCleanup
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
+import io.github.valerioisufi.drawview.model.text.NumberingStyle
 import kotlin.math.abs
 
 /**
@@ -173,6 +174,10 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     override val inBulletList: Boolean get() = isEditing && RichTextEditing.inBulletList(value)
 
     override val inNumberedList: Boolean get() = isEditing && RichTextEditing.inNumberedList(value)
+
+    override val numberingStyle: NumberingStyle? get() = if (isEditing) RichTextEditing.numberingStyleOf(value) else null
+
+    override val numberingStart: Int get() = if (isEditing) RichTextEditing.numberingStartOf(value) else 1
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     public val rotation: Float get() = activeTextItem?.rotation ?: 0f
@@ -614,6 +619,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     /** Makes the lines of the selection numbered list items, or plain text again. */
     override fun toggleNumberedList() {
         if (!inTable) updateValue(RichTextEditing.toggleNumberedList(value), smartNewline = false)
+    }
+
+    /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
+    override fun setNumbering(style: NumberingStyle?, start: Int) {
+        if (!inTable) updateValue(RichTextEditing.setNumbering(value, style, start), smartNewline = false)
     }
 
     /** Adds 2 spaces of indentation to the lines of the selection. */

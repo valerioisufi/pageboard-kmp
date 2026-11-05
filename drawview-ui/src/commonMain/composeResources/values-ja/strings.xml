@@ -112,6 +112,17 @@
     <string name="text_editor_action_heading">見出し</string>
     <string name="text_editor_action_bullet_list">箇条書き</string>
     <string name="text_editor_action_numbered_list">段落番号</string>
+    <string name="text_editor_action_numbering">番号の形式…</string>
+    <string name="numbering_automatic">レベルごと</string>
+    <string name="numbering_decimal">数字</string>
+    <string name="numbering_lower_alpha">小文字</string>
+    <string name="numbering_upper_alpha">大文字</string>
+    <string name="numbering_lower_roman">小文字のローマ数字</string>
+    <string name="numbering_upper_roman">大文字のローマ数字</string>
+    <string name="numbering_delimiter">区切り</string>
+    <string name="numbering_start">開始番号</string>
+    <string name="numbering_start_earlier">前の番号から開始</string>
+    <string name="numbering_start_later">次の番号から開始</string>
     <string name="text_editor_action_table">表</string>
     <string name="table_row_above">上に行を挿入</string>
     <string name="table_row_below">下に行を挿入</string>

@@ -5,6 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.model.text.ListMarker
 import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.ListRenumbering
+import io.github.valerioisufi.drawview.model.text.NumberingStyle
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import kotlin.math.max
 import kotlin.math.min
@@ -310,6 +311,39 @@ public object RichTextEditing {
             text = newText,
             selection = TextRange(mapOffset(sel.start), mapOffset(sel.end))
         )
+    }
+
+    /** The numbered list item at the start of the selection of [value], or `null`. */
+    private fun numberedItemOf(value: TextFieldValue): ListNumbering.Item? {
+        val caret = min(value.selection.start, value.selection.end)
+        return ListNumbering.items(value.text, RichTextParser.parse(value.text))
+            .firstOrNull { it.span.ordered && caret >= it.span.start && caret <= it.span.end }
+    }
+
+    /** The style of the numbered list at the selection of [value] (`null` for none, or a number by level). */
+    public fun numberingStyleOf(value: TextFieldValue): NumberingStyle? = numberedItemOf(value)?.style
+
+    /** The number the numbered list at the selection of [value] starts from (1 out of a list). */
+    public fun numberingStartOf(value: TextFieldValue): Int {
+        val item = numberedItemOf(value) ?: return 1
+        return ListNumbering.items(value.text, RichTextParser.parse(value.text)).first { it.list == item.list }.ordinal
+    }
+
+    /**
+     * The list at the selection of [value] in [style] from [start]: a numbered list, a bulleted one
+     * turning numbered with its level, or the lines of the selection made a list.
+     */
+    public fun setNumbering(value: TextFieldValue, style: NumberingStyle?, start: Int): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val caret = min(value.selection.start, value.selection.end)
+        val current = ListNumbering.items(value.text, RichTextParser.parse(value.text))
+            .firstOrNull { caret >= it.span.start && caret <= it.span.end }
+        val made = if (current != null) value else toggleNumberedList(value)
+        val items = ListNumbering.items(made.text, RichTextParser.parse(made.text))
+        val madeCaret = min(made.selection.start, made.selection.end)
+        val item = items.firstOrNull { madeCaret >= it.span.start && madeCaret <= it.span.end } ?: return value
+        val level = items.filter { it.list == item.list }.map { it.span }
+        return withMarkersOf(made, level) { position -> ListMarker.write(style, start + position) }
     }
 
     /**

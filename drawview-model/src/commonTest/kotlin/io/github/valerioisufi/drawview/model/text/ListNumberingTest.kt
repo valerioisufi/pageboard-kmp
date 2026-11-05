@@ -93,6 +93,16 @@ class ListNumberingTest {
     }
 
     @Test
+    fun aMarkerOfAnotherStyleStartsAnotherList() {
+        assertEquals(listOf("a.", "b.", "IV)", "V)"), labels("a.  x\nb.  y\n\nIV)  z\nV)  w"))
+        assertEquals(listOf("1.", "A."), labels("1. x\n\nA.  y"))
+        assertEquals(listOf("A.", "B."), labels("A.  x\n\n1. y"), "a marker of no style goes on")
+        val nine = "a.  1\nb.  2\nc.  3\nd.  4\ne.  5\nf.  6\ng.  7\nh.  8\ni.  9\nj.  10"
+        assertEquals("j.", labels(nine).last(), "the ninth letter is not a Roman numeral")
+        assertEquals(1, items(nine).map { it.list }.toSet().size)
+    }
+
+    @Test
     fun theTextOfAnItemWithAStyleIsItsContent() {
         val text = "a.  uno **due**\n    more\nb.  tre"
         val spans = RichTextParser.parse(text).filter { it.kind == Kind.LIST_ITEM }

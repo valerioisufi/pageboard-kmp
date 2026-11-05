@@ -74,7 +74,9 @@ public object ListNumbering {
             }
             val parent = open.lastOrNull() ?: -1
             val previous = siblings[parent]
-            val group = if (previous != null && previous.ordered == span.ordered) {
+            // A marker of no style goes on any list; one of a style it cannot write starts another
+            val fits = span.style == null || previous?.style?.admits(span.style) == true
+            val group = if (previous != null && previous.ordered == span.ordered && fits) {
                 previous.count++
                 previous
             } else {

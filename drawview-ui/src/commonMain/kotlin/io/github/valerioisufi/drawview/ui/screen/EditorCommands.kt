@@ -4,6 +4,7 @@ import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -85,6 +86,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbering
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_table
 import io.github.valerioisufi.drawview.ui.generated.resources.table_row_above
 import io.github.valerioisufi.drawview.ui.generated.resources.table_row_below
@@ -526,6 +528,15 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.inNumberedList == true }
     ) { textTarget?.toggleNumberedList() }
 
+    /** Whether the picker of the styles of the numbered lists is open, in the formatting bar. */
+    var numberingOpen: Boolean by mutableStateOf(false)
+
+    /** Opens the picker of the styles of the numbered lists. */
+    val numbering = Command(
+        "format-numbering", label(Res.string.text_editor_action_numbering), CommandGroup.FORMAT,
+        isEnabled = { formatsText && textTarget?.inTable == false }
+    ) { numberingOpen = true }
+
     /** Inserts a table of three rows and three columns (the bar offers its size, see `TableButton`). */
     val table = Command(
         "format-table", label(Res.string.text_editor_action_table), CommandGroup.FORMAT,
@@ -571,7 +582,7 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, formula, table,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, numbering, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 

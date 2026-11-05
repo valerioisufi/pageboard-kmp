@@ -113,6 +113,17 @@
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_bullet_list">Bulleted list</string>
     <string name="text_editor_action_numbered_list">Numbered list</string>
+    <string name="text_editor_action_numbering">Numbering…</string>
+    <string name="numbering_automatic">By level</string>
+    <string name="numbering_decimal">Numbers</string>
+    <string name="numbering_lower_alpha">Lowercase letters</string>
+    <string name="numbering_upper_alpha">Uppercase letters</string>
+    <string name="numbering_lower_roman">Lowercase Roman numerals</string>
+    <string name="numbering_upper_roman">Uppercase Roman numerals</string>
+    <string name="numbering_delimiter">Written as</string>
+    <string name="numbering_start">Start from</string>
+    <string name="numbering_start_earlier">Start from an earlier number</string>
+    <string name="numbering_start_later">Start from a later number</string>
     <string name="text_editor_action_table">Table</string>
     <string name="table_row_above">Insert Row Above</string>
     <string name="table_row_below">Insert Row Below</string>

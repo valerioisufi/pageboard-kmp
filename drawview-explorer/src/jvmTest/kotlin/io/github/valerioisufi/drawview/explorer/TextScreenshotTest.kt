@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
@@ -362,6 +363,39 @@ class TextScreenshotTest {
             controller.selectionManager.clearSelection()
             controller.textEditorManager.startEditing(text, 0)
         }
+    }
+
+    /** The styles of the numbered lists on the page: a numbered list in bullets, each style, a list from another number. */
+    @Test
+    fun textSavedNumberingStyles() = capture("text-saved-numbering", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "- Bullets\n  1. a numbered list\n  2. inside them\n- And on\n\na.  letters\nb.  in a list\n    1. by level\n\nIV)  Roman\nV)  from four", drawnWidthMm = 90f)
+        save(viewModels)
+        write(viewModels, 115f, 30f, "1.  Numbers\n  1.  at every level\n  2.  too\n\nA.  Capital\nB.  letters\n\nI.  Capital\nII.  numerals", drawnWidthMm = 80f)
+        save(viewModels)
+    }
+
+    /** The picker of the styles of the list at the caret, in every window. */
+    @Test
+    fun textNumberingPicker() = WINDOWS.forEach { window ->
+        capture("text-numbering-picker", window, dark = false) { viewModels ->
+            openNote(viewModels)
+            write(viewModels, 20f, 30f, "a.  First\nb.  Second\nc.  Third", drawnWidthMm = 120f)
+            onNodeWithContentDescription("Numbering…").performScrollTo().performClick()
+            waitForIdle()
+        }
+    }
+
+    /** A style chosen in the picker: applied at once to the list, the picker still open. */
+    @Test
+    fun textNumberingChosen() = capture("text-numbering-chosen", ReferenceWindow.DESKTOP, dark = true) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "1. First\n2. Second\n3. Third", drawnWidthMm = 120f)
+        onNodeWithContentDescription("Numbering…").performClick()
+        waitForIdle()
+        onNodeWithContentDescription("Uppercase Roman numerals").performClick()
+        waitForIdle()
+        assertEquals("I.  First\nII.  Second\nIII.  Third", viewModels.controller().textEditorManager.value.text)
     }
 
     /** Starts a text at ([xMm], [yMm]) of the first page and types [text] in its field. */

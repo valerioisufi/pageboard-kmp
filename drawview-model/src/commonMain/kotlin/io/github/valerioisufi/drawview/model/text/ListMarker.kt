@@ -7,6 +7,21 @@ import io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering
  * A list with no style (`null`) is numbered by its level: `1.`, `a.`, `i.`.
  */
 public data class NumberingStyle(val numbering: Numbering, val delimiter: Char = '.') {
+    /**
+     * Whether a marker read in [other] can be an item of a list in this style: the same delimiter
+     * and the same kind of characters. The letters and the Roman numerals are told apart by the first
+     * item only: `i.` is the ninth item of a list in letters.
+     */
+    internal fun admits(other: NumberingStyle): Boolean =
+        delimiter == other.delimiter && numbering.family == other.numbering.family
+
+    private val Numbering.family: Int
+        get() = when (this) {
+            Numbering.DECIMAL -> 0
+            Numbering.LOWER_ALPHA, Numbering.LOWER_ROMAN -> 1
+            Numbering.UPPER_ALPHA, Numbering.UPPER_ROMAN -> 2
+        }
+
     public companion object {
         /** The delimiters a marker may have. */
         public const val DELIMITERS: String = ".)"
@@ -28,7 +43,8 @@ public data class NumberingStyle(val numbering: Numbering, val delimiter: Char =
  * **Two spaces make a marker of any other form than `1. `**: `A. Rossi`, `a. uno` and `1) tre`
  * stay text, as in the notes written before the styles. The editor writes the markers, and hides them.
  *
- * Only the marker of the first item of a list gives its style and start. One letter other than
+ * Only the marker of the first item of a list gives its style and start; a marker that another
+ * style cannot write starts another list, as in CommonMark. One letter other than
  * `i`, `v` and `x` is a letter; more letters are a Roman numeral when they are one.
  */
 public object ListMarker {

@@ -109,7 +109,7 @@ in an old note at a nested level, now shows its number rather than a letter: the
 | When it runs | `TextEditorManager.updateValue`, after the other rules of editing | Controller |
 | The gestures on the lists | `RichTextEditing`, `setNumbering(value, style, start)` new | Information Expert |
 | The state and the commands | `TextFormatTarget.numbering`, `EditorCommands.numbering` | Indirection, Low Coupling |
-| The picker | `NumberingPicker`, beside `TableButton`, its previews written by `ListNumbering.format` | High Cohesion |
+| The picker | `NumberedListButton`, `NumberingPicker`, beside `TableButton`, its previews written by `ListNumbering.format` | High Cohesion |
 | The continuation of a list in a chain | `ChainFlow.renumbered`, through `ListMarker` | Information Expert |
 
 ### `ListRenumbering`
@@ -128,8 +128,8 @@ Given the text before and after an edit, it rewrites the markers of the lists th
 ### The picker
 
 The button of the numbered list becomes a split button: the icon toggles as today (⌘⇧7), a chevron
-opens the picker. A popover by the pill, an `AdaptiveSheet` above the keyboard on a phone, keeping the
-caret and the keyboard open.
+opens the picker: the popover of the table picker (`ToolPopover`), on every window, keeping the caret
+and the keyboard.
 
 ```
  Automatic  1. a. i.
@@ -169,7 +169,7 @@ capital letters: `A. Rossi` at the start of a line is a name.
 | 1 | The numbers: `ListRenumbering` wired in `updateValue`, the start kept, the source right; the tables above as tests, undo, caret, paste, chains. Fixes the reported bug | done |
 | 2 | The gestures: Tab, Shift+Tab, Enter, Backspace by level, the button on the whole level, a selection counted by level | done |
 | 3 | The notation: `ListMarker`, `NumberingStyle`, parser, labels, `ChainFlow`, `TextCleanup`; the old texts unchanged, bounds of the parser, ABI | done |
-| 4 | The picker: split button, popover and sheet, `setNumbering`, start, "Numbering…" in the Format menu, the strings, screenshots | proposed |
+| 4 | The picker: split button, popover and sheet, `setNumbering`, start, "Numbering…" in the Format menu, the strings, screenshots | done |
 | 5 | Typing a style, the instructions of the agents and of the assistant on the notation, the desktop app on a scratch directory | proposed |
 
 Each phase can land alone: phases 1 and 2 are useful without a style to choose. The plan was

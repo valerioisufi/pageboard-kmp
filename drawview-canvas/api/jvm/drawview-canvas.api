@@ -580,6 +580,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
 	public fun getInTable ()Z
+	public fun getNumberingStart ()I
+	public fun getNumberingStyle ()Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
 	public final fun getTableCaret ()Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Caret;
@@ -599,6 +601,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V
+	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
 	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun startEditing-b0fnrdo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
@@ -637,11 +640,14 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
 	public fun getInTable ()Z
+	public fun getNumberingStart ()I
+	public fun getNumberingStyle ()Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public fun getTakesBackground ()Z
 	public fun indent ()V
 	public fun insertTable (II)V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public fun outdent ()V
+	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
 	public fun toggleCodeBlock ()V
@@ -661,11 +667,14 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun getInHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInTable (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getNumberingStart (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)I
+	public static fun getNumberingStyle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public static fun getTakesBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun insertTable (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;II)V
 	public static fun isActive (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun setNumbering (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
@@ -1158,7 +1167,10 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun lineBreakInItem (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun numberingStartOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
+	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun setNumbering (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

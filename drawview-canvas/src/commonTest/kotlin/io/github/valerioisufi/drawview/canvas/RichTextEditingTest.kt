@@ -3,6 +3,8 @@ package io.github.valerioisufi.drawview.canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
+import io.github.valerioisufi.drawview.model.text.ListNumbering
+import io.github.valerioisufi.drawview.model.text.NumberingStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -484,5 +486,27 @@ class RichTextEditingTest {
         assertTrue(RichTextEditing.inNumberedList(level("a.  x", 5)))
         assertEquals("x", RichTextEditing.toggleNumberedList(level("a.  x", 5)).text)
         assertEquals("- x\n- y", RichTextEditing.toggleBulletList(level("a.  x\nb.  y", 5)).text)
+    }
+
+    @Test
+    fun aStyleIsSetOnTheWholeListAtTheCaret() {
+        val letters = NumberingStyle(ListNumbering.Numbering.LOWER_ALPHA)
+        val roman = NumberingStyle(ListNumbering.Numbering.UPPER_ROMAN, ')')
+        assertEquals("a.  x\nb.  y", RichTextEditing.setNumbering(level("1. x\n2. y", 8), letters, 1).text)
+        assertEquals("C.  x".lowercase(), RichTextEditing.setNumbering(level("x", 0), letters, 3).text, "a line made a list")
+        assertEquals("a.  x\nb.  y", RichTextEditing.setNumbering(level("- x\n- y", 2), letters, 1).text, "a level of bullets")
+        assertEquals("1. x\n2. y", RichTextEditing.setNumbering(level("a.  x\nb.  y", 5), null, 1).text, "back to the numbers by level")
+        assertEquals("V)  x\nVI)  y", RichTextEditing.setNumbering(level("1. x\n2. y", 3), roman, 5).text)
+        assertEquals("- a\n  a.  b\n- c", RichTextEditing.setNumbering(level("- a\n  1. b\n- c", 9), letters, 1).text, "its level only")
+        assertEquals(TextRange(4), RichTextEditing.setNumbering(level("1. x", 3), letters, 1).selection, "the caret at its text")
+    }
+
+    @Test
+    fun theStyleOfTheListAtTheCaretIsRead() {
+        val letters = "c.  x\nd.  y"
+        assertEquals(NumberingStyle(ListNumbering.Numbering.LOWER_ALPHA), RichTextEditing.numberingStyleOf(level(letters, 8)))
+        assertEquals(3, RichTextEditing.numberingStartOf(level(letters, 8)))
+        assertEquals(null, RichTextEditing.numberingStyleOf(level("1. x", 3)))
+        assertEquals(1, RichTextEditing.numberingStartOf(level("plain", 2)))
     }
 }

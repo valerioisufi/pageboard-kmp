@@ -112,6 +112,17 @@
     <string name="text_editor_action_heading">제목</string>
     <string name="text_editor_action_bullet_list">글머리 기호</string>
     <string name="text_editor_action_numbered_list">번호 매기기</string>
+    <string name="text_editor_action_numbering">번호 매기기…</string>
+    <string name="numbering_automatic">수준별</string>
+    <string name="numbering_decimal">숫자</string>
+    <string name="numbering_lower_alpha">소문자</string>
+    <string name="numbering_upper_alpha">대문자</string>
+    <string name="numbering_lower_roman">소문자 로마 숫자</string>
+    <string name="numbering_upper_roman">대문자 로마 숫자</string>
+    <string name="numbering_delimiter">구분 기호</string>
+    <string name="numbering_start">시작 번호</string>
+    <string name="numbering_start_earlier">이전 번호에서 시작</string>
+    <string name="numbering_start_later">다음 번호에서 시작</string>
     <string name="text_editor_action_table">표</string>
     <string name="table_row_above">위에 행 삽입</string>
     <string name="table_row_below">아래에 행 삽입</string>

@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.canvas.controller
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.text.NumberingStyle
 
 /**
  * What the formatting of the texts applies to: the text being written (see [TextEditorManager]) or
@@ -61,6 +62,12 @@ public interface TextFormatTarget {
     /** Whether the lines of the selection are numbered list items. */
     public val inNumberedList: Boolean get() = false
 
+    /** The style of the numbered list of the selection (`null` for none, or a number by its level). */
+    public val numberingStyle: NumberingStyle? get() = null
+
+    /** The number the numbered list of the selection starts from. */
+    public val numberingStart: Int get() = 1
+
     /** Adds or removes [format] around the selection of the text being written. */
     public fun toggle(format: RichTextEditing.Format) {}
 
@@ -78,6 +85,9 @@ public interface TextFormatTarget {
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
     public fun toggleNumberedList() {}
+
+    /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
+    public fun setNumbering(style: NumberingStyle?, start: Int) {}
 
     /** Adds 2 spaces of indentation to the lines of the selection. */
     public fun indent() {}
