@@ -117,9 +117,9 @@ These are in brief; the full version is in `docs/modularization.md`.
 ## Worktrees
 
 `.worktreeinclude` copies `local.properties` (the Android SDK) and the `Local.xcconfig` files of
-the iOS apps (the Apple team) into a new worktree. The native libraries (`native/build`,
-`build/pdfium`) belong to each checkout, so the first build of a new worktree builds or
-downloads them, which takes a while.
+the iOS apps (the Apple team) into a new worktree. The native libraries of the desktop, of iOS and
+of cargo come from the build cache when their sources are the same (`docs/build-speed.md`); the
+CMake of Android runs in each checkout, which takes a while.
 
 ## Planned work
 

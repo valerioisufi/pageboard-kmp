@@ -5,6 +5,10 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ValueSource
+import org.gradle.api.provider.ValueSourceParameters
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
@@ -13,6 +17,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.Properties
 import javax.inject.Inject
@@ -42,10 +47,38 @@ val Project.rustTargetDirectory: File
     get() = rootProject.layout.projectDirectory.dir("native/build/rust").asFile
 
 /**
+ * The version of Xcode (empty on another system): what compiles the native code of Apple targets,
+ * so an input of the tasks whose output goes in the build cache. A [ValueSource] not read while
+ * configuring: it runs only when one of those tasks is in the graph.
+ */
+abstract class AppleToolchainVersion : ValueSource<String, ValueSourceParameters.None> {
+    @get:Inject
+    abstract val exec: ExecOperations
+
+    override fun obtain(): String {
+        if (!System.getProperty("os.name").lowercase().contains("mac")) return ""
+        val output = ByteArrayOutputStream()
+        exec.exec {
+            commandLine("xcodebuild", "-version")
+            standardOutput = output
+            isIgnoreExitValue = true
+        }
+        return output.toString().trim()
+    }
+}
+
+/** The version of Xcode ([AppleToolchainVersion]). */
+fun Project.appleToolchainVersion(): Provider<String> =
+    providers.of(AppleToolchainVersion::class.java) {}
+
+/**
  * Builds the library of a Rust crate with cargo, for each of [targets] (target triple → folder),
  * into [output]`/<folder>/`: a `cdylib` (Android, desktop) or a `staticlib` (iOS), with the
- * versions of `Cargo.lock` (`--locked`).
+ * versions of `Cargo.lock` (`--locked`). Its output goes in the build cache: the toolchain of
+ * Rust is among the [sources] (`rust-toolchain.toml`), the NDK in the [environment] by its path,
+ * Xcode in [appleToolchain].
  */
+@CacheableTask
 abstract class CargoBuild : DefaultTask() {
     /** The sources of the crate (what makes the library change). */
     @get:InputFiles
@@ -78,6 +111,10 @@ abstract class CargoBuild : DefaultTask() {
     @get:Input
     abstract val stripDebugSymbols: Property<Boolean>
 
+    /** The version of Xcode, for the targets linked with it ([appleToolchainVersion]). */
+    @get:Input
+    abstract val appleToolchain: Property<String>
+
     @get:Internal
     abstract val targetDirectory: DirectoryProperty
 
@@ -92,6 +129,7 @@ abstract class CargoBuild : DefaultTask() {
 
     init {
         stripDebugSymbols.convention(false)
+        appleToolchain.convention("")
     }
 
     @TaskAction

@@ -24,6 +24,8 @@ plugins {
     alias(libs.plugins.mavenPublish) apply false
     // The documentation of the libraries: each one, and all of them together (dokkaGenerate)
     alias(libs.plugins.dokka)
+    // The classes of the convention plugins, for the native tasks of this script
+    id("drawview.publish") apply false
 }
 
 // The documentation of every library together: ./gradlew :dokkaGenerate (build/dokka/html)
@@ -47,6 +49,11 @@ mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm6
         description = "Builds the Google Ink, MicroTeX, PDFium bridge and audio codecs static libraries for the $sdk SDK"
         onlyIf { System.getProperty("os.name").lowercase().contains("mac") }
         dependsOn(":extractPdfium-$pdfiumPackage", ":extractOpusSource", ":extractAacSource")
+        inputs.property("pdfium", "$pdfiumVersion/$pdfiumPackage")
+        inputs.property("opusVersion", opusVersion)
+        inputs.property("aacVersion", aacVersion)
+        inputs.property("appleToolchain", appleToolchainVersion())
+        outputs.cacheIf { true }
         environment("DRAWVIEW_PDFIUM_DIR", layout.buildDirectory.dir("pdfium/$pdfiumPackage").get().asFile.absolutePath)
         environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
         environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
@@ -73,6 +80,7 @@ mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm6
 // =====================================================================================
 
 /** Downloads [url] into [destination], failing unless its SHA-256 digest is [sha256]. */
+@CacheableTask
 abstract class DownloadVerifiedFile : DefaultTask() {
     @get:Input
     abstract val url: Property<String>
@@ -107,6 +115,7 @@ abstract class DownloadVerifiedFile : DefaultTask() {
  * (./libpdfium.dylib): it is rewritten to @rpath/libpdfium.dylib so that the JNI bridge finds
  * the library next to itself.
  */
+@CacheableTask
 abstract class ExtractPdfium @Inject constructor(
     private val archives: ArchiveOperations,
     private val fileSystem: FileSystemOperations,
@@ -319,6 +328,9 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     inputs.property("whisperVersion", whisperVersion)
     inputs.property("opusVersion", opusVersion)
     inputs.property("aacVersion", aacVersion)
+    inputs.property("pdfium", "$pdfiumVersion/$desktopPdfiumPackage")
+    inputs.property("appleToolchain", appleToolchainVersion())
+    outputs.cacheIf { true }
     listOf("drawview-ink", "drawview-canvas", "drawview-latex", "drawview-pdf", "drawview-lecture", "drawview-sync-iroh").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }

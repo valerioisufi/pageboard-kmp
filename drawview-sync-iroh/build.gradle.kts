@@ -23,6 +23,7 @@ val buildIrohBridgeIos = tasks.register<CargoBuild>("buildIrohBridgeIos") {
     targets.set(mapOf("aarch64-apple-ios" to "iphoneos", "aarch64-apple-ios-sim" to "iphonesimulator"))
     environment.set(mapOf("IPHONEOS_DEPLOYMENT_TARGET" to "15.0"))
     stripDebugSymbols.set(true)
+    appleToolchain.set(appleToolchainVersion())
     targetDirectory.set(rustTargetDirectory)
     output.set(layout.buildDirectory.dir("rust/ios"))
 }
@@ -33,7 +34,9 @@ val buildIrohDevRelay = tasks.register<Exec>("buildIrohDevRelay") {
     group = "native"
     description = "Builds the relay of the tests of the iroh bridge"
     inputs.files(bridgeSources).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.property("appleToolchain", appleToolchainVersion())
     outputs.file(devRelay)
+    outputs.cacheIf { true }
     val cargo = cargoExecutable()
     workingDir(irohBridge)
     environment("PATH", cargoSearchPath(cargo))
