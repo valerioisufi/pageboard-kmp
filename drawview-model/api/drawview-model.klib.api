@@ -3530,6 +3530,14 @@ final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighligh
     final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text.code/CodeToken> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.text/BlockQuote { // io.github.valerioisufi.drawview.model.text/BlockQuote|null[0]
+    final const val MARKER // io.github.valerioisufi.drawview.model.text/BlockQuote.MARKER|{}MARKER[0]
+        final fun <get-MARKER>(): kotlin/String // io.github.valerioisufi.drawview.model.text/BlockQuote.MARKER.<get-MARKER>|<get-MARKER>(){}[0]
+
+    final fun isQuotedAt(kotlin/CharSequence, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/BlockQuote.isQuotedAt|isQuotedAt(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun markerLength(kotlin/CharSequence, kotlin/Int): kotlin/Int // io.github.valerioisufi.drawview.model.text/BlockQuote.markerLength|markerLength(kotlin.CharSequence;kotlin.Int){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model.text/ListMarker { // io.github.valerioisufi.drawview.model.text/ListMarker|null[0]
     final fun at(kotlin/CharSequence, kotlin/Int = ...): io.github.valerioisufi.drawview.model.text/ListMarker.Read? // io.github.valerioisufi.drawview.model.text/ListMarker.at|at(kotlin.CharSequence;kotlin.Int){}[0]
     final fun canStart(io.github.valerioisufi.drawview.model.text/NumberingStyle?, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ListMarker.canStart|canStart(io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]
@@ -3649,6 +3657,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         enum entry ITALIC // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.ITALIC|null[0]
         enum entry LINK // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LINK|null[0]
         enum entry LIST_ITEM // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LIST_ITEM|null[0]
+        enum entry QUOTE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.QUOTE|null[0]
         enum entry STRIKE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.STRIKE|null[0]
         enum entry TABLE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.TABLE|null[0]
 

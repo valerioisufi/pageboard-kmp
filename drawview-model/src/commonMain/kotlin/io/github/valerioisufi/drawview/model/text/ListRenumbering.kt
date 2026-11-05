@@ -203,7 +203,8 @@ public object ListRenumbering {
         for (span in spans) if (span.kind == Kind.CODE_BLOCK && span.listItem?.start == item.start) end = maxOf(end, span.end)
         var line = text.indexOf('\n', item.contentStart)
         while (line in 0 until end) {
-            val lineStart = line + 1
+            // The line of an item in a quote has its indentation after its marker
+            val lineStart = line + 1 + BlockQuote.markerLength(text, line + 1)
             var spaces = 0
             while (lineStart + spaces < text.length && text[lineStart + spaces] == ' ') spaces++
             val blank = lineStart + spaces >= text.length || text[lineStart + spaces] == '\n'

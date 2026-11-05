@@ -184,14 +184,17 @@ public object ListNumbering {
 
     /**
      * Whether a line of other text is between [from] (the end of an item) and [to] (the start of
-     * the next one): a line not blank, out of the blocks of code under the items.
+     * the next one): a line not blank, out of the blocks of code under the items, its marker of a
+     * quote apart. A list never goes from a quote to out of it.
      */
     private fun breaksList(text: String, from: Int, to: Int, underItems: List<Span>): Boolean {
+        if (BlockQuote.isQuotedAt(text, from) != BlockQuote.isQuotedAt(text, to)) return true
         var lineStart = from
         while (lineStart < to) {
             val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0 || it > to) to else it }
             val covered = RichTextParser.isIn(underItems, lineStart)
-            if (!covered && text.substring(lineStart, lineEnd).isNotBlank()) return true
+            val textStart = if (lineStart == 0 || text[lineStart - 1] == '\n') lineStart + BlockQuote.markerLength(text, lineStart) else lineStart
+            if (!covered && textStart < lineEnd && text.substring(textStart, lineEnd).isNotBlank()) return true
             lineStart = lineEnd + 1
         }
         return false

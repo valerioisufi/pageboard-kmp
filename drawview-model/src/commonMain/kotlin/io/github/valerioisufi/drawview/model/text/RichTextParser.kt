@@ -4,7 +4,7 @@ import kotlin.math.min
 
 /**
  * The notation of the texts: Markdown (bold, italic, strikethrough, code, blocks of code,
- * headings) with formulas, `$…$` in the line and `$$…$$` in display style (on a line of their own
+ * headings, block quotes, see [BlockQuote]) with formulas, `$…$` in the line and `$$…$$` in display style (on a line of their own
  * when nothing else is on their lines), and the escapes `\*` of the punctuation.
  *
  * The rules follow Pandoc for the formulas (a `$` opening a formula is followed by a character
@@ -17,7 +17,7 @@ import kotlin.math.min
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK, TABLE }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK, TABLE, QUOTE }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
@@ -26,6 +26,10 @@ public object RichTextParser {
      * A list item goes from the start of its line to the end of its last continuation line (see
      * [ListNumbering] for its place in its list). A table goes from the start of its header row to
      * the end of its last row (see [TableShape] for its cells).
+     *
+     * A block quote goes from the start of its first line to the end of its last, its content
+     * from the text of the first; the markers of its other lines are not delimiters. A list item in
+     * a quote starts after the marker of its line.
      *
      * A block of code goes from the start of the line of its opening fence to the end of the line
      * of its closing fence (or of the text, when no fence closes it); its content is the lines
@@ -79,6 +83,10 @@ public object RichTextParser {
         val links = scanLinks(withoutVerbatim, text)
         val masked = maskDelimiters(withoutVerbatim, links)
         val candidates = (verbatim + links).toMutableList()
+        val quotes = quotes(text, verbatim)
+        candidates += quotes
+        // The patterns of the items read the markers of the quotes as indentation: the offsets stay those of the source
+        val unquoted = blanked(masked, quotes)
         candidates += emphasisBetween(verbatim.filter { it.kind == Kind.CODE_BLOCK }, masked, text)
         for (match in HEADING.findAll(masked)) {
             val start = match.range.first
@@ -89,27 +97,95 @@ public object RichTextParser {
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             if (contentStart < end) candidates += Span(Kind.HEADING, start, end, contentStart, end, level = level)
         }
-        for (match in BULLET_LIST.findAll(masked)) {
-            val start = match.range.first
+        for (match in BULLET_LIST.findAll(unquoted)) {
+            val lineStart = match.range.first
             val end = match.range.last + 1
+            val start = lineStart + quoteMarkerOf(text, lineStart, quotes)
             val indent = match.groupValues[1]
             val marker = match.groupValues[2]
-            var contentStart = start + indent.length + marker.length
+            var contentStart = lineStart + indent.length + marker.length
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
-            val level = indentLevel(indent)
+            val level = indentLevel(indent.substring(start - lineStart))
             candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false)
         }
-        for (match in NUMBERED_LIST.findAll(masked)) {
-            val start = match.range.first
+        for (match in NUMBERED_LIST.findAll(unquoted)) {
+            val lineStart = match.range.first
             val end = match.range.last + 1
+            val start = lineStart + quoteMarkerOf(text, lineStart, quotes)
             val indent = match.groupValues[1]
-            val marker = ListMarker.at(masked, start + indent.length) ?: continue
-            val contentStart = start + indent.length + marker.length
-            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = indentLevel(indent), ordered = true, number = marker.number, style = marker.style)
+            val marker = ListMarker.at(unquoted, lineStart + indent.length) ?: continue
+            val contentStart = lineStart + indent.length + marker.length
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = indentLevel(indent.substring(start - lineStart)), ordered = true, number = marker.number, style = marker.style)
         }
-        withContinuations(text, candidates, verbatim)
+        withContinuations(text, candidates, verbatim, quotes)
         candidates += tables(text, masked)
         return nest(candidates)
+    }
+
+    /**
+     * The block quotes of [text]: the runs of lines with the marker of a quote, out of the blocks of
+     * code and the formulas ([verbatim]).
+     */
+    private fun quotes(text: String, verbatim: List<Span>): List<Span> {
+        if ('>' !in text) return emptyList()
+        val quotes = mutableListOf<Span>()
+        var first = -1
+        var firstLength = 0
+        var lastEnd = 0
+        var lineStart = 0
+        while (lineStart <= text.length) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+            val length = if (isIn(verbatim, lineStart)) 0 else BlockQuote.markerLength(text, lineStart)
+            if (length > 0) {
+                if (first < 0) {
+                    first = lineStart
+                    firstLength = length
+                }
+                lastEnd = lineEnd
+            } else if (first >= 0) {
+                quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd)
+                first = -1
+            }
+            lineStart = lineEnd + 1
+        }
+        if (first >= 0) quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd)
+        return quotes
+    }
+
+    /** [masked] with the markers of the lines of [quotes] replaced by spaces, the offsets kept. */
+    private fun blanked(masked: String, quotes: List<Span>): String {
+        if (quotes.isEmpty()) return masked
+        val chars = masked.toCharArray()
+        for (quote in quotes) {
+            var lineStart = quote.start
+            while (lineStart <= quote.end) {
+                for (i in lineStart until lineStart + BlockQuote.markerLength(masked, lineStart)) chars[i] = ' '
+                val next = masked.indexOf('\n', lineStart)
+                if (next < 0) break
+                lineStart = next + 1
+            }
+        }
+        return chars.concatToString()
+    }
+
+    /** The length of the marker of the line starting at [lineStart] of [text] if it is in one of [quotes], else 0. */
+    private fun quoteMarkerOf(text: String, lineStart: Int, quotes: List<Span>): Int =
+        if (quotes.isNotEmpty() && isInQuote(quotes, lineStart)) BlockQuote.markerLength(text, lineStart) else 0
+
+    /** Whether [offset] is in one of [quotes], its end included (the end of a quote with nothing on its last line). */
+    private fun isInQuote(quotes: List<Span>, offset: Int): Boolean {
+        var low = 0
+        var high = quotes.size - 1
+        while (low <= high) {
+            val middle = (low + high) ushr 1
+            val quote = quotes[middle]
+            when {
+                offset < quote.start -> high = middle - 1
+                offset > quote.end -> low = middle + 1
+                else -> return true
+            }
+        }
+        return false
     }
 
     /**
@@ -151,21 +227,27 @@ public object RichTextParser {
      * the item, that are not an item themselves nor in a block of code ([verbatim]). An item and
      * its continuation lines are one paragraph: a line break inside an item.
      */
-    private fun withContinuations(text: String, candidates: MutableList<Span>, verbatim: List<Span>) {
+    private fun withContinuations(text: String, candidates: MutableList<Span>, verbatim: List<Span>, quotes: List<Span>) {
         val itemStarts = HashSet<Int>()
         for (span in candidates) if (span.kind == Kind.LIST_ITEM) itemStarts += span.start
         val blocks = verbatim.filter { it.kind == Kind.CODE_BLOCK }.sortedBy { it.start }
         for ((index, item) in candidates.withIndex()) {
             if (item.kind != Kind.LIST_ITEM) continue
             val column = columnOf(text, item.start, item.contentStart)
+            val quoted = quotes.isNotEmpty() && isInQuote(quotes, item.start)
             var end = item.end
             while (end < text.length) {
                 val lineStart = end + 1
-                if (lineStart > text.length || lineStart in itemStarts || isIn(blocks, lineStart)) break
+                if (lineStart > text.length) break
+                // A line of a quote has its indentation after its marker; an item stays on its side of a quote
+                val marker = quoteMarkerOf(text, lineStart, quotes)
+                if ((marker > 0) != quoted) break
+                val textStart = lineStart + marker
+                if (textStart in itemStarts || isIn(blocks, lineStart)) break
                 val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
-                var k = lineStart
+                var k = textStart
                 while (k < lineEnd && (text[k] == ' ' || text[k] == '\t')) k++
-                if (k == lineEnd || columnOf(text, lineStart, k) < column) break
+                if (k == lineEnd || columnOf(text, textStart, k) < column) break
                 end = lineEnd
             }
             if (end != item.end) candidates[index] = item.copy(end = end, contentEnd = end)

@@ -3038,6 +3038,13 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
 	public final fun recognize (Ljava/util/List;F)Lio/github/valerioisufi/drawview/model/shape/Shape;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/BlockQuote {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/BlockQuote;
+	public static final field MARKER Ljava/lang/String;
+	public final fun isQuotedAt (Ljava/lang/CharSequence;I)Z
+	public final fun markerLength (Ljava/lang/CharSequence;I)I
+}
+
 public final class io/github/valerioisufi/drawview/model/text/ChainFlow {
 	public fun <init> (Lkotlin/jvm/functions/Function2;)V
 	public final fun flow (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/text/ChainFlow$Room;)Ljava/util/List;
@@ -3191,6 +3198,7 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Kin
 	public static final field ITALIC Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field LINK Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field LIST_ITEM Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field QUOTE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field STRIKE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field TABLE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
