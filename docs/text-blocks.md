@@ -106,7 +106,7 @@ from inside a quote to outside it.
 | The gestures in a quote: Enter, Backspace, `toggleQuote`, the lines of the lists after the marker | `RichTextEditing` | Information Expert |
 | The command, its button | `EditorCommands.quote`, `TextFormatTarget.toggleQuote`, `TextFormatBar` | Controller, Indirection |
 | The sizes of the headings | `MarkdownTextUtil.headingScale` | Information Expert |
-| A heading kept with what follows | `ChainFlow.cutFor` | Information Expert |
+| A heading kept with what follows | `ChainFlow.cutFor` for a text written, `TextFlow` (its blocks) for one imported | Information Expert |
 | Which characters come from the symbols | `NotesFonts.symbols`, `TextSymbols` (`drawview-model`), pure | Pure Fabrication, Protected Variations |
 | The symbols in their font | `RichTextPresenter`, on the text shown | Information Expert |
 | The symbols in a PDF | `TextFace.SYMBOLS`, `NotesFontFiles` | Polymorphism |
@@ -160,7 +160,7 @@ code, which has the mono font. The font has one weight: a symbol in bold text st
 | Phase | Content | Status |
 | :--- | :--- | :--- |
 | 1 | Symbols: the script and the font, `TextSymbols`, `NotesFonts.symbols`, the presenter, `TextFace.SYMBOLS` and the PDF, the screenshot of `↔`, an emoji left alone, the license listed in the application | done |
-| 2 | Headings: the six sizes, `ChainFlow` keeping a heading with what follows, the placement of an import if it cuts the same way, screenshots and tests | proposed |
+| 2 | Headings: the six sizes, `ChainFlow` keeping a heading with what follows, `TextFlow` for what is imported, screenshots and tests | done |
 | 3 | Quotes in the notation: `BlockQuote`, `Kind.QUOTE`, the items in a quote, `ListNumbering`; old texts (`>5`, `a > b`), bounds of the parser | proposed |
 | 4 | Quotes drawn: presenter, bars, page, editor, PDF, assistant, flow across boxes; the search and the copy checked; screenshots of the 12 quotes of the note | proposed |
 | 5 | Writing quotes: Enter, Backspace, Tab, the lists inside, `toggleQuote`, button, icon, shortcut, menu, the strings in 7 languages; the desktop app on a scratch directory | proposed |

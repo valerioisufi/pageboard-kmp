@@ -46,4 +46,13 @@ class ChainFlowTest {
         val pieces = flow.flow("1. a\n1. b\n1. c\n1. d", listOf(Room(100f, 10f)), room)
         assertEquals(listOf(Piece("1. a\n2. b"), Piece("3. c\n4. d")), pieces)
     }
+
+    @Test
+    fun aHeadingStaysWithWhatFollowsIt() {
+        assertEquals(listOf(Piece("a\nb"), Piece("### c\nd\ne")), flow.flow("a\nb\n### c\nd\ne", listOf(room), room))
+        assertEquals(listOf(Piece("a"), Piece("# b\n\nc")), flow.flow("a\n# b\n\nc", listOf(room), room), "over a blank line")
+        assertEquals(listOf(Piece("a"), Piece("# b\n## c\nd")), flow.flow("a\n# b\n## c\nd", listOf(room), room), "two headings together")
+        assertEquals(listOf(Piece("# a\n# b\n# c"), Piece("d")), flow.flow("# a\n# b\n# c\nd", listOf(room), room), "only headings fit: a box takes something")
+        assertEquals(listOf(Piece("```\na\n```\nb"), Piece("c\nd")), flow.flow("```\na\n```\nb\nc\nd", listOf(Room(100f, 20f)), Room(100f, 20f)), "no heading: as before")
+    }
 }

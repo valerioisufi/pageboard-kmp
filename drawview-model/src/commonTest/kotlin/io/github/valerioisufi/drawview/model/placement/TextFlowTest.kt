@@ -115,4 +115,15 @@ class TextFlowTest {
         assertEquals(1, pieces.single().newPage)
         assertEquals(10f, pieces.single().box.top)
     }
+
+    @Test
+    fun noPieceEndsWithAHeading() {
+        // A heading every other block, at every place of a page
+        for (lead in 0..10) {
+            val markdown = (List(lead) { "line" } + (1..121).map { if (it % 2 == 0) "### heading $it" else "text $it" }).joinToString("\n\n")
+            val pieces = flow.flow(markdown, null, empty(), ::heightOf)
+            assertTrue(pieces.size > 1)
+            for (piece in pieces) assertTrue(!piece.text.lines().last().startsWith("#"), piece.text.lines().last())
+        }
+    }
 }

@@ -365,6 +365,14 @@ class TextScreenshotTest {
         }
     }
 
+    /** The six levels of the headings, told apart. */
+    @Test
+    fun textSavedHeadings() = capture("text-saved-headings", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "# Level one\nText\n## Level two\nText\n### Level three\nText\n#### Level four\nText\n##### Level five\nText\n###### Level six\nText", drawnWidthMm = 150f)
+        save(viewModels)
+    }
+
     /** The symbols from their font: in the line, in bold, in a table, an emoji asked for left alone. */
     @Test
     fun textSavedSymbols() = capture("text-saved-symbols", ReferenceWindow.DESKTOP, dark = false) { viewModels ->

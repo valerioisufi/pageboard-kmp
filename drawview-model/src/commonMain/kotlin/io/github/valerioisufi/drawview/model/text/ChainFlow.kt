@@ -80,10 +80,32 @@ public class ChainFlow(private val heightOf: (text: String, widthMm: Float) -> F
                 high = middle - 1
             }
         }
-        if (best >= 0) return ends[best]
+        if (best >= 0) return ends[keptWithItsHeading(text, ends, best)]
         val first = text.substring(0, ends[0])
         if (fresh && '\n' !in first) return wordCut(first, room).takeIf { it in 1 until first.length } ?: ends[0]
         return ends[0]
+    }
+
+    /**
+     * The unit of [ends] to cut after instead of [best], so that no heading ends a box: the last one
+     * before the headings and the blank lines at the end of what fits. [best] when only headings
+     * and blank lines fit, as a box always takes something.
+     */
+    private fun keptWithItsHeading(text: String, ends: List<Int>, best: Int): Int {
+        val headingEnds = RichTextParser.parse(text).filter { it.kind == Kind.HEADING }.mapTo(HashSet()) { it.end }
+        var kept = best
+        var afterHeading = false
+        while (kept >= 0) {
+            val end = ends[kept]
+            val start = if (kept == 0) 0 else ends[kept - 1] + 1
+            when {
+                end in headingEnds -> afterHeading = true
+                start >= end || text.substring(start, end).isBlank() -> Unit
+                else -> break
+            }
+            kept--
+        }
+        return if (afterHeading && kept >= 0) kept else best
     }
 
     /** The end of the most words of [line] that fit in [room] (after the space following the last one). */

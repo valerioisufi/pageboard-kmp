@@ -4,8 +4,8 @@ import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /**
  * A long Markdown text flowed through the free space of a page, then onto new pages after it: split
- * into blocks that never break a formula, a code block or a list item, the blocks one after the
- * other in reading order, those that follow each other in one place joined in one text.
+ * into blocks that never break a formula, a code block or a list item, nor part a heading from what
+ * follows it, the blocks one after the other in reading order, those that follow each other in one place joined in one text.
  *
  * @param planner finds the free places (see [PlacementPlanner]).
  * @param minWidthMm the narrowest a piece may be (narrower, a long text is hard to read).
@@ -70,7 +70,7 @@ public class TextFlow(
         val pieces = mutableListOf<Piece>()
         var occupancy = first ?: newPage
         var pageNumber = if (first == null) 1 else 0
-        val pending = ArrayDeque(blocksOf(markdown))
+        val pending = ArrayDeque(withTheirHeadings(blocksOf(markdown)))
         while (pending.isNotEmpty()) {
             val block = pending.first()
             val width = occupancy.widthMm - 2 * planner.pageMarginMm
@@ -140,6 +140,22 @@ public class TextFlow(
         }
 
         private val HEADING = Regex("""^#{1,3}\s.*""")
+
+        /** A line that is a heading of any level: it goes where the block after it goes. */
+        private val ANY_HEADING = Regex("""^#{1,6}\s.*""")
+
+        /** [blocks] with each block of a heading alone joined to the block after it: no heading ends a piece. */
+        private fun withTheirHeadings(blocks: List<String>): List<String> {
+            val joined = mutableListOf<String>()
+            var pending: String? = null
+            for (block in blocks) {
+                val whole = pending?.let { it + "\n\n" + block } ?: block
+                pending = if ('\n' !in block && ANY_HEADING.matches(block)) whole else null
+                if (pending == null) joined += whole
+            }
+            pending?.let { joined += it }
+            return joined
+        }
 
         /**
          * The blocks of [markdown]: its paragraphs, between blank lines, but a fenced code block

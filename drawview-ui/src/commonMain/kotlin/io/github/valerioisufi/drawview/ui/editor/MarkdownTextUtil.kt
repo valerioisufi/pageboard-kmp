@@ -86,11 +86,14 @@ public object MarkdownTextUtil {
         Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM, Kind.TABLE -> null
     }
 
-    /** How much bigger than the text a heading of [level] is. */
+    /** How much bigger than the text a heading of [level] is: all six told apart, bold from the fourth at the size of the text and below. */
     internal fun headingScale(level: Int): Float = when (level) {
         1 -> 1.4f
         2 -> 1.25f
-        else -> 1.1f
+        3 -> 1.1f
+        4 -> 1f
+        5 -> 0.95f
+        else -> 0.9f
     }
 
     /**
