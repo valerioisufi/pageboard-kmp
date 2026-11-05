@@ -46,6 +46,7 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/
 	public final fun isAnswering ()Z
 	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
 	public fun onQueryChange (Ljava/lang/String;)V
+	public fun onScopeChange (Ljava/util/Set;)V
 	public final fun openAnchor (Lio/github/valerioisufi/drawview/search/SearchAnchor;Lio/github/valerioisufi/drawview/explorer/DocumentOpener;)V
 	public final fun setAnswerModelSpec (Lio/github/valerioisufi/drawview/ml/ModelSpec;)V
 	public final fun start (Lkotlinx/coroutines/CoroutineScope;)V

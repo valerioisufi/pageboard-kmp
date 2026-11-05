@@ -50,6 +50,7 @@ final class io.github.valerioisufi.drawview.search.ui/ContentSearch : io.github.
     final fun askOnline(kotlin/String = ...) // io.github.valerioisufi.drawview.search.ui/ContentSearch.askOnline|askOnline(kotlin.String){}[0]
     final fun matchesOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.explorer/LibrarySearchMatch> // io.github.valerioisufi.drawview.search.ui/ContentSearch.matchesOf|matchesOf(kotlin.String){}[0]
     final fun onQueryChange(kotlin/String) // io.github.valerioisufi.drawview.search.ui/ContentSearch.onQueryChange|onQueryChange(kotlin.String){}[0]
+    final fun onScopeChange(kotlin.collections/Set<kotlin/String>?) // io.github.valerioisufi.drawview.search.ui/ContentSearch.onScopeChange|onScopeChange(kotlin.collections.Set<kotlin.String>?){}[0]
     final fun openAnchor(io.github.valerioisufi.drawview.search/SearchAnchor, io.github.valerioisufi.drawview.explorer/DocumentOpener) // io.github.valerioisufi.drawview.search.ui/ContentSearch.openAnchor|openAnchor(io.github.valerioisufi.drawview.search.SearchAnchor;io.github.valerioisufi.drawview.explorer.DocumentOpener){}[0]
     final fun start(kotlinx.coroutines/CoroutineScope) // io.github.valerioisufi.drawview.search.ui/ContentSearch.start|start(kotlinx.coroutines.CoroutineScope){}[0]
 

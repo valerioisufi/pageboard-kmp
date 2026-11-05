@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -132,6 +133,7 @@ internal fun ExplorerScreen(
     LaunchedEffect(viewModel, search) {
         viewModel.contentSearch = search
         search?.onQueryChange(viewModel.searchQuery)
+        snapshotFlow { viewModel.searchDocumentIds }.collect { search?.onScopeChange(it) }
     }
     val searchFocus = remember { FocusRequester() }
     // Going somewhere takes the focus from the search (and the keyboard away), keeping the shortcuts

@@ -234,6 +234,12 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         }
     }
 
+    /** The documents a search looks at for [contentSearch], `null` when it looks at all of them. */
+    val searchDocumentIds: Set<String>? by derivedStateOf {
+        val everywhere = searchScope == SearchScope.LIBRARY || (section == Section.HOME && currentFolderId == null)
+        if (!isSearching || everywhere) null else documentsInScope.mapTo(mutableSetOf()) { it.id }
+    }
+
     /**
      * What the library shows, in the chosen order: the content of the current folder (the folders
      * stay under a filter, the notes in them can be reached), the notes opened last or the shared
@@ -254,7 +260,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** What is in the trash, narrowed by the search of its names. */
     val shownTrash: List<TrashedItem> by derivedStateOf {
         val query = searchQuery.trim()
-        if (query.isEmpty()) trash else trash.filter { it.name.contains(query, ignoreCase = true) }
+        if (query.isEmpty()) trash else trash.filter { nameMatches(it.name, query) }
     }
 
     private fun sorted(items: List<FileItem>) = sortFiles(items, sortOption, sortAscending, keepFoldersOnTop)
@@ -265,17 +271,17 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
      * order without it.
      */
     private fun searchResults(query: String): List<FileItem> {
-        val matchingFolders = foldersInScope.filter { it.name.contains(query, ignoreCase = true) }
+        val matchingFolders = foldersInScope.filter { nameMatches(it.name, query) }
         val ranked = contentSearch?.matchedDocumentIds
         if (ranked == null) {
-            val matchingDocuments = documentsInScope.filter { it.name.contains(query, ignoreCase = true) }
+            val matchingDocuments = documentsInScope.filter { nameMatches(it.name, query) }
             return sorted(matchingFolders.map { it.toFileItem() } + matchingDocuments.map { it.toFileItem() })
         }
         val inScope = documentsInScope.associateBy { it.id }
         val rankedIds = ranked.toSet()
         val rankedDocuments = ranked.mapNotNull { inScope[it]?.toFileItem() }
         val namedDocuments = documentsInScope
-            .filter { it.id !in rankedIds && it.name.contains(query, ignoreCase = true) }
+            .filter { it.id !in rankedIds && nameMatches(it.name, query) }
             .map { it.toFileItem() }
         return matchingFolders.sortedBy { it.name }.map { it.toFileItem() } + rankedDocuments + namedDocuments
     }
@@ -735,6 +741,41 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
         /** The notes of the section of the recent ones. */
         const val RECENT_SECTION_LIMIT = 30
+    }
+}
+
+/**
+ * Whether the [name] of an item holds every word of [query], in any order, whatever their case and
+ * their accents ("universita" finds "Università").
+ */
+internal fun nameMatches(name: String, query: String): Boolean {
+    val folded = foldAccents(name)
+    return foldAccents(query).split(' ', '\t').filter { it.isNotEmpty() }.all { it in folded }
+}
+
+/** [text] in lower case, its Latin letters without their accents. */
+private fun foldAccents(text: String): String = buildString(text.length) {
+    for (char in text) {
+        val lower = char.lowercaseChar()
+        append(
+            when (lower) {
+                'à', 'á', 'â', 'ã', 'ä', 'å', 'ā', 'ă', 'ą' -> 'a'
+                'ç', 'ć', 'č' -> 'c'
+                'ď', 'đ' -> 'd'
+                'è', 'é', 'ê', 'ë', 'ē', 'ĕ', 'ė', 'ę', 'ě' -> 'e'
+                'ì', 'í', 'î', 'ï', 'ī', 'ĭ', 'į' -> 'i'
+                'ł' -> 'l'
+                'ñ', 'ń', 'ň' -> 'n'
+                'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ō', 'ŏ', 'ő' -> 'o'
+                'ř', 'ŕ' -> 'r'
+                'ś', 'š', 'ş' -> 's'
+                'ť', 'ţ' -> 't'
+                'ù', 'ú', 'û', 'ü', 'ū', 'ŭ', 'ů', 'ű', 'ų' -> 'u'
+                'ý', 'ÿ' -> 'y'
+                'ź', 'ż', 'ž' -> 'z'
+                else -> lower
+            }
+        )
     }
 }
 

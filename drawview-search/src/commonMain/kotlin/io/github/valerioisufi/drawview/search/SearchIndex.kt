@@ -393,9 +393,10 @@ public class SearchIndex(
      * the last word matched as a prefix while typed).
      *
      * Chunks matching all query words are ranked first, followed by chunks matching a subset of
-     * the query words ordered by their BM25 sum.
+     * the query words ordered by their BM25 sum. With [documentIds], only the chunks of those
+     * documents count, so that the best ones elsewhere do not fill the [limit].
      */
-    public fun searchWords(query: String, limit: Int = DEFAULT_SEARCH_LIMIT): List<ScoredChunk> = syncLock(lock) {
+    public fun searchWords(query: String, limit: Int = DEFAULT_SEARCH_LIMIT, documentIds: Set<String>? = null): List<ScoredChunk> = syncLock(lock) {
         checkNotClosed()
         if (limit <= 0) return emptyList()
         val words = searchWordsOf(query)
@@ -407,14 +408,14 @@ public class SearchIndex(
         // 1. Exact/prefix match of all words (or content words when there are stopwords)
         val contentWords = words.filter { it.length > 1 && it !in STOPWORDS }.ifEmpty { words }
         val allTermsExpr = ftsExpression(contentWords, operator = "AND", prefixLast = true)
-        queryFts(conn, allTermsExpr, limit).forEach { scored ->
+        queryFts(conn, allTermsExpr, limit, documentIds).forEach { scored ->
             collected[scored.indexed.id] = scored.copy(score = scored.score + ALL_WORDS_BOOST)
         }
 
         // 2. Any content word (BM25 sum ranks chunks with more and rarer words higher)
         if (contentWords.size > 1 && collected.size < limit) {
             val anyTermExpr = ftsExpression(contentWords, operator = "OR", prefixLast = true)
-            for (scored in queryFts(conn, anyTermExpr, limit * 2)) {
+            for (scored in queryFts(conn, anyTermExpr, limit * 2, documentIds)) {
                 if (collected.size >= limit) break
                 if (scored.indexed.id !in collected) {
                     collected[scored.indexed.id] = scored
@@ -427,12 +428,14 @@ public class SearchIndex(
 
     /**
      * Compares [queryVector] with every stored chunk vector in memory (brute force) and returns
-     * the top [limit] chunks by cosine similarity.
+     * the top [limit] chunks by cosine similarity; with [documentIds], of those documents only.
      */
-    public fun searchVectors(queryVector: FloatArray, limit: Int = DEFAULT_SEARCH_LIMIT): List<ScoredChunk> = syncLock(lock) {
+    public fun searchVectors(queryVector: FloatArray, limit: Int = DEFAULT_SEARCH_LIMIT, documentIds: Set<String>? = null): List<ScoredChunk> = syncLock(lock) {
         checkNotClosed()
         if (limit <= 0) return emptyList()
-        val pairs = chunkVectorsLocked()
+        val pairs = chunkVectorsLocked().let { all ->
+            if (documentIds == null) all else all.filter { (chunk, _) -> chunk.chunk.anchor.documentId in documentIds }
+        }
         if (pairs.isEmpty()) return emptyList()
         val normalizedQuery = QuantizedVector.truncateAndNormalize(queryVector, dimensions)
         pairs.map { (chunk, vector) ->
@@ -497,7 +500,7 @@ public class SearchIndex(
         return loaded
     }
 
-    private fun queryFts(conn: SQLiteConnection, matchExpression: String, limit: Int): List<ScoredChunk> {
+    private fun queryFts(conn: SQLiteConnection, matchExpression: String, limit: Int, documentIds: Set<String>?): List<ScoredChunk> {
         if (matchExpression.isBlank()) return emptyList()
         val result = ArrayList<ScoredChunk>()
         val sql = """
@@ -512,9 +515,11 @@ public class SearchIndex(
         """.trimIndent()
         conn.prepare(sql).use { stmt ->
             stmt.bindText(1, matchExpression)
-            stmt.bindLong(2, limit.toLong())
-            while (stmt.step()) {
+            // Chunks of other documents do not count: read until the limit is reached among the others
+            stmt.bindLong(2, if (documentIds == null) limit.toLong() else -1L)
+            while (result.size < limit && stmt.step()) {
                 val indexed = readIndexedChunk(stmt)
+                if (documentIds != null && indexed.chunk.anchor.documentId !in documentIds) continue
                 val bm25 = -stmt.getDouble(16)
                 result.add(ScoredChunk(indexed, bm25.coerceAtLeast(0.0)))
             }

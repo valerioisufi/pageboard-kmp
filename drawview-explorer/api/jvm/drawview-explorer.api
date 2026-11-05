@@ -39,11 +39,13 @@ public abstract interface class io/github/valerioisufi/drawview/explorer/Library
 	public abstract fun getMatchedDocumentIds ()Ljava/util/List;
 	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
 	public abstract fun onQueryChange (Ljava/lang/String;)V
+	public fun onScopeChange (Ljava/util/Set;)V
 }
 
 public final class io/github/valerioisufi/drawview/explorer/LibrarySearch$DefaultImpls {
 	public static fun getHeaderContent (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;)Lkotlin/jvm/functions/Function4;
 	public static fun matchesOf (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Ljava/lang/String;)Ljava/util/List;
+	public static fun onScopeChange (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Ljava/util/Set;)V
 }
 
 public final class io/github/valerioisufi/drawview/explorer/LibrarySearchMatch {
@@ -191,6 +193,9 @@ public final class io/github/valerioisufi/drawview/explorer/generated/resources/
 	public static final fun getExplorer_root_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_search_clear (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_search_placeholder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_results_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_scope_here (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_scope_library (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_section_folders (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_section_notes (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_section_recent (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -217,12 +222,12 @@ public final class io/github/valerioisufi/drawview/explorer/generated/resources/
 	public static final fun getExplorer_trash_cannot_undo (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_delete_forever (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_delete_forever_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty_state (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty_state_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/generated/resources/String1_commonMainKt {
+	public static final fun getExplorer_trash_empty (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty_state (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty_state_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_empty_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_from (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_moved_one (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -252,8 +257,8 @@ public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSinglet
 public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$ExplorerScreenKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$ExplorerScreenKt;
 	public fun <init> ()V
-	public final fun getLambda$1515193071$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$536041376$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$543990714$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryContentKt {
@@ -261,6 +266,7 @@ public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSinglet
 	public fun <init> ()V
 	public final fun getLambda$-16331200$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1359878694$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$2096172348$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryHeaderKt {

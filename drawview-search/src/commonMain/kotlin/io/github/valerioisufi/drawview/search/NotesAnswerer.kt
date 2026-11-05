@@ -88,16 +88,17 @@ public class NotesAnswerer(
 ) {
     /**
      * Answers [question] on the device using [modelSpec] (or [generator] when supplied directly),
-     * retrieving up to [passageLimit] passages from [engine].
+     * retrieving up to [passageLimit] passages from [engine] (of [documentIds] only, when given).
      */
     public suspend fun answerOnDevice(
         question: String,
         modelSpec: ModelSpec = ModelCatalog.GEMMA_4_E2B,
         passageLimit: Int = SearchEngine.DEFAULT_PASSAGE_LIMIT,
+        documentIds: Set<String>? = null,
         onProgress: (Int) -> Unit = {}
     ): NotesAnswer {
         val trimmed = question.trim()
-        val retrieved = engine.passages(trimmed, limit = passageLimit)
+        val retrieved = engine.passages(trimmed, limit = passageLimit, documentIds = documentIds)
         if (retrieved.isEmpty()) {
             return NotesAnswer(
                 question = trimmed,
@@ -140,15 +141,17 @@ public class NotesAnswerer(
 
     /**
      * Answers [question] using the online [backend] (e.g. Google Gemini, chosen explicitly by the
-     * student), retrieving up to [passageLimit] passages from [engine].
+     * student), retrieving up to [passageLimit] passages from [engine] (of [documentIds] only, when
+     * given).
      */
     public suspend fun answerOnline(
         question: String,
         backend: OnlineAnswerBackend,
-        passageLimit: Int = SearchEngine.DEFAULT_PASSAGE_LIMIT
+        passageLimit: Int = SearchEngine.DEFAULT_PASSAGE_LIMIT,
+        documentIds: Set<String>? = null
     ): NotesAnswer {
         val trimmed = question.trim()
-        val retrieved = engine.passages(trimmed, limit = passageLimit)
+        val retrieved = engine.passages(trimmed, limit = passageLimit, documentIds = documentIds)
         if (retrieved.isEmpty()) {
             return NotesAnswer(
                 question = trimmed,

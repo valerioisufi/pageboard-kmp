@@ -47,6 +47,12 @@ public interface LibrarySearch {
     /** Updates the query being searched in the library. */
     public fun onQueryChange(query: String)
 
+    /**
+     * Updates where the query is searched: the documents the library looks at, `null` for all of
+     * them. Those found elsewhere are left out by the library in any case.
+     */
+    public fun onScopeChange(documentIds: Set<String>?) {}
+
     /** Matching passages of [documentId] for the current query. */
     public fun matchesOf(documentId: String): List<LibrarySearchMatch> = emptyList()
 

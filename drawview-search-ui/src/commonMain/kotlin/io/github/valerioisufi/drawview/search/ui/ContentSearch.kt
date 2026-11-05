@@ -39,13 +39,22 @@ import io.github.valerioisufi.drawview.search.SearchSource
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Search of the contents of the notes for the document library ([LibrarySearch]), backed by
@@ -67,6 +76,17 @@ public class ContentSearch(
     private val onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ) : LibrarySearch {
     private val queryFlow = MutableStateFlow("")
+    private val scopeFlow = MutableStateFlow<Set<String>?>(null)
+
+    /** The documents the search and the answers look at, `null` for all of them. */
+    internal val scope: StateFlow<Set<String>?> get() = scopeFlow
+
+    /** Where the index is read: never the thread of the interface, the typing would wait for it. */
+    internal var searchDispatcher: CoroutineDispatcher = Dispatchers.Default
+
+    /** `true` while a search takes long enough to say so. */
+    internal var isSearchSlow: Boolean by mutableStateOf(false)
+        private set
     private var resultsByDocument by mutableStateOf<Map<String, DocumentSearchResult>>(emptyMap())
     private var activeScope: CoroutineScope? = null
     private var answerJob: Job? = null
@@ -110,11 +130,14 @@ public class ContentSearch(
             isAnswering = false
             currentAnswer = null
             answerError = null
-        }
-        if (query.isBlank()) {
+            // Never the results of another query, even for a moment
             matchedDocumentIds = null
             resultsByDocument = emptyMap()
         }
+    }
+
+    override fun onScopeChange(documentIds: Set<String>?) {
+        scopeFlow.value = documentIds
     }
 
     /**
@@ -149,7 +172,7 @@ public class ContentSearch(
         isAnswering = true
         answerError = null
         try {
-            currentAnswer = answerer.answerOnDevice(trimmed, modelSpec = answerModelSpec)
+            currentAnswer = answerer.answerOnDevice(trimmed, modelSpec = answerModelSpec, documentIds = scopeFlow.value)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -166,7 +189,7 @@ public class ContentSearch(
         isAnswering = true
         answerError = null
         try {
-            currentAnswer = answerer.answerOnline(trimmed, backend = backend)
+            currentAnswer = answerer.answerOnline(trimmed, backend = backend, documentIds = scopeFlow.value)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -206,7 +229,8 @@ public class ContentSearch(
             matchedDocumentIds = null
             resultsByDocument = emptyMap()
         } else {
-            val results = engine.search(trimmed)
+            val scope = scopeFlow.value
+            val results = withContext(searchDispatcher) { engine.search(trimmed, documentIds = scope) }
             matchedDocumentIds = results.map { it.documentId }
             resultsByDocument = results.associateBy { it.documentId }
         }
@@ -214,9 +238,23 @@ public class ContentSearch(
 
     private fun CoroutineScope.launchSearchCollector() {
         launch {
-            combine(queryFlow, index.revision) { query, _ -> query.trim() }
-                .collectLatest { trimmed ->
-                    searchNow(trimmed)
+            combine(queryFlow.map { it.trim() }, scopeFlow) { query, scope -> query to scope }
+                .distinctUntilChanged()
+                .collectLatest { (query, _) ->
+                    if (query.isEmpty()) {
+                        searchNow(query)
+                        return@collectLatest
+                    }
+                    // Not at every key
+                    delay(TYPING_PAUSE_MILLIS)
+                    val searched = index.revision.value
+                    searchShowingProgress(query)
+                    // What the index learns reaches the results, without moving them under the
+                    // pointer at every note read, and without ever stopping a search running
+                    index.revision.dropWhile { it == searched }.conflate().collect {
+                        searchShowingProgress(query)
+                        delay(INDEX_REFRESH_MILLIS)
+                    }
                 }
         }
         installedModels?.let { models ->
@@ -231,6 +269,28 @@ public class ContentSearch(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Runs the search of [query], saying so when it takes long. A failure leaves the names found
+     * by the library, and the search and the indexer going.
+     */
+    private suspend fun searchShowingProgress(query: String) = coroutineScope {
+        val slow = launch {
+            delay(SLOW_SEARCH_MILLIS)
+            isSearchSlow = true
+        }
+        try {
+            searchNow(query)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            matchedDocumentIds = null
+            resultsByDocument = emptyMap()
+        } finally {
+            slow.cancel()
+            isSearchSlow = false
         }
     }
 
@@ -268,6 +328,15 @@ public class ContentSearch(
     )
 
     public companion object {
+        /** The pause in the typing a search waits for. */
+        private const val TYPING_PAUSE_MILLIS = 150L
+
+        /** How long a search runs before saying so. */
+        private const val SLOW_SEARCH_MILLIS = 300L
+
+        /** How often the results follow the changes of the index. */
+        private const val INDEX_REFRESH_MILLIS = 5_000L
+
         internal fun formatLocation(anchor: SearchAnchor): String = when (anchor) {
             is SearchAnchor.Document -> ""
             is SearchAnchor.Page -> "p. ${anchor.pageNumber}"

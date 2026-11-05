@@ -44,21 +44,24 @@ import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_online_privacy
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_sources_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_thinking
+import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_scope
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_indexing_status
+import io.github.valerioisufi.drawview.search.ui.generated.resources.search_searching
 import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Why the results of a search may be missing something: the notes not read yet. Nothing once the
- * index is up to date.
+ * Why the results of a search may be missing something: the notes not read yet, a search still
+ * running. Nothing otherwise.
  */
 @Composable
 internal fun IndexingNotice(search: ContentSearch, modifier: Modifier = Modifier) {
     val progress by search.indexingProgress.collectAsState()
-    if (!progress.isIndexing || progress.indexedDocuments >= progress.totalDocuments) return
+    val indexing = progress.isIndexing && progress.indexedDocuments < progress.totalDocuments
+    if (!indexing && !search.isSearchSlow) return
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -66,7 +69,11 @@ internal fun IndexingNotice(search: ContentSearch, modifier: Modifier = Modifier
     ) {
         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(14.dp))
         Text(
-            text = stringResource(Res.string.search_indexing_status, progress.indexedDocuments, progress.totalDocuments),
+            text = if (indexing) {
+                stringResource(Res.string.search_indexing_status, progress.indexedDocuments, progress.totalDocuments)
+            } else {
+                stringResource(Res.string.search_searching)
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -99,6 +106,7 @@ public fun AskNotesCard(
     val answer = search.currentAnswer
     val isAnswering = search.isAnswering
     val error = search.answerError
+    val scope by search.scope.collectAsState()
     if (!search.runtimeAvailable && !canAskOnline && answer == null && !isAnswering && error == null) return
 
     Surface(
@@ -166,6 +174,14 @@ public fun AskNotesCard(
                         }
                     }
                 }
+            }
+
+            if (scope != null && answer == null && !isAnswering) {
+                Text(
+                    text = stringResource(Res.string.search_ask_scope),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             if (!hasLocalAnswerModel && search.runtimeAvailable && answer == null && !isAnswering) {

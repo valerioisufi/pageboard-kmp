@@ -306,6 +306,30 @@ class LibrarySearchStateTest {
     }
 
     @Test
+    fun theContentSearchKnowsWhereTheLibraryLooks() = runTest {
+        val viewModel = library()
+        assertNull(viewModel.searchDocumentIds, "no search")
+        viewModel.search("limit")
+        assertNull(viewModel.searchDocumentIds, "from the root, everywhere")
+
+        val waves = viewModel.run { search("waves"); named("Waves") }
+        val motion = viewModel.run { search("motion"); named("Motion") }
+        viewModel.showFolder(viewModel.folder("Physics").id)
+        viewModel.search("limit")
+        assertEquals(setOf(waves.id, motion.id), viewModel.searchDocumentIds)
+        viewModel.selectSearchScope(SearchScope.LIBRARY)
+        assertNull(viewModel.searchDocumentIds)
+    }
+
+    @Test
+    fun aNameIsFoundByItsWordsWithoutAccents() {
+        assertTrue(nameMatches("Università di Pisa", "universita"))
+        assertTrue(nameMatches("Limiti di analisi", "analisi limiti"))
+        assertTrue(nameMatches("Limiti di analisi", "  LIM  "))
+        assertFalse(nameMatches("Limiti di analisi", "analisi derivate"))
+    }
+
+    @Test
     fun theDetailsOfAnItemAreNotASelection() = runTest {
         val viewModel = library()
         val cycles = viewModel.named("Limit cycles")

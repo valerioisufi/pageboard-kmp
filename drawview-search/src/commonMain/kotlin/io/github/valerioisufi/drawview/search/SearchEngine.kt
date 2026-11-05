@@ -45,12 +45,14 @@ public class SearchEngine(
     private val embedder: Embedder? = null
 ) {
     /**
-     * Searches for [query] across all indexed documents, grouping hits by document and place.
+     * Searches for [query] across all indexed documents (only [documentIds], when given), grouping
+     * hits by document and place.
      */
     public suspend fun search(
         query: String,
         limit: Int = SearchIndex.DEFAULT_SEARCH_LIMIT,
-        maxHitsPerDocument: Int = DEFAULT_MAX_HITS_PER_DOCUMENT
+        maxHitsPerDocument: Int = DEFAULT_MAX_HITS_PER_DOCUMENT,
+        documentIds: Set<String>? = null
     ): List<DocumentSearchResult> {
         val trimmed = query.trim()
         if (trimmed.isEmpty() || limit <= 0) return emptyList()
@@ -58,7 +60,8 @@ public class SearchEngine(
         val ranked = rankChunks(
             rawQuery = trimmed,
             formattedEmbeddingQuery = EmbeddingPrompts.query(trimmed),
-            limit = limit
+            limit = limit,
+            documentIds = documentIds
         )
         if (ranked.isEmpty()) return emptyList()
 
@@ -86,18 +89,20 @@ public class SearchEngine(
     /**
      * Retrieves the top [limit] passages most relevant to [question] for "Ask your notes"
      * (`NotesAnswerer`), using the question-answering embedding prompt when the embedding model is
-     * available.
+     * available; only of [documentIds], when given.
      */
     public suspend fun passages(
         question: String,
-        limit: Int = DEFAULT_PASSAGE_LIMIT
+        limit: Int = DEFAULT_PASSAGE_LIMIT,
+        documentIds: Set<String>? = null
     ): List<SearchHit> {
         val trimmed = question.trim()
         if (trimmed.isEmpty() || limit <= 0) return emptyList()
         val ranked = rankChunks(
             rawQuery = trimmed,
             formattedEmbeddingQuery = EmbeddingPrompts.question(trimmed),
-            limit = SearchIndex.DEFAULT_SEARCH_LIMIT
+            limit = SearchIndex.DEFAULT_SEARCH_LIMIT,
+            documentIds = documentIds
         )
         return deduplicateByPlace(ranked)
             .filter { it.indexed.chunk.kind != SearchChunkKind.TITLE }
@@ -114,7 +119,7 @@ public class SearchEngine(
     public suspend fun pagesAbout(documentId: String, text: String, limit: Int = DEFAULT_TOPIC_PAGES): List<String> {
         val trimmed = text.trim()
         if (trimmed.isEmpty() || limit <= 0) return emptyList()
-        val ranked = rankChunks(rawQuery = trimmed, formattedEmbeddingQuery = EmbeddingPrompts.query(trimmed), limit = SearchIndex.DEFAULT_SEARCH_LIMIT)
+        val ranked = rankChunks(rawQuery = trimmed, formattedEmbeddingQuery = EmbeddingPrompts.query(trimmed), limit = SearchIndex.DEFAULT_SEARCH_LIMIT, documentIds = setOf(documentId))
         return ranked.asSequence()
             .filter { it.indexed.chunk.kind != SearchChunkKind.LECTURE_TRANSCRIPT && it.indexed.chunk.kind != SearchChunkKind.LECTURE_NOTES }
             .mapNotNull { (it.indexed.chunk.anchor as? SearchAnchor.Page)?.takeIf { page -> page.documentId == documentId }?.pageId }
@@ -126,12 +131,13 @@ public class SearchEngine(
     private suspend fun rankChunks(
         rawQuery: String,
         formattedEmbeddingQuery: String,
-        limit: Int
+        limit: Int,
+        documentIds: Set<String>?
     ): List<ScoredChunk> {
-        val wordResults = index.searchWords(rawQuery, limit)
+        val wordResults = index.searchWords(rawQuery, limit, documentIds)
         val queryVector = embedSingle(formattedEmbeddingQuery)
         val vectorResults = if (queryVector != null) {
-            index.searchVectors(queryVector, limit)
+            index.searchVectors(queryVector, limit, documentIds)
         } else {
             emptyList()
         }
