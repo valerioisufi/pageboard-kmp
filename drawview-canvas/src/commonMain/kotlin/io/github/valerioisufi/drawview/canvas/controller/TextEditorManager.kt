@@ -159,6 +159,13 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     private val selectionSteps = mutableListOf<SelectionStep>()
 
+    /**
+     * The value a composition of an input method started from, when the composition replaced a
+     * selection (a dead key, as `` ` `` on some layouts): committed as one delimiter, it surrounds
+     * that selection as the delimiter typed directly does (see [SelectionInput.surround]).
+     */
+    private var composedOverSelection: TextFieldValue? = null
+
     /** The text as typed and the list made from it, until the next edit (see [typedMarkerTakenBack]). */
     private var typedMarker: Pair<TextFieldValue, TextFieldValue>? = null
 
@@ -535,6 +542,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         caretRequest = null
         saver.stop()
         selectionSteps.clear()
+        composedOverSelection = null
         value = TextFieldValue()
         controller.presence.reportTextDraft(null, null)
         controller.requestRedraw()
@@ -563,14 +571,19 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             reportDraft()
             return
         }
+        // A composition starting over a selection keeps it for its commit; a commit takes it
+        if (newValue.composition != null && value.composition == null && !value.selection.collapsed) composedOverSelection = value
+        val composedFrom = composedOverSelection.takeIf { newValue.composition == null }
+        if (newValue.composition == null) composedOverSelection = null
         val textChanged = newValue.text != value.text
-        val surrounded = if (textChanged && smartNewline) {
+        val committedOver = composedFrom?.takeIf { smartNewline }?.let { from -> SelectionInput.surround(from, newValue)?.let { from to it } }
+        val surrounded = committedOver?.second ?: if (textChanged && smartNewline) {
             SelectionInput.surround(value, newValue) ?: SelectionInput.link(value, newValue) ?: cleanedPaste(newValue)
         } else {
             null
         }
         if (surrounded != null) {
-            selectionSteps += SelectionStep(before = value, intermediate = newValue, after = surrounded)
+            selectionSteps += SelectionStep(before = committedOver?.first ?: value, intermediate = newValue, after = surrounded)
         } else if (textChanged) {
             selectionSteps.clear()
         }

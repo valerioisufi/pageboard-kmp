@@ -66,6 +66,7 @@ internal fun BarAction(icon: ImageVector, label: String, onClick: () -> Unit, co
         IconButton(
             onClick = onClick,
             enabled = enabled,
+            modifier = Modifier.keepsTextFocus(),
             colors = IconButtonDefaults.iconButtonColors(contentColor = if (tint == Color.Unspecified) MaterialTheme.colorScheme.onSurfaceVariant else tint)
         ) {
             Icon(icon, contentDescription = label, modifier = Modifier.size(20.dp))

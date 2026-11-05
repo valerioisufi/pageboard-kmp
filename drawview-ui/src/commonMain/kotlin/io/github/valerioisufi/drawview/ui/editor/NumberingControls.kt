@@ -71,6 +71,7 @@ internal fun NumberedListButton(target: TextFormatTarget, commands: EditorComman
                         .size(width = 22.dp, height = 36.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(if (commands.numberingOpen) colors.primaryContainer else Color.Transparent)
+                        .keepsTextFocus()
                         .clickable(enabled = commands.numbering.isEnabled(), role = Role.Button, onClickLabel = commands.numbering.label()) { commands.numberingOpen = true }
                 ) {
                     Icon(DrawViewIcons.ChevronDown, contentDescription = commands.numbering.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))

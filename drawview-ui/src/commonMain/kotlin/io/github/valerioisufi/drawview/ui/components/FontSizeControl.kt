@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem
+import io.github.valerioisufi.drawview.ui.editor.keepsTextFocus
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_decrease_font_size
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_increase_font_size
@@ -65,7 +66,7 @@ internal fun FontSizeControl(
         IconButton(
             onClick = { onFontSizeChange(TextSizes.smaller(fontSizePt)) },
             enabled = fontSizePt > TextSizes.MIN,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp).keepsTextFocus()
         ) {
             Icon(DrawViewIcons.Minus, contentDescription = stringResource(Res.string.draw_toolbar_action_decrease_font_size), modifier = Modifier.size(16.dp))
         }
@@ -80,6 +81,7 @@ internal fun FontSizeControl(
                 modifier = Modifier
                     .widthIn(min = 40.dp)
                     .clip(RoundedCornerShape(8.dp))
+                    .keepsTextFocus()
                     .clickable(onClickLabel = label) { menuOpen = true }
                     .padding(horizontal = 6.dp, vertical = 6.dp)
             )
@@ -118,7 +120,7 @@ internal fun FontSizeControl(
         IconButton(
             onClick = { onFontSizeChange(TextSizes.larger(fontSizePt)) },
             enabled = fontSizePt < TextSizes.MAX,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp).keepsTextFocus()
         ) {
             Icon(DrawViewIcons.Plus, contentDescription = stringResource(Res.string.draw_toolbar_action_increase_font_size), modifier = Modifier.size(16.dp))
         }

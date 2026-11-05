@@ -83,6 +83,7 @@ internal fun TextBackgroundButton(target: TextFormatTarget) {
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
+                .keepsTextFocus()
                 .clickable(onClickLabel = label) { paletteOpen = true }
                 .semantics { contentDescription = label }
         ) {
@@ -153,6 +154,7 @@ internal fun TextColorButton(target: TextFormatTarget) {
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
+                .keepsTextFocus()
                 .clickable(onClickLabel = label) { paletteOpen = true }
                 .semantics { contentDescription = label }
         ) {
@@ -223,6 +225,7 @@ internal fun FormatToggle(command: Command?, checked: Boolean, icon: ImageVector
                 .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(if (checked) colors.primaryContainer else Color.Transparent)
+                .keepsTextFocus()
                 .toggleable(value = checked, role = Role.Checkbox, onValueChange = { onClick() })
         ) {
             Icon(icon, contentDescription = stringResource(description), tint = if (checked) colors.onPrimaryContainer else colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -248,6 +251,7 @@ internal fun FormatButton(command: Command, icon: ImageVector) {
                 .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(if (checked) colors.primaryContainer else Color.Transparent)
+                .keepsTextFocus()
                 .clickable(enabled = enabled, role = Role.Button, onClickLabel = command.label()) { command.performIfEnabled() }
         ) {
             Icon(

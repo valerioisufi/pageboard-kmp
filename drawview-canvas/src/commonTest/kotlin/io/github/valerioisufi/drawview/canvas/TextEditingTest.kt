@@ -702,6 +702,53 @@ class TextEditingTest {
     }
 
     @Test
+    fun aDelimiterComposedByADeadKeyOverTheSelectionSurroundsItWhenCommitted() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("una parola qui", TextRange(4, 10)))
+        // The dead key: the backtick composed in place of the selection, then committed as it is
+        editor.updateValue(TextFieldValue("una ` qui", TextRange(5), composition = TextRange(4, 5)))
+        editor.updateValue(TextFieldValue("una ` qui", TextRange(5)))
+        assertEquals(TextFieldValue("una `parola` qui", TextRange(5, 11)), editor.value)
+        // Committed by replacing the composition (as macOS does), the same
+        editor.updateValue(TextFieldValue("una parola qui", TextRange(4, 10)))
+        editor.updateValue(TextFieldValue("una ~ qui", TextRange(5), composition = TextRange(4, 5)))
+        editor.updateValue(TextFieldValue("una ~ qui", TextRange(5), composition = TextRange(4, 5)))
+        editor.updateValue(TextFieldValue("una ~ qui", TextRange(5)))
+        assertEquals(TextFieldValue("una ~parola~ qui", TextRange(5, 11)), editor.value)
+    }
+
+    @Test
+    fun aLetterComposedByADeadKeyOverTheSelectionReplacesIt() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("una parola qui", TextRange(4, 10)))
+        editor.updateValue(TextFieldValue("una ` qui", TextRange(5), composition = TextRange(4, 5)))
+        editor.updateValue(TextFieldValue("una è qui", TextRange(5)))
+        assertEquals(TextFieldValue("una è qui", TextRange(5)), editor.value)
+        // A composition from a caret with no selection surrounds nothing
+        editor.updateValue(TextFieldValue("una è qui", TextRange(9)))
+        editor.updateValue(TextFieldValue("una è qui`", TextRange(10), composition = TextRange(9, 10)))
+        editor.updateValue(TextFieldValue("una è qui`", TextRange(10)))
+        assertEquals(TextFieldValue("una è qui`", TextRange(10)), editor.value)
+    }
+
+    @Test
+    fun theUndoOfTheFieldTakesBackADelimiterComposedOverTheSelection() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("una parola qui", TextRange(4, 10)))
+        editor.updateValue(TextFieldValue("una ` qui", TextRange(5), composition = TextRange(4, 5)))
+        editor.updateValue(TextFieldValue("una ` qui", TextRange(5)))
+        // The field goes back to what it had before the composition
+        editor.updateValue(TextFieldValue("una parola qui", TextRange(4, 10)))
+        assertEquals(TextFieldValue("una parola qui", TextRange(4, 10)), editor.value)
+    }
+
+    @Test
     fun pastingAnAddressOverTheSelectionMakesItALinkAndUndoesAtOnce() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
