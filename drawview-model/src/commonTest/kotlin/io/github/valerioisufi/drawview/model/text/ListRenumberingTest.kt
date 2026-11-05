@@ -24,6 +24,7 @@ class ListRenumberingTest {
         assertEquals("1. b\n2. c", after(list, "2. b\n3. c"))
         assertEquals(listOf("1.", "2."), labels(after(list, "2. b\n3. c")))
         assertEquals("5. b\n6. c", after("5. a\n6. b\n7. c", "6. b\n7. c"), "a list from 5 still starts from 5")
+        assertEquals("10. b\n11. c", after("10. a\n11. b\n12. c", "11. b\n12. c"), "markers sharing their first digit")
         assertEquals("a\n1. b\n2. c", after(list, "a\n2. b\n3. c"), "the first marker taken away")
     }
 
@@ -104,5 +105,26 @@ class ListRenumberingTest {
     fun undoingAnEditBringsTheNumbersBack() {
         assertNull(ListRenumbering.after("1. b\n2. c", list))
         assertNull(ListRenumbering.after("5. b", "5. a\n6. b"))
+    }
+
+    @Test
+    fun aListKeepsItsStyle() {
+        val letters = "a.  x\nb.  y\nc.  z"
+        assertEquals("a.  y\nb.  z", after(letters, "b.  y\nc.  z"), "the first item goes")
+        assertEquals("a.  x\nb.  z", after(letters, "a.  x\nc.  z"))
+        assertEquals("a.  x\nb.  y\nc.  n\nd.  z", after(letters, "a.  x\nb.  y\nc.  n\nc.  z"))
+        assertEquals("i)  y\nii)  z", after("i)  x\nii)  y\niii)  z", "ii)  y\niii)  z"))
+    }
+
+    @Test
+    fun anItemMovedTakesTheNumberingOfItsLevel() {
+        assertEquals("A.  x\n  1. y", after("A.  x\nB.  y", "A.  x\n  B.  y"))
+        assertEquals("A.  x\nB.  y", after("A.  x\n  1. y", "A.  x\n1. y"), "back in the list, in its style")
+    }
+
+    @Test
+    fun aMarkerInAStyleMovesTheLinesOfItsItem() {
+        val written = ListRenumbering.withMarkers("1. x\n   more", RichTextParser.parse("1. x\n   more").filter { it.kind == RichTextParser.Kind.LIST_ITEM }) { ListMarker.write(NumberingStyle(ListNumbering.Numbering.LOWER_ALPHA), it + 1) }
+        assertEquals("a.  x\n    more", written.text)
     }
 }

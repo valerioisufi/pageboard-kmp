@@ -92,8 +92,11 @@ text, so no note written so far changes (requirement 5). Nobody sees them or typ
 is hidden, and the editor writes it. Pandoc requires the two spaces after a capital letter for
 the same reason.
 
-The style of a list is the one of its first sibling. One letter other than `i`/`I` is a letter,
-more letters are a Roman numeral; a Roman list starting from `v` is told by its second item (`vi`).
+The style of a list is the one of its first sibling. One letter other than `i`, `v`, `x` is a
+letter, more letters are a Roman numeral when they are one. So a list in letters cannot start from
+`i`, `v` or `x`, nor a Roman list from `l`, `c`, `d`, `m`: the picker skips them
+(`ListMarker.canStart`, a marker that does not read back). `1.  ` with two spaces, already possible
+in an old note at a nested level, now shows its number rather than a letter: the number written.
 
 ### Who does what
 
@@ -165,7 +168,7 @@ capital letters: `A. Rossi` at the start of a line is a name.
 | :--- | :--- | :--- |
 | 1 | The numbers: `ListRenumbering` wired in `updateValue`, the start kept, the source right; the tables above as tests, undo, caret, paste, chains. Fixes the reported bug | done |
 | 2 | The gestures: Tab, Shift+Tab, Enter, Backspace by level, the button on the whole level, a selection counted by level | done |
-| 3 | The notation: `ListMarker`, `NumberingStyle`, parser, labels, `ChainFlow`, `TextCleanup`; the old texts unchanged, bounds of the parser, ABI | proposed |
+| 3 | The notation: `ListMarker`, `NumberingStyle`, parser, labels, `ChainFlow`, `TextCleanup`; the old texts unchanged, bounds of the parser, ABI | done |
 | 4 | The picker: split button, popover and sheet, `setNumbering`, start, "Numbering…" in the Format menu, the strings, screenshots | proposed |
 | 5 | Typing a style, the instructions of the agents and of the assistant on the notation, the desktop app on a scratch directory | proposed |
 

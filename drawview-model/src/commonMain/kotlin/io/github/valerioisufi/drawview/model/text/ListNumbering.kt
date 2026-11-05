@@ -13,8 +13,9 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
  * * The items of a list with the same parent and the same kind (bulleted or numbered) are
  *   siblings. A numbered item shows its ordinal among its siblings from the number of the first
  *   one (CommonMark: `1. 1. 1.` shows `1.`, `2.`, `3.`), as a number, a letter or a Roman numeral
- *   by the numbered items it is nested in (`1.`, `a.`, `i.`, then again). A bulleted item shows a
- *   disc, a circle or a square by its depth.
+ *   by the numbered items it is nested in (`1.`, `a.`, `i.`, then again), or in the style its list
+ *   chose in the marker of its first item (see [ListMarker]). A bulleted item shows a disc, a
+ *   circle or a square by its depth.
  */
 public object ListNumbering {
 
@@ -22,14 +23,14 @@ public object ListNumbering {
     public enum class Bullet { DISC, CIRCLE, SQUARE }
 
     /** The numbering of a numbered item. */
-    public enum class Numbering { DECIMAL, LOWER_ALPHA, LOWER_ROMAN }
+    public enum class Numbering { DECIMAL, LOWER_ALPHA, LOWER_ROMAN, UPPER_ALPHA, UPPER_ROMAN }
 
     /**
      * A list item of a text: its [span], its [depth] (0 for an item nested in none), the index of
      * its [parent] in the items (-1 for none), the [list] of its siblings (an index shared by them)
      * and its [label]; [bullet] or [numbering] says how the label is drawn; [ordinal] is the
      * number of a numbered item (0 for a bulleted one); [run] is shared by the items not parted by
-     * a line of other text.
+     * a line of other text; [style] is the one its list chose (`null` for a number by level).
      */
     public class Item(
         public val span: Span,
@@ -40,7 +41,8 @@ public object ListNumbering {
         public val bullet: Bullet?,
         public val numbering: Numbering?,
         public val ordinal: Int = 0,
-        public val run: Int = 0
+        public val run: Int = 0,
+        public val style: NumberingStyle? = null
     )
 
     /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
@@ -54,7 +56,7 @@ public object ListNumbering {
         // The items open, the innermost last (indices in the result)
         val open = ArrayList<Int>()
         // The siblings counted: by the index of their parent (-1 for the top), the last list and its count
-        class Siblings(val list: Int, val ordered: Boolean, val first: Int, var count: Int)
+        class Siblings(val list: Int, val ordered: Boolean, val first: Int, val style: NumberingStyle?, var count: Int)
         val siblings = HashMap<Int, Siblings>()
         var lists = 0
         var previousEnd = -1
@@ -76,7 +78,7 @@ public object ListNumbering {
                 previous.count++
                 previous
             } else {
-                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, 0).also { siblings[parent] = it }
+                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, span.style, 0).also { siblings[parent] = it }
             }
             val depth = open.size
             val label: String
@@ -85,13 +87,13 @@ public object ListNumbering {
             val ordinal = if (span.ordered) group.first + group.count else 0
             if (span.ordered) {
                 val numberedAbove = open.count { result[it].span.ordered }
-                numbering = Numbering.entries[numberedAbove % Numbering.entries.size]
-                label = format(ordinal, numbering) + "."
+                numbering = group.style?.numbering ?: BY_LEVEL[numberedAbove % BY_LEVEL.size]
+                label = format(ordinal, numbering) + (group.style?.delimiter ?: '.')
             } else {
                 bullet = Bullet.entries[depth % Bullet.entries.size]
                 label = glyphOf(bullet)
             }
-            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run)
+            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run, group.style)
             open += index
             previousEnd = span.end
         }
@@ -129,10 +131,12 @@ public object ListNumbering {
         Bullet.SQUARE -> "▪"
     }
 
-    /** [number] written in [numbering]: `3`, `c`, `iii`; a number below 1 as a number. */
+    /** [number] written in [numbering]: `3`, `c`, `C`, `iii`, `III`; a number below 1 as a number. */
     public fun format(number: Int, numbering: Numbering): String = when {
         number < 1 || numbering == Numbering.DECIMAL -> number.toString()
         numbering == Numbering.LOWER_ALPHA -> alpha(number)
+        numbering == Numbering.UPPER_ALPHA -> alpha(number).uppercase()
+        numbering == Numbering.UPPER_ROMAN -> roman(number).uppercase()
         else -> roman(number)
     }
 
@@ -160,6 +164,9 @@ public object ListNumbering {
         }
         return out.toString()
     }
+
+    /** The numbering of a list with no style, by the numbered items it is nested in. */
+    private val BY_LEVEL = listOf(Numbering.DECIMAL, Numbering.LOWER_ALPHA, Numbering.LOWER_ROMAN)
 
     private val ROMAN = listOf(
         1000 to "m", 900 to "cm", 500 to "d", 400 to "cd", 100 to "c", 90 to "xc",

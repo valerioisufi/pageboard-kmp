@@ -38,6 +38,7 @@ public object RichTextParser {
      * @property block a display formula alone on its lines: a centered line of its own.
      * @property ordered whether a list item is ordered (numbered).
      * @property number the sequence number of an ordered list item.
+     * @property style the style its marker asks for (see [ListMarker]), `null` for a number by level.
      * @property language the language of a block of code, the first word after its opening fence
      *   that is not [numbered] (empty when there is none).
      * @property numbered a block of code asking for the numbers of its lines, by a word after its
@@ -58,7 +59,8 @@ public object RichTextParser {
         val number: Int = 0,
         val language: String = "",
         val numbered: Boolean = false,
-        val listItem: Span? = null
+        val listItem: Span? = null,
+        val style: NumberingStyle? = null
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -101,12 +103,9 @@ public object RichTextParser {
             val start = match.range.first
             val end = match.range.last + 1
             val indent = match.groupValues[1]
-            val numberStr = match.groupValues[2]
-            var contentStart = start + indent.length + numberStr.length + 1
-            while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
-            val level = indentLevel(indent)
-            val number = numberStr.toIntOrNull() ?: 1
-            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = true, number = number)
+            val marker = ListMarker.at(masked, start + indent.length) ?: continue
+            val contentStart = start + indent.length + marker.length
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = indentLevel(indent), ordered = true, number = marker.number, style = marker.style)
         }
         withContinuations(text, candidates, verbatim)
         candidates += tables(text, masked)
@@ -307,27 +306,18 @@ public object RichTextParser {
                 columns.removeAt(columns.lastIndex)
                 items.removeAt(items.lastIndex)
             }
-            // A marker: "-", "*" or "+", or digits and ".", then a space or a tab
-            var marker = i
-            val ordered = text[i].isDigit()
-            if (ordered) {
-                while (marker < text.length && text[marker].isDigit()) marker++
-                if (text.getOrNull(marker) != '.') return
-            } else if (text[i] != '-' && text[i] != '*' && text[i] != '+') {
-                return
+            // A marker: "-", "*" or "+" then a space or a tab, or a number (see ListMarker)
+            val numbered = if (text[i] == '-' || text[i] == '*' || text[i] == '+') null else ListMarker.at(text, i) ?: return
+            var marker = i + (numbered?.length ?: 1)
+            if (numbered == null) {
+                if (text.getOrNull(marker) != ' ' && text.getOrNull(marker) != '\t') return
+                while (marker < text.length && (text[marker] == ' ' || text[marker] == '\t')) marker++
             }
-            marker++
-            if (text.getOrNull(marker) != ' ' && text.getOrNull(marker) != '\t') return
-            var contentStart = marker
-            var column = indent + (marker - i)
-            while (contentStart < text.length && (text[contentStart] == ' ' || text[contentStart] == '\t')) {
-                column += if (text[contentStart] == '\t') 2 else 1
-                contentStart++
-            }
+            val contentStart = marker
+            val column = indent + RichTextParser.columnOf(text, i, contentStart)
             val lineEnd = text.indexOf('\n', i).let { if (it < 0) text.length else it }
-            val number = if (ordered) text.substring(i, marker - 1).toIntOrNull() ?: 1 else 0
             columns += column
-            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = ordered, number = number)
+            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = numbered != null, number = numbered?.number ?: 0, style = numbered?.style)
         }
     }
 
@@ -672,7 +662,7 @@ public object RichTextParser {
     // Inline flags such as (?m) are not supported everywhere
     private val HEADING = Regex("""^#{1,6}[ \t]+\S.*$""", RegexOption.MULTILINE)
     private val BULLET_LIST = Regex("""^([ \t]*)([-*+])[ \t]+(.*)$""", RegexOption.MULTILINE)
-    private val NUMBERED_LIST = Regex("""^([ \t]*)(\d+)\.[ \t]+(.*)$""", RegexOption.MULTILINE)
+    private val NUMBERED_LIST = Regex("""^([ \t]*)[0-9A-Za-z]+[.)][ \t]+(.*)$""", RegexOption.MULTILINE)
     private val TABLE_DELIMITER = Regex("""^ {0,3}\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$""")
 
     private fun indentLevel(indent: String): Int {

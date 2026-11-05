@@ -126,7 +126,7 @@ public object TextCleanup {
         '\n' !in block && block.length <= MAX_HEADING_CHARS && block.isNotEmpty() && block.last() !in ENDING_SIGNS &&
             !isMarkdownLine(block) && !isItem(block) && !block.startsWith("```") && !block.startsWith("$$") && block.any { it.isLetter() }
 
-    private val MARKDOWN_LINE = Regex("""^(#{1,6}\s|- |\* |\d+\.\s|```|~~~|>\s|\|)""")
+    private val MARKDOWN_LINE = Regex("""^(#{1,6}\s|- |\* |\d+\.\s|[0-9A-Za-z]+[.)]  |```|~~~|>\s|\|)""")
     private val INLINE_FORMULA = Regex("""\$[^\s$][^$\n]*\$""")
     private val BULLET = Regex("""^[•◦▪‣·–—*\-]\s+(.+)$""")
     private val NUMBERED_ITEM = Regex("""^(\d{1,3})[).]\s+(.+)$""")

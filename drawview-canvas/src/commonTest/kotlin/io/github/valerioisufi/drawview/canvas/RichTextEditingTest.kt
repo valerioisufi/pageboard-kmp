@@ -471,4 +471,18 @@ class RichTextEditingTest {
         assertEquals("- a\n- b", out.text)
         assertEquals(TextRange(6), out.selection)
     }
+
+    @Test
+    fun enterContinuesAListInItsStyle() {
+        assertEquals("a.  x\nb.  ", RichTextEditing.handleEnter(level("a.  x", 5))!!.text)
+        assertEquals("I)  x\nII)  ", RichTextEditing.handleEnter(level("I)  x", 5))!!.text)
+        assertEquals("a.  x\n", RichTextEditing.handleEnter(level("a.  x\nb.  ", 10))!!.text, "out of the list on an empty one")
+    }
+
+    @Test
+    fun theButtonsReadAMarkerInAStyle() {
+        assertTrue(RichTextEditing.inNumberedList(level("a.  x", 5)))
+        assertEquals("x", RichTextEditing.toggleNumberedList(level("a.  x", 5)).text)
+        assertEquals("- x\n- y", RichTextEditing.toggleBulletList(level("a.  x\nb.  y", 5)).text)
+    }
 }

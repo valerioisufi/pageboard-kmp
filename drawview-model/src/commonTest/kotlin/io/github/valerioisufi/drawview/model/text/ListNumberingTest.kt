@@ -68,4 +68,53 @@ class ListNumberingTest {
         assertEquals("aa", ListNumbering.format(27, ListNumbering.Numbering.LOWER_ALPHA))
         assertEquals("0", ListNumbering.format(0, ListNumbering.Numbering.LOWER_ALPHA))
     }
+
+    @Test
+    fun whatWasTextStaysText() {
+        for (text in listOf("a. uno", "A. Rossi", "1) tre", "i. e. cosa", "I. Asimov", "a) due", "Dr.  Rossi", "mix.  uno", "abcdefgh.  uno", "aB.  uno", "è.  uno")) {
+            val isItem = RichTextParser.parse(text).any { it.kind == Kind.LIST_ITEM }
+            assertEquals(text == "mix.  uno", isItem, text)
+        }
+        assertEquals(listOf("1.", "a.", "i."), labels("1. a\n  1. b\n    1. c"), "a list with no style is by level")
+    }
+
+    @Test
+    fun theStyleIsInTheMarkerOfTheFirstItem() {
+        assertEquals(listOf("a.", "b.", "c."), labels("a.  x\nb.  y\nz.  w"))
+        assertEquals(listOf("A.", "B."), labels("A.  x\nB.  y"))
+        assertEquals(listOf("i.", "ii.", "iii."), labels("i.  x\nii.  y\niii.  z"))
+        assertEquals(listOf("I.", "II."), labels("I.  x\nII.  y"))
+        assertEquals(listOf("1)", "2)"), labels("1)  x\n2)  y"))
+        assertEquals(listOf("a)", "b)"), labels("a)  x\nb)  y"))
+        assertEquals(listOf("c.", "d."), labels("c.  x\nd.  y"), "from the number written")
+        assertEquals(listOf("v.", "vi."), labels("v.  x\nvi.  y"))
+        assertEquals(listOf("1.", "1."), labels("1. a\n  1.  b"), "decimal at any level")
+        assertEquals(listOf("A.", "a.", "B."), labels("A.  x\n  1. y\nB.  z"), "a level with no style under one with a style")
+    }
+
+    @Test
+    fun theTextOfAnItemWithAStyleIsItsContent() {
+        val text = "a.  uno **due**\n    more\nb.  tre"
+        val spans = RichTextParser.parse(text).filter { it.kind == Kind.LIST_ITEM }
+        assertEquals(listOf("uno **due**\n    more", "tre"), spans.map { text.substring(it.contentStart, it.contentEnd) })
+        val code = RichTextParser.parse("a.  x\n    ```c\n    y\n    ```").single { it.kind == Kind.CODE_BLOCK }
+        assertEquals(0, code.listItem?.start, "a block of code under it")
+    }
+
+    @Test
+    fun aMarkerReadsBackWhatIsWritten() {
+        val styles = ListNumbering.Numbering.entries.flatMap { n -> NumberingStyle.DELIMITERS.map { NumberingStyle(n, it) } } + listOf(null)
+        for (style in styles) {
+            for (number in 1..120) {
+                val read = ListMarker.at(ListMarker.write(style, number) + "x")
+                if (ListMarker.canStart(style, number)) {
+                    assertEquals(number, read?.number)
+                    assertEquals(style, read?.style)
+                }
+            }
+            assertEquals(true, ListMarker.canStart(style, 1), "every style starts from 1")
+        }
+        assertEquals(false, ListMarker.canStart(NumberingStyle(ListNumbering.Numbering.LOWER_ALPHA), 9), "`i` is a Roman numeral")
+        assertEquals(false, ListMarker.canStart(NumberingStyle(ListNumbering.Numbering.LOWER_ROMAN), 50), "`l` is a letter")
+    }
 }

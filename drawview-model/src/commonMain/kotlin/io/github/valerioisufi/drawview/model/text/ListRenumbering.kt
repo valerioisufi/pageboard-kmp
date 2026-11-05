@@ -61,13 +61,16 @@ public object ListRenumbering {
         val oldByMarker = HashMap<Int, Int>()
         for ((index, item) in oldItems.withIndex()) oldByMarker[ListNumbering.markerStart(old, item.span)] = index
 
+        // The end the two texts share, free of the start they share: `10.` and `11.` share a `1`
+        var tail = 0
+        while (tail < most && old[old.length - 1 - tail] == new[new.length - 1 - tail]) tail++
         // The item before the edit of each item after it: the same marker at the same place
         val origins = IntArray(items.size) { index ->
             val span = items[index].span
             val marker = ListNumbering.markerStart(new, span)
             val before = when {
-                marker < prefix -> marker
-                marker >= new.length - suffix -> marker + old.length - new.length
+                span.contentStart <= prefix -> marker
+                marker >= new.length - tail -> marker + old.length - new.length
                 else -> -1
             }
             val origin = oldByMarker[before]
@@ -90,13 +93,16 @@ public object ListRenumbering {
                     list.all { origins[it] >= 0 && oldItems[origins[it]].list == oldList && oldItems[origins[it]].depth == items[it].depth }
                 if (whole) continue
             }
+            val moved = origin >= 0 && oldItems[origin].depth != first.depth
             val start = when {
                 origin < 0 -> first.span.number
-                oldItems[origin].depth != first.depth -> 1
+                moved -> 1
                 else -> startOf(oldItems, origin, kept)
             }
+            // An item moved to a new level takes the numbering of that level, not the style it had
+            val style = if (moved) null else first.style
             for ((position, index) in list.withIndex()) {
-                write(new, items[index].span, start + position, spans, replacements)
+                write(new, items[index].span, style, start + position, spans, replacements)
             }
         }
         if (replacements.isEmpty()) return null
@@ -111,7 +117,7 @@ public object ListRenumbering {
         val spans = RichTextParser.parse(text)
         val replacements = ArrayList<Replacement>()
         for (item in ListNumbering.items(text, spans)) {
-            if (item.span.ordered) write(text, item.span, item.ordinal, spans, replacements)
+            if (item.span.ordered) write(text, item.span, item.style, item.ordinal, spans, replacements)
         }
         return if (replacements.isEmpty()) text else applied(text, replacements)
     }
@@ -181,16 +187,14 @@ public object ListRenumbering {
         return (if (start < 0) oldItems[origin].ordinal else start) + before
     }
 
-    /** Adds to [replacements] the number [number] in the marker of [item], and its lines moved to follow its text. */
-    private fun write(text: String, item: Span, number: Int, spans: List<Span>, replacements: MutableList<Replacement>) {
-        if (item.number == number) return
+    /** Adds to [replacements] the marker of [number] in [style] for [item], and its lines moved to follow its text. */
+    private fun write(text: String, item: Span, style: NumberingStyle?, number: Int, spans: List<Span>, replacements: MutableList<Replacement>) {
+        if (item.number == number && item.style == style) return
         val marker = ListNumbering.markerStart(text, item)
-        var digits = marker
-        while (digits < text.length && text[digits].isDigit()) digits++
-        val written = number.toString()
-        replacements += Replacement(marker, digits - marker, written)
-        val shift = written.length - (digits - marker)
-        if (shift != 0) moveLines(text, item, shift, spans, replacements)
+        val written = ListMarker.write(style, number)
+        val length = item.contentStart - marker
+        replacements += Replacement(marker, length, written)
+        if (written.length != length) moveLines(text, item, written.length - length, spans, replacements)
     }
 
     /** Adds to [replacements] the lines of [item] after its first one moved by [shift] columns. */

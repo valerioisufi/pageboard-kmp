@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.canvas.text
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.valerioisufi.drawview.model.text.ListMarker
 import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.ListRenumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
@@ -166,7 +167,7 @@ public object RichTextEditing {
         val lines = value.text.substring(firstLineStart, lastLineEnd).split('\n')
         return lines.isNotEmpty() && lines.all { line ->
             val rest = line.dropWhile { it == ' ' || it == '\t' }
-            if (ordered) NUMBERED_MARKER.containsMatchIn(rest) else rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ")
+            if (ordered) ListMarker.at(rest) != null else rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ")
         }
     }
 
@@ -235,7 +236,7 @@ public object RichTextEditing {
         val parsed = lines.mapIndexed { i, line ->
             val indent = line.takeWhile { it == ' ' || it == '\t' }
             val rest = line.substring(indent.length)
-            val numMatch = NUMBERED_MARKER.find(rest)
+            val numbered = ListMarker.at(rest)
             val headMatch = HEADING_MARKER.find(rest)
             val (type, len) = when {
                 itemOf[i] >= 0 -> MarkerType.CONTINUATION to 0
@@ -244,7 +245,7 @@ public object RichTextEditing {
                     while (mLen < rest.length && rest[mLen].isWhitespace()) mLen++
                     MarkerType.BULLET to mLen
                 }
-                numMatch != null -> MarkerType.NUMBERED to numMatch.value.length
+                numbered != null -> MarkerType.NUMBERED to numbered.length
                 headMatch != null -> MarkerType.HEADING to headMatch.value.length
                 else -> MarkerType.NONE to 0
             }
@@ -340,7 +341,7 @@ public object RichTextEditing {
         val parent = items[item.parent].span
         var parentMarker = parent.start
         while (text[parentMarker] == ' ' || text[parentMarker] == '\t') parentMarker++
-        val marker = if (parent.ordered) "${parent.number + 1}. " else text[parentMarker] + " "
+        val marker = if (parent.ordered) ListMarker.write(parent.style, parent.number + 1) else text[parentMarker] + " "
         val prefix = text.substring(parent.start, parentMarker) + marker
         return TextFieldValue(
             text.substring(0, item.span.start) + prefix + text.substring(item.span.contentStart),
@@ -396,7 +397,7 @@ public object RichTextEditing {
         if (continued != null) {
             var markerStart = continued.start
             while (text[markerStart] == ' ' || text[markerStart] == '\t') markerStart++
-            val marker = if (continued.ordered) "${continued.number + 1}. " else text[markerStart] + " "
+            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) else text[markerStart] + " "
             var after = cursor
             while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
             // At the start of the line: the next item takes the whole line
@@ -407,16 +408,13 @@ public object RichTextEditing {
 
         val indent = line.takeWhile { it == ' ' || it == '\t' }
         val rest = line.substring(indent.length)
-        val numMatch = NUMBERED_MARKER.find(rest)
+        val numbered = ListMarker.at(rest)
 
         val (markerType, markerLen, numValue, bulletMarker) = when {
             rest.startsWith("- ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "- ")
             rest.startsWith("* ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "* ")
             rest.startsWith("+ ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "+ ")
-            numMatch != null -> {
-                val num = numMatch.groupValues[1].toIntOrNull() ?: 1
-                MarkerInfo(MarkerType.NUMBERED, numMatch.value.length, num, "")
-            }
+            numbered != null -> MarkerInfo(MarkerType.NUMBERED, numbered.length, numbered.number, "")
             else -> MarkerInfo(MarkerType.NONE, 0, 0, "")
         }
 
@@ -439,7 +437,7 @@ public object RichTextEditing {
         val beforeCursor = line.substring(0, cursorInLine)
         val afterCursor = line.substring(cursorInLine).trimStart()
         val nextPrefix = if (markerType == MarkerType.NUMBERED) {
-            "$indent${numValue + 1}. "
+            indent + ListMarker.write(numbered?.style, numValue + 1)
         } else {
             "$indent$bulletMarker"
         }
@@ -730,7 +728,6 @@ public object RichTextEditing {
 
     private enum class MarkerType { NONE, BULLET, NUMBERED, HEADING, CONTINUATION }
 
-    private val NUMBERED_MARKER = Regex("""^(\d+)\.[ \t]+""")
     private val HEADING_MARKER = Regex("""^#{1,6}[ \t]+""")
     private const val BULLET_PREFIX = "- "
     private const val HEADING_PREFIX = "# "

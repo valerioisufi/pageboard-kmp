@@ -2407,6 +2407,27 @@ final class io.github.valerioisufi.drawview.model.text/ChainFlow { // io.github.
     }
 }
 
+final class io.github.valerioisufi.drawview.model.text/NumberingStyle { // io.github.valerioisufi.drawview.model.text/NumberingStyle|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering, kotlin/Char = ...) // io.github.valerioisufi.drawview.model.text/NumberingStyle.<init>|<init>(io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering;kotlin.Char){}[0]
+
+    final val delimiter // io.github.valerioisufi.drawview.model.text/NumberingStyle.delimiter|{}delimiter[0]
+        final fun <get-delimiter>(): kotlin/Char // io.github.valerioisufi.drawview.model.text/NumberingStyle.delimiter.<get-delimiter>|<get-delimiter>(){}[0]
+    final val numbering // io.github.valerioisufi.drawview.model.text/NumberingStyle.numbering|{}numbering[0]
+        final fun <get-numbering>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering // io.github.valerioisufi.drawview.model.text/NumberingStyle.numbering.<get-numbering>|<get-numbering>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering // io.github.valerioisufi.drawview.model.text/NumberingStyle.component1|component1(){}[0]
+    final fun component2(): kotlin/Char // io.github.valerioisufi.drawview.model.text/NumberingStyle.component2|component2(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering = ..., kotlin/Char = ...): io.github.valerioisufi.drawview.model.text/NumberingStyle // io.github.valerioisufi.drawview.model.text/NumberingStyle.copy|copy(io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering;kotlin.Char){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/NumberingStyle.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/NumberingStyle.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/NumberingStyle.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.text/NumberingStyle.Companion|null[0]
+        final const val DELIMITERS // io.github.valerioisufi.drawview.model.text/NumberingStyle.Companion.DELIMITERS|{}DELIMITERS[0]
+            final fun <get-DELIMITERS>(): kotlin/String // io.github.valerioisufi.drawview.model.text/NumberingStyle.Companion.DELIMITERS.<get-DELIMITERS>|<get-DELIMITERS>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.text/TableShape { // io.github.valerioisufi.drawview.model.text/TableShape|null[0]
     constructor <init>(kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>>, kotlin.collections/List<io.github.valerioisufi.drawview.model/TextAlignment?>, kotlin.collections/List<kotlin.ranges/IntRange>) // io.github.valerioisufi.drawview.model.text/TableShape.<init>|<init>(kotlin.collections.List<kotlin.collections.List<kotlin.ranges.IntRange>>;kotlin.collections.List<io.github.valerioisufi.drawview.model.TextAlignment?>;kotlin.collections.List<kotlin.ranges.IntRange>){}[0]
 
@@ -3509,6 +3530,31 @@ final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighligh
     final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text.code/CodeToken> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.text/ListMarker { // io.github.valerioisufi.drawview.model.text/ListMarker|null[0]
+    final fun at(kotlin/CharSequence, kotlin/Int = ...): io.github.valerioisufi.drawview.model.text/ListMarker.Read? // io.github.valerioisufi.drawview.model.text/ListMarker.at|at(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun canStart(io.github.valerioisufi.drawview.model.text/NumberingStyle?, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ListMarker.canStart|canStart(io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]
+    final fun write(io.github.valerioisufi.drawview.model.text/NumberingStyle?, kotlin/Int): kotlin/String // io.github.valerioisufi.drawview.model.text/ListMarker.write|write(io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]
+
+    final class Read { // io.github.valerioisufi.drawview.model.text/ListMarker.Read|null[0]
+        constructor <init>(kotlin/Int, io.github.valerioisufi.drawview.model.text/NumberingStyle?, kotlin/Int) // io.github.valerioisufi.drawview.model.text/ListMarker.Read.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]
+
+        final val length // io.github.valerioisufi.drawview.model.text/ListMarker.Read.length|{}length[0]
+            final fun <get-length>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListMarker.Read.length.<get-length>|<get-length>(){}[0]
+        final val number // io.github.valerioisufi.drawview.model.text/ListMarker.Read.number|{}number[0]
+            final fun <get-number>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListMarker.Read.number.<get-number>|<get-number>(){}[0]
+        final val style // io.github.valerioisufi.drawview.model.text/ListMarker.Read.style|{}style[0]
+            final fun <get-style>(): io.github.valerioisufi.drawview.model.text/NumberingStyle? // io.github.valerioisufi.drawview.model.text/ListMarker.Read.style.<get-style>|<get-style>(){}[0]
+
+        final fun component1(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListMarker.Read.component1|component1(){}[0]
+        final fun component2(): io.github.valerioisufi.drawview.model.text/NumberingStyle? // io.github.valerioisufi.drawview.model.text/ListMarker.Read.component2|component2(){}[0]
+        final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListMarker.Read.component3|component3(){}[0]
+        final fun copy(kotlin/Int = ..., io.github.valerioisufi.drawview.model.text/NumberingStyle? = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.model.text/ListMarker.Read // io.github.valerioisufi.drawview.model.text/ListMarker.Read.copy|copy(kotlin.Int;io.github.valerioisufi.drawview.model.text.NumberingStyle?;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ListMarker.Read.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListMarker.Read.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/ListMarker.Read.toString|toString(){}[0]
+    }
+}
+
 final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.github.valerioisufi.drawview.model.text/ListNumbering|null[0]
     final fun continuationIndentAt(kotlin/String, kotlin/Int): kotlin.ranges/IntRange? // io.github.valerioisufi.drawview.model.text/ListNumbering.continuationIndentAt|continuationIndentAt(kotlin.String;kotlin.Int){}[0]
     final fun format(kotlin/Int, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.format|format(kotlin.Int;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering){}[0]
@@ -3533,6 +3579,8 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
         enum entry DECIMAL // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.DECIMAL|null[0]
         enum entry LOWER_ALPHA // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.LOWER_ALPHA|null[0]
         enum entry LOWER_ROMAN // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.LOWER_ROMAN|null[0]
+        enum entry UPPER_ALPHA // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.UPPER_ALPHA|null[0]
+        enum entry UPPER_ROMAN // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.UPPER_ROMAN|null[0]
 
         final val entries // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.entries|#static{}entries[0]
             final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering> // io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering.entries.<get-entries>|<get-entries>#static(){}[0]
@@ -3542,7 +3590,7 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     }
 
     final class Item { // io.github.valerioisufi.drawview.model.text/ListNumbering.Item|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?, kotlin/Int = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?;kotlin.Int;kotlin.Int){}[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?, kotlin/Int = ..., kotlin/Int = ..., io.github.valerioisufi.drawview.model.text/NumberingStyle? = ...) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?;kotlin.Int;kotlin.Int;io.github.valerioisufi.drawview.model.text.NumberingStyle?){}[0]
 
         final val bullet // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet|{}bullet[0]
             final fun <get-bullet>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet.<get-bullet>|<get-bullet>(){}[0]
@@ -3562,6 +3610,8 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
             final fun <get-run>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.run.<get-run>|<get-run>(){}[0]
         final val span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span|{}span[0]
             final fun <get-span>(): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span.<get-span>|<get-span>(){}[0]
+        final val style // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.style|{}style[0]
+            final fun <get-style>(): io.github.valerioisufi.drawview.model.text/NumberingStyle? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.style.<get-style>|<get-style>(){}[0]
     }
 }
 
@@ -3610,7 +3660,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
     }
 
     final class Span { // io.github.valerioisufi.drawview.model.text/RichTextParser.Span|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model.text/RichTextParser.Span? = ...) // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.drawview.model.text.RichTextParser.Span?){}[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.drawview.model.text/NumberingStyle? = ...) // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.drawview.model.text.RichTextParser.Span?;io.github.valerioisufi.drawview.model.text.NumberingStyle?){}[0]
 
         final val block // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.block|{}block[0]
             final fun <get-block>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.block.<get-block>|<get-block>(){}[0]
@@ -3640,12 +3690,15 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
             final fun <get-ordered>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.ordered.<get-ordered>|<get-ordered>(){}[0]
         final val start // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.start|{}start[0]
             final fun <get-start>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.start.<get-start>|<get-start>(){}[0]
+        final val style // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.style|{}style[0]
+            final fun <get-style>(): io.github.valerioisufi.drawview.model.text/NumberingStyle? // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.style.<get-style>|<get-style>(){}[0]
 
         final fun component1(): io.github.valerioisufi.drawview.model.text/RichTextParser.Kind // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component1|component1(){}[0]
         final fun component10(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component10|component10(){}[0]
         final fun component11(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component11|component11(){}[0]
         final fun component12(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component12|component12(){}[0]
         final fun component13(): io.github.valerioisufi.drawview.model.text/RichTextParser.Span? // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component13|component13(){}[0]
+        final fun component14(): io.github.valerioisufi.drawview.model.text/NumberingStyle? // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component14|component14(){}[0]
         final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component2|component2(){}[0]
         final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component3|component3(){}[0]
         final fun component4(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component4|component4(){}[0]
@@ -3654,7 +3707,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         final fun component7(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component7|component7(){}[0]
         final fun component8(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component8|component8(){}[0]
         final fun component9(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component9|component9(){}[0]
-        final fun copy(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model.text/RichTextParser.Span? = ...): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.drawview.model.text.RichTextParser.Span?){}[0]
+        final fun copy(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.drawview.model.text/NumberingStyle? = ...): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.drawview.model.text.RichTextParser.Span?;io.github.valerioisufi.drawview.model.text.NumberingStyle?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.toString|toString(){}[0]
