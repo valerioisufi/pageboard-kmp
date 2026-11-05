@@ -143,8 +143,8 @@ that fails its check stops the plan there, with what was learned.
 
 | Phase | Content | Check | Status |
 |---|---|---|---|
-| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): stopped, the user chooses |
-| 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Not started |
+| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the user chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
+| 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Done; the check holds, except that E4B writes more notes (67 against 53) |
 | 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Not started |
 | 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | Not started |
 | 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not started |
@@ -167,8 +167,36 @@ that fails its check stops the plan there, with what was learned.
   They count as failed in the runs of phase 2 as well.
 * **What it means for the runs.** The time does not change the notes, only how long they take: about
   43 minutes a lecture here, so about 6 hours for the 4 dev lectures twice.
-* **Waiting for the user:** the runs here or on the Mac, and how to read the threshold of the time.
-  `GEMINI_API_KEY` is not set on this computer yet, and phase 2 needs it.
+* **The choice of the user:** the quality is measured here, on the processor, and the time, with its
+  threshold unchanged, on the Mac at the end.
+
+### Phase 2 results (2026-11-05)
+
+Summed over the 4 dev lectures, the verdicts of the two passes pooled:
+
+| Configuration | Notes | Per hour | Add | Slide | Trivial | Wrong | Questions | Longest request |
+|---|---|---|---|---|---|---|---|---|
+| `e4b-text` | 280 | 50 | 25% | 60% | 4% | 11% | 66% | 214 s |
+| `gemini-3.8-flash-cached-text` | 60 | 11 | 88% | 9% | 2% | 0% | 71% | 9 s |
+| `gemini-3.8-flash-cached-text#2` | 54 | 10 | 81% | 12% | 6% | 0% | 71% | 13 s |
+
+* **Against the thresholds.** E4B misses the wrong notes (11% against 5%), the notes that add (25%
+  against 50%), the notes per hour (50 against 22) and the time; its questions are within 15 points.
+* **The lecture of 2026-10-15 against the Starting point.** Questions: E4B 57% (61% before), Gemini 68%
+  and 66% (72%). Notes that add: E4B about 11 (6), Gemini 12 and 8 (9). Wrong notes: E4B about 11 (10),
+  Gemini 0. All close, but for the notes of E4B: 67 against 53, not looked into.
+* **The noise of the runs.** On this computer `e4b-text#2` gave the same notes as `e4b-text`, word for
+  word, on all 4 lectures, so a second run of E4B measures nothing and the next phases need only one.
+  Gemini changes: 15 and 8 notes on the same lecture, 60 and 54 in all.
+* **The noise of the grader.** 353 verdicts of 393 notes are the same in both passes (90%): 164 `SLIDE`,
+  154 `ADDS`, 24 `WRONG`, 11 `TRIVIAL`. The most frequent change is `ADDS` to `SLIDE` (18). The same set
+  scored twice on the questions differs by up to 12 points on a lecture, and for E4B by less than 1
+  point on the sum.
+* **Failed requests.** E4B: 10 answers of 68 could not be read as the JSON of the notes, so those
+  intervals wrote no note. Gemini: none.
+* **What the checks must do.** With every note that adds kept, reaching 50% and 22 per hour means
+  removing more than half of the 280 notes, and at most about 7 wrong ones of the 31 may stay.
+* **The money.** $0.61 for the runs and $0.84 for the grades (the estimate said $1.13): $1.45 of $6.
 
 ## Decisions
 
