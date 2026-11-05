@@ -29,7 +29,8 @@ public class ChainFlow(private val heightOf: (text: String, widthMm: Float) -> F
      */
     public fun flow(text: String, rooms: List<Room>, extra: Room): List<Piece> {
         val pieces = mutableListOf<Piece>()
-        var rest = text
+        // The numbers as shown: the lists are counted through the boxes, a part alone would count from its first number
+        var rest = ListRenumbering.asShown(text)
         var continuesLine = false
         var index = 0
         while (true) {
@@ -38,7 +39,7 @@ public class ChainFlow(private val heightOf: (text: String, widthMm: Float) -> F
             val cut = cutFor(rest, room, fresh)
             if (cut >= rest.length) {
                 pieces += Piece(rest, continuesLine)
-                return renumbered(text, pieces)
+                return pieces
             }
             if (rest[cut] == '\n') {
                 pieces += Piece(rest.substring(0, cut), continuesLine)
@@ -123,30 +124,5 @@ public class ChainFlow(private val heightOf: (text: String, widthMm: Float) -> F
         }
         ends += text.length
         return ends
-    }
-
-    /**
-     * [pieces] of [text] with the first item of each part written with its number when it goes on a
-     * numbered list of the part before (a part alone would count from its first number).
-     */
-    private fun renumbered(text: String, pieces: List<Piece>): List<Piece> {
-        if (pieces.size < 2) return pieces
-        val items = ListNumbering.items(text, RichTextParser.parse(text))
-        if (items.none { it.span.ordered }) return pieces
-        val out = mutableListOf(pieces[0])
-        var offset = pieces[0].text.length
-        for (piece in pieces.drop(1)) {
-            if (!piece.continuesLine) offset++
-            val item = items.firstOrNull { it.span.start == offset && it.span.ordered }
-            val first = item?.let { current -> items.firstOrNull { it.list == current.list } }
-            out += if (item != null && first != null && first.span.start < offset) {
-                val marker = Regex("""^([ \t]*)\d+\.""").find(piece.text)
-                if (marker != null) piece.copy(text = marker.groupValues[1] + item.ordinal + "." + piece.text.substring(marker.range.last + 1)) else piece
-            } else {
-                piece
-            }
-            offset += piece.text.length
-        }
-        return out
     }
 }

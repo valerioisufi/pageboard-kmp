@@ -3110,6 +3110,16 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Numb
 	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/ListRenumbering {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListRenumbering;
+	public final fun after (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/ListRenumbering$Renumbered;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ListRenumbering$Renumbered {
+	public final fun getText ()Ljava/lang/String;
+	public final fun map (I)I
+}
+
 public final class io/github/valerioisufi/drawview/model/text/PastedText {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/PastedText;
 	public final fun clean (Ljava/lang/String;)Ljava/lang/String;

@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.canvas.text
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.model.text.ListNumbering
+import io.github.valerioisufi.drawview.model.text.ListRenumbering
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import kotlin.math.max
 import kotlin.math.min
@@ -491,6 +492,19 @@ public object RichTextEditing {
         }
         val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
         return TextFieldValue(old.removeRange(item.start, item.contentStart), TextRange(item.start))
+    }
+
+    /**
+     * [newValue] with the numbers of the lists the edit from [oldValue] touched made right (see
+     * [ListRenumbering]), its selection following them.
+     */
+    public fun withListsRenumbered(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue {
+        val renumbered = ListRenumbering.after(oldValue.text, newValue.text) ?: return newValue
+        return TextFieldValue(
+            renumbered.text,
+            TextRange(renumbered.map(newValue.selection.start), renumbered.map(newValue.selection.end)),
+            newValue.composition?.let { TextRange(renumbered.map(it.start), renumbered.map(it.end)) }
+        )
     }
 
     /** The list item of [text] whose marker (its indent, its bullet or number, the space after it) has [offset], or `null`. */

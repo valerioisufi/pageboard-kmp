@@ -72,6 +72,48 @@ class TextChainEditingTest {
     }
 
     @Test
+    fun anItemTakenAwayMovesTheNumbersInTheNextBoxes() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        val list = (1..6).joinToString("\n") { "$it. i$it" }
+        editor.type(list)
+        assertEquals("5. i5\n6. i6", editor.value.text, "the list went on in a new box")
+        editor.finishEditing()
+        val first = controller.document.pages[0].texts.single()
+        editor.startEditing(first, 0)
+        editor.type(first.text.removePrefix("1. i1\n"))
+        assertEquals("1. i2\n2. i3\n3. i4", editor.value.text, "the start stays")
+        editor.finishEditing()
+        val texts = controller.document.pages.flatMap { it.texts }.joinToString("\n") { it.text }
+        assertEquals("1. i2\n2. i3\n3. i4\n4. i5\n5. i6", texts, "the next box follows on closing")
+    }
+
+    @Test
+    fun theNumbersAreRightAfterAnEditInTheEditor() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startDrawnText(0, Rect(20f, 20f, 120f, 30f))
+        editor.type("1. a\n2. b\n3. c")
+        editor.updateValue(TextFieldValue("2. b\n3. c", TextRange(4)))
+        assertEquals("1. b\n2. c", editor.value.text)
+        assertEquals(TextRange(4), editor.value.selection)
+        // Backspace at the start of the text of an item: its marker goes, the next one goes on
+        editor.type("1. a\n2. b\n3. c")
+        val caret = "1. a\n2. ".length
+        editor.updateValue(TextFieldValue("1. a\n2. b\n3. c", TextRange(caret)))
+        editor.updateValue(TextFieldValue("1. a\n2.b\n3. c", TextRange(caret - 1)))
+        assertEquals("1. a\nb\n2. c", editor.value.text)
+        // Tab on an item: from 1 at its level
+        editor.type("1. a\n2. b\n3. c")
+        editor.updateValue(TextFieldValue("1. a\n2. b\n3. c", TextRange(13)))
+        editor.indent()
+        assertEquals("1. a\n2. b\n  1. c", editor.value.text)
+        editor.outdent()
+        assertEquals("1. a\n2. b\n3. c", editor.value.text)
+    }
+
+    @Test
     fun linesTakenAwayPullTheNextOnesBack() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager

@@ -484,7 +484,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
                 ?: newValue
             textChanged -> newValue
             else -> RichTextEditing.keepCaretOutOfMarkers(value, newValue) ?: newValue
-        }
+        }.let { RichTextEditing.withListsRenumbered(value, it) }
         val reallyChanged = applied.text != value.text
         value = applied
         if (reallyChanged) {

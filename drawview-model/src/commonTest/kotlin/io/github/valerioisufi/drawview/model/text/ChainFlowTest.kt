@@ -44,6 +44,6 @@ class ChainFlowTest {
     @Test
     fun aNumberedListGoesOnWithItsNumbers() {
         val pieces = flow.flow("1. a\n1. b\n1. c\n1. d", listOf(Room(100f, 10f)), room)
-        assertEquals(listOf(Piece("1. a\n1. b"), Piece("3. c\n1. d")), pieces)
+        assertEquals(listOf(Piece("1. a\n2. b"), Piece("3. c\n4. d")), pieces)
     }
 }

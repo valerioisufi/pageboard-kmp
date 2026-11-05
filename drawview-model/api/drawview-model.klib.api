@@ -3562,6 +3562,17 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     }
 }
 
+final object io.github.valerioisufi.drawview.model.text/ListRenumbering { // io.github.valerioisufi.drawview.model.text/ListRenumbering|null[0]
+    final fun after(kotlin/String, kotlin/String): io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered? // io.github.valerioisufi.drawview.model.text/ListRenumbering.after|after(kotlin.String;kotlin.String){}[0]
+
+    final class Renumbered { // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered|null[0]
+        final val text // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered.text.<get-text>|<get-text>(){}[0]
+
+        final fun map(kotlin/Int): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered.map|map(kotlin.Int){}[0]
+    }
+}
+
 final object io.github.valerioisufi.drawview.model.text/PastedText { // io.github.valerioisufi.drawview.model.text/PastedText|null[0]
     final fun clean(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.clean|clean(kotlin.String){}[0]
     final fun normalized(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.normalized|normalized(kotlin.String){}[0]

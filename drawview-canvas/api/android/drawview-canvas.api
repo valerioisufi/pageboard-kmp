@@ -1165,6 +1165,7 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleLineNumbers (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun withListsRenumbered (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format : java/lang/Enum {

@@ -160,7 +160,7 @@ public object ListNumbering {
     )
 
     /** Where the marker of [item] starts: after the spaces of its line. */
-    private fun markerStart(text: String, item: Span): Int {
+    internal fun markerStart(text: String, item: Span): Int {
         var k = item.start
         while (k < item.contentStart && (text[k] == ' ' || text[k] == '\t')) k++
         return k
