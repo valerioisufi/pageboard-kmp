@@ -4,10 +4,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,18 +50,24 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.platform.TextToolbarStatus
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Density
@@ -74,6 +82,7 @@ import io.github.valerioisufi.drawview.canvas.canvasGesturesOverField
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
@@ -199,6 +208,16 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val accent = MaterialTheme.colorScheme.primary
     val currentShown by rememberUpdatedState(shown)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    /** The offset of the source under a point of the layout of the field, as it is shown now. */
+    fun offsetAt(point: Offset): Int? {
+        val current = layout ?: return null
+        val text = currentShown
+        if (current.layoutInput.text.text != text.text.text) return null
+        return codeOffsetAt(current, text, point) ?: text.mapping.transformedToOriginal(current.getOffsetForPosition(point))
+    }
+    // The selection by a finger or a pen, its handles and its toolbar drawn by the editor
+    val touch = remember { TouchSelection() }
+    SideEffect { touch.valueChanged(editor.value) }
 
     // What the field pastes: the formatted text of the clipboard in the notation, out of the blocks of code
     val systemClipboard = LocalClipboard.current
@@ -263,11 +282,23 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 .pageScale(widthPx, screenPerLayout)
                 .onFocusChanged { focused = it.hasFocus }
                 .focusRequester(focusRequester)
-                // A tap on a block of code puts the caret on the character tapped (the field would
+                // A finger and a pen select as the page shows the text, the handles where it is
+                .touchSelectionGestures(
+                    touch,
+                    offsetAt = ::offsetAt,
+                    value = { editor.value },
+                    onValue = { editor.updateValue(it) },
+                    onTap = {
+                        focusRequester.requestFocus()
+                        keyboardController?.show()
+                    }
+                )
+                // A click on a block of code puts the caret on the character clicked (the field would
                 // put it at an end of the character standing for the block)
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        if (down.type != PointerType.Mouse) return@awaitEachGesture
                         val current = layout ?: return@awaitEachGesture
                         val text = currentShown
                         if (current.layoutInput.text.text != text.text.text) return@awaitEachGesture
@@ -472,6 +503,84 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     }
                 }
             )
+        }
+
+        // The handles of a selection by touch, where the text is on the screen
+        fun toScreen(point: Offset): Offset {
+            val k = screenPerLayout()
+            val origin = controller.editedBoxOrigin()
+            val turned = Matrix2D().postRotate(editor.rotation).mapPoint(point.x * k, point.y * k)
+            return Offset(origin.x + turned.x, origin.y + turned.y)
+        }
+        fun toLayout(point: Offset): Offset {
+            val k = screenPerLayout()
+            val origin = controller.editedBoxOrigin()
+            val straight = Matrix2D().postRotate(-editor.rotation).mapPoint(point.x - origin.x, point.y - origin.y)
+            return Offset(straight.x / k, straight.y / k)
+        }
+        fun caretAt(offset: Int): Rect? = layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }
+            ?.let { caretRect(it, currentShown, editor.tableCaret, offset) }
+        TouchHandles(
+            touch,
+            value = { editor.value },
+            caretRect = ::caretAt,
+            toScreen = ::toScreen,
+            toLayout = ::toLayout,
+            offsetAt = ::offsetAt,
+            onValue = { editor.updateValue(it) },
+            color = LocalTextSelectionColors.current.handleColor
+        )
+
+        // The toolbar of the platform for a selection by touch (copy, cut, paste, select all)
+        val textToolbar = LocalTextToolbar.current
+        var parentInRoot by remember { mutableStateOf(Offset.Zero) }
+        var toolbarShown by remember { mutableStateOf(false) }
+        Box(Modifier.onGloballyPositioned { parentInRoot = it.positionInRoot() })
+        val selected = value.selection
+        val wantsToolbar = touch.toolbar && !touch.dragging
+        val start = if (wantsToolbar) caretAt(selected.min) else null
+        val end = if (wantsToolbar) caretAt(selected.max) else null
+        SideEffect {
+            if (start != null && end != null) {
+                val corners = listOf(start.topLeft, start.bottomLeft, end.topRight, end.bottomRight).map { toScreen(it) + parentInRoot }
+                val rect = Rect(corners.minOf { it.x }, corners.minOf { it.y }, corners.maxOf { it.x }, corners.maxOf { it.y })
+                fun copy() {
+                    val now = editor.value
+                    plainClipboard.setText(AnnotatedString(now.text.substring(now.selection.min, now.selection.max)))
+                }
+                textToolbar.showMenu(
+                    rect,
+                    onCopyRequested = if (selected.collapsed) null else ({
+                        copy()
+                        touch.toolbar = false
+                    }),
+                    onPasteRequested = {
+                        val formatted = clipboardText.markdown().takeUnless { editor.inCodeBlock }
+                        val now = editor.value
+                        if (formatted != null) {
+                            editor.formattedPaste = formatted
+                            editor.updateValue(TextFieldValue(now.text.replaceRange(now.selection.min, now.selection.max, formatted), TextRange(now.selection.min + formatted.length)))
+                        } else {
+                            plainClipboard.getText()?.text?.let { editor.pasteAtCaret(it) }
+                        }
+                        touch.toolbar = false
+                    },
+                    onCutRequested = if (selected.collapsed) null else ({
+                        copy()
+                        val now = editor.value
+                        editor.updateValue(TextFieldValue(now.text.removeRange(now.selection.min, now.selection.max), TextRange(now.selection.min)))
+                        touch.toolbar = false
+                    }),
+                    onSelectAllRequested = if (selected.min == 0 && selected.max == value.text.length) null else ({
+                        editor.updateValue(editor.value.copy(selection = TextRange(0, editor.value.text.length)))
+                        touch.touch(editor.value, TouchSelection.Handles.SELECTION, toolbar = true)
+                    })
+                )
+                toolbarShown = true
+            } else if (toolbarShown) {
+                if (textToolbar.status == TextToolbarStatus.Shown) textToolbar.hide()
+                toolbarShown = false
+            }
         }
     }
 

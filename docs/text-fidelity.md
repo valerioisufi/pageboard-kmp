@@ -175,23 +175,27 @@ reaches a layer (Protected Variations); `PageScale` is a Pure Fabrication.
 ### The caret, the selection, the pointers
 
 Scaled with the field, the field's own caret is as thin as the zoom (measured), and its handles on
-Android and iOS, drawn in popups, may not follow the layer (to be seen on the tablet, see
-[Risks](#risks)); neither knows the objects of the text.
+Android and iOS are placed off by the zoom and the rotation: Compose 1.12.1 places a handle at
+the top-left corner of the field in the window plus its position in the layout of the field,
+without the layers above the field (`HandlePositionProvider`, read in its sources). Neither knows
+the objects of the text.
 
 * `TextCaret` draws the caret: 2 dp on the screen at every zoom, blinking as Compose's (solid while
   typing or moving), wherever the caret is: in the text, in a cell of a table, in a block of code,
   in the strip. The brush of the field is transparent.
 * `TextHitTest` tells the offset of the source under a point of the field: in the text, in a cell
   of a table, in a block of code, on a formula. It gathers `codeOffsetAt` and the taps on the cells.
-* `TextBoxGestures` takes every pointer on the text (mouse, pen, finger), after
+* `TouchSelection` takes the touches of a finger and of a pen on the text, after
   `canvasGesturesOverField` keeps the pan and the pinch: a tap puts the caret, two select a word,
-  three a line, a drag selects (also into and out of a block of code), Shift and a click extends;
-  on a touch screen a long press selects a word and opens the text toolbar of the platform
-  (`LocalTextToolbar`), and the handles of the caret and of the selection are drawn at their size
-  on the screen, outside the layer, and dragged. The field's own pointer input gets nothing (taken
-  at the first pass), so its handles never show; the secondary button keeps its context menu.
+  a long press selects a word and then follows the finger, a pen pressed and dragged selects; the
+  handles of the caret and of the selection are drawn at their size on the screen, outside the
+  layer, and dragged; the text toolbar of the platform (`LocalTextToolbar`) copies, cuts, pastes,
+  selects all. The field's own pointer input gets no touch (taken at the first pass), so its handles
+  never show. A mouse stays the field's, which selects well through the layer (it has no
+  handles): on the objects the editor takes it too (a click on a block of code today, a drag in
+  one in phase 6).
 
-`TextBoxGestures` is the controller of the pointers on the text, calling
+`TouchSelection` is the controller of the touches on the text, calling
 `TextEditorManager.updateValue` (Controller, Indirection); `TextHitTest` knows the layout and the
 presented text (Information Expert).
 
@@ -283,7 +287,7 @@ rule for a focus lost.
 | The field laid out at the resolution of the page, drawn scaled at the exact place | `TextBoxEditor`, `PageScale` (`drawview-ui`) | Information Expert, Protected Variations, Pure Fabrication |
 | The caret drawn at a constant width | `TextCaret` (`drawview-ui`) | Pure Fabrication |
 | The offset under a point | `TextHitTest` (`drawview-ui`) | Information Expert |
-| The pointers on the text, the handles, the toolbar of the platform | `TextBoxGestures` (`drawview-ui`) | Controller, Indirection |
+| The touches on the text, the handles, the toolbar of the platform | `TouchSelection` (`drawview-ui`) | Controller, Indirection |
 | The presentation independent of the caret | `RichTextPresenter` (`drawview-ui`) | Information Expert |
 | Where the caret can stand | `CaretStops` (`drawview-ui`), through `TextEditorManager.caretStops` | Information Expert, Indirection |
 | Deleting what is seen | `InlineFormatting.delete` (`drawview-canvas`) | Information Expert |
@@ -308,7 +312,7 @@ rule for a focus lost.
 |---|---|---|
 | 1 | Dead keys: the selection kept over a composition, surrounded at its commit; the controls of the bars not taking the focus; tests of the editor (a dead key over a selection, `è` composed over one, its undo) and of the bar pressed with a mouse (code, bold, formula) | Done, not tried on macOS |
 | 2 | One layout: the field at 20 px/mm in `PageScale`, the transformation keyed on the presented text, `TextCaret`; tests: the lines written and saved within half a pixel at 48%, 73%, 100%, 160% and 270%, the formulas and the headings in place after a zoom and after a new size, the caret 2 dp at three zooms, `TextParityTest` through the field at several zooms; on the tablet: the text sharp at 30% and 400%, and whether Compose's handles follow the layer | Done, not tried on the tablet |
-| 3 | The pointers: `TextHitTest`, `TextBoxGestures`, the handles and the toolbar on touch screens; tests with an injected mouse (click, double and triple click, Shift, drag) and touch (tap, long press, the handles dragged, a turned text); on the tablet with the pen and a finger | |
+| 3 | The touches: `TouchSelection`, the handles and the toolbar on touch screens; tests with injected touches (a tap, a long press, the handles where the text is at two zooms, a handle dragged, a turned text); on the tablet with the pen and a finger | Done, not tried on the tablet |
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings, escapes and links, `CaretStops`, `InlineFormatting.delete`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, `TextParityTest` with the caret at every offset (no line moves) | |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | |
@@ -355,6 +359,31 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   place of the box, the glyphs may move by a fraction of a pixel); the tablet (the sharpness of the
   scaled text, the handles of Compose under the layer).
 
+### Phase 3 results
+
+* `TouchSelection` (`drawview-ui`): the touches of a finger and of a pen on the field, taken at the
+  first pass after the gestures of the canvas: a tap puts the caret on the character tapped and
+  its handle under it (a tap on the caret opens the toolbar or closes it), two taps select a word,
+  a long press selects a word then follows the finger, a pen dragged selects; a finger taken by the
+  canvas (a pan, a pinch) is left to it. A long press is told by a timeout and by the time of the
+  events, as the canvas tells it; a selection follows the pointer only once it moved, not on a move
+  of the content under it.
+* `TouchHandles`: the drop of the caret and the two of the selection, 22 dp on the screen in the
+  color of the selection, hanging from the bottom of their caret where the text is (its place, its
+  rotation, the zoom); dragged, the finger is taken where the handle is placed, not on the handle,
+  which moves with the caret under it. They go when the value changes by another way (keys, a mouse,
+  the bar).
+* The toolbar of the platform (`LocalTextToolbar`: copy, cut, paste, with the formatted text of the
+  clipboard as the field pastes it, select all) over the selection, after a long press, two taps or
+  the end of a drag; none on the desktop, which has no such toolbar.
+* The click on a block of code stays for the mouse only; a touch on one goes through
+  `TouchSelection`, with the same offset.
+* Tests (`TextBoxTouchTest`, injected touches): a tap at 60% and at 200% puts the caret on the
+  character and its handle under it within 3 px; a long press selects the word, its handles at its
+  ends; the end handle dragged two words further; a tap on a text turned by 20°. The gestures over
+  the field (`TextBoxGesturesOverFieldTest`) are unchanged. A pen cannot be injected by the tests of
+  the desktop: its drag is to be tried on the tablet.
+
 ## Decisions
 
 Approved by the user on 2026-11-05 ("approvo il piano"), with the plan:
@@ -377,8 +406,10 @@ Taken alone, revertible:
 5. **The resolution of the page, 20 px/mm**, for the field too: the one where the page lays out,
    measures and exports.
 6. **The caret drawn by the editor**, 2 dp, blinking as Compose's.
-7. **One owner of every pointer on the text**, mouse included: a drag into a block of code and a
-   tap on a hidden part need the layouts of the objects, which the field does not know.
+7. **The editor owns the touches on the text, the field keeps the mouse** (changed in phase 3:
+   proposed first for every pointer). The handles are what needs the editor; the field selects
+   well with a mouse through the layer, and a click or a drag on an object is taken by the editor
+   where it lands. A pen is a touch: Compose shows handles for it.
 8. **Typing at the edge of a format goes on in the format on its left**, as in the word processors;
    right after a closing delimiter just typed, outside it.
 9. **A `>` alone being typed** stays the one case where the caret changes the layout.
@@ -391,10 +422,11 @@ Taken alone, revertible:
 
 ## Risks
 
-* **Handles and popups on Android and iOS.** Compose draws the handles of a field in popups placed
-  from its layout; if they do not follow the layers above the field they would be off by the zoom
-  (and today already by the rotation of a turned text). Phase 2 looks at it on the tablet; phase 3
-  replaces them in any case, for the objects.
+* **Handles and popups on Android and iOS.** Compose places the handles of a field from its layout,
+  without the layers above it (read in its sources): scaled, they would be off by the zoom, and
+  today they are already off by the rotation of a turned text. Phase 3 draws them in the editor;
+  to see on the tablet: no handle of Compose shows, the toolbar of the system opens over the
+  selection.
 * **Scaled text on Android.** The text drawn in a scaled layer is expected to be rasterized at its
   size on the screen, as on the desktop; to see on the tablet at small and large zooms.
 * **Input methods.** The rectangle of the caret they are given should go through the layers; a
