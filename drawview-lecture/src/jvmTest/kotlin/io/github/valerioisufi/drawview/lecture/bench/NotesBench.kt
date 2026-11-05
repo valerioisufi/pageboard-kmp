@@ -28,7 +28,17 @@ import kotlinx.serialization.json.Json
 
 /** A note suggested by a configuration of [NotesBench], as it is kept for grading. */
 @Serializable
-internal class BenchNote(val atMs: Long, val page: Int?, val kind: String, val title: String, val content: String)
+internal class BenchNote(
+    val atMs: Long,
+    val page: Int?,
+    val kind: String,
+    val title: String,
+    val content: String,
+    /** The words of the lecturer the note comes from, as the model gave them (`-said`). */
+    val said: String = "",
+    /** Where the transcript of the request of this note starts. */
+    val fromMs: Long = 0
+)
 
 /** What a configuration of [NotesBench] wrote and cost over the whole lecture. */
 @Serializable
@@ -64,15 +74,19 @@ internal class NotesRun(
  *   the slides of the notebook ([LectureStart]) kept in an explicit cache ([GeminiPromptCache]),
  *   as the recorder sends them to Gemini; with `-medium`, the model thinks at the medium level.
  *
+ * With `-said`, the request also asks each note for the words of the lecturer it comes from
+ * ([withSaid]), without touching the schema of the application.
+ *
  * The audio never goes to a model: the lecture is transcribed on a computer (the transcript of
  * the workspace stands for it).
  *
  * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs], and then
  * with `#<n>`, a label for running it again.
  *
- * `<config>+repeat` is the run of `<config>`, already written, through [NoteChecks]: no model is
- * asked, the notes dropped are in its `<config>+repeat.md` with their reason, and its time is the
- * time of the run it comes from.
+ * `<config>+repeat`, `<config>+said`, `<config>+judge` and their chains are the run of `<config>`,
+ * already written, through [NoteChecks] in that order: the notes dropped are in its `.md` with their
+ * reason. Only `judge` asks a model (E4B, [ModelCheck], its answers kept in `judge-copies.json` next to the
+ * runs), and only its time is added to the time of the run it comes from.
  *
  * The notebook is the one of the student without the assistant ([BenchLecture.untouched]).
  *
@@ -120,12 +134,12 @@ internal class NotesBench(
             val file = bench.output("notes/$lectureId/$config.json")
             val run = when {
                 file.isFile -> json.decodeFromString(NotesRun.serializer(), file.readText())
-                config.endsWith(CHECKED) -> checked(config, lecture)
+                CHECKS in config -> checked(config, lecture)
                 else -> run(config, lecture)
             }
             if (run == null) {
-                report.appendLine("| $config | no run of ${config.removeSuffix(CHECKED)} to check | | | | | | | | | |")
-                println("notes $lectureId $config: no run of ${config.removeSuffix(CHECKED)} to check")
+                report.appendLine("| $config | no run of ${config.substringBefore(CHECKS)} to check | | | | | | | | | |")
+                println("notes $lectureId $config: no run of ${config.substringBefore(CHECKS)} to check")
                 continue
             }
             if (run.stopped) {
@@ -144,18 +158,49 @@ internal class NotesBench(
     }
 
     /** The run [config] names through its checks; `null` when that run was not written. */
-    private fun checked(config: String, lecture: BenchLecture): NotesRun? {
-        val file = bench.output("notes/${lecture.id}/${config.removeSuffix(CHECKED)}.json")
+    private suspend fun checked(config: String, lecture: BenchLecture): NotesRun? {
+        val file = bench.output("notes/${lecture.id}/${config.substringBefore(CHECKS)}.json")
         if (!file.isFile) return null
         val run = json.decodeFromString(NotesRun.serializer(), file.readText())
         val slides = lecture.pagesAt(lecture.prepared.durationMs).mapNotNull { it.slide?.text }
-        val decisions = NoteChecks(listOf(RepeatCheck(slides))).decide(run.notes)
+        val checks = config.substringAfter(CHECKS).split(CHECKS).map { check ->
+            when (check) {
+                "repeat" -> RepeatCheck(slides)
+                "said" -> SaidCheck(lecture.transcript, run.intervalMs)
+                "judge" -> modelCheck(lecture, run.intervalMs)
+                else -> error("No check $check in $config")
+            }
+        }
+        val decisions = NoteChecks(checks).decide(run.notes)
+        bench.loaded.unloadAll()
+        val judging = checks.filterIsInstance<ModelCheck>().flatMap { it.millisByInterval.values }
         bench.output("notes/${lecture.id}/$config.md").writeText(
             decisions.filter { it.droppedBecause != null }.joinToString("\n\n") { "### ${it.droppedBecause}\n${it.note.title}: ${it.note.content}" }
         )
         return NotesRun(
-            config, run.lectureId, run.intervalMs, run.requests, run.failed, run.millis, run.longestMillis, run.promptTokens, run.outputTokens,
+            config, run.lectureId, run.intervalMs, run.requests, run.failed, run.millis + judging.sum(), run.longestMillis + (judging.maxOrNull() ?: 0L), run.promptTokens, run.outputTokens,
             run.promptByModality, run.cachedTokens, run.outline, decisions.filter { it.droppedBecause == null }.map { it.note }, run.stopped
+        )
+    }
+
+    /** The judge of the notes of [lecture]: E4B, with the page of a note and those found by searching for it. */
+    private suspend fun modelCheck(lecture: BenchLecture, intervalMs: Long): ModelCheck {
+        val pages = lecture.pagesAt(lecture.prepared.durationMs)
+        val search = NotebookSearch.build(bench, pages)
+        val model = bench.generators.first { it.spec.id == "gemma-4-e4b" }
+        return ModelCheck(
+            lecture.transcript,
+            intervalMs,
+            bench.output("notes/${lecture.id}/judge-copies.json"),
+            pagesOf = { note ->
+                val own = note.page?.minus(1)
+                val found = search.find("${note.title}: ${note.content}".take(MAX_QUERY_CHARS), count = JUDGE_PAGES, excluding = setOfNotNull(own))
+                (listOfNotNull(own) + found).mapNotNull { index -> pages.firstOrNull { it.index == index } }.map { "[Page ${it.index + 1}] ${NotebookSearch.textOf(it)}" }
+            },
+            ask = { prompt ->
+                val answer = bench.ask(model, GeneratorOptions(maxTokens = JUDGE_TOKENS, images = false), prompt, SchemaMode.ASKED)
+                answer.text.takeIf { answer.error == null }?.let { jsonOf(it, prompt.schema) }
+            }
         )
     }
 
@@ -164,7 +209,8 @@ internal class NotesBench(
         val name = configured.substringBefore('@')
         val intervalMs = configured.substringAfter('@', "").toLongOrNull()?.times(1000) ?: intervalMs
         val cached = name.contains("-cached")
-        val base = name.replace("-cached", "").replace("-medium", "")
+        val said = name.contains("-said")
+        val base = name.replace("-cached", "").replace("-medium", "").replace("-said", "")
         val settings = if (name.contains("-medium")) settings.copy(thinkingLevel = "medium") else settings
         val device = base.startsWith("e4b")
         val model = if (device) null else base.removeSuffix("-text")
@@ -211,7 +257,7 @@ internal class NotesBench(
             } else {
                 lecture.notebook(endMs)
             }
-            val prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, start = start)
+            val prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, start = start).let { if (said) withSaid(it) else it }
             val start = TimeSource.Monotonic.markNow()
             val text: String? = if (device) {
                 val answer = bench.ask(bench.generators.first { it.spec.id == "gemma-4-e4b" }, GeneratorOptions(maxTokens = 16384, images = true), prompt, SchemaMode.ASKED)
@@ -252,6 +298,7 @@ internal class NotesBench(
             } else {
                 if (analysis.outline.isNotBlank()) outline = analysis.outline.trim()
                 if (analysis.currentTopic.isNotBlank()) topic = analysis.currentTopic.trim()
+                val saidOfNotes = if (said) saidOf(text) else emptyList()
                 analysis.notes.forEachIndexed { i, note ->
                     val atMs = startMs + (note.atSeconds * 1000).toLong()
                     suggestions.add(
@@ -264,7 +311,7 @@ internal class NotesBench(
                             atMs = atMs
                         )
                     )
-                    notes.add(BenchNote(atMs, note.page, note.kind, note.title, note.content))
+                    notes.add(BenchNote(atMs, note.page, note.kind, note.title, note.content, saidOfNotes.getOrElse(i) { "" }, startMs))
                 }
             }
             println("notes $config ${formatLectureTime(startMs)}: ${analysis?.notes?.size ?: "failed"} (${seconds(start.elapsedNow().inWholeMilliseconds)})")
@@ -305,9 +352,11 @@ internal class NotesBench(
     }
 
     companion object {
-        private const val CHECKED = "+repeat"
+        private const val CHECKS = "+"
         private const val ATTEMPTS = 4
         private const val FOUND_PAGES = 3
+        private const val JUDGE_PAGES = 2
+        private const val JUDGE_TOKENS = 8192
         private const val MAX_QUERY_CHARS = 2000
     }
 }

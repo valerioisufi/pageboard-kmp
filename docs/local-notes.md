@@ -146,7 +146,7 @@ that fails its check stops the plan there, with what was learned.
 | 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the user chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
 | 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Done; the check holds, except that E4B writes more notes (67 against 53) |
 | 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Done: closer on the notes that add and per hour, no change on the wrong ones, too much lost on one lecture |
-| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | Not started |
+| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | No candidate passes; the run of 12B waits for the user |
 | 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not started |
 
 ### Phase 1 results (2026-11-04)
@@ -222,6 +222,50 @@ of the shares follows the rule in the decisions below, on the 243 notes with the
   to 81% with notes removed, which removing cannot do: 6 points on a lecture are noise.
 * **The money.** $0.09 for the scores: $1.54 of $6.
 
+### Phase 4 results (2026-11-05)
+
+Summed over the 4 dev lectures, the verdicts of the two passes pooled:
+
+| Configuration | Notes | Per hour | Add | Slide | Trivial | Wrong | Questions |
+|---|---|---|---|---|---|---|---|
+| `e4b-text` | 280 | 50 | 25% | 60% | 4% | 11% | 66% |
+| `e4b-text+repeat` | 184 | 33 | 34% | 53% | 3% | 10% | 64% |
+| `e4b-said-text` | 337 | 61 | 20% | 63% | 7% | 11% | 68% |
+| `e4b-said-text+said` | 312 | 56 | 21% | 63% | 5% | 11% | 69% |
+| `e4b-said-text+said+repeat` | 205 | 37 | 27% | 58% | 5% | 10% | 57% |
+| Thresholds | | 22 | 50% | | | 5% | within 15 points of 71% |
+
+* **No candidate passes on dev.** All of them miss the notes that add, the wrong notes, the notes per
+  hour and the time.
+* **The words said do not catch the wrong notes.** E4B gives a sentence for all 337 notes, and only 25
+  are not in the transcript (13 of them on one lecture). The wrong notes stay at 11%: a sentence the
+  lecturer did say can stand behind a note that says something else. Asking for the sentence also
+  brings more notes, and fewer that add. It takes 8,856 s against 7,976 s, and 294 s the longest request.
+* **The model as a judge, on the lecture `928359` only.** Two forms, the rest of the lectures not run
+  because neither tells the notes apart:
+
+  | Stable verdict of the grader | A verdict asked: passed / dropped | Copies checked by the code: passed / dropped / unreadable |
+  |---|---|---|
+  | `ADDS` | 8 / 2 | 4 / 11 / 4 |
+  | `SLIDE` | 36 / 1 | 1 / 22 / 14 |
+  | `WRONG` | 7 / 0 | 1 / 6 / 0 |
+
+  A verdict asked is `ADDS` almost always (55 of the 58 notes judged before that run was stopped). Asked for copies, the model finds
+  a sentence of a slide for almost every note, also for those that add, so nearly 3 of 4 of these go.
+  A note takes 18 s, and the longest interval comes to 266 s.
+* **The cap, on the verdicts already paid.** At 2 notes an interval E4B gives 21 notes per hour, with
+  25% that add and 9% wrong; through `RepeatCheck`, 17 per hour, 32% and 8%. It reaches the notes per
+  hour, not the quality: which notes it keeps is not a matter of what they add. So it was not scored.
+* **What is learned.** Words shared with the slides remove part of the repetition. Nothing tried tells
+  a wrong note from a right one, and E4B on the processor does not judge its own notes. The checks do not
+  make the notes of E4B good enough; they are 25% that add against the 81% to 88% of Gemini, with the same
+  questions within 5 points, so most of what E4B writes the student already has on the slides.
+* **The run of 12B cannot be done on this computer.** [docs/local-models.md](./local-models.md) found that
+  on the processor it does not finish an answer of 256 tokens within the ten minutes of a session of
+  LiteRT-LM, and this JVM has no GPU. It needs the Mac, with a copy of the workspace, and it is not
+  downloaded (6,883 MB). Its grades would cost about $0.20.
+* **The money.** $0.54 for the grades of this phase: $2.07 of $6.
+
 ## Decisions
 
 Taken alone, revertible (R):
@@ -230,6 +274,9 @@ Taken alone, revertible (R):
   the notes with `ADDS` in both passes, among 0.30 to 0.80 on a slide and 0.40 to 0.80 on a note. The
   10% was chosen before the pairs were compared, after a look at each share alone, and is the only
   number chosen by hand.
+* **The judge is not run on the other 3 lectures, and only one change of form was tried:** the first
+  lecture was enough to see that neither form separates the notes, and a third form would be tuned on
+  one lecture.
 * **The second run of E4B is dropped from the next phases:** on this computer it gives the same notes.
 
 * **E4B first, E2B not measured here** (R): a tablet has no transcript yet (whisper does not run
