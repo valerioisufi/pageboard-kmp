@@ -4,26 +4,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.withKeyDown
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
+import io.github.valerioisufi.drawview.explorer.ui.rememberLibraryGridState
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.InputHints
+import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.adaptive.platformConventions
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
@@ -158,6 +169,74 @@ class LibrarySearchNavigationTest {
         assertEquals("", viewModel.searchQuery)
         assertNull(viewModel.detailsItem)
         assertTrue(viewModel.selectedItems.isEmpty())
+    }
+
+    /** The library without thumbnails (a list), whose position the test can read and change. */
+    private fun longList(test: suspend DesktopComposeUiTest.(FileExplorerViewModel, LazyGridState) -> Unit) = runDesktopComposeUiTest(400, 800) {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage())
+        store.createFolder("Physics", parentId = null)
+        repeat(80) { store.createDocument("Note ${it + 10}") }
+        val viewModels = object : ViewModelStoreOwner {
+            override val viewModelStore = ViewModelStore()
+        }
+        var gridState: LazyGridState? = null
+        setContent {
+            CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
+                DrawViewTheme(dynamicColor = false) {
+                    AdaptiveRoot(hints = InputHints.PointerAndKeyboard, conventions = platformConventions) {
+                        CommandRoot {
+                            val documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) }
+                            val viewModel = viewModel { FileExplorerViewModel(documents) }
+                            val state = rememberLibraryGridState(viewModel)
+                            gridState = state
+                            ExplorerScreen(viewModel, onOpenDocument = {}, title = { Text("DrawView") }, gridState = state, modifier = Modifier.fillMaxSize())
+                        }
+                    }
+                }
+            }
+        }
+        waitForIdle()
+        test(viewModels.viewModelStore.keys().firstNotNullOf { viewModels.viewModelStore[it] as? FileExplorerViewModel }, gridState!!)
+        viewModels.viewModelStore.clear()
+    }
+
+    private val primaryKey = if (platformConventions.shortcutModifier == ShortcutModifier.COMMAND) Key.MetaLeft else Key.CtrlLeft
+
+    @Test
+    fun theSearchStaysWithinReachWhereverTheListIs() = longList { _, gridState ->
+        gridState.requestScrollToItem(60)
+        waitForIdle()
+        assertTrue(gridState.firstVisibleItemIndex > 0)
+        onNode(hasSetTextAction()).assertExists()
+
+        onRoot().performKeyInput { withKeyDown(primaryKey) { pressKey(Key.K) } }
+        waitForIdle()
+        onNode(hasSetTextAction() and isFocused()).assertExists()
+    }
+
+    @Test
+    fun whatIsShownStartsFromTheTop() = longList { viewModel, gridState ->
+        gridState.requestScrollToItem(60)
+        waitForIdle()
+        search("note")
+        assertEquals(0, gridState.firstVisibleItemIndex, "the results")
+
+        gridState.requestScrollToItem(30)
+        waitForIdle()
+        viewModel.search("")
+        viewModel.showFolder(viewModel.rootFolders.single().id)
+        waitForIdle()
+        assertEquals(0, gridState.firstVisibleItemIndex, "a folder")
+    }
+
+    @Test
+    fun goingSomewhereTakesTheFocusFromTheSearch() = library { viewModel ->
+        search("phys")
+        onNode(hasSetTextAction() and isFocused()).assertExists()
+        onAllNodesWithText("Physics")[1].performClick()
+        waitForIdle()
+        assertEquals("Physics", viewModel.currentFolder?.name)
+        assertEquals(0, onAllNodes(hasSetTextAction() and isFocused()).fetchSemanticsNodes().size)
     }
 
     @Test

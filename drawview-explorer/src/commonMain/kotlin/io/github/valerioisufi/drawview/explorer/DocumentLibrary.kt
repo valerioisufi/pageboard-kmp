@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
+import io.github.valerioisufi.drawview.explorer.ui.rememberLibraryGridState
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -98,6 +99,8 @@ public fun DocumentLibrary(
     }
 
     val session = editorViewModel.session
+    // Outside the branch of the library: back from a note, the list is where it was
+    val gridState = rememberLibraryGridState(fileExplorerViewModel)
     // The library and the editor adapt to the window, the input and the platform; their commands
     // reach the shortcuts and the menu bar of the application (see CommandRoot)
     CompositionLocalProvider(LocalDrawViewEngines provides engines) {
@@ -135,6 +138,7 @@ public fun DocumentLibrary(
                             onImportPdf = pdfPicker,
                             onImportImage = imagePicker,
                             onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
+                            gridState = gridState,
                             modifier = Modifier.fillMaxSize()
                         )
                         libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }

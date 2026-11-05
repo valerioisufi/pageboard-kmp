@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -197,6 +198,7 @@ public fun SearchField(
     val colors = MaterialTheme.colorScheme
     val interactions = remember { MutableInteractionSource() }
     val focused by interactions.collectIsFocusedAsState()
+    val keyboard = LocalSoftwareKeyboardController.current
     BasicTextField(
         value = query,
         interactionSource = interactions,
@@ -205,7 +207,8 @@ public fun SearchField(
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface),
         cursorBrush = SolidColor(colors.primary),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(),
+        // The results are already shown: the key leaves room for them
+        keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
         modifier = modifier
             .height(48.dp)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
