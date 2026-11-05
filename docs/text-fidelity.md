@@ -318,7 +318,7 @@ rule for a focus lost.
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | Done |
-| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | |
+| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows; the Mac and the tablet left to the user |
 
 Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 needs 4; 6 needs 4 and
 5 (the fence in the strip). Each phase is one commit with its status here, after the checks of
@@ -459,6 +459,30 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   every press; Backspace at the start of the code opens the fence in the strip; a drag selects a part
   of the code. `EditorCodeTest` and `TextParityTest`: a block the same with the caret anywhere, the
   caret at the column of its code.
+
+### Phase 7 results
+
+* On Windows, after every phase: `jvmTest`, `checkKotlinAbi`, `compileAndroidMain` and both Android
+  applications assembled. The failures are those of main on this computer (as listed for this computer: the
+  iOS dumps of the ABI, `TextHeightTest`, the trackpad, the lectures, the export), and the JVM and
+  Android dumps of `drawview-ui` miss two strings of main (`common_action_paste_plain`,
+  `paste_equation_placeholder`), not from this work; no public API changed.
+* The screenshots of the texts of the explorer rendered and looked at (they are recorded on the Mac,
+  and differ here in every glyph): the field at the place of the page, the strip of an invalid
+  formula below it instead of a line wrapped by its source, a text turned as before (its caret, past
+  the top of its frame, is so in the reference too).
+* PencilNotes desktop started twice on a scratch directory (after phase 2 and at the end), without
+  errors; not driven by hand.
+* Left to the user:
+  * **On the Mac:** ⌥9 over a selection (phase 1), and `./gradlew verifyRoborazziJvm` of explorer,
+    ui, sync-ui, lecture-ui and export-ui: the screenshots of the texts written change (the field
+    at the exact place of the box, the caret of the editor, the strip, the blocks of code with the
+    caret in them), to look at and record again (`recordRoborazziJvm`); the iOS compilation and
+    the tests of the iOS simulator, which this computer cannot run.
+  * **On the tablet**, with the pen, a finger and the keyboard: the text sharp at small and large
+    zooms; a tap, two taps and a long press, the handles where the text is and dragged, the toolbar
+    of the system over the selection, no handle of Compose; the pen dragged selecting; a formula and
+    a block of code written; the keyboard of the system in the strip (its composition).
 
 ## Decisions
 
