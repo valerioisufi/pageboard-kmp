@@ -119,7 +119,8 @@ These are in brief; the full version is in `docs/modularization.md`.
 `.worktreeinclude` copies `local.properties` (the Android SDK) and the `Local.xcconfig` files of
 the iOS apps (the Apple team) into a new worktree. The native libraries of the desktop, of iOS and
 of cargo come from the build cache when their sources are the same (`docs/build-speed.md`); the
-CMake of Android runs in each checkout, which takes a while.
+CMake of Android runs in each checkout, which takes a while. In `local.properties`,
+`android.debug.abis=arm64-v8a` leaves it one ABI, and `rust.targetDir` shares the directory of cargo.
 
 ## Planned work
 

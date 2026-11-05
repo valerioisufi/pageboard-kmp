@@ -80,6 +80,26 @@ Variations).
 | 2 | `android.debug.abis`, one cargo task per variant | done |
 | 3 | `rust.targetDir` | done |
 
+## Results
+
+A new worktree, with the build cache filled by another checkout of the same sources: the two
+commands of the checks, measured as in the starting point.
+
+| Setting | `jvmTest checkKotlinAbi` | Android and iOS | Total |
+|---|---|---|---|
+| Before | 5 min 1 s | 5 min 6 s | 10 min 7 s |
+| Phase 1, native tasks in the cache | 55 s | 2 min 44 s | 3 min 39 s |
+| Phases 1 and 2, `android.debug.abis=arm64-v8a` | 59 s | 47 s | 1 min 46 s |
+
+With phase 1 all the iOS targets come from the cache, and 25 `jvmTest` of the 26 that have tests.
+What runs still is the CMake of Android, 5 tasks with one ABI.
+
+`rust.targetDir`, when the build cache misses (`buildIrohBridgeIos` run again, 2 targets): 3 min 3 s
+in an empty directory, 46 s from another worktree sharing it. The dependencies are reused.
+
+A debug APK holds the 3 ABIs without the setting and only `arm64-v8a` with it; the release AARs
+checked (iroh, pdfium) hold the 3 of them with the setting too.
+
 ## Decisions
 
 Revertible, taken alone:
