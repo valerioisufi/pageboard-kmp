@@ -63,7 +63,7 @@ Variations).
   environment of the task, by its path.
 - **The machine says which ABIs it debugs (Indirection, Low Coupling):** `android.debug.abis` in
   `local.properties` (the place of `rust.cargo`, copied into the worktrees by `.worktreeinclude`),
-  read by one function (`debugAbisOf`), the same for the CMake and for cargo. Without it, debug has
+  read by one function (`debugAbis`), the same for the CMake and for cargo. Without it, debug has
   the 3 ABIs, as the CI wants. The release variant always has them.
 - **One task of cargo per variant (High Cohesion):** `buildRustLibrariesDebug` and
   `buildRustLibrariesRelease`, since the variants may have different ABIs. Same ABIs, same key: one
@@ -77,7 +77,7 @@ Variations).
 | Phase | What | Status |
 |---|---|---|
 | 1 | The native tasks in the build cache, with the inputs they lacked | done |
-| 2 | `android.debug.abis`, one cargo task per variant | to do |
+| 2 | `android.debug.abis`, one cargo task per variant | done |
 | 3 | `rust.targetDir` | to do |
 
 ## Decisions

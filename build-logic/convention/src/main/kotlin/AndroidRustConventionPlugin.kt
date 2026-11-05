@@ -40,23 +40,25 @@ class AndroidRustConventionPlugin : Plugin<Project> {
         }
 
         val components = extensions.getByType<LibraryAndroidComponentsExtension>()
-        val build = tasks.register<CargoBuild>("buildRustLibraries") {
-            group = "native"
-            description = "Builds the Rust library of the module for the Android ABIs"
-            sources.from(rust.crate.map { crate -> fileTree(crate) { exclude("target/**") } })
-            crate.set(rust.crate)
-            library.set(rust.library)
-            cargo.set(cargoExecutable())
-            crateType.set("cdylib")
-            targets.set(ABIS.mapValues { it.value.abi })
-            environment.set(components.sdkComponents.ndkDirectory.map { ndk -> linkers(ndk.asFile, minSdk) })
-            targetDirectory.set(rustTargetDirectory)
-            output.set(layout.buildDirectory.dir("rust/jniLibs"))
-        }
-
         // The licenses of the crate (and of DrawView) in the library: its Java resources
         val licenses = licensesTask()
+        val debugAbis = debugAbis()
         components.onVariants { variant ->
+            // A release holds every ABI, a debug build those of this machine
+            val abis = if (variant.buildType == "debug") debugAbis else ANDROID_ABIS
+            val build = tasks.register<CargoBuild>("buildRustLibraries" + variant.name.replaceFirstChar { it.uppercase() }) {
+                group = "native"
+                description = "Builds the Rust library of the module for the Android ABIs of ${variant.name}"
+                sources.from(rust.crate.map { crate -> fileTree(crate) { exclude("target/**") } })
+                crate.set(rust.crate)
+                library.set(rust.library)
+                cargo.set(cargoExecutable())
+                crateType.set("cdylib")
+                targets.set(ABIS.filterValues { it.abi in abis }.mapValues { it.value.abi })
+                environment.set(components.sdkComponents.ndkDirectory.map { ndk -> linkers(ndk.asFile, minSdk) })
+                targetDirectory.set(rustTargetDirectory)
+                output.set(layout.buildDirectory.dir("rust/jniLibs/${variant.name}"))
+            }
             variant.sources.jniLibs?.addGeneratedSourceDirectory(build, CargoBuild::output)
             variant.sources.resources?.addGeneratedSourceDirectory(licenses, LicensesTask::output)
         }

@@ -75,11 +75,11 @@ The text of the PDF pages can be selected, highlighted, underlined and struck ou
 No native binary is versioned: Gradle builds or downloads them on demand.
 
 * **Google Ink & MicroTeX** are built from the sources in [`/native`](./native) with CMake:
-  * Android: by the NDK, one Android library per engine (`:drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, each a dependency of the module using it), for `arm64-v8a`, `armeabi-v7a` and `x86_64`.
+  * Android: by the NDK, one Android library per engine (`:drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, each a dependency of the module using it), for `arm64-v8a`, `armeabi-v7a` and `x86_64`. A machine can build fewer of them in debug, with `android.debug.abis=arm64-v8a` in `local.properties`: a release always has the three.
   * iOS: `./gradlew buildIosNativeLibs-<iphoneos|iphonesimulator>` (static libraries linked through cinterop, macOS only).
   * Desktop JVM: `./gradlew buildDesktopNativeLibs` (JNI libraries of the host platform, bundled in the jvm jars; `-Pdrawview.desktop.platform=darwin-x86_64` cross-builds the Intel macOS libraries on Apple silicon). Windows hosts need Git Bash and Visual Studio with the C++ Clang tools.
 * **The iroh bridge** ([`native/iroh-bridge`](./native/iroh-bridge)) is a Rust crate built by cargo, with the toolchain of its `rust-toolchain.toml` (rustup) and the versions of its `Cargo.lock`. Gradle finds cargo in `local.properties` (`rust.cargo=/path/to/cargo`), in `~/.cargo/bin` or on the `PATH`.
-  * Android: `:drawview-native-iroh` (for the three ABIs, with the NDK of the module).
+  * Android: `:drawview-native-iroh` (for the ABIs of the variant, with the NDK of the module).
   * iOS: `./gradlew :drawview-sync-iroh:buildIrohBridgeIos` (static libraries linked through cinterop, macOS only).
   * Desktop JVM: with the other JNI libraries (`./gradlew buildDesktopNativeLibs`).
   * The notices of its crates (`THIRD_PARTY_NOTICES.md`) are written by [cargo-about](https://github.com/EmbarkStudios/cargo-about) when `Cargo.lock` changes: `cargo about generate about.hbs -o THIRD_PARTY_NOTICES.md`.

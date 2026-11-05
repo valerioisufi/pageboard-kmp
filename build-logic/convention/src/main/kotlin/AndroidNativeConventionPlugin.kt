@@ -27,15 +27,16 @@ class AndroidNativeConventionPlugin : Plugin<Project> {
 
             defaultConfig {
                 minSdk = libs.version("android-minSdk").toInt()
-                ndk {
-                    abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
-                }
                 externalNativeBuild {
                     cmake {
                         arguments += listOf("-DANDROID_STL=c++_static", "-DDRAWVIEW_BUILD_JNI=ON")
                     }
                 }
             }
+
+            // A release holds every ABI, a debug build those of this machine
+            buildTypes.getByName("release").ndk.abiFilters += ANDROID_ABIS
+            buildTypes.getByName("debug").ndk.abiFilters += debugAbis()
 
             externalNativeBuild {
                 cmake {

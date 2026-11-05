@@ -19,7 +19,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.Properties
 import javax.inject.Inject
 
 /**
@@ -27,11 +26,7 @@ import javax.inject.Inject
  * `PATH` (Gradle started by Android Studio does not see the `PATH` of the shell).
  */
 fun Project.cargoExecutable(): String {
-    val local = rootProject.file("local.properties")
-    if (local.isFile) {
-        val configured = Properties().apply { local.inputStream().use(::load) }.getProperty("rust.cargo")
-        if (!configured.isNullOrBlank()) return configured
-    }
+    localProperty("rust.cargo")?.let { return it }
     val name = if (System.getProperty("os.name").lowercase().startsWith("windows")) "cargo.exe" else "cargo"
     val candidates = listOf(File(System.getProperty("user.home"), ".cargo/bin/$name")) +
         System.getenv("PATH").orEmpty().split(File.pathSeparator).filter { it.isNotBlank() }.map { File(it, name) }
