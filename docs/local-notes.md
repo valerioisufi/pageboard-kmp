@@ -145,7 +145,7 @@ that fails its check stops the plan there, with what was learned.
 |---|---|---|---|
 | 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the user chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
 | 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Done; the check holds, except that E4B writes more notes (67 against 53) |
-| 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Not started |
+| 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Done: closer on the notes that add and per hour, no change on the wrong ones, too much lost on one lecture |
 | 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | Not started |
 | 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not started |
 
@@ -198,9 +198,39 @@ Summed over the 4 dev lectures, the verdicts of the two passes pooled:
   removing more than half of the 280 notes, and at most about 7 wrong ones of the 31 may stay.
 * **The money.** $0.61 for the runs and $0.84 for the grades (the estimate said $1.13): $1.45 of $6.
 
+### Phase 3 results (2026-11-05)
+
+`RepeatCheck` drops a note when 35% of its words are on one slide, or 60% in a note kept before it.
+`e4b-text+repeat` is the run of `e4b-text` through it, with no model asked and no time added. The choice
+of the shares follows the rule in the decisions below, on the 243 notes with the same verdict twice.
+
+| Configuration | Notes | Per hour | Add | Slide | Trivial | Wrong | Questions |
+|---|---|---|---|---|---|---|---|
+| `e4b-text` | 280 | 50 | 25% | 60% | 4% | 11% | 66% |
+| `e4b-text+repeat` | 184 | 33 | 34% | 53% | 3% | 10% | 64% |
+| Thresholds | | 22 | 50% | | | 5% | within 15 points of 71% |
+
+* **It moves two measures, and passes none of the failing ones.** The notes that add go from 25% to 34%
+  and the notes per hour from 50 to 33. The wrong notes do not move beyond the noise: they use the
+  words of the slides as much as the right ones do, so words alone do not tell them apart.
+* **The lectures differ too much for one share.** On the lecture of 2026-10-15 it keeps 10 notes of 67,
+  and its questions fall from 57% to 43%, beyond the noise of the grader. On the other three it keeps
+  53 to 64 notes of 67 to 76, and their questions stay within the noise. On that lecture the notes
+  dropped share 66% of their words with a slide at the median, against 40% to 50% on the others, and
+  12 of their 114 verdicts are `ADDS`.
+* **The score of a lecture is noisy upwards too.** The questions of the lecture `928359` rise from 75%
+  to 81% with notes removed, which removing cannot do: 6 points on a lecture are noise.
+* **The money.** $0.09 for the scores: $1.54 of $6.
+
 ## Decisions
 
 Taken alone, revertible (R):
+
+* **The shares of `RepeatCheck`** are the pair that keeps the fewest notes while losing at most 10% of
+  the notes with `ADDS` in both passes, among 0.30 to 0.80 on a slide and 0.40 to 0.80 on a note. The
+  10% was chosen before the pairs were compared, after a look at each share alone, and is the only
+  number chosen by hand.
+* **The second run of E4B is dropped from the next phases:** on this computer it gives the same notes.
 
 * **E4B first, E2B not measured here** (R): a tablet has no transcript yet (whisper does not run
   there, `consistent` makes it record only), so its notes wait for the speech anyway. If E4B does not

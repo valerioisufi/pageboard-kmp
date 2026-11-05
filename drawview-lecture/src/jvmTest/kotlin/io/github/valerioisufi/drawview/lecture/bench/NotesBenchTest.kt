@@ -60,6 +60,32 @@ class NotesBenchTest {
     }
 
     @Test
+    fun aRunIsCheckedWithoutAskingOrPaying() = runBlocking {
+        lecture("one")
+        val base = "e4b-text"
+        File(directory, "answers/notes/one").mkdirs()
+        val note = """{"atMs":0,"page":null,"kind":"EXPLANATION","title":"t","content":"la coda dei processi cresce sempre"}"""
+        File(directory, "answers/notes/one/$base.json").writeText(
+            """{"config":"$base","lectureId":"one","intervalMs":300000,"requests":3,"failed":1,"millis":9,"longestMillis":5,"promptTokens":0,"outputTokens":0,"promptByModality":{},"outline":"","notes":[$note,$note]}"""
+        )
+        bench(listOf("one"), "$base+repeat").run(StringBuilder())
+        val written = File(directory, "answers/notes/one/$base+repeat.json").readText()
+        assertEquals(1, Regex("\"atMs\"").findAll(written).count(), written)
+        assertTrue("\"longestMillis\": 5" in written, written)
+        assertTrue("repeats a note" in File(directory, "answers/notes/one/$base+repeat.md").readText())
+        assertFalse(File(directory, "dollars.txt").exists())
+    }
+
+    @Test
+    fun aCheckWithoutItsRunSaysSo() = runBlocking {
+        lecture("one")
+        val report = StringBuilder()
+        bench(listOf("one"), "e4b-text+repeat").run(report)
+        assertTrue("no run of e4b-text to check" in report.toString(), report.toString())
+        assertFalse(File(directory, "answers/notes/one/e4b-text+repeat.json").exists())
+    }
+
+    @Test
     fun theCapCountsWhatWasSpentBeforeAndARunStoppedIsNotKept() = runBlocking {
         lecture("one")
         directory.mkdirs()

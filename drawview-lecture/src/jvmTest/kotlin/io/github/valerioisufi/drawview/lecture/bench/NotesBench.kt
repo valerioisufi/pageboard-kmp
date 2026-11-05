@@ -70,6 +70,10 @@ internal class NotesRun(
  * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs], and then
  * with `#<n>`, a label for running it again.
  *
+ * `<config>+repeat` is the run of `<config>`, already written, through [NoteChecks]: no model is
+ * asked, the notes dropped are in its `<config>+repeat.md` with their reason, and its time is the
+ * time of the run it comes from.
+ *
  * The notebook is the one of the student without the assistant ([BenchLecture.untouched]).
  *
  * Every run is written to `<bench>/answers/notes/<lecture>/<config>.json` (the notes, the tokens,
@@ -114,7 +118,16 @@ internal class NotesBench(
             .appendLine("|---|---|---|---|---|---|---|---|---|---|---|")
         for (config in configs) {
             val file = bench.output("notes/$lectureId/$config.json")
-            val run = if (file.isFile) json.decodeFromString(NotesRun.serializer(), file.readText()) else run(config, lecture)
+            val run = when {
+                file.isFile -> json.decodeFromString(NotesRun.serializer(), file.readText())
+                config.endsWith(CHECKED) -> checked(config, lecture)
+                else -> run(config, lecture)
+            }
+            if (run == null) {
+                report.appendLine("| $config | no run of ${config.removeSuffix(CHECKED)} to check | | | | | | | | | |")
+                println("notes $lectureId $config: no run of ${config.removeSuffix(CHECKED)} to check")
+                continue
+            }
             if (run.stopped) {
                 report.appendLine("| $config | stopped at ${"%.2f".format(spent)} dollars, not kept | | | | | | | | | |")
                 println("notes $config: stopped at ${"%.2f".format(spent)} dollars")
@@ -128,6 +141,22 @@ internal class NotesBench(
             println("notes $lectureId $config: ${run.requests} requests, ${run.notes.size} notes, ${seconds(run.millis)}, the longest ${seconds(run.longestMillis)}")
         }
         report.appendLine()
+    }
+
+    /** The run [config] names through its checks; `null` when that run was not written. */
+    private fun checked(config: String, lecture: BenchLecture): NotesRun? {
+        val file = bench.output("notes/${lecture.id}/${config.removeSuffix(CHECKED)}.json")
+        if (!file.isFile) return null
+        val run = json.decodeFromString(NotesRun.serializer(), file.readText())
+        val slides = lecture.pagesAt(lecture.prepared.durationMs).mapNotNull { it.slide?.text }
+        val decisions = NoteChecks(listOf(RepeatCheck(slides))).decide(run.notes)
+        bench.output("notes/${lecture.id}/$config.md").writeText(
+            decisions.filter { it.droppedBecause != null }.joinToString("\n\n") { "### ${it.droppedBecause}\n${it.note.title}: ${it.note.content}" }
+        )
+        return NotesRun(
+            config, run.lectureId, run.intervalMs, run.requests, run.failed, run.millis, run.longestMillis, run.promptTokens, run.outputTokens,
+            run.promptByModality, run.cachedTokens, run.outline, decisions.filter { it.droppedBecause == null }.map { it.note }, run.stopped
+        )
     }
 
     private suspend fun run(config: String, lecture: BenchLecture): NotesRun {
@@ -276,6 +305,7 @@ internal class NotesBench(
     }
 
     companion object {
+        private const val CHECKED = "+repeat"
         private const val ATTEMPTS = 4
         private const val FOUND_PAGES = 3
         private const val MAX_QUERY_CHARS = 2000

@@ -82,6 +82,11 @@ class GradeNotesTest(unittest.TestCase):
         self.assertGreater(estimate.dollars, 0)
         self.assertEqual({}, g.Lecture(entry(), 3_600_000, self.store).store["verdicts"])
 
+    def test_an_estimate_counts_every_pass_of_the_score(self):
+        estimate = g.Estimate()
+        self.lecture.score(estimate, ["a", "b"], 2)
+        self.assertEqual(2, estimate.requests)
+
     def test_the_cap_counts_what_the_runs_spent(self):
         path = os.path.join(self.directory.name, "dollars.txt")
         with open(path, "w", encoding="utf-8") as f:

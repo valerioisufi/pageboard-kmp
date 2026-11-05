@@ -191,10 +191,10 @@ class Lecture:
             return
         numbered = "\n".join(f"{i + 1}. {n.replace(chr(10), ' / ')}" for i, n in enumerate(notes))
         questions = "\n".join(f"{x['id']}: {x['text']}\n  expected answer: {x['answer']}" for x in self.questions)
-        while len(kept) < passes:
+        for _ in range(len(kept), passes):
             items = ask(SCORE_SYSTEM, self.slides + "Notes:\n" + numbered + "\n\nQuestions:\n" + questions, SCORE_SCHEMA, OUTPUT_PER_QUESTION * len(self.questions))
             if not items:
-                return
+                continue
             ids = {x["id"] for x in self.questions}
             kept.append({item["id"]: item["grade"] for item in items if item["id"] in ids})
             self.save()
