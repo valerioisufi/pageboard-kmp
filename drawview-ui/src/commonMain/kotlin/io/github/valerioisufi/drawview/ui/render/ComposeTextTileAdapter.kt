@@ -47,7 +47,6 @@ import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.editor.QUOTE_BAR_ALPHA
 import io.github.valerioisufi.drawview.ui.editor.quoteBars
-import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.editor.PresentedCodeBlock
 import io.github.valerioisufi.drawview.ui.editor.PresentedFormula
 import io.github.valerioisufi.drawview.ui.editor.PresentedTable
@@ -482,10 +481,7 @@ public class ComposeTextTileAdapter(
             paperColor = paperColor,
             symbols = fonts.symbols
         ) { latex, sizePx ->
-            formulaImages.render(latex, sizePx, text.color)?.let {
-                formulaSizes[it.bitmap] = sizePx
-                MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
-            }
+            formulaImages.formula(latex, sizePx, text.color)?.also { formulaSizes[it.image] = sizePx }
         }
         val shown = RichTextPresenter.present(text.text, presentation)
         val layout = measurer.measure(

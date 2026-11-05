@@ -307,7 +307,7 @@ rule for a focus lost.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Dead keys: the selection kept over a composition, surrounded at its commit; the controls of the bars not taking the focus; tests of the editor (a dead key over a selection, `è` composed over one, its undo) and of the bar pressed with a mouse (code, bold, formula) | Done, not tried on macOS |
-| 2 | One layout: the field at 20 px/mm in `PageScale`, the transformation keyed on the presented text, `TextCaret`; tests: the lines written and saved within half a pixel at 48%, 73%, 100%, 160% and 270%, the formulas and the headings in place after a zoom and after a new size, the caret 2 dp at three zooms, `TextParityTest` through the field at several zooms; on the tablet: the text sharp at 30% and 400%, and whether Compose's handles follow the layer | |
+| 2 | One layout: the field at 20 px/mm in `PageScale`, the transformation keyed on the presented text, `TextCaret`; tests: the lines written and saved within half a pixel at 48%, 73%, 100%, 160% and 270%, the formulas and the headings in place after a zoom and after a new size, the caret 2 dp at three zooms, `TextParityTest` through the field at several zooms; on the tablet: the text sharp at 30% and 400%, and whether Compose's handles follow the layer | Done, not tried on the tablet |
 | 3 | The pointers: `TextHitTest`, `TextBoxGestures`, the handles and the toolbar on touch screens; tests with an injected mouse (click, double and triple click, Shift, drag) and touch (tap, long press, the handles dragged, a turned text); on the tablet with the pen and a finger | |
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings, escapes and links, `CaretStops`, `InlineFormatting.delete`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, `TextParityTest` with the caret at every offset (no line moves) | |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | |
@@ -330,6 +330,30 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   test).
 * Not tried on macOS: the values of a dead key are those the field gives (a composition, then its
   commit, the text the same or replaced); ⌥9 on the Mac of the user is to be tried.
+
+### Phase 2 results
+
+* `TextBoxEditor` presents and lays out at `ComposeTextTileAdapter.LAYOUT_PX_PER_MM`, the font size
+  and the width of the page; `pageScale` measures the field on that width and draws it scaled by
+  the zoom, the layer of the field translated to the exact place of the box. A zoom or a pan
+  changes layers only: the presented text no longer depends on the zoom.
+* The transformation of the field is remembered with the presented text, so a new size, color or
+  formula engine reaches the field with the same value.
+* The room of a formula comes from one place, `FormulaImages.formula`, for the page and the field;
+  the field draws its images rendered again at their size on the screen (steps of 8%), as the
+  tiles do. `renderAtBucket` is gone.
+* `TextCaret` draws the caret, 2 dp wide on the screen, blinking every 500 ms and shown again at
+  each move, in the text and in the cell of a table; the brush of the field is transparent. The
+  outline of the cell of the caret keeps its width on the screen too.
+* Tests (`TextBoxFidelityTest`): the baselines of the field are those of the page within half a
+  pixel of the layout at 48%, 73%, 100%, 160% and 270%, and so is its height; after a zoom and after
+  a new size while written, with MicroTeX (without the transformation keyed on the presented text,
+  the lines stay at the old size: 7.5 mm instead of 8.6 mm for the first one); the caret 1 to 3 px
+  wide at 40%, 100% and 300%. The tests of the explorer and of `drawview-ui` pass, but for
+  `TextHeightTest`, which fails on this computer on main too.
+* Not done on this computer: the screenshots, recorded on the Mac (the field is now at the exact
+  place of the box, the glyphs may move by a fraction of a pixel); the tablet (the sharpness of the
+  scaled text, the handles of Compose under the layer).
 
 ## Decisions
 

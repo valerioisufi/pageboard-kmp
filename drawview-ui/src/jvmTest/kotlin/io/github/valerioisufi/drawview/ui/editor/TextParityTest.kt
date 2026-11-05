@@ -119,7 +119,7 @@ class TextParityTest {
                 measurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = fonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             }
-        ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, text.color, screenPerCanvas = 1f) }
+        ) { latex, sizePx -> images.formula(latex, sizePx, text.color) }
         val shown = RichTextPresenter.present(text.text, presentation, reveal = TextRange(caret ?: (text.text.length + 1)))
         val style = TextStyle(fontSize = fontSizePx.sp, fontFamily = fonts.text, letterSpacing = 0.sp, lineHeight = TextUnit.Unspecified, textAlign = text.alignment.toTextAlign())
         return measurer.measure(shown.text, style, constraints = Constraints.fixedWidth(widthPx), skipCache = true) to shown

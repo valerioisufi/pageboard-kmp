@@ -4,9 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -29,11 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.translate
@@ -61,6 +61,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -100,9 +101,11 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The field of the text being written, over the canvas where the text is on its page, as the page
- * draws it: the size and the place follow the zoom and the camera, the lines wrap on the width of
- * the box, the text presented as the page presents it (see [RichTextPresenter]), the caret revealing
- * the source of what it touches; the formula under the caret shows its source, rendered above it.
+ * draws it: laid out as the page lays it out (at its resolution, on the width of the box, presented
+ * as the page presents it, see [RichTextPresenter]) and drawn scaled by the zoom at the place of the
+ * box (see [pageScale]), so that its lines are those of the page at every zoom; the caret, drawn by
+ * the editor ([TextCaret]), reveals the source of what it touches; the formula under the caret
+ * shows its source, rendered above it.
  *
  * It shows and changes the state of the [io.github.valerioisufi.drawview.canvas.controller.TextEditorManager]
  * of [controller]; the height it lays the text out is reported to it. Its frame is the one of a
@@ -115,8 +118,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
-    // The scale of the page (page millimeters -> screen pixels): composed again by a zoom, not by
-    // the other movements of the camera, the field placed where the box is (editedBoxOrigin)
+    // The scale of the page (page millimeters -> screen pixels), the field placed where the box is
+    // (editedBoxOrigin): a zoom scales the drawing of the field, never its layout
     val pageScale by remember(controller) {
         derivedStateOf {
             controller.version
@@ -124,28 +127,32 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.scaleFactor
         }
     }
-    val scale = (pageScale ?: return).coerceAtLeast(0.01f)
-    // Read by the layout callback, which must see the scale of the layout it is given
-    val currentScale by rememberUpdatedState(scale)
+    if (pageScale == null) return
+    // Pixels of the screen per pixel of the layout: read where it is drawn, not composed
+    val screenPerLayout = { (pageScale ?: LAYOUT_SCALE).coerceAtLeast(0.01f) / LAYOUT_SCALE }
 
     val focusRequester = remember { FocusRequester() }
+    var focused by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
     // Font sizes follow the page, not the accessibility font scale
     val unscaledDensity = remember(density.density) { Density(density = density.density, fontScale = 1.0f) }
-    val fontSizePx = editor.fontSize * PT_TO_MM * scale
+    // Laid out at the resolution of the page, as the page lays it out (ComposeTextTileAdapter):
+    // the same font size and width in pixels, so the same lines
+    val fontSizePx = editor.fontSize * PT_TO_MM * LAYOUT_SCALE
     val fontSizeSp = with(unscaledDensity) { fontSizePx.toSp() }
     val textColor = Color(editor.color)
-    // Exact width of the box in pixels, the same used to lay out the text on the canvas
-    val widthPx = (editor.boxWidth * scale).toInt().coerceAtLeast(1)
-    val widthDp = with(unscaledDensity) { widthPx.toDp() }
+    val widthPx = (editor.boxWidth * LAYOUT_SCALE).toInt().coerceAtLeast(1)
 
-    // The formulas drawn as the page draws them, in the room the page gives them
+    // The formulas in the room the page gives them, drawn by images at the size they have on the screen
     val resolver = LocalFontFamilyResolver.current
     val codeMeasurer = remember(resolver) { TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0) }
     val struts = remember(codeMeasurer, notesFonts) { notesFonts.struts(codeMeasurer) }
     val formulas = controller.engines.formulas
-    val images = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
+    val roomImages = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
+    val screenImages = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
+    // The size each image of the room was rendered at, to render it again at its size on the screen
+    val formulaSizes = remember(formulas) { HashMap<ImageBitmap, Float>() }
     val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
     // The blocks of code laid out as the page lays them out, those not changed kept while typing
     val highlighter = controller.engines.code
@@ -154,6 +161,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val paper by controller.document.observe { pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER }
     val value = editor.value
     val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
+        formulaSizes.clear()
         val presentation = Presentation(
             fontSizePx = fontSizePx,
             color = textColor,
@@ -178,9 +186,13 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 TableLayout.measureCell(codeMeasurer, cell, TextStyle(color = textColor, fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), cellWidth, alignment)
             },
             paperColor = paper
-        ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color, scale / ComposeTextTileAdapter.LAYOUT_PX_PER_MM) }
+        ) { latex, sizePx -> roomImages.formula(latex, sizePx, editor.color)?.also { formulaSizes[it.image] = sizePx } }
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
+    // The presented text is what the field shows: a new one (a new size, the formulas ready) is
+    // shown at once, even with the same value
+    val transformation = remember(shown) { VisualTransformation { TransformedText(shown.text, shown.mapping) } }
+    val caretShown by TextCaret.rememberShown(focused, value.selection, value.text)
     val codeTheme = remember(editor.color, paper) { CodeTheme.of(textColor, paper) }
     // The cell of the caret when it is in a table, and the color of the caret
     val tableCaret = editor.tableCaret
@@ -233,22 +245,24 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 }
             },
             modifier = Modifier
-                .offset {
-                    val origin = controller.editedBoxOrigin()
-                    IntOffset(origin.x.roundToInt(), origin.y.roundToInt())
-                }
                 // As large as the box, also when it is larger than the canvas: the lines wrap as on
                 // the page, and a field cut by the canvas would scroll inside itself
                 .wrapContentSize(Alignment.TopStart, unbounded = true)
-                .width(widthDp)
                 .graphicsLayer {
+                    // At the exact place of the box, as the page draws it (not on whole pixels)
+                    val origin = controller.editedBoxOrigin()
+                    translationX = origin.x
+                    translationY = origin.y
                     // A text turns around its top-left corner (see DrawText)
                     rotationZ = editor.rotation
                     transformOrigin = TransformOrigin(0f, 0f)
                 }
-                .focusRequester(focusRequester)
                 // The fingers, a wheel and the middle button move the canvas over the field too
                 .canvasGesturesOverField(controller)
+                // Laid out as the page lays it out, drawn at the zoom; what follows is in the pixels of the layout
+                .pageScale(widthPx, screenPerLayout)
+                .onFocusChanged { focused = it.hasFocus }
+                .focusRequester(focusRequester)
                 // A tap on a block of code puts the caret on the character tapped (the field would
                 // put it at an end of the character standing for the block)
                 .pointerInput(Unit) {
@@ -322,9 +336,11 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 .drawWithContent {
                     val current = layout?.takeIf { it.layoutInput.text.text == shown.text.text }
                     // Under everything: the fill of the box, around it as on the page (see TextBackground)
+                    // What is as wide on the screen at every zoom, in the pixels of the layout
+                    val screenPx = 1f / screenPerLayout()
                     editor.background?.let { fill ->
-                        val outset = TextBackground.outsetMm(editor.fontSize) * scale
-                        val radius = TextBackground.radiusMm(editor.fontSize) * scale
+                        val outset = TextBackground.outsetMm(editor.fontSize) * LAYOUT_SCALE
+                        val radius = TextBackground.radiusMm(editor.fontSize) * LAYOUT_SCALE
                         drawRoundRect(
                             Color(fill),
                             topLeft = Offset(-outset, -outset),
@@ -375,25 +391,36 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             accent,
                             topLeft = Offset(frameLeft, frameTop),
                             size = Size(edges.columnEdges[cell.column + 1] - edges.columnEdges[cell.column], edges.rowEdges[cell.row + 1] - edges.rowEdges[cell.row]),
-                            style = Stroke(width = 2.dp.toPx())
+                            style = Stroke(width = 2.dp.toPx() * screenPx)
                         )
                         val length = cell.source.last + 1 - cell.source.first
                         fun inCell(offset: Int) = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
                         val selection = value.selection
                         if (selection.collapsed) {
-                            val rect = cell.layout.getCursorRect(inCell(selection.start))
-                            drawRect(accent, topLeft = origin + rect.topLeft, size = Size(2.dp.toPx(), rect.height))
+                            if (caretShown) {
+                                val rect = cell.layout.getCursorRect(inCell(selection.start))
+                                with(TextCaret) { drawCaret(rect.translate(origin), TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
+                            }
                         } else {
                             val path = cell.layout.getPathForRange(inCell(selection.min), inCell(selection.max))
                             translate(origin.x, origin.y) { drawPath(path, accent.copy(alpha = 0.3f)) }
                         }
+                    } else if (caretShown && value.selection.collapsed) {
+                        // The caret of the text, as wide on the screen at every zoom
+                        val rect = current.getCursorRect(shown.mapping.originalToTransformed(value.selection.start).coerceIn(0, current.layoutInput.text.length))
+                        with(TextCaret) { drawCaret(rect, TextCaret.CARET_WIDTH.toPx() * screenPx, accent) }
                     }
                     for ((formula, box) in shown.formulas.map { it to current.formulaRect(it) } + current.tableFormulas(shown.tables)) {
+                        // Rendered again at the size it has on the screen, sharp at every zoom
+                        val image = formulaSizes[formula.image]
+                            ?.let { screenImages.render(formula.latex, onScreen(it / screenPx), editor.color)?.bitmap }
+                            ?: formula.image
                         drawImage(
-                            formula.image,
-                            srcSize = IntSize(formula.image.width, formula.image.height),
+                            image,
+                            srcSize = IntSize(image.width, image.height),
                             dstOffset = IntOffset(box.left.roundToInt(), box.top.roundToInt()),
-                            dstSize = IntSize(formula.widthPx.roundToInt().coerceAtLeast(1), formula.heightPx.roundToInt().coerceAtLeast(1))
+                            dstSize = IntSize(formula.widthPx.roundToInt().coerceAtLeast(1), formula.heightPx.roundToInt().coerceAtLeast(1)),
+                            filterQuality = FilterQuality.Medium
                         )
                     }
                 },
@@ -405,15 +432,15 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 lineHeight = TextUnit.Unspecified,
                 textAlign = editor.alignment.toTextAlign()
             ),
-            // In a table the caret is drawn in its cell (the table is one object of the field)
-            cursorBrush = SolidColor(if (tableCaret != null) Color.Transparent else MaterialTheme.colorScheme.primary),
-            visualTransformation = { TransformedText(currentShown.text, currentShown.mapping) },
+            // The caret is drawn by the editor (see TextCaret), in the text or in the cell of a table
+            cursorBrush = SolidColor(Color.Transparent),
+            visualTransformation = transformation,
             onTextLayout = { result ->
                 layout = result
-                editor.reportLayoutHeight(result.size.height / currentScale)
+                editor.reportLayoutHeight(result.size.height / LAYOUT_SCALE)
                 // The caret on the character the user touched
                 editor.takeCaretRequest()?.let { local ->
-                    val point = Offset(local.x * currentScale, local.y * currentScale)
+                    val point = Offset(local.x * LAYOUT_SCALE, local.y * LAYOUT_SCALE)
                     val offset = codeOffsetAt(result, currentShown, point)
                         ?: currentShown.mapping.transformedToOriginal(result.getOffsetForPosition(point))
                     editor.updateValue(editor.value.copy(selection = TextRange(offset)))
@@ -428,9 +455,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             val start = shown.mapping.originalToTransformed(atCaret.start).coerceIn(0, shown.text.length)
             val anchorX = current.getHorizontalPosition(start, usePrimaryDirection = true)
             val anchorY = current.getLineTop(current.getLineForOffset(start))
-            val previewPx = max(fontSizePx, with(unscaledDensity) { MIN_PREVIEW_TEXT.toPx() })
+            // At the size of the text on the screen, readable when the page is far
+            val previewPx = max(fontSizePx * screenPerLayout(), with(unscaledDensity) { MIN_PREVIEW_TEXT.toPx() })
             val preview = remember(atCaret, value.text, previewPx, editor.color) {
-                images.render(MarkdownTextUtil.formulaSource(value.text, atCaret), MarkdownTextUtil.formulaSizePx(atCaret, previewPx), editor.color)
+                screenImages.render(MarkdownTextUtil.formulaSource(value.text, atCaret), MarkdownTextUtil.formulaSizePx(atCaret, previewPx), editor.color)
             }
             FormulaPreview(
                 image = preview?.bitmap,
@@ -439,7 +467,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     val gap = PREVIEW_GAP.roundToPx()
                     layout(placeable.width, placeable.height) {
                         val origin = controller.editedBoxOrigin()
-                        placeable.place((origin.x + anchorX).roundToInt(), (origin.y + anchorY - placeable.height - gap).roundToInt().coerceAtLeast(0))
+                        val k = screenPerLayout()
+                        placeable.place((origin.x + anchorX * k).roundToInt(), (origin.y + anchorY * k - placeable.height - gap).roundToInt().coerceAtLeast(0))
                     }
                 }
             )
@@ -453,10 +482,18 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
 
     val laidOut = layout?.takeIf { it.layoutInput.text.text == shown.text.text }
     if (laidOut != null) {
-        val rect = caretRect(laidOut, shown, tableCaret, value.selection.end)
+        // On the screen, from the corner of the box
+        val k = screenPerLayout()
+        val rect = caretRect(laidOut, shown, tableCaret, value.selection.end).let { Rect(it.left * k, it.top * k, it.right * k, it.bottom * k) }
         SideEffect { onCaret(CaretPlace(value.text, value.selection, rect)) }
     }
 }
+
+/** The resolution the field lays its text out at: the page's (see [ComposeTextTileAdapter]). */
+private const val LAYOUT_SCALE = ComposeTextTileAdapter.LAYOUT_PX_PER_MM
+
+/** The size [sizePx] on the screen a formula is rendered at, in steps of [SIZE_STEP] (fewer images while the zoom changes). */
+private fun onScreen(sizePx: Float): Float = SIZE_STEP.pow(ceil(ln(sizePx.coerceAtLeast(1f)) / ln(SIZE_STEP)))
 
 /**
  * The caret at [offset] of the text written, in pixels from the top-left corner of the field; in a
@@ -528,20 +565,6 @@ private fun FormulaPreview(image: ImageBitmap?, modifier: Modifier) {
             )
         }
     }
-}
-
-/**
- * [latex] rendered by [images] at the size of the steps of [SIZE_STEP] above [sizePx] (fewer
- * images while the zoom changes), with the room of the image the canvas renders: its size at the
- * resolution of the canvas, [screenPerCanvas] screen pixels per pixel of the canvas, so that the
- * lines are those of the page.
- */
-internal fun renderAtBucket(images: FormulaImages, latex: String, sizePx: Float, color: Int, screenPerCanvas: Float): MarkdownTextUtil.RenderedFormula<ImageBitmap>? {
-    if (sizePx <= 0f || screenPerCanvas <= 0f) return null
-    val bucket = SIZE_STEP.pow(ceil(ln(sizePx) / ln(SIZE_STEP)))
-    val image = images.render(latex, bucket, color) ?: return null
-    val page = images.render(latex, sizePx / screenPerCanvas, color) ?: return null
-    return MarkdownTextUtil.RenderedFormula(image.bitmap, page.bitmap.width * screenPerCanvas, page.bitmap.height * screenPerCanvas, page.baselineRatio)
 }
 
 /** The blocks of code laid out kept by the editor. */

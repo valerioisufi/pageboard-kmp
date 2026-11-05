@@ -1,9 +1,11 @@
 package io.github.valerioisufi.drawview.ui.render
 
+import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaImage
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.math.roundToInt
 
 /**
@@ -40,6 +42,14 @@ internal class FormulaImages(private val renderer: FormulaRenderer?, private val
             }
         }
     }
+
+    /**
+     * [latex] rendered [sizePx] high in [color] with the room it takes in the lines of a text: the
+     * size of its image. The page and the field of the editor give a formula this room, at the
+     * resolution of the page, so that their lines are the same.
+     */
+    fun formula(latex: String, sizePx: Float, color: Int): MarkdownTextUtil.RenderedFormula<ImageBitmap>? =
+        render(latex, sizePx, color)?.let { MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio) }
 
     /** Drops the images (e.g. when the engine becomes ready). */
     fun clear() = syncLock(lock) { images.clear() }

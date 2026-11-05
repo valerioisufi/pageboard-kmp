@@ -19,6 +19,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
@@ -64,11 +65,16 @@ private class CopiedHtml(private val html: String) : Transferable {
 }
 
 /**
- * The editor of a document kept in memory, in a window of 1200 × 900 with its own [clipboard], for
- * the behavior of the text boxes under real pointers and keys.
+ * The editor of a document kept in memory, in a window of 1200 × 900 with its own [clipboard] and
+ * [engines] (none: the formulas as their source), for the behavior of the text boxes under real
+ * pointers and keys.
  */
 @OptIn(ExperimentalTestApi::class)
-internal fun textBoxScene(clipboard: TextBoxClipboard = TextBoxClipboard(), block: DesktopComposeUiTest.(DrawViewController) -> Unit) {
+internal fun textBoxScene(
+    clipboard: TextBoxClipboard = TextBoxClipboard(),
+    engines: DrawViewEngines = DrawViewEngines.None,
+    block: DesktopComposeUiTest.(DrawViewController) -> Unit
+) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
     val documents = OpenDocuments(store, dispatcher = Dispatchers.Unconfined)
@@ -76,7 +82,7 @@ internal fun textBoxScene(clipboard: TextBoxClipboard = TextBoxClipboard(), bloc
         val id = store.createDocument("Text boxes", background = PageBackground.Ruled()).id
         checkNotNull(documents.open(id))
     }
-    val controller = DrawViewController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session)
+    val controller = DrawViewController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session, engines = engines)
     runDesktopComposeUiTest(width = 1200, height = 900) {
         setContent {
             CompositionLocalProvider(LocalClipboard provides clipboard, LocalClipboardManager provides clipboard.manager) {
