@@ -44,8 +44,8 @@ internal class MarkdownWriter {
                 collect(child, format, runs, depth + 1)
                 continue
             }
-            if (isIgnored(child)) continue
-            if (!isBlock(child) && !holdsBlock(child, depth + 1)) {
+            if (HtmlFormula.of(child) == null && isIgnored(child)) continue
+            if (HtmlFormula.of(child) != null || (!isBlock(child) && !holdsBlock(child, depth + 1))) {
                 collect(child, format, runs, depth + 1)
                 continue
             }
@@ -100,6 +100,11 @@ internal class MarkdownWriter {
         when (node) {
             is TextNode -> runs += InlineRun.Text(node.getWholeText(), format)
             is Element -> {
+                val formula = HtmlFormula.of(node)
+                if (formula != null) {
+                    runs += formula
+                    return
+                }
                 if (isIgnored(node)) return
                 when (node.normalName()) {
                     "br" -> {
@@ -284,9 +289,10 @@ internal class MarkdownWriter {
         val inner = format.inside(element)
         val rows = rowsOf(element)
         val columns = rows.maxOfOrNull { row -> row.sumOf { spanOf(it) } } ?: 0
+        val captions = element.children().filter { it.normalName() == "caption" }.flatMap { blocksIn(it, inner, quoted, depth + 1) }
         // A table with a row or a column only is the layout of a page, not a table of data
         if (rows.size < 2 || columns < 2) {
-            return rows.flatten().flatMap { blocksIn(it, inner.inside(it), quoted, depth + 1) }
+            return captions + rows.flatten().flatMap { blocksIn(it, inner.inside(it), quoted, depth + 1) }
         }
         formatted = true
         val lines = mutableListOf<String>()
@@ -295,7 +301,7 @@ internal class MarkdownWriter {
             lines += "| " + (cells + List(columns - cells.size) { "" }).joinToString(" | ") + " |"
             if (index == 0) lines += "| " + (0 until columns).joinToString(" | ") { alignmentOf(cellAt(row, it)) } + " |"
         }
-        return listOf(Block(lines))
+        return captions + Block(lines)
     }
 
     /** The rows of a [table], those of a table inside it left out (a cell holds its text). */
@@ -374,9 +380,36 @@ internal class MarkdownWriter {
 
         fun isBlock(element: Element): Boolean = element.normalName() in BLOCKS
 
+        /**
+         * Whether [markdown] holds all the words of the tree of [root] that are meant to be read, in
+         * their order: the letters and digits of the one are found in the other, which has the
+         * addresses of its links and the languages of its code besides.
+         */
+        fun keepsTextOf(root: Element, markdown: String): Boolean {
+            val source = StringBuilder().also { readableTextOf(root, it, 0) }
+            var at = 0
+            for (c in markdown) {
+                if (at < source.length && c == source[at]) at++
+            }
+            return at == source.length
+        }
+
+        /** The letters and digits of what [node] holds that the conversion is meant to keep. */
+        private fun readableTextOf(node: Node, out: StringBuilder, depth: Int) {
+            when (node) {
+                is TextNode -> node.getWholeText().filterTo(out) { it.isLetterOrDigit() }
+                is Element -> when {
+                    HtmlFormula.of(node) != null || isIgnored(node) -> Unit
+                    depth >= MAX_DEPTH -> node.text().filterTo(out) { it.isLetterOrDigit() }
+                    node.normalName() == "pre" -> for (child in codeOf(node).childNodes()) readableTextOf(child, out, depth + 1)
+                    else -> for (child in node.childNodes()) readableTextOf(child, out, depth + 1)
+                }
+            }
+        }
+
         /** Whether what [element] holds is not read: not meant to be, or not shown. */
         fun isIgnored(element: Element): Boolean {
-            if (element.normalName() in IGNORED || element.hasAttr("hidden")) return true
+            if (element.normalName() in IGNORED || element.hasAttr("hidden") || HtmlFormula.isDrawingOfScript(element)) return true
             val style = HtmlFormat.styleOf(element)
             return style["display"] == "none" || style["visibility"] == "hidden"
         }

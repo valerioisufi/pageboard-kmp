@@ -100,7 +100,7 @@ schema, to a stored format or to the sync protocol.
 | Phase | What | Status |
 |---|---|---|
 | 1 | Ksoup checked on the targets (`iosArm64`, `iosSimulatorArm64`, JVM, Android, with Kotlin 2.4.20); `drawview-html` with its `Module.md`, `api/` dump, Dokka and `THIRD_PARTY_LICENSES.md`; blocks, inline formats, `style`, escapes; every result read back with `RichTextParser` in the tests | done |
-| 2 | The real sources: fixtures of HTML copied from Chrome, Firefox, Google Docs, Word and a chat assistant; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | planned |
+| 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
 | 3 | `Clipboard.readHtml` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text | planned |
 | 4 | The field (wrapping `Clipboard`, `cleanedPaste`), "Paste as plain text" | planned |
 | 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari | planned |
