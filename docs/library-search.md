@@ -193,8 +193,7 @@ clears the query (Seen). They clear it behind the port, though (see S1).
 
 Each phase is a commit on `feat/library-search`, with its tests. Phases 1 to 4 stay inside internal
 classes, so no ABI changes. Phase 5 changes the public API of `drawview-search`, `drawview-explorer`
-and `drawview-search-ui`, recorded with `updateKotlinAbi` and said in the commit: the dumps of the
-modules with Compose come out empty on Windows, so they are recorded on the Mac.
+and `drawview-search-ui`, recorded with `updateKotlinAbi` and said in the commit.
 
 1. **One way in and out** (N1 to N7, S1 to S3): the state, `navigate`, the scope with its chip, the
    details apart from the selection, the filter. The ranked results are filtered in the view model
@@ -215,17 +214,47 @@ modules with Compose come out empty on Windows, so they are recorded on the Mac.
 | 1. One way in and out | done |
 | 2. The rules follow the item | done |
 | 3. What the results say | done |
-| 4. The field and the scroll | done (the references of the screenshots to record on the Mac, the tablet to try) |
-| 5. Typing and fresh results | done (the iOS dumps of the explorer and of search-ui written by hand, to check on the Mac) |
-| 6. The threshold of the vectors | to do |
+| 4. The field and the scroll | done, tried on the tablet |
+| 5. Typing and fresh results | done, without the measure of the typing on a large index |
+| 6. The threshold of the vectors | done, measured on the bench and not on an index of the application |
+
+The references of the screenshots of the library are recorded again, after looking at each
+difference: the field above the title, the title of the results, the text of "no results".
+`checkKotlinAbi`, the build and the tests on iOS and `./consumer-checks/check.sh` pass.
+
+`textSavedCode` and `textLargerThanWindow` of `TextScreenshotTest` fail with or without this work
+(they fail at 7ef50513 too), and `textChainWritten` fails now and then, by one column of pixels of
+the caret. Their references are left as they are: they are not of this plan.
+
+### The measure of the threshold (phase 6)
+
+`SearchBench` on the 427 pages of the workspace of lecture-eval, the 30 searches of phase 0 and 20
+searches with no answer in the notes (`SearchBench.NO_ANSWER`, ten far from their subjects and ten
+near them), 512 dimensions:
+
+* the page wanted scores from 0.711 to 0.866 (median 0.795);
+* the best page of a search with no answer scores from 0.582 to 0.714 (median 0.642).
+
+| Least score | Page wanted kept | Paraphrased kept | No answer, nothing shown | Pages shown, with an answer (mean) | Pages shown, without (mean) |
+|---|---|---|---|---|---|
+| none | 100 % | 100 % | 0 % | 50.0 | 50.0 |
+| 0.60 | 100 % | 100 % | 15 % | 50.0 | 29.5 |
+| 0.64 | 100 % | 100 % | 45 % | 46.3 | 17.3 |
+| 0.66 | 100 % | 100 % | 60 % | 43.4 | 6.9 |
+| **0.68** | 100 % | 100 % | 70 % | 27.7 | 1.7 |
+| 0.70 | 100 % | 100 % | 85 % | 17.6 | 0.3 |
+| 0.72 | 96 % | 93 % | 100 % | 10.4 | 0.0 |
+| 0.74 | 76 % | 75 % | 100 % | 6.1 | 0.0 |
+
+The value is **0.68** (`SearchEngine.LEAST_VECTOR_SCORE`). 0.70 hides more, but it leaves 0.011 above
+the lowest page wanted, and hiding a note that is there costs more than showing a page or two that
+is not it. The searches that still show something are near the subjects of the notes (a transform,
+a normal form, a routing protocol).
 
 ## Checks
 
-* `./gradlew jvmTest checkKotlinAbi` and the builds of CLAUDE.md at every phase; on this Windows
-  computer `checkKotlinAbi` of the modules with Compose already fails on main, so compare it with
-  main.
-* `verifyRoborazziJvm` of explorer and search-ui from phase 3. The references come from the Mac:
-  they are recorded there, or their differences on Windows are told apart from the real ones.
+* `./gradlew jvmTest checkKotlinAbi` and the builds of CLAUDE.md at every phase.
+* `verifyRoborazziJvm` of explorer and search-ui from phase 3.
 * The application on a scratch directory only:
   `JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`.
 
@@ -244,6 +273,13 @@ All revertible, taken alone and waiting for the approval of this plan:
 * **A filter keeps the folders of the folder shown.** The design said "no folder"; it is what hides
   the notes in the sub-folders.
 * **No order on ranked results**: their order is the relevance.
+* **The threshold is 0.68**, see the measure above.
+* **A word match that passes is half of the words of the query or more**, the coverage the merge
+  already asks of a boost. Any single word would keep the unrelated pages: `prima` in "cause della
+  prima guerra mondiale" is on many of them.
+* **The threshold is for the search only.** "Ask your notes" and `pagesAbout` keep the closest
+  chunks: the first has a model to judge them, the second asks for the closest pages whatever they
+  score.
 
 ## Left for later
 
@@ -262,6 +298,7 @@ All revertible, taken alone and waiting for the approval of this plan:
 * A note outside the folder is not found until the search is widened: the empty state offers the
   whole library, so that "no results" is not read as "it is not in my notes".
 * The threshold depends on the corpus: too high, it hides the paraphrases that are the reason for
-  the vectors. The measure of phase 0 was made on one student's notes, on the Mac.
+  the vectors. It was measured on one student's notes, a chunk a page, while the index of the
+  application also holds smaller chunks (a text box, a title), whose scores may differ.
 * The temporary test used a fake port and only the wide layout for the navigation: the problems
   marked Read may turn out larger or smaller on the tablet.

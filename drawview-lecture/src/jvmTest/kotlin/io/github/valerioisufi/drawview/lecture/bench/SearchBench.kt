@@ -29,6 +29,9 @@ private class EvalDocument(val id: String, val title: String = "")
  *
  * The page found in the first five, within one page (a slide continued on the next one), and the
  * reciprocal rank; the time to compute the vectors of every page.
+ *
+ * Phase 6 of docs/library-search.md: what a least score of the vectors would keep, of the pages of
+ * [QUERIES] and of the pages found for [NO_ANSWER], searches the notebooks say nothing about.
  */
 internal class SearchBench(private val bench: Bench, private val workspace: File) {
     class Page(val documentId: String, val title: String, val number: Int, val text: String)
@@ -80,6 +83,10 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
                     }
                 }
             }
+            val prompt = "task: search result | query: "
+            val answered = bench.withEmbedder(model, EmbedderOptions()) { embedder -> embedder.embed(QUERIES.map { prompt + it.text }) }
+            val unanswered = bench.withEmbedder(model, EmbedderOptions()) { embedder -> embedder.embed(NO_ANSWER.map { prompt + it }) }
+            thresholds(report, pages, targets, vectors, answered, unanswered)
             bench.loaded.unload(model.spec.id)
         } else {
             report.appendLine().appendLine("No embedding model in ${bench.directory}/models.")
@@ -106,6 +113,52 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
         }
         bench.output("search/rankings.md").writeText(details.toString())
         report.appendLine()
+    }
+
+    /** What each least score keeps, at the dimensions of the index, with the scores behind it in `search/scores.md`. */
+    private fun thresholds(
+        report: StringBuilder,
+        pages: List<Page>,
+        targets: List<Int>,
+        vectors: List<FloatArray>,
+        answered: List<FloatArray>,
+        unanswered: List<FloatArray>
+    ) {
+        val pageVectors = vectors.map { truncate(it, THRESHOLD_DIMENSIONS) }
+        fun scores(query: FloatArray) = truncate(query, THRESHOLD_DIMENSIONS).let { q -> pageVectors.map { dot(q, it).toDouble() } }
+        val answeredScores = answered.map(::scores)
+        val unansweredScores = unanswered.map(::scores)
+        val targetScores = targets.mapIndexed { i, target -> answeredScores[i][target] }
+        val paraphrased = QUERIES.indices.filter { QUERIES[it].paraphrase }
+
+        report.appendLine().appendLine("### A least score of the vectors (phase 6 of docs/library-search.md)").appendLine()
+        report.appendLine("${NO_ANSWER.size} searches with no answer in the notebooks. The scores, $THRESHOLD_DIMENSIONS dimensions:").appendLine()
+        report.appendLine("* the page wanted: ${spread(targetScores)};")
+        report.appendLine("* the best page of a search with an answer: ${spread(answeredScores.map { it.max() })};")
+        report.appendLine("* the best page of a search without one: ${spread(unansweredScores.map { it.max() })}.").appendLine()
+        report.appendLine("| Least score | Page wanted kept | Paraphrased kept | No answer, nothing shown | Pages shown, with an answer (mean) | Pages shown, without (mean) |")
+        report.appendLine("|---|---|---|---|---|---|")
+        for (step in 50..76 step 2) {
+            val least = step / 100.0
+            fun shown(all: List<List<Double>>) = "%.1f".format(all.meanOf { scores -> scores.count { it >= least }.coerceAtMost(SHOWN_AT_MOST).toDouble() })
+            report.appendLine(
+                "| ${"%.2f".format(least)} | ${percent(targetScores.count { it >= least }, targetScores.size)} | " +
+                    "${percent(paraphrased.count { targetScores[it] >= least }, paraphrased.size)} | " +
+                    "${percent(unansweredScores.count { scores -> scores.none { it >= least } }, unansweredScores.size)} | " +
+                    "${shown(answeredScores)} | ${shown(unansweredScores)} |"
+            )
+        }
+        val details = StringBuilder()
+        fun best(scores: List<Double>) = scores.indices.sortedByDescending { scores[it] }.take(3).joinToString { "%.3f %s p. %d".format(scores[it], pages[it].title.take(24), pages[it].number) }
+        for ((i, query) in QUERIES.withIndex()) details.appendLine("* ${"%.3f".format(targetScores[i])} ${query.text}: ${best(answeredScores[i])}")
+        details.appendLine()
+        for ((i, query) in NO_ANSWER.withIndex()) details.appendLine("* $query: ${best(unansweredScores[i])}")
+        bench.output("search/scores.md").writeText(details.toString())
+    }
+
+    private fun spread(values: List<Double>): String {
+        val sorted = values.sorted()
+        return "from %.3f to %.3f, median %.3f".format(sorted.first(), sorted.last(), sorted[sorted.size / 2])
     }
 
     /** The pages of the notebooks of the lectures of the workspace: the slides, and the notes typed that were not removed. */
@@ -175,6 +228,34 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
     companion object {
         private const val RRF_K = 60
         private const val MAX_PAGE_CHARS = 2000
+        private const val THRESHOLD_DIMENSIONS = 512
+
+        /** The vector results a search takes from the index, `SearchIndex.DEFAULT_SEARCH_LIMIT`. */
+        private const val SHOWN_AT_MOST = 50
+
+        /** Searches with no answer in the notebooks: ten far from their subjects, ten near them. */
+        val NO_ANSWER = listOf(
+            "ricetta della carbonara con il guanciale",
+            "trama dei Promessi Sposi",
+            "cause della prima guerra mondiale",
+            "come si coltivano i pomodori sul balcone",
+            "regola del fuorigioco nel calcio",
+            "fotosintesi clorofilliana nelle piante",
+            "pittura del Rinascimento a Firenze",
+            "diritto di recesso nei contratti di affitto",
+            "sintomi dell'influenza stagionale",
+            "orari dei treni per Milano",
+            "layout flexbox nei fogli di stile CSS",
+            "normalizzazione dei database relazionali in terza forma normale",
+            "analisi sintattica LALR in un compilatore",
+            "garbage collection generazionale nella JVM",
+            "teorema del campionamento di Nyquist",
+            "integrali di linea e teorema di Green",
+            "trasformata di Fourier discreta",
+            "equazioni di Maxwell nel vuoto",
+            "shader e pipeline grafica di OpenGL",
+            "routing BGP tra sistemi autonomi"
+        )
 
         /** The searches, written for the notebooks of the workspace of 2026-10-18 (most slides are in English). */
         val QUERIES = listOf(

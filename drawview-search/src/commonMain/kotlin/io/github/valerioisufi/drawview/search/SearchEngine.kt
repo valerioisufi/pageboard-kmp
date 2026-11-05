@@ -61,7 +61,8 @@ public class SearchEngine(
             rawQuery = trimmed,
             formattedEmbeddingQuery = EmbeddingPrompts.query(trimmed),
             limit = limit,
-            documentIds = documentIds
+            documentIds = documentIds,
+            leastVectorScore = LEAST_VECTOR_SCORE
         )
         if (ranked.isEmpty()) return emptyList()
 
@@ -132,15 +133,25 @@ public class SearchEngine(
         rawQuery: String,
         formattedEmbeddingQuery: String,
         limit: Int,
-        documentIds: Set<String>?
+        documentIds: Set<String>?,
+        leastVectorScore: Double? = null
     ): List<ScoredChunk> {
-        val wordResults = index.searchWords(rawQuery, limit, documentIds)
+        val foundByWords = index.searchWords(rawQuery, limit, documentIds)
         val queryVector = embedSingle(formattedEmbeddingQuery)
-        val vectorResults = if (queryVector != null) {
+        val foundByVectors = if (queryVector != null) {
             index.searchVectors(queryVector, limit, documentIds)
         } else {
             emptyList()
         }
+
+        if (foundByVectors.isEmpty()) {
+            return foundByWords
+        }
+        // Vectors always have a closest chunk, however unrelated; the words of the query still pass
+        val queryWords = searchWordsOf(rawQuery).filter { it.length > 1 }.distinct()
+        fun holdsTheWords(scored: ScoredChunk) = wordCoverage(scored.indexed.chunk, queryWords) >= MIN_BOOST_COVERAGE
+        val vectorResults = if (leastVectorScore == null) foundByVectors else foundByVectors.filter { it.score >= leastVectorScore || holdsTheWords(it) }
+        val wordResults = if (leastVectorScore == null) foundByWords else foundByWords.filter(::holdsTheWords)
 
         if (vectorResults.isEmpty()) {
             return wordResults
@@ -312,6 +323,12 @@ public class SearchEngine(
         public const val DEFAULT_MAX_HITS_PER_DOCUMENT: Int = 3
         public const val DEFAULT_PASSAGE_LIMIT: Int = 10
         public const val DEFAULT_TOPIC_PAGES: Int = 3
+
+        /**
+         * The least cosine similarity of a chunk found by its meaning alone, measured for
+         * EmbeddingGemma 2 at 512 dimensions in phase 6 of `docs/library-search.md`.
+         */
+        private const val LEAST_VECTOR_SCORE = 0.68
 
         private const val MIN_BOOST_COVERAGE = 0.5
         private const val HIGH_WORD_COVERAGE = 0.75
