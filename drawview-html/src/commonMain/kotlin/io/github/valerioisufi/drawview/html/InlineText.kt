@@ -185,7 +185,18 @@ internal object InlineText {
                         out.append(piece.text)
                     } else {
                         val startsLine = !inTable && out.isEmpty()
-                        out.append(MarkdownEscape.escape(piece.text, startsLine, inLink = format.link != null, inTable = inTable))
+                        var at = 0
+                        for (formula in MarkdownEscape.formulasIn(piece.text)) {
+                            if (formula.first > at) {
+                                out.append(MarkdownEscape.escape(piece.text.substring(at, formula.first), startsLine && at == 0, inLink = format.link != null, inTable = inTable))
+                            }
+                            out.append(piece.text, formula.first, formula.last + 1)
+                            at = formula.last + 1
+                            formatted = true
+                        }
+                        if (at < piece.text.length) {
+                            out.append(MarkdownEscape.escape(piece.text.substring(at), startsLine && at == 0, inLink = format.link != null, inTable = inTable))
+                        }
                     }
                 }
             }

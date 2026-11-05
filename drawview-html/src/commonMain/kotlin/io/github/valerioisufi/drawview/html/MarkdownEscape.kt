@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.html
 
 import io.github.valerioisufi.drawview.model.text.ListMarker
+import io.github.valerioisufi.drawview.model.text.RichTextParser
 
 /**
  * The characters of a text that would read as the notation (see `RichTextParser`) written so that
@@ -12,6 +13,25 @@ internal object MarkdownEscape {
     private const val ESCAPABLE = """\`*_{}[]()#+-.!${'$'}~|<>"""
 
     private val HEADING_MARKER = Regex("""^#{1,6}[ \t]""")
+
+    /** What a formula has and a sentence between two prices has not. */
+    private val FORMULA_SIGN = Regex("""[\\^_{}=+\-*/<>()]""")
+
+    /** A formula this short is a symbol, as `$l$`. */
+    private const val SYMBOL_CHARS = 3
+
+    /**
+     * The formulas written as text in [text], in their order: some applications (Gemini) copy a
+     * formula as its source, between dollars. They are those the notation reads, when they look like a
+     * formula: `$5 e $10` and `$a e b$` stay text.
+     */
+    fun formulasIn(text: String): List<IntRange> {
+        if ('$' !in text) return emptyList()
+        return RichTextParser.parse(text)
+            .filter { it.kind == RichTextParser.Kind.FORMULA }
+            .filter { it.contentEnd - it.contentStart <= SYMBOL_CHARS || FORMULA_SIGN.containsMatchIn(text.substring(it.contentStart, it.contentEnd)) }
+            .map { it.start until it.end }
+    }
 
     /**
      * [text] of a line, which [startsLine] when nothing is before it on its line.

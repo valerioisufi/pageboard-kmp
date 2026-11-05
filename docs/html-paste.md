@@ -130,6 +130,9 @@ Taken alone, revertible:
    Google Docs needs none, since `style` winning over the tag covers its outer `<b>`.
 10. **An equation of Word becomes a visible placeholder**: Word copies an image, with its OMML in a
     comment, and images are dropped. A converter from OMML to LaTeX is left for later.
+11. **A formula copied as text between dollars is a formula**, when the notation reads it as one and it
+    looks like one (a sign of a formula, or at most 3 characters): Gemini copies its formulas so, as a
+    real copy from Chrome showed (2026-11-05). Any other `$` stays a character.
 
 ## Open points
 

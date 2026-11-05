@@ -12,6 +12,27 @@ class SourcesTest {
     private fun convert(html: String): String? = HtmlToMarkdown().convert(html)
 
     @Test
+    fun aFormulaCopiedAsItsSourceIsAFormula() {
+        // As Gemini copies it from Chrome: the source between dollars, as text
+        val gemini = "<ul><li><b>Pag. 18 (dopo la Slide 14,</b> <b><i>layer \$l\$</i></b><b>):</b> compare \$\\sigma_{fwd}^2\$ invece di \$\\sigma_{bwd}^2\$:" +
+            "<br>\$\$\\sigma^2 = \\frac{2}{n_{IN} + n_{OUT}}\$\$</li><li><i>a \$\\lambda\$</i></li></ul>"
+        val markdown = convert(gemini).orEmpty()
+        assertTrue("\\\$" !in markdown && "\\_" !in markdown, markdown)
+        val spans = parsed(markdown)
+        val formulas = spans.filter { it.kind == Kind.FORMULA }
+        assertEquals(5, formulas.size, markdown)
+        assertEquals(1, formulas.count { it.display }, markdown)
+        assertEquals(2, spans.count { it.kind == Kind.LIST_ITEM }, markdown)
+    }
+
+    @Test
+    fun aPriceIsNotAFormula() {
+        assertEquals("**a** costa \\\$5 e \\\$10", convert("<b>a</b> costa \$5 e \$10"))
+        assertEquals("**a** \\\$un testo qualunque\\\$", convert("<b>a</b> \$un testo qualunque\$"))
+        assertEquals("**a** \\_b\\_ \$x_1\$ \\*", convert("<b>a</b> _b_ \$x_1\$ *"))
+    }
+
+    @Test
     fun theListsOfWordBecomeLists() {
         val word = """
             <p class=MsoNormal><b>Titolo<o:p></o:p></b></p>
