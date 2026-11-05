@@ -22,7 +22,10 @@ internal object InlineText {
     /** The most line breaks in a row: more of them only leave a larger hole in a note. */
     private const val MOST_BREAKS = 2
 
-    private const val ZERO_WIDTH_SPACE = '​'
+    private const val ZERO_WIDTH_SPACE = '\u200B'
+
+    /** The characters pages put around their words only to break or join lines: not text of a note. */
+    private const val INVISIBLE = "\u200B\u2060\uFEFF\u00AD"
 
     /** A delimiter open in a line. */
     private sealed class Delimiter(val open: String, val close: String) {
@@ -55,7 +58,8 @@ internal object InlineText {
     fun write(runs: List<InlineRun>, oneLine: Boolean = false, inTable: Boolean = false): Written {
         var formatted = false
         val lines = linesOf(runs, oneLine).map { line ->
-            val written = writeLine(line, inTable)
+            // A line of a heading or of a cell has its marker before it: what follows is no marker
+            val written = writeLine(line, inTable, startsBlock = !oneLine)
             formatted = formatted || written.formatted
             written.text
         }
@@ -116,7 +120,8 @@ internal object InlineText {
                         word.clear()
                     }
                     for (c in run.text) {
-                        if (c.isWhitespace() || c == ' ') {
+                        if (c in INVISIBLE) continue
+                        if (c.isWhitespace() || c == '\u00A0') {
                             flushWord()
                             pendingSpace = true
                         } else {
@@ -140,11 +145,12 @@ internal object InlineText {
     }
 
     /** A line of [pieces], with the delimiters they ask for. */
-    private fun writeLine(pieces: List<Piece>, inTable: Boolean): Written {
+    private fun writeLine(pieces: List<Piece>, inTable: Boolean, startsBlock: Boolean): Written {
         val out = StringBuilder()
         val open = ArrayDeque<Delimiter>()
         val closers = ArrayDeque<String>()
         var formatted = false
+        var afterFormula = false
         fun closeTo(depth: Int) {
             while (open.size > depth) {
                 open.removeLast()
@@ -155,10 +161,15 @@ internal object InlineText {
             when (piece) {
                 is Piece.Math -> {
                     closeTo(0)
+                    if (out.lastOrNull()?.isLetterOrDigit() == true) out.append(' ')
                     out.append(piece.written)
+                    afterFormula = true
                     formatted = true
                 }
                 is Piece.Words -> {
+                    // A browser may lose the space after a formula it copies; a formula followed by a digit would not read as one
+                    if (afterFormula && piece.text.first().isLetterOrDigit()) out.append(' ')
+                    afterFormula = false
                     // A code holding a backtick has no way of being written as code
                     val format = if (piece.format.code && '`' in piece.text) piece.format.copy(code = false) else piece.format
                     val wanted = delimitersOf(format)
@@ -184,7 +195,7 @@ internal object InlineText {
                     if (format.code) {
                         out.append(piece.text)
                     } else {
-                        val startsLine = !inTable && out.isEmpty()
+                        val startsLine = startsBlock && out.isEmpty()
                         var at = 0
                         for (formula in MarkdownEscape.formulasIn(piece.text)) {
                             if (formula.first > at) {

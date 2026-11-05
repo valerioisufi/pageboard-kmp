@@ -7,8 +7,13 @@ import io.github.valerioisufi.drawview.model.text.ListMarker
 import io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering
 import io.github.valerioisufi.drawview.model.text.NumberingStyle
 
-/** A block of the notation: its [lines], and whether it [isList]. */
-private class Block(val lines: List<String>, val isList: Boolean = false)
+/**
+ * A block of the notation: its [lines], and whether it [isList].
+ *
+ * @property codeLine the line, when the block is a line of code alone: what code editors copy, one
+ *   element per line.
+ */
+private class Block(val lines: List<String>, val isList: Boolean = false, val codeLine: String? = null)
 
 /**
  * Walks a tree of HTML once and writes its blocks in the notation. One instance per conversion.
@@ -44,8 +49,9 @@ internal class MarkdownWriter {
                 collect(child, format, runs, depth + 1)
                 continue
             }
-            if (HtmlFormula.of(child) == null && isIgnored(child)) continue
-            if (HtmlFormula.of(child) != null || (!isBlock(child) && !holdsBlock(child, depth + 1))) {
+            val isFormula = HtmlFormula.of(child) != null
+            if (!isFormula && isIgnored(child)) continue
+            if (isFormula || (!isBlock(child) && !holdsBlock(child, depth + 1))) {
                 collect(child, format, runs, depth + 1)
                 continue
             }
@@ -82,14 +88,41 @@ internal class MarkdownWriter {
             }
         }
         flush()
-        return blocks
+        return withCodeLinesJoined(blocks)
+    }
+
+    /** The lines of code in a row of [blocks] as one block of code. */
+    private fun withCodeLinesJoined(blocks: List<Block>): List<Block> {
+        if (blocks.count { it.codeLine != null } < 2) return blocks
+        val joined = mutableListOf<Block>()
+        var index = 0
+        while (index < blocks.size) {
+            val start = index
+            while (index < blocks.size && blocks[index].codeLine != null) index++
+            when (index - start) {
+                0 -> joined += blocks[index++]
+                1 -> joined += blocks[start]
+                else -> joined += fenced(blocks.subList(start, index).map { it.codeLine!! }.joinToString("\n"), null, codeLine = false)
+            }
+        }
+        return joined
+    }
+
+    /** The fenced block of [source]. */
+    private fun fenced(source: String, language: String?, codeLine: Boolean): Block {
+        formatted = true
+        val longest = BACKTICKS.findAll(source).maxOfOrNull { it.value.length } ?: 0
+        val fence = "`".repeat(maxOf(3, longest + 1))
+        return Block(listOf(fence + (language ?: "")) + source.lines() + fence, codeLine = source.takeIf { codeLine && '\n' !in it })
     }
 
     private fun paragraph(runs: List<InlineRun>): Block? {
         val written = InlineText.write(runs)
         if (written.text.isBlank()) return null
         formatted = formatted || written.formatted
-        return Block(written.text.lines())
+        // A paragraph all in a code of one line: `like this`
+        val code = written.text.takeIf { it.length > 2 && it.first() == '`' && it.last() == '`' && it.count { c -> c == '`' } == 2 && '\n' !in it }
+        return Block(written.text.lines(), codeLine = code?.let { it.substring(1, it.length - 1) })
     }
 
     /**
@@ -112,7 +145,7 @@ internal class MarkdownWriter {
                         return
                     }
                     "img" -> {
-                        node.attr("alt").takeIf { it.isNotBlank() }?.let { runs += InlineRun.Text(it, format) }
+                        node.attr("alt").takeIf(::isSign)?.let { runs += InlineRun.Text(it, format) }
                         return
                     }
                 }
@@ -243,10 +276,7 @@ internal class MarkdownWriter {
     private fun codeBlock(element: Element): Block? {
         val source = StringBuilder().also { sourceOf(codeOf(element), it, 0) }.toString().trim('\n')
         if (source.isBlank()) return null
-        formatted = true
-        val longest = BACKTICKS.findAll(source).maxOfOrNull { it.value.length } ?: 0
-        val fence = "`".repeat(maxOf(3, longest + 1))
-        return Block(listOf(fence + (languageOf(element) ?: "")) + source.lines() + fence)
+        return fenced(source, languageOf(element), codeLine = languageOf(element) == null)
     }
 
     /** The source of the code of [node], its line breaks kept. */
@@ -294,12 +324,18 @@ internal class MarkdownWriter {
         if (rows.size < 2 || columns < 2) {
             return captions + rows.flatten().flatMap { blocksIn(it, inner.inside(it), quoted, depth + 1) }
         }
+        val cells = rows.map { row ->
+            val written = row.flatMap { cell -> listOf(cellText(cell, inner, depth)) + List(spanOf(cell) - 1) { "" } }
+            written + List(columns - written.size) { "" }
+        }
+        // The columns a span of a cell made, with nothing of their own
+        val kept = (0 until columns).filter { column -> cells.any { it[column].isNotEmpty() } }
+        if (kept.size < 2) return captions + rows.flatten().flatMap { blocksIn(it, inner.inside(it), quoted, depth + 1) }
         formatted = true
         val lines = mutableListOf<String>()
-        for ((index, row) in rows.withIndex()) {
-            val cells = row.flatMap { cell -> listOf(cellText(cell, inner, depth)) + List(spanOf(cell) - 1) { "" } }
-            lines += "| " + (cells + List(columns - cells.size) { "" }).joinToString(" | ") + " |"
-            if (index == 0) lines += "| " + (0 until columns).joinToString(" | ") { alignmentOf(cellAt(row, it)) } + " |"
+        for ((index, row) in cells.withIndex()) {
+            lines += "| " + kept.joinToString(" | ") { row[it] } + " |"
+            if (index == 0) lines += "| " + kept.joinToString(" | ") { alignmentOf(cellAt(rows[0], it)) } + " |"
         }
         return captions + Block(lines)
     }
@@ -363,6 +399,15 @@ internal class MarkdownWriter {
         private const val NESTED_INDENT = "  "
 
         private val BACKTICKS = Regex("`+")
+
+        /** The classes of the numbers of the lines beside the code of a page. */
+        private val GUTTER = Regex("""gutter|line-?numbers?$|^lineno""", RegexOption.IGNORE_CASE)
+
+        /** The longest description of an image kept: an emoji or a sign, as chats and GitHub draw them. */
+        private const val MOST_SIGN_CHARS = 8
+
+        /** Whether the description [alt] of an image stands for a sign: any other description is not text that was on the page. */
+        private fun isSign(alt: String): Boolean = alt.isNotBlank() && alt.length <= MOST_SIGN_CHARS && alt.none { it.isLetterOrDigit() }
         private val LANGUAGE = Regex("""[A-Za-z0-9+#._-]{1,32}""")
         private val LANGUAGE_CLASS = Regex("""^(?:language-|lang-|highlight-source-)(.+)$""")
 
@@ -409,7 +454,8 @@ internal class MarkdownWriter {
 
         /** Whether what [element] holds is not read: not meant to be, or not shown. */
         fun isIgnored(element: Element): Boolean {
-            if (element.normalName() in IGNORED || element.hasAttr("hidden") || HtmlFormula.isDrawingOfScript(element)) return true
+            if (element.normalName() in IGNORED || element.hasAttr("hidden") || HtmlFormula.isDrawingOfScript(element) || HtmlFormula.isAccessibleCopy(element)) return true
+            if (element.classNames().any { GUTTER.containsMatchIn(it) }) return true
             val style = HtmlFormat.styleOf(element)
             return style["display"] == "none" || style["visibility"] == "hidden"
         }

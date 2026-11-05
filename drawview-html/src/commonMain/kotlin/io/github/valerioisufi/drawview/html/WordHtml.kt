@@ -93,7 +93,7 @@ internal class WordHtml(private val equationPlaceholder: String) {
     private fun read(element: Element): ListParagraph {
         val style = LIST_STYLE.find(HtmlFormat.styleOf(element)["mso-list"].orEmpty())!!
         val markers = element.getAllElements().filter { HtmlFormat.styleOf(it)["mso-list"] == "ignore" }
-        val marker = markers.joinToString("") { it.text() }.replace(' ', ' ').trim()
+        val marker = markers.joinToString("") { it.text() }.replace('\u00A0', ' ').trim()
         markers.forEach { it.remove() }
         return ListParagraph(element, style.groupValues[2].toInt(), style.groupValues[1] + "/" + style.groupValues[3], marker)
     }

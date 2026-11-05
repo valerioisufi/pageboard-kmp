@@ -141,6 +141,56 @@ class SourcesTest {
     }
 
     @Test
+    fun aFormulaOfKatexCopiedByChromeIsWrittenFromItsMathml() {
+        // Chrome leaves out the hidden annotation with the source, and keeps the MathML and the drawing
+        val katex = { mathml: String, html: String -> """<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow>$mathml</mrow></semantics></math></span><span class="katex-html" aria-hidden="true">$html</span></span>""" }
+        assertEquals("**a** \$a^{\\prime}\$", convert("<b>a</b> " + katex("""<msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup>""", "a′")))
+        assertEquals("\$\\tilde{a}\$ x", convert(katex("""<mover accent="true"><mi>a</mi><mo>~</mo></mover>""", "a~") + " x"))
+        assertEquals("\$\\frac{1}{\\sigma_{i}^{2}}\$", convert(katex("<mfrac><mn>1</mn><msubsup><mi>σ</mi><mi>i</mi><mn>2</mn></msubsup></mfrac>", "1σ")))
+        assertEquals("\$\\sum_{i=1}^{n}x\$", convert(katex("""<munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>x</mi>""", "x")))
+        assertEquals("\$\\lim_{x\\to0}\\sin x\$", convert(katex("""<munder><mo><mi>lim</mi></mo><mrow><mi>x</mi><mo>→</mo><mn>0</mn></mrow></munder><mi>sin</mi><mi>x</mi>""", "x").replace("<mo><mi>lim</mi></mo>", "<mi>lim</mi>")))
+        assertEquals("\$\\left( \\begin{matrix}a & b \\\\ c & d\\end{matrix} \\right)\$", convert(katex("""<mrow><mo fence="true">(</mo><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable><mo fence="true">)</mo></mrow>""", "ab")))
+        assertEquals("\$\\sqrt[3]{x}+\\sqrt{y}\$", convert(katex("<mroot><mi>x</mi><mn>3</mn></mroot><mo>+</mo><msqrt><mi>y</mi></msqrt>", "x")))
+        assertEquals("\$\\text{se }x\\mathrm{d}\$".replace("se ", "se"), convert(katex("""<mtext>se </mtext><mi>x</mi><mi mathvariant="normal">d</mi>""", "x")))
+    }
+
+    @Test
+    fun aFormulaOfKatexThatCannotBeWrittenKeepsOnlyItsDrawing() {
+        val katex = """<b>a</b> <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mnuovo>x</mnuovo></mrow></semantics></math></span><span class="katex-html" aria-hidden="true">disegno</span></span>"""
+        assertEquals("**a** disegno", convert(katex))
+    }
+
+    @Test
+    fun aFormulaOfWikipediaCopiedByChromeIsReadFromItsAttribute() {
+        val page = """<p>Sia <span class="mwe-math-mathml-a11y" style="display:none"><math class="mwe-math-element" data-mw="{&quot;name&quot;:&quot;math&quot;,&quot;attrs&quot;:{&quot;display&quot;:&quot;inline&quot;},&quot;body&quot;:{&quot;extsrc&quot;:&quot;\\mu=0&quot;}}"><mrow><mi>μ</mi></mrow></math></span><mjx-container><mjx-lazy data-mjx-lazy="25"></mjx-lazy></mjx-container> dato</p>"""
+        assertEquals("Sia \$\\mu=0\$ dato", convert(page))
+        val display = """<p><span class="mwe-math-mathml-a11y" style="display:none"><math data-mw="{&quot;attrs&quot;:{&quot;display&quot;:&quot;block&quot;},&quot;body&quot;:{&quot;extsrc&quot;:&quot;x&quot;}}"></math></span></p>"""
+        assertEquals("\$\$x\$\$", convert(display))
+    }
+
+    @Test
+    fun theSetsOfWikipediaAreWrittenInLatex() {
+        val page = """<p>Sia <span class="mwe-math-mathml-a11y"><math data-mw="{&quot;body&quot;:{&quot;extsrc&quot;:&quot;x\\in\\R, \\Rightarrow&quot;}}"></math></span></p>"""
+        assertEquals("Sia \$x\\in\\mathbb{R}, \\Rightarrow\$", convert(page))
+    }
+
+    @Test
+    fun aFormulaKeepsItsSpaceFromTheWordsAroundIt() {
+        val math = """<math alttext="x"></math>"""
+        assertEquals("a \$x\$ b", convert("a$math" + "b"))
+        assertEquals("(\$x\$), \$x\$ 2", convert("($math), $math" + "2"))
+    }
+
+    @Test
+    fun aFormulaOfMathJax2CopiedByChromeIsReadFromItsAttribute() {
+        val mathml = "&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msup&gt;&lt;mn&gt;10&lt;/mn&gt;&lt;mrow&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;k&lt;/mi&gt;&lt;/mrow&gt;&lt;/msup&gt;&lt;/math&gt;"
+        val page = """<p>Di <span class="math-container"><span class="MathJax_Preview"></span><span class="MathJax" data-mathml="$mathml" role="presentation"><nobr aria-hidden="true"><span class="math"><span class="mn">10</span><span class="mo">−</span><span class="mi">k</span></span></nobr></span></span> per</p>"""
+        assertEquals("Di \${10}^{-k}\$ per", convert(page))
+        val display = """<div class="MathJax_Display"><span class="MathJax" data-mathml="$mathml"><nobr>10</nobr></span></div>"""
+        assertEquals("\$\${10}^{-k}\$\$", convert(display))
+    }
+
+    @Test
     fun aFormulaOfKatexIsAFormula() {
         val inline = """<p><b>Sia</b> <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base">x2</span></span></span> dato.</p>"""
         assertEquals("**Sia** \$x^2\$ dato.", convert(inline))
@@ -167,8 +217,8 @@ class SourcesTest {
     }
 
     @Test
-    fun aFormulaWithoutItsSourceKeepsItsText() {
-        assertEquals("**a** x2", convert("""<b>a</b> <math><msup><mi>x</mi><mn>2</mn></msup></math>"""))
+    fun aFormulaWithoutItsSourceIsWrittenFromItsMathml() {
+        assertEquals("**a** \$x^{2}\$", convert("""<b>a</b> <math><msup><mi>x</mi><mn>2</mn></msup></math>"""))
     }
 
     @Test

@@ -136,7 +136,8 @@ class HtmlToMarkdownTest {
     fun whatIsNotTextIsNotRead() {
         assertEquals("**a**", convert("<script>x</script><style>y</style><b>a</b><svg><text>z</text></svg><button>b</button>"))
         assertEquals("**a**", convert("""<b>a</b><span style="display:none">h</span><span hidden>i</span>"""))
-        assertEquals("**a** alt", convert("""<b>a</b> <img src="https://example.com/x.png" alt="alt">"""))
+        assertEquals("**a**", convert("""<b>a</b> <img src="https://example.com/x.png" alt="alt">"""))
+        assertEquals("**a** \uD83D\uDE00", convert("""<b>a</b> <img src="https://example.com/x.png" alt="😀">"""))
         assertEquals("**a**", convert("""<b>a</b><img src="https://example.com/x.png">"""))
     }
 
@@ -159,6 +160,36 @@ class HtmlToMarkdownTest {
             convert("<b>a</b><p># no</p><p>- no</p><p>+ no</p><p>&gt; no</p><p>1. no</p><p>#nope</p>")
         )
         assertEquals(setOf(Kind.BOLD, Kind.ESCAPE), kinds(convert("<b>a</b><p># no</p><p>- no</p><p>&gt; no</p><p>1. no</p>")))
+    }
+
+    @Test
+    fun theCharactersThatOnlyBreakLinesAreNotText() {
+        assertEquals("**a** bc", convert("<b>a</b> \u2060b\u00ADc\uFEFF\u200B"))
+    }
+
+    @Test
+    fun aHeadingStartingWithANumberIsNotEscaped() {
+        assertEquals("# 3. Numeri", convert("<h1>3. Numeri</h1>"))
+    }
+
+    @Test
+    fun theColumnsOfASpanWithNothingOfTheirOwnGoAway() {
+        val html = """<table><tr><th colspan="2">T</th><th>U</th></tr><tr><td colspan="2">a</td><td>b</td></tr></table>"""
+        assertEquals("| T | U |\n| --- | --- |\n| a | b |", convert(html))
+    }
+
+    @Test
+    fun theLinesOfACodeEditorAreOneBlock() {
+        // A pre per line, as CodeMirror copies it
+        assertEquals("```\nuno\n  due\n```", convert("""<div class="CodeMirror-code"><pre class="CodeMirror-line">uno</pre><pre class="CodeMirror-line">  due</pre></div>"""))
+        // A div per line, monospaced
+        assertEquals("```\nuno\ndue\n```", convert("""<div class="cm-line"><span style="font-family:monospace">uno</span></div><div class="cm-line"><span style="font-family:monospace">due</span></div>"""))
+        // Their numbers are not code
+        assertEquals("```\nuno\ndue\n```", convert("""<div class="cm-gutters">1 2</div><pre>uno</pre><pre>due</pre>"""))
+        // A code of several lines stays apart, with its language
+        assertEquals("```js\na\nb\n```\n\n```\nc\nd\n```", convert("""<pre class="language-js">a${"\n"}b</pre><pre>c${"\n"}d</pre>"""))
+        // Words in code in a paragraph with others stay in their paragraph
+        assertEquals("usa `a`\n\n`b`", convert("<p>usa <code>a</code></p><p><code>b</code></p>"))
     }
 
     @Test

@@ -73,6 +73,8 @@ this notation, and small.
 | What Word copies rewritten as plain HTML | `WordHtml` (internal, `drawview-html`) | Polymorphism, Protected Variations |
 | A formula of KaTeX, MathJax or MathML read back as its source | `HtmlFormula` (internal, `drawview-html`) | Information Expert |
 | An equation of Word written in LaTeX | `OmmlToLatex` (internal, `drawview-html`) | Pure Fabrication |
+| MathML written in LaTeX | `MathmlToLatex` (internal, `drawview-html`) | Pure Fabrication |
+| How text is written in LaTeX, for both | `LatexWriting` (internal, `drawview-html`) | High Cohesion |
 | Characters of the source that would read as notation escaped | `MarkdownEscape` (internal, `drawview-html`), tested against `RichTextParser` | Information Expert |
 | The HTML of the clipboard, per platform | `expect fun htmlIn(clipboard)` (`drawview-ui`) | Polymorphism, Indirection |
 | What a paste contains: HTML converted, or plain text, for canvas and field alike | `ClipboardText` (`drawview-ui`) | Controller, Low Coupling |
@@ -106,7 +108,7 @@ schema, to a stored format or to the sync protocol.
 | 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
 | 3 | `htmlIn` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text, "Paste as plain text" on the canvas | done |
 | 4 | The field (`FormattedPasteClipboard`, `TextEditorManager.formattedPaste`, `PastedText.placed`), "Paste as plain text" in the field | done |
-| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari. On Windows: the checks, Android builds, consumer checks. Left to the user: real copies from a browser and Word on each device, the iOS sources and the klib dump of `drawview-canvas` on the Mac | in progress |
+| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari. On Windows: the checks, Android builds, consumer checks, and real copies from Chrome (Wikipedia, MDN, GitHub, Stack Overflow, Math Stack Exchange, KaTeX, arXiv, the docs of Python and Kotlin) and from Word, driven by scripts. Left to the user: real copies on the other devices and browsers, the iOS sources and the klib dump of `drawview-canvas` on the Mac | in progress |
 
 ## Decisions
 
@@ -115,8 +117,9 @@ Taken alone, revertible:
 1. **Ksoup for the parsing, the conversion written here**, rather than `khtmltomarkdown`.
 2. **A new module** `drawview-html`, rather than a dependency of `drawview-model`.
 3. **HTML wins over plain text when it is there**, with "Paste as plain text" as the way out.
-4. **Images are dropped** (their `alt` is kept as text when there is one): a text cannot hold them,
-   and fetching them would mean network requests caused by a paste.
+4. **Images are dropped**: a text cannot hold them, and fetching them would mean network requests
+   caused by a paste. Their `alt` is kept only when it stands for a sign (an emoji): any other was
+   not text on the page (`icon`, the badges of a README).
 5. **Up to 2 MB of HTML**; beyond it, the plain text.
 6. **HTML without any formatting is left to the plain text** (`convert` answers `null`): nothing is
    gained, the cleaning of `PastedText` still applies, and a Markdown copied as text stays Markdown
@@ -135,6 +138,12 @@ Taken alone, revertible:
 11. **A formula copied as text between dollars is a formula**, when the notation reads it as one and it
     looks like one (a sign of a formula, or at most 3 characters): Gemini copies its formulas so, as a
     real copy from Chrome showed (2026-11-05). Any other `$` stays a character.
+12. **A formula of a page is read from what a browser really copies**: Chrome leaves out what is
+    hidden, so the source in the `annotation` of KaTeX and MathJax is gone. Its MathML is written in
+    LaTeX (`MathmlToLatex`), and Wikipedia is read from its `data-mw`. Found with real copies from Chrome
+    (2026-11-05); what cannot be written keeps the drawing of the formula as text.
+13. **The lines of a code editor are one block**, and the numbers beside them are not code; a block of
+    several lines stays apart from the next one.
 
 ## Open points
 
