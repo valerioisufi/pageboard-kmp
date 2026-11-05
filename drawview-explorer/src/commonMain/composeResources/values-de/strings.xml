@@ -42,6 +42,8 @@
     <string name="explorer_section_notes">Notizen</string>
     <string name="explorer_search_placeholder">Notizen suchen</string>
     <string name="explorer_search_clear">Suche löschen</string>
+    <string name="explorer_search_scope_here">In %1$s</string>
+    <string name="explorer_search_scope_library">Gesamte Bibliothek</string>
     <string name="explorer_command_search">Suchen</string>
     <string name="explorer_filter_all">Alle</string>
     <string name="explorer_filter_notes">Notizen</string>

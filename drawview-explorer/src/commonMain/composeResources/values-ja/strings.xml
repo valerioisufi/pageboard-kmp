@@ -42,6 +42,8 @@
     <string name="explorer_section_notes">ノート</string>
     <string name="explorer_search_placeholder">ノートを検索</string>
     <string name="explorer_search_clear">検索をクリア</string>
+    <string name="explorer_search_scope_here">%1$s 内</string>
+    <string name="explorer_search_scope_library">ライブラリ全体</string>
     <string name="explorer_command_search">検索</string>
     <string name="explorer_filter_all">すべて</string>
     <string name="explorer_filter_notes">ノート</string>

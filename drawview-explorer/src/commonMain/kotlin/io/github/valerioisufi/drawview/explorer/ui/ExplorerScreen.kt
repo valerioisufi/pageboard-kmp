@@ -202,7 +202,7 @@ internal fun ExplorerScreen(
                 onOpenDocumentWithPlace = onOpenDocumentWithPlace,
                 thumbnails = thumbnails,
                 commands = commands,
-                onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.selectOnly(item) } else null,
+                onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.showDetails(item) } else null,
                 onOpenDocumentInNewWindow = onOpenDocumentInNewWindow
             )
             val newNote = { commands.newNote.perform() }
@@ -250,7 +250,7 @@ internal fun ExplorerScreen(
                         libraryHeader(layout, viewModel, commands, searchFocus)
                     }
                 }
-                if (layout == LibraryLayout.PANES && viewModel.selectedItems.isNotEmpty()) {
+                if (layout == LibraryLayout.PANES && viewModel.targetItems.isNotEmpty()) {
                     VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     LibraryDetailsPane(itemActions, commands, onClose = { viewModel.clearSelection() })
                 }
@@ -268,7 +268,7 @@ internal fun ExplorerScreen(
                         .align(Alignment.BottomEnd)
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
                         .padding(
-                            end = if (layout == LibraryLayout.PANES && viewModel.selectedItems.isNotEmpty()) LibraryLayout.DetailsWidth + 28.dp else if (compact) 16.dp else 24.dp,
+                            end = if (layout == LibraryLayout.PANES && viewModel.targetItems.isNotEmpty()) LibraryLayout.DetailsWidth + 28.dp else if (compact) 16.dp else 24.dp,
                             bottom = if (compact) 16.dp else 24.dp
                         )
                 )
@@ -342,6 +342,14 @@ private fun LazyGridScope.libraryHeader(
         }
     }
     if (viewModel.section == FileExplorerViewModel.Section.TRASH) return
+    if (viewModel.canWidenSearch) {
+        item(key = "search-scope", span = { GridItemSpan(maxLineSpan) }) {
+            LibrarySearchScopeChips(
+                viewModel,
+                contentPadding = if (layout == LibraryLayout.LIST) PaddingValues(horizontal = 16.dp) else PaddingValues()
+            )
+        }
+    }
     item(key = "filters", span = { GridItemSpan(maxLineSpan) }) {
         LibraryFilterChips(
             viewModel,

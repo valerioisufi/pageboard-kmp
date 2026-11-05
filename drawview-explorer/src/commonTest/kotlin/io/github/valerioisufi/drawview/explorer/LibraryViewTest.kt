@@ -83,13 +83,21 @@ class LibraryViewTest {
         assertEquals(listOf("Analysis", "Exercises", "Lecture"), viewModel.shownNames)
         assertEquals(listOf("pdf", "lecture", "shared"), viewModel.allTags.map { it.id })
 
+        // The folders stay, so that the notes in them can be reached
         viewModel.selectFilter(LibraryFilter.Notes)
-        assertEquals(listOf("Exercises", "Lecture"), viewModel.shownNames)
+        assertEquals(listOf("Analysis", "Exercises", "Lecture"), viewModel.shownNames)
         viewModel.selectFilter(LibraryFilter.Tagged("lecture"))
-        assertEquals(listOf("Lecture"), viewModel.shownNames)
-        assertEquals(listOf("lecture"), viewModel.tagsOf(viewModel.shownFiles.single()).map { it.id })
+        assertEquals(listOf("Analysis", "Lecture"), viewModel.shownNames)
+        assertEquals(listOf("lecture"), viewModel.tagsOf(viewModel.shownFiles.last()).map { it.id })
         viewModel.selectFilter(LibraryFilter.Tagged("pdf"))
-        assertTrue(viewModel.shownFiles.isEmpty())
+        assertEquals(listOf("Analysis"), viewModel.shownNames)
+
+        // Another section starts with all its notes; a search narrows without the folders
+        viewModel.search("a")
+        assertEquals(emptyList(), viewModel.shownNames)
+        viewModel.showSection(Section.RECENT)
+        assertEquals(LibraryFilter.All, viewModel.filter)
+        viewModel.showFolder(null)
         viewModel.selectFilter(LibraryFilter.All)
         assertEquals(3, viewModel.shownFiles.size)
     }

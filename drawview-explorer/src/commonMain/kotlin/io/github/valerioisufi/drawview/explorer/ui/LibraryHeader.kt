@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
+import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SearchScope
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SortOption
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.ViewMode
@@ -50,6 +51,8 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_not
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_clear
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_placeholder
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_scope_here
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_scope_library
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_recent
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_shared
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
@@ -199,7 +202,8 @@ internal fun LibraryTitle(
                 style = IconButtonStyle.Tonal
             )
         }
-        if (folder != null && viewModel.section == Section.HOME) {
+        // A search is left with back, or by going somewhere: going up would change nothing on screen
+        if (folder != null && viewModel.section == Section.HOME && !viewModel.isSearching) {
             DesignIconButton(
                 icon = DrawViewIcons.ArrowUp,
                 label = stringResource(Res.string.explorer_action_back),
@@ -349,6 +353,28 @@ internal fun SortButton(viewModel: FileExplorerViewModel) {
                 alignWithIcons = true
             )
         }
+    }
+}
+
+/** Where the search looks: what the library shows (a folder, a section), or all of it. */
+@Composable
+internal fun LibrarySearchScopeChips(viewModel: FileExplorerViewModel, modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
+    val here = when (viewModel.section) {
+        Section.RECENT -> stringResource(Res.string.explorer_section_recent)
+        Section.SHARED -> stringResource(Res.string.explorer_section_shared)
+        else -> viewModel.currentFolder?.name.orEmpty()
+    }
+    ChipRow(modifier = modifier, contentPadding = contentPadding) {
+        DesignFilterChip(
+            stringResource(Res.string.explorer_search_scope_here, here),
+            viewModel.searchScope == SearchScope.HERE,
+            { viewModel.selectSearchScope(SearchScope.HERE) }
+        )
+        DesignFilterChip(
+            stringResource(Res.string.explorer_search_scope_library),
+            viewModel.searchScope == SearchScope.LIBRARY,
+            { viewModel.selectSearchScope(SearchScope.LIBRARY) }
+        )
     }
 }
 

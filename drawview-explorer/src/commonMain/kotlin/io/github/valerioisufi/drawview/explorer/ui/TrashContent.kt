@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.LocalLibraryClock
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_no_results_title
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_notes_count
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_days_left
@@ -74,7 +75,7 @@ internal fun daysLeft(item: TrashedItem, now: Long): Int {
  * first, see [LibraryCommands.deleteForGood]); why there is nothing when it is empty.
  */
 internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp) {
-    val items = viewModel.trash
+    val items = viewModel.shownTrash
     item(key = "trash-info", span = { GridItemSpan(maxLineSpan) }) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = margin, vertical = 4.dp),
@@ -87,12 +88,25 @@ internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, comman
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f)
             )
-            if (items.isNotEmpty() && commands != null) {
+            if (viewModel.trash.isNotEmpty() && commands != null) {
                 OutlineButton(onClick = { commands.emptyTrash() }) {
                     Text(stringResource(Res.string.explorer_trash_empty))
                 }
             }
         }
+    }
+    if (viewModel.trash.isNotEmpty() && items.isEmpty()) {
+        item(key = "trash-no-results", span = { GridItemSpan(maxLineSpan) }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 64.dp, start = margin, end = margin),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(DrawViewIcons.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
+                Text(stringResource(Res.string.explorer_no_results_title, viewModel.searchQuery.trim()), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
+        return
     }
     if (items.isEmpty()) {
         item(key = "trash-empty", span = { GridItemSpan(maxLineSpan) }) {

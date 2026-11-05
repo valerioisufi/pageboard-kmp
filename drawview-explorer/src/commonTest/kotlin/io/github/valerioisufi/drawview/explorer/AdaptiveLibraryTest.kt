@@ -74,9 +74,9 @@ class AdaptiveLibraryTest {
         viewModel.extendSelection(viewModel.item("E"))
         assertEquals(listOf("E"), viewModel.selectedItems.map { it.name })
 
-        viewModel.selectOnly(viewModel.item("C"))
-        assertEquals(listOf("C"), viewModel.selectedItems.map { it.name })
-        assertTrue(viewModel.selectionMode)
+        viewModel.showDetails(viewModel.item("C"))
+        assertEquals(listOf("C"), viewModel.targetItems.map { it.name })
+        assertFalse(viewModel.selectionMode, "the details of an item are not a selection")
     }
 
     @Test

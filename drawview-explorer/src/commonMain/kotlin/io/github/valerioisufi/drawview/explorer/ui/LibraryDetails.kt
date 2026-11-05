@@ -84,7 +84,7 @@ private const val OpenCommand = "open"
  */
 @Composable
 internal fun LibraryDetailsPane(actions: ItemActions, commands: LibraryCommands, onClose: () -> Unit, modifier: Modifier = Modifier) {
-    val selection = actions.viewModel.selectedItems
+    val selection = actions.viewModel.targetItems
     Column(
         modifier = modifier
             .width(LibraryLayout.DetailsWidth)

@@ -72,6 +72,12 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** How the notes are shown where there is room for both: cards with their first page, or rows. */
     enum class ViewMode { GRID, LIST }
 
+    /**
+     * Where a search looks: [HERE] is what the library shows (the current folder with its
+     * sub-folders, the notes of a section), [LIBRARY] everything in it.
+     */
+    enum class SearchScope { HERE, LIBRARY }
+
     private var documents by mutableStateOf(emptyList<DocumentSummary>())
     private var folders by mutableStateOf(emptyList<FolderSummary>())
 
@@ -141,9 +147,20 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     var section by mutableStateOf(Section.HOME)
         private set
 
-    /** The text searched in the names of the notes and of the folders of the whole library. */
+    /** The text searched in the names and the contents of the notes and in the names of the folders. */
     var searchQuery by mutableStateOf("")
         private set
+
+    /** Where the search looks; it starts over from [SearchScope.HERE] each time. */
+    var searchScope by mutableStateOf(SearchScope.HERE)
+        private set
+
+    /** Whether the library shows the results of a search in place of what it holds. */
+    val isSearching: Boolean get() = searchQuery.isNotBlank()
+
+    /** Whether a search can look further than it does by default: not from the root, nor in the trash. */
+    val canWidenSearch: Boolean
+        get() = isSearching && section != Section.TRASH && (section != Section.HOME || currentFolderId != null)
 
     /** The notes shown: all of them, or those of a kind (see [LibraryFilter]). */
     var filter by mutableStateOf<LibraryFilter>(LibraryFilter.All)
@@ -171,55 +188,107 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** Matching passages of the document [item] for the active [searchQuery]. */
     fun searchMatchesOf(item: FileItem): List<LibrarySearchMatch> =
-        if (item.type == FileType.FILE && searchQuery.isNotBlank()) {
+        if (item.type == FileType.FILE && isSearching) {
             contentSearch?.matchesOf(item.id).orEmpty()
         } else {
             emptyList()
         }
 
     /** Whether a search, a filter or a section other than the folders changes what is shown. */
-    val isNarrowed: Boolean get() = searchQuery.isNotBlank() || filter != LibraryFilter.All || section != Section.HOME
+    val isNarrowed: Boolean get() = isSearching || filter != LibraryFilter.All || section != Section.HOME
+
+    /** The current folder with the folders under it, at any depth; `null` in the root. */
+    private val folderTreeShown: Set<String>? by derivedStateOf {
+        val root = currentFolderId ?: return@derivedStateOf null
+        val children = folders.groupBy { it.parentId }
+        val tree = mutableSetOf(root)
+        val pending = ArrayDeque(listOf(root))
+        while (pending.isNotEmpty()) {
+            for (child in children[pending.removeFirst()].orEmpty()) {
+                if (tree.add(child.id)) pending.addLast(child.id)
+            }
+        }
+        tree
+    }
+
+    /** The folders a search looks at, by [searchScope]. */
+    private val foldersInScope: List<FolderSummary> by derivedStateOf {
+        val tree = folderTreeShown
+        when {
+            searchScope == SearchScope.LIBRARY -> folders
+            section != Section.HOME -> emptyList()
+            tree == null -> folders
+            else -> folders.filter { it.parentId in tree }
+        }
+    }
+
+    /** The documents a search looks at, by [searchScope]. */
+    private val documentsInScope: List<DocumentSummary> by derivedStateOf {
+        val tree = folderTreeShown
+        when {
+            searchScope == SearchScope.LIBRARY -> documents
+            section == Section.RECENT -> recentDocuments.mapTo(mutableSetOf()) { it.id }.let { recent -> documents.filter { it.id in recent } }
+            section == Section.SHARED -> documents.filter { it.isShared }
+            tree == null -> documents
+            else -> documents.filter { it.folderId in tree }
+        }
+    }
 
     /**
-     * What the library shows, in the chosen order: the content of the current folder, the notes
-     * opened last or the shared ones, the items of the whole library whose name or content holds
-     * the text searched; only the notes of the filter (no folder).
+     * What the library shows, in the chosen order: the content of the current folder (the folders
+     * stay under a filter, the notes in them can be reached), the notes opened last or the shared
+     * ones, the items whose name or content holds the text searched; only the notes of the filter.
      */
     val shownFiles: List<FileItem> by derivedStateOf {
         val query = searchQuery.trim()
-        if (query.isNotEmpty()) {
-            val matchedIds = contentSearch?.matchedDocumentIds
-            if (matchedIds != null) {
-                val matchingFolders = folders
-                    .filter { it.name.contains(query, ignoreCase = true) }
-                    .sortedBy { it.name }
-                    .map { it.toFileItem() }
-                val docsById = documents.associateBy { it.id }
-                val rankedDocs = matchedIds.mapNotNull { docsById[it]?.toFileItem() }
-                val nameMatchedDocs = documents
-                    .filter { it.id !in matchedIds && it.name.contains(query, ignoreCase = true) }
-                    .map { it.toFileItem() }
-                return@derivedStateOf (matchingFolders + rankedDocs + nameMatchedDocs).filterBy(filter)
-            }
+        when {
+            // The trash shows its own items (see shownTrash)
+            section == Section.TRASH -> emptyList()
+            query.isNotEmpty() -> searchResults(query).filterBy(filter)
+            section == Section.RECENT -> recentDocuments.filterBy(filter)
+            section == Section.SHARED -> sorted(documents.filter { it.isShared }.map { it.toFileItem() }.filterBy(filter))
+            else -> sorted(currentDirectoryFiles.filterBy(filter, keepFolders = true))
         }
-        val candidates = when {
-            query.isNotEmpty() -> (folders.map { it.toFileItem() } + documents.map { it.toFileItem() })
-                .filter { it.name.contains(query, ignoreCase = true) }
-            section == Section.RECENT -> return@derivedStateOf recentDocuments.filterBy(filter)
-            section == Section.SHARED -> documents.filter { it.isShared }.map { it.toFileItem() }
-            // The trash shows its own items (see trash)
-            section == Section.TRASH -> return@derivedStateOf emptyList()
-            else -> currentDirectoryFiles
-        }
-        sortFiles(candidates.filterBy(filter), sortOption, sortAscending, keepFoldersOnTop)
     }
 
-    private fun List<FileItem>.filterBy(filter: LibraryFilter): List<FileItem> = when (filter) {
-        LibraryFilter.All -> this
-        LibraryFilter.Notes -> filter { it.type == FileType.FILE && !it.hasPdf }
-        is LibraryFilter.Tagged -> {
-            val tag = allTags.firstOrNull { it.id == filter.tagId }
-            filter { item -> item.type == FileType.FILE && tag != null && tag.contains(item.id) }
+    /** What is in the trash, narrowed by the search of its names. */
+    val shownTrash: List<TrashedItem> by derivedStateOf {
+        val query = searchQuery.trim()
+        if (query.isEmpty()) trash else trash.filter { it.name.contains(query, ignoreCase = true) }
+    }
+
+    private fun sorted(items: List<FileItem>) = sortFiles(items, sortOption, sortAscending, keepFoldersOnTop)
+
+    /**
+     * The items in the scope of the search holding [query]: the folders by name, then the documents
+     * in the order of the search of the contents and those it did not find by name; by the chosen
+     * order without it.
+     */
+    private fun searchResults(query: String): List<FileItem> {
+        val matchingFolders = foldersInScope.filter { it.name.contains(query, ignoreCase = true) }
+        val ranked = contentSearch?.matchedDocumentIds
+        if (ranked == null) {
+            val matchingDocuments = documentsInScope.filter { it.name.contains(query, ignoreCase = true) }
+            return sorted(matchingFolders.map { it.toFileItem() } + matchingDocuments.map { it.toFileItem() })
+        }
+        val inScope = documentsInScope.associateBy { it.id }
+        val rankedIds = ranked.toSet()
+        val rankedDocuments = ranked.mapNotNull { inScope[it]?.toFileItem() }
+        val namedDocuments = documentsInScope
+            .filter { it.id !in rankedIds && it.name.contains(query, ignoreCase = true) }
+            .map { it.toFileItem() }
+        return matchingFolders.sortedBy { it.name }.map { it.toFileItem() } + rankedDocuments + namedDocuments
+    }
+
+    private fun List<FileItem>.filterBy(filter: LibraryFilter, keepFolders: Boolean = false): List<FileItem> {
+        if (filter == LibraryFilter.All) return this
+        val tag = (filter as? LibraryFilter.Tagged)?.let { tagged -> allTags.firstOrNull { it.id == tagged.tagId } }
+        return filter { item ->
+            when {
+                item.type == FileType.FOLDER -> keepFolders
+                filter == LibraryFilter.Notes -> !item.hasPdf
+                else -> tag != null && tag.contains(item.id)
+            }
         }
     }
 
@@ -246,17 +315,36 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** The name of the folder [folderId], `null` for the root or an unknown folder. */
     fun folderName(folderId: String?): String? = folderId?.let { id -> folders.firstOrNull { it.id == id }?.name }
 
-    /** Shows [section]; the folders start again from the root. */
-    fun showSection(section: Section) {
+    /**
+     * Goes to [section] and to the folders of [path], from the root: every move of the library
+     * passes from here, leaving the search and the selection. Another section starts with all its
+     * notes.
+     */
+    private fun navigate(section: Section, path: List<String>) {
+        if (section != this.section) filter = LibraryFilter.All
         directoryIdSequence.clear()
+        directoryIdSequence.addAll(path)
         this.section = section
+        setQuery("")
         clearSelection()
     }
 
-    /** Searches [query] in the names and contents of the whole library (empty: back to what was shown). */
-    fun search(query: String) {
+    /** Shows [section]; the folders start again from the root. */
+    fun showSection(section: Section) = navigate(section, emptyList())
+
+    /** The only writer of [searchQuery], which [contentSearch] follows (the trash has only names). */
+    private fun setQuery(query: String) {
         searchQuery = query
-        contentSearch?.onQueryChange(query)
+        if (query.isBlank()) searchScope = SearchScope.HERE
+        contentSearch?.onQueryChange(if (section == Section.TRASH) "" else query)
+    }
+
+    /** Searches [query] in [searchScope] (empty: back to what was shown). */
+    fun search(query: String) = setQuery(query)
+
+    /** Makes the search look in [scope]. */
+    fun selectSearchScope(scope: SearchScope) {
+        searchScope = scope
     }
 
     /** Shows the notes of [filter]. */
@@ -272,10 +360,26 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         documents.sortedByDescending { it.lastOpenedAt }.take(RECENT_FILES_LIMIT).map { it.toFileItem() }
     }
 
-    /** Whether items are being selected (long press), and the selected items. */
-    var selectionMode by mutableStateOf(false)
-        private set
-    val selectedItems = mutableStateListOf<FileItem>()
+    /** The items selected, by their [FileItem.key]: what they are is read from the library. */
+    private val selectedKeys = mutableStateListOf<String>()
+
+    /** The selected items among those shown, as they are now (renamed, moved, gone). */
+    val selectedItems: List<FileItem> by derivedStateOf {
+        val shown = shownFiles.associateBy { it.key }
+        selectedKeys.mapNotNull { shown[it] }
+    }
+
+    /** Whether items are being selected (long press, or with the keys of the pointer). */
+    val selectionMode: Boolean get() = selectedItems.isNotEmpty()
+
+    /** The item whose details are shown beside a wide library, by its [FileItem.key]. */
+    private var detailsKey by mutableStateOf<String?>(null)
+
+    /** The item whose details are shown beside a wide library: it does not start a selection. */
+    val detailsItem: FileItem? by derivedStateOf { detailsKey?.let { key -> shownFiles.firstOrNull { it.key == key } } }
+
+    /** What the commands act on: the selected items, or the item whose details are shown. */
+    val targetItems: List<FileItem> get() = selectedItems.ifEmpty { listOfNotNull(detailsItem) }
 
     init {
         viewModelScope.launch { store.documents.collect { documents = it } }
@@ -313,40 +417,37 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /**
      * NAVIGATION
      */
-    /** Enters [folder]: one found by a search or shown in another section is shown in its place. */
+    /** Enters [folder], wherever it was found: its path is the one from the root. */
     fun enterFolder(folder: FileItem) {
-        if (folder.type != FileType.FOLDER) return
-        if (searchQuery.isNotBlank() || section != Section.HOME || folder.folderId != currentFolderId) {
-            showFolder(folder.id)
-        } else {
-            directoryIdSequence.add(folder.id)
-        }
+        if (folder.type == FileType.FOLDER) showFolder(folder.id)
     }
 
     /** Shows the folder [folderId] (`null`: the root), its path from the root known by its parents. */
     fun showFolder(folderId: String?) {
         val path = generateSequence(folderId) { id -> folders.firstOrNull { it.id == id }?.parentId }.toList().asReversed()
-        directoryIdSequence.clear()
-        directoryIdSequence.addAll(path)
-        section = Section.HOME
-        searchQuery = ""
+        navigate(Section.HOME, path)
     }
 
     /** Goes back to the parent folder; `false` in the root. */
-    fun backFolder(): Boolean = directoryIdSequence.removeLastOrNull() != null
+    fun backFolder(): Boolean {
+        if (directoryIdSequence.isEmpty()) return false
+        navigate(section, directoryIdSequence.dropLast(1))
+        return true
+    }
 
     /**
-     * Whether the system back has something to do: clear the selection or the search, leave a
-     * folder or a section.
+     * Whether the system back has something to do: clear the selection or the details, leave the
+     * search (back where it started), leave a folder or a section.
      */
-    val canNavigateBack: Boolean get() = selectionMode || searchQuery.isNotEmpty() || directoryIdSequence.isNotEmpty() || section != Section.HOME
+    val canNavigateBack: Boolean
+        get() = targetItems.isNotEmpty() || searchQuery.isNotEmpty() || directoryIdSequence.isNotEmpty() || section != Section.HOME
 
     fun navigateBack() {
         when {
-            selectionMode -> clearSelection()
-            searchQuery.isNotEmpty() -> searchQuery = ""
+            targetItems.isNotEmpty() -> clearSelection()
+            searchQuery.isNotEmpty() -> setQuery("")
             directoryIdSequence.isNotEmpty() -> backFolder()
-            else -> section = Section.HOME
+            else -> showSection(Section.HOME)
         }
     }
 
@@ -482,31 +583,32 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /**
      * SELECTION
      */
-    fun isSelected(file: FileItem): Boolean = selectedItems.any { it.key == file.key }
+    /** Whether [file] is marked: selected, or with its details shown. */
+    fun isSelected(file: FileItem): Boolean = file.key in selectedKeys || file.key == detailsKey
 
     /** The item the selection extends from ([extendSelection]): the last one selected. */
-    private var selectionAnchor: FileItem? = null
+    private var selectionAnchor: String? = null
+
+    /** A selection starting while the details of an item are shown starts from that item. */
+    private fun selectDetailsItem() {
+        val key = detailsKey ?: return
+        if (key !in selectedKeys) selectedKeys.add(key)
+        detailsKey = null
+    }
 
     fun toggleSelection(file: FileItem) {
-        val index = selectedItems.indexOfFirst { it.key == file.key }
-        if (index >= 0) {
-            selectedItems.removeAt(index)
-            if (selectedItems.isEmpty()) {
-                selectionMode = false
-            }
-        } else {
-            selectedItems.add(file)
-            selectionMode = true
-            selectionAnchor = file
+        selectDetailsItem()
+        if (!selectedKeys.remove(file.key)) {
+            selectedKeys.add(file.key)
+            selectionAnchor = file.key
         }
     }
 
-    /** Selects [file] alone (a wide library shows its details beside). */
-    fun selectOnly(file: FileItem) {
-        selectedItems.clear()
-        selectedItems.add(file)
-        selectionMode = true
-        selectionAnchor = file
+    /** Shows the details of [file] beside a wide library, in place of a selection. */
+    fun showDetails(file: FileItem) {
+        selectedKeys.clear()
+        detailsKey = file.key
+        selectionAnchor = file.key
     }
 
     /**
@@ -514,29 +616,30 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
      * order of the folder; without one, selects [file].
      */
     fun extendSelection(file: FileItem) {
+        selectDetailsItem()
         val items = shownFiles
-        val from = selectionAnchor?.let { anchor -> items.indexOfFirst { it.key == anchor.key } }?.takeIf { it >= 0 }
+        val from = selectionAnchor?.let { anchor -> items.indexOfFirst { it.key == anchor } }?.takeIf { it >= 0 }
         val to = items.indexOfFirst { it.key == file.key }
         if (from == null || to < 0) {
-            if (!isSelected(file)) toggleSelection(file)
+            if (file.key !in selectedKeys) toggleSelection(file)
             return
         }
         for (item in items.subList(minOf(from, to), maxOf(from, to) + 1)) {
-            if (!isSelected(item)) selectedItems.add(item)
+            if (item.key !in selectedKeys) selectedKeys.add(item.key)
         }
-        selectionMode = true
     }
 
+    /** Leaves the selection and the details of an item. */
     fun clearSelection() {
-        selectedItems.clear()
-        selectionMode = false
+        selectedKeys.clear()
+        detailsKey = null
         selectionAnchor = null
     }
 
     fun selectAll() {
-        selectedItems.clear()
-        selectedItems.addAll(shownFiles)
-        selectionMode = true
+        detailsKey = null
+        selectedKeys.clear()
+        selectedKeys.addAll(shownFiles.map { it.key })
     }
 
     fun deleteSelected() = deleteFiles(selectedItems.toList())
@@ -592,8 +695,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     private fun unselect(files: List<FileItem>) {
         val keys = files.mapTo(mutableSetOf()) { it.key }
-        selectedItems.removeAll { it.key in keys }
-        if (selectedItems.isEmpty()) selectionMode = false
+        selectedKeys.removeAll { it in keys }
+        if (detailsKey in keys) detailsKey = null
     }
 
     private companion object {

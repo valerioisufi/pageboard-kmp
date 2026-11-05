@@ -141,7 +141,7 @@ internal fun Modifier.draggableItem(item: FileItem, viewModel: FileExplorerViewM
                     }
                     if (!dragging && (change.position - down.position).getDistance() > viewConfiguration.touchSlop) {
                         dragging = true
-                        val items = if (viewModel.isSelected(item)) viewModel.selectedItems.toList() else listOf(item)
+                        val items = if (viewModel.isSelected(item)) viewModel.targetItems else listOf(item)
                         drag.start(items, root)
                     }
                     if (dragging) {

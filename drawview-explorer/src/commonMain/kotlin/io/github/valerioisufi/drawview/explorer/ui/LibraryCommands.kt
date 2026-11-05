@@ -73,7 +73,7 @@ internal class LibraryCommands internal constructor(
     private val openDocumentInNewWindow: ((String) -> Unit)? = null,
     private val thumbnail: (FileItem) -> (suspend () -> ImageBitmap?)? = { null }
 ) {
-    private val selection: List<FileItem> get() = viewModel.selectedItems.toList()
+    private val selection: List<FileItem> get() = viewModel.targetItems
 
     // ----- File -----
 
@@ -205,7 +205,7 @@ internal class LibraryCommands internal constructor(
     val enclosingFolder = Command(
         "enclosing-folder", label(Res.string.explorer_action_back), CommandGroup.VIEW,
         shortcuts = listOf(Shortcut(Key.DirectionUp, primary = true)),
-        isEnabled = { viewModel.currentFolder != null }
+        isEnabled = { viewModel.currentFolder != null && !viewModel.isSearching }
     ) { viewModel.backFolder() }
 
     val sortBy: List<Command> = listOf(

@@ -42,6 +42,8 @@
     <string name="explorer_section_notes">노트</string>
     <string name="explorer_search_placeholder">노트 검색</string>
     <string name="explorer_search_clear">검색 지우기</string>
+    <string name="explorer_search_scope_here">%1$s 안에서</string>
+    <string name="explorer_search_scope_library">전체 라이브러리</string>
     <string name="explorer_command_search">검색</string>
     <string name="explorer_filter_all">전체</string>
     <string name="explorer_filter_notes">노트</string>

@@ -42,6 +42,8 @@
     <string name="explorer_section_notes">Notes</string>
     <string name="explorer_search_placeholder">Search notes</string>
     <string name="explorer_search_clear">Clear the search</string>
+    <string name="explorer_search_scope_here">In %1$s</string>
+    <string name="explorer_search_scope_library">Whole library</string>
     <string name="explorer_command_search">Search</string>
     <string name="explorer_filter_all">All</string>
     <string name="explorer_filter_notes">Notes</string>

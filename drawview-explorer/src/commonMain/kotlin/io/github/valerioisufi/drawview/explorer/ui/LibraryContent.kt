@@ -112,14 +112,14 @@ internal fun LibraryContent(
         header()
         val searchHeader = viewModel.contentSearch?.headerContent
         val activeQuery = viewModel.searchQuery.trim()
-        if (activeQuery.isNotEmpty() && searchHeader != null) {
+        if (activeQuery.isNotEmpty() && searchHeader != null && viewModel.section != Section.TRASH) {
             item(key = "search-header", span = { GridItemSpan(maxLineSpan) }) {
                 Box(modifier = Modifier.padding(horizontal = if (compact) margin else 0.dp, vertical = 4.dp)) {
                     searchHeader(activeQuery, actions.onOpenDocumentWithPlace)
                 }
             }
         }
-        if (viewModel.section == Section.TRASH && activeQuery.isEmpty()) {
+        if (viewModel.section == Section.TRASH) {
             trashContent(viewModel, actions.commands, compact, margin = if (compact) margin else 0.dp)
             return@LazyVerticalGrid
         }
@@ -150,7 +150,8 @@ internal fun LibraryContent(
                 }
             }
         }
-        if (files.isEmpty()) {
+        // The folders stay under a filter: its notes may be missing all the same
+        if (files.isEmpty() || (notes.isEmpty() && viewModel.filter != LibraryFilter.All)) {
             item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
                 EmptyLibrary(viewModel, onNewNote, onImportPdf, modifier = Modifier.padding(horizontal = margin))
             }

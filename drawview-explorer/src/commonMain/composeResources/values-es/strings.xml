@@ -42,6 +42,8 @@
     <string name="explorer_section_notes">Notas</string>
     <string name="explorer_search_placeholder">Buscar notas</string>
     <string name="explorer_search_clear">Borrar la búsqueda</string>
+    <string name="explorer_search_scope_here">En %1$s</string>
+    <string name="explorer_search_scope_library">Toda la biblioteca</string>
     <string name="explorer_command_search">Buscar</string>
     <string name="explorer_filter_all">Todas</string>
     <string name="explorer_filter_notes">Notas</string>
