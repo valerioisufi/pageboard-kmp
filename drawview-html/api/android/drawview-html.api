@@ -1,0 +1,5 @@
+public final class io/github/valerioisufi/drawview/html/HtmlToMarkdown {
+	public fun <init> ()V
+	public final fun convert (Ljava/lang/String;)Ljava/lang/String;
+}
+

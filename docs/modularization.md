@@ -107,6 +107,7 @@ until the release (see the release checklist at the end).
 | `drawview-ui` | editor screen, bars, dialogs, commands, theme, `EditorExtension` | canvas | yes | — |
 | `drawview-store` | store ports, `OpenDocuments`, key-value (and in-memory) store | model | no | — |
 | `drawview-store-room` | the Room store, the migrations of its schema | store | no | SQLite |
+| `drawview-html` | HTML turned into the Markdown of the texts, for what is pasted (see [html-paste.md](html-paste.md)) | model | no | Ksoup |
 | `drawview-store-testing` | the contract tests every store must pass | store | no | — |
 | `drawview-session` | opening a stored document in the editor, writing its changes (`DocumentEditorViewModel`, `EditorSessionScreen`) | ui, store | yes | — |
 | `drawview-explorer` | library of documents and folders, thumbnails | session | yes | — |

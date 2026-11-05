@@ -60,6 +60,7 @@ if (hasAndroidSdk) {
 }
 include(":drawview-platform")
 include(":drawview-model")
+include(":drawview-html")
 include(":drawview-ink")
 include(":drawview-canvas")
 include(":drawview-store")
