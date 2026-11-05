@@ -61,10 +61,69 @@ class SourcesTest {
     }
 
     @Test
-    fun anEquationOfWordLeavesAPlaceholder() {
-        val word = """<p class=MsoNormal><b>x</b> vale <!--[if gte msEquation 12]><m:oMath><m:r><m:t>a</m:t></m:r></m:oMath><![endif]--><![if !msEquation]><img src="file:///C:/tmp/image001.png" alt=""><![endif]></p>"""
+    fun anEquationOfWordThatCannotBeWrittenLeavesAPlaceholder() {
+        val word = """<p class=MsoNormal><b>x</b> vale <!--[if gte msEquation 12]><m:oMath><m:nuovo><m:r>a</m:r></m:nuovo></m:oMath><![endif]--><![if !msEquation]><img src="file:///C:/tmp/image001.png" alt=""><![endif]></p>"""
         assertEquals("**x** vale [equation]", convert(word))
         assertEquals("**x** vale [equazione]", HtmlToMarkdown("[equazione]").convert(word))
+    }
+
+    @Test
+    fun anEquationOfWordInALineIsAFormula() {
+        // As Word copied it, its styles left out
+        val word = """<p class=MsoNormal><b>Testo</b> con <!--[if gte msEquation 12]><m:oMath><m:sSubSup><m:sSubSupPr><span style='font-family:"Cambria Math",serif'><m:ctrlPr></m:ctrlPr></span></m:sSubSupPr><m:e><i><span><m:r>σ</m:r></span></i></m:e><m:sub><i><span><m:r>fwd</m:r></span></i></m:sub><m:sup><i><span><m:r>2</m:r></span></i></m:sup></m:sSubSup></m:oMath><![endif]--><![if !msEquation]><span style='font-size:12.0pt'><!--[if gte vml 1]><v:shape id="_x0000_i1025"><v:imagedata src="file:///C:/tmp/a.png" o:title=""/></v:shape><![endif]--><![if !vml]><img width=33 height=25 src="file:///C:/tmp/a.png" v:shapes="_x0000_i1025"><![endif]></span><![endif]><span>&nbsp;</span>e<o:p></o:p></p>"""
+        val markdown = convert(word)
+        assertEquals("**Testo** con \$\\sigma_{fwd}^{2}\$ e", markdown)
+        assertEquals(1, parsed(markdown).count { it.kind == Kind.FORMULA })
+    }
+
+    @Test
+    fun anEquationOfWordOnItsLineStaysInTheItemItGoesOn() {
+        val equation = """<!--[if gte msEquation 12]><m:oMathPara><m:oMath><m:f><m:fPr><span><m:ctrlPr></m:ctrlPr></span></m:fPr><m:num><span><m:r><m:rPr><m:scr m:val="roman"/><m:sty m:val="p"/></m:rPr>2</m:r></span></m:num><m:den><i><span><m:r>n</m:r></span></i></m:den></m:f></m:oMath></m:oMathPara><![endif]--><![if !msEquation]><img src="file:///C:/tmp/a.png"><![endif]>"""
+        val item = { text: String -> """<p class=MsoListParagraph style='mso-list:l0 level1 lfo1'><![if !supportLists]><span><span style='mso-list:Ignore'>·<span>&nbsp;</span></span></span><![endif]>$text<o:p></o:p></p>""" }
+        val expected = "- uno\n  \$\$\\frac{2}{n}\$\$\n- due"
+        // In a paragraph of the list, without its marker
+        assertEquals(expected, convert(item("uno") + "<p class=MsoListParagraphCxSpMiddle>$equation<o:p></o:p></p>" + item("due")))
+        // Centered in a normal paragraph, between two items
+        assertEquals(expected, convert(item("uno") + "<p class=MsoNormal align=center>$equation<o:p></o:p></p>" + item("due")))
+        // After the last item it is a paragraph of its own
+        assertEquals("- uno\n\n\$\$\\frac{2}{n}\$\$\n\nfine", convert(item("uno") + "<p class=MsoNormal>$equation<o:p></o:p></p><p class=MsoNormal>fine</p>"))
+        val markdown = convert(item("uno") + "<p class=MsoListParagraphCxSpMiddle>$equation</p>" + item("due"))
+        assertEquals(2, parsed(markdown).count { it.kind == Kind.LIST_ITEM })
+        assertEquals(1, parsed(markdown).count { it.kind == Kind.FORMULA && it.display })
+    }
+
+    @Test
+    fun theStructuresOfAnEquationOfWordAreWritten() {
+        fun tex(omml: String) = OmmlToLatex.convert("[if gte msEquation 12]><m:oMath>$omml</m:oMath><![endif]")?.tex
+        fun r(text: String) = "<i><span><m:r>$text</m:r></span></i>"
+        val plain = """<m:rPr><m:scr m:val="roman"/><m:sty m:val="p"/></m:rPr>"""
+        val noProps = "<span><m:ctrlPr></m:ctrlPr></span>"
+
+        assertEquals("\\sqrt{a+b}", tex("""<m:rad><m:radPr><m:degHide m:val="on"/>$noProps</m:radPr><m:deg></m:deg><m:e>${r("a")}<span><m:r>+</m:r></span>${r("b")}</m:e></m:rad>"""))
+        assertEquals("\\sqrt[3]{x}", tex("<m:rad><m:radPr>$noProps</m:radPr><m:deg>${r("3")}</m:deg><m:e>${r("x")}</m:e></m:rad>"))
+        assertEquals("\\sum_{i=1}^{n}x_{i}", tex("""<m:nary><m:naryPr><m:chr m:val="∑"/>$noProps</m:naryPr><m:sub>${r("i=1")}</m:sub><m:sup>${r("n")}</m:sup><m:e><m:sSub><m:sSubPr>$noProps</m:sSubPr><m:e>${r("x")}</m:e><m:sub>${r("i")}</m:sub></m:sSub></m:e></m:nary>"""))
+        assertEquals("\\int_{0}^{\\infty}e^{-x}dx", tex("<m:nary><m:naryPr>$noProps</m:naryPr><m:sub>${r("0")}</m:sub><m:sup>${r("∞")}</m:sup><m:e><m:sSup><m:sSupPr>$noProps</m:sSupPr><m:e>${r("e")}</m:e><m:sup>${r("-x")}</m:sup></m:sSup>${r("dx")}</m:e></m:nary>"))
+        val matrix = "<m:m><m:mPr><m:mcs><m:mc><m:mcPr><m:count m:val=\"2\"/></m:mcPr></m:mc></m:mcs>$noProps</m:mPr><m:mr><m:e>${r("a")}</m:e><m:e>${r("b")}</m:e></m:mr><m:mr><m:e>${r("c")}</m:e><m:e>${r("d")}</m:e></m:mr></m:m>"
+        assertEquals("\\begin{matrix}a & b \\\\ c & d\\end{matrix}", tex(matrix))
+        assertEquals("\\left( \\begin{matrix}a & b \\\\ c & d\\end{matrix} \\right)", tex("<m:d><m:dPr>$noProps</m:dPr><m:e>$matrix</m:e></m:d>"))
+        assertEquals("\\left[ a | b \\right)", tex("""<m:d><m:dPr><m:begChr m:val="["/></m:dPr><m:e>${r("a")}</m:e><m:e>${r("b")}</m:e></m:d>"""))
+        assertEquals("\\left\\{ a \\right.", tex("""<m:d><m:dPr><m:begChr m:val="{"/><m:endChr m:val=""/></m:dPr><m:e>${r("a")}</m:e></m:d>"""))
+        assertEquals("\\hat{x}+\\overline{y}", tex("""<m:acc><m:accPr>$noProps</m:accPr><m:e>${r("x")}</m:e></m:acc>${r("+")}<m:acc><m:accPr><m:chr m:val="&#x305;"/></m:accPr><m:e>${r("y")}</m:e></m:acc>"""))
+        assertEquals("\\overline{x}", tex("""<m:bar><m:barPr><m:pos m:val="top"/></m:barPr><m:e>${r("x")}</m:e></m:bar>"""))
+        val limit = "<m:limLow><m:e><span><m:r>$plain" + "lim</m:r></span></m:e><m:lim>${r("x→0")}</m:lim></m:limLow>"
+        assertEquals("\\lim_{x\\to0}{\\sin{x}}", tex("<m:func><m:fName>$limit</m:fName><m:e><m:func><m:fName><span><m:r>$plain" + "sin</m:r></span></m:fName><m:e>${r("x")}</m:e></m:func></m:e></m:func>"))
+        assertEquals("\\mathrm{abc}", tex("<span><m:r>$plain" + "abc</m:r></span>"))
+        assertEquals("\\text{per ogni}x", tex("""<m:r><m:rPr><m:nor/></m:rPr>per ogni</m:r>${r("x")}"""))
+        assertEquals("\\alpha x\\leq\\sigma\\{\\}", tex(r("αx≤σ{}")))
+        assertEquals("ab", tex("<m:r>\uD835\uDC4E\uD835\uDC4F</m:r>"))
+        assertEquals("{n \\atop k}", tex("""<m:f><m:fPr><m:type m:val="noBar"/></m:fPr><m:num>${r("n")}</m:num><m:den>${r("k")}</m:den></m:f>"""))
+        assertEquals("a", tex("<m:r><w:rPr><w:rFonts/></w:rPr><m:t>a</m:t></m:r>"))
+    }
+
+    @Test
+    fun anEquationNestedTooDeepLeavesAPlaceholder() {
+        val deep = "<m:rad><m:e>".repeat(200) + "<m:r>x</m:r>" + "</m:e></m:rad>".repeat(200)
+        assertEquals("**a** [equation]", convert("<p><b>a</b> <!--[if gte msEquation 12]><m:oMath>$deep</m:oMath><![endif]--></p>"))
     }
 
     @Test

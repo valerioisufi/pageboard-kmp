@@ -72,6 +72,7 @@ this notation, and small.
 | The formatting a node asks for, tag and `style` together | `HtmlFormat` (internal, `drawview-html`) | Information Expert |
 | What Word copies rewritten as plain HTML | `WordHtml` (internal, `drawview-html`) | Polymorphism, Protected Variations |
 | A formula of KaTeX, MathJax or MathML read back as its source | `HtmlFormula` (internal, `drawview-html`) | Information Expert |
+| An equation of Word written in LaTeX | `OmmlToLatex` (internal, `drawview-html`) | Pure Fabrication |
 | Characters of the source that would read as notation escaped | `MarkdownEscape` (internal, `drawview-html`), tested against `RichTextParser` | Information Expert |
 | The HTML of the clipboard, per platform | `expect fun htmlIn(clipboard)` (`drawview-ui`) | Polymorphism, Indirection |
 | What a paste contains: HTML converted, or plain text, for canvas and field alike | `ClipboardText` (`drawview-ui`) | Controller, Low Coupling |
@@ -128,8 +129,9 @@ Taken alone, revertible:
 9. **Word gets a normalization of its own** (`WordHtml`), which rewrites its tree into plain HTML
    before the conversion: a new source adds a normalization and its fixtures, not a new converter.
    Google Docs needs none, since `style` winning over the tag covers its outer `<b>`.
-10. **An equation of Word becomes a visible placeholder**: Word copies an image, with its OMML in a
-    comment, and images are dropped. A converter from OMML to LaTeX is left for later.
+10. **An equation of Word is a formula** (`OmmlToLatex`): Word copies an image, with its OMML in a
+    comment. What cannot be written (an unknown element, too deep) becomes a visible placeholder, never
+    a formula with a piece missing. Asked by the user after a real copy, 2026-11-05.
 11. **A formula copied as text between dollars is a formula**, when the notation reads it as one and it
     looks like one (a sign of a formula, or at most 3 characters): Gemini copies its formulas so, as a
     real copy from Chrome showed (2026-11-05). Any other `$` stays a character.
@@ -148,7 +150,6 @@ Taken alone, revertible:
 
 ## Left for later
 
-* Equations of Word as formulas (OMML to LaTeX).
 * Subscripts and superscripts: their text is kept, without the shift.
 * Importing `.html` and `.docx` files.
 * RTF (`public.rtf`), for the applications with no HTML flavor.
