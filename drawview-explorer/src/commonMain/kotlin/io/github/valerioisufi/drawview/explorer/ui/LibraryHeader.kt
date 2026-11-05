@@ -294,11 +294,11 @@ internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: Lib
 
 /**
  * The menu of the folder shown (or of the Home): the actions of the application on it, e.g.
- * "Export folder…". Nothing when there are none, or outside the folders (recent, shared, trash).
+ * "Export folder…". Nothing when there are none, or outside the folders (recent, shared, trash, a search).
  */
 @Composable
 internal fun FolderActionsButton(viewModel: FileExplorerViewModel, commands: LibraryCommands) {
-    if (viewModel.section != Section.HOME || commands.folderActionCommands.isEmpty()) return
+    if (!viewModel.showsFolder || commands.folderActionCommands.isEmpty()) return
     var expanded by remember { mutableStateOf(false) }
     Box {
         DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)

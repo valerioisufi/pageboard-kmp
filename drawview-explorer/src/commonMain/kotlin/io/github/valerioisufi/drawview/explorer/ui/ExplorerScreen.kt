@@ -452,7 +452,7 @@ private fun LibraryDialogHost(
                 onDismissRequest = onDismiss,
                 getSubFolders = { folderId -> viewModel.getSubFolders(folderId) },
                 isFolderSelected = { folderId -> dialog.items.any { it.id == folderId && it.type == FileType.FOLDER } },
-                isValidMove = { targetId -> viewModel.isValidMove(targetId, dialog.items) && dialog.items.none { it.folderId == targetId } },
+                isValidMove = { targetId -> viewModel.isValidMove(targetId, dialog.items) },
                 onConfirm = { targetFolderId ->
                     viewModel.moveFiles(dialog.items, targetFolderId)
                     onDismiss()

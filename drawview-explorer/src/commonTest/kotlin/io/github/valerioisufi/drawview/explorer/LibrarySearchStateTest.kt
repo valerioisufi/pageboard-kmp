@@ -234,6 +234,58 @@ class LibrarySearchStateTest {
     }
 
     @Test
+    fun aResultIsRenamedAmongItsOwnSiblings() = runTest {
+        val viewModel = library()
+        viewModel.search("o")
+        val motion = viewModel.named("Motion")
+
+        assertNull(viewModel.validateFileName("Limit cycles", motion), "free in Physics, taken in the root")
+        assertTrue(viewModel.validateFileName("Waves", motion) != null, "taken in Physics")
+        assertNull(viewModel.validateFileName("Motion", motion), "its own name")
+    }
+
+    @Test
+    fun aResultMovesFromItsOwnFolder() = runTest {
+        val viewModel = library()
+        viewModel.search("o")
+        val motion = viewModel.named("Motion")
+        assertTrue(viewModel.isValidMove(null, listOf(motion)), "to Home, from Physics")
+        assertFalse(viewModel.isValidMove(motion.folderId, listOf(motion)), "where it is")
+
+        viewModel.search("")
+        val analysis = viewModel.named("Analysis")
+        viewModel.search("seq")
+        val sequences = viewModel.named("Sequences")
+        assertFalse(viewModel.isValidMove(sequences.id, listOf(analysis)), "into a folder under it")
+        assertTrue(viewModel.isValidMove(null, listOf(sequences)))
+
+        viewModel.showSection(Section.RECENT)
+        assertTrue(viewModel.isValidMove(null, listOf(motion)), "from a section too")
+
+        viewModel.showFolder(null)
+        viewModel.search("o")
+        viewModel.moveFile(motion, null)
+        viewModel.search("")
+        assertEquals(listOf("Analysis", "Physics", "Limit cycles", "Motion"), viewModel.shownNames)
+    }
+
+    @Test
+    fun whatIsMadeDuringASearchIsShownWhereItWent() = runTest {
+        val viewModel = library()
+        viewModel.showFolder(viewModel.folder("Physics").id)
+        viewModel.search("mot")
+        viewModel.createFile(FileExplorerViewModel.FileType.FOLDER, "Optics")
+        assertEquals("", viewModel.searchQuery)
+        assertEquals("Physics", viewModel.currentFolder?.name)
+        assertEquals(listOf("Optics", "Motion", "Waves"), viewModel.shownNames)
+
+        viewModel.showSection(Section.RECENT)
+        viewModel.createFile(FileExplorerViewModel.FileType.FOLDER, "Zoology")
+        assertEquals(Section.HOME, viewModel.section)
+        assertTrue("Zoology" in viewModel.shownNames)
+    }
+
+    @Test
     fun theDetailsOfAnItemAreNotASelection() = runTest {
         val viewModel = library()
         val cycles = viewModel.named("Limit cycles")

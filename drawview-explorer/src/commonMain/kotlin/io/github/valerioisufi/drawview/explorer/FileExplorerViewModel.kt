@@ -459,15 +459,26 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
      * FILE OPERATIONS
      */
 
-    /** The error of a name for a new item (or for the new name of [renamedFile]), `null` when valid. */
+    /**
+     * The error of a name for a new item in the current folder, or for the new name of
+     * [renamedFile] in the folder holding it (a result of a search may be anywhere), `null` when
+     * valid.
+     */
     fun validateFileName(name: String, renamedFile: FileItem? = null): StringResource? {
         DocumentNames.syntaxError(name)?.let { return it }
-        if (existNameInDirectory(name, except = renamedFile)) return DrawViewRes.string.name_error_exists
-        return null
+        val taken = if (renamedFile != null) {
+            existNameInFolder(name, renamedFile.folderId, except = renamedFile)
+        } else {
+            existNameInDirectory(name)
+        }
+        return if (taken) DrawViewRes.string.name_error_exists else null
     }
 
-    fun existNameInDirectory(name: String, except: FileItem? = null): Boolean =
-        currentDirectoryFiles.any { it.name == name && it.key != except?.key }
+    fun existNameInDirectory(name: String, except: FileItem? = null): Boolean = existNameInFolder(name, currentFolderId, except)
+
+    private fun existNameInFolder(name: String, folderId: String?, except: FileItem?): Boolean =
+        folders.any { it.parentId == folderId && it.name == name && "${FileType.FOLDER.name}:${it.id}" != except?.key } ||
+            documents.any { it.folderId == folderId && it.name == name && "${FileType.FILE.name}:${it.id}" != except?.key }
 
     /** [name], or the first of "name (2)", "name (3)"… free in the current folder. */
     fun availableName(name: String): String {
@@ -497,7 +508,13 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
                     true
                 }
             }
-            if (created) onSuccess() else onError(Res.string.explorer_error_create_failed)
+            if (created) {
+                // Made during a search or in a section it would not be seen: it is shown where it went
+                if (isSearching || section != Section.HOME) showFolder(folderId)
+                onSuccess()
+            } else {
+                onError(Res.string.explorer_error_create_failed)
+            }
         }
     }
 
@@ -545,6 +562,9 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         }.sortedBy { it.second.lowercase() }
     }
 
+    /** Whether the library shows the content of a folder: not a section, nor the results of a search. */
+    val showsFolder: Boolean get() = section == Section.HOME && !isSearching
+
     /** The folder shown (`null`: the root), where a new note goes by default. */
     val currentFolderIdOrNull: String? get() = currentFolderId.takeIf { section == Section.HOME }
 
@@ -562,12 +582,15 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     fun moveFile(file: FileItem, targetFolderId: String?) = moveFiles(listOf(file), targetFolderId)
 
     /**
-     * Whether [files] can be moved into [targetFolderId]: not into the current folder (nothing
-     * would change) nor into one of the moved folders.
+     * Whether [files] can be moved into [targetFolderId]: one of them at least is elsewhere (each
+     * has its own folder, in a search or a section), and no folder would go into itself or into a
+     * folder under it.
      */
     fun isValidMove(targetFolderId: String?, files: List<FileItem> = selectedItems): Boolean {
-        if (targetFolderId == currentFolderId) return false
-        return files.none { it.type == FileType.FOLDER && it.id == targetFolderId }
+        if (files.none { it.folderId != targetFolderId }) return false
+        val parents = folders.associate { it.id to it.parentId }
+        val targetPath = generateSequence(targetFolderId) { parents[it] }.toSet()
+        return files.none { it.type == FileType.FOLDER && it.id in targetPath }
     }
 
     private suspend fun trash(file: FileItem): Boolean = when (file.type) {
@@ -689,7 +712,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     fun moveFiles(files: List<FileItem>, targetFolderId: String?) {
         unselect(files)
         viewModelScope.launch {
-            files.forEach { move(it, targetFolderId) }
+            files.filter { it.folderId != targetFolderId }.forEach { move(it, targetFolderId) }
         }
     }
 

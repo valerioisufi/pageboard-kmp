@@ -211,7 +211,7 @@ modules with Compose come out empty on Windows, so they are recorded on the Mac.
 | Phase | State |
 |---|---|
 | 1. One way in and out | done |
-| 2. The rules follow the item | to do |
+| 2. The rules follow the item | done |
 | 3. What the results say | to do |
 | 4. The field and the scroll | to do |
 | 5. Typing and fresh results | to do |

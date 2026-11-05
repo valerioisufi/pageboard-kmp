@@ -154,6 +154,34 @@ class LibraryCommandsTest {
     }
 
     @Test
+    fun theCommandsOfTheFolderShownWaitForTheEndOfASearch() = runTest {
+        val (viewModel, pair) = library()
+        val (commands, shown) = pair
+        viewModel.createFile(FileType.FOLDER, "Math")
+        viewModel.enterFolder(viewModel.item("Math"))
+        viewModel.createFile(FileType.FILE, "Note")
+        assertTrue(commands.enclosingFolder.isEnabled())
+        assertTrue(commands.folderActionCommands.single().isEnabled())
+
+        viewModel.search("note")
+        assertFalse(commands.enclosingFolder.isEnabled(), "going up would change nothing on screen")
+        assertFalse(commands.folderActionCommands.single().isEnabled(), "the folder is not what is on screen")
+        assertFalse(commands.itemsActionCommands.single().isEnabled())
+        commands.itemsActionCommands.single().perform()
+        assertNull(shown.selection)
+
+        // Selecting all follows what is on screen: here an empty folder, and a result elsewhere
+        viewModel.search("")
+        viewModel.showFolder(null)
+        viewModel.createFile(FileType.FOLDER, "Empty")
+        viewModel.enterFolder(viewModel.item("Empty"))
+        assertFalse(commands.selectAll.isEnabled())
+        viewModel.search("note")
+        viewModel.selectSearchScope(FileExplorerViewModel.SearchScope.LIBRARY)
+        assertTrue(commands.selectAll.isEnabled())
+    }
+
+    @Test
     fun theSortCommandsAreItsStates() = runTest {
         val (viewModel, pair) = library()
         val (commands, _) = pair

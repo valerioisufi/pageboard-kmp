@@ -114,8 +114,8 @@ internal class LibraryCommands internal constructor(
         thumbnail = items.firstOrNull { it.type == FileType.FILE }?.let(thumbnail)
     )
 
-    /** Whether the folder shown is one of the library (not a list of recent or shared notes, nor the trash). */
-    private val showsFolder: Boolean get() = viewModel.section == FileExplorerViewModel.Section.HOME
+    /** Whether a folder is on screen (not a list of recent or shared notes, nor the trash, nor results). */
+    private val showsFolder: Boolean get() = viewModel.showsFolder
 
     /** The folder shown, as the selection of an action of the application. */
     private val shownFolder: LibrarySelection.Folder get() = LibrarySelection.Folder(viewModel.currentFolder?.id)
@@ -171,7 +171,7 @@ internal class LibraryCommands internal constructor(
     val selectAll = Command(
         "select-all", label(Res.string.explorer_action_select_all), CommandGroup.EDIT,
         shortcuts = listOf(Shortcut(Key.A, primary = true)),
-        isEnabled = { viewModel.currentDirectoryFiles.isNotEmpty() }
+        isEnabled = { viewModel.shownFiles.isNotEmpty() }
     ) { viewModel.selectAll() }
 
     val rename = Command(
