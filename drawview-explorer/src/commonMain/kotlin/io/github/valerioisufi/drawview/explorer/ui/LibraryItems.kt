@@ -49,6 +49,7 @@ import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_details
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_notes_count
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
@@ -128,7 +129,7 @@ internal fun NoteCard(item: FileItem, actions: ItemActions, modifier: Modifier =
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 6.dp)
             ) {
-                ItemText(item, modifier = Modifier.weight(1f))
+                ItemText(item, viewModel, modifier = Modifier.weight(1f))
                 if (!viewModel.selectionMode) ItemMoreButton(item, itemCommands, actions)
             }
             val matches = viewModel.searchMatchesOf(item)
@@ -137,6 +138,7 @@ internal fun NoteCard(item: FileItem, actions: ItemActions, modifier: Modifier =
                     matches = matches,
                     onOpenDefault = { actions.onOpenDocument(item.id) },
                     openDocument = actions.onOpenDocumentWithPlace,
+                    onSelect = { viewModel.toggleSelection(item) }.takeIf { viewModel.selectionMode },
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
@@ -181,10 +183,11 @@ internal fun FolderCard(item: FileItem, actions: ItemActions, modifier: Modifier
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleSmall, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    pluralStringResource(Res.plurals.explorer_notes_count, item.noteCount, item.noteCount),
+                    itemLocation(item, viewModel) ?: pluralStringResource(Res.plurals.explorer_notes_count, item.noteCount, item.noteCount),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -244,7 +247,14 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(itemSubtitle(item), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, maxLines = 1)
+                    Text(
+                        itemLocation(item, viewModel) ?: itemSubtitle(item),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
                     viewModel.tagsOf(item).firstOrNull()?.let { tag -> LabelBadge(tag.label(), tag.tone, icon = tag.icon) }
                 }
                 val matches = viewModel.searchMatchesOf(item)
@@ -253,6 +263,7 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
                         matches = matches,
                         onOpenDefault = { actions.onOpenDocument(item.id) },
                         openDocument = actions.onOpenDocumentWithPlace,
+                        onSelect = { viewModel.toggleSelection(item) }.takeIf { viewModel.selectionMode },
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -263,21 +274,36 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
     }
 }
 
-/** The name of an item and the date of its last change (a document) or its notes (a folder). */
+/** Where a result of a search is ("Analysis › Limits", the root), `null` outside a search. */
 @Composable
-private fun ItemText(item: FileItem, modifier: Modifier = Modifier) {
+private fun itemLocation(item: FileItem, viewModel: FileExplorerViewModel): String? =
+    if (viewModel.isSearching) viewModel.folderPath(item.folderId) ?: stringResource(Res.string.explorer_root_folder) else null
+
+/** The name of an item and the date of its last change (a document) or its notes (a folder); in a search, where it is. */
+@Composable
+private fun ItemText(item: FileItem, viewModel: FileExplorerViewModel, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(item.name, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(itemSubtitle(item), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+        Text(
+            itemLocation(item, viewModel) ?: itemSubtitle(item),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
-/** Matching snippets of a document shown under its name when searching the library. */
+/**
+ * Matching snippets of a document shown under its name when searching the library; while items
+ * are selected ([onSelect]) they select it, as the rest of the item.
+ */
 @Composable
 private fun SearchMatchesList(
     matches: List<LibrarySearchMatch>,
     onOpenDefault: () -> Unit,
     openDocument: DocumentOpener,
+    onSelect: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -292,7 +318,11 @@ private fun SearchMatchesList(
                     .background(colors.surfaceContainerHighest.copy(alpha = 0.55f))
                     .clickable {
                         val customOpen = match.onOpen
-                        if (customOpen != null) customOpen(openDocument) else onOpenDefault()
+                        when {
+                            onSelect != null -> onSelect()
+                            customOpen != null -> customOpen(openDocument)
+                            else -> onOpenDefault()
+                        }
                     }
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {

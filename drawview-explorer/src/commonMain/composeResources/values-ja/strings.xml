@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">検索をクリア</string>
     <string name="explorer_search_scope_here">%1$s 内</string>
     <string name="explorer_search_scope_library">ライブラリ全体</string>
+    <string name="explorer_search_results_title">「%1$s」の検索結果</string>
     <string name="explorer_command_search">検索</string>
     <string name="explorer_filter_all">すべて</string>
     <string name="explorer_filter_notes">ノート</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">このフォルダは空です</string>
     <string name="explorer_empty_folder_body">ここにノートを作成するか、ノートを移動してください。</string>
     <string name="explorer_no_results_title">「%1$s」に一致するノートはありません</string>
-    <string name="explorer_no_results_body">検索はノートとフォルダの名前を対象にします。綴りを確認してください。</string>
+    <string name="explorer_no_results_body">つづりを確認するか、別の言葉で試してください。</string>
     <string name="explorer_empty_recent_title">まだ開いたノートはありません</string>
     <string name="explorer_empty_recent_body">開いたノートが新しい順にここに表示されます。</string>
     <string name="explorer_empty_shared_title">共有ノートはありません</string>

@@ -286,6 +286,26 @@ class LibrarySearchStateTest {
     }
 
     @Test
+    fun aResultSaysWhereItIs() = runTest {
+        val viewModel = library()
+        viewModel.search("limit")
+        assertEquals("Analysis › Sequences", viewModel.folderPath(viewModel.named("Limit laws").folderId))
+        assertNull(viewModel.folderPath(viewModel.named("Limit cycles").folderId))
+    }
+
+    @Test
+    fun aSearchWidenedIsNotInAnyPlace() = runTest {
+        val viewModel = library()
+        viewModel.showFolder(viewModel.folder("Physics").id)
+        viewModel.search("limit")
+        assertFalse(viewModel.searchCoversLibrary)
+        viewModel.selectSearchScope(SearchScope.LIBRARY)
+        assertTrue(viewModel.searchCoversLibrary)
+        viewModel.search("")
+        assertFalse(viewModel.searchCoversLibrary)
+    }
+
+    @Test
     fun theDetailsOfAnItemAreNotASelection() = runTest {
         val viewModel = library()
         val cycles = viewModel.named("Limit cycles")

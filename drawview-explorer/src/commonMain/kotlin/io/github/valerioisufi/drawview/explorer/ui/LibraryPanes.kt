@@ -94,7 +94,8 @@ internal fun LibraryNavigationPane(
     modifier: Modifier = Modifier
 ) {
     val rootFolder = viewModel.currentRootFolderId
-    val section = viewModel.section
+    // A search of the whole library is not in any of them
+    val section = viewModel.section.takeUnless { viewModel.searchCoversLibrary }
     // The pane is under the traffic lights of macOS: it starts below the title bar
     val decorTopPad = LocalWindowDecorInsets.current.calculateTopPadding()
     Column(

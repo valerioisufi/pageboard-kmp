@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">Suche löschen</string>
     <string name="explorer_search_scope_here">In %1$s</string>
     <string name="explorer_search_scope_library">Gesamte Bibliothek</string>
+    <string name="explorer_search_results_title">Ergebnisse für „%1$s“</string>
     <string name="explorer_command_search">Suchen</string>
     <string name="explorer_filter_all">Alle</string>
     <string name="explorer_filter_notes">Notizen</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">Dieser Ordner ist leer</string>
     <string name="explorer_empty_folder_body">Erstelle hier eine Notiz oder verschiebe Notizen hierher.</string>
     <string name="explorer_no_results_title">Keine Notiz passt zu „%1$s“</string>
-    <string name="explorer_no_results_body">Die Suche durchsucht die Namen der Notizen und Ordner. Prüfe die Schreibweise.</string>
+    <string name="explorer_no_results_body">Prüfe die Schreibweise oder versuche es mit anderen Wörtern.</string>
     <string name="explorer_empty_recent_title">Noch keine Notiz geöffnet</string>
     <string name="explorer_empty_recent_body">Die geöffneten Notizen erscheinen hier, die letzte zuerst.</string>
     <string name="explorer_empty_shared_title">Keine geteilten Notizen</string>

@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">Cancella la ricerca</string>
     <string name="explorer_search_scope_here">In %1$s</string>
     <string name="explorer_search_scope_library">Tutta la libreria</string>
+    <string name="explorer_search_results_title">Risultati per “%1$s”</string>
     <string name="explorer_command_search">Cerca</string>
     <string name="explorer_filter_all">Tutte</string>
     <string name="explorer_filter_notes">Note</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">Questa cartella è vuota</string>
     <string name="explorer_empty_folder_body">Crea qui una nota, o spostaci delle note.</string>
     <string name="explorer_no_results_title">Nessuna nota corrisponde a “%1$s”</string>
-    <string name="explorer_no_results_body">La ricerca guarda i nomi delle note e delle cartelle. Controlla l’ortografia.</string>
+    <string name="explorer_no_results_body">Controlla come è scritto o prova con altre parole.</string>
     <string name="explorer_empty_recent_title">Nessuna nota aperta finora</string>
     <string name="explorer_empty_recent_body">Le note che apri compaiono qui, dall’ultima.</string>
     <string name="explorer_empty_shared_title">Nessuna nota condivisa</string>

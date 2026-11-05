@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">Clear the search</string>
     <string name="explorer_search_scope_here">In %1$s</string>
     <string name="explorer_search_scope_library">Whole library</string>
+    <string name="explorer_search_results_title">Results for “%1$s”</string>
     <string name="explorer_command_search">Search</string>
     <string name="explorer_filter_all">All</string>
     <string name="explorer_filter_notes">Notes</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">This folder is empty</string>
     <string name="explorer_empty_folder_body">Make a note here, or move notes into it.</string>
     <string name="explorer_no_results_title">No notes match “%1$s”</string>
-    <string name="explorer_no_results_body">The search looks at the names of the notes and of the folders. Check the spelling.</string>
+    <string name="explorer_no_results_body">Check the spelling, or try other words.</string>
     <string name="explorer_empty_recent_title">No notes opened yet</string>
     <string name="explorer_empty_recent_body">The notes you open appear here, the last first.</string>
     <string name="explorer_empty_shared_title">No shared notes</string>

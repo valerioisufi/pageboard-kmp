@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.search.ui
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -8,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.LibrarySearch
@@ -88,7 +91,10 @@ public class ContentSearch(
 
     override val headerContent: (@Composable (query: String, openDocument: DocumentOpener) -> Unit) =
         { query, openDocument ->
-            AskNotesCard(search = this, query = query, openDocument = openDocument)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                IndexingNotice(search = this@ContentSearch)
+                AskNotesCard(search = this@ContentSearch, query = query, openDocument = openDocument)
+            }
         }
 
     /** Current state of the background indexer. */

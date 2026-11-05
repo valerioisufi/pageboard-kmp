@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">Effacer la recherche</string>
     <string name="explorer_search_scope_here">Dans %1$s</string>
     <string name="explorer_search_scope_library">Toute la bibliothèque</string>
+    <string name="explorer_search_results_title">Résultats pour « %1$s »</string>
     <string name="explorer_command_search">Rechercher</string>
     <string name="explorer_filter_all">Toutes</string>
     <string name="explorer_filter_notes">Notes</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">Ce dossier est vide</string>
     <string name="explorer_empty_folder_body">Créez une note ici ou déplacez-y des notes.</string>
     <string name="explorer_no_results_title">Aucune note ne correspond à « %1$s »</string>
-    <string name="explorer_no_results_body">La recherche porte sur les noms des notes et des dossiers. Vérifiez l’orthographe.</string>
+    <string name="explorer_no_results_body">Vérifiez l’orthographe ou essayez d’autres mots.</string>
     <string name="explorer_empty_recent_title">Aucune note ouverte pour l’instant</string>
     <string name="explorer_empty_recent_body">Les notes que vous ouvrez apparaissent ici, la dernière en premier.</string>
     <string name="explorer_empty_shared_title">Aucune note partagée</string>

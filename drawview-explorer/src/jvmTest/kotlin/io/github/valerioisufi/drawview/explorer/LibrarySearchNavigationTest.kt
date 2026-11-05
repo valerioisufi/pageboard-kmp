@@ -123,6 +123,31 @@ class LibrarySearchNavigationTest {
     }
 
     @Test
+    fun theResultsSayWhatTheyAreAndWhereTheyLooked() = library { viewModel ->
+        viewModel.showFolder(viewModel.rootFolders.first { it.name == "Analysis" }.id)
+        waitForIdle()
+        search("limit")
+        onNodeWithText("Results for “limit”").assertExists()
+        onNodeWithText("1 item · In Analysis", substring = false).assertExists()
+        // The folder of the result, in place of its date
+        assertEquals(2, onAllNodesWithText("Analysis").fetchSemanticsNodes().size, "in the pane and under the note")
+
+        click("Whole library")
+        onNodeWithText("2 items · Whole library").assertExists()
+    }
+
+    @Test
+    fun aSearchWithoutResultsHereOffersTheWholeLibrary() = library { viewModel ->
+        viewModel.showFolder(viewModel.rootFolders.first { it.name == "Physics" }.id)
+        waitForIdle()
+        search("limit")
+        onNodeWithText("No notes match “limit”").assertExists()
+        // The chip and the button of the empty state
+        click("Whole library", index = 1)
+        assertEquals(1, onAllNodesWithText("Limit cycles").fetchSemanticsNodes().size)
+    }
+
+    @Test
     fun aClickOpensAFolderWithTheDetailsOfANoteOpen() = library { viewModel ->
         viewModel.search("i")
         viewModel.showDetails(viewModel.shownFiles.first { it.name == "Motion" })

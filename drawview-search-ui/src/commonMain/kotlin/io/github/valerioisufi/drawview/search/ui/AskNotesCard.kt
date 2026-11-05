@@ -45,14 +45,38 @@ import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_sources_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_thinking
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_title
+import io.github.valerioisufi.drawview.search.ui.generated.resources.search_indexing_status
 import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 
 /**
+ * Why the results of a search may be missing something: the notes not read yet. Nothing once the
+ * index is up to date.
+ */
+@Composable
+internal fun IndexingNotice(search: ContentSearch, modifier: Modifier = Modifier) {
+    val progress by search.indexingProgress.collectAsState()
+    if (!progress.isIndexing || progress.indexedDocuments >= progress.totalDocuments) return
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier.padding(vertical = 2.dp)
+    ) {
+        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(14.dp))
+        Text(
+            text = stringResource(Res.string.search_indexing_status, progress.indexedDocuments, progress.totalDocuments),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
  * Card shown at the top of the library search results when the query is at least 3 characters
- * long, offering to answer the question from the passages found in the notes (View).
+ * long, offering to answer the question from the passages found in the notes (View); nothing
+ * without a way to answer.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -75,6 +99,7 @@ public fun AskNotesCard(
     val answer = search.currentAnswer
     val isAnswering = search.isAnswering
     val error = search.answerError
+    if (!search.runtimeAvailable && !canAskOnline && answer == null && !isAnswering && error == null) return
 
     Surface(
         shape = RoundedCornerShape(14.dp),

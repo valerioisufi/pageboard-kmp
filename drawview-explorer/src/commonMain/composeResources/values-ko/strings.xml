@@ -44,6 +44,7 @@
     <string name="explorer_search_clear">검색 지우기</string>
     <string name="explorer_search_scope_here">%1$s 안에서</string>
     <string name="explorer_search_scope_library">전체 라이브러리</string>
+    <string name="explorer_search_results_title">“%1$s” 검색 결과</string>
     <string name="explorer_command_search">검색</string>
     <string name="explorer_filter_all">전체</string>
     <string name="explorer_filter_notes">노트</string>
@@ -75,7 +76,7 @@
     <string name="explorer_empty_folder_title">이 폴더는 비어 있습니다</string>
     <string name="explorer_empty_folder_body">여기에 노트를 만들거나 노트를 옮기세요.</string>
     <string name="explorer_no_results_title">“%1$s”와(과) 일치하는 노트가 없습니다</string>
-    <string name="explorer_no_results_body">검색은 노트와 폴더의 이름을 찾습니다. 철자를 확인하세요.</string>
+    <string name="explorer_no_results_body">맞춤법을 확인하거나 다른 단어로 검색해 보세요.</string>
     <string name="explorer_empty_recent_title">아직 연 노트가 없습니다</string>
     <string name="explorer_empty_recent_body">연 노트가 최근 순서로 여기에 표시됩니다.</string>
     <string name="explorer_empty_shared_title">공유된 노트가 없습니다</string>

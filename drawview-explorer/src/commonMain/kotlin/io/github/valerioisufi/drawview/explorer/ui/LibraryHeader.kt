@@ -51,6 +51,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_not
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_clear
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_placeholder
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_results_title
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_scope_here
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_scope_library
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_recent
@@ -215,6 +216,8 @@ internal fun LibraryTitle(
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = when {
+                    viewModel.isSearching && viewModel.section != Section.TRASH ->
+                        stringResource(Res.string.explorer_search_results_title, viewModel.searchQuery.trim())
                     viewModel.section == Section.RECENT -> stringResource(Res.string.explorer_section_recent)
                     viewModel.section == Section.SHARED -> stringResource(Res.string.explorer_section_shared)
                     viewModel.section == Section.TRASH -> stringResource(Res.string.explorer_section_trash)
@@ -238,10 +241,15 @@ internal fun LibraryTitle(
     }
 }
 
-/** "7 notes · 3 folders · sorted by name", "Home › Analysis · 5 notes", "4 notes". */
+/** "7 notes · 3 folders · sorted by name", "Home › Analysis · 5 notes", "4 notes", "3 items · In Analysis". */
 @Composable
 private fun librarySubtitle(viewModel: FileExplorerViewModel, withOrder: Boolean): String {
-    if (viewModel.section == Section.TRASH) return pluralStringResource(Res.plurals.explorer_items_count, viewModel.trash.size, viewModel.trash.size)
+    if (viewModel.section == Section.TRASH) return pluralStringResource(Res.plurals.explorer_items_count, viewModel.shownTrash.size, viewModel.shownTrash.size)
+    if (viewModel.isSearching) {
+        val results = pluralStringResource(Res.plurals.explorer_items_count, viewModel.shownFiles.size, viewModel.shownFiles.size)
+        val place = if (viewModel.canWidenSearch && !viewModel.searchCoversLibrary) searchHereLabel(viewModel) else stringResource(Res.string.explorer_search_scope_library)
+        return "$results · $place"
+    }
     val content = viewModel.currentDirectoryFiles
     val notes = if (viewModel.section == Section.HOME) content.count { it.type == FileType.FILE } else viewModel.shownFiles.size
     val folders = if (viewModel.section == Section.HOME) content.count { it.type == FileType.FOLDER } else 0
@@ -287,7 +295,8 @@ internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: Lib
                 selected = viewModel.viewMode == ViewMode.LIST
             )
         }
-        SortButton(viewModel)
+        // The results of the search of the contents come by relevance
+        if (!viewModel.isSearching || viewModel.contentSearch == null) SortButton(viewModel)
         FolderActionsButton(viewModel, commands)
     }
 }
@@ -356,17 +365,23 @@ internal fun SortButton(viewModel: FileExplorerViewModel) {
     }
 }
 
-/** Where the search looks: what the library shows (a folder, a section), or all of it. */
+/** What the library shows, as the place of a search: "In Analysis", "In Recent". */
 @Composable
-internal fun LibrarySearchScopeChips(viewModel: FileExplorerViewModel, modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
+private fun searchHereLabel(viewModel: FileExplorerViewModel): String {
     val here = when (viewModel.section) {
         Section.RECENT -> stringResource(Res.string.explorer_section_recent)
         Section.SHARED -> stringResource(Res.string.explorer_section_shared)
         else -> viewModel.currentFolder?.name.orEmpty()
     }
+    return stringResource(Res.string.explorer_search_scope_here, here)
+}
+
+/** Where the search looks: what the library shows (a folder, a section), or all of it. */
+@Composable
+internal fun LibrarySearchScopeChips(viewModel: FileExplorerViewModel, modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
     ChipRow(modifier = modifier, contentPadding = contentPadding) {
         DesignFilterChip(
-            stringResource(Res.string.explorer_search_scope_here, here),
+            searchHereLabel(viewModel),
             viewModel.searchScope == SearchScope.HERE,
             { viewModel.selectSearchScope(SearchScope.HERE) }
         )

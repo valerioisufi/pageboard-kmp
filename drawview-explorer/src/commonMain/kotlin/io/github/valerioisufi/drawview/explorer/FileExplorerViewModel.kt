@@ -342,6 +342,9 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** Searches [query] in [searchScope] (empty: back to what was shown). */
     fun search(query: String) = setQuery(query)
 
+    /** Whether a search was widened beyond what the library shows: the navigation marks nothing as shown. */
+    val searchCoversLibrary: Boolean get() = isSearching && searchScope == SearchScope.LIBRARY
+
     /** Makes the search look in [scope]. */
     fun selectSearchScope(scope: SearchScope) {
         searchScope = scope
@@ -564,6 +567,11 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** Whether the library shows the content of a folder: not a section, nor the results of a search. */
     val showsFolder: Boolean get() = section == Section.HOME && !isSearching
+
+    private val folderPathsById: Map<String, String> by derivedStateOf { folderPaths.toMap() }
+
+    /** The path of the folder [folderId] from the root ("Analysis › Limits"), `null` for the root. */
+    fun folderPath(folderId: String?): String? = folderId?.let { folderPathsById[it] }
 
     /** The folder shown (`null`: the root), where a new note goes by default. */
     val currentFolderIdOrNull: String? get() = currentFolderId.takeIf { section == Section.HOME }

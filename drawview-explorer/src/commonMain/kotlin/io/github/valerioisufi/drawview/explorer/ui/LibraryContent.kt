@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
+import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SearchScope
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.ViewMode
 import io.github.valerioisufi.drawview.explorer.LibraryFilter
@@ -58,6 +59,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fil
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_import_pdf
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_no_results_body
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_no_results_title
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_search_scope_library
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_folders
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_notes
 import io.github.valerioisufi.drawview.ui.components.OutlineButton
@@ -200,7 +202,17 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
             icon = DrawViewIcons.Search,
             title = stringResource(Res.string.explorer_no_results_title, query),
             body = stringResource(Res.string.explorer_no_results_body),
-            modifier = modifier
+            modifier = modifier,
+            // It may be elsewhere: "no results" here does not mean it is not in the notes
+            action = if (viewModel.canWidenSearch && !viewModel.searchCoversLibrary) {
+                {
+                    OutlineButton(onClick = { viewModel.selectSearchScope(SearchScope.LIBRARY) }) {
+                        Text(stringResource(Res.string.explorer_search_scope_library))
+                    }
+                }
+            } else {
+                null
+            }
         )
         filter != LibraryFilter.All -> {
             val label = when (filter) {
@@ -266,9 +278,9 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
     }
 }
 
-/** An empty state: its icon, its title and why. */
+/** An empty state: its icon, its title and why, what can be done about it. */
 @Composable
-private fun EmptyState(icon: ImageVector, title: String, body: String?, modifier: Modifier = Modifier) {
+private fun EmptyState(icon: ImageVector, title: String, body: String?, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
     Column(
         modifier = modifier.fillMaxWidth().padding(top = 64.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -285,6 +297,7 @@ private fun EmptyState(icon: ImageVector, title: String, body: String?, modifier
                 modifier = Modifier.widthIn(max = 360.dp)
             )
         }
+        action?.invoke()
     }
 }
 
