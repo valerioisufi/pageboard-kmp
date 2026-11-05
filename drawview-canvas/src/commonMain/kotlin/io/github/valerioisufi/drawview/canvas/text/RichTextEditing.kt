@@ -209,6 +209,7 @@ public object RichTextEditing {
 
     private fun toggleListLines(value: TextFieldValue, ordered: Boolean): TextFieldValue {
         if (inCodeBlock(value)) return value
+        wholeLevelTurned(value, ordered)?.let { return it }
         val text = value.text
         val sel = value.selection
         val items = RichTextParser.parse(text).filter { it.kind == RichTextParser.Kind.LIST_ITEM }
@@ -255,7 +256,8 @@ public object RichTextEditing {
 
         // The new prefix of each line (its indent and its marker), the old one it replaces
         val newPrefixes = ArrayList<String>(lines.size)
-        var number = 0
+        // Each level counted on its own: by the indent of the lines, a less indented line closing the deeper ones
+        val numbers = LinkedHashMap<Int, Int>()
         for ((i, info) in parsed.withIndex()) {
             newPrefixes += when {
                 info.markerType == MarkerType.CONTINUATION -> {
@@ -264,7 +266,12 @@ public object RichTextEditing {
                     if (allSame) head.indent else " ".repeat(newPrefixes[itemOf[i]].length)
                 }
                 allSame -> info.indent
-                ordered -> info.indent + "${++number}. "
+                ordered -> {
+                    numbers.keys.removeAll { it > info.indent.length }
+                    val number = (numbers[info.indent.length] ?: 0) + 1
+                    numbers[info.indent.length] = number
+                    info.indent + "$number. "
+                }
                 else -> info.indent + BULLET_PREFIX
             }
         }
@@ -301,6 +308,43 @@ public object RichTextEditing {
         return value.copy(
             text = newText,
             selection = TextRange(mapOffset(sel.start), mapOffset(sel.end))
+        )
+    }
+
+    /**
+     * With no selection, on an item of the other kind: the items of its level around it turned, as
+     * one list (their numbers from the first). `null` anywhere else.
+     */
+    private fun wholeLevelTurned(value: TextFieldValue, ordered: Boolean): TextFieldValue? {
+        if (!value.selection.collapsed) return null
+        val text = value.text
+        val items = ListNumbering.items(text, RichTextParser.parse(text))
+        val caret = value.selection.start
+        val item = items.firstOrNull { caret >= it.span.start && caret <= it.span.end } ?: return null
+        if (item.span.ordered == ordered) return null
+        val level = items.filter { it.list == item.list }.map { it.span }
+        return withMarkersOf(value, level) { position -> if (ordered) "${position + 1}. " else BULLET_PREFIX }
+    }
+
+    /** [value] with the markers of [items] replaced, its selection following them. */
+    private fun withMarkersOf(value: TextFieldValue, items: List<RichTextParser.Span>, marker: (Int) -> String): TextFieldValue {
+        val written = ListRenumbering.withMarkers(value.text, items, marker)
+        return TextFieldValue(written.text, TextRange(written.map(value.selection.start), written.map(value.selection.end)))
+    }
+
+    /**
+     * The nested list item [item] of [text] one level out, its marker of the kind of its parent, the
+     * caret at its text. The lines nested under it stay under it.
+     */
+    private fun oneLevelOut(text: String, items: List<ListNumbering.Item>, item: ListNumbering.Item): TextFieldValue {
+        val parent = items[item.parent].span
+        var parentMarker = parent.start
+        while (text[parentMarker] == ' ' || text[parentMarker] == '\t') parentMarker++
+        val marker = if (parent.ordered) "${parent.number + 1}. " else text[parentMarker] + " "
+        val prefix = text.substring(parent.start, parentMarker) + marker
+        return TextFieldValue(
+            text.substring(0, item.span.start) + prefix + text.substring(item.span.contentStart),
+            TextRange(item.span.start + prefix.length)
         )
     }
 
@@ -381,8 +425,10 @@ public object RichTextEditing {
         val markerEnd = indent.length + markerLen
         val content = rest.substring(markerLen)
 
-        // Empty list item: exit list by clearing the marker on this line
+        // Empty list item: one level out, or out of the list by clearing the marker on this line
         if (content.isBlank()) {
+            val items = ListNumbering.items(text, RichTextParser.parse(text))
+            items.firstOrNull { it.span.start == lineStart && it.parent >= 0 }?.let { return oneLevelOut(text, items, it) }
             val newText = text.substring(0, lineStart) + text.substring(lineEnd)
             return TextFieldValue(newText, TextRange(lineStart))
         }
@@ -473,7 +519,8 @@ public object RichTextEditing {
     /**
      * What a deletion of [oldValue] into [newValue] does when it deletes a character that is not
      * shown: Backspace at the start of the text of a list item deletes the last character of its
-     * marker, and takes the whole marker away instead; Backspace at the start of a continuation line
+     * marker, and takes the whole marker away instead (a nested item goes one level out); Backspace
+     * at the start of a continuation line
      * of an item deletes a space of its hidden indent, and joins the line to the one before instead;
      * Backspace at the start of the code of a block
      * deletes the line break of its opening fence (hidden while the code is written), and moves the
@@ -491,6 +538,9 @@ public object RichTextEditing {
             if (caret == indent.last) return TextFieldValue(old.removeRange(indent.first - 1, caret), TextRange(indent.first - 1))
         }
         val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
+        val items = ListNumbering.items(old, spans)
+        // A nested item goes one level out; one of the first level becomes text
+        items.firstOrNull { it.span.start == item.start && it.parent >= 0 }?.let { return oneLevelOut(old, items, it) }
         return TextFieldValue(old.removeRange(item.start, item.contentStart), TextRange(item.start))
     }
 
@@ -517,9 +567,13 @@ public object RichTextEditing {
      * [CODE_INDENT].
      */
     public fun indent(value: TextFieldValue): TextFieldValue {
-        if (!inCodeBlock(value)) return indentLines(value, LIST_INDENT)
+        if (!inCodeBlock(value)) {
+            // An item goes under the sibling before it: the first of a list has none
+            val first = firstItemOf(value)
+            return if (first != null && !first.second) value else indentLines(value, LIST_INDENT, inCode = false)
+        }
         val start = min(value.selection.start, value.selection.end)
-        if (start != max(value.selection.start, value.selection.end)) return indentLines(value, CODE_INDENT)
+        if (start != max(value.selection.start, value.selection.end)) return indentLines(value, CODE_INDENT, inCode = true)
         val text = value.text
         var column = 0
         for (i in text.lastIndexOf('\n', start - 1) + 1 until start) {
@@ -530,25 +584,51 @@ public object RichTextEditing {
     }
 
     /**
-     * The lines the selection covers, with the continuation lines of the list items it touches
-     * (out of the blocks of code): an item moves with its lines.
+     * The first list item the selection of [value] touches, if its first line is one, and whether a
+     * sibling comes before it.
+     */
+    private fun firstItemOf(value: TextFieldValue): Pair<ListNumbering.Item, Boolean>? {
+        val text = value.text
+        val items = ListNumbering.items(text, RichTextParser.parse(text))
+        val (first, _) = selectedLines(text, value.selection)
+        val index = items.indexOfFirst { it.span.start <= first && first <= it.span.end }
+        if (index < 0) return null
+        val item = items[index]
+        var k = index - 1
+        while (k >= 0 && items[k].run == item.run && items[k].depth > item.depth) k--
+        return item to (k >= 0 && items[k].run == item.run && items[k].depth == item.depth)
+    }
+
+    /**
+     * The lines the selection covers, with the lines of the list items it touches and of the items
+     * nested under them (out of the blocks of code): an item moves with what belongs to it.
      */
     private fun selectedItemLines(text: String, selection: TextRange, inCode: Boolean): Pair<Int, Int> {
         var (first, last) = selectedLines(text, selection)
         if (inCode) return first to last
-        for (item in RichTextParser.parse(text)) {
+        val spans = RichTextParser.parse(text)
+        for (item in spans) {
             if (item.kind != RichTextParser.Kind.LIST_ITEM) continue
             if (item.start < first && item.end >= first) first = item.start
             if (item.start <= last && item.end > last) last = item.end
+        }
+        val items = ListNumbering.items(text, spans)
+        val lastSelected = items.indexOfLast { it.span.start <= last && last <= it.span.end }
+        if (lastSelected >= 0) {
+            var k = lastSelected + 1
+            while (k < items.size && items[k].run == items[lastSelected].run && items[k].depth > items[lastSelected].depth) {
+                last = items[k].span.end
+                k++
+            }
         }
         return first to last
     }
 
     /** Adds [width] spaces at the beginning of each line covered by the selection. */
-    private fun indentLines(value: TextFieldValue, width: Int): TextFieldValue {
+    private fun indentLines(value: TextFieldValue, width: Int, inCode: Boolean): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, width == CODE_INDENT)
+        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, inCode)
         val unit = " ".repeat(width)
 
         val block = text.substring(firstLineStart, lastLineEnd)
@@ -583,13 +663,21 @@ public object RichTextEditing {
      * Outdents the lines covered by the selection by removing up to 2 leading spaces from each
      * line; in the code of a block, up to [CODE_INDENT] spaces or a tab.
      */
-    public fun outdent(value: TextFieldValue): TextFieldValue = outdentLines(value, if (inCodeBlock(value)) CODE_INDENT else LIST_INDENT)
+    public fun outdent(value: TextFieldValue): TextFieldValue {
+        if (inCodeBlock(value)) return outdentLines(value, CODE_INDENT, inCode = true)
+        // A nested item goes back to the level of its parent, however far it was written from it
+        val item = firstItemOf(value)?.first ?: return outdentLines(value, LIST_INDENT, inCode = false)
+        val items = ListNumbering.items(value.text, RichTextParser.parse(value.text))
+        val parent = items.firstOrNull { it.span.start == item.span.start }?.parent?.takeIf { it >= 0 }?.let { items[it] }
+        val width = ListNumbering.markerColumnOf(value.text, item.span) - (parent?.let { ListNumbering.markerColumnOf(value.text, it.span) } ?: 0)
+        return outdentLines(value, width.coerceAtLeast(LIST_INDENT), inCode = false)
+    }
 
     /** Removes up to [width] leading spaces, or a tab, from each line covered by the selection. */
-    private fun outdentLines(value: TextFieldValue, width: Int): TextFieldValue {
+    private fun outdentLines(value: TextFieldValue, width: Int, inCode: Boolean): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, width == CODE_INDENT)
+        val (firstLineStart, lastLineEnd) = selectedItemLines(text, sel, inCode)
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')

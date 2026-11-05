@@ -615,11 +615,11 @@ class TextEditingTest {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
         editor.startNewText(0, 50f, 50f)
-        editor.type("- Item")
+        editor.type("- First\n- Item")
         editor.indent()
-        assertEquals("  - Item", editor.value.text)
+        assertEquals("- First\n  - Item", editor.value.text)
         editor.outdent()
-        assertEquals("- Item", editor.value.text)
+        assertEquals("- First\n- Item", editor.value.text)
     }
 
     @Test

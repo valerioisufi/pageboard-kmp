@@ -116,6 +116,23 @@ public object ListRenumbering {
         return if (replacements.isEmpty()) text else applied(text, replacements)
     }
 
+    /**
+     * [text] with the markers of [items] replaced: each written by [marker] from its position (with
+     * the spaces after it), the lines of each item following its text.
+     */
+    public fun withMarkers(text: String, items: List<Span>, marker: (Int) -> String): Renumbered {
+        val spans = RichTextParser.parse(text)
+        val replacements = ArrayList<Replacement>()
+        for ((position, item) in items.withIndex()) {
+            val start = ListNumbering.markerStart(text, item)
+            val written = marker(position)
+            val length = item.contentStart - start
+            replacements += Replacement(start, length, written)
+            if (written.length != length) moveLines(text, item, written.length - length, spans, replacements)
+        }
+        return Renumbered(applied(text, replacements), replacements)
+    }
+
     /** [text] with [replacements], which end up sorted. */
     private fun applied(text: String, replacements: MutableList<Replacement>): String {
         replacements.sortBy { it.start }

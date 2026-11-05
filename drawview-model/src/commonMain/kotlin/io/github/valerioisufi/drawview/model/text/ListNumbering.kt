@@ -28,7 +28,8 @@ public object ListNumbering {
      * A list item of a text: its [span], its [depth] (0 for an item nested in none), the index of
      * its [parent] in the items (-1 for none), the [list] of its siblings (an index shared by them)
      * and its [label]; [bullet] or [numbering] says how the label is drawn; [ordinal] is the
-     * number of a numbered item (0 for a bulleted one).
+     * number of a numbered item (0 for a bulleted one); [run] is shared by the items not parted by
+     * a line of other text.
      */
     public class Item(
         public val span: Span,
@@ -38,7 +39,8 @@ public object ListNumbering {
         public val label: String,
         public val bullet: Bullet?,
         public val numbering: Numbering?,
-        public val ordinal: Int = 0
+        public val ordinal: Int = 0,
+        public val run: Int = 0
     )
 
     /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
@@ -56,10 +58,12 @@ public object ListNumbering {
         val siblings = HashMap<Int, Siblings>()
         var lists = 0
         var previousEnd = -1
+        var run = 0
         for ((index, span) in listItems.withIndex()) {
             if (previousEnd >= 0 && breaksList(text, previousEnd, span.start, underItems)) {
                 open.clear()
                 siblings.clear()
+                run++
             }
             val indent = RichTextParser.columnOf(text, span.start, markerStart(text, span))
             indents[index] = indent
@@ -87,7 +91,7 @@ public object ListNumbering {
                 bullet = Bullet.entries[depth % Bullet.entries.size]
                 label = glyphOf(bullet)
             }
-            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal)
+            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run)
             open += index
             previousEnd = span.end
         }
@@ -114,6 +118,9 @@ public object ListNumbering {
         val item = RichTextParser.parse(text).firstOrNull { it.kind == Kind.LIST_ITEM && it.start < lineStart && it.end >= contentStart && lineStart <= it.end }
         return if (item != null) lineStart..contentStart else null
     }
+
+    /** The column of the marker of [item] of [text]: the spaces before it, a tab counted as 2. */
+    public fun markerColumnOf(text: String, item: Span): Int = RichTextParser.columnOf(text, item.start, markerStart(text, item))
 
     /** The glyph of [bullet] (in a font that has it: the monospace font of the notes has all three). */
     public fun glyphOf(bullet: Bullet): String = when (bullet) {

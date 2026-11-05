@@ -3076,6 +3076,7 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering {
 	public final fun format (ILio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)Ljava/lang/String;
 	public final fun glyphOf (Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;)Ljava/lang/String;
 	public final fun items (Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
+	public final fun markerColumnOf (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)I
 	public final fun textColumnOf (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)I
 }
 
@@ -3089,8 +3090,8 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Bull
 }
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Item {
-	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;I)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;II)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBullet ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
 	public final fun getDepth ()I
 	public final fun getLabel ()Ljava/lang/String;
@@ -3098,6 +3099,7 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Item
 	public final fun getNumbering ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
 	public final fun getOrdinal ()I
 	public final fun getParent ()I
+	public final fun getRun ()I
 	public final fun getSpan ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 }
 
@@ -3113,6 +3115,7 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Numb
 public final class io/github/valerioisufi/drawview/model/text/ListRenumbering {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListRenumbering;
 	public final fun after (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/ListRenumbering$Renumbered;
+	public final fun withMarkers (Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/text/ListRenumbering$Renumbered;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/ListRenumbering$Renumbered {

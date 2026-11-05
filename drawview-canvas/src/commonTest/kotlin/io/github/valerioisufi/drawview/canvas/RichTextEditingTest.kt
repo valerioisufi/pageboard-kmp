@@ -194,10 +194,10 @@ class RichTextEditingTest {
 
     @Test
     fun indentAddsTwoSpacesToLines() {
-        val single = TextFieldValue("- Item", TextRange(6))
+        val single = TextFieldValue("Item", TextRange(4))
         val indented = RichTextEditing.indent(single)
-        assertEquals("  - Item", indented.text)
-        assertEquals(TextRange(8), indented.selection)
+        assertEquals("  Item", indented.text)
+        assertEquals(TextRange(6), indented.selection)
 
         val multi = TextFieldValue("A\nB", TextRange(0, 3))
         val multiIndented = RichTextEditing.indent(multi)
@@ -283,7 +283,7 @@ class RichTextEditingTest {
         val back = RichTextEditing.outdent(TextFieldValue("```\n      ab\n\tx\n```", TextRange(4, 16)))
         assertEquals("```\n  ab\nx\n```", back.text, "up to four spaces or a tab")
 
-        assertEquals("  - item", RichTextEditing.indent(at("- item", 0)).text, "a list still by two")
+        assertEquals("- a\n  - item", RichTextEditing.indent(at("- a\n- item", 4)).text, "a list still by two")
     }
 
     @Test
@@ -407,11 +407,68 @@ class RichTextEditingTest {
         // Bullets to numbers: the line under the item at the text of the numbered item
         val numbered = RichTextEditing.toggleNumberedList(TextFieldValue("- a\n  b\n- c", TextRange(0, 10)))
         assertEquals("1. a\n   b\n2. c", numbered.text)
-        assertEquals("1. a\n   b\n- c", RichTextEditing.toggleNumberedList(at("- a\n  b\n- c", 1)).text, "the item of the caret with its line")
+        assertEquals("1. a\n   b\n2. c", RichTextEditing.toggleNumberedList(at("- a\n  b\n- c", 2)).text, "the level of the caret with its lines")
         // Out of the list: the line at the indent of its item
         assertEquals("a\nb\nc", RichTextEditing.toggleNumberedList(TextFieldValue(numbered.text, TextRange(0, numbered.text.length))).text)
         // Tab moves the item with its lines
-        assertEquals("  - a\n    b", RichTextEditing.indent(at("- a\n  b", 2)).text)
+        assertEquals("- x\n  - a\n    b", RichTextEditing.indent(at("- x\n- a\n  b", 6)).text)
         assertEquals("- a\n  b", RichTextEditing.outdent(at("  - a\n    b", 4)).text)
+    }
+
+    private fun level(text: String, offset: Int) = TextFieldValue(text, TextRange(offset))
+
+    @Test
+    fun theNumberedButtonTurnsTheWholeLevel() {
+        val text = "- a\n  - b\n  - c\n- d"
+        assertEquals("- a\n  1. b\n  2. c\n- d", RichTextEditing.toggleNumberedList(level(text, text.indexOf("b"))).text)
+        assertEquals("1. a\n  - b\n  - c\n2. d", RichTextEditing.toggleNumberedList(level(text, text.indexOf("d"))).text)
+        assertEquals("- x\n- y", RichTextEditing.toggleBulletList(level("1. x\n2. y", 3)).text, "and back to bullets")
+        val selected = TextFieldValue(text, TextRange(text.indexOf("b"), text.indexOf("b") + 1))
+        assertEquals("- a\n  1. b\n  - c\n- d", RichTextEditing.toggleNumberedList(selected).text, "a selection: its lines only")
+    }
+
+    @Test
+    fun aSelectionOverTheLevelsCountsEachOnItsOwn() {
+        val text = "- a\n  - b\n  - c\n- d"
+        assertEquals("1. a\n  1. b\n  2. c\n2. d", RichTextEditing.toggleNumberedList(TextFieldValue(text, TextRange(0, text.length))).text)
+    }
+
+    @Test
+    fun theLinesOfTheItemsFollowWhenALevelTurns() {
+        val text = "- a\n  more\n- b"
+        assertEquals("1. a\n   more\n2. b", RichTextEditing.toggleNumberedList(level(text, 2)).text)
+    }
+
+    @Test
+    fun tabNestsAnItemUnderTheSiblingBeforeIt() {
+        assertEquals("- a", RichTextEditing.indent(level("- a", 2)).text, "the first item has none")
+        assertEquals("- a\n  - b", RichTextEditing.indent(level("- a\n- b", 6)).text)
+        assertEquals("- a\n  - b\n    - c", RichTextEditing.indent(level("- a\n- b\n  - c", 6)).text, "what is nested under it follows")
+        assertEquals("- a\n  - b\n  - c", RichTextEditing.indent(level("- a\n  - b\n- c", 12)).text, "past a nested item")
+        assertEquals("- a\n\nb\n\n- c", RichTextEditing.indent(level("- a\n\nb\n\n- c", 11)).text, "text before it: another list")
+    }
+
+    @Test
+    fun shiftTabTakesAnItemToTheLevelOfItsParent() {
+        assertEquals("- a\n- b", RichTextEditing.outdent(level("- a\n    - b", 10)).text, "however far it was written")
+        assertEquals("- a\n- b\n  - c", RichTextEditing.outdent(level("- a\n  - b\n    - c", 8)).text, "what is nested under it follows")
+    }
+
+    @Test
+    fun enterOnAnEmptyNestedItemGoesOneLevelOut() {
+        val out = RichTextEditing.handleEnter(level("- a\n  - b\n  - ", 15))!!
+        assertEquals("- a\n  - b\n- ", out.text)
+        assertEquals(TextRange(12), out.selection)
+        assertEquals("1. a\n2. ", RichTextEditing.handleEnter(level("1. a\n  - ", 9))!!.text, "of the kind of its parent")
+        assertEquals("- a\n", RichTextEditing.handleEnter(level("- a\n- ", 6))!!.text, "out of the list from the first level")
+    }
+
+    @Test
+    fun backspaceOnANestedMarkerGoesOneLevelOut() {
+        val old = "- a\n  1. b"
+        val caret = old.indexOf("b")
+        val out = RichTextEditing.handleConcealedDeletion(level(old, caret), level(old.removeRange(caret - 1, caret), caret - 1))!!
+        assertEquals("- a\n- b", out.text)
+        assertEquals(TextRange(6), out.selection)
     }
 }

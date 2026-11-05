@@ -3514,6 +3514,7 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     final fun format(kotlin/Int, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.format|format(kotlin.Int;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering){}[0]
     final fun glyphOf(io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet): kotlin/String // io.github.valerioisufi.drawview.model.text/ListNumbering.glyphOf|glyphOf(io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet){}[0]
     final fun items(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span>): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/ListNumbering.Item> // io.github.valerioisufi.drawview.model.text/ListNumbering.items|items(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.text.RichTextParser.Span>){}[0]
+    final fun markerColumnOf(kotlin/String, io.github.valerioisufi.drawview.model.text/RichTextParser.Span): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.markerColumnOf|markerColumnOf(kotlin.String;io.github.valerioisufi.drawview.model.text.RichTextParser.Span){}[0]
     final fun textColumnOf(kotlin/String, io.github.valerioisufi.drawview.model.text/RichTextParser.Span): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.textColumnOf|textColumnOf(kotlin.String;io.github.valerioisufi.drawview.model.text.RichTextParser.Span){}[0]
 
     final enum class Bullet : kotlin/Enum<io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet> { // io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet|null[0]
@@ -3541,7 +3542,7 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     }
 
     final class Item { // io.github.valerioisufi.drawview.model.text/ListNumbering.Item|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?, kotlin/Int = ...) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?;kotlin.Int){}[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?, kotlin/Int = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?;kotlin.Int;kotlin.Int){}[0]
 
         final val bullet // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet|{}bullet[0]
             final fun <get-bullet>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet.<get-bullet>|<get-bullet>(){}[0]
@@ -3557,6 +3558,8 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
             final fun <get-ordinal>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.ordinal.<get-ordinal>|<get-ordinal>(){}[0]
         final val parent // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent|{}parent[0]
             final fun <get-parent>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent.<get-parent>|<get-parent>(){}[0]
+        final val run // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.run|{}run[0]
+            final fun <get-run>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.run.<get-run>|<get-run>(){}[0]
         final val span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span|{}span[0]
             final fun <get-span>(): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span.<get-span>|<get-span>(){}[0]
     }
@@ -3564,6 +3567,7 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
 
 final object io.github.valerioisufi.drawview.model.text/ListRenumbering { // io.github.valerioisufi.drawview.model.text/ListRenumbering|null[0]
     final fun after(kotlin/String, kotlin/String): io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered? // io.github.valerioisufi.drawview.model.text/ListRenumbering.after|after(kotlin.String;kotlin.String){}[0]
+    final fun withMarkers(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span>, kotlin/Function1<kotlin/Int, kotlin/String>): io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered // io.github.valerioisufi.drawview.model.text/ListRenumbering.withMarkers|withMarkers(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.text.RichTextParser.Span>;kotlin.Function1<kotlin.Int,kotlin.String>){}[0]
 
     final class Renumbered { // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered|null[0]
         final val text // io.github.valerioisufi.drawview.model.text/ListRenumbering.Renumbered.text|{}text[0]

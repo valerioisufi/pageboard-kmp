@@ -164,13 +164,22 @@ capital letters: `A. Rossi` at the start of a line is a name.
 | Phase | Content | Status |
 | :--- | :--- | :--- |
 | 1 | The numbers: `ListRenumbering` wired in `updateValue`, the start kept, the source right; the tables above as tests, undo, caret, paste, chains. Fixes the reported bug | done |
-| 2 | The gestures: Tab, Shift+Tab, Enter, Backspace by level, the button on the whole level, a selection counted by level | proposed |
+| 2 | The gestures: Tab, Shift+Tab, Enter, Backspace by level, the button on the whole level, a selection counted by level | done |
 | 3 | The notation: `ListMarker`, `NumberingStyle`, parser, labels, `ChainFlow`, `TextCleanup`; the old texts unchanged, bounds of the parser, ABI | proposed |
 | 4 | The picker: split button, popover and sheet, `setNumbering`, start, "Numbering…" in the Format menu, the strings, screenshots | proposed |
 | 5 | Typing a style, the instructions of the agents and of the assistant on the notation, the desktop app on a scratch directory | proposed |
 
 Each phase can land alone: phases 1 and 2 are useful without a style to choose. The plan was
 approved on 2026-11-05, with the decisions left to me.
+
+### What phase 2 does
+
+* `RichTextEditing.indent` moves an item under the sibling before it, with what is nested under it;
+  on the first item of a list it does nothing. `outdent` takes an item to the level of its parent,
+  however far it was written from it (the imported notes have 4 spaces).
+* `handleEnter` and `handleConcealedDeletion` on a nested item: one level out, in the kind of the parent.
+* `toggleListLines` turns the whole level when nothing is selected and the item is of the other
+  kind (`ListRenumbering.withMarkers`); taking a list away stays on the lines selected.
 
 ### What phase 1 does
 
