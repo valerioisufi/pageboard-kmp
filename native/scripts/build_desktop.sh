@@ -106,7 +106,11 @@ case "$PLATFORM" in
     windows-x86_64) RUST_TARGET="x86_64-pc-windows-msvc" ;;
     windows-aarch64) RUST_TARGET="aarch64-pc-windows-msvc" ;;
 esac
-CARGO="$(sed -n 's/^rust\.cargo=//p' "$ROOT_DIR/local.properties" 2>/dev/null | tail -n 1)"
+CARGO=""
+# No local.properties on a machine that does not configure cargo, such as the CI runners
+if [[ -f "$ROOT_DIR/local.properties" ]]; then
+    CARGO="$(sed -n 's/^rust\.cargo=//p' "$ROOT_DIR/local.properties" | tail -n 1)"
+fi
 [[ -n "$CARGO" ]] || CARGO="$(command -v cargo || true)"
 [[ -n "$CARGO" ]] || CARGO="$HOME/.cargo/bin/cargo"
 # Where cargo builds: given by Gradle (rustTargetDirectory), else the place of the checkout
