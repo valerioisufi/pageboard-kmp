@@ -146,8 +146,8 @@ that fails its check stops the plan there, with what was learned.
 | 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the user chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
 | 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Done; the check holds, except that E4B writes more notes (67 against 53) |
 | 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Done: closer on the notes that add and per hour, no change on the wrong ones, too much lost on one lecture |
-| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | No candidate passes; the run of 12B waits for the user |
-| 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not started |
+| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | No candidate passes, so the verdict is written; the user chose not to run 12B |
+| 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not run: no choice to test, and the 5 test lectures stay unseen |
 
 ### Phase 1 results (2026-11-04)
 
@@ -266,6 +266,20 @@ Summed over the 4 dev lectures, the verdicts of the two passes pooled:
   downloaded (6,883 MB). Its grades would cost about $0.20.
 * **The money.** $0.54 for the grades of this phase: $2.07 of $6.
 
+## Verdict (2026-11-05)
+
+**The live notes stay off the local models.** The application keeps writing them with Gemini, and
+phase 4 of [docs/local-models.md](./local-models.md) does not move them onto the device.
+
+* **On what it rests:** the 4 dev lectures, Gemma 4 E4B on the processor of the PC, graded by Gemini. The
+  best candidate reaches 34% of notes that add and 10% wrong, against 50% and 5%.
+* **What was not measured:** Gemma 4 12B, which the user chose not to run (it needs the Mac); E2B; the 5
+  test lectures, still unseen, so a later plan can use them; the time on the Mac, which has no
+  candidate to time. So this is the limit of E4B with these checks, not of every local model.
+* **What it does not decide:** the handwriting, the catch-up and the review of phase 4 were not measured here.
+* **What would reopen it:** a model that passes the thresholds on the dev lectures. The bench is ready for
+  one: a configuration of `NotesBench`, its checks, and `grade_notes.py`.
+
 ## Decisions
 
 Taken alone, revertible (R):
@@ -288,6 +302,12 @@ Taken alone, revertible (R):
 * **The checks after the model, not a new prompt first** (R): they can be read and measured one by
   one, and they carry over to any model.
 * **The thresholds above** (R): proposed from the only figures there are, and fixed before the runs.
+
+Taken by the user:
+
+* **The verdict now, without the run of 12B** (2026-11-05).
+* **The runs on this PC, the time on the Mac at the end** (2026-11-04). With no candidate left, the
+  time was not measured on the Mac.
 
 Left to the user, with the approval of this plan:
 

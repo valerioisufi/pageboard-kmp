@@ -241,7 +241,7 @@ the student reached from a tablet on the local network. It is no longer the defa
 | 1. The runtime on the desktop | done |
 | 2. Measure on the desktop | done |
 | 3. Android | done in code (the bench on the tablet left to run) |
-| 4. The assistant on the device | not started |
+| 4. The assistant on the device | not started; the live notes stay on Gemini ([docs/local-notes.md](./local-notes.md)) |
 | 5. The settings | not started |
 | 6. The speech on the device | not started |
 | 7. iOS | not started |
@@ -390,6 +390,12 @@ The bench of the assistant (`AssistantBench`, a JVM test of `drawview-lecture` r
   check of our own (`JsonAnswers` of the first design is dropped, phase 1); phase 2 measures how
   often they follow their schema (revertible). The first bench found it wrong with E2B: the
   schema may have to be asked in the prompt, the answer taken out of its ```` ```json ```` block.
+
+* The live notes stay off the local models: on 4 lectures, Gemma 4 E4B with checks after it reached
+  34% of notes that add and 10% wrong, against thresholds of 50% and 5%
+  ([docs/local-notes.md](./local-notes.md), the student, 2026-11-05). Gemma 4 12B and E2B were not
+  measured, and a model that passes those thresholds reopens it. The other requests of phase 4 were
+  not measured there.
 
 ## Left for later
 
