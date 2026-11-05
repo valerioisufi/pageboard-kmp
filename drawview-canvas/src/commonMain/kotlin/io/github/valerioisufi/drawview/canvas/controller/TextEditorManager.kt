@@ -159,6 +159,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     private val selectionSteps = mutableListOf<SelectionStep>()
 
+    /** The text as typed and the list made from it, until the next edit (see [typedMarkerTakenBack]). */
+    private var typedMarker: Pair<TextFieldValue, TextFieldValue>? = null
+
     override fun isActive(format: RichTextEditing.Format): Boolean {
         if (!isEditing || inCodeBlock) return false
         val current = value
@@ -483,8 +486,10 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         }
         val applied = when {
             surrounded != null -> surrounded
-            textChanged && smartNewline -> TableEditing.keepInCells(value, newValue)
+            textChanged && smartNewline -> typedMarkerTakenBack(newValue)
+                ?: TableEditing.keepInCells(value, newValue)
                 ?: RichTextEditing.handleSmartNewline(value, newValue)
+                ?: RichTextEditing.listFromTypedMarker(value, newValue)?.also { typedMarker = newValue to it }
                 ?: RichTextEditing.handleConcealedDeletion(value, newValue)
                 ?: newValue
             textChanged -> newValue
@@ -497,6 +502,17 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             reportDraft()
             flowIfOverflowing()
         }
+    }
+
+    /**
+     * What was typed before a list started from it, when Backspace comes right after: the text as
+     * typed, staying text (its marker has one space). `null` for any other edit.
+     */
+    private fun typedMarkerTakenBack(newValue: TextFieldValue): TextFieldValue? {
+        val (typed, list) = typedMarker ?: return null
+        typedMarker = null
+        val caret = list.selection.start
+        return typed.takeIf { value == list && newValue.text.length == list.text.length - 1 && newValue.selection.start == caret - 1 }
     }
 
     /**

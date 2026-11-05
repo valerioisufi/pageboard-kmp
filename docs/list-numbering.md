@@ -170,10 +170,27 @@ capital letters: `A. Rossi` at the start of a line is a name.
 | 2 | The gestures: Tab, Shift+Tab, Enter, Backspace by level, the button on the whole level, a selection counted by level | done |
 | 3 | The notation: `ListMarker`, `NumberingStyle`, parser, labels, `ChainFlow`, `TextCleanup`; the old texts unchanged, bounds of the parser, ABI | done |
 | 4 | The picker: split button, popover and sheet, `setNumbering`, start, "Numbering…" in the Format menu, the strings, screenshots | done |
-| 5 | Typing a style, the instructions of the agents and of the assistant on the notation, the desktop app on a scratch directory | proposed |
+| 5 | Typing a style, the instructions of the agents and of the assistant on the notation, the desktop app on a scratch directory | done |
 
 Each phase can land alone: phases 1 and 2 are useful without a style to choose. The plan was
 approved on 2026-11-05, with the decisions left to me.
+
+### What phase 5 does
+
+* `RichTextEditing.listFromTypedMarker` adds the second space to `a. `, `i. `, `a) `, `i) `, `1) ` typed
+  at the start of a line; `TextEditorManager` gives back what was typed on the Backspace right after.
+* The description of `propose` in `DocumentTools` says the notation of the styles. The prompts of the
+  lecture assistant do not change: its notes do not need a style, and a run costs money.
+
+### What was checked
+
+* On the JVM: the tests of the parser, the numbering, the renumbering, the gestures, the chains, and
+  the screenshots of the picker in the windows of a phone, a tablet and a desktop, light and dark.
+* **Not by hand**: the Android and iOS apps were compiled, not run; the keyboard of a phone and the
+  pen on a tablet are left to the user.
+* `text-saved-code` and `text-larger-than-window` fail `verifyRoborazziJvm` on 3cc39770 too, by a
+  scroll of 48 px that is not from this work. The first is left as it was (it still fails), the
+  second is recorded again, because it has the bar.
 
 ### What phase 2 does
 
@@ -203,6 +220,12 @@ approved on 2026-11-05, with the decisions left to me.
 4. **The source is rewritten** by `ListRenumbering`, instead of only drawing the right label: the
    copy, the search and the agents read the source. Only on a list being edited.
 5. **Automatic stays the default**: existing lists and new ones look as they do now.
+
+6. **A list with blank lines goes on over them** (as it did), but a marker of a style it cannot write
+   starts another list (as in CommonMark): `A.  x` after `1. y`. The letters and the Roman numerals of
+   the same case are one kind here, because `i.` is the ninth letter too: `I.  x` right after a list
+   in capital letters, parted by a blank line only, goes on as its next letter.
+7. **The button that takes a list away acts on the lines selected**, not on the level.
 
 ## Left for later
 

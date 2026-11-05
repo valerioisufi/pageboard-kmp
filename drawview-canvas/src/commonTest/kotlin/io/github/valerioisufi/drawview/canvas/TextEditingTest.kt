@@ -623,6 +623,36 @@ class TextEditingTest {
     }
 
     @Test
+    fun aMarkerTypedStartsAListInItsStyleAndBackspaceTakesItBack() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("a.", TextRange(2)))
+        editor.updateValue(TextFieldValue("a. ", TextRange(3)))
+        assertEquals("a.  ", editor.value.text)
+        assertEquals(TextRange(4), editor.value.selection)
+        // Backspace right after: as it was typed, and text
+        editor.updateValue(TextFieldValue("a. ", TextRange(3)))
+        assertEquals("a. ", editor.value.text)
+        editor.updateValue(TextFieldValue("a. x", TextRange(4)))
+        assertEquals("a. x", editor.value.text, "it stays text")
+        // Going on: an item, and Enter its next one
+        editor.updateValue(TextFieldValue("", TextRange(0)))
+        editor.updateValue(TextFieldValue("i)", TextRange(2)))
+        editor.updateValue(TextFieldValue("i) ", TextRange(3)))
+        editor.updateValue(TextFieldValue("i)  x", TextRange(5)))
+        editor.handleEnter()
+        assertEquals("i)  x\nii)  ", editor.value.text)
+        // A capital letter, or another letter, is a name
+        editor.updateValue(TextFieldValue("A.", TextRange(2)))
+        editor.updateValue(TextFieldValue("A. ", TextRange(3)))
+        assertEquals("A. ", editor.value.text)
+        editor.updateValue(TextFieldValue("b.", TextRange(2)))
+        editor.updateValue(TextFieldValue("b. ", TextRange(3)))
+        assertEquals("b. ", editor.value.text)
+    }
+
+    @Test
     fun softKeyboardReturnContinuesAndExitsList() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager

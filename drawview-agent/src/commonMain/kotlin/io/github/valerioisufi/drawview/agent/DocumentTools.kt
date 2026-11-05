@@ -275,7 +275,7 @@ public class DocumentTools internal constructor(
     /** The schema of the items of a proposal. */
     private fun JsonObjectBuilder.itemsSchema() {
         put("type", "array")
-        put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs.")
+        put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs; a numbered list in a style of its own has two spaces after its markers, as in `a.  text`, `I.  text`, `1)  text`.")
         putJsonObject("items") {
             put("type", "object")
             put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page.")

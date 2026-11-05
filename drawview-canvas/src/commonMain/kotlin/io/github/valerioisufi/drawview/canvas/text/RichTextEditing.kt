@@ -577,6 +577,22 @@ public object RichTextEditing {
     }
 
     /**
+     * The space typed after `a.`, `i.`, `a)`, `i)` or `1)` at the start of a line, of a list in that
+     * style: the second space of its marker added (see [ListMarker]). `null` for any other edit. Not
+     * the capital letters: `A. Rossi` at the start of a line is a name.
+     */
+    public fun listFromTypedMarker(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        val caret = newValue.selection.start
+        if (!newValue.selection.collapsed || caret < 1 || newValue.text.length != oldValue.text.length + 1) return null
+        if (newValue.text[caret - 1] != ' ' || newValue.text != oldValue.text.substring(0, caret - 1) + " " + oldValue.text.substring(caret - 1)) return null
+        val lineStart = newValue.text.lastIndexOf('\n', caret - 1) + 1
+        val typed = newValue.text.substring(lineStart, caret).trimStart(' ', '\t')
+        if (typed !in TYPED_MARKERS || inCodeBlock(oldValue)) return null
+        if (RichTextParser.parse(oldValue.text).any { it.kind == RichTextParser.Kind.TABLE && caret - 1 in it.start..it.end }) return null
+        return TextFieldValue(newValue.text.substring(0, caret) + " " + newValue.text.substring(caret), TextRange(caret + 1))
+    }
+
+    /**
      * [newValue] with the numbers of the lists the edit from [oldValue] touched made right (see
      * [ListRenumbering]), its selection following them.
      */
@@ -764,6 +780,9 @@ public object RichTextEditing {
 
     private val HEADING_MARKER = Regex("""^#{1,6}[ \t]+""")
     private const val BULLET_PREFIX = "- "
+
+    /** What typed at the start of a line and followed by a space starts a list in a style. */
+    private val TYPED_MARKERS = setOf("a. ", "i. ", "a) ", "i) ", "1) ")
     private const val HEADING_PREFIX = "# "
 
     /** The spaces of a level of a list, and of a column of the code. */

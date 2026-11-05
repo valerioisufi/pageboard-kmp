@@ -1167,6 +1167,7 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun lineBreakInItem (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun listFromTypedMarker (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun numberingStartOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
 	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
