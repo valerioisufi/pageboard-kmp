@@ -530,6 +530,21 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     }
 
     /**
+     * The text in the notation the field was given to paste (see `docs/html-paste.md`): when it comes
+     * back it is taken as it is, not cleaned as a text from elsewhere.
+     */
+    public var formattedPaste: String? = null
+
+    /** [text] put at the caret in place of the selection, as a paste of the field: cleaned, in the notation of the text around it. */
+    public fun pasteAtCaret(text: String) {
+        if (!isEditing || text.isEmpty()) return
+        formattedPaste = null
+        val selection = value.selection
+        val caret = selection.min + text.length
+        updateValue(TextFieldValue(value.text.replaceRange(selection.min, selection.max, text), TextRange(caret)))
+    }
+
+    /**
      * [newValue] with the text pasted in it cleaned (see [PastedText]), or `null` when it needs nothing.
      * A paste is known by what it inserts: several characters with a line break, which an input
      * method does not commit; in a block of code only its line endings change, in a table it is
@@ -541,8 +556,13 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val new = newValue.text
         if (!new.startsWith(value.text.substring(0, start)) || !new.endsWith(rest) || new.length < start + rest.length + 2) return null
         val pasted = new.substring(start, new.length - rest.length)
-        if ('\n' !in pasted && '\r' !in pasted) return null
         if (TableEditing.caretIn(value) != null) return null
+        if (pasted == formattedPaste) {
+            val placed = PastedText.placed(pasted, value.text.substring(0, start), rest)
+            if (placed == pasted) return null
+            return TextFieldValue(value.text.substring(0, start) + placed + rest, TextRange(start + placed.length))
+        }
+        if ('\n' !in pasted && '\r' !in pasted) return null
         val clean = if (selectedCodeBlock != null) PastedText.normalized(pasted) else PastedText.clean(pasted)
         if (clean == pasted) return null
         return TextFieldValue(value.text.substring(0, start) + clean + rest, TextRange(start + clean.length))

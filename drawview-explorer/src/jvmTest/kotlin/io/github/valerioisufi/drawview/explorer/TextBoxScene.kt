@@ -7,7 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.Transferable
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
@@ -34,10 +39,28 @@ import kotlinx.coroutines.runBlocking
 
 /** The clipboard of a text box scene: [text] is what a paste reads. */
 @OptIn(ExperimentalComposeUiApi::class)
-internal class TextBoxClipboard(var text: String? = null) : Clipboard {
+internal class TextBoxClipboard(var text: String? = null, html: String? = null) : Clipboard {
     override suspend fun getClipEntry(): ClipEntry? = text?.let { ClipEntry(StringSelection(it)) }
     override suspend fun setClipEntry(clipEntry: ClipEntry?) = Unit
-    override val nativeClipboard = java.awt.datatransfer.Clipboard("text box scene")
+    override val nativeClipboard = java.awt.datatransfer.Clipboard("text box scene").also { clipboard ->
+        if (html != null) clipboard.setContents(CopiedHtml(html), null)
+    }
+
+    /** The same text for what reads the clipboard at once, as the commands. */
+    @Suppress("DEPRECATION")
+    val manager = object : ClipboardManager {
+        override fun getText(): AnnotatedString? = text?.let { AnnotatedString(it) }
+        override fun setText(annotatedString: AnnotatedString) {
+            text = annotatedString.text
+        }
+    }
+}
+
+/** What another application copies: [html], in its own flavor. */
+private class CopiedHtml(private val html: String) : Transferable {
+    override fun getTransferDataFlavors(): Array<DataFlavor> = arrayOf(DataFlavor.fragmentHtmlFlavor)
+    override fun isDataFlavorSupported(flavor: DataFlavor): Boolean = flavor == DataFlavor.fragmentHtmlFlavor
+    override fun getTransferData(flavor: DataFlavor): Any = html
 }
 
 /**
@@ -56,7 +79,7 @@ internal fun textBoxScene(clipboard: TextBoxClipboard = TextBoxClipboard(), bloc
     val controller = DrawViewController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session)
     runDesktopComposeUiTest(width = 1200, height = 900) {
         setContent {
-            CompositionLocalProvider(LocalClipboard provides clipboard) {
+            CompositionLocalProvider(LocalClipboard provides clipboard, LocalClipboardManager provides clipboard.manager) {
                 DrawViewTheme(darkTheme = false, dynamicColor = false) {
                     AdaptiveRoot(conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
                         EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize())

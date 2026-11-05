@@ -75,6 +75,75 @@ class TextBoxPasteTest {
         }
     }
 
+    private fun DesktopComposeUiTest.pressPlainPaste() {
+        onNode(hasSetTextAction()).performKeyInput { withKeyDown(Key.MetaLeft) { withKeyDown(Key.ShiftLeft) { pressKey(Key.V) } } }
+        waitForIdle()
+    }
+
+    @Test
+    fun aFormattedTextIsPastedInTheFieldInTheNotationAndOneUndoTakesItAway() {
+        val clipboard = TextBoxClipboard("Titolo\ngrassetto", html = "<h1>Titolo</h1><p><b>grassetto</b></p>")
+        textBoxScene(clipboard) { controller ->
+            startBox(controller, 30f, 60f, widthMm = 120f)
+            val editor = controller.textEditorManager
+            type("Prima ")
+            pressWithShortcut(Key.V)
+            assertEquals("Prima \n\n# Titolo\n\n**grassetto**", editor.value.text)
+            pressWithShortcut(Key.Z)
+            assertEquals("Prima ", editor.value.text)
+        }
+    }
+
+    @Test
+    fun aFormattedWordIsPastedInTheLine() {
+        val clipboard = TextBoxClipboard("grassetto", html = "<b>grassetto</b>")
+        textBoxScene(clipboard) { controller ->
+            startBox(controller, 30f, 60f, widthMm = 120f)
+            type("Prima ")
+            pressWithShortcut(Key.V)
+            assertEquals("Prima **grassetto**", controller.textEditorManager.value.text)
+        }
+    }
+
+    @Test
+    fun aFormattedTextPastedInABlockOfCodeIsItsPlainText() {
+        val clipboard = TextBoxClipboard("uno", html = "<b>uno</b>")
+        textBoxScene(clipboard) { controller ->
+            startBox(controller, 30f, 60f, widthMm = 120f)
+            val editor = controller.textEditorManager
+            type("```\nx\n```")
+            runOnIdle { editor.updateValue(editor.value.copy(selection = TextRange(5))) }
+            waitForIdle()
+            pressWithShortcut(Key.V)
+            assertEquals("```\nxuno\n```", editor.value.text)
+        }
+    }
+
+    @Test
+    fun aFormattedCellIsPastedInItsCell() {
+        val clipboard = TextBoxClipboard("uno due", html = "<p><b>uno</b></p><p>due</p>")
+        textBoxScene(clipboard) { controller ->
+            startBox(controller, 30f, 60f, widthMm = 120f)
+            val editor = controller.textEditorManager
+            runOnIdle { editor.insertTable(2, 2) }
+            waitForIdle()
+            pressWithShortcut(Key.V)
+            assertTrue("**uno**" in editor.value.text.lines()[0] && "due" in editor.value.text.lines()[0])
+            assertTrue(editor.inTable)
+        }
+    }
+
+    @Test
+    fun theShortcutOfThePlainPasteLeavesTheFormattingOut() {
+        val clipboard = TextBoxClipboard("grassetto *vero*", html = "<b>grassetto</b>")
+        textBoxScene(clipboard) { controller ->
+            startBox(controller, 30f, 60f, widthMm = 120f)
+            type("Prima ")
+            pressPlainPaste()
+            assertEquals("Prima grassetto *vero*", controller.textEditorManager.value.text)
+        }
+    }
+
     @Test
     fun aMarkdownPastedOnTheCanvasIsTakenAsItIs() = textBoxScene { controller ->
         val markdown = "# Titolo\n\n- uno\n- **due**"

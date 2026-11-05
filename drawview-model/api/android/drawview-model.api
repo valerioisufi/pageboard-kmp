@@ -3179,6 +3179,7 @@ public final class io/github/valerioisufi/drawview/model/text/PastedText {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/PastedText;
 	public final fun clean (Ljava/lang/String;)Ljava/lang/String;
 	public final fun normalized (Ljava/lang/String;)Ljava/lang/String;
+	public final fun placed (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser {

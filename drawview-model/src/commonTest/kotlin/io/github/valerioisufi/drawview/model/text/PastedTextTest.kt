@@ -13,6 +13,16 @@ class PastedTextTest {
     }
 
     @Test
+    fun aBlockPastedInALineGetsALineOfItsOwn() {
+        assertEquals("\n\n# T", PastedText.placed("# T", "Prima ", ""))
+        assertEquals("- a\n\n", PastedText.placed("- a", "", "dopo"))
+        assertEquals("\n\n| a |\n| --- |\n\n", PastedText.placed("| a |\n| --- |", "x", "y"))
+        assertEquals("# T", PastedText.placed("# T", "Prima\n", "\ndopo"))
+        assertEquals("**a**", PastedText.placed("**a**", "Prima ", " dopo"))
+        assertEquals("**a**\n\nb", PastedText.placed("**a**\n\nb", "Prima ", " dopo"))
+    }
+
+    @Test
     fun bulletsBecomeAListTheLinesUnderThemJoined() {
         assertEquals(
             "- Primo\n- Secondo che era a capo su due righe\n- Terzo",

@@ -75,7 +75,8 @@ this notation, and small.
 | Characters of the source that would read as notation escaped | `MarkdownEscape` (internal, `drawview-html`), tested against `RichTextParser` | Information Expert |
 | The HTML of the clipboard, per platform | `expect fun htmlIn(clipboard)` (`drawview-ui`) | Polymorphism, Indirection |
 | What a paste contains: HTML converted, or plain text, for canvas and field alike | `ClipboardText` (`drawview-ui`) | Controller, Low Coupling |
-| The field pasting the converted text | a wrapping `Clipboard` provided to `BasicTextField` in `TextBoxEditor` | Indirection |
+| The field pasting the converted text | `FormattedPasteClipboard`, provided to `BasicTextField` in `TextBoxEditor` | Indirection |
+| A block pasted in a line given a line of its own | `PastedText.placed` (`drawview-model`) | Information Expert |
 
 **A module of its own.** `drawview-model` has no parser today, and every library would inherit Ksoup
 through it. `drawview-html` is headless, without Compose, and `drawview-ui` uses it as an
@@ -86,11 +87,12 @@ with the prefix of its container (quote, list), and the inline formatting is wri
 text it covers, with the spaces kept outside the delimiters, as the notation requires. A cell of a
 table stays on one line. A `colspan` adds empty cells, since the notation has no spans.
 
-**In the field.** The wrapping `Clipboard` answers `getClipEntry` with an entry of the converted
+**In the field.** `FormattedPasteClipboard` answers `getClipEntry` with an entry of the converted
 text and delegates the rest. It is built per platform (`ClipEntry(StringSelection)`,
 `ClipData.newPlainText`, `ClipEntry.withPlainText`). The field also calls `getClipEntry` to know
-whether a paste is possible, so the conversion is cached by its HTML. `cleanedPaste` must leave a
-converted text as it is.
+whether a paste is possible, so the conversion is cached by its HTML. `cleanedPaste` knows the text it
+gave (`formattedPaste`) and leaves it as it is, apart from the line a block needs. In a block of code
+the plain text is pasted.
 
 **Data.** The result is the text of a `TextData`, Markdown as already stored: no change to the Room
 schema, to a stored format or to the sync protocol.
@@ -102,7 +104,7 @@ schema, to a stored format or to the sync protocol.
 | 1 | Ksoup checked on the targets (`iosArm64`, `iosSimulatorArm64`, JVM, Android, with Kotlin 2.4.20); `drawview-html` with its `Module.md`, `api/` dump, Dokka and `THIRD_PARTY_LICENSES.md`; blocks, inline formats, `style`, escapes; every result read back with `RichTextParser` in the tests | done |
 | 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
 | 3 | `htmlIn` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text, "Paste as plain text" on the canvas | done |
-| 4 | The field (wrapping `Clipboard`, `cleanedPaste`), "Paste as plain text" | planned |
+| 4 | The field (`FormattedPasteClipboard`, `TextEditorManager.formattedPaste`, `PastedText.placed`), "Paste as plain text" in the field | done |
 | 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari | planned |
 
 ## Decisions

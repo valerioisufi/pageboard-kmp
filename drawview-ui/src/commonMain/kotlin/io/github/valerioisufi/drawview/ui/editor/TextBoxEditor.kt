@@ -50,6 +50,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -74,6 +76,8 @@ import io.github.valerioisufi.drawview.canvas.text.TableEditing
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
@@ -184,7 +188,22 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val currentShown by rememberUpdatedState(shown)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
-    CompositionLocalProvider(LocalDensity provides unscaledDensity) {
+    // What the field pastes: the formatted text of the clipboard in the notation, out of the blocks of code
+    val systemClipboard = LocalClipboard.current
+    val clipboardText = rememberClipboardText()
+    val fieldClipboard = remember(systemClipboard, clipboardText, editor) {
+        FormattedPasteClipboard(
+            systemClipboard,
+            formattedText = { clipboardText.markdown().takeUnless { editor.inCodeBlock } },
+            onFormatted = { editor.formattedPaste = it }
+        )
+    }
+    // "Paste as plain text" is not a paste of the field
+    @Suppress("DEPRECATION")
+    val plainClipboard = LocalClipboardManager.current
+    val conventions = currentAdaptiveInfo().conventions
+
+    CompositionLocalProvider(LocalDensity provides unscaledDensity, LocalClipboard provides fieldClipboard) {
         // The session this field was made for
         val session = remember { editor.sessionId }
         // The text this field has: its own, also after it stopped being the one written
@@ -246,6 +265,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     }
                 }
                 .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown && PASTE_PLAIN.matches(event, conventions)) {
+                        plainClipboard.getText()?.text?.let { editor.pasteAtCaret(it) }
+                        return@onPreviewKeyEvent true
+                    }
                     if (event.type == KeyEventType.KeyDown && editor.inTable) {
                         // In a table the caret goes from cell to cell (Tab: see indent)
                         val moved = when (event.key) {
@@ -523,6 +546,9 @@ internal fun renderAtBucket(images: FormulaImages, latex: String, sizePx: Float,
 
 /** The blocks of code laid out kept by the editor. */
 private const val MAX_CODE_LAYOUTS = 16
+
+/** "Paste as plain text" while writing, the shortcut of its command (see `EditorCommands.pastePlain`). */
+private val PASTE_PLAIN = Shortcut(Key.V, primary = true, shift = true)
 
 /** Ratio between the sizes the formulas of the editor are rendered at. */
 private const val SIZE_STEP = 1.08f

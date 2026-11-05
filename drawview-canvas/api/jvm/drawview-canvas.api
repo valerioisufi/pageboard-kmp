@@ -574,6 +574,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getColor ()I
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
+	public final fun getFormattedPaste ()Ljava/lang/String;
 	public fun getInBulletList ()Z
 	public final fun getInChain ()Z
 	public fun getInCodeBlock ()Z
@@ -599,11 +600,13 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
 	public fun outdent ()V
+	public final fun pasteAtCaret (Ljava/lang/String;)V
 	public final fun pasteMarkdown-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteMarkdown-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V
+	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
 	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;)V

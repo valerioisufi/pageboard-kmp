@@ -23,6 +23,9 @@ public object PastedText {
     /** The signs ending a line that was meant to end there. */
     private const val SENTENCE_ENDS = ".:;!?"
 
+    /** The start of a line that belongs to a block of the notation. */
+    private val BLOCK_LINE = Regex("""^(#{1,6} |- |\d+\. |[0-9A-Za-z]+[.)]  |> |>$|\||```|\$\$)""")
+
     /** [text] with its line endings and its non-breaking spaces normalized, nothing else. */
     public fun normalized(text: String): String = text.replace("\r\n", "\n").replace('\r', '\n').replace(' ', ' ')
 
@@ -53,6 +56,19 @@ public object PastedText {
         }
         return out.joinToString("\n")
     }
+
+    /**
+     * [markdown] pasted between [before] and [after] of a text: a block (a heading, a list, a table,
+     * …) needs a line of its own to be read as one, so a line break is added where the text around
+     * it is on the same line. A paragraph joins the line it is pasted in.
+     */
+    public fun placed(markdown: String, before: String, after: String): String {
+        val opens = before.substringAfterLast('\n').isNotBlank() && isBlockLine(markdown.substringBefore('\n'))
+        val closes = after.substringBefore('\n').isNotBlank() && isBlockLine(markdown.substringAfterLast('\n'))
+        return (if (opens) "\n\n" else "") + markdown + (if (closes) "\n\n" else "")
+    }
+
+    private fun isBlockLine(line: String): Boolean = BLOCK_LINE.containsMatchIn(line.trimStart())
 
     /** The lines of a [paragraph] with items: each item at its depth, the lines under it joined to it. */
     private fun listOf(paragraph: List<String>, indents: List<Int>): List<String> {

@@ -3638,6 +3638,7 @@ final object io.github.valerioisufi.drawview.model.text/ListRenumbering { // io.
 final object io.github.valerioisufi.drawview.model.text/PastedText { // io.github.valerioisufi.drawview.model.text/PastedText|null[0]
     final fun clean(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.clean|clean(kotlin.String){}[0]
     final fun normalized(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.normalized|normalized(kotlin.String){}[0]
+    final fun placed(kotlin/String, kotlin/String, kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/PastedText.placed|placed(kotlin.String;kotlin.String;kotlin.String){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.github.valerioisufi.drawview.model.text/RichTextParser|null[0]
