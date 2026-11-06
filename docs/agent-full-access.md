@@ -206,7 +206,7 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 |---|---|---|
 | 1 | The access: `allDocuments`, `applyDirectly`, `allows`; every tool on `allows`; `direct` of a connection removed; the sheet with the two switches and its warning, from the library too. Tests: the value stored today read as before (`enabled`, `documents`), a document created later reached with `allDocuments`, search on all; screenshots of the sheet; ABI recorded on purpose | done |
 | 2 | Applying without an editor and `AgentActivity`: a proposal applied on a closed document, in an editor recorded by its history too, the undo of a batch, refused after a Ctrl+Z or a later change; the batches in the sheet of the access, with Undo. Tests on the in-memory store and in a real editor; screenshots of the sheet; the command line against the application on a scratch directory | done |
-| 3 | Reading: every element with its `base` in `read_page`, `read_stroke`, the `base` of a page. Tests: strokes, images, PDF pages, a scanned page, the bound on points | proposed |
+| 3 | Reading: every element with its `base` in `read_page` (images, PDF pages, other elements; the strokes when asked, at most 500, those crossing an area), `read_stroke` (at most 2000 points, evenly picked), the `base` of a page in `read_page` and `read_document`, the style of a text. Tests: strokes, an area, the bound on strokes and points, images, a scanned PDF page, an element of another kind, the base changing with an element and with what is on a page | done |
 | 4 | The items of the elements: `remove_elements`, `place_elements`, `reorder_elements`, `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image`. Tests: each item, stale, one undo for a batch, two sessions converging, the limits | proposed |
 | 5 | The items of the pages and `rename_document`. Tests: each item, a removed page in the trash of the pages, stale, convergence | proposed |
 | 6 | The library: `LibraryItem`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, their inverses in the activity, the limits per batch and per minute. Tests: each item and its undo, a shared document read only, nothing deleted for good | proposed |
@@ -236,7 +236,11 @@ Taken alone, revertible:
    it undoes is in the trash anyway.
 9. **Limits on trashing** per batch and per minute, refused beyond them: a model in a loop cannot empty
    the library into the trash before the user looks.
-10. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
+10. **The base of a text stays the base of its content**: a proposal on its words is not made stale
+    by a move of its box. The base of any other element covers its presence, place, order and content;
+    the base of a page covers its presence, position, format and what is on it.
+11. **The strokes are listed only when asked**, and at most 500: a page of handwriting holds thousands.
+12. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
 
 ## Left for later
 

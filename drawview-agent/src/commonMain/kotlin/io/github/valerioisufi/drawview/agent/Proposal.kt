@@ -119,7 +119,7 @@ public data class Proposal(
 internal fun DrawText.base(): String = "${contentVersions}#${fnv1a(text).toString(16)}"
 
 /** The FNV-1a hash of [text]: to notice a change, not against someone making one on purpose. */
-private fun fnv1a(text: String): ULong {
+internal fun fnv1a(text: String): ULong {
     var hash = 0xcbf29ce484222325UL
     for (char in text) {
         hash = hash xor char.code.toULong()
