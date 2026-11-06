@@ -211,6 +211,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      */
     private var writingNewText = false
 
+    /** Saves the text written as it is written (see [saveWriting]). */
+    private val saver = WritingSaver(controller.coroutineScope) { saveWriting() }
+
     /**
      * Where the caret goes once the edited text is laid out: a point of the box in millimeters
      * from its top-left corner (before its rotation), or `null` for the end of the text.
@@ -318,6 +321,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         controller.viewport.camera.stopAllAnimations()
         controller.requestRedraw()
         reportDraft()
+        // Opened as it is stored: nothing to save yet
+        saver.stop()
     }
 
     /**
@@ -406,6 +411,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      * saved; the saves of a writing are undone with it, in one step.
      */
     public fun saveWriting() {
+        saver.stop()
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0 || value.text.isBlank() || controller.session.isReadOnly) return
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
@@ -527,6 +533,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         activeTextPageIndex = -1
         itemPageIndex = -1
         caretRequest = null
+        saver.stop()
         selectionSteps.clear()
         value = TextFieldValue()
         controller.presence.reportTextDraft(null, null)
@@ -1176,10 +1183,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         versions = versions
     )
 
-    /** The text being written as it is now, for the others working on the document. */
+    /** The text being written as it is now, for the others working on the document, and saved soon (see [WritingSaver]). */
     private fun reportDraft() {
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         controller.presence.reportTextDraft(page.id, draft())
+        saver.changed()
     }
 
     private companion object {

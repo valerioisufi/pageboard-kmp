@@ -20,5 +20,13 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            // The editor draws with Skia on the desktop
+            implementation(compose.desktop.currentOs)
+            // The text written read back from the store of the applications (see TextWrittenSurvivesRoomTest)
+            implementation(project(":drawview-store-room"))
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+        }
     }
 }
