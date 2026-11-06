@@ -318,13 +318,15 @@ final class io.github.valerioisufi.drawview.agent/AgentAccess { // io.github.val
     final val grants // io.github.valerioisufi.drawview.agent/AgentAccess.grants|{}grants[0]
         final fun <get-grants>(): kotlinx.coroutines.flow/StateFlow<io.github.valerioisufi.drawview.agent/AgentGrants> // io.github.valerioisufi.drawview.agent/AgentAccess.grants.<get-grants>|<get-grants>(){}[0]
 
+    final fun allows(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentAccess.allows|allows(kotlin.String){}[0]
     final fun connect(kotlin/String): io.github.valerioisufi.drawview.agent/AgentConnection // io.github.valerioisufi.drawview.agent/AgentAccess.connect|connect(kotlin.String){}[0]
     final fun disconnect(kotlin/String) // io.github.valerioisufi.drawview.agent/AgentAccess.disconnect|disconnect(kotlin.String){}[0]
     final fun rename(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.agent/AgentAccess.rename|rename(kotlin.String;kotlin.String){}[0]
-    final fun setDirect(kotlin/String, kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentAccess.setDirect|setDirect(kotlin.String;kotlin.Boolean){}[0]
     final suspend fun grant(kotlin/String) // io.github.valerioisufi.drawview.agent/AgentAccess.grant|grant(kotlin.String){}[0]
     final suspend fun load() // io.github.valerioisufi.drawview.agent/AgentAccess.load|load(){}[0]
     final suspend fun revoke(kotlin/String) // io.github.valerioisufi.drawview.agent/AgentAccess.revoke|revoke(kotlin.String){}[0]
+    final suspend fun setAllDocuments(kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentAccess.setAllDocuments|setAllDocuments(kotlin.Boolean){}[0]
+    final suspend fun setApplyDirectly(kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentAccess.setApplyDirectly|setApplyDirectly(kotlin.Boolean){}[0]
     final suspend fun setEnabled(kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentAccess.setEnabled|setEnabled(kotlin.Boolean){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.agent/AgentAccess.Companion|null[0]
@@ -372,10 +374,8 @@ final class io.github.valerioisufi.drawview.agent/AgentArea { // io.github.valer
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentConnection { // io.github.valerioisufi.drawview.agent/AgentConnection|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.agent/AgentConnection.<init>|<init>(kotlin.String;kotlin.String;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.agent/AgentConnection.<init>|<init>(kotlin.String;kotlin.String){}[0]
 
-    final val direct // io.github.valerioisufi.drawview.agent/AgentConnection.direct|{}direct[0]
-        final fun <get-direct>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentConnection.direct.<get-direct>|<get-direct>(){}[0]
     final val id // io.github.valerioisufi.drawview.agent/AgentConnection.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentConnection.id.<get-id>|<get-id>(){}[0]
     final val name // io.github.valerioisufi.drawview.agent/AgentConnection.name|{}name[0]
@@ -383,8 +383,7 @@ final class io.github.valerioisufi.drawview.agent/AgentConnection { // io.github
 
     final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentConnection.component1|component1(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentConnection.component2|component2(){}[0]
-    final fun component3(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentConnection.component3|component3(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.agent/AgentConnection // io.github.valerioisufi.drawview.agent/AgentConnection.copy|copy(kotlin.String;kotlin.String;kotlin.Boolean){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.drawview.agent/AgentConnection // io.github.valerioisufi.drawview.agent/AgentConnection.copy|copy(kotlin.String;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentConnection.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentConnection.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentConnection.toString|toString(){}[0]
@@ -430,16 +429,23 @@ final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.va
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentGrants { // io.github.valerioisufi.drawview.agent/AgentGrants|null[0]
-    constructor <init>(kotlin/Boolean = ..., kotlin.collections/Set<kotlin/String> = ...) // io.github.valerioisufi.drawview.agent/AgentGrants.<init>|<init>(kotlin.Boolean;kotlin.collections.Set<kotlin.String>){}[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.agent/AgentGrants.<init>|<init>(kotlin.Boolean;kotlin.collections.Set<kotlin.String>;kotlin.Boolean;kotlin.Boolean){}[0]
 
+    final val allDocuments // io.github.valerioisufi.drawview.agent/AgentGrants.allDocuments|{}allDocuments[0]
+        final fun <get-allDocuments>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.allDocuments.<get-allDocuments>|<get-allDocuments>(){}[0]
+    final val applyDirectly // io.github.valerioisufi.drawview.agent/AgentGrants.applyDirectly|{}applyDirectly[0]
+        final fun <get-applyDirectly>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.applyDirectly.<get-applyDirectly>|<get-applyDirectly>(){}[0]
     final val documents // io.github.valerioisufi.drawview.agent/AgentGrants.documents|{}documents[0]
         final fun <get-documents>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.agent/AgentGrants.documents.<get-documents>|<get-documents>(){}[0]
     final val enabled // io.github.valerioisufi.drawview.agent/AgentGrants.enabled|{}enabled[0]
         final fun <get-enabled>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.enabled.<get-enabled>|<get-enabled>(){}[0]
 
+    final fun allows(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.allows|allows(kotlin.String){}[0]
     final fun component1(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.component1|component1(){}[0]
     final fun component2(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.agent/AgentGrants.component2|component2(){}[0]
-    final fun copy(kotlin/Boolean = ..., kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.agent/AgentGrants // io.github.valerioisufi.drawview.agent/AgentGrants.copy|copy(kotlin.Boolean;kotlin.collections.Set<kotlin.String>){}[0]
+    final fun component3(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.component4|component4(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.agent/AgentGrants // io.github.valerioisufi.drawview.agent/AgentGrants.copy|copy(kotlin.Boolean;kotlin.collections.Set<kotlin.String>;kotlin.Boolean;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentGrants.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentGrants.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentGrants.toString|toString(){}[0]

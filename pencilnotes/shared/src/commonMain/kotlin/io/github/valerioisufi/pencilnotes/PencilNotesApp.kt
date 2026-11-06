@@ -189,7 +189,7 @@ fun PencilNotesApp(
                     DocumentLibrary(
                         title = { PencilNotesBrand() },
                         documents = documents,
-                        actions = listOf(collaboration.joinAction(), search.settingsAction(), aboutLibraryAction()),
+                        actions = listOfNotNull(collaboration.joinAction(), search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
                         editorExtension = editorExtension,
                         itemsActions = listOf(export.libraryAction),
                         tags = listOf(lectureTag),

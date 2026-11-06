@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.ui.ContentSearch
 import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import kotlin.concurrent.Volatile
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -44,8 +45,13 @@ class PencilNotesAgents {
 
     val endpoint: AgentEndpoint = AgentEndpoint(agents, serverName = "PencilNotes", serverVersion = "3.0.0")
 
+    private val ui = AgentReviewUi(agents)
+
     /** The review in the editors. */
-    internal val editorExtension: EditorExtension = AgentReviewUi(agents).editorExtension
+    internal val editorExtension: EditorExtension = ui.editorExtension
+
+    /** The access, from the library. */
+    internal val libraryAction: LibraryAction = ui.libraryAction
 
     private suspend fun search(query: String, documentIds: Set<String>, limit: Int): List<AgentSearchHit> {
         val engine = contentSearch?.engine ?: return emptyList()

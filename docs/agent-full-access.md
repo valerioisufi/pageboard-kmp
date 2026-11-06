@@ -198,7 +198,7 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | The access: `allDocuments`, `applyDirectly`, `allows`; every tool on `allows`; `direct` of a connection removed; the sheet with the two switches and its warning, from the library too. Tests: the value stored today read as before (`enabled`, `documents`), a document created later reached with `allDocuments`, search on all; screenshots of the sheet; ABI recorded on purpose | proposed |
+| 1 | The access: `allDocuments`, `applyDirectly`, `allows`; every tool on `allows`; `direct` of a connection removed; the sheet with the two switches and its warning, from the library too. Tests: the value stored today read as before (`enabled`, `documents`), a document created later reached with `allDocuments`, search on all; screenshots of the sheet; ABI recorded on purpose | done |
 | 2 | Applying without an editor and `AgentActivity`: a proposal applied on a closed document, in an editor recorded by its history too, the undo of a batch, refused after a Ctrl+Z or a later change. Tests on the in-memory store and in a real editor; the command line against the application on a scratch directory | proposed |
 | 3 | Reading: every element with its `base` in `read_page`, `read_stroke`, the `base` of a page. Tests: strokes, images, PDF pages, a scanned page, the bound on points | proposed |
 | 4 | The items of the elements: `remove_elements`, `place_elements`, `reorder_elements`, `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image`. Tests: each item, stale, one undo for a batch, two sessions converging, the limits | proposed |

@@ -16,24 +16,29 @@ import kotlinx.serialization.json.Json
  * What the user allows.
  *
  * @param enabled whether clients are let in at all.
- * @param documents the documents they may reach.
+ * @param documents the documents they may reach one by one, kept while [allDocuments] is on.
+ * @param allDocuments whether they reach every document, the ones made later too.
+ * @param applyDirectly whether what they propose is applied when it arrives, without a review.
  */
 @Serializable
 public data class AgentGrants(
     val enabled: Boolean = false,
-    val documents: Set<String> = emptySet()
-)
+    val documents: Set<String> = emptySet(),
+    val allDocuments: Boolean = false,
+    val applyDirectly: Boolean = false
+) {
+    /** Whether a client may reach the document [documentId]. */
+    public fun allows(documentId: String): Boolean = enabled && (allDocuments || documentId in documents)
+}
 
 /**
  * A client connected to the application.
  *
  * @param name the name it gave itself: for the user to read, not proof of anything.
- * @param direct whether its proposals are applied without a review, for this connection only.
  */
 public data class AgentConnection(
     val id: String,
-    val name: String,
-    val direct: Boolean = false
+    val name: String
 )
 
 /**
@@ -67,6 +72,15 @@ public class AgentAccess(private val preferences: PreferenceStore? = null) {
 
     public suspend fun revoke(documentId: String): Unit = change { it.copy(documents = it.documents - documentId) }
 
+    /** Lets the clients reach every document, or only the ones granted one by one. */
+    public suspend fun setAllDocuments(all: Boolean): Unit = change { it.copy(allDocuments = all) }
+
+    /** Whether what the clients propose is applied when it arrives, or waits for the review of the user. */
+    public suspend fun setApplyDirectly(direct: Boolean): Unit = change { it.copy(applyDirectly = direct) }
+
+    /** Whether a client may reach the document [documentId] now. */
+    public fun allows(documentId: String): Boolean = grantsState.value.allows(documentId)
+
     /** A new client named [name]; followed by a [disconnect]. */
     public fun connect(name: String): AgentConnection {
         val connection = AgentConnection(newElementId(), name.take(MAX_NAME_LENGTH))
@@ -82,13 +96,6 @@ public class AgentAccess(private val preferences: PreferenceStore? = null) {
     public fun rename(id: String, name: String) {
         connectionsState.update { current -> current.map { if (it.id == id) it.copy(name = name.take(MAX_NAME_LENGTH)) else it } }
     }
-
-    /** Whether the proposals of the client [id] are applied without a review, while it stays connected. */
-    public fun setDirect(id: String, direct: Boolean) {
-        connectionsState.update { current -> current.map { if (it.id == id) it.copy(direct = direct) else it } }
-    }
-
-    internal fun isDirect(id: String): Boolean = connectionsState.value.firstOrNull { it.id == id }?.direct == true
 
     private suspend fun change(transform: (AgentGrants) -> AgentGrants): Unit = mutex.withLock {
         val changed = transform(grantsState.value)

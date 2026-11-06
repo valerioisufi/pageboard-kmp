@@ -198,8 +198,8 @@ class AgentReviewEditorTest {
     }
 
     @Test
-    fun aClientInDirectModeChangesAnOpenDocumentAtOnceAndCanBeUndone() = scene { scene ->
-        scene.agents.access.setDirect(scene.connection, true)
+    fun applyingDirectlyChangesAnOpenDocumentAtOnceAndCanBeUndone() = scene { scene ->
+        runBlocking { scene.agents.access.setApplyDirectly(true) }
         val id = scene.proposeChanges()
         assertFalse(scene.agents.proposals.find(id)!!.isWaiting)
         assertEquals(setOf("From the model", "Added by the model"), scene.texts.toSet())

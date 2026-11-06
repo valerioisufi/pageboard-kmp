@@ -51,7 +51,11 @@ import io.github.valerioisufi.drawview.agent.ProposalPlan
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_accept_selected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_clients
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all_note
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct_note
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_full_warning
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_document
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_document_note
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_enable
@@ -97,6 +101,7 @@ import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.math.roundToInt
@@ -123,6 +128,32 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         perform = { accessOf = documentId }
     )
 
+    /** The sheet of the access in the library, for every document. */
+    public val libraryAction: LibraryAction = LibraryAction(
+        icon = DrawViewIcons.Sparkles,
+        label = { stringResource(Res.string.agent_access_title) },
+        content = { onDone -> Access(documentId = null, onDismiss = onDone) }
+    )
+
+    @Composable
+    private fun Access(documentId: String?, onDismiss: () -> Unit) {
+        val grants by agents.access.grants.collectAsState()
+        val connections by agents.access.connections.collectAsState()
+        val scope = rememberCoroutineScope()
+        AccessSheet(
+            grants = grants,
+            documentId = documentId,
+            connections = connections,
+            onEnabled = { enabled -> scope.launch { agents.access.setEnabled(enabled) } },
+            onAllDocuments = { all -> scope.launch { agents.access.setAllDocuments(all) } },
+            onDocument = { allowed ->
+                if (documentId != null) scope.launch { if (allowed) agents.access.grant(documentId) else agents.access.revoke(documentId) }
+            },
+            onApplyDirectly = { direct -> scope.launch { agents.access.setApplyDirectly(direct) } },
+            onDismiss = onDismiss
+        )
+    }
+
     /** What the application adds to its editors. */
     public val editorExtension: EditorExtension = EditorExtension(
         toolbarActions = { context ->
@@ -140,20 +171,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
                 if (waiting > 0) openPanels += documentId
             }
             if (accessOf == documentId) {
-                val grants by agents.access.grants.collectAsState()
-                val connections by agents.access.connections.collectAsState()
-                val scope = rememberCoroutineScope()
-                AccessSheet(
-                    grants = grants,
-                    documentId = documentId,
-                    connections = connections,
-                    onEnabled = { enabled -> scope.launch { agents.access.setEnabled(enabled) } },
-                    onDocument = { allowed ->
-                        scope.launch { if (allowed) agents.access.grant(documentId) else agents.access.revoke(documentId) }
-                    },
-                    onDirect = { id, direct -> agents.access.setDirect(id, direct) },
-                    onDismiss = { accessOf = null }
-                )
+                Access(documentId, onDismiss = { accessOf = null })
             }
         },
         commands = { context -> listOf(accessCommand(context.documentId)) },
@@ -476,15 +494,19 @@ private fun DecidedProposal(proposal: Proposal) {
     }
 }
 
-/** The access of the clients: on or off, this document, those connected. */
+/**
+ * The access of the clients: on or off, every document or [documentId] (`null` in the library), applied
+ * at once or reviewed, those connected.
+ */
 @Composable
 internal fun AccessSheet(
     grants: AgentGrants,
-    documentId: String,
+    documentId: String?,
     connections: List<AgentConnection>,
     onEnabled: (Boolean) -> Unit,
+    onAllDocuments: (Boolean) -> Unit,
     onDocument: (Boolean) -> Unit,
-    onDirect: (String, Boolean) -> Unit,
+    onApplyDirectly: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     AdaptiveSheet(
@@ -504,11 +526,32 @@ internal fun AccessSheet(
             )
             if (grants.enabled) {
                 SwitchRow(
-                    stringResource(Res.string.agent_access_document),
-                    stringResource(Res.string.agent_access_document_note),
-                    checked = documentId in grants.documents,
-                    onChange = onDocument
+                    stringResource(Res.string.agent_access_all),
+                    stringResource(Res.string.agent_access_all_note),
+                    checked = grants.allDocuments,
+                    onChange = onAllDocuments
                 )
+                if (!grants.allDocuments && documentId != null) {
+                    SwitchRow(
+                        stringResource(Res.string.agent_access_document),
+                        stringResource(Res.string.agent_access_document_note),
+                        checked = documentId in grants.documents,
+                        onChange = onDocument
+                    )
+                }
+                SwitchRow(
+                    stringResource(Res.string.agent_access_direct),
+                    stringResource(Res.string.agent_access_direct_note),
+                    checked = grants.applyDirectly,
+                    onChange = onApplyDirectly
+                )
+                if (grants.allDocuments && grants.applyDirectly) {
+                    Text(
+                        stringResource(Res.string.agent_access_full_warning),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
                 Text(
                     stringResource(Res.string.agent_access_how),
                     style = MaterialTheme.typography.bodySmall,
@@ -523,12 +566,7 @@ internal fun AccessSheet(
                     )
                 }
                 for (connection in connections) {
-                    SwitchRow(
-                        connection.name,
-                        stringResource(Res.string.agent_access_direct),
-                        checked = connection.direct,
-                        onChange = { onDirect(connection.id, it) }
-                    )
+                    Text(connection.name, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

@@ -86,12 +86,13 @@ public class ExternalAgents(
     }
 
     /**
-     * A new [proposal] of the client [connection]: applied at once for a client in direct mode whose
+     * A new [proposal] of the client [connection]: applied at once when the user chose so and its
      * document is in an editor (so that it can be undone), shown for its review otherwise.
      */
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun received(proposal: Proposal, connection: String) {
         val editors = engines.editors
-        if (access.isDirect(connection) && editors != null) {
+        if (access.grants.value.applyDirectly && editors != null) {
             val open = documents.open(proposal.documentId)
             val inEditor = try {
                 open?.edit { editors.settle(proposal.documentId) } == true

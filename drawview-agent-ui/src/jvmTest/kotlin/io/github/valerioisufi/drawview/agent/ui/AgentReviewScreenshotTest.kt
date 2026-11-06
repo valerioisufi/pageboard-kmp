@@ -119,23 +119,29 @@ class AgentReviewScreenshotTest {
     }
 
     @Test
-    fun access() = runDesktopComposeUiTest(width = 640, height = 620) {
+    fun access() = captureAccess("agent_access", AgentGrants(enabled = true, documents = setOf("document")), documentId = "document")
+
+    @Test
+    fun accessFull() = captureAccess("agent_access_full", AgentGrants(enabled = true, allDocuments = true, applyDirectly = true), documentId = null)
+
+    private fun captureAccess(name: String, grants: AgentGrants, documentId: String?) = runDesktopComposeUiTest(width = 640, height = 720) {
         setContent {
             DrawViewTheme(darkTheme = false, dynamicColor = false) {
                 AdaptiveRoot(Modifier.fillMaxSize()) {
                     AccessSheet(
-                        grants = AgentGrants(enabled = true, documents = setOf("document")),
-                        documentId = "document",
-                        connections = listOf(AgentConnection("c", "Claude Code", direct = false)),
+                        grants = grants,
+                        documentId = documentId,
+                        connections = listOf(AgentConnection("c", "Claude Code")),
                         onEnabled = {},
+                        onAllDocuments = {},
                         onDocument = {},
-                        onDirect = { _, _ -> },
+                        onApplyDirectly = {},
                         onDismiss = {}
                     )
                 }
             }
         }
         waitForIdle()
-        captureToImage().captureRoboImage("screenshots/agent_access.png")
+        captureToImage().captureRoboImage("screenshots/$name.png")
     }
 }

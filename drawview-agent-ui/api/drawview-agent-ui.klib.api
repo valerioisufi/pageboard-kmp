@@ -11,6 +11,8 @@ final class io.github.valerioisufi.drawview.agent.ui/AgentReviewUi { // io.githu
 
     final val editorExtension // io.github.valerioisufi.drawview.agent.ui/AgentReviewUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.agent.ui/AgentReviewUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]
+    final val libraryAction // io.github.valerioisufi.drawview.agent.ui/AgentReviewUi.libraryAction|{}libraryAction[0]
+        final fun <get-libraryAction>(): io.github.valerioisufi.drawview.ui.extension/LibraryAction // io.github.valerioisufi.drawview.agent.ui/AgentReviewUi.libraryAction.<get-libraryAction>|<get-libraryAction>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors : io.github.valerioisufi.drawview.agent/AgentEditors { // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors|null[0]

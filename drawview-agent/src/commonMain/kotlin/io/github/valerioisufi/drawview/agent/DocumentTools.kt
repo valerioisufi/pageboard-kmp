@@ -94,13 +94,17 @@ public class DocumentTools internal constructor(
         description = "Lists the documents the user allowed: their id, title and number of pages.",
         inputSchema = schema()
     ) { _, _ ->
-        val granted = access.grants.value.documents
+        val grants = access.grants.value
         val listed = documents.store.documents.first()
-            .filter { it.id in granted }
+            .filter { grants.allows(it.id) }
             .map { DocumentEntry(it.id, it.name, it.pageCount) }
         value(buildJsonObject {
             put("documents", json.encodeToJsonElement(listed))
-            put("note", if (listed.isEmpty()) "No document is allowed yet: the user allows one from its editor, in \"External models…\"." else "Other documents may exist; the user allows them one by one.")
+            when {
+                grants.allDocuments -> {}
+                listed.isEmpty() -> put("note", "No document is allowed yet: the user allows one from its editor, in \"External models…\", or all of them.")
+                else -> put("note", "Other documents may exist; the user allows them one by one, or all of them.")
+            }
         })
     }
 
@@ -203,10 +207,11 @@ public class DocumentTools internal constructor(
     ) { arguments, _ ->
         val query = arguments.requiredString("query").take(MAX_QUERY_LENGTH)
         val limit = (arguments.int("limit") ?: MAX_SEARCH_RESULTS).coerceIn(1, MAX_SEARCH_RESULTS)
-        val granted = access.grants.value.documents
+        val grants = access.grants.value
+        val granted = if (grants.allDocuments) documents.store.documents.first().mapTo(mutableSetOf()) { it.id } else grants.documents
         val hits = engines.search?.invoke(query, granted, limit).orEmpty()
             // Whatever the search answers, nothing but what is allowed
-            .filter { it.documentId in granted }
+            .filter { it.documentId in granted && grants.allows(it.documentId) }
             .take(limit)
         value(buildJsonObject {
             put("passages", json.encodeToJsonElement(hits.map { SearchEntry(it.documentId, it.title, it.pageId, it.snippet) }))
@@ -301,7 +306,7 @@ public class DocumentTools internal constructor(
     ) { arguments, _ ->
         val proposal = proposals.find(arguments.requiredString("proposal"))
             ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such proposal: the application drops them when it quits.")
-        if (proposal.documentId !in access.grants.value.documents) {
+        if (!access.allows(proposal.documentId)) {
             throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The document of this proposal is no longer allowed.")
         }
         value(proposalJson.encodeToJsonElement(proposal.toStatus()))
@@ -309,7 +314,7 @@ public class DocumentTools internal constructor(
 
     /** Runs [block] on the document [id], allowed and out of the trash, opened for it. */
     private suspend fun <T> withDocument(id: String, block: suspend (OpenDocument) -> T): T {
-        if (id !in access.grants.value.documents) {
+        if (!access.allows(id)) {
             throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The user has not allowed this document: they can do it from its editor, in \"External models…\".")
         }
         if (documents.store.documents.first().none { it.id == id }) {

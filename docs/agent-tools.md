@@ -172,6 +172,8 @@ A client granted "apply directly" for one connection has its proposals accepted 
 same checks, when the document is open in an editor (so that they can be undone); on a closed document
 it stays a proposal. The grant ends with the connection. The panel shows what was applied.
 
+Replaced by the setting `applyDirectly`, kept and for every client, in `docs/agent-full-access.md`.
+
 ### The local access
 
 * **Off by default.** The setting starts the host; turning it off stops it and closes the clients.

@@ -367,10 +367,10 @@ class ExternalAgentsTest {
     }
 
     @Test
-    fun aClientInDirectModeWaitsForNoReviewWhenAnEditorIsOpen() = runTest {
+    fun applyingDirectlyWaitsForNoReviewWhenAnEditorIsOpen() = runTest {
         val editors = FakeEditors(open = true)
         val setup = setup(this, backgroundScope, AgentEngines(editors = editors))
-        setup.agents.access.setDirect(setup.connection, true)
+        setup.agents.access.setApplyDirectly(true)
         val id = setup.propose(insert("Direct"))
         assertFalse(setup.agents.proposals.find(id)!!.isWaiting)
         assertEquals("Direct", setup.open.document.pages.first().texts.single().text)
@@ -378,23 +378,36 @@ class ExternalAgentsTest {
     }
 
     @Test
-    fun aClientInDirectModeWaitsForTheReviewWithoutAnEditor() = runTest {
+    fun applyingDirectlyWaitsForTheReviewWithoutAnEditor() = runTest {
         val editors = FakeEditors(open = false)
         val setup = setup(this, backgroundScope, AgentEngines(editors = editors))
-        setup.agents.access.setDirect(setup.connection, true)
+        setup.agents.access.setApplyDirectly(true)
         val id = setup.propose(insert("Direct"))
         assertTrue(setup.agents.proposals.find(id)!!.isWaiting)
         assertEquals(listOf(setup.documentId), editors.opened)
     }
 
     @Test
-    fun theDirectModeEndsWithTheConnection() = runTest {
-        val setup = setup(this, backgroundScope, AgentEngines(editors = FakeEditors(open = true)))
-        setup.agents.access.setDirect(setup.connection, true)
+    fun applyingDirectlyIsKeptAcrossConnections() = runTest {
+        val editors = FakeEditors(open = true)
+        val setup = setup(this, backgroundScope, AgentEngines(editors = editors))
+        setup.agents.access.setApplyDirectly(true)
         setup.agents.access.disconnect(setup.connection)
-        val again = setup.agents.access.connect("test")
-        assertFalse(again.direct)
-        assertFalse(setup.agents.access.isDirect(setup.connection))
+        val again = setup.agents.access.connect("command")
+        val proposal = assertIs<ToolResult.Value>(
+            setup.agents.tools.call(
+                "propose",
+                buildJsonObject {
+                    put("document", setup.documentId)
+                    put("title", "A change")
+                    put("items", JsonArray(listOf(insert("Again"))))
+                },
+                again.id
+            )
+        ).json.jsonObject.string("proposal")
+        assertFalse(setup.agents.proposals.find(proposal)!!.isWaiting)
+        val kept = AgentAccess(setup.store).apply { load() }
+        assertTrue(kept.grants.value.applyDirectly)
     }
 
     @Test
@@ -412,6 +425,53 @@ class ExternalAgentsTest {
         store.setPreference(AgentAccess.PREFERENCE_KEY, "{broken")
         val broken = AgentAccess(store).apply { load() }
         assertEquals(AgentGrants(), broken.grants.value)
+    }
+
+    @Test
+    fun theGrantsStoredBeforeTheFullAccessReadAsTheyWere() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        // The value written by the application before allDocuments and applyDirectly
+        store.setPreference(AgentAccess.PREFERENCE_KEY, """{"enabled":true,"documents":["a","b"]}""")
+        val access = AgentAccess(store).apply { load() }
+        assertEquals(AgentGrants(enabled = true, documents = setOf("a", "b")), access.grants.value)
+        assertFalse(access.grants.value.allDocuments)
+        assertFalse(access.grants.value.applyDirectly)
+        assertTrue(access.allows("a"))
+        assertFalse(access.allows("c"))
+
+        access.setAllDocuments(true)
+        access.setAllDocuments(false)
+        assertEquals(setOf("a", "b"), AgentAccess(store).apply { load() }.grants.value.documents)
+    }
+
+    @Test
+    fun allDocumentsReachesTheOnesMadeLater() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.agents.access.revoke(setup.documentId)
+        setup.agents.access.setAllDocuments(true)
+        val later = setup.store.createDocument("Chemistry", 210f, 297f, PageBackground.Solid())
+        val listed = setup.call("list_documents").getValue("documents").jsonArray.map { it.jsonObject.string("id") }.toSet()
+        assertEquals(setOf(setup.documentId, later.id), listed)
+        val read = setup.call("read_document", buildJsonObject { put("document", later.id) })
+        assertTrue(read.containsKey("pages"))
+
+        setup.agents.access.setEnabled(false)
+        assertFalse(setup.agents.access.allows(later.id))
+    }
+
+    @Test
+    fun allDocumentsSearchesThemAll() = runTest {
+        var asked = emptySet<String>()
+        val setup = setup(this, backgroundScope, AgentEngines(search = { _, ids, _ ->
+            asked = ids
+            ids.map { AgentSearchHit(it, "T", null, it) }
+        }))
+        setup.agents.access.revoke(setup.documentId)
+        setup.agents.access.setAllDocuments(true)
+        val other = setup.store.createDocument("Chemistry", 210f, 297f, PageBackground.Solid())
+        val passages = setup.call("search", buildJsonObject { put("query", "x") }).getValue("passages").jsonArray
+        assertEquals(setOf(setup.documentId, other.id), asked)
+        assertEquals(2, passages.size)
     }
 
     @Test
