@@ -606,6 +606,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V
+	public final fun saveWriting ()V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V

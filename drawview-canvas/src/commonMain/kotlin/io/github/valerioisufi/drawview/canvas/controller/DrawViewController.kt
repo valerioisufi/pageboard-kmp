@@ -567,13 +567,17 @@ public class DrawViewController(
     // History
     // ==========================================================
 
+    /** Undoes the last change; a text being written is saved first, so that its writing is undone. */
     public fun undo() {
         clearSelection()
+        if (textEditorManager.isEditing) textEditorManager.finishEditing()
         historyManager.undo()
     }
 
+    /** Redoes the last change undone; a text being written is saved first. */
     public fun redo() {
         clearSelection()
+        if (textEditorManager.isEditing) textEditorManager.finishEditing()
         historyManager.redo()
     }
 

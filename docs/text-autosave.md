@@ -69,7 +69,7 @@ the one place where a note lives; nothing new is stored, nothing has to be resto
 |---|---|---|
 | The change of the box as it is now, submitted without closing the editor; what the next change is made from (`editedFrom`, the element) taken from the document | `TextEditorManager.saveWriting` (`drawview-canvas`, public) | Information Expert, Controller |
 | When to save: some time after the last change, at most some time after the first one not saved | `WritingSaver` (`drawview-canvas`, new, internal) | Pure Fabrication, High Cohesion |
-| The saves of a writing undone in one step | `HistoryManager` entry kept open (`openEntry` / `closeEntry`, internal) | Information Expert, Protected Variations |
+| The saves of a writing undone in one step | `HistoryManager`, the entry kept open (`intoEntry` / `closeEntry`, internal) | Information Expert, Protected Variations |
 | Undo and redo of the canvas while writing: the writing ended first | `DrawViewController.undo` / `redo` | Controller |
 | The writing of an open document saved now, and ended when the document is closed | `EditorSession.saveWriting`, `DocumentEditorViewModel.closeSession`, `DrawViewSessions.saveWriting` (`drawview-session`) | Controller, Indirection |
 | The stop of the screen of the editor (Android, iOS) | `EditorSessionScreen`, a `LifecycleEventEffect(ON_STOP)` | Indirection, Low Coupling |
@@ -120,7 +120,15 @@ step too (today it takes two). A new text saved and then emptied leaves an entry
 nothing, which is dropped.
 
 The entry is a mechanism of its own, not `beginGroup` across the user's time: a group left open by a
-bug would swallow every later change. Undo or redo on the canvas while writing ends the writing
+bug would swallow every later change. Only the changes the editor submits through it
+(`HistoryManager.intoEntry`) go into it; any other change recorded meanwhile (a page added from the
+menu) closes it first, and is a step of its own.
+
+An entry of the history is now a list of changes, undone (and redone) one after the other, each its
+own operation. A `CompositeChange` of the inverses would not do: it is one operation with one stamp,
+and of two inverses of the same text the second is taken as already included (its versions are
+covered by the stamp of the first). A writing saved three times is undone by three operations,
+sent to the other devices like any undo. Undo or redo on the canvas while writing ends the writing
 first, so that what is undone is the writing (today it undoes the change before and leaves the box
 open over it).
 
@@ -144,7 +152,7 @@ writing without pauses) behind.
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | `saveWriting` and the history entry: tests in `drawview-canvas` of a new text and a changed one saved with the editor open (same `sessionId`, value and caret), one undo for the writing (with saves, with a flow), a blank text not saved, a new text saved then emptied, a chain saved with its links and flowed on closing, a text changed on another device kept as one copy, a box moved to another page, undo while writing | to do |
+| 1 | `saveWriting` and the history entry (`TextAutosaveTest`): tests in `drawview-canvas` of a new text and a changed one saved with the editor open (same `sessionId`, value and caret), one undo for the writing (with saves, with a flow), a blank text not saved, a new text saved then emptied, a chain saved with its links and flowed on closing, a text changed on another device kept as one copy, a box moved to another page, undo while writing, another change meanwhile a step of its own | done |
 | 2 | `WritingSaver`: tests with virtual time (saved 2 s after the last change, at most 10 s while typing, nothing when unchanged, stopped at the end); **the kill test**: in `drawview-session`, a document of a `KeyValueDocumentStore` written in a box, the time past the save, the process dropped without closing anything, a new store on the same storage opens the document and finds the text; the same on the Room store on the JVM | to do |
 | 3 | The signals: `closeSession` ends the writing, `ON_STOP` in `EditorSessionScreen`, `DrawViewSessions.saveWriting` in the exits of the desktop apps; iOS verified (or `scenePhase`); tried on the tablet (`adb install -r` over a box open) and on the desktop app on a scratch directory | to do |
 
@@ -178,6 +186,15 @@ Taken alone, revertible:
    writes in it.
 
 ## Left for later
+
+- **Copies of a text changed apart on two devices.** When two devices change the same text
+  without seeing each other (offline from each other: the presence keeps them from writing it at
+  once), the content that loses is kept as a copy under the text. With several operations of one
+  device against one of the other, the devices can end with different copies: the one receiving the
+  several operations keeps a copy of an intermediate one too (its content lost against the other's,
+  before the next one of the same device wins). It was so before, for a text written twice; the saves
+  make several operations of one writing common. Nothing is lost (a copy too many, on one device);
+  making the copies the same everywhere is a change of `UpdateTexts` (`writeText`), of its own.
 
 - A text removed on another device while it is written here closes the editor and drops what was
   written (`onChange`, `cancelEditing`); with the saves, what was saved stays in the removed text,

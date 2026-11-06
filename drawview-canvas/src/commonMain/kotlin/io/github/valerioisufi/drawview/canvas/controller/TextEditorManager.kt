@@ -206,6 +206,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     private var editedFrom: TextData? = null
 
     /**
+     * Whether the writing began on a new text: saved meanwhile (see [saveWriting]) and emptied, it
+     * leaves nothing to undo.
+     */
+    private var writingNewText = false
+
+    /**
      * Where the caret goes once the edited text is laid out: a point of the box in millimeters
      * from its top-left corner (before its rotation), or `null` for the end of the text.
      */
@@ -277,6 +283,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        // A writing goes on across the boxes it flows into (see flowChain)
+        if (!controller.historyManager.hasEntry) writingNewText = item == null
         activeTextItem = item
         activeTextPageIndex = pageIndex
         itemPageIndex = if (item != null) pageIndex else -1
@@ -383,37 +391,96 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      * moved to another page goes there, on top of its elements, in the same change.
      */
     public fun finishEditing() {
+        var keep = true
+        try {
+            keep = finishWriting()
+        } finally {
+            controller.historyManager.closeEntry(keep)
+        }
+    }
+
+    /**
+     * Saves the text being written as it is now, the editor staying open on it, as [finishEditing]
+     * would save it alone (its chain is not flowed): so that a process killed while it is written
+     * does not lose it (see `docs/text-autosave.md`). A blank text, or one saved as it is, is not
+     * saved; the saves of a writing are undone with it, in one step.
+     */
+    public fun saveWriting() {
         val pageIndex = activeTextPageIndex
-        if (pageIndex < 0) return
+        if (pageIndex < 0 || value.text.isBlank() || controller.session.isReadOnly) return
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val existing = activeTextItem
+        val itemPage = if (existing != null) controller.document.pages.getOrNull(itemPageIndex) ?: return else page
+        val data = placedDraft(page)
+        if (existing == null) {
+            // Kept out of the tiles while written, as a text changed is
+            controller.hiddenElements.setDragged(listOf(data.id), true)
+            submit(AddElements.of(page, listOf(data.toElement())))
+            val added = page.texts.firstOrNull { it.id == data.id }
+            if (added == null) {
+                controller.hiddenElements.setDragged(listOf(data.id), false)
+                return
+            }
+            activeTextItem = added
+            itemPageIndex = pageIndex
+        } else if (itemPage !== page) {
+            // Moved to the page (see UpdateTexts), on top of its elements
+            submit(CompositeChange(listOf(UpdateTexts(page.id, listOf(data)), ReorderElements.onTop(page.id, listOf(existing.id)))))
+            itemPageIndex = pageIndex
+        } else if (data != editedFrom) {
+            submit(UpdateTexts(page.id, listOf(data)))
+        } else {
+            return
+        }
+        // The next change is made from the text as saved
+        editedFrom = activeTextItem?.toData()?.copy(order = null)
+    }
+
+    /** Submits [change], a change of the text written: undone with the others of the writing. */
+    private fun submit(change: DocumentChange) {
+        controller.historyManager.intoEntry { controller.session.submit(change) }
+    }
+
+    /**
+     * The draft placed by its room on [page], or the text as it was when only the rounding of its
+     * box differs.
+     */
+    private fun placedDraft(page: DrawPage): TextData {
+        val placed = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page)
+        val from = editedFrom
+        return if (from != null && placed.copy(x = from.x, y = from.y, width = from.width) == from &&
+            abs(placed.x - from.x) < ROUNDING_MM && abs(placed.y - from.y) < ROUNDING_MM && abs(placed.width - from.width) < ROUNDING_MM
+        ) from else placed
+    }
+
+    /** [finishEditing] but for the entry of the history; whether the writing leaves something to undo. */
+    private fun finishWriting(): Boolean {
+        val pageIndex = activeTextPageIndex
+        if (pageIndex < 0) return true
         val page = controller.document.pages.getOrNull(pageIndex)
         val existing = activeTextItem
         val itemPage = if (existing != null) controller.document.pages.getOrNull(itemPageIndex) else page
         if (page == null || itemPage == null) {
             cancelEditing()
-            return
+            return true
         }
 
         // A text below the bottom of its page, or in a chain: flowed into its boxes (emptied, the
         // text of those after it comes back to it)
         val after = if (existing != null) followingInChain(existing) else emptyList()
-        if ((value.text.isNotBlank() || after.any { it.text.isNotBlank() }) && flowChain(caret = null)) return
+        if ((value.text.isNotBlank() || after.any { it.text.isNotBlank() }) && flowChain(caret = null)) return true
 
         if (value.text.isBlank()) {
             if (existing != null) {
                 controller.hiddenElements.setDragged(listOf(existing.id), false)
-                controller.session.submit(emptiedChange(existing, itemPage, after))
+                submit(emptiedChange(existing, itemPage, after))
             }
             resetSession()
-            return
+            // A new text saved while written, then emptied: nothing to undo
+            return !writingNewText
         }
 
-        val data = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page).let { placed ->
-            // Its room as it was when only the rounding of its box differs
-            val from = editedFrom
-            if (from != null && placed.copy(x = from.x, y = from.y, width = from.width) == from &&
-                abs(placed.x - from.x) < ROUNDING_MM && abs(placed.y - from.y) < ROUNDING_MM && abs(placed.width - from.width) < ROUNDING_MM
-            ) from else placed
-        }
+        val data = placedDraft(page)
         if (existing != null) {
             controller.hiddenElements.setDragged(listOf(existing.id), false)
             // Shown again even when nothing changed
@@ -421,16 +488,17 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             controller.invalidatePageContent(itemPage, existing.getRotatedBounds())
             if (itemPage !== page) {
                 // Moved to the page (see UpdateTexts), on top of its elements
-                controller.session.submit(CompositeChange(listOf(UpdateTexts(page.id, listOf(data)), ReorderElements.onTop(page.id, listOf(existing.id)))))
+                submit(CompositeChange(listOf(UpdateTexts(page.id, listOf(data)), ReorderElements.onTop(page.id, listOf(existing.id)))))
             } else if (data != editedFrom) {
                 // Changed by the user (not only on another device meanwhile)
-                controller.session.submit(UpdateTexts(page.id, listOf(data)))
+                submit(UpdateTexts(page.id, listOf(data)))
             }
         } else {
-            controller.session.submit(AddElements.of(page, listOf(data.toElement())))
+            submit(AddElements.of(page, listOf(data.toElement())))
         }
         controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
         resetSession()
+        return true
     }
 
     /**
@@ -445,6 +513,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }
         resetSession()
+        controller.historyManager.closeEntry()
     }
 
     /** Closes the editor of a text that a change made on another device removed. */
@@ -1014,7 +1083,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             it.markDirty()
             controller.invalidatePageContent(page, it.getRotatedBounds())
         }
-        if (changes.isNotEmpty()) controller.session.submit(CompositeChange(changes))
+        if (changes.isNotEmpty()) submit(CompositeChange(changes))
         controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
         resetSession()
         if (caret != null) {
@@ -1032,6 +1101,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             val session = sessionId
             openAt(ids[target], (caret - start).coerceIn(0, pieces[target].text.length))
             flowedFromSession = session
+            // The writing goes on in that box, or ends here
+            if (!isEditing) controller.historyManager.closeEntry()
         }
         return true
     }
