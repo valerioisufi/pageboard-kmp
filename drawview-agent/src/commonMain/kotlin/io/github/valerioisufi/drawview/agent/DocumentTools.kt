@@ -174,6 +174,7 @@ public class DocumentTools internal constructor(
                     heightMm = page.heightMm,
                     measured = geometry.isMeasured,
                     base = page.pageBase(),
+                    background = if (page.hasCustomBackground) PageItems.kindOf(page.background) else "document",
                     strokes = page.strokes.size,
                     texts = page.texts.filter { it.removed == null }.sortedWith(compareBy({ it.y }, { it.x })).map {
                         val box = geometry.textBoxes.getValue(it.id)
@@ -303,6 +304,7 @@ public class DocumentTools internal constructor(
         val items = arguments.items()
         limits.checkItems(items)
         if (!limits.canPlan(items)) throw AgentToolException(AgentErrorCode.REFUSED, "This is too much text to preview at once: use fewer items, or propose it.")
+        checkNames(documentId, items)
         value(proposalJson.encodeToJsonElement(withDocument(documentId) { open -> planOf(open, withImages(open, items, keep = false)) }))
     }
 
@@ -319,6 +321,7 @@ public class DocumentTools internal constructor(
         val title = arguments.requiredString("title")
         limits.check(title, arguments.items())
         val items = withDocument(documentId) { open -> withImages(open, arguments.items(), keep = true) }
+        checkNames(documentId, items)
         var plan: PlanAnswer? = null
         val proposal = withDocument(documentId) { open ->
             val entries = open.edit { session ->
@@ -375,6 +378,15 @@ public class DocumentTools internal constructor(
         return Rect(room.left, room.top, room.left + width, room.top + width * ratio)
     }
 
+    /** Refuses a new title another document of its folder has. */
+    private suspend fun checkNames(documentId: String, items: List<ProposalItem>) {
+        for (item in items.filterIsInstance<ProposalItem.RenameDocument>()) {
+            if (!documents.store.isDocumentNameAvailable(documentId, item.title.trim())) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "Another document of its folder is named \"${item.title.trim().take(200)}\".")
+            }
+        }
+    }
+
     /** What [items] would do to the document of [open] now; fails when what they refer to is not there. */
     private suspend fun planOf(open: OpenDocument, items: List<ProposalItem>): PlanAnswer = planning.withLock {
         open.edit { session ->
@@ -397,7 +409,7 @@ public class DocumentTools internal constructor(
         put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs; a numbered list in a style of its own has two spaces after its markers, as in `a.  text`, `I.  text`, `1)  text`.")
         putJsonObject("items") {
             put("type", "object")
-            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
+            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
             putJsonObject("properties") {
                 putJsonObject("kind") {
                     put("type", "string")
@@ -413,6 +425,11 @@ public class DocumentTools internal constructor(
                         add(JsonPrimitive("add_stroke"))
                         add(JsonPrimitive("restyle_stroke"))
                         add(JsonPrimitive("add_image"))
+                        add(JsonPrimitive("remove_page"))
+                        add(JsonPrimitive("move_page"))
+                        add(JsonPrimitive("duplicate_page"))
+                        add(JsonPrimitive("set_page_format"))
+                        add(JsonPrimitive("rename_document"))
                     }
                 }
             }
@@ -530,14 +547,17 @@ internal class ProposalLimits(
             for (target in ElementItems.targetsOf(item)) {
                 if (!targets.add(target)) refuse("An element can be changed by one item of a proposal only.")
             }
-            checkElementItem(item)
+            PageItems.targetOf(item)?.let { page ->
+                if (!targets.add("page:$page")) refuse("A page can be removed, moved or formatted by one item of a proposal only.")
+            }
+            checkElementItem(item, items)
         }
         val removed = items.filterIsInstance<ProposalItem.RemoveText>().mapTo(mutableSetOf()) { it.text }
         for (item in items.filterIsInstance<ProposalItem.InsertText>()) checkAnchor(item, removed)
     }
 
     /** The values of an item on elements, whatever the document. */
-    private fun checkElementItem(item: ProposalItem) {
+    private fun checkElementItem(item: ProposalItem, items: List<ProposalItem>) {
         fun color(text: String?) {
             if (text != null && ElementItems.parseColor(text) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
         }
@@ -576,6 +596,25 @@ internal class ProposalLimits(
                 if (item.color == null && item.width == null) refuse("restyle_stroke needs color or width.")
             }
             is ProposalItem.AddImage -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of an image file.")
+            is ProposalItem.SetPageFormat -> {
+                fun side(value: Float?) {
+                    if (value != null && (!value.isFinite() || value < PageItems.MIN_PAGE_SIDE_MM || value > PageItems.MAX_PAGE_SIDE_MM)) {
+                        refuse("A side of a page is between ${PageItems.MIN_PAGE_SIDE_MM} and ${PageItems.MAX_PAGE_SIDE_MM} millimeters.")
+                    }
+                }
+                side(item.widthMm)
+                side(item.heightMm)
+                color(item.backgroundColor)
+                if (item.background != null && item.background !in PageItems.BACKGROUNDS) refuse("background is plain, ruled, grid, dotted or document.")
+                if (item.spacingMm != null && (!item.spacingMm.isFinite() || item.spacingMm < 1f || item.spacingMm > 100f)) refuse("spacing_mm is between 1 and 100.")
+                if (listOf(item.widthMm, item.heightMm, item.background, item.spacingMm, item.backgroundColor).all { it == null }) {
+                    refuse("set_page_format needs a size or a background.")
+                }
+            }
+            is ProposalItem.RenameDocument -> {
+                if (item.title.isBlank() || item.title.length > PageItems.MAX_TITLE_LENGTH) refuse("A title of at most ${PageItems.MAX_TITLE_LENGTH} characters is needed.")
+                if (items.count { it is ProposalItem.RenameDocument } > 1) refuse("A document is renamed by one item of a proposal only.")
+            }
             else -> {}
         }
     }
@@ -652,6 +691,28 @@ private fun DrawDocument.beforeOf(item: ProposalItem): String? {
             if (item.page != null && pageById(item.page) == null) missing("page \"${item.page.take(64)}\"")
             null
         }
+        is ProposalItem.RemovePage -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            null
+        }
+        is ProposalItem.MovePage -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            if (item.after != null) {
+                pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+                if (item.after == item.page) throw AgentToolException(AgentErrorCode.REFUSED, "A page is not moved after itself.")
+            }
+            null
+        }
+        is ProposalItem.DuplicatePage -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.SetPageFormat -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            null
+        }
+        is ProposalItem.RenameDocument -> title
     }
 }
 
@@ -710,6 +771,11 @@ private val ProposalItem.wireKind: String
         is ProposalItem.AddStroke -> "add_stroke"
         is ProposalItem.RestyleStroke -> "restyle_stroke"
         is ProposalItem.AddImage -> "add_image"
+        is ProposalItem.RemovePage -> "remove_page"
+        is ProposalItem.MovePage -> "move_page"
+        is ProposalItem.DuplicatePage -> "duplicate_page"
+        is ProposalItem.SetPageFormat -> "set_page_format"
+        is ProposalItem.RenameDocument -> "rename_document"
     }
 
 /** A piece as a client reads it; a page the plan would add has no id for it until it is there. */
@@ -834,6 +900,7 @@ private data class PageContent(
     @SerialName("height_mm") val heightMm: Float,
     val measured: Boolean,
     val base: String,
+    val background: String,
     val strokes: Int,
     val texts: List<TextEntry>,
     val images: List<ImageEntry>,

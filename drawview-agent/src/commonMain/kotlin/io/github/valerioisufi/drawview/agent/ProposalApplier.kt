@@ -76,6 +76,8 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                     }
                 }
                 is ProposalItem.AddPage -> changes += planned.newPages
+                is ProposalItem.RemovePage, is ProposalItem.MovePage, is ProposalItem.DuplicatePage,
+                is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> changes += PageItems.changesOf(document, item)
                 else -> changes += ElementItems.changesOf(document, item)
             }
             ItemOutcome.ACCEPTED

@@ -75,6 +75,11 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_close
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_command
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_decided_title
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_move_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_duplicate_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_set_page_format
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_rename_document
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_place_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
@@ -499,6 +504,11 @@ private fun itemLabel(item: ProposalItem): String = stringResource(
         is ProposalItem.AddStroke -> Res.string.agent_item_add_stroke
         is ProposalItem.RestyleStroke -> Res.string.agent_item_restyle_stroke
         is ProposalItem.AddImage -> Res.string.agent_item_add_image
+        is ProposalItem.RemovePage -> Res.string.agent_item_remove_page
+        is ProposalItem.MovePage -> Res.string.agent_item_move_page
+        is ProposalItem.DuplicatePage -> Res.string.agent_item_duplicate_page
+        is ProposalItem.SetPageFormat -> Res.string.agent_item_set_page_format
+        is ProposalItem.RenameDocument -> Res.string.agent_item_rename_document
     }
 )
 

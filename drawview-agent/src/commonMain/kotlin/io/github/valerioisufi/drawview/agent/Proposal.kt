@@ -133,6 +133,46 @@ public sealed interface ProposalItem {
         val area: AgentArea? = null,
         val hash: String = ""
     ) : ProposalItem
+
+    /** Removes the page [page], as it was when read ([base]): it goes to the trash of the pages. */
+    @Serializable
+    @SerialName("remove_page")
+    public data class RemovePage(val page: String, val base: String) : ProposalItem
+
+    /** Moves the page [page] after the page [after] (`null`: before every page). */
+    @Serializable
+    @SerialName("move_page")
+    public data class MovePage(val page: String, val after: String? = null) : ProposalItem
+
+    /** Adds a copy of the page [page], with all it holds, after the page [after] (`null`: after itself). */
+    @Serializable
+    @SerialName("duplicate_page")
+    public data class DuplicatePage(val page: String, val after: String? = null) : ProposalItem
+
+    /**
+     * Changes the format of the page [page], as it was when read ([base]): its size in millimeters and
+     * its background, what is not given staying as it is.
+     *
+     * @param background `plain`, `ruled`, `grid`, `dotted`, or `document` for the background of the document.
+     * @param spacingMm the distance between the lines or the dots of the background.
+     * @param backgroundColor `#RRGGBB` or `#RRGGBBAA`.
+     */
+    @Serializable
+    @SerialName("set_page_format")
+    public data class SetPageFormat(
+        val page: String,
+        val base: String,
+        @SerialName("width_mm") val widthMm: Float? = null,
+        @SerialName("height_mm") val heightMm: Float? = null,
+        val background: String? = null,
+        @SerialName("spacing_mm") val spacingMm: Float? = null,
+        @SerialName("background_color") val backgroundColor: String? = null
+    ) : ProposalItem
+
+    /** Renames the document [title]. */
+    @Serializable
+    @SerialName("rename_document")
+    public data class RenameDocument(val title: String) : ProposalItem
 }
 
 /** An element of a page, as it was when read ([base]). */

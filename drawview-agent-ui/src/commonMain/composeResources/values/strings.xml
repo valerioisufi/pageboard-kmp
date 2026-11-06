@@ -19,6 +19,11 @@
     <string name="agent_item_add_stroke">Draw a stroke</string>
     <string name="agent_item_restyle_stroke">Change the color or width of a stroke</string>
     <string name="agent_item_add_image">Add an image</string>
+    <string name="agent_item_remove_page">Remove a page</string>
+    <string name="agent_item_move_page">Move a page</string>
+    <string name="agent_item_duplicate_page">Duplicate a page</string>
+    <string name="agent_item_set_page_format">Change the format of a page</string>
+    <string name="agent_item_rename_document">Rename the document</string>
     <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
     <string name="agent_outcome_accepted">Applied</string>
     <string name="agent_outcome_rejected">Rejected</string>

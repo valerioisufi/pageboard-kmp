@@ -147,6 +147,13 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 }
                 is ProposalItem.PlaceElements, is ProposalItem.ReorderElements, is ProposalItem.RestyleText,
                 is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.RemovePage -> {
+                    // What comes after it does not go on it
+                    pages.removeAt(pages.indexOfFirst { it.id == item.page })
+                    PlannedItem(false, emptyList(), 0, emptyList())
+                }
+                is ProposalItem.DuplicatePage -> PlannedItem(false, emptyList(), 1, emptyList())
+                is ProposalItem.MovePage, is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> PlannedItem(false, emptyList(), 0, emptyList())
             }
         }
         return ProposalPlan(measure.isMeasured, planned, pages.map { it.id })
@@ -182,6 +189,10 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.AddStroke -> document.pageById(item.page) == null
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(document, item.stroke)?.second?.elementBase() != item.base
         is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
+        // A document keeps one page at least
+        is ProposalItem.RemovePage -> PageItems.isStale(document, item) || pages.none { it.id == item.page } || pages.size <= 1
+        is ProposalItem.MovePage, is ProposalItem.DuplicatePage, is ProposalItem.SetPageFormat -> PageItems.isStale(document, item)
+        is ProposalItem.RenameDocument -> false
     }
 
     private fun planReplace(
