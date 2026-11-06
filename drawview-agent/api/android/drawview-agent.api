@@ -21,6 +21,19 @@ public final class io/github/valerioisufi/drawview/agent/AgentAccess {
 public final class io/github/valerioisufi/drawview/agent/AgentAccess$Companion {
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentActivity {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/AgentActivity$Companion;
+	public static final field DEFAULT_MAX_KEPT I
+	public fun <init> ()V
+	public fun <init> (ILkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (ILkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun find (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/AgentBatch;
+	public final fun getBatches ()Lkotlinx/coroutines/flow/StateFlow;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentActivity$Companion {
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentArea {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/AgentArea$Companion;
 	public fun <init> (FFFF)V
@@ -54,6 +67,30 @@ public final synthetic class io/github/valerioisufi/drawview/agent/AgentArea$$se
 
 public final class io/github/valerioisufi/drawview/agent/AgentArea$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentBatch {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()I
+	public final fun component6 ()J
+	public final fun component7 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJZ)Lio/github/valerioisufi/drawview/agent/AgentBatch;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/AgentBatch;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJZILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/AgentBatch;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAt ()J
+	public final fun getClient ()Ljava/lang/String;
+	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getItems ()I
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getUndone ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentConnection {
@@ -209,11 +246,13 @@ public final class io/github/valerioisufi/drawview/agent/ExternalAgents {
 	public final fun decide (Ljava/lang/String;Ljava/util/Set;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun decide$default (Lio/github/valerioisufi/drawview/agent/ExternalAgents;Ljava/lang/String;Ljava/util/Set;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun getAccess ()Lio/github/valerioisufi/drawview/agent/AgentAccess;
+	public final fun getActivity ()Lio/github/valerioisufi/drawview/agent/AgentActivity;
 	public final fun getProposals ()Lio/github/valerioisufi/drawview/agent/ProposalBook;
 	public final fun getTools ()Lio/github/valerioisufi/drawview/agent/DocumentTools;
 	public final fun plan (Lio/github/valerioisufi/drawview/agent/Proposal;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun plan$default (Lio/github/valerioisufi/drawview/agent/ExternalAgents;Lio/github/valerioisufi/drawview/agent/Proposal;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun staleItems (Lio/github/valerioisufi/drawview/agent/Proposal;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun undo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/agent/InsertPlace : java/lang/Enum {
@@ -577,5 +616,15 @@ public final class io/github/valerioisufi/drawview/agent/ToolResult$Image : io/g
 public final class io/github/valerioisufi/drawview/agent/ToolResult$Value : io/github/valerioisufi/drawview/agent/ToolResult {
 	public fun <init> (Lkotlinx/serialization/json/JsonElement;)V
 	public final fun getJson ()Lkotlinx/serialization/json/JsonElement;
+}
+
+public final class io/github/valerioisufi/drawview/agent/UndoOutcome : java/lang/Enum {
+	public static final field CHANGED Lio/github/valerioisufi/drawview/agent/UndoOutcome;
+	public static final field GONE Lio/github/valerioisufi/drawview/agent/UndoOutcome;
+	public static final field UNAVAILABLE Lio/github/valerioisufi/drawview/agent/UndoOutcome;
+	public static final field UNDONE Lio/github/valerioisufi/drawview/agent/UndoOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/UndoOutcome;
+	public static fun values ()[Lio/github/valerioisufi/drawview/agent/UndoOutcome;
 }
 

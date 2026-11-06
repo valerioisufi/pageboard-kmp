@@ -37,7 +37,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.agent.AGENT_TEXT_COLOR
+import io.github.valerioisufi.drawview.agent.AgentBatch
 import io.github.valerioisufi.drawview.agent.AgentConnection
+import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
@@ -52,6 +54,12 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_accept_selected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_clients
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changed
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changes
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_unavailable
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undo
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undone
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all_note
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct_note
@@ -107,6 +115,7 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -139,11 +148,16 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
     private fun Access(documentId: String?, onDismiss: () -> Unit) {
         val grants by agents.access.grants.collectAsState()
         val connections by agents.access.connections.collectAsState()
+        val batches by agents.activity.batches.collectAsState()
+        val outcomes = remember { mutableStateMapOf<String, UndoOutcome>() }
         val scope = rememberCoroutineScope()
         AccessSheet(
             grants = grants,
             documentId = documentId,
             connections = connections,
+            batches = batches.filter { documentId == null || it.documentId == documentId },
+            undoOutcomes = outcomes,
+            onUndo = { id -> scope.launch { outcomes[id] = agents.undo(id) } },
             onEnabled = { enabled -> scope.launch { agents.access.setEnabled(enabled) } },
             onAllDocuments = { all -> scope.launch { agents.access.setAllDocuments(all) } },
             onDocument = { allowed ->
@@ -505,6 +519,9 @@ internal fun AccessSheet(
     connections: List<AgentConnection>,
     onEnabled: (Boolean) -> Unit,
     onAllDocuments: (Boolean) -> Unit,
+    batches: List<AgentBatch> = emptyList(),
+    undoOutcomes: Map<String, UndoOutcome> = emptyMap(),
+    onUndo: (String) -> Unit = {},
     onDocument: (Boolean) -> Unit,
     onApplyDirectly: (Boolean) -> Unit,
     onDismiss: () -> Unit
@@ -569,9 +586,48 @@ internal fun AccessSheet(
                     Text(connection.name, style = MaterialTheme.typography.bodyLarge)
                 }
             }
+            if (batches.isNotEmpty()) {
+                Text(stringResource(Res.string.agent_activity_title), style = MaterialTheme.typography.titleSmall)
+                for (batch in batches.asReversed().take(MAX_BATCHES_SHOWN)) {
+                    BatchRow(batch, undoOutcomes[batch.id], onUndo = { onUndo(batch.id) })
+                }
+            }
         }
     }
 }
+
+/** A batch of changes of a model: what, from whom, and its undo. */
+@Composable
+private fun BatchRow(batch: AgentBatch, outcome: UndoOutcome?, onUndo: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(batch.title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                pluralStringResource(Res.plurals.agent_activity_changes, batch.items, batch.items, batch.client),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            val note = when {
+                batch.undone -> Res.string.agent_activity_undone
+                outcome == UndoOutcome.CHANGED -> Res.string.agent_activity_changed
+                outcome == UndoOutcome.UNAVAILABLE -> Res.string.agent_activity_unavailable
+                else -> null
+            }
+            if (note != null) {
+                Text(
+                    stringResource(note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (batch.undone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+                )
+            }
+        }
+        if (!batch.undone) {
+            TextButton(onClick = onUndo) { Text(stringResource(Res.string.agent_activity_undo)) }
+        }
+    }
+}
+
+private const val MAX_BATCHES_SHOWN = 20
 
 @Composable
 private fun SwitchRow(title: String, note: String, checked: Boolean, onChange: (Boolean) -> Unit) {

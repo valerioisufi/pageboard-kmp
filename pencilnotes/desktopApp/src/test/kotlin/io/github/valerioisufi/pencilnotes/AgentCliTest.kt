@@ -115,6 +115,30 @@ class AgentCliTest {
     }
 
     @Test
+    fun aCommandChangesADocumentInNoEditorWhenTheUserChoseToApplyDirectly() {
+        startHost()
+        // Not allowed by itself: all the documents are
+        val id = runBlocking { store.createDocument("Chemistry", 210f, 297f, PageBackground.Solid()).id }
+        runBlocking {
+            agents.access.setAllDocuments(true)
+            agents.access.setApplyDirectly(true)
+        }
+        val items = File(directory, "items.json").apply {
+            writeText("""[{"kind":"insert_text","markdown":"From the terminal"}]""")
+        }
+        val proposed = run("propose", id, "--file", items.path, "--title", "A note")
+        assertEquals(AgentCli.EXIT_OK, proposed.code, proposed.errors)
+
+        val status = run("status", proposed.output.trim())
+        assertEquals(AgentCli.EXIT_OK, status.code, status.errors)
+        assertTrue(status.output.contains("accepted"))
+        val open = assertNotNull(runBlocking { documents.open(id) })
+        assertEquals(listOf("From the terminal"), open.document.pages.first().texts.map { it.text })
+        runBlocking { documents.close(open) }
+        assertEquals(id, agents.activity.batches.value.single().documentId)
+    }
+
+    @Test
     fun aProposalIsFollowedUntilDecided() {
         startHost()
         val id = newDocument()

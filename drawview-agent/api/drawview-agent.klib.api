@@ -54,6 +54,19 @@ final enum class io.github.valerioisufi.drawview.agent/ItemOutcome : kotlin/Enum
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.agent/ItemOutcome> // io.github.valerioisufi.drawview.agent/ItemOutcome.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.agent/UndoOutcome : kotlin/Enum<io.github.valerioisufi.drawview.agent/UndoOutcome> { // io.github.valerioisufi.drawview.agent/UndoOutcome|null[0]
+    enum entry CHANGED // io.github.valerioisufi.drawview.agent/UndoOutcome.CHANGED|null[0]
+    enum entry GONE // io.github.valerioisufi.drawview.agent/UndoOutcome.GONE|null[0]
+    enum entry UNAVAILABLE // io.github.valerioisufi.drawview.agent/UndoOutcome.UNAVAILABLE|null[0]
+    enum entry UNDONE // io.github.valerioisufi.drawview.agent/UndoOutcome.UNDONE|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.agent/UndoOutcome.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.agent/UndoOutcome> // io.github.valerioisufi.drawview.agent/UndoOutcome.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.agent/UndoOutcome // io.github.valerioisufi.drawview.agent/UndoOutcome.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.agent/UndoOutcome> // io.github.valerioisufi.drawview.agent/UndoOutcome.values|values#static(){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.agent/AgentEditors { // io.github.valerioisufi.drawview.agent/AgentEditors|null[0]
     abstract fun isInEditor(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentEditors.isInEditor|isInEditor(kotlin.String){}[0]
     abstract fun openForReview(kotlin/String) // io.github.valerioisufi.drawview.agent/AgentEditors.openForReview|openForReview(kotlin.String){}[0]
@@ -335,6 +348,20 @@ final class io.github.valerioisufi.drawview.agent/AgentAccess { // io.github.val
     }
 }
 
+final class io.github.valerioisufi.drawview.agent/AgentActivity { // io.github.valerioisufi.drawview.agent/AgentActivity|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Function0<kotlin/Long> = ...) // io.github.valerioisufi.drawview.agent/AgentActivity.<init>|<init>(kotlin.Int;kotlin.Function0<kotlin.Long>){}[0]
+
+    final val batches // io.github.valerioisufi.drawview.agent/AgentActivity.batches|{}batches[0]
+        final fun <get-batches>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentBatch>> // io.github.valerioisufi.drawview.agent/AgentActivity.batches.<get-batches>|<get-batches>(){}[0]
+
+    final fun find(kotlin/String): io.github.valerioisufi.drawview.agent/AgentBatch? // io.github.valerioisufi.drawview.agent/AgentActivity.find|find(kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.agent/AgentActivity.Companion|null[0]
+        final const val DEFAULT_MAX_KEPT // io.github.valerioisufi.drawview.agent/AgentActivity.Companion.DEFAULT_MAX_KEPT|{}DEFAULT_MAX_KEPT[0]
+            final fun <get-DEFAULT_MAX_KEPT>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentActivity.Companion.DEFAULT_MAX_KEPT.<get-DEFAULT_MAX_KEPT>|<get-DEFAULT_MAX_KEPT>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.agent/AgentArea { // io.github.valerioisufi.drawview.agent/AgentArea|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.agent/AgentArea.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 
@@ -371,6 +398,37 @@ final class io.github.valerioisufi.drawview.agent/AgentArea { // io.github.valer
     final object Companion { // io.github.valerioisufi.drawview.agent/AgentArea.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/AgentArea> // io.github.valerioisufi.drawview.agent/AgentArea.Companion.serializer|serializer(){}[0]
     }
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentBatch { // io.github.valerioisufi.drawview.agent/AgentBatch|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin/Int, kotlin/Long, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.agent/AgentBatch.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean){}[0]
+
+    final val at // io.github.valerioisufi.drawview.agent/AgentBatch.at|{}at[0]
+        final fun <get-at>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentBatch.at.<get-at>|<get-at>(){}[0]
+    final val client // io.github.valerioisufi.drawview.agent/AgentBatch.client|{}client[0]
+        final fun <get-client>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.client.<get-client>|<get-client>(){}[0]
+    final val documentId // io.github.valerioisufi.drawview.agent/AgentBatch.documentId|{}documentId[0]
+        final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val id // io.github.valerioisufi.drawview.agent/AgentBatch.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.id.<get-id>|<get-id>(){}[0]
+    final val items // io.github.valerioisufi.drawview.agent/AgentBatch.items|{}items[0]
+        final fun <get-items>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentBatch.items.<get-items>|<get-items>(){}[0]
+    final val title // io.github.valerioisufi.drawview.agent/AgentBatch.title|{}title[0]
+        final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.title.<get-title>|<get-title>(){}[0]
+    final val undone // io.github.valerioisufi.drawview.agent/AgentBatch.undone|{}undone[0]
+        final fun <get-undone>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentBatch.undone.<get-undone>|<get-undone>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.component4|component4(){}[0]
+    final fun component5(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentBatch.component5|component5(){}[0]
+    final fun component6(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentBatch.component6|component6(){}[0]
+    final fun component7(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentBatch.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.agent/AgentBatch // io.github.valerioisufi.drawview.agent/AgentBatch.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentBatch.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentBatch.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentBatch.toString|toString(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentConnection { // io.github.valerioisufi.drawview.agent/AgentConnection|null[0]
@@ -536,6 +594,8 @@ final class io.github.valerioisufi.drawview.agent/ExternalAgents { // io.github.
 
     final val access // io.github.valerioisufi.drawview.agent/ExternalAgents.access|{}access[0]
         final fun <get-access>(): io.github.valerioisufi.drawview.agent/AgentAccess // io.github.valerioisufi.drawview.agent/ExternalAgents.access.<get-access>|<get-access>(){}[0]
+    final val activity // io.github.valerioisufi.drawview.agent/ExternalAgents.activity|{}activity[0]
+        final fun <get-activity>(): io.github.valerioisufi.drawview.agent/AgentActivity // io.github.valerioisufi.drawview.agent/ExternalAgents.activity.<get-activity>|<get-activity>(){}[0]
     final val proposals // io.github.valerioisufi.drawview.agent/ExternalAgents.proposals|{}proposals[0]
         final fun <get-proposals>(): io.github.valerioisufi.drawview.agent/ProposalBook // io.github.valerioisufi.drawview.agent/ExternalAgents.proposals.<get-proposals>|<get-proposals>(){}[0]
     final val tools // io.github.valerioisufi.drawview.agent/ExternalAgents.tools|{}tools[0]
@@ -544,6 +604,7 @@ final class io.github.valerioisufi.drawview.agent/ExternalAgents { // io.github.
     final suspend fun decide(kotlin/String, kotlin.collections/Set<kotlin/Int>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ...) // io.github.valerioisufi.drawview.agent/ExternalAgents.decide|decide(kotlin.String;kotlin.collections.Set<kotlin.Int>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>){}[0]
     final suspend fun plan(io.github.valerioisufi.drawview.agent/Proposal, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ...): io.github.valerioisufi.drawview.agent/ProposalPlan? // io.github.valerioisufi.drawview.agent/ExternalAgents.plan|plan(io.github.valerioisufi.drawview.agent.Proposal;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>){}[0]
     final suspend fun staleItems(io.github.valerioisufi.drawview.agent/Proposal): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.drawview.agent/ExternalAgents.staleItems|staleItems(io.github.valerioisufi.drawview.agent.Proposal){}[0]
+    final suspend fun undo(kotlin/String): io.github.valerioisufi.drawview.agent/UndoOutcome // io.github.valerioisufi.drawview.agent/ExternalAgents.undo|undo(kotlin.String){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/PlannedItem { // io.github.valerioisufi.drawview.agent/PlannedItem|null[0]

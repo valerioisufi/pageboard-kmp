@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.agent
 
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
+import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import kotlinx.coroutines.sync.Mutex
@@ -19,6 +22,7 @@ public class ExternalAgents(
 ) {
     public val access: AgentAccess = AgentAccess(preferences)
     public val proposals: ProposalBook = ProposalBook()
+    public val activity: AgentActivity = AgentActivity()
     public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received)
 
     private val applier = ProposalApplier(engines)
@@ -42,10 +46,21 @@ public class ExternalAgents(
                 indexes.forEach { outcomes[it] = ItemOutcome.STALE }
             } else {
                 try {
-                    val applied = open.edit { session ->
+                    val (applied, stamp) = open.edit { session ->
                         engines.editors?.settle(proposal.documentId)
                         val places = indexes.withIndex().mapNotNull { (position, index) -> chosen[index]?.let { position to it } }.toMap()
-                        applier.apply(session, indexes.map { proposal.entries[it].item }, places)
+                        var stamp: Stamp? = null
+                        val observer = ChangeObserver { committed -> if (committed.origin == ChangeOrigin.LOCAL) stamp = committed.operation.stamp }
+                        session.addObserver(observer)
+                        try {
+                            applier.apply(session, indexes.map { proposal.entries[it].item }, places) to stamp
+                        } finally {
+                            session.removeObserver(observer)
+                        }
+                    }
+                    val inverse = applied.inverse
+                    if (inverse != null && stamp != null) {
+                        activity.record(proposal.documentId, proposal.client, proposal.title, indexes.size, inverse, stamp)
                     }
                     indexes.forEachIndexed { position, index ->
                         outcomes[index] = applied.outcomes[position]
@@ -86,24 +101,46 @@ public class ExternalAgents(
     }
 
     /**
-     * A new [proposal] of the client [connection]: applied at once when the user chose so and its
-     * document is in an editor (so that it can be undone), shown for its review otherwise.
+     * Undoes the batch [batchId] of the [activity], whether its document is in an editor or not, when
+     * what it changed is as it left it; otherwise nothing is done.
+     */
+    public suspend fun undo(batchId: String): UndoOutcome = decisions.withLock {
+        val batch = activity.find(batchId)?.takeUnless { it.undone } ?: return UndoOutcome.GONE
+        val undo = activity.undoOf(batchId) ?: return UndoOutcome.GONE
+        val open = documents.open(batch.documentId) ?: return UndoOutcome.UNAVAILABLE
+        val outcome = try {
+            open.edit { session ->
+                when {
+                    session.isReadOnly -> UndoOutcome.UNAVAILABLE
+                    else -> {
+                        // What is being written is finished first: written on the batch, it is a change since
+                        engines.editors?.settle(batch.documentId)
+                        if (!unchangedSince(session.document, undo.inverse, undo.stamp)) {
+                            UndoOutcome.CHANGED
+                        } else {
+                            session.submit(undo.inverse)
+                            UndoOutcome.UNDONE
+                        }
+                    }
+                }
+            }
+        } finally {
+            documents.close(open)
+        }
+        if (outcome == UndoOutcome.UNDONE) activity.markUndone(batchId)
+        outcome
+    }
+
+    /**
+     * A new [proposal] of the client [connection]: applied at once when the user chose so, its document
+     * in an editor or not (it is in the [activity], to be undone); shown for its review otherwise.
      */
     @Suppress("UNUSED_PARAMETER")
     private suspend fun received(proposal: Proposal, connection: String) {
-        val editors = engines.editors
-        if (access.grants.value.applyDirectly && editors != null) {
-            val open = documents.open(proposal.documentId)
-            val inEditor = try {
-                open?.edit { editors.settle(proposal.documentId) } == true
-            } finally {
-                open?.let { documents.close(it) }
-            }
-            if (inEditor) {
-                decide(proposal.id, proposal.entries.indices.toSet())
-                return
-            }
+        if (access.grants.value.applyDirectly) {
+            decide(proposal.id, proposal.entries.indices.toSet())
+            return
         }
-        editors?.openForReview(proposal.documentId)
+        engines.editors?.openForReview(proposal.documentId)
     }
 }

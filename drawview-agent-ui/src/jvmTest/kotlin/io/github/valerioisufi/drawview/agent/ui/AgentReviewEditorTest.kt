@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
 import io.github.valerioisufi.drawview.agent.ToolResult
+import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PageBackground
@@ -204,6 +205,26 @@ class AgentReviewEditorTest {
         assertFalse(scene.agents.proposals.find(id)!!.isWaiting)
         assertEquals(setOf("From the model", "Added by the model"), scene.texts.toSet())
         scene.controller.historyManager.undo()
+        assertEquals(listOf("Old text"), scene.texts)
+    }
+
+    @Test
+    fun aBatchUndoneByCtrlZIsNotUndoneAgainFromTheActivity() = scene { scene ->
+        runBlocking { scene.agents.access.setApplyDirectly(true) }
+        scene.proposeChanges()
+        scene.controller.historyManager.undo()
+        assertEquals(listOf("Old text"), scene.texts)
+        val batch = scene.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.CHANGED, runBlocking { scene.agents.undo(batch.id) })
+        assertEquals(listOf("Old text"), scene.texts)
+    }
+
+    @Test
+    fun aBatchUndoneFromTheActivityInAnEditorIsUndoneThere() = scene { scene ->
+        runBlocking { scene.agents.access.setApplyDirectly(true) }
+        scene.proposeChanges()
+        val batch = scene.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.UNDONE, runBlocking { scene.agents.undo(batch.id) })
         assertEquals(listOf("Old text"), scene.texts)
     }
 

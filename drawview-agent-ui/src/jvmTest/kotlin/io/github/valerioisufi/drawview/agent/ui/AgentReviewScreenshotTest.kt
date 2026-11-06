@@ -15,7 +15,9 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.drawview.agent.AgentBatch
 import io.github.valerioisufi.drawview.agent.AgentConnection
+import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ItemOutcome
 import io.github.valerioisufi.drawview.agent.PlacementWarning
@@ -122,9 +124,27 @@ class AgentReviewScreenshotTest {
     fun access() = captureAccess("agent_access", AgentGrants(enabled = true, documents = setOf("document")), documentId = "document")
 
     @Test
-    fun accessFull() = captureAccess("agent_access_full", AgentGrants(enabled = true, allDocuments = true, applyDirectly = true), documentId = null)
+    fun accessFull() = captureAccess(
+        "agent_access_full",
+        AgentGrants(enabled = true, allDocuments = true, applyDirectly = true),
+        documentId = null,
+        batches = listOf(
+            AgentBatch("a", "d", "Claude Code", "Summary of chapter 2", items = 3, at = 0L, undone = true),
+            AgentBatch("b", "d", "Claude Code", "Fix the formulas", items = 1, at = 0L),
+            AgentBatch("c", "d", "script", "Tidy the headings", items = 5, at = 0L)
+        ),
+        outcomes = mapOf("b" to UndoOutcome.CHANGED),
+        height = 1020
+    )
 
-    private fun captureAccess(name: String, grants: AgentGrants, documentId: String?) = runDesktopComposeUiTest(width = 640, height = 720) {
+    private fun captureAccess(
+        name: String,
+        grants: AgentGrants,
+        documentId: String?,
+        batches: List<AgentBatch> = emptyList(),
+        outcomes: Map<String, UndoOutcome> = emptyMap(),
+        height: Int = 720
+    ) = runDesktopComposeUiTest(width = 640, height = height) {
         setContent {
             DrawViewTheme(darkTheme = false, dynamicColor = false) {
                 AdaptiveRoot(Modifier.fillMaxSize()) {
@@ -134,6 +154,8 @@ class AgentReviewScreenshotTest {
                         connections = listOf(AgentConnection("c", "Claude Code")),
                         onEnabled = {},
                         onAllDocuments = {},
+                        batches = batches,
+                        undoOutcomes = outcomes,
                         onDocument = {},
                         onApplyDirectly = {},
                         onDismiss = {}

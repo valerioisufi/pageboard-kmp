@@ -169,6 +169,12 @@ that change it, as today.
 
 ### The activity
 
+The undo is checked by the stamps: every piece the inverse of a batch touches (an element, a page and
+what is on it, the title, the defaults) must have no stamp after the operation of the batch. A Ctrl+Z
+of the batch is an operation after it, so it counts as a change; a kind of change the check does not
+know counts as changed. The sheet of the access lists the batches (of its document in an editor, all of
+them in the library) with Undo, and says why one was not undone.
+
 `AgentActivity` keeps, in memory, the last batches applied for a client: when, which client, what, on
 which document, and the inverse. Undoing a batch applies its inverse only when what it touched is as the
 batch left it (the versions after it); otherwise it says what changed and does nothing, so an undo
@@ -199,12 +205,12 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 | Phase | What | Status |
 |---|---|---|
 | 1 | The access: `allDocuments`, `applyDirectly`, `allows`; every tool on `allows`; `direct` of a connection removed; the sheet with the two switches and its warning, from the library too. Tests: the value stored today read as before (`enabled`, `documents`), a document created later reached with `allDocuments`, search on all; screenshots of the sheet; ABI recorded on purpose | done |
-| 2 | Applying without an editor and `AgentActivity`: a proposal applied on a closed document, in an editor recorded by its history too, the undo of a batch, refused after a Ctrl+Z or a later change. Tests on the in-memory store and in a real editor; the command line against the application on a scratch directory | proposed |
+| 2 | Applying without an editor and `AgentActivity`: a proposal applied on a closed document, in an editor recorded by its history too, the undo of a batch, refused after a Ctrl+Z or a later change; the batches in the sheet of the access, with Undo. Tests on the in-memory store and in a real editor; screenshots of the sheet; the command line against the application on a scratch directory | done |
 | 3 | Reading: every element with its `base` in `read_page`, `read_stroke`, the `base` of a page. Tests: strokes, images, PDF pages, a scanned page, the bound on points | proposed |
 | 4 | The items of the elements: `remove_elements`, `place_elements`, `reorder_elements`, `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image`. Tests: each item, stale, one undo for a batch, two sessions converging, the limits | proposed |
 | 5 | The items of the pages and `rename_document`. Tests: each item, a removed page in the trash of the pages, stale, convergence | proposed |
 | 6 | The library: `LibraryItem`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, their inverses in the activity, the limits per batch and per minute. Tests: each item and its undo, a shared document read only, nothing deleted for good | proposed |
-| 7 | The review of the new items: the panel of the editor (before and after of an element, a page), the library items and the activity in the sheet of the library, with Undo; the strings in the seven languages. Tests: screenshots (`verifyRoborazziJvm`), a real editor, the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
+| 7 | The review of the new items: the panel of the editor (before and after of an element, a page), the library items and the activity in the sheet of the library, with Undo; the strings (in English, like the rest of `drawview-agent-ui`). Tests: screenshots (`verifyRoborazziJvm`), a real editor, the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
 | 8 | The command line and MCP: the new tools in `tools/list`, `pencilnotes propose-library`, `pencilnotes activity`, `pencilnotes undo <batch>`, the exit codes; the help of the commands. Tests: the commands against the application on a scratch directory | proposed |
 
 After phase 2 a closed document can be changed with the items of today; after phase 5 every change of a

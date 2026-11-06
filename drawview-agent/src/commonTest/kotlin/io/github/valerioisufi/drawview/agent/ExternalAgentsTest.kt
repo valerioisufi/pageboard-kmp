@@ -378,13 +378,121 @@ class ExternalAgentsTest {
     }
 
     @Test
-    fun applyingDirectlyWaitsForTheReviewWithoutAnEditor() = runTest {
+    fun applyingDirectlyChangesADocumentInNoEditor() = runTest {
         val editors = FakeEditors(open = false)
         val setup = setup(this, backgroundScope, AgentEngines(editors = editors))
         setup.agents.access.setApplyDirectly(true)
+        setup.documents.close(setup.open)
+
         val id = setup.propose(insert("Direct"))
-        assertTrue(setup.agents.proposals.find(id)!!.isWaiting)
-        assertEquals(listOf(setup.documentId), editors.opened)
+
+        assertFalse(setup.agents.proposals.find(id)!!.isWaiting)
+        assertEquals(emptyList(), editors.opened)
+        val again = assertNotNull(setup.documents.open(setup.documentId))
+        assertEquals("Direct", again.document.pages.first().texts.single().text)
+        val batch = setup.agents.activity.batches.value.single()
+        assertEquals(setup.documentId, batch.documentId)
+        assertEquals("test", batch.client)
+        assertEquals("A change", batch.title)
+        setup.documents.close(again)
+    }
+
+    @Test
+    fun applyingDirectlyNeedsNoEditorsAtAll() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(insert("Headless"))
+        assertEquals("Headless", setup.open.document.pages.first().texts.single().text)
+    }
+
+    @Test
+    fun aBatchOfADocumentInNoEditorIsUndoneFromTheActivity() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("old")
+        val base = setup.page().getValue("texts").jsonArray[0].jsonObject.string("base")
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(replace(text.id, base, "new"), insert("Added"), buildJsonObject { put("kind", "add_page") })
+        val pages = setup.open.document.pages.size
+        assertEquals(2, pages)
+
+        val batch = setup.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.UNDONE, setup.agents.undo(batch.id))
+
+        assertEquals("old", text.text)
+        assertEquals(listOf("old"), setup.open.document.pages.first().texts.filter { it.removed == null }.map { it.text })
+        assertEquals(1, setup.open.document.pages.size)
+        assertTrue(setup.agents.activity.find(batch.id)!!.undone)
+        // Once only
+        assertEquals(UndoOutcome.GONE, setup.agents.undo(batch.id))
+    }
+
+    @Test
+    fun aBatchChangedSinceIsNotUndone() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("old")
+        val base = setup.page().getValue("texts").jsonArray[0].jsonObject.string("base")
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(replace(text.id, base, "from the model"))
+
+        // The user writes on it afterwards
+        setup.open.edit { session ->
+            session.submit(UpdateTexts(session.document.pages.first().id, listOf(text.toData().copy(text = "from the user"))))
+        }
+        val batch = setup.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.CHANGED, setup.agents.undo(batch.id))
+        assertEquals("from the user", text.text)
+        assertFalse(setup.agents.activity.find(batch.id)!!.undone)
+    }
+
+    @Test
+    fun aBatchUndoneByTheHistoryIsNotUndoneAgain() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("old")
+        val base = setup.page().getValue("texts").jsonArray[0].jsonObject.string("base")
+        val operations = countOperations(setup.open)
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(replace(text.id, base, "new"), insert("Added"))
+
+        // A Ctrl+Z of the editor: the inverse it recorded
+        setup.open.edit { it.submit(operations.single().inverse!!, ChangeOrigin.UNDO) }
+        assertEquals("old", text.text)
+        val texts = setup.open.document.pages.first().texts.filter { it.removed == null }.map { it.text }
+
+        val batch = setup.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.CHANGED, setup.agents.undo(batch.id))
+        assertEquals("old", text.text)
+        assertEquals(texts, setup.open.document.pages.first().texts.filter { it.removed == null }.map { it.text })
+    }
+
+    @Test
+    fun aBatchAcceptedInTheReviewIsInTheActivity() = runTest {
+        val setup = setup(this, backgroundScope)
+        val id = setup.propose(insert("Reviewed"), insert("Not this"))
+        assertTrue(setup.agents.activity.batches.value.isEmpty())
+        setup.agents.decide(id, setOf(0))
+        assertEquals(1, setup.agents.activity.batches.value.single().items)
+        // A batch of rejected items changes nothing, and is not there
+        val other = setup.propose(insert("Rejected"))
+        setup.agents.decide(other, emptySet())
+        assertEquals(1, setup.agents.activity.batches.value.size)
+    }
+
+    @Test
+    fun aBatchOfADocumentReadOnlyIsNotUndone() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(insert("Added"))
+        setup.documents.setReadOnly(setup.documentId, true)
+        val batch = setup.agents.activity.batches.value.single()
+        assertEquals(UndoOutcome.UNAVAILABLE, setup.agents.undo(batch.id))
+    }
+
+    @Test
+    fun theActivityKeepsTheMostRecentBatches() {
+        val activity = AgentActivity(maxKept = 2, clock = { 0L })
+        val stamp = io.github.valerioisufi.drawview.model.Stamp.ZERO
+        repeat(3) { activity.record("d", "c", "t$it", 1, CompositeChange(emptyList()), stamp) }
+        assertEquals(listOf("t1", "t2"), activity.batches.value.map { it.title })
     }
 
     @Test
