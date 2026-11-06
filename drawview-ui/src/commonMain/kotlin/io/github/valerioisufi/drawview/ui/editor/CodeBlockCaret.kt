@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.TextFieldValue
  *   block into its first character, from its last one onto the line after it, and back.
  * * ↑ and ↓ go through the lines of the code as the block lays them out, into a block from the line
  *   above or below it and out of it, keeping the place of the caret along the line.
+ * * Out of a block that ends the text (or starts it) the arrows add the line that is not there.
  * * Home and End go to the ends of the line of the code.
  * * The caret on the opening fence (by a tap on the label of the block, or Backspace at the start of
  *   its code) moves in it as in any text: it is written in the strip.
@@ -77,6 +78,28 @@ internal object CodeBlockCaret {
         val into = shown.codeBlocks.firstOrNull { layout.getLineForOffset(it.offset) == target } ?: return null
         val x = layout.getCursorRect(at).left - layout.codeBlockOrigin(into).x
         return into.codeStart + into.layout.offsetOnLine(if (up) into.layout.lineCount - 1 else 0, x)
+    }
+
+    /**
+     * The caret leaving a block of code where no line is, from [value] as [shown] shows it: going on
+     * ([forward]: → at the end of its code, ↓ on its last line when [vertical]) out of a block that
+     * ends the text, or back (← at the start of its code, ↑ on its first line) out of one that starts
+     * it. A line is added there, the caret on it, so that a text can be written after or before the
+     * block; `null` when the caret is not leaving such a block (an unclosed block takes the text after it).
+     */
+    fun leftAtTheEnds(value: TextFieldValue, shown: PresentedText<*>, forward: Boolean, vertical: Boolean): TextFieldValue? {
+        if (!value.selection.collapsed) return null
+        val caret = value.selection.start
+        val block = shown.codeBlocks.firstOrNull { it.holds(caret) } ?: return null
+        val line = block.layout.lineOf(caret - block.codeStart)
+        if (forward) {
+            if (block.end != value.text.length || block.end <= block.codeEnd) return null
+            val leaving = if (vertical) line == block.layout.lineCount - 1 else caret == block.codeEnd
+            return if (leaving) TextFieldValue(value.text + "\n", TextRange(value.text.length + 1)) else null
+        }
+        if (block.start != 0) return null
+        val leaving = if (vertical) line == 0 else caret == block.codeStart
+        return if (leaving) TextFieldValue("\n" + value.text, TextRange(0)) else null
     }
 
     /** The caret at the start ([start]) or at the end of its line of the code of a block, `null` out of the blocks. */

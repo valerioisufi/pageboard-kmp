@@ -121,7 +121,48 @@ class TextBoxCodeBlockTest {
     }
 
     @Test
-    fun aDragInTheBlockSelectsItsCode() = textBoxScene { controller ->
+    fun theArrowsOutOfABlockEndingTheTextAddALineAfterIt() = textBoxScene { controller ->
+        val ending = "Sopra il blocco\n```kotlin\nfun a() = 1\n  val b = 2\n```"
+        startBox(controller, 30f, 30f, widthMm = 120f)
+        type(ending)
+        // → at the end of the code
+        caret(controller, ending.indexOf("\n```", ending.indexOf("val")))
+        press(Key.DirectionRight)
+        assertEquals("$ending\n", controller.textEditorManager.value.text, "a line after the block")
+        assertEquals(TextRange(ending.length + 1), controller.textEditorManager.value.selection)
+        type("Sotto")
+        assertEquals("$ending\nSotto", controller.textEditorManager.value.text, "written after the block, not in its code")
+        // ↓ on its last line, the line after it there: no line added
+        caret(controller, ending.indexOf("val"))
+        press(Key.DirectionDown)
+        assertEquals("$ending\nSotto", controller.textEditorManager.value.text)
+        assertTrue(controller.textEditorManager.value.selection.start > ending.length, "on the line after: ${controller.textEditorManager.value.selection}")
+    }
+
+    @Test
+    fun downOnTheLastLineOfABlockEndingTheTextAddsALine() = textBoxScene { controller ->
+        val ending = "Sopra\n```\nuno\ndue\n```"
+        startBox(controller, 30f, 30f, widthMm = 120f)
+        type(ending)
+        caret(controller, ending.indexOf("due") + 1)
+        press(Key.DirectionDown)
+        assertEquals("$ending\n", controller.textEditorManager.value.text)
+        assertEquals(TextRange(ending.length + 1), controller.textEditorManager.value.selection)
+    }
+
+    @Test
+    fun theArrowsBackOutOfABlockStartingTheTextAddALineBeforeIt() = textBoxScene { controller ->
+        val starting = "```\nuno\ndue\n```\nSotto"
+        startBox(controller, 30f, 30f, widthMm = 120f)
+        type(starting)
+        caret(controller, starting.indexOf("uno"))
+        press(Key.DirectionLeft)
+        assertEquals("\n$starting", controller.textEditorManager.value.text, "a line before the block")
+        assertEquals(TextRange(0), controller.textEditorManager.value.selection)
+    }
+
+    @Test
+    fun aDragInTheBlockSelectsItsCode()= textBoxScene { controller ->
         writeText(controller)
         val layout = fieldLayout()
         val field = fieldBounds()

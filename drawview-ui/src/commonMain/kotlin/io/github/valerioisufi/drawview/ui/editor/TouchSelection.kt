@@ -65,9 +65,13 @@ internal class TouchSelection {
         this.toolbar = toolbar
     }
 
-    /** The value of the text changed: by another way than a touch, the handles go. */
+    /**
+     * The value of the text changed: by another way than a touch, the handles go. The composition
+     * alone is no change: a keyboard composes the word of the caret again when the caret is put in it.
+     */
     fun valueChanged(value: TextFieldValue) {
-        if (value == touched) return
+        val last = touched
+        if (last != null && value.text == last.text && value.selection == last.selection) return
         touched = null
         handles = Handles.NONE
         toolbar = false
@@ -98,8 +102,8 @@ internal class TouchSelection {
 /**
  * Takes the touches of a finger and of a pen on the field of the text being written, in the pixels
  * of its layout (put after [pageScale]), before the field (whose handles would be misplaced): see
- * [TouchSelection]. A mouse is left to the field. A finger taken by the canvas (a pan, a pinch) is
- * left to it.
+ * [TouchSelection]. A mouse is left to the field; a pointer of no known type is a finger, the end
+ * of a pen that erases a pen. A finger taken by the canvas (a pan, a pinch) is left to it.
  *
  * @param offsetAt the offset of the source under a point of the layout, `null` when not laid out.
  * @param value the value of the text now.
@@ -117,10 +121,11 @@ internal fun Modifier.touchSelectionGestures(
     var lastTapAt = Offset.Zero
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-        if (down.type != PointerType.Touch && down.type != PointerType.Stylus) return@awaitEachGesture
+        // A pointer of no known type (an automation, an accessibility service) is taken as a finger
+        if (down.type == PointerType.Mouse) return@awaitEachGesture
         if (down.isConsumed) return@awaitEachGesture
         down.consume()
-        val pen = down.type == PointerType.Stylus
+        val pen = down.type == PointerType.Stylus || down.type == PointerType.Eraser
         val start = offsetAt(down.position) ?: return@awaitEachGesture
         val doubleTap = lastTap >= 0 && down.uptimeMillis - lastTap < viewConfiguration.doubleTapTimeoutMillis &&
             (down.position - lastTapAt).getDistance() < viewConfiguration.touchSlop * DOUBLE_TAP_SLOP

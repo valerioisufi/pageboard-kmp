@@ -369,6 +369,18 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     }
                     val current = editor.value
                     if (event.type == KeyEventType.KeyDown && current.selection.collapsed && !event.isShiftPressed && current.text == shownSource) {
+                        // Out of a block of code that ends or starts the text: onto a line added
+                        val leaving = when (event.key) {
+                            Key.DirectionRight -> CodeBlockCaret.leftAtTheEnds(current, currentShown, forward = true, vertical = false)
+                            Key.DirectionDown -> CodeBlockCaret.leftAtTheEnds(current, currentShown, forward = true, vertical = true)
+                            Key.DirectionLeft -> CodeBlockCaret.leftAtTheEnds(current, currentShown, forward = false, vertical = false)
+                            Key.DirectionUp -> CodeBlockCaret.leftAtTheEnds(current, currentShown, forward = false, vertical = true)
+                            else -> null
+                        }
+                        if (leaving != null) {
+                            editor.updateValue(leaving, smartNewline = false)
+                            return@onPreviewKeyEvent true
+                        }
                         // Through the lines of a block of code and into it, as the block lays them out
                         val laidOut = layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }
                         val target = laidOut?.let {
@@ -381,7 +393,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                             }
                         }
                         if (target != null) {
-                            change(current.copy(selection = TextRange(target)))
+                            // A move of the caret ends the word the keyboard composes, as the field's own moves do
+                            change(current.copy(selection = TextRange(target), composition = null))
                             return@onPreviewKeyEvent true
                         }
                     }
@@ -574,16 +587,19 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 monospace = notesFonts.monospace
             )
         }
-        TouchHandles(
-            touch,
-            value = { editor.value },
-            caretRect = ::caretAt,
-            toScreen = ::toScreen,
-            toLayout = ::toLayout,
-            offsetAt = ::offsetAt,
-            onValue = { change(it) },
-            color = LocalTextSelectionColors.current.handleColor
-        )
+        // No handle on the text while the caret is in the strip: it would stand at the start of the formula
+        if (hidden?.caretIn != true) {
+            TouchHandles(
+                touch,
+                value = { editor.value },
+                caretRect = ::caretAt,
+                toScreen = ::toScreen,
+                toLayout = ::toLayout,
+                offsetAt = ::offsetAt,
+                onValue = { change(it) },
+                color = LocalTextSelectionColors.current.handleColor
+            )
+        }
 
         // The toolbar of the platform for a selection by touch (copy, cut, paste, select all)
         val textToolbar = LocalTextToolbar.current

@@ -318,7 +318,7 @@ rule for a focus lost.
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | Done |
-| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows; the Mac and the tablet left to the user |
+| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows and on the tablet (five fixes); the Mac and a real pen left to the user |
 
 Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 needs 4; 6 needs 4 and
 5 (the fence in the strip). Each phase is one commit with its status here, after the checks of
@@ -473,16 +473,43 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   the top of its frame, is so in the reference too).
 * PencilNotes desktop started twice on a scratch directory (after phase 2 and at the end), without
   errors; not driven by hand.
+* **On the tablet** (a Huawei MatePad, Android 10, SwiftKey), on a note made for it, driven over
+  adb: the touches by `input` and by `monkey` scripts (a double tap, a long press, a handle
+  dragged), the keys by a keyboard made with `hid` (Ctrl+= and Ctrl+−, the arrows, the text).
+  * The lines written and saved at 100%: 12 pixels of about 11 800 differ; at 125% the lines at the
+    same place to the pixel (the antialiasing differs, the glyphs sharp in both).
+  * A zoom while writing, a formula in the text: in place, as saved.
+  * A tap, two taps, a long press, a handle dragged, the toolbar of the system, the bar's code over
+    a selection by touch: as on the desktop, after the fixes below.
+  * A formula: the caret going into it with the arrows or a tap, nothing moving, its source written
+    in the strip with the keyboard of the system, its image again at every key.
+  * A block of code written, its fences closed by the editor, ↑ through its lines.
+  * Fixed on the tablet:
+    1. The pointers of `input` and of other automations have no type (`PointerType.Unknown`): they
+       went to the field, its handles misplaced. Every pointer but a mouse is now the editor's, a
+       pen's eraser a pen.
+    2. The keyboards of Android compose again the word where the caret is put: the composition
+       changing alone hid the handles and the toolbar of a selection just made. Now only the text
+       and the selection count.
+    3. The caret moved by the editor (in a block of code) kept the composition of the word it left;
+       SwiftKey then moved the caret again. A move of the editor ends the composition, as the
+       field's own moves.
+    4. Out of a block of code ending the text (→ at the end of its code, ↓ on its last line) nothing
+       could be written after it, nor before one starting it: the line is added (decision 14).
+    5. The handle of the caret stood at the start of a formula while the caret was in the strip:
+       no handle then.
+  * Seen, not from this work: SwiftKey puts the caret at the end of a word tapped when it composes
+    another one, in every field of Compose (the search of the library too); Ctrl+Home and Ctrl+End
+    do nothing in a field on Android; the text of a box being written is lost when the application
+    is killed (an install over it here).
 * Left to the user:
   * **On the Mac:** ⌥9 over a selection (phase 1), and `./gradlew verifyRoborazziJvm` of explorer,
     ui, sync-ui, lecture-ui and export-ui: the screenshots of the texts written change (the field
     at the exact place of the box, the caret of the editor, the strip, the blocks of code with the
     caret in them), to look at and record again (`recordRoborazziJvm`); the iOS compilation and
     the tests of the iOS simulator, which this computer cannot run.
-  * **On the tablet**, with the pen, a finger and the keyboard: the text sharp at small and large
-    zooms; a tap, two taps and a long press, the handles where the text is and dragged, the toolbar
-    of the system over the selection, no handle of Compose; the pen dragged selecting; a formula and
-    a block of code written; the keyboard of the system in the strip (its composition).
+  * **On the tablet**, by hand: the pen dragged selecting (adb gives no pen), a pinch while writing
+    (adb gives one finger), and a real finger.
 
 ## Decisions
 
@@ -519,6 +546,10 @@ Taken alone, revertible:
     Backspace at the start of its code.
 12. **The controls of the bars are not reached with Tab**: in the field Tab indents, and the
     commands have their shortcuts.
+13. **A pointer of no known type is a finger** (phase 7): automations and accessibility services
+    send such pointers, and the field would misplace its handles for them.
+14. **The arrows out of a block of code at an end of the text add the line** that is not there
+    (phase 7), as Typora does: → or ↓ out of a block ending the text, ← or ↑ out of one starting it.
 
 ## Risks
 
@@ -544,10 +575,9 @@ Taken alone, revertible:
   a character is typed in it.
 * A view of the whole source of a text on demand.
 * Scribble of the Apple Pencil in the field ([text-editing.md](text-editing.md)).
-* Text before a block of code at the very start of a text, or after one at its very end: the caret
-  does not stand on the line of the block outside its code (a character typed there would break
-  its fence), so a line is to be added first, by Enter at the end of the line before. A key that
-  writes the line itself.
+* Text before a block of code at the very start of a text, or after one at its very end, without
+  arrows (a finger and the keyboard of the screen): the arrows add the line (decision 14), a touch
+  has no way yet. A tap below the last line of such a block, or a row of the bar.
 * The strip covers the line next to what it belongs to (above or below it); a place in the bar, on
   small screens, if it gets in the way.
 * A selection drawn by a mouse from the text into a block of code, and Shift and the arrows across a

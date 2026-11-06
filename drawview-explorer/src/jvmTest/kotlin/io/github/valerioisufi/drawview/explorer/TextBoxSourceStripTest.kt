@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
@@ -110,8 +111,38 @@ class TextBoxSourceStripTest {
         assertEquals(TextRange(formulaEnd - 1), controller.textEditorManager.value.selection)
     }
 
+    /** The middle of the formula drawn, on the root. */
+    private fun DesktopComposeUiTest.formulaMiddle(): androidx.compose.ui.geometry.Offset {
+        val layout = fieldLayout()
+        val field = fieldBounds()
+        val scale = field.width / layout.size.width
+        val shown = layout.layoutInput.text.text
+        val first = layout.getBoundingBox(shown.indexOf('￼'))
+        val last = layout.getBoundingBox(shown.lastIndexOf('￼'))
+        return field.topLeft + androidx.compose.ui.geometry.Offset((first.left + last.right) / 2f, first.center.y) * scale
+    }
+
     @Test
-    fun theCaretInALinkShowsItsAddressInTheStrip() = textBoxScene { controller ->
+    fun aClickInTheMiddleOfAFormulaOpensItsSource() = textBoxScene(engines = FORMULAS) { controller ->
+        writeText(controller)
+        val on = formulaMiddle()
+        onRoot().performMouseInput { click(on) }
+        waitForIdle()
+        assertEquals(TextRange(formulaEnd - 1), controller.textEditorManager.value.selection)
+    }
+
+    @Test
+    fun aTapOnAFormulaOpensItsSource() = textBoxScene(engines = FORMULAS) { controller ->
+        writeText(controller)
+        val on = formulaMiddle()
+        onRoot().performTouchInput { click(on) }
+        waitForIdle()
+        assertEquals(TextRange(formulaEnd - 1), controller.textEditorManager.value.selection)
+        assertTrue(stripShows(latex), "its source in the strip")
+    }
+
+    @Test
+    fun theCaretInALinkShowsItsAddressInTheStrip()= textBoxScene { controller ->
         writeText(controller)
         val shown = fieldLayout().layoutInput.text.text
         caret(controller, text.indexOf("uida"))
