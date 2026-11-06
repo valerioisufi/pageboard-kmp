@@ -39,6 +39,21 @@ public data class AgentSearchHit(
     val snippet: String
 )
 
+/** An image file read by the application: where it is, its content, its size in pixels. */
+public class AgentImage(public val path: String, public val hash: String, public val widthPx: Int, public val heightPx: Int)
+
+/** The image files a client names, read by the application. */
+public interface AgentImages {
+    /** The image file at [path] as it is, or `null` when it is not an image the application reads. */
+    public suspend fun read(path: String): AgentImage?
+
+    /**
+     * The image file at [path] kept among the files of the documents (the same content is kept once),
+     * or `null` when it is not an image the application reads.
+     */
+    public suspend fun keep(path: String): AgentImage?
+}
+
 /**
  * What the tools need from the application, each optional: without one the tool that needs it is not
  * offered, or says that it cannot tell (rule 1 of the libraries, see `docs/modularization.md`).
@@ -48,6 +63,7 @@ public data class AgentSearchHit(
  * @param pdfText the text of the page `pageIndex` of the PDF file at `path`, or `null` when it has none.
  * @param handwriting the transcription of the handwriting of a page, or `null` when there is none.
  * @param renderPage the page as a PNG, at most `maxSidePx` on its longest side, or `null`.
+ * @param images the image files a client adds (`add_image`), read by the application.
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
  */
 public class AgentEngines(
@@ -56,5 +72,6 @@ public class AgentEngines(
     public val pdfText: (suspend (path: String, pageIndex: Int) -> String?)? = null,
     public val handwriting: (suspend (documentId: String, pageId: String) -> String?)? = null,
     public val renderPage: (suspend (documentId: String, pageId: String, maxSidePx: Int) -> ByteArray?)? = null,
+    public val images: AgentImages? = null,
     public val defaultTextSize: Float = 16f
 )

@@ -75,6 +75,13 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_close
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_command
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_decided_title
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_elements
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_place_elements
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_text
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_stroke
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_image
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_insert
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_insert_new_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove
@@ -485,6 +492,13 @@ private fun itemLabel(item: ProposalItem): String = stringResource(
         is ProposalItem.RemoveText -> Res.string.agent_item_remove
         is ProposalItem.InsertText -> if (item.newPage) Res.string.agent_item_insert_new_page else Res.string.agent_item_insert
         is ProposalItem.AddPage -> Res.string.agent_item_add_page
+        is ProposalItem.RemoveElements -> Res.string.agent_item_remove_elements
+        is ProposalItem.PlaceElements -> Res.string.agent_item_place_elements
+        is ProposalItem.ReorderElements -> Res.string.agent_item_reorder_elements
+        is ProposalItem.RestyleText -> Res.string.agent_item_restyle_text
+        is ProposalItem.AddStroke -> Res.string.agent_item_add_stroke
+        is ProposalItem.RestyleStroke -> Res.string.agent_item_restyle_stroke
+        is ProposalItem.AddImage -> Res.string.agent_item_add_image
     }
 )
 

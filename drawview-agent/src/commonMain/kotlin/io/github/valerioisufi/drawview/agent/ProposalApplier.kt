@@ -76,6 +76,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                     }
                 }
                 is ProposalItem.AddPage -> changes += planned.newPages
+                else -> changes += ElementItems.changesOf(document, item)
             }
             ItemOutcome.ACCEPTED
         }

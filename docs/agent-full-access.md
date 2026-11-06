@@ -128,12 +128,12 @@ waits in the sheet of the library.
 | Item | Becomes | Check |
 |---|---|---|
 | `remove_elements(page, [id, base])` | `RemoveElements` | each `base` |
-| `place_elements(page, [id, base, dx, dy, scale?, rotation?])` | `PlaceElements` (stroke, box, text placements) | each `base`, inside the page |
-| `reorder_elements(page, [id, base], to: front/back/above/below, of?)` | `ReorderElements` | each `base` |
+| `place_elements(page, [id, base], dx?, dy?, scale?)` | `PlaceElements` (stroke, box, text placements), scaled around the corner of the box holding them | each `base`, inside the page |
+| `reorder_elements(page, [id, base], to: front/back)` | `ReorderElements` | each `base` |
 | `restyle_text(text, base, color?, size?, align?)` | `UpdateTexts` | `base` |
 | `add_stroke(page, points, color, width, tool)` | `AddElements` | bounded points, inside the page |
-| `restyle_stroke(stroke, base, color?, width?)` | `RemoveElements` + `AddElements` of a copy: the answer gives its new id | `base` |
-| `add_image(page, path, area?)` | `AddResource` + `AddElements` | a file read by the application, decoded as an image, bounded in size |
+| `restyle_stroke(stroke, base, color?, width?)` | `RemoveElements` + `AddElements` of a copy, in its order: the model reads its new id from the page | `base` |
+| `add_image(path, page?, area?)` | `AddResource` + `AddElements` | a file read by the application (`AgentImages`), decoded as an image, at most 32 MiB; kept and placed when proposed |
 | `remove_page(page, base)` | `RemovePage` (the trash of the pages) | `base` of the page |
 | `move_page(page, after?)` | `MovePages` | the page and the one it follows are there |
 | `duplicate_page(page, after?)` | the copy of `CopiedPages` | the page is there |
@@ -207,7 +207,7 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 | 1 | The access: `allDocuments`, `applyDirectly`, `allows`; every tool on `allows`; `direct` of a connection removed; the sheet with the two switches and its warning, from the library too. Tests: the value stored today read as before (`enabled`, `documents`), a document created later reached with `allDocuments`, search on all; screenshots of the sheet; ABI recorded on purpose | done |
 | 2 | Applying without an editor and `AgentActivity`: a proposal applied on a closed document, in an editor recorded by its history too, the undo of a batch, refused after a Ctrl+Z or a later change; the batches in the sheet of the access, with Undo. Tests on the in-memory store and in a real editor; screenshots of the sheet; the command line against the application on a scratch directory | done |
 | 3 | Reading: every element with its `base` in `read_page` (images, PDF pages, other elements; the strokes when asked, at most 500, those crossing an area), `read_stroke` (at most 2000 points, evenly picked), the `base` of a page in `read_page` and `read_document`, the style of a text. Tests: strokes, an area, the bound on strokes and points, images, a scanned PDF page, an element of another kind, the base changing with an element and with what is on a page | done |
-| 4 | The items of the elements: `remove_elements`, `place_elements`, `reorder_elements`, `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image`. Tests: each item, stale, one undo for a batch, two sessions converging, the limits | proposed |
+| 4 | The items of the elements: `remove_elements`, `place_elements` (moved and scaled together, inside the page), `reorder_elements` (front or back), `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image` (the file read and kept by the application, `AgentImages`, on the desktop). Tests: each item, stale, refused values, one operation and one undo for a batch, a batch converging on another device through the written operation, an element changed by one item only | done |
 | 5 | The items of the pages and `rename_document`. Tests: each item, a removed page in the trash of the pages, stale, convergence | proposed |
 | 6 | The library: `LibraryItem`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, their inverses in the activity, the limits per batch and per minute. Tests: each item and its undo, a shared document read only, nothing deleted for good | proposed |
 | 7 | The review of the new items: the panel of the editor (before and after of an element, a page), the library items and the activity in the sheet of the library, with Undo; the strings (in English, like the rest of `drawview-agent-ui`). Tests: screenshots (`verifyRoborazziJvm`), a real editor, the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
@@ -240,7 +240,12 @@ Taken alone, revertible:
     by a move of its box. The base of any other element covers its presence, place, order and content;
     the base of a page covers its presence, position, format and what is on it.
 11. **The strokes are listed only when asked**, and at most 500: a page of handwriting holds thousands.
-12. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
+12. **No rotation in `place_elements`**, and no `above`/`below` in `reorder_elements`: moving, scaling,
+    front and back cover what a model asks for; the others can be added as values of the same items.
+13. **An image is kept and placed when it is proposed**, not when accepted: the application reads the
+    file once, and a preview keeps nothing. A proposal rejected leaves its copy among the files of the
+    documents, as an image imported then deleted does.
+14. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
 
 ## Left for later
 

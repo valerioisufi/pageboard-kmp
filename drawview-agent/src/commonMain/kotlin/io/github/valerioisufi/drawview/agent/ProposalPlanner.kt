@@ -141,6 +141,12 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                     val page = newPageAfter(pages, pages.anchorOf(item.after)!!)
                     PlannedItem(false, emptyList(), 1, emptyList(), listOf(page))
                 }
+                is ProposalItem.RemoveElements -> {
+                    pages.first { it.id == item.page }.excluded += item.elements.map { it.id }
+                    PlannedItem(false, emptyList(), 0, emptyList())
+                }
+                is ProposalItem.PlaceElements, is ProposalItem.ReorderElements, is ProposalItem.RestyleText,
+                is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage -> PlannedItem(false, emptyList(), 0, emptyList())
             }
         }
         return ProposalPlan(measure.isMeasured, planned, pages.map { it.id })
@@ -169,6 +175,13 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
             else -> pages.anchorOf(item.page) == null
         }
         is ProposalItem.AddPage -> pages.anchorOf(item.after) == null
+        is ProposalItem.RemoveElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
+        is ProposalItem.PlaceElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
+        is ProposalItem.ReorderElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
+        is ProposalItem.RestyleText -> document.findText(item.text)?.second?.base() != item.base
+        is ProposalItem.AddStroke -> document.pageById(item.page) == null
+        is ProposalItem.RestyleStroke -> ElementItems.findStroke(document, item.stroke)?.second?.elementBase() != item.base
+        is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
     }
 
     private fun planReplace(

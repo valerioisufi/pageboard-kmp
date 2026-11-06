@@ -12,6 +12,13 @@
     <string name="agent_item_insert">Add a text</string>
     <string name="agent_item_insert_new_page">Add a text on a new page</string>
     <string name="agent_item_add_page">Add a page</string>
+    <string name="agent_item_remove_elements">Remove elements</string>
+    <string name="agent_item_place_elements">Move elements</string>
+    <string name="agent_item_reorder_elements">Bring elements forward or back</string>
+    <string name="agent_item_restyle_text">Change the style of a text</string>
+    <string name="agent_item_add_stroke">Draw a stroke</string>
+    <string name="agent_item_restyle_stroke">Change the color or width of a stroke</string>
+    <string name="agent_item_add_image">Add an image</string>
     <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
     <string name="agent_outcome_accepted">Applied</string>
     <string name="agent_outcome_rejected">Rejected</string>

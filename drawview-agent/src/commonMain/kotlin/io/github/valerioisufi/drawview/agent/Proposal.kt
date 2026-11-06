@@ -47,6 +47,106 @@ public sealed interface ProposalItem {
     @Serializable
     @SerialName("add_page")
     public data class AddPage(val after: String? = null) : ProposalItem
+
+    /** Removes [elements] of the page [page], of any kind: they stay hidden in the document. */
+    @Serializable
+    @SerialName("remove_elements")
+    public data class RemoveElements(val page: String, val elements: List<ElementRef>) : ProposalItem
+
+    /**
+     * Moves [elements] of the page [page] by [dx] and [dy] millimeters, and scales them by [scale]
+     * around the top-left corner of the box holding them all.
+     */
+    @Serializable
+    @SerialName("place_elements")
+    public data class PlaceElements(
+        val page: String,
+        val elements: List<ElementRef>,
+        val dx: Float = 0f,
+        val dy: Float = 0f,
+        val scale: Float = 1f
+    ) : ProposalItem
+
+    /** Puts [elements] of the page [page] on top of the others, or under them. */
+    @Serializable
+    @SerialName("reorder_elements")
+    public data class ReorderElements(val page: String, val elements: List<ElementRef>, val to: StackPlace) : ProposalItem
+
+    /**
+     * Changes the style of the text box [text], as it was when read ([base]).
+     *
+     * @param color `#RRGGBB` or `#RRGGBBAA`.
+     * @param alignment `start`, `center` or `end`.
+     */
+    @Serializable
+    @SerialName("restyle_text")
+    public data class RestyleText(
+        val text: String,
+        val base: String,
+        val color: String? = null,
+        @SerialName("font_size") val fontSize: Float? = null,
+        val alignment: String? = null
+    ) : ProposalItem
+
+    /**
+     * Draws a stroke on the page [page] through [points], `[x, y]` in millimeters from its top-left corner.
+     *
+     * @param color `#RRGGBB` or `#RRGGBBAA`; the blue of the models by default.
+     * @param width the width of its line in millimeters.
+     * @param tool `pressure_pen`, `marker`, `highlighter` or `dashed_line`.
+     */
+    @Serializable
+    @SerialName("add_stroke")
+    public data class AddStroke(
+        val page: String,
+        val points: List<List<Float>>,
+        val color: String? = null,
+        val width: Float? = null,
+        val tool: String? = null
+    ) : ProposalItem
+
+    /**
+     * Changes the color or the width of the stroke [stroke], as it was when read ([base]). The stroke
+     * keeps its place and its order, under a new id.
+     */
+    @Serializable
+    @SerialName("restyle_stroke")
+    public data class RestyleStroke(
+        val stroke: String,
+        val base: String,
+        val color: String? = null,
+        val width: Float? = null
+    ) : ProposalItem
+
+    /**
+     * Adds the image file [path] to the page [page] (`null`: the last one), in [area] (its proportions
+     * kept), or in the free space of the page.
+     *
+     * Once proposed, [path] is the copy the application keeps among the files of the documents, and
+     * [hash] its content: what a client sends for them is replaced.
+     */
+    @Serializable
+    @SerialName("add_image")
+    public data class AddImage(
+        val path: String,
+        val page: String? = null,
+        val area: AgentArea? = null,
+        val hash: String = ""
+    ) : ProposalItem
+}
+
+/** An element of a page, as it was when read ([base]). */
+@Serializable
+public data class ElementRef(val id: String, val base: String)
+
+/** Where elements go in the stack of their page. */
+@Serializable
+public enum class StackPlace {
+    @SerialName("front")
+    FRONT,
+
+    @SerialName("back")
+    BACK
 }
 
 /** An area of a page in millimeters, from its top-left corner. */

@@ -134,11 +134,12 @@ public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection
 
 public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;F)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;FILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;F)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDefaultTextSize ()F
 	public final fun getEditors ()Lio/github/valerioisufi/drawview/agent/AgentEditors;
 	public final fun getHandwriting ()Lkotlin/jvm/functions/Function3;
+	public final fun getImages ()Lio/github/valerioisufi/drawview/agent/AgentImages;
 	public final fun getPdfText ()Lkotlin/jvm/functions/Function3;
 	public final fun getRenderPage ()Lkotlin/jvm/functions/Function4;
 	public final fun getSearch ()Lkotlin/jvm/functions/Function4;
@@ -193,6 +194,19 @@ public final class io/github/valerioisufi/drawview/agent/AgentGrants$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentImage {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;II)V
+	public final fun getHash ()Ljava/lang/String;
+	public final fun getHeightPx ()I
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getWidthPx ()I
+}
+
+public abstract interface class io/github/valerioisufi/drawview/agent/AgentImages {
+	public abstract fun keep (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun read (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentSearchHit {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -238,6 +252,35 @@ public final class io/github/valerioisufi/drawview/agent/ChosenPlace {
 public final class io/github/valerioisufi/drawview/agent/DocumentTools {
 	public final fun call (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getTools ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ElementRef {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ElementRef$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ElementRef;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ElementRef;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ElementRef;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBase ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ElementRef$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ElementRef$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ElementRef;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ElementRef;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ElementRef$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class io/github/valerioisufi/drawview/agent/ExternalAgents {
@@ -452,6 +495,40 @@ public abstract interface class io/github/valerioisufi/drawview/agent/ProposalIt
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$Companion;
 }
 
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddImage : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/agent/AgentArea;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getArea ()Lio/github/valerioisufi/drawview/agent/AgentArea;
+	public final fun getHash ()Ljava/lang/String;
+	public final fun getPage ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$AddImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$AddImage;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddImage$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddPage : io/github/valerioisufi/drawview/agent/ProposalItem {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$AddPage$Companion;
 	public fun <init> ()V
@@ -478,6 +555,42 @@ public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddPage$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddStroke : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Float;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getPage ()Ljava/lang/String;
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getTool ()Ljava/lang/String;
+	public final fun getWidth ()Ljava/lang/Float;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$AddStroke$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$AddStroke;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddStroke$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -523,6 +636,71 @@ public final class io/github/valerioisufi/drawview/agent/ProposalItem$InsertText
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;FFF)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun copy (Ljava/lang/String;Ljava/util/List;FFF)Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements;Ljava/lang/String;Ljava/util/List;FFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDx ()F
+	public final fun getDy ()F
+	public final fun getElements ()Ljava/util/List;
+	public final fun getPage ()Ljava/lang/String;
+	public final fun getScale ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$PlaceElements$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getElements ()Ljava/util/List;
+	public final fun getPage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RemoveElements$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$RemoveText : io/github/valerioisufi/drawview/agent/ProposalItem {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$RemoveText$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
@@ -549,6 +727,37 @@ public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$RemoveText$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/agent/StackPlace;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/agent/StackPlace;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/agent/StackPlace;)Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/agent/StackPlace;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getElements ()Ljava/util/List;
+	public final fun getPage ()Ljava/lang/String;
+	public final fun getTo ()Lio/github/valerioisufi/drawview/agent/StackPlace;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$ReorderElements$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -583,6 +792,76 @@ public final class io/github/valerioisufi/drawview/agent/ProposalItem$ReplaceTex
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Float;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBase ()Ljava/lang/String;
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getStroke ()Ljava/lang/String;
+	public final fun getWidth ()Ljava/lang/Float;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleStroke$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleText : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Float;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlignment ()Ljava/lang/String;
+	public final fun getBase ()Ljava/lang/String;
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getFontSize ()Ljava/lang/Float;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleText;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleText$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ProposalPlan {
 	public fun <init> (ZLjava/util/List;Ljava/util/List;)V
 	public final fun getItems ()Ljava/util/List;
@@ -602,6 +881,19 @@ public final class io/github/valerioisufi/drawview/agent/ProposalPlanner {
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalPlanner$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/agent/StackPlace : java/lang/Enum {
+	public static final field BACK Lio/github/valerioisufi/drawview/agent/StackPlace;
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/StackPlace$Companion;
+	public static final field FRONT Lio/github/valerioisufi/drawview/agent/StackPlace;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/StackPlace;
+	public static fun values ()[Lio/github/valerioisufi/drawview/agent/StackPlace;
+}
+
+public final class io/github/valerioisufi/drawview/agent/StackPlace$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/ToolResult {
