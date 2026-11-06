@@ -164,8 +164,13 @@ The tools `list_folders` and `list_trash` read; `propose_library` proposes `Libr
 | `restore(item)` | `restore` | to the trash again |
 
 There is no item for `deleteDocument`, `deleteFolder` or `purgeTrash`, and none ever (requirement 5).
-A document read only on this device (a shared one of which this device is a member) refuses the items
-that change it, as today.
+An item of the library changes where a document is, not what it holds: a shared document of which this
+device is a member is moved or sent to the trash on this device, as the library does it.
+
+The items of a proposal for the library are done one after the other: one that cannot be done as the
+library is (a document gone, a name taken) is stale, and the others are done. Their undo is all or
+nothing: every step is checked first (a document created and not written in, a folder created and still
+empty, a document still where it was moved), then undone in the reverse order.
 
 ### The activity
 
@@ -209,7 +214,7 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 | 3 | Reading: every element with its `base` in `read_page` (images, PDF pages, other elements; the strokes when asked, at most 500, those crossing an area), `read_stroke` (at most 2000 points, evenly picked), the `base` of a page in `read_page` and `read_document`, the style of a text. Tests: strokes, an area, the bound on strokes and points, images, a scanned PDF page, an element of another kind, the base changing with an element and with what is on a page | done |
 | 4 | The items of the elements: `remove_elements`, `place_elements` (moved and scaled together, inside the page), `reorder_elements` (front or back), `restyle_text`, `add_stroke`, `restyle_stroke`, `add_image` (the file read and kept by the application, `AgentImages`, on the desktop). Tests: each item, stale, refused values, one operation and one undo for a batch, a batch converging on another device through the written operation, an element changed by one item only | done |
 | 5 | The items of the pages and `rename_document`: `remove_page` (to the trash of the pages, one page kept), `move_page`, `duplicate_page` (the copy of `CopiedPages`), `set_page_format` (size, background), `rename_document` (a free name); the background in `read_page`. Tests: each item, a removed page in the trash of the pages, a page written on after it was read, the last page kept, refused values, one operation undone at once, converging on another device through the written operation | done |
-| 6 | The library: `LibraryItem`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, their inverses in the activity, the limits per batch and per minute. Tests: each item and its undo, a shared document read only, nothing deleted for good | proposed |
+| 6 | The library: `LibraryItem`, `LibraryBook`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, the folder of a document in `list_documents`, the created documents in `proposal_status`; their undo in the activity, each step checked against what it left; `TrashLimiter` (20 per proposal, 50 a minute). Tests: each item and its undo, a document written in or a folder filled since not undone, stale items, folders needing every document allowed, the review, the limits, nothing deleted for good | done |
 | 7 | The review of the new items: the panel of the editor (before and after of an element, a page), the library items and the activity in the sheet of the library, with Undo; the strings (in English, like the rest of `drawview-agent-ui`). Tests: screenshots (`verifyRoborazziJvm`), a real editor, the desktop application on a scratch directory. The clicks in its window are left to the user | proposed |
 | 8 | The command line and MCP: the new tools in `tools/list`, `pencilnotes propose-library`, `pencilnotes activity`, `pencilnotes undo <batch>`, the exit codes; the help of the commands. Tests: the commands against the application on a scratch directory | proposed |
 
@@ -245,7 +250,11 @@ Taken alone, revertible:
 13. **An image is kept and placed when it is proposed**, not when accepted: the application reads the
     file once, and a preview keeps nothing. A proposal rejected leaves its copy among the files of the
     documents, as an image imported then deleted does.
-14. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
+14. **The folders need every document allowed**: a folder holds documents the user may not have allowed
+    one by one. A document a client creates is allowed with it.
+15. **A proposal for the library is not one operation**: the catalog has no transaction, so an item that
+    cannot be done is stale and the others are done, as in a document.
+16. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
 
 ## Left for later
 

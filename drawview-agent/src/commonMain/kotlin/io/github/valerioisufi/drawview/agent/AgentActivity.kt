@@ -29,7 +29,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * A batch of changes a model made to a document: the items of a proposal applied as one operation.
+ * A batch of changes a model made to a document, the items of a proposal applied as one operation, or
+ * to the library ([documentId] `null`).
  *
  * @param client the name the client gave itself: for the user to read, not proof of anything.
  * @param title the title of its proposal.
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.update
  */
 public data class AgentBatch(
     val id: String,
-    val documentId: String,
+    val documentId: String?,
     val client: String,
     val title: String,
     val items: Int,
@@ -46,8 +47,14 @@ public data class AgentBatch(
     val undone: Boolean = false
 )
 
-/** How a batch is undone: the change undoing it, and the stamp of its operation. */
-internal class BatchUndo(val inverse: DocumentChange, val stamp: Stamp)
+/** How a batch is undone. */
+internal sealed interface BatchUndo
+
+/** A batch of a document: the change undoing it, and the stamp of its operation. */
+internal class DocumentUndo(val inverse: DocumentChange, val stamp: Stamp) : BatchUndo
+
+/** A batch of the library: the steps undoing its items, in their order. */
+internal class LibraryUndos(val steps: List<LibraryUndo>) : BatchUndo
 
 /** What became of the undo of an [AgentBatch]. */
 public enum class UndoOutcome {
@@ -88,7 +95,10 @@ public class AgentActivity(
     /** The batch [id], or `null`. */
     public fun find(id: String): AgentBatch? = state.value.firstOrNull { it.id == id }
 
-    internal fun record(documentId: String, client: String, title: String, items: Int, inverse: DocumentChange, stamp: Stamp): AgentBatch {
+    internal fun record(documentId: String, client: String, title: String, items: Int, inverse: DocumentChange, stamp: Stamp): AgentBatch =
+        record(documentId, client, title, items, DocumentUndo(inverse, stamp))
+
+    internal fun record(documentId: String?, client: String, title: String, items: Int, undo: BatchUndo): AgentBatch {
         val batch = AgentBatch(newElementId(), documentId, client, title, items, clock())
         var dropped = emptyList<AgentBatch>()
         state.update { current ->
@@ -96,7 +106,7 @@ public class AgentActivity(
             dropped = all.dropLast(maxKept)
             all.takeLast(maxKept)
         }
-        undos[batch.id] = BatchUndo(inverse, stamp)
+        undos[batch.id] = undo
         dropped.forEach { undos.remove(it.id) }
         return batch
     }

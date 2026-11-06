@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.TrashedItem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -65,7 +66,10 @@ public class DocumentTools internal constructor(
     private val proposals: ProposalBook,
     private val engines: AgentEngines,
     private val submit: suspend (Proposal, connection: String) -> Unit,
-    private val limits: ProposalLimits = ProposalLimits()
+    private val limits: ProposalLimits = ProposalLimits(),
+    private val library: LibraryBook = LibraryBook(),
+    private val submitLibrary: suspend (LibraryProposal, connection: String) -> Unit = { _, _ -> },
+    private val trashLimiter: TrashLimiter = TrashLimiter()
 ) {
     private val planner = ProposalPlanner(engines)
 
@@ -83,6 +87,9 @@ public class DocumentTools internal constructor(
         add(previewProposal())
         add(propose())
         add(proposalStatus())
+        add(listFolders())
+        add(listTrash())
+        add(proposeLibrary())
     }
 
     /** Calls the tool [name] for the client [connection]; fails with an [AgentToolException]. */
@@ -101,7 +108,7 @@ public class DocumentTools internal constructor(
         val grants = access.grants.value
         val listed = documents.store.documents.first()
             .filter { grants.allows(it.id) }
-            .map { DocumentEntry(it.id, it.name, it.pageCount) }
+            .map { DocumentEntry(it.id, it.name, it.pageCount, it.folderId) }
         value(buildJsonObject {
             put("documents", json.encodeToJsonElement(listed))
             when {
@@ -442,12 +449,107 @@ public class DocumentTools internal constructor(
         description = "What became of a proposal: waiting, or the outcome of each item: accepted, rejected, or stale when what it was made on changed after you read it (read it again and propose again). Once decided, placed gives the boxes where the text of each accepted item went.",
         inputSchema = schema(required = listOf("proposal")) { string("proposal", "The id answered by propose.") }
     ) { arguments, _ ->
-        val proposal = proposals.find(arguments.requiredString("proposal"))
+        val id = arguments.requiredString("proposal")
+        library.find(id)?.let { return@AgentTool value(proposalJson.encodeToJsonElement(it.toStatus())) }
+        val proposal = proposals.find(id)
             ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such proposal: the application drops them when it quits.")
         if (!access.allows(proposal.documentId)) {
             throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The document of this proposal is no longer allowed.")
         }
         value(proposalJson.encodeToJsonElement(proposal.toStatus()))
+    }
+
+    private fun listFolders() = AgentTool(
+        name = "list_folders",
+        description = "The folders of the library: id, name and the folder they are in (none: the root). Given when the user allowed all the documents.",
+        inputSchema = schema()
+    ) { _, _ ->
+        requireAllDocuments()
+        val folders = documents.store.folders.first().map { FolderEntry(it.id, it.name, it.parentId) }
+        value(buildJsonObject { put("folders", json.encodeToJsonElement(folders)) })
+    }
+
+    private fun listTrash() = AgentTool(
+        name = "list_trash",
+        description = "What is in the trash of the library, the most recent first: id (to restore it), kind (document or folder), name, the folder it was in, when it went there (milliseconds). Only items whose documents are all allowed. The user empties the trash; you cannot.",
+        inputSchema = schema()
+    ) { _, _ ->
+        val grants = access.grants.value
+        val items = documents.store.trash.first()
+            .filter { item -> if (item.kind == TrashedItem.Kind.FOLDER) grants.allDocuments else item.documentIds.all { grants.allows(it) } }
+            .map { TrashEntry(it.id, it.kind.name.lowercase(), it.name, it.folderId, it.trashedAt) }
+        value(buildJsonObject { put("items", json.encodeToJsonElement(items)) })
+    }
+
+    private fun proposeLibrary() = AgentTool(
+        name = "propose_library",
+        description = "Proposes changes to the library: documents and folders created, moved, sent to the trash or restored. The user reviews them, unless they chose to apply changes at once. Nothing is deleted for good: the trash keeps it, and every change can be undone by the user. Answers the id of the proposal, to follow with proposal_status; once decided, created gives the ids of the documents made.",
+        inputSchema = schema(required = listOf("title", "items")) {
+            string("title", "What the proposal does, in a few words, for the user.")
+            putJsonObject("items") {
+                put("type", "array")
+                put("description", "What to do, in order.")
+                putJsonObject("items") {
+                    put("type", "object")
+                    put("description", "kind \"create_document\" (title, folder?, width_mm?, height_mm?). kind \"move_document\" (document, folder?: none for the root). kind \"trash_document\" (document). kind \"create_folder\" (name, parent?). kind \"rename_folder\" (folder, name). kind \"move_folder\" (folder, parent?). kind \"trash_folder\" (folder): with all it holds. kind \"restore\" (item): an item of list_trash, back where it was. Folders need the user to have allowed all the documents.")
+                    putJsonObject("properties") {
+                        putJsonObject("kind") {
+                            put("type", "string")
+                            putJsonArray("enum") {
+                                listOf("create_document", "move_document", "trash_document", "create_folder", "rename_folder", "move_folder", "trash_folder", "restore")
+                                    .forEach { add(JsonPrimitive(it)) }
+                            }
+                        }
+                    }
+                    putJsonArray("required") { add(JsonPrimitive("kind")) }
+                }
+            }
+        }
+    ) { arguments, connection ->
+        val title = arguments.requiredString("title")
+        val items = try {
+            proposalJson.decodeFromJsonElement(ListOfLibraryItems, arguments["items"] ?: throw SerializationException("no items"))
+        } catch (e: SerializationException) {
+            throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
+        } catch (e: IllegalArgumentException) {
+            throw AgentToolException(AgentErrorCode.BAD_REQUEST, "The items cannot be read: ${e.message?.take(200)}")
+        }
+        limits.checkLibrary(title, items)
+        checkLibraryAccess(items)
+        trashLimiter.take(items.count { it.trashes })
+        val name = access.connections.value.firstOrNull { it.id == connection }?.name ?: "A client"
+        val proposal = library.add(name, title.trim(), items)
+        submitLibrary(proposal, connection)
+        value(proposalJson.encodeToJsonElement(library.find(proposal.id)!!.toStatus()))
+    }
+
+    private fun requireAllDocuments() {
+        if (!access.grants.value.allDocuments) {
+            throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The folders are reached when the user allows all the documents, in \"External models…\".")
+        }
+    }
+
+    /** Refuses an item on a document, a folder or an item of the trash the client may not reach. */
+    private suspend fun checkLibraryAccess(items: List<LibraryItem>) {
+        fun document(id: String) {
+            if (!access.allows(id)) throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The user has not allowed the document \"${id.take(64)}\".")
+        }
+        for (item in items) {
+            when (item) {
+                is LibraryItem.CreateDocument -> if (item.folder != null) requireAllDocuments()
+                is LibraryItem.MoveDocument -> {
+                    document(item.document)
+                    if (item.folder != null) requireAllDocuments()
+                }
+                is LibraryItem.TrashDocument -> document(item.document)
+                is LibraryItem.CreateFolder, is LibraryItem.RenameFolder, is LibraryItem.MoveFolder, is LibraryItem.TrashFolder -> requireAllDocuments()
+                is LibraryItem.Restore -> {
+                    val trashed = documents.store.trash.first().firstOrNull { it.id == item.item }
+                        ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such item in the trash: list it again.")
+                    if (trashed.kind == TrashedItem.Kind.FOLDER) requireAllDocuments() else trashed.documentIds.forEach(::document)
+                }
+            }
+        }
     }
 
     /** Runs [block] on the document [id], allowed and out of the trash, opened for it. */
@@ -474,6 +576,7 @@ public class DocumentTools internal constructor(
             explicitNulls = false
         }
         val ListOfItems = kotlinx.serialization.builtins.ListSerializer(ProposalItem.serializer())
+        val ListOfLibraryItems = kotlinx.serialization.builtins.ListSerializer(LibraryItem.serializer())
 
         const val MAX_RENDER_SIDE = 2048
         const val MIN_RENDER_SIDE = 64
@@ -504,7 +607,8 @@ internal class ProposalLimits(
     private val maxTitleLength: Int = 200,
     private val maxPlannedLength: Int = 32 * 1024,
     private val maxElements: Int = 500,
-    private val maxStrokePoints: Int = 2000
+    private val maxStrokePoints: Int = 2000,
+    private val maxLibraryItems: Int = 100
 ) {
     private companion object {
         const val MAX_PATH_LENGTH = 4096
@@ -525,6 +629,29 @@ internal class ProposalLimits(
     }
 
     private fun refuse(message: String): Nothing = throw AgentToolException(AgentErrorCode.REFUSED, message)
+
+    /** The bounds of a proposal for the library. */
+    fun checkLibrary(title: String, items: List<LibraryItem>) {
+        if (title.isBlank() || title.length > maxTitleLength) refuse("A title of at most $maxTitleLength characters is needed.")
+        if (items.isEmpty()) refuse("A proposal needs at least one item.")
+        if (items.size > maxLibraryItems) refuse("A proposal for the library has at most $maxLibraryItems items.")
+        fun name(name: String) {
+            if (name.isBlank() || name.length > PageItems.MAX_TITLE_LENGTH) refuse("A name of at most ${PageItems.MAX_TITLE_LENGTH} characters is needed.")
+        }
+        for (item in items) {
+            when (item) {
+                is LibraryItem.CreateDocument -> {
+                    name(item.title)
+                    if (listOf(item.widthMm, item.heightMm).any { !it.isFinite() || it < PageItems.MIN_PAGE_SIDE_MM || it > PageItems.MAX_PAGE_SIDE_MM }) {
+                        refuse("A side of a page is between ${PageItems.MIN_PAGE_SIDE_MM} and ${PageItems.MAX_PAGE_SIDE_MM} millimeters.")
+                    }
+                }
+                is LibraryItem.CreateFolder -> name(item.name)
+                is LibraryItem.RenameFolder -> name(item.name)
+                else -> {}
+            }
+        }
+    }
 
     /** The bounds of the items of a proposal, and what they refer to making sense among them. */
     fun checkItems(items: List<ProposalItem>) {
@@ -735,6 +862,14 @@ private fun DrawDocument.pageOf(arguments: JsonObject): DrawPage {
     return page ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such page.")
 }
 
+private fun LibraryProposal.toStatus() = ProposalStatus(
+    id,
+    null,
+    if (isWaiting) "waiting" else "decided",
+    outcomes.map { it.wireName },
+    created = created.takeIf { !isWaiting }
+)
+
 private fun Proposal.toStatus() = ProposalStatus(
     id,
     documentId,
@@ -869,7 +1004,7 @@ private class SchemaBuilder {
 }
 
 @Serializable
-private data class DocumentEntry(val id: String, val title: String, val pages: Int)
+private data class DocumentEntry(val id: String, val title: String, val pages: Int, val folder: String? = null)
 
 @Serializable
 private data class DocumentContent(
@@ -995,11 +1130,24 @@ private data class SearchEntry(
 @Serializable
 private data class ProposalStatus(
     val proposal: String,
-    val document: String,
+    val document: String?,
     val state: String,
     val items: List<String>,
     val plan: PlanAnswer? = null,
-    val placed: List<List<PieceEntry>>? = null
+    val placed: List<List<PieceEntry>>? = null,
+    val created: List<String>? = null
+)
+
+@Serializable
+private data class FolderEntry(val id: String, val name: String, val parent: String? = null)
+
+@Serializable
+private data class TrashEntry(
+    val id: String,
+    val kind: String,
+    val name: String,
+    val folder: String? = null,
+    @SerialName("trashed_at") val trashedAt: Long
 )
 
 @Serializable

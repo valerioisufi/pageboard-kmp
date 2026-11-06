@@ -23,7 +23,10 @@ public class ExternalAgents(
     public val access: AgentAccess = AgentAccess(preferences)
     public val proposals: ProposalBook = ProposalBook()
     public val activity: AgentActivity = AgentActivity()
-    public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received)
+    public val library: LibraryBook = LibraryBook()
+    public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received, library = library, submitLibrary = ::receivedLibrary)
+
+    private val libraryApplier = LibraryApplier()
 
     private val applier = ProposalApplier(engines)
     private val planner = ProposalPlanner(engines)
@@ -74,6 +77,24 @@ public class ExternalAgents(
         proposals.resolve(proposalId, outcomes, placed)
     }
 
+    /**
+     * The user decided about the proposal [proposalId] for the library: the items at [accepted] are
+     * done in their order, the others are rejected. Nothing happens if it is decided already.
+     */
+    public suspend fun decideLibrary(proposalId: String, accepted: Set<Int>): Unit = decisions.withLock {
+        val proposal = library.find(proposalId)?.takeIf { it.isWaiting } ?: return
+        val indexes = proposal.items.indices.filter { it in accepted }
+        val outcomes = MutableList(proposal.items.size) { ItemOutcome.REJECTED }
+        val applied = libraryApplier.apply(documents, indexes.map { proposal.items[it] })
+        indexes.forEachIndexed { position, index -> outcomes[index] = applied.outcomes[position] }
+        if (applied.undos.isNotEmpty()) {
+            activity.record(null, proposal.client, proposal.title, applied.undos.size, LibraryUndos(applied.undos))
+        }
+        // What a client made, it may change: allowed with it
+        if (!access.grants.value.allDocuments) applied.created.forEach { access.grant(it) }
+        library.resolve(proposalId, outcomes, applied.created)
+    }
+
     /** The items of [proposal] that would not be applied as the document is now, to show them. */
     public suspend fun staleItems(proposal: Proposal): Set<Int> {
         val open = documents.open(proposal.documentId) ?: return proposal.entries.indices.toSet()
@@ -106,15 +127,27 @@ public class ExternalAgents(
      */
     public suspend fun undo(batchId: String): UndoOutcome = decisions.withLock {
         val batch = activity.find(batchId)?.takeUnless { it.undone } ?: return UndoOutcome.GONE
-        val undo = activity.undoOf(batchId) ?: return UndoOutcome.GONE
-        val open = documents.open(batch.documentId) ?: return UndoOutcome.UNAVAILABLE
+        val undo = when (val kept = activity.undoOf(batchId)) {
+            null -> return UndoOutcome.GONE
+            is LibraryUndos -> {
+                val catalog = documents.store
+                // All of it as the batch left it, or nothing is done
+                if (!kept.steps.all { it.isAsLeft(catalog) }) return UndoOutcome.CHANGED
+                kept.steps.asReversed().forEach { it.undo(catalog) }
+                activity.markUndone(batchId)
+                return UndoOutcome.UNDONE
+            }
+            is DocumentUndo -> kept
+        }
+        val documentId = batch.documentId ?: return UndoOutcome.GONE
+        val open = documents.open(documentId) ?: return UndoOutcome.UNAVAILABLE
         val outcome = try {
             open.edit { session ->
                 when {
                     session.isReadOnly -> UndoOutcome.UNAVAILABLE
                     else -> {
                         // What is being written is finished first: written on the batch, it is a change since
-                        engines.editors?.settle(batch.documentId)
+                        engines.editors?.settle(documentId)
                         if (!unchangedSince(session.document, undo.inverse, undo.stamp)) {
                             UndoOutcome.CHANGED
                         } else {
@@ -135,6 +168,12 @@ public class ExternalAgents(
      * A new [proposal] of the client [connection]: applied at once when the user chose so, its document
      * in an editor or not (it is in the [activity], to be undone); shown for its review otherwise.
      */
+    @Suppress("UNUSED_PARAMETER")
+    private suspend fun receivedLibrary(proposal: LibraryProposal, connection: String) {
+        // Reviewed in the sheet of the library otherwise
+        if (access.grants.value.applyDirectly) decideLibrary(proposal.id, proposal.items.indices.toSet())
+    }
+
     @Suppress("UNUSED_PARAMETER")
     private suspend fun received(proposal: Proposal, connection: String) {
         if (access.grants.value.applyDirectly) {
