@@ -12,6 +12,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
@@ -43,13 +44,22 @@ class TextWrittenSurvivesTest {
     fun tearDown() = Dispatchers.resetMain()
 
     /** The editor of the document [documentId] of [documents], open. */
-    private fun TestScope.editorOf(documents: OpenDocuments, documentId: String): DrawViewController {
-        val viewModel = DocumentEditorViewModel(documents)
+    private fun TestScope.editorOf(documents: OpenDocuments, documentId: String): DrawViewController =
+        editorOf(DocumentEditorViewModel(documents), documentId)
+
+    /** The editor of [viewModel] open on the document [documentId]. */
+    private fun TestScope.editorOf(viewModel: DocumentEditorViewModel, documentId: String): DrawViewController {
         viewModel.openDocument(documentId)
         advanceUntilIdle()
         val controller = assertNotNull(viewModel.session?.controller)
         controller.viewport.setSize(800f, 1200f)
         return controller
+    }
+
+    /** The texts of the document [documentId] as another process reads them from [storage]. */
+    private suspend fun TestScope.storedTexts(storage: InMemoryKeyValueStorage, documentId: String): List<String> {
+        val document = assertNotNull(KeyValueDocumentStore(storage, scope = backgroundScope).loadDocument(documentId))
+        return document.pages.single().texts.filter { it.removed == null }.map { it.text }
     }
 
     private fun DrawViewController.write(text: String) {
@@ -74,8 +84,44 @@ class TextWrittenSurvivesTest {
         process.cancel()
 
         // Another process, on the same storage
-        val again = KeyValueDocumentStore(storage, scope = backgroundScope)
-        val document = assertNotNull(again.loadDocument(documentId))
-        assertEquals(listOf("a line typed in a box still open"), document.pages.single().texts.map { it.text })
+        assertEquals(listOf("a line typed in a box still open"), storedTexts(storage, documentId))
+    }
+
+    @Test
+    fun closingTheDocumentSavesTheTextBeingWritten() = runTest(main) {
+        val storage = InMemoryKeyValueStorage()
+        val process = CoroutineScope(SupervisorJob() + main)
+        val store = KeyValueDocumentStore(storage, scope = process)
+        val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
+        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process))
+        val controller = editorOf(viewModel, documentId)
+
+        controller.write("written, then the window closed")
+        viewModel.closeSession()
+        assertFalse(controller.textEditorManager.isEditing)
+        // Less than a pause in the writing: saved by the closing
+        advanceTimeBy(500)
+        runCurrent()
+        process.cancel()
+        assertEquals(listOf("written, then the window closed"), storedTexts(storage, documentId))
+    }
+
+    @Test
+    fun theApplicationExitingSavesTheTextsBeingWritten() = runTest(main) {
+        val storage = InMemoryKeyValueStorage()
+        val process = CoroutineScope(SupervisorJob() + main)
+        val store = KeyValueDocumentStore(storage, scope = process)
+        val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
+        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process))
+        val controller = editorOf(viewModel, documentId)
+
+        controller.write("written, then the application closed")
+        DrawViewSessions.saveWriting()
+        assertTrue(controller.textEditorManager.isEditing, "saved, the box still open")
+        advanceTimeBy(500)
+        runCurrent()
+        process.cancel()
+        assertEquals(listOf("written, then the application closed"), storedTexts(storage, documentId))
+        viewModel.closeSession()
     }
 }

@@ -85,6 +85,8 @@ private fun runApplication(agents: PencilNotesAgents) {
         }
 
         fun exit() {
+            // The texts being written, saved in their documents
+            DrawViewSessions.saveWriting()
             runBlocking {
                 // The lecture being recorded is saved (its review is left for later), then the
                 // pending changes of the open note

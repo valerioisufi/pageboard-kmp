@@ -72,7 +72,7 @@ the one place where a note lives; nothing new is stored, nothing has to be resto
 | The saves of a writing undone in one step | `HistoryManager`, the entry kept open (`intoEntry` / `closeEntry`, internal) | Information Expert, Protected Variations |
 | Undo and redo of the canvas while writing: the writing ended first | `DrawViewController.undo` / `redo` | Controller |
 | The writing of an open document saved now, and ended when the document is closed | `EditorSession.saveWriting`, `DocumentEditorViewModel.closeSession`, `DrawViewSessions.saveWriting` (`drawview-session`) | Controller, Indirection |
-| The stop of the screen of the editor (Android, iOS) | `EditorSessionScreen`, a `LifecycleEventEffect(ON_STOP)` | Indirection, Low Coupling |
+| The stop of the screen of the editor (Android, iOS), and the editor going (a window, an activity) | `EditorSessionScreen`, a `LifecycleEventEffect(ON_STOP)` and a `DisposableEffect` | Indirection, Low Coupling |
 | The desktop applications closing | `exit()` of PencilNotes and of the sample | Controller |
 
 ### The checkpoint
@@ -138,10 +138,15 @@ open over it).
   finished, another document opened): `finishEditing` before the session is flushed and disposed, on
   the main thread.
 * **Android and iOS**: `EditorSessionScreen` saves the writing on `Lifecycle.Event.ON_STOP`
-  (`lifecycle-runtime-compose`, already in the catalog). On Android it comes when the activity stops,
-  which is before the system may kill it in the background. On iOS, Compose Multiplatform should send
-  it when the application goes to the background: to be verified in phase 3; if it does not, the
-  SwiftUI apps call `DrawViewSessions.saveWriting()` on `scenePhase == .background`.
+  (`lifecycle-runtime-compose`, already in the catalog, now a dependency of `drawview-session`). On
+  Android it comes when the activity stops, which is before the system may kill it in the background.
+  On iOS, Compose Multiplatform 1.12.1 moves the lifecycle of its view controller with the scene
+  (`ComposeContainerLifecycleDelegate`, on `UISceneDidEnterBackgroundNotification`): read in the
+  library, not tried on a device. Were it not so, the SwiftUI apps would call
+  `DrawViewSessions.saveWriting()` on `scenePhase == .background`.
+* **The editor going**: `EditorSessionScreen` saves the writing when it leaves the composition too
+  (a desktop window of a document closed while the library stays open, whose view model is not
+  cleared; an activity destroyed). The box stays open in the editor that goes: nothing is closed.
 * **Desktop exit**: `exit()` calls `DrawViewSessions.saveWriting()` (main thread) before
   `flushAll()`, in PencilNotes and in the sample.
 
@@ -154,7 +159,7 @@ writing without pauses) behind.
 |---|---|---|
 | 1 | `saveWriting` and the history entry (`TextAutosaveTest`): tests in `drawview-canvas` of a new text and a changed one saved with the editor open (same `sessionId`, value and caret), one undo for the writing (with saves, with a flow), a blank text not saved, a new text saved then emptied, a chain saved with its links and flowed on closing, a text changed on another device kept as one copy, a box moved to another page, undo while writing, another change meanwhile a step of its own | done |
 | 2 | `WritingSaver` (`WritingSaverTest`, `TextWrittenSurvivesTest`, `TextWrittenSurvivesRoomTest`): tests with virtual time (saved 2 s after the last change, at most 10 s while typing, nothing when unchanged, stopped at the end); **the kill test**: in `drawview-session`, a document of a `KeyValueDocumentStore` written in a box, the time past the save, the process dropped without closing anything, a new store on the same storage opens the document and finds the text; the same on the Room store on the JVM, read by a second connection to the file; both fail without the saves | done |
-| 3 | The signals: `closeSession` ends the writing, `ON_STOP` in `EditorSessionScreen`, `DrawViewSessions.saveWriting` in the exits of the desktop apps; iOS verified (or `scenePhase`); tried on the tablet (`adb install -r` over a box open) and on the desktop app on a scratch directory | to do |
+| 3 | The signals (`TextWrittenSurvivesTest`, `EditorSessionScreenSavesTest`): `closeSession` ends the writing, `ON_STOP` and the disposal in `EditorSessionScreen`, `DrawViewSessions.saveWriting` in the exits of the desktop apps; iOS read in the library; tried on the desktop app on a scratch directory; on the tablet (`adb install -r` over a box open) | done, not yet tried on the tablet |
 
 Each phase: the checks of `CLAUDE.md`, `updateKotlinAbi` for the new public functions
 (`TextEditorManager.saveWriting`, `EditorSession.saveWriting`, `DrawViewSessions.saveWriting`), said

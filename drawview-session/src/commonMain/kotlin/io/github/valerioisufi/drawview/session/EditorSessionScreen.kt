@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
@@ -26,7 +29,8 @@ import kotlinx.coroutines.flow.combine
  * The editor of an open document: a progress bar while the document is being loaded, then the
  * [EditorScreen], with the folder of the document under its title, renamed there (the devices it is
  * shared with rename it too). [onClose] is called by the back button of the editor and by the
- * system back.
+ * system back. The text being written is saved when the screen stops (the application in the
+ * background) and when the editor goes (see `docs/text-autosave.md`).
  *
  * @param extension content contributed to the editor by the application (top bar actions, panels,
  *   commands, overlays).
@@ -38,6 +42,11 @@ public fun EditorSessionScreen(
     modifier: Modifier = Modifier,
     extension: EditorExtension? = null
 ) {
+    // Before the system may kill the process in the background, and when the window or the activity goes
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { session.saveWriting() }
+    DisposableEffect(session) {
+        onDispose { session.saveWriting() }
+    }
     val controller = session.controller
     if (controller == null) {
         // The document is being loaded

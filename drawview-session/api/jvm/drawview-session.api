@@ -25,6 +25,7 @@ public final class io/github/valerioisufi/drawview/session/DrawViewSessions {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/session/DrawViewSessions;
 	public final fun find (Ljava/lang/String;)Lio/github/valerioisufi/drawview/session/EditorSession;
 	public final fun flushAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun saveWriting ()V
 }
 
 public final class io/github/valerioisufi/drawview/session/EditorSession {
@@ -33,6 +34,7 @@ public final class io/github/valerioisufi/drawview/session/EditorSession {
 	public final fun getController ()Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;
 	public final fun getDocument ()Lio/github/valerioisufi/drawview/store/OpenDocument;
 	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun saveWriting ()V
 }
 
 public final class io/github/valerioisufi/drawview/session/EditorSessionScreenKt {

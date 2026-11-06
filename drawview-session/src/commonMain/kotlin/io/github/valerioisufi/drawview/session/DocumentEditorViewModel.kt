@@ -48,6 +48,14 @@ public class EditorSession internal constructor(
      */
     internal val persistenceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /**
+     * Saves the text being written in the document, its box staying open (see
+     * `TextEditorManager.saveWriting`), so that it survives the process; on the main thread.
+     */
+    public fun saveWriting() {
+        controller?.textEditorManager?.saveWriting()
+    }
+
     /** Writes every pending change of the session. */
     public suspend fun flush() {
         controller?.flushPersistence()
@@ -166,9 +174,11 @@ public class DocumentEditorViewModel(
         }
     }
 
-    /** Closes the open document, writing its pending changes. */
+    /** Closes the open document, writing its pending changes (the text being written too). */
     public fun closeSession() {
         val current = session ?: return
+        // The box being written closed and saved, before the editor goes
+        current.controller?.textEditorManager?.finishEditing()
         session = null
         DrawViewSessions.close(current)
     }
@@ -215,6 +225,14 @@ public object DrawViewSessions {
         }
         job.invokeOnCompletion { syncLock(lock) { closing.remove(job) } }
         job.start()
+    }
+
+    /**
+     * Saves the texts being written in the open sessions (see [EditorSession.saveWriting]), on the
+     * main thread: e.g. before [flushAll] when the application exits.
+     */
+    public fun saveWriting() {
+        syncLock(lock) { open.toList() }.forEach { it.saveWriting() }
     }
 
     /** Writes the pending changes of every session (open or being closed). */

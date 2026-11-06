@@ -41,6 +41,7 @@ fun main() {
                 onCloseRequest = {
                     windowManager.closeLibrary()
                     if (windowManager.shouldExit) {
+                        DrawViewSessions.saveWriting()
                         runBlocking { DrawViewSessions.flushAll() }
                         exitApplication()
                     }
@@ -74,6 +75,7 @@ fun main() {
                     onCloseRequest = {
                         windowManager.closeDocument(documentId)
                         if (windowManager.shouldExit) {
+                            DrawViewSessions.saveWriting()
                             runBlocking { DrawViewSessions.flushAll() }
                             exitApplication()
                         }
@@ -92,6 +94,7 @@ fun main() {
                             onClose = {
                                 windowManager.closeDocument(documentId)
                                 if (windowManager.shouldExit) {
+                                    DrawViewSessions.saveWriting()
                                     runBlocking { DrawViewSessions.flushAll() }
                                     exitApplication()
                                 }
