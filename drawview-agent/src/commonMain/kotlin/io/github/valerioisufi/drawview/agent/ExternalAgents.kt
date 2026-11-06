@@ -28,7 +28,10 @@ public class ExternalAgents(
 
     /** The documents and folders of the library, to name them in the review. */
     public val catalog: DocumentCatalog get() = documents.store
-    public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received, library = library, submitLibrary = ::receivedLibrary)
+    public val tools: DocumentTools = DocumentTools(
+        documents, access, proposals, engines, ::received,
+        library = library, submitLibrary = ::receivedLibrary, activity = activity, undo = { undo(it) }
+    )
 
     private val libraryApplier = LibraryApplier()
 

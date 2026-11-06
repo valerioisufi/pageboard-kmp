@@ -49,6 +49,12 @@ internal class AgentCli(
                 "preview" -> preview(args.drop(1))
                 "propose" -> propose(args.drop(1))
                 "status" -> status(args.drop(1))
+                "folders" -> folders(args.drop(1))
+                "trash" -> trash(args.drop(1))
+                "propose-library" -> proposeLibrary(args.drop(1))
+                "activity" -> activity(args.drop(1))
+                "undo" -> undo(args.drop(1))
+                "call" -> call(args.drop(1))
                 "mcp" -> mcp()
                 else -> usage()
             }
@@ -66,12 +72,20 @@ internal class AgentCli(
             """
             Usage:
               pencilnotes docs [--json]
-              pencilnotes read <document> [--page <n>] [--json]
+              pencilnotes read <document> [--page <n> [--strokes]] [--json]
               pencilnotes search "<text>" [--json]
               pencilnotes preview <document> --file <items.json> [--json]
               pencilnotes propose <document> --file <items.json> [--title "<title>"]
               pencilnotes status <proposal> [--wait]
+              pencilnotes folders [--json]
+              pencilnotes trash [--json]
+              pencilnotes propose-library --file <items.json> [--title "<title>"]
+              pencilnotes activity [--json]
+              pencilnotes undo <batch>
+              pencilnotes call <tool> [--file <arguments.json>]
               pencilnotes mcp
+
+            The items of a proposal and the tools are those of "pencilnotes mcp" (tools/list).
             """.trimIndent()
         )
         return EXIT_USAGE
@@ -111,6 +125,7 @@ internal class AgentCli(
                 val answer = client.call("read_page", buildJsonObject {
                     put("document", document)
                     put("index", index)
+                    if (parsed.has("--strokes")) put("strokes", true)
                 })
                 if (parsed.has("--json")) output.println(answer) else printPage(answer)
             }
@@ -119,13 +134,29 @@ internal class AgentCli(
     }
 
     private fun printPage(page: JsonObject) {
-        output.println("# Page ${page.text("index")}  ${page.text("id")}  (${page.text("strokes")} strokes)")
+        output.println("# Page ${page.text("index")}  ${page.text("id")}  base ${page.text("base")}  (${page.text("strokes")} strokes, background ${page.text("background")})")
         for (entry in page.array("texts")) {
             val fields = entry.jsonObject
             output.println()
             output.println("## Text ${fields.text("id")}  base ${fields.text("base")}")
             output.println("x ${fields.text("x")}, y ${fields.text("y")}, ${fields.text("width")} x ${fields.text("height")} mm, size ${fields.text("font_size")}")
             output.println(fields.text("markdown"))
+        }
+        for (entry in page.array("images")) {
+            val fields = entry.jsonObject
+            output.println()
+            output.println("## Image ${fields.text("id")}  base ${fields.text("base")}")
+            output.println("x ${fields.text("x")}, y ${fields.text("y")}, ${fields.text("width")} x ${fields.text("height")} mm")
+        }
+        val strokes = page.array("stroke_list")
+        if (strokes.isNotEmpty()) {
+            output.println()
+            output.println("## Strokes")
+            for (entry in strokes) {
+                val fields = entry.jsonObject
+                output.println("${fields.text("id")}  base ${fields.text("base")}  x ${fields.text("x")}, y ${fields.text("y")}, ${fields.text("width")} x ${fields.text("height")} mm, ${fields.text("color")}, ${fields.text("stroke_width")} mm, ${fields.text("tool")}")
+            }
+            page.text("strokes_left_out")?.let { output.println("… and $it more") }
         }
         val free = page.array("free_areas")
         if (free.isNotEmpty()) {
@@ -254,6 +285,85 @@ internal class AgentCli(
         }
     }
 
+    private fun folders(args: List<String>): Int = connected { client ->
+        val answer = client.call("list_folders", JsonObject(emptyMap()))
+        if ("--json" in args) output.println(answer) else {
+            for (folder in answer.array("folders")) {
+                val fields = folder.jsonObject
+                output.println("${fields.text("id")}  ${fields.text("name")}${fields.text("parent")?.let { "  in $it" }.orEmpty()}")
+            }
+        }
+        EXIT_OK
+    }
+
+    private fun trash(args: List<String>): Int = connected { client ->
+        val answer = client.call("list_trash", JsonObject(emptyMap()))
+        if ("--json" in args) output.println(answer) else {
+            for (item in answer.array("items")) {
+                val fields = item.jsonObject
+                output.println("${fields.text("id")}  ${fields.text("kind")}  ${fields.text("name")}")
+            }
+        }
+        EXIT_OK
+    }
+
+    private fun proposeLibrary(args: List<String>): Int {
+        val parsed = Arguments(args)
+        val path = parsed.option("--file") ?: return usage()
+        val file = File(path)
+        val items = readItems(file, path)
+        return connected { client ->
+            val answer = client.call("propose_library", buildJsonObject {
+                put("title", parsed.option("--title") ?: file.nameWithoutExtension)
+                put("items", items)
+            })
+            output.println(answer.text("proposal"))
+            EXIT_OK
+        }
+    }
+
+    private fun activity(args: List<String>): Int = connected { client ->
+        val answer = client.call("list_activity", JsonObject(emptyMap()))
+        if ("--json" in args) output.println(answer) else {
+            for (batch in answer.array("batches")) {
+                val fields = batch.jsonObject
+                val undone = if (fields["undone"]?.jsonPrimitive?.booleanOrNull == true) "  undone" else ""
+                output.println("${fields.text("id")}  ${fields.text("document") ?: "library"}  ${fields.text("title")}  (${fields.text("items")} items, ${fields.text("client")})$undone")
+            }
+        }
+        EXIT_OK
+    }
+
+    private fun undo(args: List<String>): Int {
+        val batch = Arguments(args).positional.firstOrNull() ?: return usage()
+        return connected { client ->
+            client.call("undo", buildJsonObject { put("batch", batch) })
+            output.println("undone")
+            EXIT_OK
+        }
+    }
+
+    /** Any tool, with the arguments in a file (none by default): its answer as JSON. */
+    private fun call(args: List<String>): Int {
+        val parsed = Arguments(args)
+        val tool = parsed.positional.firstOrNull() ?: return usage()
+        val arguments = parsed.option("--file")?.let { path ->
+            val file = File(path)
+            try {
+                if (file.length() > AgentEndpoint.MAX_MESSAGE_LENGTH) throw Failure("$path is too long.", EXIT_REFUSED)
+                Json.parseToJsonElement(file.readText()) as? JsonObject ?: throw Failure("$path holds a JSON object of arguments.", EXIT_REFUSED)
+            } catch (e: IOException) {
+                throw Failure("Cannot read $path: ${e.message}", EXIT_USAGE)
+            } catch (e: SerializationException) {
+                throw Failure("$path is not JSON: ${e.message?.take(200)}", EXIT_REFUSED)
+            }
+        } ?: JsonObject(emptyMap())
+        return connected { client ->
+            output.println(client.call(tool, arguments))
+            EXIT_OK
+        }
+    }
+
     /** Forwards the lines of a client of the protocol to the application and back, until one side ends. */
     private fun mcp(): Int {
         val channel = open()
@@ -296,7 +406,7 @@ internal class AgentCli(
         } catch (_: IOException) {
             channel.close()
             throw Failure(
-                "PencilNotes is not running on these notes, or the access of external models is off. Open it, and turn it on in \"External models…\" in the menu of a document.",
+                "PencilNotes is not running on these notes, or the access of external models is off. Open it, and turn it on in \"External models\" in the library or in the menu of a document.",
                 EXIT_NOT_RUNNING
             )
         }
@@ -380,8 +490,14 @@ internal class AgentCli(
         /** Items stale or rejected. */
         const val EXIT_NOT_ACCEPTED = 5
 
+        /** What the command names is not there (a document, a batch, an item of the trash). */
+        const val EXIT_NOT_FOUND = 6
+
         /** The commands: what else is given to the application is not for this class. */
-        val COMMANDS = setOf("docs", "read", "search", "preview", "propose", "status", "mcp", "help", "--help")
+        val COMMANDS = setOf(
+            "docs", "read", "search", "preview", "propose", "status", "folders", "trash", "propose-library", "activity", "undo", "call",
+            "mcp", "help", "--help"
+        )
 
         /** The longest answer read back: a page drawn as an image, in Base64, fits. */
         private const val MAX_ANSWER_BYTES = 64 * 1024 * 1024
@@ -390,6 +506,7 @@ internal class AgentCli(
         private fun exitCodeOf(code: String?): Int = when (code) {
             "access_off" -> EXIT_NOT_RUNNING
             "not_granted" -> EXIT_NOT_GRANTED
+            "not_found" -> EXIT_NOT_FOUND
             else -> EXIT_REFUSED
         }
 

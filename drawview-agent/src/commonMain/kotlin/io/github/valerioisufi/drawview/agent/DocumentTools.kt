@@ -69,7 +69,9 @@ public class DocumentTools internal constructor(
     private val limits: ProposalLimits = ProposalLimits(),
     private val library: LibraryBook = LibraryBook(),
     private val submitLibrary: suspend (LibraryProposal, connection: String) -> Unit = { _, _ -> },
-    private val trashLimiter: TrashLimiter = TrashLimiter()
+    private val trashLimiter: TrashLimiter = TrashLimiter(),
+    private val activity: AgentActivity = AgentActivity(),
+    private val undo: suspend (batchId: String) -> UndoOutcome = { UndoOutcome.GONE }
 ) {
     private val planner = ProposalPlanner(engines)
 
@@ -90,6 +92,8 @@ public class DocumentTools internal constructor(
         add(listFolders())
         add(listTrash())
         add(proposeLibrary())
+        add(listActivity())
+        add(undoBatch())
     }
 
     /** Calls the tool [name] for the client [connection]; fails with an [AgentToolException]. */
@@ -521,6 +525,37 @@ public class DocumentTools internal constructor(
         val proposal = library.add(name, title.trim(), items)
         submitLibrary(proposal, connection)
         value(proposalJson.encodeToJsonElement(library.find(proposal.id)!!.toStatus()))
+    }
+
+    private fun listActivity() = AgentTool(
+        name = "list_activity",
+        description = "What the models changed, the most recent first, of the documents you may reach (and of the library when all are allowed): id (to undo it), document (none: the library), the client, the title of its proposal, how many items, when (milliseconds), whether it was undone.",
+        inputSchema = schema()
+    ) { _, _ ->
+        val grants = access.grants.value
+        val batches = activity.batches.value.asReversed()
+            .filter { batch -> batch.documentId?.let { grants.allows(it) } ?: grants.allDocuments }
+            .map { ActivityEntry(it.id, it.documentId, it.client, it.title, it.items, it.at, it.undone) }
+        value(buildJsonObject { put("batches", json.encodeToJsonElement(batches)) })
+    }
+
+    private fun undoBatch() = AgentTool(
+        name = "undo",
+        description = "Undoes a batch of list_activity: done only while what it changed was not changed again since, by the user or anyone else; otherwise nothing is done and the answer is refused.",
+        inputSchema = schema(required = listOf("batch")) { string("batch", "The id list_activity gave.") }
+    ) { arguments, _ ->
+        val id = arguments.requiredString("batch")
+        val batch = activity.find(id) ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such batch: the application drops them when it quits.")
+        val grants = access.grants.value
+        if (batch.documentId?.let { !grants.allows(it) } ?: !grants.allDocuments) {
+            throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The user has not allowed what this batch changed.")
+        }
+        when (undo(id)) {
+            UndoOutcome.UNDONE -> value(buildJsonObject { put("batch", id); put("state", "undone") })
+            UndoOutcome.CHANGED -> throw AgentToolException(AgentErrorCode.REFUSED, "What it changed was changed again since: nothing was undone, so that nothing is lost.")
+            UndoOutcome.GONE -> throw AgentToolException(AgentErrorCode.NOT_FOUND, "This batch was undone already.")
+            UndoOutcome.UNAVAILABLE -> throw AgentToolException(AgentErrorCode.REFUSED, "Its document cannot be changed on this device.")
+        }
     }
 
     private fun requireAllDocuments() {
@@ -1155,6 +1190,17 @@ private data class ProposalStatus(
     val plan: PlanAnswer? = null,
     val placed: List<List<PieceEntry>>? = null,
     val created: List<String>? = null
+)
+
+@Serializable
+private data class ActivityEntry(
+    val id: String,
+    val document: String? = null,
+    val client: String,
+    val title: String,
+    val items: Int,
+    val at: Long,
+    val undone: Boolean
 )
 
 @Serializable

@@ -104,7 +104,7 @@ class AgentCliTest {
         assertTrue(read.output.contains("page 0"))
 
         assertEquals(AgentCli.EXIT_OK, run("read", id, "--page", "0").code)
-        assertEquals(AgentCli.EXIT_REFUSED, run("read", id, "--page", "9").code)
+        assertEquals(AgentCli.EXIT_NOT_FOUND, run("read", id, "--page", "9").code)
         assertEquals(AgentCli.EXIT_USAGE, run("read", id, "--page", "x").code)
     }
 
@@ -136,6 +136,49 @@ class AgentCliTest {
         assertEquals(listOf("From the terminal"), open.document.pages.first().texts.map { it.text })
         runBlocking { documents.close(open) }
         assertEquals(id, agents.activity.batches.value.single().documentId)
+    }
+
+    @Test
+    fun theLibraryIsChangedReadAndUndoneFromTheTerminal() {
+        startHost()
+        val id = newDocument()
+        runBlocking {
+            agents.access.setAllDocuments(true)
+            agents.access.setApplyDirectly(true)
+        }
+        val items = File(directory, "library.json").apply {
+            writeText("""[{"kind":"create_folder","name":"Year 1"},{"kind":"trash_document","document":"$id"}]""")
+        }
+        val proposed = run("propose-library", "--file", items.path, "--title", "Tidy up")
+        assertEquals(AgentCli.EXIT_OK, proposed.code, proposed.errors)
+        assertEquals(AgentCli.EXIT_OK, run("status", proposed.output.trim()).code)
+
+        val folders = run("folders")
+        assertEquals(AgentCli.EXIT_OK, folders.code, folders.errors)
+        assertTrue(folders.output.contains("Year 1"))
+        val trash = run("trash")
+        assertTrue(trash.output.contains(id), trash.output)
+
+        val activity = run("activity")
+        assertEquals(AgentCli.EXIT_OK, activity.code, activity.errors)
+        val batch = activity.output.lines().first().substringBefore(" ")
+        assertTrue(activity.output.contains("library"))
+        val undone = run("undo", batch)
+        assertEquals(AgentCli.EXIT_OK, undone.code, undone.errors)
+        assertTrue(runBlocking { store.trash.first() }.none { it.id == id })
+        assertEquals(AgentCli.EXIT_NOT_FOUND, run("undo", batch).code)
+        assertEquals(AgentCli.EXIT_NOT_FOUND, run("undo", "elsewhere").code)
+    }
+
+    @Test
+    fun anyToolIsCalledWithItsArgumentsInAFile() {
+        startHost()
+        val id = newDocument()
+        val arguments = File(directory, "arguments.json").apply { writeText("""{"document":"$id","index":0,"strokes":true}""") }
+        val read = run("call", "read_page", "--file", arguments.path)
+        assertEquals(AgentCli.EXIT_OK, read.code, read.errors)
+        assertTrue(read.output.contains("\"stroke_list\""), read.output)
+        assertEquals(AgentCli.EXIT_REFUSED, run("call", "no_such_tool").code)
     }
 
     @Test

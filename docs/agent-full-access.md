@@ -216,7 +216,7 @@ One commit per phase on `feat/agent-full-access`, with the checks of `CLAUDE.md`
 | 5 | The items of the pages and `rename_document`: `remove_page` (to the trash of the pages, one page kept), `move_page`, `duplicate_page` (the copy of `CopiedPages`), `set_page_format` (size, background), `rename_document` (a free name); the background in `read_page`. Tests: each item, a removed page in the trash of the pages, a page written on after it was read, the last page kept, refused values, one operation undone at once, converging on another device through the written operation | done |
 | 6 | The library: `LibraryItem`, `LibraryBook`, `LibraryApplier`, `list_folders`, `list_trash`, `propose_library`, the folder of a document in `list_documents`, the created documents in `proposal_status`; their undo in the activity, each step checked against what it left; `TrashLimiter` (20 per proposal, 50 a minute). Tests: each item and its undo, a document written in or a folder filled since not undone, stale items, folders needing every document allowed, the review, the limits, nothing deleted for good | done |
 | 7 | The review of the new items: the page and what each item does beside its label (`itemDetail`), the title before and after a rename, a stale item told for what it is; the proposals for the library in the sheet of the library, each item in words with the names of its documents and folders (`libraryItemText`), applied or rejected there; `ProposalEntry.page` and `ExternalAgents.catalog`; the strings (in English, like the rest of `drawview-agent-ui`). Tests: screenshots `agent_review_elements` and `agent_access_library`, a real editor (elements, pages and a rename accepted, then one undo), the desktop application started on a scratch directory. The clicks in its window are left to the user | done |
-| 8 | The command line and MCP: the new tools in `tools/list`, `pencilnotes propose-library`, `pencilnotes activity`, `pencilnotes undo <batch>`, the exit codes; the help of the commands. Tests: the commands against the application on a scratch directory | proposed |
+| 8 | The command line and MCP: the tools `list_activity` and `undo` (a model may undo what a model did, with the same checks), every new tool in `tools/list`; the commands `folders`, `trash`, `propose-library`, `activity`, `undo <batch>`, `call <tool> [--file]` and `read --strokes`, the images and strokes in the text of a page, the exit code 6 for what is not found; the usage. Tests: the commands against a socket (the library changed, read and undone; any tool called with its arguments in a file) | done |
 
 After phase 2 a closed document can be changed with the items of today; after phase 5 every change of a
 document is there; phases 6–8 add the library and the commands.
@@ -254,7 +254,11 @@ Taken alone, revertible:
     one by one. A document a client creates is allowed with it.
 15. **A proposal for the library is not one operation**: the catalog has no transaction, so an item that
     cannot be done is stale and the others are done, as in a document.
-16. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
+16. **A model may undo** what the models did (`undo`), with the checks of the user's Undo: it may want
+    to take back its own mistake, and nothing changed since is overwritten.
+17. **`call` reaches any tool** from a terminal, so that a new tool needs no new command.
+18. **Exit code 6 for what is not found**, where it was 4: a script tells a wrong id from a refusal.
+19. **The commands stay on the desktop**, the application open, as in `docs/agent-tools.md`.
 
 ## Left for later
 

@@ -216,7 +216,8 @@ pencilnotes mcp
 `pencilnotes mcp` is the bridge a client of MCP starts: it reads and writes the messages on its
 standard input and output and forwards them to the socket. The other commands are the same tools, for
 a person or a script. The exit codes tell the cases apart: 0 done, 2 application not running or access
-off, 3 document not granted, 4 refused by the checks, 5 items stale or rejected.
+off, 3 document not granted, 4 refused by the checks, 5 items stale or rejected, 6 not found (added by
+`docs/agent-full-access.md`).
 
 ### Threats
 
