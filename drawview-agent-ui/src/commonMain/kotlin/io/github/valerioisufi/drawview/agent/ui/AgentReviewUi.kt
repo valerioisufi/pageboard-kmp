@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.agent.AGENT_TEXT_COLOR
 import io.github.valerioisufi.drawview.agent.AgentBatch
 import io.github.valerioisufi.drawview.agent.AgentConnection
+import io.github.valerioisufi.drawview.agent.LibraryItem
+import io.github.valerioisufi.drawview.agent.LibraryProposal
 import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ChosenPlace
@@ -57,6 +59,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changed
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changes
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_title
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_unavailable
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undo
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undone
@@ -92,6 +95,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_i
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_replace
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_stale
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_stale_other
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_accepted
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_rejected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_stale
@@ -161,12 +165,19 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         val grants by agents.access.grants.collectAsState()
         val connections by agents.access.connections.collectAsState()
         val batches by agents.activity.batches.collectAsState()
+        val libraryProposals by agents.library.proposals.collectAsState()
+        val documents by agents.catalog.documents.collectAsState(emptyList())
+        val folders by agents.catalog.folders.collectAsState(emptyList())
+        val trash by agents.catalog.trash.collectAsState(emptyList())
         val outcomes = remember { mutableStateMapOf<String, UndoOutcome>() }
         val scope = rememberCoroutineScope()
         AccessSheet(
             grants = grants,
             documentId = documentId,
             connections = connections,
+            libraryProposals = if (documentId == null) libraryProposals.filter { it.isWaiting } else emptyList(),
+            names = documents.associate { it.id to it.name } + folders.associate { it.id to it.name } + trash.associate { it.id to it.name },
+            onDecideLibrary = { id, accepted -> scope.launch { agents.decideLibrary(id, accepted) } },
             batches = batches.filter { documentId == null || it.documentId == documentId },
             undoOutcomes = outcomes,
             onUndo = { id -> scope.launch { outcomes[id] = agents.undo(id) } },
@@ -428,6 +439,7 @@ private fun EntryContent(
     val item = entry.item
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(itemLabel(item), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
+        itemDetail(entry)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         entry.before?.let {
             Text(
                 it,
@@ -439,12 +451,14 @@ private fun EntryContent(
         val after = when (item) {
             is ProposalItem.ReplaceText -> item.markdown
             is ProposalItem.InsertText -> item.markdown
+            is ProposalItem.RenameDocument -> item.title
             else -> null
         }
         after?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
         if (stale) {
+            val onText = item is ProposalItem.ReplaceText || item is ProposalItem.RemoveText || item is ProposalItem.RestyleText
             Text(
-                stringResource(Res.string.agent_item_stale),
+                stringResource(if (onText) Res.string.agent_item_stale else Res.string.agent_item_stale_other),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -546,6 +560,9 @@ internal fun AccessSheet(
     batches: List<AgentBatch> = emptyList(),
     undoOutcomes: Map<String, UndoOutcome> = emptyMap(),
     onUndo: (String) -> Unit = {},
+    libraryProposals: List<LibraryProposal> = emptyList(),
+    names: Map<String, String> = emptyMap(),
+    onDecideLibrary: (String, Set<Int>) -> Unit = { _, _ -> },
     onDocument: (Boolean) -> Unit,
     onApplyDirectly: (Boolean) -> Unit,
     onDismiss: () -> Unit
@@ -610,10 +627,60 @@ internal fun AccessSheet(
                     Text(connection.name, style = MaterialTheme.typography.bodyLarge)
                 }
             }
+            if (libraryProposals.isNotEmpty()) {
+                Text(stringResource(Res.string.agent_library_title), style = MaterialTheme.typography.titleSmall)
+                for (proposal in libraryProposals) {
+                    androidx.compose.runtime.key(proposal.id) { LibraryProposalCard(proposal, names, onDecideLibrary) }
+                }
+            }
             if (batches.isNotEmpty()) {
                 Text(stringResource(Res.string.agent_activity_title), style = MaterialTheme.typography.titleSmall)
                 for (batch in batches.asReversed().take(MAX_BATCHES_SHOWN)) {
                     BatchRow(batch, undoOutcomes[batch.id], onUndo = { onUndo(batch.id) })
+                }
+            }
+        }
+    }
+}
+
+/** A proposal for the library waiting: each item with a box, on by default. */
+@Composable
+private fun LibraryProposalCard(proposal: LibraryProposal, names: Map<String, String>, onDecide: (String, Set<Int>) -> Unit) {
+    val unchecked = remember(proposal.id) { mutableStateSetOf<Int>() }
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(proposal.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(Res.string.agent_review_from, proposal.client),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            proposal.items.forEachIndexed { index, item ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = index !in unchecked,
+                        onCheckedChange = { checked -> if (checked) unchecked -= index else unchecked += index }
+                    )
+                    Text(
+                        libraryItemText(item, names),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (item is LibraryItem.TrashDocument || item is LibraryItem.TrashFolder) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                val accepted = proposal.items.indices.filter { it !in unchecked }.toSet()
+                Button(onClick = { onDecide(proposal.id, accepted) }, enabled = accepted.isNotEmpty()) {
+                    Text(stringResource(Res.string.agent_accept_selected), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                OutlinedButton(onClick = { onDecide(proposal.id, emptySet()) }) {
+                    Text(stringResource(Res.string.agent_reject_all), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }

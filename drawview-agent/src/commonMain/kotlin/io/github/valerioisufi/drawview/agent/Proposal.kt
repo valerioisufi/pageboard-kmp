@@ -228,12 +228,14 @@ public enum class ItemOutcome(public val wireName: String) {
  *
  * @param before the text it replaces or removes as it was when proposed, to show beside the new one.
  * @param placed where its text went, once accepted.
+ * @param page the index (from 0) of the page it is on when proposed, for an item on a page or its elements.
  */
 public data class ProposalEntry(
     val item: ProposalItem,
     val before: String? = null,
     val outcome: ItemOutcome = ItemOutcome.WAITING,
-    val placed: List<PlannedPiece> = emptyList()
+    val placed: List<PlannedPiece> = emptyList(),
+    val page: Int? = null
 )
 
 /**

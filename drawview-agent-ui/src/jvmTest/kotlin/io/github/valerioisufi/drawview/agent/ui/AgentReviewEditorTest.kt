@@ -41,6 +41,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -226,6 +227,51 @@ class AgentReviewEditorTest {
         val batch = scene.agents.activity.batches.value.single()
         assertEquals(UndoOutcome.UNDONE, runBlocking { scene.agents.undo(batch.id) })
         assertEquals(listOf("Old text"), scene.texts)
+    }
+
+    @Test
+    fun elementsAndPagesAcceptedInTheReviewAreUndoneByOneUndo() = scene { scene ->
+        val page = scene.controller.document.pages.first()
+        val id = runBlocking {
+            val base = scene.call("read_page", buildJsonObject { put("document", scene.documentId) })
+                .getValue("texts").jsonArray.first().jsonObject.getValue("base").jsonPrimitive.content
+            scene.call(
+                "propose",
+                buildJsonObject {
+                    put("document", scene.documentId)
+                    put("title", "Lay out the page")
+                    put(
+                        "items",
+                        JsonArray(
+                            listOf(
+                                buildJsonObject {
+                                    put("kind", "restyle_text"); put("text", scene.text.id); put("base", base); put("color", "#C0392B")
+                                },
+                                buildJsonObject {
+                                    put("kind", "add_stroke"); put("page", page.id)
+                                    put("points", JsonArray(listOf(JsonArray(listOf(JsonPrimitive(20f), JsonPrimitive(60f))), JsonArray(listOf(JsonPrimitive(90f), JsonPrimitive(60f))))))
+                                },
+                                buildJsonObject { put("kind", "duplicate_page"); put("page", page.id) },
+                                buildJsonObject { put("kind", "rename_document"); put("title", "Electromagnetism") }
+                            )
+                        )
+                    )
+                }
+            ).getValue("proposal").jsonPrimitive.content
+        }
+        waitForIdle()
+        runBlocking { scene.agents.decide(id, setOf(0, 1, 2, 3)) }
+        waitForIdle()
+        assertEquals(0xFFC0392B.toInt(), scene.text.color)
+        assertEquals(2, scene.controller.document.pages.size)
+        assertEquals(1, scene.controller.document.pages.first().strokes.size)
+        assertEquals("Electromagnetism", scene.controller.document.title)
+
+        scene.controller.historyManager.undo()
+        assertEquals(0xFF000000.toInt(), scene.text.color)
+        assertEquals(1, scene.controller.document.pages.size)
+        assertEquals(0, scene.controller.document.pages.first().strokes.size)
+        assertEquals("Physics", scene.controller.document.title)
     }
 
     @Test

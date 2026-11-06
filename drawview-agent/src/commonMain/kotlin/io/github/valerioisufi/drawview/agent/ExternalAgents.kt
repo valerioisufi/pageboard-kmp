@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.agent
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.store.DocumentCatalog
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import kotlinx.coroutines.sync.Mutex
@@ -24,6 +25,9 @@ public class ExternalAgents(
     public val proposals: ProposalBook = ProposalBook()
     public val activity: AgentActivity = AgentActivity()
     public val library: LibraryBook = LibraryBook()
+
+    /** The documents and folders of the library, to name them in the review. */
+    public val catalog: DocumentCatalog get() = documents.store
     public val tools: DocumentTools = DocumentTools(documents, access, proposals, engines, ::received, library = library, submitLibrary = ::receivedLibrary)
 
     private val libraryApplier = LibraryApplier()

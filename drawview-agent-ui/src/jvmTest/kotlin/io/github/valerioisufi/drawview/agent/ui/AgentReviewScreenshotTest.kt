@@ -15,7 +15,12 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.drawview.agent.AgentArea
 import io.github.valerioisufi.drawview.agent.AgentBatch
+import io.github.valerioisufi.drawview.agent.ElementRef
+import io.github.valerioisufi.drawview.agent.LibraryItem
+import io.github.valerioisufi.drawview.agent.LibraryProposal
+import io.github.valerioisufi.drawview.agent.StackPlace
 import io.github.valerioisufi.drawview.agent.AgentConnection
 import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.AgentGrants
@@ -105,6 +110,51 @@ class AgentReviewScreenshotTest {
     private val shown = mapOf("one" to setOf(0, 2))
     private val chosen = mapOf("one" to setOf(2))
 
+    private val elements = Proposal(
+        id = "three",
+        documentId = "document",
+        client = "Claude Code",
+        title = "Lay out page 2",
+        entries = listOf(
+            ProposalEntry(ProposalItem.RemoveElements("p", listOf(ElementRef("s1", "b"), ElementRef("s2", "b"))), page = 1),
+            ProposalEntry(ProposalItem.PlaceElements("p", listOf(ElementRef("i", "b")), dx = 12.5f, dy = -4f, scale = 1.5f), page = 1),
+            ProposalEntry(ProposalItem.ReorderElements("p", listOf(ElementRef("i", "b")), StackPlace.BACK), page = 1),
+            ProposalEntry(ProposalItem.RestyleText("t", "b", color = "#C0392B", fontSize = 20f, alignment = "center"), before = "Maxwell's equations", page = 1),
+            ProposalEntry(ProposalItem.AddStroke("p", List(24) { listOf(20f + it, 50f) }, width = 0.8f), page = 1),
+            ProposalEntry(ProposalItem.AddImage("/kept/figure.png", "p", AgentArea(20f, 30f, 100f, 50f)), page = 1),
+            ProposalEntry(ProposalItem.SetPageFormat("p", "b", widthMm = 297f, heightMm = 210f, background = "grid"), page = 1),
+            ProposalEntry(ProposalItem.RemovePage("q", "b"), page = 3),
+            ProposalEntry(ProposalItem.RenameDocument("Electromagnetism"), before = "Physics")
+        )
+    )
+
+    @Test
+    fun reviewOfElementsAndPages() = capture("agent_review_elements", 420, 1100) {
+        ReviewList(listOf(elements), mapOf("three" to setOf(7)), onDecide = { _, _ -> })
+    }
+
+    @Test
+    fun accessWithALibraryProposal() = captureAccess(
+        "agent_access_library",
+        AgentGrants(enabled = true, allDocuments = true),
+        documentId = null,
+        libraryProposals = listOf(
+            LibraryProposal(
+                "l",
+                "Claude Code",
+                "Sort the courses",
+                listOf(
+                    LibraryItem.CreateFolder("Year 1"),
+                    LibraryItem.MoveDocument("physics", "year"),
+                    LibraryItem.TrashDocument("draft"),
+                    LibraryItem.Restore("old")
+                )
+            )
+        ),
+        names = mapOf("physics" to "Physics", "year" to "Year 1", "draft" to "Draft", "old" to "Old notes"),
+        height = 1000
+    )
+
     @Test
     fun review() = capture("agent_review", 420, 920) {
         ReviewList(listOf(decided, waiting), mapOf("one" to setOf(1)), onDecide = { _, _ -> }, warnings = warnings, shown = shown, chosen = chosen)
@@ -143,7 +193,9 @@ class AgentReviewScreenshotTest {
         documentId: String?,
         batches: List<AgentBatch> = emptyList(),
         outcomes: Map<String, UndoOutcome> = emptyMap(),
-        height: Int = 720
+        height: Int = 720,
+        libraryProposals: List<LibraryProposal> = emptyList(),
+        names: Map<String, String> = emptyMap()
     ) = runDesktopComposeUiTest(width = 640, height = height) {
         setContent {
             DrawViewTheme(darkTheme = false, dynamicColor = false) {
@@ -156,6 +208,8 @@ class AgentReviewScreenshotTest {
                         onAllDocuments = {},
                         batches = batches,
                         undoOutcomes = outcomes,
+                        libraryProposals = libraryProposals,
+                        names = names,
                         onDocument = {},
                         onApplyDirectly = {},
                         onDismiss = {}

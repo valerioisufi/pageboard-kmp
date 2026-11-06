@@ -333,7 +333,7 @@ public class DocumentTools internal constructor(
         val proposal = withDocument(documentId) { open ->
             val entries = open.edit { session ->
                 if (session.isReadOnly) throw AgentToolException(AgentErrorCode.REFUSED, "This document may only be read on this device.")
-                items.map { ProposalEntry(it, session.document.beforeOf(it)) }
+                items.map { ProposalEntry(it, session.document.beforeOf(it), page = session.document.pageIndexOf(it)) }
             }
             if (limits.canPlan(items)) plan = planOf(open, items)
             val name = access.connections.value.firstOrNull { it.id == connection }?.name ?: "A client"
@@ -841,6 +841,25 @@ private fun DrawDocument.beforeOf(item: ProposalItem): String? {
         }
         is ProposalItem.RenameDocument -> title
     }
+}
+
+/** The index of the page [item] is on, for an item on a page or its elements. */
+private fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
+    val id = when (item) {
+        is ProposalItem.RemoveElements -> item.page
+        is ProposalItem.PlaceElements -> item.page
+        is ProposalItem.ReorderElements -> item.page
+        is ProposalItem.AddStroke -> item.page
+        is ProposalItem.AddImage -> item.page
+        is ProposalItem.RemovePage -> item.page
+        is ProposalItem.MovePage -> item.page
+        is ProposalItem.DuplicatePage -> item.page
+        is ProposalItem.SetPageFormat -> item.page
+        is ProposalItem.RestyleText -> findText(item.text)?.first?.id
+        is ProposalItem.RestyleStroke -> ElementItems.findStroke(this, item.stroke)?.first?.id
+        else -> null
+    } ?: return null
+    return pages.indexOfFirst { it.id == id }.takeIf { it >= 0 }
 }
 
 /** The page [pageId] and its elements [refs]; fails when one is not there. */
