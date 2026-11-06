@@ -11,9 +11,12 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -161,8 +164,41 @@ class TextBoxCodeBlockTest {
         assertEquals(TextRange(0), controller.textEditorManager.value.selection)
     }
 
+    private fun DesktopComposeUiTest.tap(at: Offset) {
+        onRoot().performTouchInput { click(at) }
+        waitForIdle()
+    }
+
     @Test
-    fun aDragInTheBlockSelectsItsCode()= textBoxScene { controller ->
+    fun aTapJustBelowABlockEndingTheTextAddsALineAfterIt() = textBoxScene { controller ->
+        val ending = "Sopra il blocco\n```kotlin\nfun a() = 1\n```"
+        startBox(controller, 30f, 30f, widthMm = 120f)
+        type(ending)
+        // On the frame, and a little further
+        for (below in listOf(4f, 30f)) {
+            runOnIdle { controller.textEditorManager.updateValue(TextFieldValue(ending, TextRange(0)), smartNewline = false) }
+            waitForIdle()
+            val field = fieldBounds()
+            tap(Offset(field.center.x, field.bottom + below))
+            assertTrue(controller.textEditorManager.isEditing, "still written, $below px below")
+            assertEquals("$ending\n", controller.textEditorManager.value.text, "a line after the block, $below px below")
+            assertEquals(TextRange(ending.length + 1), controller.textEditorManager.value.selection)
+        }
+        type("Sotto")
+        assertEquals("$ending\nSotto", controller.textEditorManager.value.text, "written after the block")
+    }
+
+    @Test
+    fun aTapFarBelowABlockEndingTheTextEndsTheWriting() = textBoxScene { controller ->
+        startBox(controller, 30f, 30f, widthMm = 120f)
+        type("Sopra\n```\nuno\n```")
+        val field = fieldBounds()
+        tap(Offset(field.center.x, field.bottom + 200f))
+        assertTrue(!controller.textEditorManager.isEditing, "saved")
+    }
+
+    @Test
+    fun aDragInTheBlockSelectsItsCode() = textBoxScene { controller ->
         writeText(controller)
         val layout = fieldLayout()
         val field = fieldBounds()

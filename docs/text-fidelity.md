@@ -318,7 +318,7 @@ rule for a focus lost.
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | Done |
-| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows and on the tablet (five fixes); the Mac and a real pen left to the user |
+| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows and on the tablet (six fixes); the Mac and a real pen left to the user |
 
 Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 needs 4; 6 needs 4 and
 5 (the fence in the strip). Each phase is one commit with its status here, after the checks of
@@ -498,6 +498,8 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
        could be written after it, nor before one starting it: the line is added (decision 14).
     5. The handle of the caret stood at the start of a formula while the caret was in the strip:
        no handle then.
+    6. A finger and the keyboard of the screen had no arrows to add the line of fix 4: a tap
+       just past the box adds it (decision 15).
   * Seen, not from this work: SwiftKey puts the caret at the end of a word tapped when it composes
     another one, in every field of Compose (the search of the library too); Ctrl+Home and Ctrl+End
     do nothing in a field on Android; the text of a box being written is lost when the application
@@ -550,6 +552,12 @@ Taken alone, revertible:
     send such pointers, and the field would misplace its handles for them.
 14. **The arrows out of a block of code at an end of the text add the line** that is not there
     (phase 7), as Typora does: → or ↓ out of a block ending the text, ← or ↑ out of one starting it.
+15. **A tap just past a box being written by such a block adds the line too** (phase 7, asked by
+    the user: "Sì, aggiungilo"), as a tap below the last block in Notion: within 40 dp below a box
+    ending with a closed block, or above one starting with it, and within its width; further away
+    the tap ends the writing as before. Not Enter twice at the end of the code, which would take the
+    empty lines written between the parts of a code. Above a box the formatting bar may be there
+    (on the desktop, by the frame): there the arrows add the line.
 
 ## Risks
 
@@ -575,9 +583,6 @@ Taken alone, revertible:
   a character is typed in it.
 * A view of the whole source of a text on demand.
 * Scribble of the Apple Pencil in the field ([text-editing.md](text-editing.md)).
-* Text before a block of code at the very start of a text, or after one at its very end, without
-  arrows (a finger and the keyboard of the screen): the arrows add the line (decision 14), a touch
-  has no way yet. A tap below the last line of such a block, or a row of the bar.
 * The strip covers the line next to what it belongs to (above or below it); a place in the bar, on
   small screens, if it gets in the way.
 * A selection drawn by a mouse from the text into a block of code, and Shift and the arrows across a

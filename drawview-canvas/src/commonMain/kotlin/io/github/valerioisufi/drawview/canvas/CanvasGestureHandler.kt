@@ -885,7 +885,11 @@ internal class CanvasGestureHandler(
                 if (wasTap) onTextToolTap(position)
             }
 
-            Mode.EDITOR_MOVE, Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> controller.snapManager.clearGuides()
+            Mode.EDITOR_MOVE, Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
+                controller.snapManager.clearGuides()
+                // A tap on the frame, past a block of code ending (or starting) the text: a line by it
+                if (mode == Mode.EDITOR_MOVE && wasTap) lineBesideEditedBlock(position)
+            }
 
             Mode.TEXT_BOX -> {
                 live.textBoxDraft = null
@@ -901,8 +905,9 @@ internal class CanvasGestureHandler(
             }
 
             Mode.EDITOR_TAP -> {
-                // On another text: saves this one and opens that one; elsewhere: saves this one
-                if (wasTap && !editTextAt(position)) controller.textEditorManager.finishEditing()
+                // Just past a block of code ending (or starting) this text: a line by it; on another
+                // text: saves this one and opens that one; elsewhere: saves this one
+                if (wasTap && !lineBesideEditedBlock(position) && !editTextAt(position)) controller.textEditorManager.finishEditing()
             }
 
             else -> {}
@@ -1031,6 +1036,20 @@ internal class CanvasGestureHandler(
         val topLeft = controller.viewport.screenToPageMm(pageIndex, box.topLeft) ?: return
         val bottomRight = controller.viewport.screenToPageMm(pageIndex, box.bottomRight) ?: return
         controller.textEditorManager.startDrawnText(pageIndex, Rect(topLeft, bottomRight))
+    }
+
+    /**
+     * A tap at [position] just past the edge of the text being written by a block of code that ends
+     * or starts it: a line by the block (see `TextEditorManager.lineBesideBlockAt`), within
+     * [BLOCK_LINE_REACH_DP] of the edge on the screen.
+     * @return `true` if the line was added.
+     */
+    private fun lineBesideEditedBlock(position: Offset): Boolean {
+        val editor = controller.textEditorManager
+        val pageIndex = editor.activeTextPageIndex
+        val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return false
+        val past = controller.viewport.screenToPageMm(pageIndex, position + Offset(BLOCK_LINE_REACH_DP * controller.viewport.density, 0f)) ?: return false
+        return editor.lineBesideBlockAt(mm.x, mm.y, reachMm = (past - mm).getDistance())
     }
 
     /**
@@ -1326,3 +1345,6 @@ private const val ACTIVITY_INTERVAL_MS = 16L
 
 /** How far ahead of its last input the stroke in progress is predicted: a frame of a 60 Hz display. */
 private const val PREDICTION_MS = 16L
+
+/** How far past the edge of a text being written a tap adds a line by its block of code: a finger's width. */
+private const val BLOCK_LINE_REACH_DP = 40f

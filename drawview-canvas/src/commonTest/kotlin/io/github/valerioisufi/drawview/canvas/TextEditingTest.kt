@@ -114,6 +114,34 @@ class TextEditingTest {
     }
 
     @Test
+    fun aTapJustPastABlockOfCodeAtAnEndOfTheTextAddsALineByIt() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        val ending = "Above\n```\nval a = 1\n```"
+        editor.startEditing(DrawText().apply { x = 10f; y = 20f; width = 60f; height = 30f; text = ending }, 0)
+        editor.reportLayoutHeight(30f)
+        // Within the width, 5 mm below: a line after the block, the caret on it
+        assertTrue(editor.lineBesideBlockAt(40f, 55f, reachMm = 8f))
+        assertEquals(TextFieldValue("$ending\n", TextRange(ending.length + 1)), editor.value)
+        // No block ends the text now; too far, out of its width, inside: nothing
+        editor.updateValue(TextFieldValue(ending), smartNewline = false)
+        assertFalse(editor.lineBesideBlockAt(40f, 60f, reachMm = 8f), "too far")
+        assertFalse(editor.lineBesideBlockAt(75f, 55f, reachMm = 8f), "beside the box")
+        assertFalse(editor.lineBesideBlockAt(40f, 40f, reachMm = 8f), "in the box")
+        assertFalse(editor.lineBesideBlockAt(40f, 15f, reachMm = 8f), "above it, no block starting the text")
+        assertEquals(ending, editor.value.text)
+
+        // Above a text starting with a block: a line before it
+        val starting = "```\nval a = 1\n```\nBelow"
+        editor.updateValue(TextFieldValue(starting), smartNewline = false)
+        assertTrue(editor.lineBesideBlockAt(40f, 15f, reachMm = 8f))
+        assertEquals(TextFieldValue("\n$starting", TextRange(0)), editor.value)
+        // An unclosed block takes the text after it: no line
+        editor.updateValue(TextFieldValue("Above\n```\nval a = 1"), smartNewline = false)
+        assertFalse(editor.lineBesideBlockAt(40f, 55f, reachMm = 8f), "not closed")
+    }
+
+    @Test
     fun anOpenedTextPutsTheCaretWhereItIsTouched() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager

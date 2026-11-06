@@ -672,6 +672,37 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     }
 
     /**
+     * A tap at ([x], [y]), in mm on the page of the box being written, past its bottom edge when its
+     * text ends with a block of code, or past its top edge when it starts with one, within [reachMm]
+     * of that edge and within the width of the box: a line is added after the block (before it), the
+     * caret on it. The caret cannot stand outside the code on the line of a block, and a finger has
+     * no arrows to add the line (see docs/text-fidelity.md). Returns whether it did; the tap ends
+     * the writing otherwise.
+     */
+    internal fun lineBesideBlockAt(x: Float, y: Float, reachMm: Float): Boolean {
+        if (!isEditing) return false
+        // In the box, turned around its top-left corner
+        val rad = rotation * kotlin.math.PI.toFloat() / 180f
+        val c = kotlin.math.cos(rad)
+        val s = kotlin.math.sin(rad)
+        val dx = x - boxX
+        val dy = y - boxY
+        val localX = dx * c + dy * s
+        val localY = -dx * s + dy * c
+        if (localX < 0f || localX > boxWidth) return false
+        val text = value.text
+        val blocks = RichTextParser.parse(text).filter { it.kind == RichTextParser.Kind.CODE_BLOCK && it.contentEnd < it.end }
+        val next = when {
+            localY > boxHeight && localY <= boxHeight + reachMm && blocks.any { it.end == text.length } ->
+                TextFieldValue(text + "\n", TextRange(text.length + 1))
+            localY < 0f && localY >= -reachMm && blocks.any { it.start == 0 } -> TextFieldValue("\n" + text, TextRange(0))
+            else -> return false
+        }
+        updateValue(next, smartNewline = false)
+        return true
+    }
+
+    /**
      * Handles Enter on the current line if it is a list item: continues the list or exits if empty.
      * Returns `true` if handled.
      */
