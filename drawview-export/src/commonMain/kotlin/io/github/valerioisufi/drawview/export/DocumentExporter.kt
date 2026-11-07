@@ -54,13 +54,16 @@ public class FolderDocumentItem(
 
 /**
  * What is exported of a document: its [title], its [pages] (copies that stay as they are, see
- * [PageContentSnapshot.detached]) and the files of its [resources] (images and PDFs) by
- * identifier.
+ * [PageContentSnapshot.detached]), the files of its [resources] (images and PDFs) by
+ * identifier, and when it was created ([createdAt]) and last changed ([modifiedAt]), in
+ * milliseconds since the epoch, when they are known.
  */
 public class DocumentContent(
     public val title: String,
     public val pages: List<PageContentSnapshot>,
-    public val resources: Map<String, DrawResource>
+    public val resources: Map<String, DrawResource>,
+    public val createdAt: Long? = null,
+    public val modifiedAt: Long? = null
 ) {
     public companion object {
         /**

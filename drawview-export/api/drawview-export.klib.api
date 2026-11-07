@@ -117,8 +117,12 @@ sealed interface io.github.valerioisufi.drawview.export/ExportScope { // io.gith
 }
 
 final class io.github.valerioisufi.drawview.export/DocumentContent { // io.github.valerioisufi.drawview.export/DocumentContent|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model/PageContentSnapshot>, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.model/DrawResource>) // io.github.valerioisufi.drawview.export/DocumentContent.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.PageContentSnapshot>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.drawview.model.DrawResource>){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model/PageContentSnapshot>, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.model/DrawResource>, kotlin/Long? = ..., kotlin/Long? = ...) // io.github.valerioisufi.drawview.export/DocumentContent.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.PageContentSnapshot>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.drawview.model.DrawResource>;kotlin.Long?;kotlin.Long?){}[0]
 
+    final val createdAt // io.github.valerioisufi.drawview.export/DocumentContent.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long? // io.github.valerioisufi.drawview.export/DocumentContent.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val modifiedAt // io.github.valerioisufi.drawview.export/DocumentContent.modifiedAt|{}modifiedAt[0]
+        final fun <get-modifiedAt>(): kotlin/Long? // io.github.valerioisufi.drawview.export/DocumentContent.modifiedAt.<get-modifiedAt>|<get-modifiedAt>(){}[0]
     final val pages // io.github.valerioisufi.drawview.export/DocumentContent.pages|{}pages[0]
         final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/PageContentSnapshot> // io.github.valerioisufi.drawview.export/DocumentContent.pages.<get-pages>|<get-pages>(){}[0]
     final val resources // io.github.valerioisufi.drawview.export/DocumentContent.resources|{}resources[0]

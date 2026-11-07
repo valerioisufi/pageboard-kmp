@@ -221,6 +221,35 @@ class PdfWriterTest {
     }
 
     @Test
+    fun theDatesAreWritten() {
+        val pdf = tempFile("dates", ".pdf")
+        PdfiumEngine.create().use { writer ->
+            writer.beginPage(100f, 100f)
+            writer.save(pdf.path, PdfInfo(title = "Dated", createdAt = 1_709_208_000_000L, modifiedAt = 1_773_500_967_123L))
+        }
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/CreationDate (D:20240229120000Z)" in bytes, bytes.takeLast(400))
+        assertTrue("/ModDate (D:20260314150927Z)" in bytes, bytes.takeLast(400))
+        PdfiumEngine.open(pdf.path).use { assertEquals(1, it.pageCount) }
+    }
+
+    @Test
+    fun datesAreWrittenInUtc() {
+        assertEquals("(D:19700101000000Z)", pdfDate(0L))
+        assertEquals("(D:19691231235959Z)", pdfDate(-1L))
+        assertEquals("(D:20000301000000Z)", pdfDate(951_868_800_000L))
+        assertEquals("(D:21071231235958Z)", pdfDate(4_354_819_198_000L))
+        assertEquals("(D:99991231235959Z)", pdfDate(Long.MAX_VALUE / 2))
+        // Every second of four centuries, as java.time tells them
+        val format = java.time.format.DateTimeFormatter.ofPattern("uuuuMMddHHmmss").withZone(java.time.ZoneOffset.UTC)
+        var ms = -2_208_988_800_000L // 1900-01-01
+        while (ms < 10_413_792_000_000L) { // 2300-01-01
+            assertEquals("(D:${format.format(java.time.Instant.ofEpochMilli(ms))}Z)", pdfDate(ms), "$ms")
+            ms += 86_399_999L * 7 + 13_000L
+        }
+    }
+
+    @Test
     fun numbersAreWrittenAsDecimals() {
         assertEquals(listOf("1.5", "0", "12", "0.123", "-2.25", "100000"), listOf(1.5f, -0.0004f, 12f, 0.1234f, -2.25f, 1e5f).map(::pdfNumber))
     }

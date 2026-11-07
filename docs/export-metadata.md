@@ -47,7 +47,7 @@ What a reader of ZIP files takes:
 | The local time zone of the DOS fields | A `TimeZone` given to `ZipWriter` (the system one by default, a fixed one in the tests) | Protected Variations |
 | Which date an entry takes | `DocumentExport`, which has the summaries of the notes and of the folders | Information Expert, Controller |
 | The paths of the folders in the archive with their summaries | `DocumentExport.resolve`: `ExportContents.folders` (path → `FolderSummary`) beside `documents` | Information Expert |
-| The dates of a PDF | `PdfInfo(createdAt, modifiedAt)`, written by `PdfWriter.save` in the PDF date format (`D:YYYYMMDDHHmmSS+HH'mm'`) | Information Expert |
+| The dates of a PDF | `PdfInfo(createdAt, modifiedAt)`, written by `PdfWriter.save` in the PDF date format, in UTC (`D:YYYYMMDDHHmmSSZ`) | Information Expert |
 | The dates of what is exported | `DocumentContent(createdAt, modifiedAt)`, filled by `DocumentExport.content` from the summary | Creator (the use case has the summary) |
 | The dates of a combined PDF | `PdfExporter.exportCombined`: the oldest creation, the latest change of its notes | Information Expert |
 
@@ -60,7 +60,7 @@ and at the end, so the callers of today keep compiling; the ABI dumps of `drawvi
 | # | What | Status |
 |---|---|---|
 | 1 | `ZipWriter` with the dates of each entry (DOS in the local zone, clamped to 1980–2107; `0x5455` with the modification; `0x000A` with modification and creation) and the entries of the directories; `DocumentExport` dates the PDFs of the notes, the folders (`ExportContents.folders`) and the PNGs of the pages; tests that read the archive back with `java.util.zip.ZipFile` (last modified and creation times), and with `unzip -l` by hand | Done |
-| 2 | `PdfInfo` and `DocumentContent` with the dates; `/CreationDate` and `/ModDate` in the PDF of one note, of each note and of all of them together; tests on the Info dictionary written; `updateKotlinAbi` | Proposed |
+| 2 | `PdfInfo` and `DocumentContent` with the dates; `/CreationDate` and `/ModDate` in the PDF of one note, of each note and of all of them together; tests on the Info dictionary written; `updateKotlinAbi` | Done |
 
 ## Decisions
 
@@ -73,6 +73,10 @@ Revertible, taken alone:
 * **The access time** of `0x000A` is the modification, as the archive is not an access.
 * **A combined PDF** is dated from the oldest creation to the latest change of its notes, not by
   the moment of the export.
+* **The dates of a PDF in UTC** (`Z`): `drawview-pdf` stays without a time zone, and the
+  readers show them in theirs.
+* **The dates of a PDF are those of the library** (`DocumentSummary`), read after the session of
+  the note is closed, so that its last changes count.
 * **The folders** get an entry of their own only when they hold something exported (as today,
   no empty folder appears).
 * **The archive is written in the order of the tree**: each directory just before all it holds,
@@ -87,6 +91,8 @@ Revertible, taken alone:
   notes and of the folders to the second; `ditto` keeps them too, but puts the summer dates one
   hour later, as it does for the archives of `/usr/bin/zip` of macOS itself (it reads the DOS
   fields without the summer time): a fault of the tool, not of the archive.
+* Phase 2, a combined PDF of `FolderExportTest` read by PDFKit: its creation and change dates
+  are those of the oldest and of the latest note.
 
 ## Left for later
 

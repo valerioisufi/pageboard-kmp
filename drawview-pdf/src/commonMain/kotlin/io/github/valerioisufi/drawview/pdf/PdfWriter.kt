@@ -95,8 +95,17 @@ public interface PdfWriter : AutoCloseable {
     override fun close()
 }
 
-/** What a PDF tells of itself: its [title], the application that made it ([creator]). */
-public class PdfInfo(public val title: String? = null, public val creator: String? = null)
+/**
+ * What a PDF tells of itself: its [title], the application that made it ([creator]), when its
+ * content was created ([createdAt]) and last changed ([modifiedAt]), in milliseconds since the
+ * epoch.
+ */
+public class PdfInfo(
+    public val title: String? = null,
+    public val creator: String? = null,
+    public val createdAt: Long? = null,
+    public val modifiedAt: Long? = null
+)
 
 /** A page of another PDF imported by [PdfWriter.importPdfPages], [widthPt] x [heightPt] as it is displayed. */
 public class PdfImportedPage(public val widthPt: Float, public val heightPt: Float)
@@ -313,7 +322,12 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         // The pages imported that no page has been begun on
         repeat(imported.size) { PdfiumBindings.deletePage(document, begun) }
         imported.clear()
-        val entries = listOfNotNull(info.title?.let { "/Title ${pdfText(it)}" }, info.creator?.let { "/Creator ${pdfText(it)}" })
+        val entries = listOfNotNull(
+            info.title?.let { "/Title ${pdfText(it)}" },
+            info.creator?.let { "/Creator ${pdfText(it)}" },
+            info.createdAt?.let { "/CreationDate ${pdfDate(it)}" },
+            info.modifiedAt?.let { "/ModDate ${pdfDate(it)}" }
+        )
         check(PdfiumBindings.saveDocument(document, path, entries.joinToString(" ").ifEmpty { null })) { "Cannot write the PDF to $path" }
     }
 
@@ -370,6 +384,31 @@ internal fun pdfText(text: String): String = buildString {
     append("<FEFF")
     for (unit in text) append(unit.code.toString(16).uppercase().padStart(4, '0'))
     append('>')
+}
+
+/**
+ * The instant [epochMs] as a date string of a PDF, in UTC: `(D:YYYYMMDDHHmmSSZ)`, the years held
+ * within 0000-9999.
+ */
+internal fun pdfDate(epochMs: Long): String {
+    val seconds = epochMs.floorDiv(1000L)
+    val days = seconds.floorDiv(86_400L)
+    val secondOfDay = seconds.mod(86_400L).toInt()
+    // The civil date of the days since 1970-01-01 (H. Hinnant, days_from_civil reversed)
+    val z = days + 719_468L
+    val era = z.floorDiv(146_097L)
+    val dayOfEra = z - era * 146_097L
+    val yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36_524 - dayOfEra / 146_096) / 365
+    val dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100)
+    val mp = (5 * dayOfYear + 2) / 153
+    val day = (dayOfYear - (153 * mp + 2) / 5 + 1).toInt()
+    val month = (if (mp < 10) mp + 3 else mp - 9).toInt()
+    val year = yearOfEra + era * 400 + if (month <= 2) 1 else 0
+    if (year < 0) return "(D:00000101000000Z)"
+    if (year > 9999) return "(D:99991231235959Z)"
+    fun two(value: Int) = value.toString().padStart(2, '0')
+    return "(D:${year.toString().padStart(4, '0')}${two(month)}${two(day)}" +
+        "${two(secondOfDay / 3600)}${two(secondOfDay / 60 % 60)}${two(secondOfDay % 60)}Z)"
 }
 
 /**

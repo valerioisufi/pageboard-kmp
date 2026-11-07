@@ -278,6 +278,50 @@ class FolderExportTest {
         }
     }
 
+    @Test
+    fun exportedPdfsAreDatedByTheirNotes() = runBlocking {
+        var now = 1_760_000_000_000L
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), clock = { now })
+        val export = DocumentExport(OpenDocuments(store, Dispatchers.Default))
+        store.createDocument("First", folderId = null).also { store.closeDocument(it.id) }
+        now += 86_400_000L
+        store.createDocument("Second", folderId = null).also { store.closeDocument(it.id) }
+        val summaries = store.documents.first().associateBy { it.name }
+        val first = summaries.getValue("First")
+        val second = summaries.getValue("Second")
+        val writers = ExportWriters(PdfExporter(textAdapter = null))
+
+        val tempDir = File.createTempFile("export_pdf_dates", "").apply { delete(); mkdirs() }
+        try {
+            // One note
+            val one = File(tempDir, "one.pdf")
+            export.export(export.resolve(ExportScope.Pages(first.id)), ExportFormat.PDF, ExportOptions(), writers, one.path)
+            assertPdfDates(one.readBytes(), first.createdAt, first.modifiedAt)
+
+            // One per note, in a ZIP
+            val zip = File(tempDir, "notes.zip")
+            export.export(export.resolve(ExportScope.Folder(null)), ExportFormat.PDF_PER_DOCUMENT, ExportOptions(), writers, zip.path)
+            ZipFile(zip).use { file ->
+                assertPdfDates(file.getInputStream(file.getEntry("Second.pdf")).readBytes(), second.createdAt, second.modifiedAt)
+            }
+
+            // All together: from the oldest creation to the latest change
+            val combined = File(tempDir, "combined.pdf")
+            export.export(export.resolve(ExportScope.Folder(null)), ExportFormat.COMBINED_PDF, ExportOptions(), writers, combined.path)
+            assertPdfDates(combined.readBytes(), first.createdAt, second.modifiedAt)
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    private fun assertPdfDates(pdf: ByteArray, createdAt: Long, modifiedAt: Long) {
+        val format = java.time.format.DateTimeFormatter.ofPattern("uuuuMMddHHmmss").withZone(java.time.ZoneOffset.UTC)
+        fun date(ms: Long) = "(D:${format.format(java.time.Instant.ofEpochMilli(ms))}Z)"
+        val text = pdf.decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/CreationDate ${date(createdAt)}" in text, text.takeLast(400))
+        assertTrue("/ModDate ${date(modifiedAt)}" in text, text.takeLast(400))
+    }
+
     /** The offset of the [index]-th local file header of the archive. */
     private fun ByteArray.indexOfHeader(index: Int): Int {
         var found = -1

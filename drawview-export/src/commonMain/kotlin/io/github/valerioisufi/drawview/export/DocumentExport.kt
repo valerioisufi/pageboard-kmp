@@ -33,14 +33,20 @@ public class DocumentExport(private val documents: OpenDocuments) {
         return exporter.export(content, options, path, progress)
     }
 
-    /** The content of the document [documentId] to export with [options], or `null` when it does not exist. */
+    /**
+     * The content of the document [documentId] to export with [options], dated as the library
+     * dates it, or `null` when it does not exist.
+     */
     public suspend fun content(documentId: String, options: ExportOptions = ExportOptions()): DocumentContent? {
         val document = documents.open(documentId) ?: return null
-        return try {
+        val content = try {
             document.edit { session -> DocumentContent.of(session.document, options.pageIds, options.pageIndices) }
         } finally {
             documents.close(document)
         }
+        // Read after the session is closed, so that its last changes are counted
+        val summary = documents.store.documents.first().firstOrNull { it.id == documentId } ?: return content
+        return DocumentContent(content.title, content.pages, content.resources, summary.createdAt, summary.modifiedAt)
     }
 
     /**
@@ -198,7 +204,7 @@ public class DocumentExport(private val documents: OpenDocuments) {
                 val times = contents.documents.firstOrNull()?.summary?.let(::entryTimes)
                 try {
                     content.pages.forEachIndexed { index, page ->
-                        image.export(DocumentContent(content.title, listOf(page), content.resources), pageOptions, temp)
+                        image.export(DocumentContent(content.title, listOf(page), content.resources, content.createdAt, content.modifiedAt), pageOptions, temp)
                         val bytes = PlatformFiles.readBytes(temp) ?: throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot read $temp")
                         zip.addEntry("$base - ${(index + 1).toString().padStart(digits, '0')}.png", bytes, times)
                         report((index + 1f) / content.pages.size)

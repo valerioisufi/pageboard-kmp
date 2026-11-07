@@ -75,10 +75,14 @@ final class io.github.valerioisufi.drawview.pdf/PdfImportedPage { // io.github.v
 }
 
 final class io.github.valerioisufi.drawview.pdf/PdfInfo { // io.github.valerioisufi.drawview.pdf/PdfInfo|null[0]
-    constructor <init>(kotlin/String? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.pdf/PdfInfo.<init>|<init>(kotlin.String?;kotlin.String?){}[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String? = ..., kotlin/Long? = ..., kotlin/Long? = ...) // io.github.valerioisufi.drawview.pdf/PdfInfo.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.Long?;kotlin.Long?){}[0]
 
+    final val createdAt // io.github.valerioisufi.drawview.pdf/PdfInfo.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long? // io.github.valerioisufi.drawview.pdf/PdfInfo.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
     final val creator // io.github.valerioisufi.drawview.pdf/PdfInfo.creator|{}creator[0]
         final fun <get-creator>(): kotlin/String? // io.github.valerioisufi.drawview.pdf/PdfInfo.creator.<get-creator>|<get-creator>(){}[0]
+    final val modifiedAt // io.github.valerioisufi.drawview.pdf/PdfInfo.modifiedAt|{}modifiedAt[0]
+        final fun <get-modifiedAt>(): kotlin/Long? // io.github.valerioisufi.drawview.pdf/PdfInfo.modifiedAt.<get-modifiedAt>|<get-modifiedAt>(){}[0]
     final val title // io.github.valerioisufi.drawview.pdf/PdfInfo.title|{}title[0]
         final fun <get-title>(): kotlin/String? // io.github.valerioisufi.drawview.pdf/PdfInfo.title.<get-title>|<get-title>(){}[0]
 }

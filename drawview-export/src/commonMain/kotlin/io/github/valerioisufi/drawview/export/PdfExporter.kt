@@ -80,7 +80,8 @@ public class PdfExporter(
         exportCombined(listOf(content), options, path, title = content.title, progress)
 
     /**
-     * Writes [contents] sequentially into a single PDF document at [path].
+     * Writes [contents] sequentially into a single PDF document at [path], dated from the oldest
+     * creation to the latest change of its contents.
      */
     public suspend fun exportCombined(
         contents: List<DocumentContent>,
@@ -90,9 +91,15 @@ public class PdfExporter(
         progress: (Float) -> Unit = {}
     ): ExportResult = withContext(Dispatchers.Default) {
         val totalPages = contents.sumOf { it.pages.size }
+        val info = PdfInfo(
+            title = title,
+            creator = creator,
+            createdAt = contents.mapNotNull { it.createdAt }.minOrNull(),
+            modifiedAt = contents.mapNotNull { it.modifiedAt }.maxOrNull()
+        )
         if (totalPages == 0) {
             createWriter().use { writer ->
-                writer.save(path, PdfInfo(title = title, creator = creator))
+                writer.save(path, info)
             }
             return@withContext ExportResult(0, 0)
         }
@@ -115,7 +122,7 @@ public class PdfExporter(
                     progress(pagesWritten.toFloat() / totalPages)
                 }
             }
-            writer.save(path, PdfInfo(title = title, creator = creator))
+            writer.save(path, info)
         }
         ExportResult(pagesWritten, skipped)
     }

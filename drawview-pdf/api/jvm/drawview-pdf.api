@@ -40,9 +40,11 @@ public final class io/github/valerioisufi/drawview/pdf/PdfImportedPage {
 public final class io/github/valerioisufi/drawview/pdf/PdfInfo {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCreatedAt ()Ljava/lang/Long;
 	public final fun getCreator ()Ljava/lang/String;
+	public final fun getModifiedAt ()Ljava/lang/Long;
 	public final fun getTitle ()Ljava/lang/String;
 }
 
