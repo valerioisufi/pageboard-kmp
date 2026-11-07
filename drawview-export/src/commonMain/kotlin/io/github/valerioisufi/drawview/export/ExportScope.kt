@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.export
 
+import io.github.valerioisufi.drawview.store.FolderSummary
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -31,14 +32,16 @@ public sealed interface ExportScope {
 
 /**
  * What a [scope] gives (see [DocumentExport.resolve]): its [name] (the note, the folder; `null`
- * for several items or the Home), its [documents] with their paths in an archive, and the number
- * of [pages] they have together.
+ * for several items or the Home), its [documents] with their paths in an archive, the number
+ * of [pages] they have together, and the [folders] of the library the directories of the archive
+ * stand for, by path (`"Math/Geometry"`), parents first.
  */
 public class ExportContents(
     public val scope: ExportScope,
     public val name: String?,
     public val documents: List<FolderDocumentItem>,
-    public val pages: Int
+    public val pages: Int,
+    public val folders: Map<String, FolderSummary> = emptyMap()
 ) {
     /** Whether the pages of one note are exported. */
     public val isSingleDocument: Boolean get() = scope is ExportScope.Pages

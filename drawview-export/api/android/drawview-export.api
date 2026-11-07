@@ -46,10 +46,12 @@ public final class io/github/valerioisufi/drawview/export/DocumentExporter$Defau
 
 public final class io/github/valerioisufi/drawview/export/ExportContents {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportScope;Ljava/lang/String;Ljava/util/List;I)V
+	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun fileName (Lio/github/valerioisufi/drawview/export/ExportFormat;ILjava/lang/String;)Ljava/lang/String;
 	public static synthetic fun fileName$default (Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;ILjava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
 	public final fun getDocuments ()Ljava/util/List;
+	public final fun getFolders ()Ljava/util/Map;
 	public final fun getFormats ()Ljava/util/List;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getPages ()I

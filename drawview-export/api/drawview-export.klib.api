@@ -147,10 +147,12 @@ final class io.github.valerioisufi.drawview.export/DocumentExport { // io.github
 }
 
 final class io.github.valerioisufi.drawview.export/ExportContents { // io.github.valerioisufi.drawview.export/ExportContents|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.export/ExportScope, kotlin/String?, kotlin.collections/List<io.github.valerioisufi.drawview.export/FolderDocumentItem>, kotlin/Int) // io.github.valerioisufi.drawview.export/ExportContents.<init>|<init>(io.github.valerioisufi.drawview.export.ExportScope;kotlin.String?;kotlin.collections.List<io.github.valerioisufi.drawview.export.FolderDocumentItem>;kotlin.Int){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.export/ExportScope, kotlin/String?, kotlin.collections/List<io.github.valerioisufi.drawview.export/FolderDocumentItem>, kotlin/Int, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.store/FolderSummary> = ...) // io.github.valerioisufi.drawview.export/ExportContents.<init>|<init>(io.github.valerioisufi.drawview.export.ExportScope;kotlin.String?;kotlin.collections.List<io.github.valerioisufi.drawview.export.FolderDocumentItem>;kotlin.Int;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.drawview.store.FolderSummary>){}[0]
 
     final val documents // io.github.valerioisufi.drawview.export/ExportContents.documents|{}documents[0]
         final fun <get-documents>(): kotlin.collections/List<io.github.valerioisufi.drawview.export/FolderDocumentItem> // io.github.valerioisufi.drawview.export/ExportContents.documents.<get-documents>|<get-documents>(){}[0]
+    final val folders // io.github.valerioisufi.drawview.export/ExportContents.folders|{}folders[0]
+        final fun <get-folders>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.store/FolderSummary> // io.github.valerioisufi.drawview.export/ExportContents.folders.<get-folders>|<get-folders>(){}[0]
     final val formats // io.github.valerioisufi.drawview.export/ExportContents.formats|{}formats[0]
         final fun <get-formats>(): kotlin.collections/List<io.github.valerioisufi.drawview.export/ExportFormat> // io.github.valerioisufi.drawview.export/ExportContents.formats.<get-formats>|<get-formats>(){}[0]
     final val isSingleDocument // io.github.valerioisufi.drawview.export/ExportContents.isSingleDocument|{}isSingleDocument[0]

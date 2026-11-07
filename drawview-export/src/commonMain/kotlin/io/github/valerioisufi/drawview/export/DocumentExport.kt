@@ -55,21 +55,27 @@ public class DocumentExport(private val documents: OpenDocuments) {
         return when (scope) {
             is ExportScope.Pages -> {
                 val summary = allDocs.firstOrNull { it.id == scope.documentId }
-                val items = listOfNotNull(summary).map { it to "" }
+                val items = listOfNotNull(summary).map { it to emptyList<FolderSummary>() }
                 ExportContents(scope, summary?.name, withPaths(items), scope.pageIds?.size ?: summary?.pageCount ?: 0)
             }
             is ExportScope.Folder -> {
-                val items = folderDocuments(scope.folderId, includeSubfolders, allDocs, allFolders, foldersById, dirPrefix = "")
-                ExportContents(scope, scope.folderId?.let { foldersById[it]?.name }, withPaths(items), items.sumOf { it.first.pageCount })
+                val items = folderDocuments(scope.folderId, includeSubfolders, allDocs, allFolders, foldersById, parents = emptyList())
+                ExportContents(
+                    scope,
+                    scope.folderId?.let { foldersById[it]?.name },
+                    withPaths(items),
+                    items.sumOf { it.first.pageCount },
+                    directories(items)
+                )
             }
             is ExportScope.Items -> {
-                val loose = scope.documentIds.mapNotNull { id -> allDocs.firstOrNull { it.id == id } }.map { it to "" }
+                val loose = scope.documentIds.mapNotNull { id -> allDocs.firstOrNull { it.id == id } }.map { it to emptyList<FolderSummary>() }
                 val inFolders = scope.folderIds.flatMap { folderId ->
                     val folder = foldersById[folderId] ?: return@flatMap emptyList()
-                    folderDocuments(folderId, includeSubfolders, allDocs, allFolders, foldersById, dirPrefix = sanitizeFileName(folder.name))
+                    folderDocuments(folderId, includeSubfolders, allDocs, allFolders, foldersById, parents = listOf(folder))
                 }
                 val items = (loose + inFolders).distinctBy { it.first.id }
-                ExportContents(scope, null, withPaths(items), items.sumOf { it.first.pageCount })
+                ExportContents(scope, null, withPaths(items), items.sumOf { it.first.pageCount }, directories(items))
             }
         }
     }
@@ -85,8 +91,8 @@ public class DocumentExport(private val documents: OpenDocuments) {
 
     /**
      * The documents of [folderId] (`null`: the home), with those of its subfolders when
-     * [includeSubfolders], each with the directory of its file: [dirPrefix] then its folders
-     * under [folderId].
+     * [includeSubfolders], each with the folders of the directory of its file: [parents] then its
+     * folders under [folderId].
      */
     private fun folderDocuments(
         folderId: String?,
@@ -94,8 +100,8 @@ public class DocumentExport(private val documents: OpenDocuments) {
         allDocs: List<DocumentSummary>,
         allFolders: List<FolderSummary>,
         foldersById: Map<String, FolderSummary>,
-        dirPrefix: String
-    ): List<Pair<DocumentSummary, String>> {
+        parents: List<FolderSummary>
+    ): List<Pair<DocumentSummary, List<FolderSummary>>> {
         val targetDocs = if (folderId == null) {
             if (includeSubfolders) allDocs else allDocs.filter { it.folderId == null }
         } else if (includeSubfolders) {
@@ -111,21 +117,15 @@ public class DocumentExport(private val documents: OpenDocuments) {
         } else {
             allDocs.filter { it.folderId == folderId }
         }
-        return targetDocs.map { doc ->
-            val relativeDir = if (folderId == null) {
-                if (doc.folderId == null) "" else folderPath(doc.folderId, foldersById)
-            } else {
-                if (doc.folderId == folderId) "" else relativeFolderPath(doc.folderId, folderId, foldersById)
-            }
-            doc to listOf(dirPrefix, relativeDir).filter { it.isNotEmpty() }.joinToString("/")
-        }
+        return targetDocs.map { doc -> doc to parents + folderChain(doc.folderId, folderId, foldersById) }
     }
 
-    /** The documents of [items] (each with the directory of its file) with paths that differ. */
-    private fun withPaths(items: List<Pair<DocumentSummary, String>>): List<FolderDocumentItem> {
+    /** The documents of [items] (each with the folders of the directory of its file) with paths that differ. */
+    private fun withPaths(items: List<Pair<DocumentSummary, List<FolderSummary>>>): List<FolderDocumentItem> {
         val usedPaths = mutableSetOf<String>()
-        return items.map { (doc, dir) ->
+        return items.map { (doc, folders) ->
             val baseName = sanitizeFileName(doc.name)
+            val dir = directoryPath(folders)
             val prefix = if (dir.isEmpty()) "" else "$dir/"
             var candidate = "$prefix$baseName.pdf"
             var counter = 2
@@ -136,6 +136,20 @@ public class DocumentExport(private val documents: OpenDocuments) {
             usedPaths.add(candidate)
             FolderDocumentItem(doc, candidate)
         }
+    }
+
+    /**
+     * The directories of the files of [items] by path, with the folder each stands for, parents
+     * first (the first folder of a path when two have the same name).
+     */
+    private fun directories(items: List<Pair<DocumentSummary, List<FolderSummary>>>): Map<String, FolderSummary> {
+        val directories = LinkedHashMap<String, FolderSummary>()
+        for ((_, folders) in items) {
+            for (depth in 1..folders.size) {
+                directories.getOrPut(directoryPath(folders.subList(0, depth))) { folders[depth - 1] }
+            }
+        }
+        return directories
     }
 
     /**
@@ -181,11 +195,12 @@ public class DocumentExport(private val documents: OpenDocuments) {
                 val digits = content.pages.size.toString().length
                 val base = sanitizeFileName(content.title)
                 val temp = newResourcePath("export_page", "png")
+                val times = contents.documents.firstOrNull()?.summary?.let(::entryTimes)
                 try {
                     content.pages.forEachIndexed { index, page ->
                         image.export(DocumentContent(content.title, listOf(page), content.resources), pageOptions, temp)
                         val bytes = PlatformFiles.readBytes(temp) ?: throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot read $temp")
-                        zip.addEntry("$base - ${(index + 1).toString().padStart(digits, '0')}.png", bytes)
+                        zip.addEntry("$base - ${(index + 1).toString().padStart(digits, '0')}.png", bytes, times)
                         report((index + 1f) / content.pages.size)
                     }
                 } finally {
@@ -211,10 +226,13 @@ public class DocumentExport(private val documents: OpenDocuments) {
         path: String,
         progress: (ExportProgress) -> Unit
     ): ExportOutcome {
-        val items = contents.documents
+        // In the order of the tree, each directory just before what it holds: the tools that date
+        // a directory when they leave it (ditto, the Archive Utility of macOS) then keep its date
+        val items = contents.documents.sortedWith(compareBy(DirectoryOrder) { directorySegments(it.relativePath) })
         if (items.isEmpty()) throw ExportException(ExportFailure.NOTHING_TO_EXPORT)
         val documentOptions = ExportOptions(backgroundPattern = options.backgroundPattern)
         val zip = ZipWriter()
+        val directories = mutableSetOf<String>()
         val temp = newResourcePath("export_folder_temp", "pdf")
         var pages = 0
         val skippedIn = mutableListOf<String>()
@@ -237,7 +255,8 @@ public class DocumentExport(private val documents: OpenDocuments) {
                         skippedIn += name
                     }
                     val bytes = PlatformFiles.readBytes(temp) ?: throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot read $temp")
-                    zip.addEntry(item.relativePath, bytes)
+                    addDirectories(zip, directorySegments(item.relativePath), contents.folders, directories)
+                    zip.addEntry(item.relativePath, bytes, entryTimes(item.summary))
                     PlatformFiles.delete(temp)
                 }
             }
@@ -275,6 +294,20 @@ public class DocumentExport(private val documents: OpenDocuments) {
         return ExportOutcome(read.size, result.pages, result.skipped, missing = missing)
     }
 
+    /**
+     * Adds to [zip] the directories of [segments] not [added] yet, parents first, dated by the
+     * [folders] they stand for.
+     */
+    private fun addDirectories(zip: ZipWriter, segments: List<String>, folders: Map<String, FolderSummary>, added: MutableSet<String>) {
+        for (depth in 1..segments.size) {
+            val path = segments.subList(0, depth).joinToString("/")
+            if (added.add(path)) zip.addDirectory(path, folders[path]?.let { ZipEntryTimes(it.modifiedAt, it.createdAt) })
+        }
+    }
+
+    /** The dates in an archive of the file of the document [summary]. */
+    private fun entryTimes(summary: DocumentSummary) = ZipEntryTimes(summary.modifiedAt, summary.createdAt)
+
     private fun imageWriter(writers: ExportWriters): PageImageExporter =
         writers.image ?: throw IllegalArgumentException("No exporter of the images")
 
@@ -283,25 +316,19 @@ public class DocumentExport(private val documents: OpenDocuments) {
         if (!PlatformFiles.writeBytes(path, bytes)) throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot write $path")
     }
 
-    private fun folderPath(folderId: String?, foldersById: Map<String, FolderSummary>): String {
-        if (folderId == null) return ""
-        val segments = generateSequence(foldersById[folderId]) { foldersById[it.parentId] }
-            .map { sanitizeFileName(it.name) }
+    /**
+     * The folders from under [rootFolderId] (from the top when `null`) down to [folderId], the
+     * folder of a document.
+     */
+    private fun folderChain(folderId: String?, rootFolderId: String?, foldersById: Map<String, FolderSummary>): List<FolderSummary> {
+        if (folderId == null || folderId == rootFolderId) return emptyList()
+        return generateSequence(foldersById[folderId]) { if (it.parentId == rootFolderId) null else foldersById[it.parentId] }
             .toList()
             .asReversed()
-        return segments.joinToString("/")
     }
 
-    private fun relativeFolderPath(folderId: String?, rootFolderId: String, foldersById: Map<String, FolderSummary>): String {
-        if (folderId == null || folderId == rootFolderId) return ""
-        val segments = generateSequence(foldersById[folderId]) {
-            if (it.parentId == rootFolderId) null else foldersById[it.parentId]
-        }
-            .map { sanitizeFileName(it.name) }
-            .toList()
-            .asReversed()
-        return segments.joinToString("/")
-    }
+    /** The path in an archive of the directory of [folders]. */
+    private fun directoryPath(folders: List<FolderSummary>): String = folders.joinToString("/") { sanitizeFileName(it.name) }
 
     public companion object {
         /** Name of the file of the document [title] in the format of [exporter]. */
@@ -312,6 +339,19 @@ public class DocumentExport(private val documents: OpenDocuments) {
         public fun sanitizeFileName(name: String): String {
             val clean = name.map { if (it in FORBIDDEN_IN_NAMES || it.code < 0x20) '_' else it }.joinToString("").trim().trimEnd('.')
             return clean.ifEmpty { "Document" }
+        }
+
+        /** The directories of the file at [path] in an archive, from the top. */
+        private fun directorySegments(path: String): List<String> =
+            path.substringBeforeLast('/', "").split('/').filter { it.isNotEmpty() }
+
+        /** The directories in the order of the tree: a directory before those under it, beside the others by name. */
+        private val DirectoryOrder = Comparator<List<String>> { a, b ->
+            for (i in 0 until minOf(a.size, b.size)) {
+                val order = a[i].compareTo(b[i])
+                if (order != 0) return@Comparator order
+            }
+            a.size.compareTo(b.size)
         }
 
         /** The part of the progress of a combined PDF spent reading the notes. */
