@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
@@ -925,6 +926,27 @@ public class LectureAssistant(
     /** The extension of the exported audio. */
     public val exportExtension: String get() = "m4a"
 
+    /** The transcript of [lecture] saved at [path], as a text file, then given to [deliver] (e.g. where the student chose). */
+    public fun exportTranscript(lecture: Lecture, path: String, deliver: suspend (written: String) -> Unit = {}) {
+        exportResult = null
+        scope.launch {
+            val result = try {
+                val segments = withContext(stateContext) { lecture.transcript.toList() }
+                val saved = withContext(Dispatchers.IO) { exportTranscript(segments, path) }
+                deliver(saved)
+                ExportResult(saved.substringAfterLast('/'), failure = null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                ExportResult(path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+            }
+            withContext(stateContext) { exportResult = result }
+        }
+    }
+
+    /** The extension of the exported transcript. */
+    public val transcriptExportExtension: String get() = "txt"
+
     public fun clearImportAndExportMessages() {
         importError = null
         exportResult = null
@@ -977,8 +999,23 @@ public object LectureRecordings {
     }
 }
 
-/** An audio exported: the name of the file, and why it failed, if it did. */
+/** An audio or transcript exported: the name of the file, and why it failed, if it did. */
 public class ExportResult(public val fileName: String, public val failure: String?)
+
+/**
+ * Saves [segments] in [target] as a plain-text file with timestamps (`[m:ss] text`, the extension
+ * of [target] becomes `.txt`).
+ *
+ * @return the path written.
+ */
+internal fun exportTranscript(segments: List<TranscriptSegment>, target: String): String {
+    require(segments.isNotEmpty()) { "the transcript is empty" }
+    val base = target.substringBeforeLast('.').takeIf { target.substringAfterLast('/').contains('.') } ?: target
+    val txt = Path("$base.txt")
+    val content = segments.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" } + "\n"
+    SystemFileSystem.sink(txt).buffered().use { it.write(content.encodeToByteArray()) }
+    return txt.toString()
+}
 
 /**
  * A lecture received from another device ([arrival]), [durationMs] long, without a transcript:

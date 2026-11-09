@@ -399,10 +399,13 @@ private fun DeleteLectureDialog(summary: LectureSummary, onConfirm: () -> Unit, 
 /** The type of the exported recordings (m4a). */
 private const val RecordingExportType = "audio/mp4"
 
+/** The type of the exported transcripts (txt). */
+private const val TranscriptExportType = "text/plain"
+
 /**
  * The lecture shown, on a card opening its menu (not while it is recorded here): finished and how
  * long, when, how many lectures the notebook has. The menu: the lectures to show, exporting the
- * audio, transcribing it again, how the audio is shared, deleting it.
+ * audio and the transcript, transcribing it again, how the audio is shared, deleting it.
  */
 @Composable
 private fun LectureHeader(assistant: LectureAssistant, documentId: String, lecture: Lecture, recordingHere: Boolean) {
@@ -416,6 +419,9 @@ private fun LectureHeader(assistant: LectureAssistant, documentId: String, lectu
     val exported = remember { arrayOfNulls<Lecture>(1) }
     val saveRecording = rememberFileSaver(stringResource(Res.string.lecture_export_title), RecordingExportType) { target ->
         exported[0]?.let { assistant.exportAudio(it, target.path, target.deliver) }
+    }
+    val saveTranscript = rememberFileSaver(stringResource(Res.string.lecture_export_transcript_title), TranscriptExportType) { target ->
+        exported[0]?.let { assistant.exportTranscript(it, target.path, target.deliver) }
     }
     val finished = lecture.status == LectureStatus.FINISHED
     val date = lectureDate(lecture.startedAt)
@@ -465,19 +471,35 @@ private fun LectureHeader(assistant: LectureAssistant, documentId: String, lectu
                     }
                 )
             }
-            if (shown != null && !isActive && assistant.canImportAndExport && finished && lecture.hasAudio) {
+            val canExportAudio = shown != null && !isActive && assistant.canImportAndExport && finished && lecture.hasAudio
+            val canExportTranscript = shown != null && !isActive && assistant.canImportAndExport && finished && lecture.transcript.isNotEmpty()
+            if (canExportAudio || canExportTranscript) {
                 MenuDivider()
-                MenuItem(
-                    text = stringResource(Res.string.lecture_export_audio),
-                    icon = rememberVectorPainter(DrawViewIcons.Download),
-                    onClick = {
-                        expanded = false
-                        assistant.clearImportAndExportMessages()
-                        val name = "${lecture.documentTitle.ifBlank { "lecture" }} ${formatLectureDate(lecture.startedAt).replace('/', '-').replace(':', '.')}"
-                        exported[0] = lecture
-                        saveRecording("$name.${assistant.exportExtension}")
-                    }
-                )
+                val exportName = { "${lecture.documentTitle.ifBlank { "lecture" }} ${formatLectureDate(lecture.startedAt).replace('/', '-').replace(':', '.')}" }
+                if (canExportAudio) {
+                    MenuItem(
+                        text = stringResource(Res.string.lecture_export_audio),
+                        icon = rememberVectorPainter(DrawViewIcons.Download),
+                        onClick = {
+                            expanded = false
+                            assistant.clearImportAndExportMessages()
+                            exported[0] = lecture
+                            saveRecording("${exportName()}.${assistant.exportExtension}")
+                        }
+                    )
+                }
+                if (canExportTranscript) {
+                    MenuItem(
+                        text = stringResource(Res.string.lecture_export_transcript),
+                        icon = rememberVectorPainter(DrawViewIcons.FileText),
+                        onClick = {
+                            expanded = false
+                            assistant.clearImportAndExportMessages()
+                            exported[0] = lecture
+                            saveTranscript("${exportName()}.${assistant.transcriptExportExtension}")
+                        }
+                    )
+                }
             }
             // The recording transcribed again on this computer
             if (shown != null && !isActive && assistant.canRetranscribe(lecture) && assistant.canTranscribeHere) {
@@ -508,10 +530,13 @@ private fun LectureHeader(assistant: LectureAssistant, documentId: String, lectu
     }
 
     assistant.exportResult?.let { result ->
+        val isTranscript = result.fileName.endsWith(".${assistant.transcriptExportExtension}", ignoreCase = true)
         if (result.failure == null) {
-            LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_export_done, result.fileName), NoticeTone.Neutral)
+            val message = if (isTranscript) Res.string.lecture_export_transcript_done else Res.string.lecture_export_done
+            LectureNotice(DrawViewIcons.Download, stringResource(message, result.fileName), NoticeTone.Neutral)
         } else {
-            LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_export_failed, result.failure.orEmpty()), NoticeTone.Error)
+            val message = if (isTranscript) Res.string.lecture_export_transcript_failed else Res.string.lecture_export_failed
+            LectureNotice(DrawViewIcons.TriangleAlert, stringResource(message, result.failure.orEmpty()), NoticeTone.Error)
         }
     }
 

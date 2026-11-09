@@ -342,6 +342,8 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun estimateTextNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun exportAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun exportTranscript (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun exportTranscript$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun forgetDocuments (Ljava/util/Set;)V
 	public final fun generate (Lio/github/valerioisufi/drawview/lecture/Lecture;Lio/github/valerioisufi/drawview/lecture/ModelProvider;)Z
 	public final fun getActiveRecorder ()Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
@@ -368,6 +370,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getRequestMicrophone ()Lkotlin/jvm/functions/Function1;
 	public final fun getSettingsStore ()Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;
 	public final fun getStartError ()Ljava/lang/String;
+	public final fun getTranscriptExportExtension ()Ljava/lang/String;
 	public final fun handwritingTexts (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/platform/ChosenFile;)Z
 	public final fun isBusy ()Z
