@@ -39,6 +39,8 @@ compose.desktop {
 
             macOS {
                 iconFile.set(project.file("src/main/resources/icons/icon.icns"))
+                entitlementsFile.set(project.file("entitlements.plist"))
+                runtimeEntitlementsFile.set(project.file("entitlements.plist"))
                 // Lecture assistant: recording of the lectures
                 infoPlist {
                     extraKeysRawXml = """
