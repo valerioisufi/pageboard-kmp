@@ -103,12 +103,13 @@ public class RecordingPlayer internal constructor(
         var finished = false
         try {
             val stretcher = if (speed == 1f) null else TimeStretcher(speed)
-            var sourceMs = startMs
+            var sourceSamples = msToSamples(startMs.coerceAtLeast(0L))
             while (true) {
                 currentCoroutineContext().ensureActive()
-                val block = withContext(Dispatchers.IO) { recording.readSegment(sourceMs, BLOCK_MS) } ?: break
+                val block = withContext(Dispatchers.IO) { recording.readSamples(sourceSamples, BLOCK_SAMPLES) } ?: break
                 if (block.isEmpty()) break
-                sourceMs += samplesToMs(block.size.toLong())
+                sourceSamples += block.size
+                val sourceMs = samplesToMs(sourceSamples)
                 val audio = stretcher?.process(block) ?: block
                 // In short pieces: the position follows, a pause is heard right away
                 var offset = 0
@@ -123,10 +124,11 @@ public class RecordingPlayer internal constructor(
                     withContext(stateContext) { positionMs = position.coerceAtLeast(startMs) }
                 }
             }
+            val endMs = samplesToMs(sourceSamples)
             // The end of the recording: until it is played
             while (output.pending > 0) {
                 delay(PIECE_MS)
-                val position = sourceMs - (samplesToMs(output.pending.toLong()) * speed).roundToLong()
+                val position = endMs - (samplesToMs(output.pending.toLong()) * speed).roundToLong()
                 withContext(stateContext) { positionMs = position }
             }
             finished = true
@@ -148,7 +150,7 @@ public class RecordingPlayer internal constructor(
         internal val SPEEDS = listOf(1f, 1.25f, 1.5f, 2f)
 
         /** Audio read from the file at a time. */
-        private const val BLOCK_MS = 2_000L
+        private const val BLOCK_SAMPLES = 2L * LECTURE_SAMPLE_RATE
         private const val PIECE_MS = 100L
         private const val PIECE_SAMPLES = (LECTURE_SAMPLE_RATE * PIECE_MS / 1000).toInt()
 

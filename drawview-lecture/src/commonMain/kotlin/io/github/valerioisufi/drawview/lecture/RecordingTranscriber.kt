@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.audio.AudioChunk
+import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
 import io.github.valerioisufi.drawview.lecture.audio.isSilent
-import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.coroutines.CompletableDeferred
@@ -56,11 +56,11 @@ internal class RecordingTranscriber(
             )
         }
 
-        var readMs = 0L
+        var readSamples = 0L
         while (true) {
-            val block = withContext(Dispatchers.IO) { recording.readSegment(readMs, BLOCK_MS) } ?: break
+            val block = withContext(Dispatchers.IO) { recording.readSamples(readSamples, BLOCK_SAMPLES) } ?: break
             if (block.isEmpty()) break
-            readMs += samplesToMs(block.size.toLong())
+            readSamples += block.size
             for (chunk in chunker.push(block)) submit(chunk)
         }
         chunker.cutNow(minSeconds = 1f)?.let { submit(it) }
@@ -75,6 +75,6 @@ internal class RecordingTranscriber(
     private companion object {
         /** A piece goes on until a pause at most this much after its length. */
         const val MAX_EXTRA_SECONDS = 30
-        const val BLOCK_MS = 10_000L
+        const val BLOCK_SAMPLES = 10L * LECTURE_SAMPLE_RATE
     }
 }
