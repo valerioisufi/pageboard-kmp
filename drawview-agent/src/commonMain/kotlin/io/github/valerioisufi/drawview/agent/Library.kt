@@ -89,8 +89,7 @@ public data class LibraryProposal(
 }
 
 /**
- * The proposals of the clients for the library, in memory, like the ones of the documents
- * ([ProposalBook]).
+ * The proposals of the clients for the library, like the ones of the documents ([ProposalBook]).
  */
 public class LibraryBook(
     private val maxWaiting: Int = ProposalBook.DEFAULT_MAX_WAITING,
@@ -115,6 +114,11 @@ public class LibraryBook(
         return proposal
     }
 
+    /** Puts back the proposals kept before the application quit, the most recent ones. */
+    internal fun restore(kept: List<LibraryProposal>) {
+        state.value = kept.filter { !it.isWaiting }.takeLast(maxDecided) + kept.filter { it.isWaiting }.takeLast(maxWaiting)
+    }
+
     internal fun resolve(id: String, outcomes: List<ItemOutcome>, created: List<String> = emptyList()) {
         state.update { current ->
             val updated = current.map { if (it.id == id) it.copy(outcomes = outcomes, created = created) else it }
@@ -132,10 +136,85 @@ public class LibraryBook(
 }
 
 /**
- * A step undoing an item of the library: [isAsLeft] tells whether what the item did is still as it
- * left it, [undo] puts it back.
+ * A step undoing an item of the library, as a value so that it is kept with the activity (see
+ * [AgentJournal]): [isAsLeft] tells whether what the item did is still as it left it, [undo] puts it back.
  */
-internal class LibraryUndo(val isAsLeft: suspend (DocumentCatalog) -> Boolean, val undo: suspend (DocumentCatalog) -> Boolean)
+@Serializable
+internal sealed interface LibraryUndo {
+    suspend fun isAsLeft(documents: OpenDocuments): Boolean
+
+    suspend fun undo(catalog: DocumentCatalog): Boolean
+
+    /** A document made: out of the trash and not written in since ([versions]), trashing it loses nothing of the user's. */
+    @Serializable
+    @SerialName("created_document")
+    class CreatedDocument(val document: String, val versions: Map<String, Long>?) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean =
+            documents.store.documents.first().any { it.id == document } && documents.versionsOf(document) == versions
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.trashDocument(document)
+    }
+
+    /** A document moved into [to] from [from]. */
+    @Serializable
+    @SerialName("moved_document")
+    class MovedDocument(val document: String, val to: String?, val from: String?) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean =
+            documents.store.documents.first().firstOrNull { it.id == document }?.let { it.folderId == to } == true
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.moveDocument(document, from)
+    }
+
+    /** A document or a folder sent to the trash. */
+    @Serializable
+    @SerialName("trashed")
+    class Trashed(val item: String) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean = documents.store.inTrash(item)
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.restore(item) != null
+    }
+
+    /** A folder made: still as made, and empty, trashing it takes nothing else. */
+    @Serializable
+    @SerialName("created_folder")
+    class CreatedFolder(val folder: String, val name: String, val parent: String?) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean {
+            val catalog = documents.store
+            val made = catalog.folder(folder)
+            return made != null && made.name == name && made.parentId == parent &&
+                catalog.documents.first().none { it.folderId == folder } && catalog.folders.first().none { it.parentId == folder }
+        }
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.trashFolder(folder)
+    }
+
+    /** A folder renamed [name], from [previous]. */
+    @Serializable
+    @SerialName("renamed_folder")
+    class RenamedFolder(val folder: String, val name: String, val previous: String) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean = documents.store.folder(folder)?.name == name
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.renameFolder(folder, previous)
+    }
+
+    /** A folder moved into [to] from [from]. */
+    @Serializable
+    @SerialName("moved_folder")
+    class MovedFolder(val folder: String, val to: String?, val from: String?) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean = documents.store.folder(folder)?.let { it.parentId == to } == true
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.moveFolder(folder, from)
+    }
+
+    /** An item of the trash put back; [document]: it is a document, not a folder. */
+    @Serializable
+    @SerialName("restored")
+    class Restored(val item: String, val document: Boolean) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean = !documents.store.inTrash(item)
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = if (document) catalog.trashDocument(item) else catalog.trashFolder(item)
+    }
+}
 
 /** The operations applied to the document [id] so far, those not stored yet included; `null` when it cannot be opened. */
 internal suspend fun OpenDocuments.versionsOf(id: String): Map<String, Long>? {
@@ -175,68 +254,43 @@ internal class LibraryApplier {
             else {
                 val id = catalog.createDocument(item.title, item.widthMm, item.heightMm, PageBackground.Solid(), item.folder).id
                 created += id
-                val made = documents.versionsOf(id)
-                LibraryUndo(
-                    // Out of the trash and not written in since: trashing it loses nothing of the user's
-                    isAsLeft = { catalog -> catalog.documents.first().any { it.id == id } && documents.versionsOf(id) == made },
-                    undo = { it.trashDocument(id) }
-                )
+                LibraryUndo.CreatedDocument(id, documents.versionsOf(id))
             }
         }
         is LibraryItem.MoveDocument -> {
             val document = catalog.documents.first().firstOrNull { it.id == item.document }
             if (document == null || (item.folder != null && catalog.folder(item.folder) == null) || !catalog.moveDocument(item.document, item.folder)) null
-            else LibraryUndo(
-                isAsLeft = { it.documents.first().firstOrNull { d -> d.id == item.document }?.let { d -> d.folderId == item.folder } == true },
-                undo = { it.moveDocument(item.document, document.folderId) }
-            )
+            else LibraryUndo.MovedDocument(item.document, item.folder, document.folderId)
         }
         is LibraryItem.TrashDocument -> {
             if (!catalog.trashDocument(item.document)) null
-            else LibraryUndo(isAsLeft = { it.inTrash(item.document) }, undo = { it.restore(item.document) != null })
+            else LibraryUndo.Trashed(item.document)
         }
         is LibraryItem.CreateFolder -> {
             if ((item.parent != null && catalog.folder(item.parent) == null) || !catalog.createFolder(item.name, item.parent)) null
             else {
                 val id = catalog.folders.first().first { it.parentId == item.parent && it.name == item.name }.id
-                LibraryUndo(
-                    // Still as made, and empty: trashing it takes nothing else
-                    isAsLeft = { catalog ->
-                        val folder = catalog.folder(id)
-                        folder != null && folder.name == item.name && folder.parentId == item.parent &&
-                            catalog.documents.first().none { it.folderId == id } && catalog.folders.first().none { it.parentId == id }
-                    },
-                    undo = { it.trashFolder(id) }
-                )
+                LibraryUndo.CreatedFolder(id, item.name, item.parent)
             }
         }
         is LibraryItem.RenameFolder -> {
             val folder = catalog.folder(item.folder)
             if (folder == null || !catalog.renameFolder(item.folder, item.name)) null
-            else LibraryUndo(isAsLeft = { it.folder(item.folder)?.name == item.name }, undo = { it.renameFolder(item.folder, folder.name) })
+            else LibraryUndo.RenamedFolder(item.folder, item.name, folder.name)
         }
         is LibraryItem.MoveFolder -> {
             val folder = catalog.folder(item.folder)
             if (folder == null || (item.parent != null && catalog.folder(item.parent) == null) || !catalog.moveFolder(item.folder, item.parent)) null
-            else LibraryUndo(
-                isAsLeft = { it.folder(item.folder)?.let { f -> f.parentId == item.parent } == true },
-                undo = { it.moveFolder(item.folder, folder.parentId) }
-            )
+            else LibraryUndo.MovedFolder(item.folder, item.parent, folder.parentId)
         }
         is LibraryItem.TrashFolder -> {
             if (!catalog.trashFolder(item.folder)) null
-            else LibraryUndo(isAsLeft = { it.inTrash(item.folder) }, undo = { it.restore(item.folder) != null })
+            else LibraryUndo.Trashed(item.folder)
         }
         is LibraryItem.Restore -> {
             val trashed = catalog.trash.first().firstOrNull { it.id == item.item }
             if (trashed == null || catalog.restore(item.item) == null) null
-            else LibraryUndo(
-                isAsLeft = { !it.inTrash(item.item) },
-                undo = { catalog ->
-                    if (trashed.kind == io.github.valerioisufi.drawview.store.TrashedItem.Kind.DOCUMENT) catalog.trashDocument(item.item)
-                    else catalog.trashFolder(item.item)
-                }
-            )
+            else LibraryUndo.Restored(item.item, document = trashed.kind == io.github.valerioisufi.drawview.store.TrashedItem.Kind.DOCUMENT)
         }
     }
 }

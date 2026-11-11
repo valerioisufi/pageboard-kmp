@@ -719,7 +719,7 @@ private fun BatchRow(batch: AgentBatch, outcome: UndoOutcome?, onUndo: () -> Uni
                 )
             }
         }
-        if (!batch.undone) {
+        if (!batch.undone && batch.undoable) {
             TextButton(onClick = onUndo) { Text(stringResource(Res.string.agent_activity_undo)) }
         }
     }

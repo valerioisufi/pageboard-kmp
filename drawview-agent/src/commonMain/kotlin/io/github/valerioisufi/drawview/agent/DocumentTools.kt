@@ -62,6 +62,7 @@ public class AgentTool internal constructor(
  *
  * @param submit gives a proposal to the application, which may apply it at once unless its client asked
  *   for a review (see [ExternalAgents]).
+ * @param ready called before a tool runs: what was kept of the proposals and the activity is back.
  */
 public class DocumentTools internal constructor(
     private val documents: OpenDocuments,
@@ -74,7 +75,8 @@ public class DocumentTools internal constructor(
     private val submitLibrary: suspend (LibraryProposal, review: Boolean) -> Unit = { _, _ -> },
     private val trashLimiter: TrashLimiter = TrashLimiter(),
     private val activity: AgentActivity = AgentActivity(),
-    private val undo: suspend (batchId: String) -> UndoOutcome = { UndoOutcome.GONE }
+    private val undo: suspend (batchId: String) -> UndoOutcome = { UndoOutcome.GONE },
+    private val ready: suspend () -> Unit = {}
 ) {
     private val planner = ProposalPlanner(engines)
 
@@ -104,6 +106,7 @@ public class DocumentTools internal constructor(
         val tool = tools.firstOrNull { it.name == name }
             ?: throw AgentToolException(AgentErrorCode.BAD_REQUEST, "There is no tool named \"${name.take(64)}\".")
         if (!access.grants.value.enabled) throw AgentToolException(AgentErrorCode.ACCESS_OFF, "The access of external models is turned off in the application.")
+        ready()
         return tool.run(arguments, connection)
     }
 
@@ -462,7 +465,7 @@ public class DocumentTools internal constructor(
         val id = arguments.requiredString("proposal")
         library.find(id)?.let { return@AgentTool value(proposalJson.encodeToJsonElement(it.toStatus())) }
         val proposal = proposals.find(id)
-            ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such proposal. The application drops them when it quits: if it was restarted since, this one may have been applied already, so read the document again before proposing again.")
+            ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such proposal. Only the most recent ones are kept: this one may have been applied already, so read the document again before proposing again.")
         if (!access.allows(proposal.documentId)) {
             throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The document of this proposal is no longer allowed.")
         }
@@ -537,13 +540,13 @@ public class DocumentTools internal constructor(
 
     private fun listActivity() = AgentTool(
         name = "list_activity",
-        description = "What the models changed, the most recent first, of the documents you may reach (and of the library when all are allowed): id (to undo it), document (none: the library), the client, the title of its proposal, how many items, when (milliseconds), whether it was undone.",
+        description = "What the models changed, the most recent first, of the documents you may reach (and of the library when all are allowed): id (to undo it), document (none: the library), the client, the title of its proposal, how many items, when (milliseconds), whether it was undone; undoable false: it can no longer be undone.",
         inputSchema = schema()
     ) { _, _ ->
         val grants = access.grants.value
         val batches = activity.batches.value.asReversed()
             .filter { batch -> batch.documentId?.let { grants.allows(it) } ?: grants.allDocuments }
-            .map { ActivityEntry(it.id, it.documentId, it.client, it.title, it.items, it.at, it.undone) }
+            .map { ActivityEntry(it.id, it.documentId, it.client, it.title, it.items, it.at, it.undone, it.undoable.takeIf { able -> !able }) }
         value(buildJsonObject { put("batches", json.encodeToJsonElement(batches)) })
     }
 
@@ -553,7 +556,7 @@ public class DocumentTools internal constructor(
         inputSchema = schema(required = listOf("batch")) { string("batch", "The id list_activity gave.") }
     ) { arguments, _ ->
         val id = arguments.requiredString("batch")
-        val batch = activity.find(id) ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such batch: the application drops them when it quits.")
+        val batch = activity.find(id) ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no such batch: only the most recent ones are kept.")
         val grants = access.grants.value
         if (batch.documentId?.let { !grants.allows(it) } ?: !grants.allDocuments) {
             throw AgentToolException(AgentErrorCode.NOT_GRANTED, "The user has not allowed what this batch changed.")
@@ -561,7 +564,7 @@ public class DocumentTools internal constructor(
         when (undo(id)) {
             UndoOutcome.UNDONE -> value(buildJsonObject { put("batch", id); put("state", "undone") })
             UndoOutcome.CHANGED -> throw AgentToolException(AgentErrorCode.REFUSED, "What it changed was changed again since: nothing was undone, so that nothing is lost.")
-            UndoOutcome.GONE -> throw AgentToolException(AgentErrorCode.NOT_FOUND, "This batch was undone already.")
+            UndoOutcome.GONE -> throw AgentToolException(AgentErrorCode.NOT_FOUND, "This batch was undone already, or can no longer be undone.")
             UndoOutcome.UNAVAILABLE -> throw AgentToolException(AgentErrorCode.REFUSED, "Its document cannot be changed on this device.")
         }
     }
@@ -1280,7 +1283,8 @@ private data class ActivityEntry(
     val title: String,
     val items: Int,
     val at: Long,
-    val undone: Boolean
+    val undone: Boolean,
+    val undoable: Boolean? = null
 )
 
 @Serializable

@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.agent.AgentEndpoint
 import io.github.valerioisufi.drawview.agent.AgentEngines
 import io.github.valerioisufi.drawview.agent.AgentImage
 import io.github.valerioisufi.drawview.agent.AgentImages
+import io.github.valerioisufi.drawview.agent.AgentJournal
 import io.github.valerioisufi.drawview.agent.AgentSearchHit
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ui.AgentReviewUi
@@ -31,8 +32,12 @@ import kotlinx.coroutines.withContext
  *
  * @param readFile the content of the file at a path of this device, or `null` when it is not a file or
  *   holds more than the bytes given: for the images a client adds.
+ * @param journal where the proposals and the activity are kept, to outlive the application.
  */
-class PencilNotesAgents(private val readFile: (path: String, maxBytes: Long) -> ByteArray? = { _, _ -> null }) {
+class PencilNotesAgents(
+    private val readFile: (path: String, maxBytes: Long) -> ByteArray? = { _, _ -> null },
+    journal: AgentJournal? = null
+) {
     /** The search of the library, once made. */
     @Volatile
     internal var contentSearch: ContentSearch? = null
@@ -56,7 +61,8 @@ class PencilNotesAgents(private val readFile: (path: String, maxBytes: Long) -> 
 
                 override suspend fun keep(path: String): AgentImage? = image(path, keep = true)
             }
-        )
+        ),
+        journal = journal
     )
 
     val endpoint: AgentEndpoint = AgentEndpoint(agents, serverName = "PencilNotes", serverVersion = "3.0.0")

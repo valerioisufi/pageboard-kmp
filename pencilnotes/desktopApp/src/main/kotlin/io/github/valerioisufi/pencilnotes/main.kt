@@ -61,9 +61,12 @@ fun main(args: Array<String>) {
 
     directoryLock.use {
         // The external models on this machine, while the user keeps their access on
-        val agents = PencilNotesAgents(readFile = { path, maxBytes ->
-            File(path).takeIf { it.isFile && it.length() <= maxBytes }?.readBytes()
-        })
+        val agents = PencilNotesAgents(
+            readFile = { path, maxBytes -> File(path).takeIf { it.isFile && it.length() <= maxBytes }?.readBytes() },
+            journal = FileAgentJournal(dataDirectory)
+        )
+        // The proposals still waiting and what the models changed, back before a client or a window asks
+        runBlocking { agents.agents.restore() }
         val host = AgentHost(dataDirectory, agents.agents.access, agents.endpoint)
         host.start()
         try {

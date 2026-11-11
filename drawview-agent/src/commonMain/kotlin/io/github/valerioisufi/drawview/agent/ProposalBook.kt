@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * The proposals of the clients, in memory: waiting for the user, then kept for a while so that their
- * client can read what became of them. Quitting the application drops them: the documents were not
- * touched, and a client can propose again.
+ * The proposals of the clients: waiting for the user, then kept for a while so that their client can
+ * read what became of them. They outlive the application when it keeps an [AgentJournal]; without
+ * one, quitting drops them: the documents were not touched, and a client can propose again.
  *
  * @param maxWaiting how many may wait at once, whoever they come from.
  * @param maxDecided how many decided ones are kept, the most recent ones.
@@ -39,6 +39,11 @@ public class ProposalBook(
         }
         if (refused) throw AgentToolException(AgentErrorCode.REFUSED, "Too many proposals are waiting for the user: wait until they are reviewed.")
         return proposal
+    }
+
+    /** Puts back the proposals kept before the application quit, the most recent ones. */
+    internal fun restore(kept: List<Proposal>) {
+        state.value = kept.filter { !it.isWaiting }.takeLast(maxDecided) + kept.filter { it.isWaiting }.takeLast(maxWaiting)
     }
 
     /** Writes the [outcomes] of the items of the proposal [id], all of them, where their text went and what they changed. */

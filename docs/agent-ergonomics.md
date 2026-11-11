@@ -175,26 +175,34 @@ The notes of the lecture assistant and the import of text use `PageOccupancy.of`
 
 ### Proposals and activity kept (points 3, 4)
 
-`AgentJournal` is an interface with `load()` and `save(snapshot)`; PencilNotes keeps it as one JSON
-file in its data directory (`agent/journal.json`), written to a temporary file and renamed.
+`AgentJournal` is an interface with `load()`, `save(text)` and `setAside()`; the text is written and
+read by `JournalCodec` in `drawview-agent`, and PencilNotes keeps it as one file in its data directory
+(`agent/journal.json`), written to a file beside it and moved over it.
 
 ```json
 {"version": 1,
  "proposals": [{"id": "…", "document": "…", "client": "…", "title": "…", "entries": […]}],
  "library": […],
  "activity": [{"id": "…", "document": "…", "client": "…", "title": "…", "items": 3, "at": 0,
-               "undone": false, "undo": "<the inverse, as an operation is stored>"}]}
+               "undone": false,
+               "undo": {"change": "<the inverse, as an operation is stored>", "stamp": "…"}}]}
 ```
 
 * A waiting proposal comes back waiting, and is checked as always when accepted: each item against
   its `base`.
-* The inverse of a batch is a `DocumentChange`, written as the operations are. A batch whose inverse
-  cannot be read is listed as not undoable, and its bytes stay in the file.
-* A file of a later version, or one that is not read, is left as it is: the application starts with
-  nothing in memory and does not write the file again until the user decides something, and then to
-  a new name beside it.
+* The inverse of a batch is a `DocumentChange`, written as the stores write the operations, with the
+  stamp of its operation. A batch whose way back is not read is listed as not undoable
+  (`AgentBatch.undoable`), and what was written of it is written back as it was.
+* An entry that is not understood (an item, a proposal or a batch of a later version) is skipped and
+  written back as it was. Every item read back goes through `ProposalLimits` again.
+* A text that is not understood as a whole (not JSON, cut, another version) is put aside: PencilNotes
+  moves the file to `journal-unread-<time>.json` beside it and leaves it there. Nothing is written
+  over a journal that was not read back first.
 * The bounds stay: 32 waiting, 64 decided, 100 batches.
 * The undo of a library batch (`LibraryUndo`) is kept by its values: the ids and the names.
+* `AgentJournalTest.theJournalOfVersionOneIsReadAsItWasWritten` holds a journal as version 1 writes
+  it: a change of that text is a change of a stored format, which needs a new version and what reads
+  the old one.
 
 This reverses decision 8 of `docs/agent-full-access.md` (the activity in memory).
 
@@ -229,7 +237,7 @@ without the ones after it.
 | 1 | Defects and answers: the order of new pages; `mode` and `require_review`; `changed` in `proposal_status`; the instructions; a test accepting a proposal in the review and by `applyDirectly`, then `list_activity` (if it fails, the defect is fixed here). Tests: three `new_page` after one page in their order, `require_review` under `applyDirectly`, ids and bases usable for a second proposal without `read_page` | 10, 15, 7, 4 | done |
 | 2 | `insert_text` with `font_size`, `color`, `width`, `style_from`, `where: "inside"`, `near` with `new_page`; `past_area`; `overlaps` for an insertion. Tests: each field, refused values, a style from a box removed since, an area too small, what a preview says is what is applied | 1, 10 | done |
 | 3 | `update_text`; the boxes and warnings of `restyle_text`, `place_elements`, `update_text` in the plan, seen by the items after; `outside_page`. Tests: words, size, width and place in one operation and one undo, stale by `base`, converging on another device through the written operation, a text grown by a larger size reported | 2, 11, 8 | done |
-| 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | to do |
+| 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | done |
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | to do |
 | 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | to do |
 | 7 | Reading: `read_pages`, `read_document` with `pdf_page`, `text_sizes` and `texts`, `render_page` with `area` and `overlay`, `read_guide`; the commands `read --pages`, `guide`. Tests: the bounds, a crop at the scale asked, each example of the guide parsed as it says | 12, 13, 14, 16 | to do |

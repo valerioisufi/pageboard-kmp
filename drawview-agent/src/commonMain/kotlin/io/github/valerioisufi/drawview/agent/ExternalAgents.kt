@@ -15,11 +15,14 @@ import kotlinx.coroutines.sync.withLock
  * review. See `docs/agent-tools.md`.
  *
  * @param documents the one the editor and the synchronization use: the only writer of the store.
+ * @param journal where the proposals and the activity are kept, to outlive the application; `null`:
+ *   in memory only.
  */
 public class ExternalAgents(
     private val documents: OpenDocuments,
     private val engines: AgentEngines = AgentEngines(),
-    preferences: PreferenceStore? = documents.store as? PreferenceStore
+    preferences: PreferenceStore? = documents.store as? PreferenceStore,
+    private val journal: AgentJournal? = null
 ) {
     public val access: AgentAccess = AgentAccess(preferences)
     public val proposals: ProposalBook = ProposalBook()
@@ -30,8 +33,42 @@ public class ExternalAgents(
     public val catalog: DocumentCatalog get() = documents.store
     public val tools: DocumentTools = DocumentTools(
         documents, access, proposals, engines, ::received,
-        library = library, submitLibrary = ::receivedLibrary, activity = activity, undo = { undo(it) }
+        library = library, submitLibrary = ::receivedLibrary, activity = activity, undo = { undo(it) }, ready = ::restore
     )
+
+    private val keeping = Mutex()
+    private var restored = journal == null
+    private var unread = JournalUnread()
+
+    /**
+     * Puts back the proposals and the activity the [journal] kept, once: called by the application when
+     * it starts, and before anything else is done here. A journal that is not understood is put aside
+     * as it is, and nothing comes back.
+     */
+    public suspend fun restore(): Unit = keeping.withLock {
+        if (restored) return
+        restored = true
+        val text = journal?.load() ?: return
+        val content = JournalCodec.decode(text)
+        if (content == null) {
+            journal.setAside()
+            return
+        }
+        unread = content.unread
+        proposals.restore(content.proposals)
+        library.restore(content.library)
+        activity.restore(content.batches, content.undos)
+    }
+
+    /** Keeps the proposals and the activity as they are now. */
+    private suspend fun persist() {
+        journal ?: return
+        keeping.withLock {
+            // Never over what was not read back yet
+            if (!restored) return
+            journal.save(JournalCodec.encode(proposals.proposals.value, library.proposals.value, activity.batches.value, activity::undoOf, unread))
+        }
+    }
 
     private val libraryApplier = LibraryApplier()
 
@@ -45,7 +82,13 @@ public class ExternalAgents(
      *
      * @param chosen the places the user chose for the pieces of the items, by index of an item.
      */
-    public suspend fun decide(proposalId: String, accepted: Set<Int>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): Unit = decisions.withLock {
+    public suspend fun decide(proposalId: String, accepted: Set<Int>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()) {
+        restore()
+        decisions.withLock { decided(proposalId, accepted, chosen) }
+        persist()
+    }
+
+    private suspend fun decided(proposalId: String, accepted: Set<Int>, chosen: Map<Int, List<ChosenPlace>>) {
         val proposal = proposals.find(proposalId)?.takeIf { it.isWaiting } ?: return
         val indexes = proposal.entries.indices.filter { it in accepted }
         val outcomes = MutableList(proposal.entries.size) { ItemOutcome.REJECTED }
@@ -90,7 +133,13 @@ public class ExternalAgents(
      * The user decided about the proposal [proposalId] for the library: the items at [accepted] are
      * done in their order, the others are rejected. Nothing happens if it is decided already.
      */
-    public suspend fun decideLibrary(proposalId: String, accepted: Set<Int>): Unit = decisions.withLock {
+    public suspend fun decideLibrary(proposalId: String, accepted: Set<Int>) {
+        restore()
+        decisions.withLock { decidedLibrary(proposalId, accepted) }
+        persist()
+    }
+
+    private suspend fun decidedLibrary(proposalId: String, accepted: Set<Int>) {
         val proposal = library.find(proposalId)?.takeIf { it.isWaiting } ?: return
         val indexes = proposal.items.indices.filter { it in accepted }
         val outcomes = MutableList(proposal.items.size) { ItemOutcome.REJECTED }
@@ -134,14 +183,19 @@ public class ExternalAgents(
      * Undoes the batch [batchId] of the [activity], whether its document is in an editor or not, when
      * what it changed is as it left it; otherwise nothing is done.
      */
-    public suspend fun undo(batchId: String): UndoOutcome = decisions.withLock {
+    public suspend fun undo(batchId: String): UndoOutcome {
+        restore()
+        return decisions.withLock { undone(batchId) }.also { persist() }
+    }
+
+    private suspend fun undone(batchId: String): UndoOutcome {
         val batch = activity.find(batchId)?.takeUnless { it.undone } ?: return UndoOutcome.GONE
         val undo = when (val kept = activity.undoOf(batchId)) {
             null -> return UndoOutcome.GONE
             is LibraryUndos -> {
                 val catalog = documents.store
                 // All of it as the batch left it, or nothing is done
-                if (!kept.steps.all { it.isAsLeft(catalog) }) return UndoOutcome.CHANGED
+                if (!kept.steps.all { it.isAsLeft(documents) }) return UndoOutcome.CHANGED
                 kept.steps.asReversed().forEach { it.undo(catalog) }
                 activity.markUndone(batchId)
                 return UndoOutcome.UNDONE
@@ -170,13 +224,13 @@ public class ExternalAgents(
             documents.close(open)
         }
         if (outcome == UndoOutcome.UNDONE) activity.markUndone(batchId)
-        outcome
+        return outcome
     }
 
     /** A new [proposal] for the library: as [received]. */
     private suspend fun receivedLibrary(proposal: LibraryProposal, review: Boolean) {
         // Reviewed in the sheet of the library otherwise
-        if (access.grants.value.applyDirectly && !review) decideLibrary(proposal.id, proposal.items.indices.toSet())
+        if (access.grants.value.applyDirectly && !review) decideLibrary(proposal.id, proposal.items.indices.toSet()) else persist()
     }
 
     /**
@@ -189,6 +243,7 @@ public class ExternalAgents(
             decide(proposal.id, proposal.entries.indices.toSet())
             return
         }
+        persist()
         engines.editors?.openForReview(proposal.documentId)
     }
 }

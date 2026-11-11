@@ -36,6 +36,8 @@ import kotlinx.coroutines.flow.update
  * @param title the title of its proposal.
  * @param at when it was applied, in milliseconds since the epoch.
  * @param undone whether it was undone from the activity.
+ * @param undoable whether the change undoing it is known: not when it was kept by a version of the
+ *   application whose changes this one does not read.
  */
 public data class AgentBatch(
     val id: String,
@@ -44,7 +46,8 @@ public data class AgentBatch(
     val title: String,
     val items: Int,
     val at: Long,
-    val undone: Boolean = false
+    val undone: Boolean = false,
+    val undoable: Boolean = true
 )
 
 /** How a batch is undone. */
@@ -72,9 +75,10 @@ public enum class UndoOutcome {
 }
 
 /**
- * What the models changed, in memory (Creator, Controller): every batch applied, with the change
- * undoing it, so that the user can undo it whether its document is in an editor or not. Quitting the
- * application drops it, like the proposals: what a model removed is still hidden in the document.
+ * What the models changed (Creator, Controller): every batch applied, with the change undoing it, so
+ * that the user can undo it whether its document is in an editor or not. It outlives the application
+ * when it keeps an [AgentJournal]; without one quitting drops it, like the proposals: what a model
+ * removed is still hidden in the document.
  *
  * A batch is undone only while what it touched is as it left it: no piece of it (an element, a page,
  * the title) changed after its operation. So an undo after the user wrote on it, or after a Ctrl+Z of
@@ -109,6 +113,14 @@ public class AgentActivity(
         undos[batch.id] = undo
         dropped.forEach { undos.remove(it.id) }
         return batch
+    }
+
+    /** Puts back the batches kept before the application quit, the most recent ones, with how they are undone. */
+    internal fun restore(kept: List<AgentBatch>, keptUndos: Map<String, BatchUndo>) {
+        val batches = kept.takeLast(maxKept)
+        undos.clear()
+        batches.forEach { batch -> keptUndos[batch.id]?.takeIf { !batch.undone }?.let { undos[batch.id] = it } }
+        state.value = batches.map { it.copy(undoable = it.undone || it.id in undos) }
     }
 
     /** How the batch [id] is undone, while it is kept and not undone. */
