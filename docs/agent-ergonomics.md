@@ -79,7 +79,7 @@ Each point of the model, and what the code says about it.
 |---|---|---|
 | `font_size` | The size in points | Finite, between `TextSizePolicy.MIN` and `ElementItems.MAX_FONT_SIZE` |
 | `color` | `#RRGGBB` or `#RRGGBBAA` | As `restyle_text` |
-| `width` | The width of the box in millimeters; the text is not narrowed below it silently: `narrowed` says so | Finite, from 20 mm to the page less its margins |
+| `width` | The width of its boxes in millimeters, never made narrower: where no place that wide is free on its page, it begins on a new one, as `moved_to_new_page` says | Finite, from 20 mm to the page less its margins, or to the width of `area` |
 | `style_from` | The id of a text box whose size and color are taken; `font_size` and `color` win over it | Missing when proposed: not found; removed later: the size of the page is used |
 | `where: "inside"` with `area` | The text goes in this area: at its top-left corner, as wide as the area at most | `area` inside the page, with `page`; without `near` and `new_page` |
 
@@ -224,7 +224,7 @@ without the ones after it.
 | Phase | What | Points | Status |
 |---|---|---|---|
 | 1 | Defects and answers: the order of new pages; `mode` and `require_review`; `changed` in `proposal_status`; the instructions; a test accepting a proposal in the review and by `applyDirectly`, then `list_activity` (if it fails, the defect is fixed here). Tests: three `new_page` after one page in their order, `require_review` under `applyDirectly`, ids and bases usable for a second proposal without `read_page` | 10, 15, 7, 4 | done |
-| 2 | `insert_text` with `font_size`, `color`, `width`, `style_from`, `where: "inside"`, `near` with `new_page`; `past_area`; `overlaps` for an insertion. Tests: each field, refused values, a style from a box removed since, an area too small, what a preview says is what is applied | 1, 10 | to do |
+| 2 | `insert_text` with `font_size`, `color`, `width`, `style_from`, `where: "inside"`, `near` with `new_page`; `past_area`; `overlaps` for an insertion. Tests: each field, refused values, a style from a box removed since, an area too small, what a preview says is what is applied | 1, 10 | done |
 | 3 | `update_text`; the boxes and warnings of `restyle_text`, `place_elements`, `update_text` in the plan, seen by the items after; `outside_page`. Tests: words, size, width and place in one operation and one undo, stale by `base`, converging on another device through the written operation, a text grown by a larger size reported | 2, 11, 8 | to do |
 | 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | to do |
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | to do |

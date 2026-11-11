@@ -66,6 +66,19 @@ public class TextFlow(
         newPage: PageOccupancy,
         firstPlace: FirstPlace?,
         heightOf: (text: String, widthMm: Float) -> Float
+    ): List<Piece> = flow(markdown, first, newPage, firstPlace, null, heightOf)
+
+    /**
+     * As [flow] beginning at [firstPlace], every piece [widthMm] wide when given: a piece is then never
+     * made narrower, and goes where that width is free.
+     */
+    public fun flow(
+        markdown: String,
+        first: PageOccupancy?,
+        newPage: PageOccupancy,
+        firstPlace: FirstPlace?,
+        widthMm: Float?,
+        heightOf: (text: String, widthMm: Float) -> Float
     ): List<Piece> {
         val pieces = mutableListOf<Piece>()
         var occupancy = first ?: newPage
@@ -73,13 +86,14 @@ public class TextFlow(
         val pending = ArrayDeque(withTheirHeadings(blocksOf(markdown)))
         while (pending.isNotEmpty()) {
             val block = pending.first()
-            val width = occupancy.widthMm - 2 * planner.pageMarginMm
+            val usable = occupancy.widthMm - 2 * planner.pageMarginMm
+            val width = widthMm?.coerceAtMost(usable) ?: usable
             val placed = pieces.lastOrNull()?.takeIf { it.newPage == pageNumber }
             val begins = firstPlace != null && first != null && pageNumber == 0 && placed == null
             val single = if (begins) {
                 PlacementBlock(minOf(firstPlace.widthMm, width), minOf(firstPlace.minWidthMm, width)) { heightOf(block, it) }
             } else {
-                PlacementBlock(width, minOf(minWidthMm, width)) { heightOf(block, it) }
+                PlacementBlock(width, if (widthMm != null) width else minOf(minWidthMm, width)) { heightOf(block, it) }
             }
             val policy = when {
                 begins -> firstPlace.policy
@@ -96,7 +110,7 @@ public class TextFlow(
                     if (lines.size > 1) {
                         lines.chunked((lines.size + 1) / 2).asReversed().forEach { pending.addFirst(it.joinToString("\n")) }
                     } else {
-                        pieces += Piece(block, pageNumber, Rect(planner.pageMarginMm, planner.pageMarginMm, occupancy.widthMm - planner.pageMarginMm, occupancy.heightMm - planner.pageMarginMm))
+                        pieces += Piece(block, pageNumber, Rect(planner.pageMarginMm, planner.pageMarginMm, planner.pageMarginMm + width, occupancy.heightMm - planner.pageMarginMm))
                     }
                     continue
                 }

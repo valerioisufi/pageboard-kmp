@@ -2898,6 +2898,7 @@ public final class io/github/valerioisufi/drawview/model/placement/TextFlow {
 	public fun <init> ()V
 	public fun <init> (Lio/github/valerioisufi/drawview/model/placement/PlacementPlanner;F)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/placement/PlacementPlanner;FILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun flow (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/TextFlow$FirstPlace;Ljava/lang/Float;Lkotlin/jvm/functions/Function2;)Ljava/util/List;
 	public final fun flow (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/TextFlow$FirstPlace;Lkotlin/jvm/functions/Function2;)Ljava/util/List;
 	public final fun flow (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lkotlin/jvm/functions/Function2;)Ljava/util/List;
 	public final fun getMinWidthMm ()F

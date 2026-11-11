@@ -7,6 +7,8 @@ import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.placement.FreeSpace
+import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.TrashedItem
@@ -306,7 +308,7 @@ public class DocumentTools internal constructor(
 
     private fun previewProposal() = AgentTool(
         name = "preview_proposal",
-        description = "What a proposal would do, without proposing it: nothing changes and the user is not asked. For each item: where its text would go (page, box in millimeters), its font size, the pages it would add and warnings: far_from_anchor, moved_to_new_page, split, narrowed, overlaps, past_page_end, chain_overflow. When measured is false the document is in no editor, and the heights are estimates. The place is computed again when the user accepts.",
+        description = "What a proposal would do, without proposing it: nothing changes and the user is not asked. For each item: where its text would go (page, box in millimeters), its font size, the pages it would add and warnings: far_from_anchor, moved_to_new_page, split, narrowed, overlaps, past_area, past_page_end, chain_overflow. When measured is false the document is in no editor, and the heights are estimates. The place is computed again when the user accepts.",
         inputSchema = schema(required = listOf("document", "items")) {
             string("document", "The id of the document.")
             putJsonObject("items") { itemsSchema() }
@@ -423,7 +425,7 @@ public class DocumentTools internal constructor(
         put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs; a numbered list in a style of its own has two spaces after its markers, as in `a.  text`, `I.  text`, `1)  text`.")
         putJsonObject("items") {
             put("type", "object")
-            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it; near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. The application computes the place and the size. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
+            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?, area?, font_size?, color?, width?, style_from?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it (after the page of near, when given); near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. where inside, with page and area ({x, y, width, height}), puts it in that area instead, at its top-left corner and as wide as it, whatever is there: the answer warns with past_area when it is higher than the area and overlaps when it covers something. The application computes the place otherwise, and the size from the page unless you give font_size (points); color is the blue of the models unless given; width (millimeters) is the width of its boxes, never made narrower; style_from is the id of a text box whose size and color it takes. Several new pages after the same page keep the order of their items. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
             putJsonObject("properties") {
                 putJsonObject("kind") {
                     put("type", "string")
@@ -656,6 +658,9 @@ internal class ProposalLimits(
 ) {
     private companion object {
         const val MAX_PATH_LENGTH = 4096
+
+        /** The narrowest a model may ask a text box to be. */
+        const val MIN_TEXT_WIDTH_MM = 20f
     }
 
     /** Whether [items] are few enough to be planned for a client, on the thread of the document. */
@@ -797,8 +802,22 @@ internal class ProposalLimits(
     }
 
     private fun checkAnchor(item: ProposalItem.InsertText, removed: Set<String>) {
+        if (item.fontSize != null && (!item.fontSize.isFinite() || item.fontSize < TextSizePolicy.MIN || item.fontSize > ElementItems.MAX_FONT_SIZE)) {
+            refuse("font_size is between ${TextSizePolicy.MIN} and ${ElementItems.MAX_FONT_SIZE}.")
+        }
+        if (item.color != null && ElementItems.parseColor(item.color) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
+        if (item.width != null && (!item.width.isFinite() || item.width < MIN_TEXT_WIDTH_MM || item.width > PageItems.MAX_PAGE_SIDE_MM)) {
+            refuse("width is at least $MIN_TEXT_WIDTH_MM millimeters, and fits its page.")
+        }
+        if (item.styleFrom != null && item.styleFrom in removed) refuse("A text cannot take the style of a text box the same proposal removes.")
+        if (item.place == InsertPlace.INSIDE) {
+            if (item.area == null || item.page == null) refuse("where inside needs page and area.")
+            if (item.near != null || item.nearArea != null || item.newPage) refuse("where inside goes without near, near_area and new_page.")
+            return
+        }
+        if (item.area != null) refuse("area goes with where inside: near_area is the area a text is about.")
         if (item.near != null) {
-            if (item.page != null || item.nearArea != null || item.newPage) refuse("near goes without page, near_area and new_page: the page is the one of the text box.")
+            if (item.page != null || item.nearArea != null) refuse("near goes without page and near_area: the page is the one of the text box.")
             if (item.near in removed) refuse("A text cannot go next to a text box the same proposal removes.")
         }
         if (item.nearArea != null) {
@@ -818,6 +837,15 @@ private fun DrawDocument.beforeOf(item: ProposalItem): String? {
         is ProposalItem.InsertText -> {
             val page = item.page?.let { id -> pages.firstOrNull { it.id == id } ?: missing("page \"${id.take(64)}\"") }
             if (item.near != null && findText(item.near) == null) missing("text \"${item.near.take(64)}\"")
+            if (item.styleFrom != null && findText(item.styleFrom) == null) missing("text \"${item.styleFrom.take(64)}\"")
+            val on = page ?: item.near?.let { findText(it)?.first } ?: pages.lastOrNull()
+            if (item.area != null && on != null && !item.area.isInside(on.widthMm, on.heightMm)) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "area is outside the page, which is ${on.widthMm} by ${on.heightMm} millimeters.")
+            }
+            if (item.width != null && on != null) {
+                val room = item.area?.width ?: (on.widthMm - 2 * FreeSpace.DEFAULT_PAGE_MARGIN_MM)
+                if (item.width > room) throw AgentToolException(AgentErrorCode.REFUSED, "width is at most $room millimeters there.")
+            }
             if (item.nearArea != null && page != null && !item.nearArea.isInside(page.widthMm, page.heightMm)) {
                 throw AgentToolException(AgentErrorCode.REFUSED, "near_area is outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
             }
@@ -996,6 +1024,7 @@ private fun PlacementWarning.toEntry(): WarningEntry = when (this) {
     is PlacementWarning.Split -> WarningEntry("split", pieces = pieces)
     is PlacementWarning.Narrowed -> WarningEntry("narrowed", fromMm = fromMm.tenths())
     is PlacementWarning.Overlaps -> WarningEntry("overlaps", with = with)
+    is PlacementWarning.PastArea -> WarningEntry("past_area", byMm = byMm.tenths())
     is PlacementWarning.PastPageEnd -> WarningEntry("past_page_end", byMm = byMm.tenths())
     is PlacementWarning.ChainOverflow -> WarningEntry("chain_overflow", byMm = byMm.tenths())
 }

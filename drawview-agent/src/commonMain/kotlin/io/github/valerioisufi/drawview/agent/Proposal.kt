@@ -30,7 +30,13 @@ public sealed interface ProposalItem {
      *
      * @param near the text box it is about, on whose page it goes: it is placed next to that box.
      * @param nearArea the area of [page] it is about, for what has no box (handwriting, a figure).
-     * @param place how to use what it is about; `null`: below it.
+     * @param place how to use what it is about; `null`: below it. [InsertPlace.INSIDE]: in [area].
+     * @param fontSize its size in points; `null`: the one of [styleFrom], or the one the page tells.
+     * @param color `#RRGGBB` or `#RRGGBBAA`; `null`: the one of [styleFrom], or the blue of the models.
+     * @param width the width of its boxes in millimeters, never made narrower; `null`: what the place allows.
+     * @param styleFrom a text box whose size and color it takes.
+     * @param area the area of [page] it goes in, with [InsertPlace.INSIDE]: at its top-left corner, as
+     *   wide as it at most.
      */
     @Serializable
     @SerialName("insert_text")
@@ -40,7 +46,12 @@ public sealed interface ProposalItem {
         @SerialName("new_page") val newPage: Boolean = false,
         val near: String? = null,
         @SerialName("near_area") val nearArea: AgentArea? = null,
-        @SerialName("where") val place: InsertPlace? = null
+        @SerialName("where") val place: InsertPlace? = null,
+        @SerialName("font_size") val fontSize: Float? = null,
+        val color: String? = null,
+        val width: Float? = null,
+        @SerialName("style_from") val styleFrom: String? = null,
+        val area: AgentArea? = null
     ) : ProposalItem
 
     /** Adds a page after the page [after] (`null`: the last one), of its format. */
@@ -210,7 +221,11 @@ public enum class InsertPlace {
 
     /** Beside it, as a short note in the margin of a book. */
     @SerialName("margin")
-    MARGIN
+    MARGIN,
+
+    /** In the area given, whatever is there: the answer warns when it does not fit or covers something. */
+    @SerialName("inside")
+    INSIDE
 }
 
 /** What became of an item of a proposal. */

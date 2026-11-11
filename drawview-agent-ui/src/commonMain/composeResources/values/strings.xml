@@ -87,6 +87,7 @@
     <string name="agent_warning_split">Split into %1$d boxes</string>
     <string name="agent_warning_narrowed">Made narrow for lack of room</string>
     <string name="agent_warning_overlaps">Would cover other content of the page</string>
+    <string name="agent_warning_past_area">Higher than the area asked for by %1$d mm</string>
     <string name="agent_warning_past_end">Would pass the end of the page by %1$d mm</string>
     <string name="agent_warning_chain">Its part no longer fits its box: the next boxes do not move</string>
     <string name="agent_show_on_page">Show on the page</string>

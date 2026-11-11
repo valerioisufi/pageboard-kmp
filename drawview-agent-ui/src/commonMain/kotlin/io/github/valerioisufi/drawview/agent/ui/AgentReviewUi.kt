@@ -112,6 +112,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warnin
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_narrowed
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_new_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_overlaps
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_area
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_end
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_split
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
@@ -500,6 +501,7 @@ private fun warningText(warning: PlacementWarning): String = when (warning) {
     is PlacementWarning.Split -> stringResource(Res.string.agent_warning_split, warning.pieces)
     is PlacementWarning.Narrowed -> stringResource(Res.string.agent_warning_narrowed)
     is PlacementWarning.Overlaps -> stringResource(Res.string.agent_warning_overlaps)
+    is PlacementWarning.PastArea -> stringResource(Res.string.agent_warning_past_area, warning.byMm.roundToInt())
     is PlacementWarning.PastPageEnd -> stringResource(Res.string.agent_warning_past_end, warning.byMm.roundToInt())
     is PlacementWarning.ChainOverflow -> stringResource(Res.string.agent_warning_chain)
 }

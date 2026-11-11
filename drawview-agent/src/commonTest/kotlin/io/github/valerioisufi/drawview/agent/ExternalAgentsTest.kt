@@ -383,6 +383,124 @@ class ExternalAgentsTest {
         assertTrue(batches.all { it.jsonObject.string("document") == setup.documentId })
     }
 
+    private fun Setup.styled(markdown: String, build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit) = buildJsonObject {
+        put("kind", "insert_text")
+        put("markdown", markdown)
+        put("page", open.document.pages.first().id)
+        build()
+    }
+
+    private fun area(x: Float, y: Float, width: Float, height: Float) = buildJsonObject {
+        put("x", x); put("y", y); put("width", width); put("height", height)
+    }
+
+    private suspend fun Setup.preview(vararg items: JsonObject): List<JsonObject> = call(
+        "preview_proposal",
+        buildJsonObject {
+            put("document", documentId)
+            put("items", JsonArray(items.toList()))
+        }
+    ).getValue("items").jsonArray.map { it.jsonObject }
+
+    private fun JsonObject.warnings(): List<String> = getValue("warnings").jsonArray.map { it.jsonObject.string("code") }
+
+    @Test
+    fun aNewTextTakesTheStyleItsModelAsksFor() = runTest {
+        val setup = setup(this, backgroundScope)
+        val id = setup.propose(setup.styled("Styled") { put("font_size", 12); put("color", "#AA0000"); put("width", 80) })
+        setup.agents.decide(id, setOf(0))
+        val text = setup.open.document.pages.first().texts.single()
+        assertEquals(12f, text.fontSize)
+        assertEquals(0xFFAA0000.toInt(), text.color)
+        assertEquals(80f, text.width)
+    }
+
+    @Test
+    fun aNewTextTakesTheStyleOfATextBox() = runTest {
+        val setup = setup(this, backgroundScope)
+        val model = setup.addText("The model of the style")
+        setup.open.edit { session ->
+            session.submit(UpdateTexts(session.document.pages.first().id, listOf(model.toData().copy(fontSize = 20f, color = 0xFF00AA00.toInt()))))
+        }
+        val id = setup.propose(
+            setup.styled("Like it") { put("style_from", model.id) },
+            setup.styled("Its color only") { put("style_from", model.id); put("font_size", 10) }
+        )
+        // A box gone since tells nothing: the item is still applied, at the size of its page
+        val later = setup.propose(setup.styled("After it went") { put("style_from", model.id) })
+        setup.agents.decide(id, setOf(0, 1))
+        val texts = setup.open.document.pages.first().texts
+        assertEquals(20f, texts.first { it.text == "Like it" }.fontSize)
+        assertEquals(0xFF00AA00.toInt(), texts.first { it.text == "Like it" }.color)
+        assertEquals(10f, texts.first { it.text == "Its color only" }.fontSize)
+        assertEquals(0xFF00AA00.toInt(), texts.first { it.text == "Its color only" }.color)
+
+        setup.open.edit { session -> session.submit(io.github.valerioisufi.drawview.model.change.RemoveElements(session.document.pages.first().id, listOf(model.id))) }
+        setup.agents.decide(later, setOf(0))
+        assertEquals(ItemOutcome.ACCEPTED, setup.agents.proposals.find(later)!!.entries.single().outcome)
+        assertEquals(AGENT_TEXT_COLOR, setup.open.document.pages.first().texts.first { it.text == "After it went" }.color)
+    }
+
+    @Test
+    fun aTextAskedInsideAnAreaGoesThereAndSaysWhatIsWrong() = runTest {
+        val setup = setup(this, backgroundScope)
+        val there = setup.addText("Already there")
+        val free = setup.styled("In its place") { put("where", "inside"); put("area", area(30f, 150f, 90f, 60f)) }
+        val small = setup.styled("One line\n\nAnother\n\nAnother\n\nAnother") { put("where", "inside"); put("area", area(110f, 230f, 60f, 5f)) }
+        val over = setup.styled("Over it") { put("where", "inside"); put("area", area(there.x, there.y, 60f, 20f)) }
+
+        val plan = setup.preview(free, small, over)
+        assertEquals(emptyList(), plan[0].warnings())
+        assertEquals(listOf("past_area"), plan[1].warnings())
+        assertEquals(listOf("overlaps"), plan[2].warnings())
+        assertTrue(setup.open.document.pages.first().texts.none { it.text == "In its place" })
+
+        val id = setup.propose(free, small, over)
+        setup.agents.decide(id, setOf(0, 1, 2))
+        val placed = setup.open.document.pages.first().texts.first { it.text == "In its place" }
+        assertEquals(30f, placed.x)
+        assertEquals(150f, placed.y)
+        assertEquals(90f, placed.width)
+        // What a preview said is where it went
+        val piece = plan[0].getValue("pieces").jsonArray.single().jsonObject
+        assertEquals(listOf("30.0", "150.0", "90.0"), listOf("x", "y", "width").map { piece.string(it) })
+        assertEquals("Already there", there.text)
+    }
+
+    @Test
+    fun aTextAboutABoxGoesOnANewPageAfterItsPage() = runTest {
+        val setup = setup(this, backgroundScope)
+        val about = setup.addText("What it is about")
+        val id = setup.propose(buildJsonObject {
+            put("kind", "insert_text")
+            put("markdown", "A long note")
+            put("near", about.id)
+            put("new_page", true)
+        })
+        setup.agents.decide(id, setOf(0))
+        val pages = setup.open.document.pages
+        assertEquals(listOf(listOf("What it is about"), listOf("A long note")), pages.map { page -> page.texts.map { it.text } })
+    }
+
+    @Test
+    fun aStyleOrAPlaceThatMakesNoSenseIsRefused() = runTest {
+        val setup = setup(this, backgroundScope)
+        suspend fun refused(code: AgentErrorCode = AgentErrorCode.REFUSED, build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit) =
+            assertEquals(code, assertFailsWith<AgentToolException> { setup.propose(setup.styled("Text", build)) }.code)
+        refused { put("font_size", 2) }
+        refused { put("font_size", 4000) }
+        refused { put("color", "red") }
+        refused { put("width", 5) }
+        refused { put("width", 400) }
+        refused { put("where", "inside") }
+        refused { put("where", "inside"); put("area", area(150f, 20f, 100f, 20f)) }
+        refused { put("where", "inside"); put("area", area(20f, 20f, 50f, 20f)); put("width", 80) }
+        refused { put("where", "inside"); put("area", area(20f, 20f, 50f, 20f)); put("new_page", true) }
+        refused { put("area", area(20f, 20f, 50f, 20f)) }
+        refused(AgentErrorCode.NOT_FOUND) { put("style_from", "nothing") }
+        assertTrue(setup.agents.proposals.proposals.value.isEmpty())
+    }
+
     @Test
     fun aNewPageHasTheFormatOfThePageItFollows() = runTest {
         val setup = setup(this, backgroundScope)

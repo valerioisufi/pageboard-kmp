@@ -82,7 +82,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                             x = piece.box.left,
                             y = piece.box.top,
                             width = piece.box.width,
-                            color = AGENT_TEXT_COLOR,
+                            color = piece.color,
                             fontSize = piece.fontSize,
                             next = piece.next
                         )

@@ -39,7 +39,8 @@ public class PlannedPiece(
     public val isOnNewPage: Boolean,
     public val box: Rect,
     public val fontSize: Float,
-    public val next: String? = null
+    public val next: String? = null,
+    public val color: Int = AGENT_TEXT_COLOR
 )
 
 /** What is wrong with where an item would go. None stops it: the user decides. */
@@ -63,6 +64,9 @@ public sealed interface PlacementWarning {
             public const val PDF: String = "pdf"
         }
     }
+
+    /** It is [byMm] higher than the area it was asked in. */
+    public data class PastArea(val byMm: Float) : PlacementWarning
 
     /** It would pass the bottom margin of its page by [byMm]. */
     public data class PastPageEnd(val byMm: Float) : PlacementWarning
@@ -178,6 +182,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.ReplaceText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.RemoveText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.InsertText -> when {
+            item.place == InsertPlace.INSIDE -> pages.anchorOf(item.page)?.let { item.area?.isInside(pages[it].widthMm, pages[it].heightMm) } != true
             item.near != null -> document.findText(item.near) == null
             item.nearArea != null -> pages.anchorOf(item.page)?.let { item.nearArea.isInside(pages[it].widthMm, pages[it].heightMm) } != true
             else -> pages.anchorOf(item.page) == null
@@ -210,7 +215,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val after = text.getRotatedBounds(measure.height(item.markdown, text.width, text.fontSize))
         val warnings = mutableListOf<PlacementWarning>()
         // What it covered already is not its doing
-        val covered = coveredBy(document, planned, text, after, before, measure)
+        val covered = coveredBy(document, planned, text.id, after, before, measure)
         if (covered.isNotEmpty()) warnings += PlacementWarning.Overlaps(covered)
         val limit = page.heightMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM
         if (after.bottom > limit && after.bottom > before.bottom) {
@@ -223,14 +228,17 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         return PlannedItem(false, listOf(piece), 0, warnings)
     }
 
-    /** What [after], the new box of [text], would cover that [before], its box now, did not. */
-    private fun coveredBy(document: DrawDocument, page: PlannedPage, text: DrawText, after: Rect, before: Rect, measure: TextMeasure): List<String> {
-        val model = page.model ?: return emptyList()
-        fun new(box: Rect) = box.overlaps(after) && !box.overlaps(before)
+    /**
+     * What [after], the box of a text ([textId]: the text box it is already), would cover that
+     * [before], its box now, did not.
+     */
+    private fun coveredBy(document: DrawDocument, page: PlannedPage, textId: String?, after: Rect, before: Rect?, measure: TextMeasure): List<String> {
+        fun new(box: Rect) = box.overlaps(after) && (before == null || !box.overlaps(before))
+        val model = page.model ?: return if (page.boxes.any { new(it) }) listOf(NEW_TEXT) else emptyList()
         val covered = linkedSetOf<String>()
         for (element in model.elements()) {
             when {
-                element.id == text.id || element.id in page.excluded -> {}
+                element.id == textId || element.id in page.excluded -> {}
                 element is DrawText -> if (new(measure.boundsOf(element))) covered += element.id
                 element is DrawStroke -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
                 element is DrawPdf -> {
@@ -259,14 +267,19 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         } ?: item.nearArea?.rect
         val pageIndex = item.near?.let { near -> pages.anchorOf(document.findText(near)!!.first.id)!! } ?: pages.anchorOf(item.page)!!
         val page = pages[pageIndex]
-        val fontSize = fontSizeFor(document, page)
+        // A box to take the style from that is gone tells nothing: the page does
+        val style = item.styleFrom?.let { document.findText(it)?.second }
+        val fontSize = item.fontSize ?: style?.fontSize ?: fontSizeFor(document, page)
+        val color = item.color?.let { ElementItems.parseColor(it) } ?: style?.color ?: AGENT_TEXT_COLOR
+        if (item.place == InsertPlace.INSIDE) return planInside(document, pages, page, item, measure, fontSize, color, chosen)
         val usable = page.widthMm - 2 * FreeSpace.DEFAULT_PAGE_MARGIN_MM
+        val asked = item.width?.coerceAtMost(usable)
         val firstPlace = when {
-            anchorRect == null -> TextFlow.FirstPlace(BesideAnchor(null), usable, textFlow.minWidthMm)
-            item.place == InsertPlace.MARGIN -> TextFlow.FirstPlace(InMargin(anchorRect), minOf(MARGIN_WIDTH_MM, usable), MARGIN_MIN_WIDTH_MM)
+            anchorRect == null -> TextFlow.FirstPlace(BesideAnchor(null), asked ?: usable, asked ?: textFlow.minWidthMm)
+            item.place == InsertPlace.MARGIN -> TextFlow.FirstPlace(InMargin(anchorRect), asked ?: minOf(MARGIN_WIDTH_MM, usable), asked ?: MARGIN_MIN_WIDTH_MM)
             else -> {
                 val room = page.widthMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM - max(anchorRect.left, FreeSpace.DEFAULT_PAGE_MARGIN_MM)
-                TextFlow.FirstPlace(BesideAnchor(anchorRect), max(room, textFlow.minWidthMm), textFlow.minWidthMm)
+                TextFlow.FirstPlace(BesideAnchor(anchorRect), asked ?: max(room, textFlow.minWidthMm), asked ?: textFlow.minWidthMm)
             }
         }
         val pieces = textFlow.flow(
@@ -274,7 +287,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
             // What it is about is not to be covered, even where the model saw more than the boxes tell
             if (item.newPage) null else occupancyOf(document, page, measure).let { taken -> item.nearArea?.let { taken + it.rect } ?: taken },
             emptyOccupancy(page),
-            firstPlace
+            firstPlace,
+            asked
         ) { text, width -> measure.height(text, width, fontSize) }
 
         val ids = pieces.map { newElementId() }
@@ -292,16 +306,52 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 pages.first { it.id == change.page.id }.also { lastPage = pages.indexOf(it) }
             }
         }
+        val covered = linkedSetOf<String>()
         val planned = pieces.mapIndexed { index, piece ->
             val target = targets[index]
-            val box = chosen?.getOrNull(index)?.box ?: piece.box
+            val place = chosen?.getOrNull(index)
+            val box = place?.box ?: piece.box
+            // The planner found it free; where the user put it may not be
+            if (place != null) covered += coveredBy(document, target, null, box, null, measure)
             target.boxes += box
             // A piece going on onto a later page goes on from the piece before it: one text across the pages
             val goesOn = pieces.getOrNull(index + 1)?.let { it.newPage > piece.newPage } == true && pages.indexOf(targets[index + 1]) > pages.indexOf(target)
-            PlannedPiece(ids[index], piece.text, target.id, target.model == null, box, fontSize, if (goesOn) ids[index + 1] else null)
+            PlannedPiece(ids[index], piece.text, target.id, target.model == null, box, fontSize, if (goesOn) ids[index + 1] else null, color)
         }
 
-        return PlannedItem(false, planned, newPages.size, insertWarnings(item, pieces, usable, firstPlace, anchorRect), newPages)
+        val warnings = insertWarnings(item, pieces, usable, firstPlace, anchorRect) +
+            listOfNotNull(covered.takeIf { it.isNotEmpty() }?.let { PlacementWarning.Overlaps(it.toList()) })
+        return PlannedItem(false, planned, newPages.size, warnings, newPages)
+    }
+
+    /**
+     * The text of [item] in the area it asks for on [page]: at its top-left corner, as wide as the item
+     * says or as the area, whatever is there. What it covers and how much higher it is are warned about.
+     */
+    private fun planInside(
+        document: DrawDocument,
+        pages: List<PlannedPage>,
+        page: PlannedPage,
+        item: ProposalItem.InsertText,
+        measure: TextMeasure,
+        fontSize: Float,
+        color: Int,
+        chosen: List<ChosenPlace>?
+    ): PlannedItem {
+        val area = item.area!!.rect
+        val width = minOf(item.width ?: area.width, area.width)
+        val height = measure.height(item.markdown, width, fontSize)
+        val place = chosen?.firstOrNull()
+        val target = place?.pageId?.let { id -> pages.firstOrNull { it.id == id } } ?: page
+        val box = place?.box ?: Rect(area.left, area.top, area.left + width, area.top + height)
+        val warnings = mutableListOf<PlacementWarning>()
+        if (place == null && box.bottom > area.bottom + FITS_MARGIN_MM) warnings += PlacementWarning.PastArea(box.bottom - area.bottom)
+        val limit = target.heightMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM
+        if (box.bottom > limit) warnings += PlacementWarning.PastPageEnd(box.bottom - limit)
+        val covered = coveredBy(document, target, null, box, null, measure)
+        if (covered.isNotEmpty()) warnings += PlacementWarning.Overlaps(covered)
+        target.boxes += box
+        return PlannedItem(false, listOf(PlannedPiece(newElementId(), item.markdown, target.id, target.model == null, box, fontSize, null, color)), 0, warnings)
     }
 
     private fun insertWarnings(
@@ -420,6 +470,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         private const val MARGIN_WIDTH_MM = 60f
         private const val MARGIN_MIN_WIDTH_MM = 30f
         private const val FAR_FROM_ANCHOR_MM = 30f
+
+        /** Higher than its area by less than this, a text still fits it. */
+        private const val FITS_MARGIN_MM = 0.5f
 
         /** Narrowed by less than this is only the width rounded to the grid of the planner. */
         private const val NARROWED_MARGIN_MM = 4f
