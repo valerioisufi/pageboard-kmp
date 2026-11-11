@@ -137,7 +137,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      * @param chosen the places chosen by the user, by index of an item and in the order of its pieces.
      */
     public fun plan(document: DrawDocument, items: List<ProposalItem>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): ProposalPlan {
-        val measure = TextMeasure(document.id, engines.editors)
+        val measure = TextMeasure(document.id, engines.editors, engines.pages?.invoke())
         val pages = plannedPages(document)
         val grown = mutableMapOf<String, Rect>()
         val chains = lazy { TextChains.of(document) }
@@ -185,7 +185,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
 
     /** The geometry of [page] for a model: how its texts are laid out, and where there is room. */
     internal fun geometryOf(document: DrawDocument, page: DrawPage): PageGeometry {
-        val measure = TextMeasure(document.id, engines.editors)
+        val measure = TextMeasure(document.id, engines.editors, engines.pages?.invoke())
         val occupancy = occupancyOf(document, PlannedPage(page.id, page.orderKey, page.widthMm, page.heightMm, page.background, null, page), measure)
         val boxes = page.texts.filter { it.removed == null }.associate { it.id to measure.boundsOf(it) }
         return PageGeometry(measure.isMeasured, boxes, textFlow.planner.freeSpace(occupancy).largestAreas(MAX_FREE_AREAS))
@@ -340,7 +340,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 element is DrawStroke -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
                 element is DrawPdf -> {
                     val others = model.elements().filter { it.id != element.id }.mapTo(mutableSetOf()) { it.id }
-                    val pdf = PageOccupancy.of(model, pdfText = { engines.editors?.pdfLayout(document.id, it) }, excluded = others)
+                    val pdf = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, excluded = others)
                     if (pdf.boxes.any { new(it) }) covered += PlacementWarning.Overlaps.PDF
                 }
                 else -> model.boundsOf(element)?.let { if (new(it)) covered += element.id }
@@ -481,7 +481,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     private fun occupancyOf(document: DrawDocument, page: PlannedPage, measure: TextMeasure): PageOccupancy {
         val model = page.model ?: return PageOccupancy(page.widthMm, page.heightMm, page.boxes.toList(), PageOccupancy.lineSpacingOf(page.background))
         val texts = model.texts.filter { it.removed == null }
-        val others = PageOccupancy.of(model, pdfText = { engines.editors?.pdfLayout(document.id, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
+        val others = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
         val boxes = texts.filter { it.id !in page.excluded }.map { measure.boundsOf(it) }
         return PageOccupancy(page.widthMm, page.heightMm, others.boxes + boxes + page.boxes, others.lineSpacingMm)
     }
@@ -520,9 +520,16 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     private fun fontSizeFor(document: DrawDocument, page: PlannedPage): Float {
         val model = page.model
             ?: return TextSizePolicy.nearestPreset(PageTextSizes.ofDocument(document) ?: engines.defaultTextSize)
-        val layout = model.pdfs.firstOrNull()?.let { engines.editors?.pdfLayout(document.id, it) }
-        return TextSizePolicy.forNote(PageTextSizes.of(model, layout), engines.defaultTextSize)
+        return TextSizePolicy.forNote(textSizesOf(document, model), engines.defaultTextSize)
     }
+
+    /** The sizes of the characters on [page]: typed, of its PDF page, of its handwriting. */
+    internal fun textSizesOf(document: DrawDocument, page: DrawPage): PageTextSizes =
+        PageTextSizes.of(page, page.pdfs.firstOrNull { it.removed == null }?.let { engines.pdfLayout(document, it) })
+
+    /** The size a text added to [page] takes when its model asks for none. */
+    internal fun noteSizeOf(document: DrawDocument, page: DrawPage): Float =
+        TextSizePolicy.forNote(textSizesOf(document, page), engines.defaultTextSize)
 
     private fun plannedPages(document: DrawDocument): MutableList<PlannedPage> =
         document.pages.mapTo(mutableListOf()) { page ->
@@ -589,19 +596,20 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
 internal class PageGeometry(val isMeasured: Boolean, val textBoxes: Map<String, Rect>, val freeAreas: List<Rect>)
 
 /**
- * The heights of the texts of a document, as well as they can be told: laid out by its editor, or
- * estimated with the lines they wrap into.
+ * The heights of the texts of a document, as well as they can be told: laid out by its editor, or by
+ * the [pages] of the application for a document in none, or estimated with the lines they wrap into.
  */
-internal class TextMeasure(private val documentId: String, private val editors: AgentEditors?) {
+internal class TextMeasure(private val documentId: String, private val editors: AgentEditors?, private val pages: PageEngine? = null) {
     private val inEditor = editors?.isInEditor(documentId) == true
     private var estimated = false
 
-    /** Whether every height told so far comes from an editor. */
-    val isMeasured: Boolean get() = inEditor && !estimated
+    /** Whether every height told so far was laid out, not estimated. */
+    val isMeasured: Boolean get() = (inEditor || pages != null) && !estimated
 
     /** The height of [markdown] on [widthMm] at [fontSize]. */
     fun height(markdown: String, widthMm: Float, fontSize: Float): Float {
         editors?.textHeight(documentId, markdown, widthMm, fontSize)?.let { return it }
+        pages?.textHeight(markdown, widthMm, fontSize)?.let { return it }
         estimated = true
         val lineHeight = TextSizes.estimatedLineHeightMm(fontSize)
         // A character about half as wide as its line is high would be too narrow for most text
@@ -609,7 +617,10 @@ internal class TextMeasure(private val documentId: String, private val editors: 
         return markdown.lines().sumOf { line -> max(1, ceil(line.length / perLine).toInt()) } * lineHeight
     }
 
-    /** The box of [text]: the height its editor laid out keeps it, without one it is estimated. */
+    /**
+     * The box of [text]: its editor laid it out and it keeps that height; in no editor its height is
+     * not stored (see `docs/text-heights.md`), so it is laid out again or estimated.
+     */
     fun boundsOf(text: DrawText): Rect =
         if (inEditor) text.getRotatedBounds() else text.getRotatedBounds(height(text.text, text.width, text.fontSize))
 

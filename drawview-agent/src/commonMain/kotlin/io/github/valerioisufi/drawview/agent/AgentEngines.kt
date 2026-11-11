@@ -1,6 +1,9 @@
 package io.github.valerioisufi.drawview.agent
 
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.PdfTextLayout
 
 /**
@@ -29,6 +32,26 @@ public interface AgentEditors {
 
     /** The text of the PDF page [pdf] as the editor of [documentId] knows it, or `null`. */
     public fun pdfLayout(documentId: String, pdf: DrawPdf): PdfTextLayout?
+}
+
+/**
+ * The pages of a document in no editor, as the tools need them (Protected Variations): what an editor
+ * tells of its own document (see [AgentEditors]), told without one, so that a model is answered the
+ * same on a document open or not. Called on the thread of the documents, but [renderPage].
+ */
+public interface PageEngine {
+    /** The height in millimeters of [markdown] laid out on [widthMm] at [fontSize], as a page draws it, or `null`. */
+    public fun textHeight(markdown: String, widthMm: Float, fontSize: Float): Float?
+
+    /** The text of the page [pageIndex] of the PDF file at [path], or `null` when it cannot be read. */
+    public fun pdfLayout(path: String, pageIndex: Int): PdfTextLayout?
+
+    /**
+     * The page [page] as a PNG, at most [maxSidePx] on its longest side, or `null`.
+     *
+     * @param resources the files of its document its elements are drawn from.
+     */
+    public suspend fun renderPage(resources: List<DrawResource>, page: PageContentSnapshot, maxSidePx: Int): ByteArray?
 }
 
 /** A passage found by the search of an application, for a model. */
@@ -62,7 +85,11 @@ public interface AgentImages {
  * @param search searches [documentIds] only.
  * @param pdfText the text of the page `pageIndex` of the PDF file at `path`, or `null` when it has none.
  * @param handwriting the transcription of the handwriting of a page, or `null` when there is none.
- * @param renderPage the page as a PNG, at most `maxSidePx` on its longest side, or `null`.
+ * @param renderPage the page as a PNG, at most `maxSidePx` on its longest side, or `null`: by an editor
+ *   of its document; without one the page is drawn by [pages].
+ * @param pages gives the pages of a document in no editor, asked each time: an application may have it only
+ *   once its window is there. Without it the heights of such a document are estimates, the text of
+ *   its PDF pages is not known, and its pages are not drawn.
  * @param images the image files a client adds (`add_image`), read by the application.
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
  */
@@ -73,5 +100,13 @@ public class AgentEngines(
     public val handwriting: (suspend (documentId: String, pageId: String) -> String?)? = null,
     public val renderPage: (suspend (documentId: String, pageId: String, maxSidePx: Int) -> ByteArray?)? = null,
     public val images: AgentImages? = null,
-    public val defaultTextSize: Float = 16f
-)
+    public val defaultTextSize: Float = 16f,
+    public val pages: (() -> PageEngine?)? = null
+) {
+    /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
+    internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {
+        editors?.pdfLayout(document.id, pdf)?.let { return it }
+        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return null
+        return pages?.invoke()?.pdfLayout(resource.path, pdf.pdfPageIndex)
+    }
+}

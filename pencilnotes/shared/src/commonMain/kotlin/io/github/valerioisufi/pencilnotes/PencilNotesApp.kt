@@ -27,7 +27,11 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.controller.PageTopics
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import io.github.valerioisufi.drawview.agent.ui.CanvasPageEngine
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
+import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
@@ -129,6 +133,7 @@ fun PencilNotesApp(
                 topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
             )
         }
+        AgentPages(agents, engines)
         // Search in the contents of the notes, and the local models (EmbeddingGemma 2, Gemma 4)
         val liteRtRuntime = remember { LiteRtRuntime() }
         val installedModels = remember { InstalledModels() }
@@ -286,6 +291,7 @@ fun PencilNotesDocumentWindow(
                 topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
             )
         }
+        AgentPages(agents, engines)
         val editorViewModel = viewModel(key = "doc-$documentId") {
             DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)
@@ -312,3 +318,17 @@ fun PencilNotesDocumentWindow(
     }
 }
 
+/**
+ * Gives the external models the pages of the documents in no editor, laid out and drawn with the
+ * fonts of this window, as an editor would (see `docs/agent-ergonomics.md`).
+ */
+@Composable
+private fun AgentPages(agents: PencilNotesAgents?, engines: DrawViewEngines) {
+    agents ?: return
+    val fontFamilyResolver = LocalFontFamilyResolver.current
+    val notesFonts = rememberNotesFonts()
+    val pages = remember(fontFamilyResolver, notesFonts, engines) {
+        CanvasPageEngine(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code), engines.pdfTiles, engines.elements)
+    }
+    SideEffect { agents.pageEngine = pages }
+}

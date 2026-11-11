@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.agent.AgentImages
 import io.github.valerioisufi.drawview.agent.AgentJournal
 import io.github.valerioisufi.drawview.agent.AgentSearchHit
 import io.github.valerioisufi.drawview.agent.ExternalAgents
+import io.github.valerioisufi.drawview.agent.PageEngine
 import io.github.valerioisufi.drawview.agent.ui.AgentReviewUi
 import io.github.valerioisufi.drawview.agent.ui.SessionAgentEditors
 import io.github.valerioisufi.drawview.canvas.platform.decodeImageBitmap
@@ -42,6 +43,10 @@ class PencilNotesAgents(
     @Volatile
     internal var contentSearch: ContentSearch? = null
 
+    /** The pages of the documents in no editor, once the fonts of a window are there. */
+    @Volatile
+    internal var pageEngine: PageEngine? = null
+
     private val reviews = Channel<String>(Channel.CONFLATED)
 
     /** The documents to open for a review of their proposals: the application opens them in an editor. */
@@ -56,6 +61,7 @@ class PencilNotesAgents(
             search = ::search,
             pdfText = ::pdfText,
             renderPage = editors::renderPage,
+            pages = { pageEngine },
             images = object : AgentImages {
                 override suspend fun read(path: String): AgentImage? = image(path, keep = false)
 

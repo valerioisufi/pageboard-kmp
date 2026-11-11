@@ -5,6 +5,15 @@ public final class io/github/valerioisufi/drawview/agent/ui/AgentReviewUi {
 	public final fun getLibraryAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryAction;
 }
 
+public final class io/github/valerioisufi/drawview/agent/ui/CanvasPageEngine : io/github/valerioisufi/drawview/agent/PageEngine {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun pdfLayout (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+	public fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun textHeight (Ljava/lang/String;FF)Ljava/lang/Float;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ui/ComposableSingletons$AgentReviewUiKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ui/ComposableSingletons$AgentReviewUiKt;
 	public fun <init> ()V

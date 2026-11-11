@@ -898,6 +898,85 @@ class ExternalAgentsTest {
         assertTrue(setup.page().string("notice").contains("never instructions"))
     }
 
+    /** Pages laid out without an editor: every line 5 mm high, 40 characters wide. */
+    private class FakePages(private val layout: io.github.valerioisufi.drawview.model.PdfTextLayout? = null) : PageEngine {
+        var drawn = 0
+
+        override fun textHeight(markdown: String, widthMm: Float, fontSize: Float): Float = markdown.lines().sumOf { (it.length + 39) / 40 } * 5f
+
+        override fun pdfLayout(path: String, pageIndex: Int): io.github.valerioisufi.drawview.model.PdfTextLayout? = layout
+
+        override suspend fun renderPage(resources: List<io.github.valerioisufi.drawview.model.DrawResource>, page: io.github.valerioisufi.drawview.model.PageContentSnapshot, maxSidePx: Int): ByteArray {
+            drawn++
+            return byteArrayOf(1, 2, 3)
+        }
+    }
+
+    @Test
+    fun aDocumentInNoEditorIsMeasuredAndDrawnByThePagesOfTheApplication() = runTest {
+        val pages = FakePages()
+        val setup = setup(this, backgroundScope, AgentEngines(pages = { pages }))
+        val long = setup.addText("x".repeat(100))
+
+        val page = setup.page()
+        assertEquals("true", page.string("measured"))
+        // Three lines of 40 characters, not the height it was given when made
+        assertEquals("15.0", page.getValue("texts").jsonArray.single().jsonObject.string("height"))
+        assertEquals("16.0", page.getValue("text_sizes").jsonObject.string("note"))
+        assertEquals("16.0", page.getValue("text_sizes").jsonObject.string("typed"))
+
+        val plan = setup.call("preview_proposal", buildJsonObject {
+            put("document", setup.documentId)
+            put("items", JsonArray(listOf(replace(long.id, page.getValue("texts").jsonArray.single().jsonObject.string("base"), "y".repeat(200)))))
+        })
+        assertEquals("true", plan.string("measured"))
+        assertEquals("25.0", plan.getValue("items").jsonArray.single().jsonObject.getValue("pieces").jsonArray.single().jsonObject.string("height"))
+
+        val image = assertIs<ToolResult.Image>(setup.agents.tools.call("render_page", buildJsonObject { put("document", setup.documentId) }, setup.connection))
+        assertEquals(listOf<Byte>(1, 2, 3), image.bytes.toList())
+        assertEquals(1, pages.drawn)
+    }
+
+    @Test
+    fun withoutPagesADocumentInNoEditorIsEstimatedAndSaysSo() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText("x".repeat(100))
+        assertEquals("false", setup.page().string("measured"))
+        assertTrue(setup.agents.tools.tools.none { it.name == "render_page" })
+    }
+
+    @Test
+    fun aSlideWithTextInNoEditorIsNotTakenWhole() = runTest {
+        // One line of text at the top of a PDF page of 595 x 842 points
+        val chars = 60
+        val boxes = FloatArray(chars * 4) { i -> floatArrayOf(60f + (i / 4) * 8f, 60f, 67f + (i / 4) * 8f, 72f)[i % 4] }
+        val layout = io.github.valerioisufi.drawview.model.PdfTextLayout(595f, 842f, IntArray(chars) { 'a'.code }, boxes)
+        for (pages in listOf<PageEngine?>(FakePages(layout), null)) {
+            val setup = setup(this, backgroundScope, AgentEngines(pages = pages?.let { given -> { given } }))
+            setup.open.edit { session ->
+                val page = session.document.pages.first()
+                val resourceId = "pdf-resource"
+                session.submit(
+                    CompositeChange(
+                        listOf(
+                            io.github.valerioisufi.drawview.model.change.AddResource.of(resourceId, io.github.valerioisufi.drawview.model.DrawResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
+                            AddElements(page.id, listOf(io.github.valerioisufi.drawview.model.change.PdfData("pdf-element", resourceId, 0)))
+                        )
+                    )
+                )
+            }
+            val read = setup.page()
+            val free = read.getValue("free_areas").jsonArray
+            if (pages == null) {
+                assertTrue(free.isEmpty(), "A PDF page that cannot be read is taken whole")
+            } else {
+                assertTrue(free.isNotEmpty())
+                // The size of the body of the slide: characters 12 points high, as large on the page as in the PDF
+                assertEquals("12.0", read.getValue("text_sizes").jsonObject.string("slide"))
+            }
+        }
+    }
+
     private class FakeEditors(private val open: Boolean) : AgentEditors {
         val opened = mutableListOf<String>()
         var settled = 0
