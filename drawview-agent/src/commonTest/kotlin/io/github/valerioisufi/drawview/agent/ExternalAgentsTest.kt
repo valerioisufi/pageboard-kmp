@@ -362,7 +362,7 @@ class ExternalAgentsTest {
         val changed = status.getValue("changed").jsonArray.map { it.jsonArray.single().jsonObject }
         val made = setup.open.document.pages.first().texts.first { it.text == "Made" }
         assertEquals(listOf(made.id, old.id), changed.map { it.string("id") })
-        assertEquals(made.id, status.getValue("placed").jsonArray[0].jsonArray.single().jsonObject.string("text"))
+        assertEquals(made.id, status.getValue("placed").jsonArray[0].jsonArray.single().jsonObject.string("id"))
 
         val again = setup.propose(replace(made.id, changed[0].string("base"), "Made again"), replace(old.id, changed[1].string("base"), "newer"))
         setup.agents.decide(again, setOf(0, 1))
@@ -499,6 +499,97 @@ class ExternalAgentsTest {
         refused { put("area", area(20f, 20f, 50f, 20f)) }
         refused(AgentErrorCode.NOT_FOUND) { put("style_from", "nothing") }
         assertTrue(setup.agents.proposals.proposals.value.isEmpty())
+    }
+
+    private suspend fun Setup.baseOf(text: DrawText): String =
+        page().getValue("texts").jsonArray.map { it.jsonObject }.first { it.string("id") == text.id }.string("base")
+
+    @Test
+    fun aTextIsChangedInEveryWayByOneItem() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("old")
+        val operations = countOperations(setup.open)
+        val item = buildJsonObject {
+            put("kind", "update_text")
+            put("text", text.id)
+            put("base", setup.baseOf(text))
+            put("markdown", "new words")
+            put("font_size", 12)
+            put("color", "#AA0000")
+            put("alignment", "center")
+            put("width", 80)
+            put("x", 40)
+            put("y", 120)
+        }
+        val piece = setup.preview(item).single().getValue("pieces").jsonArray.single().jsonObject
+        assertEquals(listOf(text.id, "40.0", "120.0", "80.0"), listOf("id", "x", "y", "width").map { piece.string(it) })
+        assertEquals("old", text.text)
+
+        val id = setup.propose(item)
+        setup.agents.decide(id, setOf(0))
+        assertEquals(1, operations.count { it.origin == ChangeOrigin.LOCAL })
+        assertEquals("new words", text.text)
+        assertEquals(listOf(12f, 80f, 40f, 120f), listOf(text.fontSize, text.width, text.x, text.y))
+        assertEquals(0xFFAA0000.toInt(), text.color)
+        assertEquals(io.github.valerioisufi.drawview.model.TextAlignment.CENTER, text.alignment)
+
+        // One undo takes it all back
+        setup.open.edit { session -> session.submit(operations.first { it.origin == ChangeOrigin.LOCAL }.inverse!!) }
+        assertEquals("old", text.text)
+        assertEquals(listOf(16f, 100f, 10f, 20f), listOf(text.fontSize, text.width, text.x, text.y))
+    }
+
+    @Test
+    fun aTextChangedSinceIsNotUpdatedAndOneOutsideThePageIsRefused() = runTest {
+        val setup = setup(this, backgroundScope)
+        val text = setup.addText("old")
+        fun update(build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit) = buildJsonObject {
+            put("kind", "update_text")
+            put("text", text.id)
+            build()
+        }
+        val base = setup.baseOf(text)
+        assertEquals(AgentErrorCode.REFUSED, assertFailsWith<AgentToolException> { setup.propose(update { put("base", base); put("x", 190) }) }.code)
+        assertEquals(AgentErrorCode.REFUSED, assertFailsWith<AgentToolException> { setup.propose(update { put("base", base) }) }.code)
+        assertEquals(AgentErrorCode.REFUSED, assertFailsWith<AgentToolException> { setup.propose(update { put("base", base); put("width", 3) }) }.code)
+
+        val id = setup.propose(update { put("base", base); put("width", 60) })
+        setup.open.edit { session -> session.submit(UpdateTexts(session.document.pages.first().id, listOf(text.toData().copy(text = "written since")))) }
+        setup.agents.decide(id, setOf(0))
+        assertEquals(ItemOutcome.STALE, setup.agents.proposals.find(id)!!.entries.single().outcome)
+        assertEquals(100f, text.width)
+    }
+
+    @Test
+    fun whatMovesOrGrowsSaysWhereItEndsAndWhatItCovers() = runTest {
+        val setup = setup(this, backgroundScope)
+        val upper = setup.addText("upper")
+        val lower = setup.open.edit { session ->
+            val page = session.document.pages.first()
+            text("lower", y = 60f).also { session.submit(AddElements.of(page, listOf(it))) }
+        }
+        val refs = setup.page().getValue("texts").jsonArray.map { it.jsonObject }.associate { it.string("id") to it.string("base") }
+
+        val moved = setup.preview(buildJsonObject {
+            put("kind", "place_elements")
+            put("page", setup.open.document.pages.first().id)
+            put("elements", buildJsonArray { add(buildJsonObject { put("id", upper.id); put("base", refs.getValue(upper.id)) }) })
+            put("dy", 42)
+        }).single()
+        val piece = moved.getValue("pieces").jsonArray.single().jsonObject
+        assertEquals(listOf(upper.id, "62.0"), listOf(piece.string("id"), piece.string("y")))
+        assertEquals(listOf("overlaps"), moved.warnings())
+        assertEquals(listOf(lower.id), moved.getValue("warnings").jsonArray.single().jsonObject.getValue("with").jsonArray.map { it.jsonPrimitive.content })
+
+        // A size that makes it higher is told, and a text moved by the item before is where that left it
+        val grown = setup.preview(buildJsonObject {
+            put("kind", "restyle_text")
+            put("text", lower.id)
+            put("base", refs.getValue(lower.id))
+            put("font_size", 300)
+        }).single()
+        assertTrue("past_page_end" in grown.warnings())
+        assertTrue(grown.getValue("pieces").jsonArray.single().jsonObject.string("height").toFloat() > 100f)
     }
 
     @Test

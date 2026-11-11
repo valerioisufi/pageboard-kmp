@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_color
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_font_size
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_at
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_front
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_moved
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_detail_page
@@ -56,6 +57,13 @@ internal fun itemDetail(entry: ProposalEntry): String? {
             item.color?.let { parts += stringResource(Res.string.agent_detail_color, it) }
             item.fontSize?.let { parts += stringResource(Res.string.agent_detail_font_size, it.mm()) }
             item.alignment?.let { parts += stringResource(Res.string.agent_detail_alignment, it) }
+        }
+        is ProposalItem.UpdateText -> {
+            item.color?.let { parts += stringResource(Res.string.agent_detail_color, it) }
+            item.fontSize?.let { parts += stringResource(Res.string.agent_detail_font_size, it.mm()) }
+            item.alignment?.let { parts += stringResource(Res.string.agent_detail_alignment, it) }
+            item.width?.let { parts += stringResource(Res.string.agent_detail_width, it.mm()) }
+            if (item.x != null || item.y != null) parts += stringResource(Res.string.agent_detail_at, item.x?.mm() ?: "–", item.y?.mm() ?: "–")
         }
         is ProposalItem.AddStroke -> {
             parts += pluralStringResource(Res.plurals.agent_detail_points, item.points.size, item.points.size)

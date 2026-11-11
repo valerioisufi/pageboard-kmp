@@ -100,6 +100,28 @@ public sealed interface ProposalItem {
     ) : ProposalItem
 
     /**
+     * Changes the text box [text], as it was when read ([base]), in any way at once: its words
+     * ([markdown]), its style, its corner ([x], [y], in millimeters from the top-left corner of its
+     * page) and the width its lines wrap on. What is `null` stays as it is.
+     *
+     * @param color `#RRGGBB` or `#RRGGBBAA`.
+     * @param alignment `start`, `center` or `end`.
+     */
+    @Serializable
+    @SerialName("update_text")
+    public data class UpdateText(
+        val text: String,
+        val base: String,
+        val markdown: String? = null,
+        @SerialName("font_size") val fontSize: Float? = null,
+        val color: String? = null,
+        val alignment: String? = null,
+        val width: Float? = null,
+        val x: Float? = null,
+        val y: Float? = null
+    ) : ProposalItem
+
+    /**
      * Draws a stroke on the page [page] through [points], `[x, y]` in millimeters from its top-left corner.
      *
      * @param color `#RRGGBB` or `#RRGGBBAA`; the blue of the models by default.

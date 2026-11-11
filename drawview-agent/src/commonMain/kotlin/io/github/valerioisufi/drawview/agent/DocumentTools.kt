@@ -308,7 +308,7 @@ public class DocumentTools internal constructor(
 
     private fun previewProposal() = AgentTool(
         name = "preview_proposal",
-        description = "What a proposal would do, without proposing it: nothing changes and the user is not asked. For each item: where its text would go (page, box in millimeters), its font size, the pages it would add and warnings: far_from_anchor, moved_to_new_page, split, narrowed, overlaps, past_area, past_page_end, chain_overflow. When measured is false the document is in no editor, and the heights are estimates. The place is computed again when the user accepts.",
+        description = "What a proposal would do, without proposing it: nothing changes and the user is not asked. For each item: where its text would go (page, box in millimeters), its font size, the pages it would add and warnings: far_from_anchor, moved_to_new_page, split, narrowed, overlaps, past_area, outside_page, past_page_end, chain_overflow. An item that moves or resizes elements answers their boxes as they would be. When measured is false the document is in no editor, and the heights are estimates. The place is computed again when the user accepts.",
         inputSchema = schema(required = listOf("document", "items")) {
             string("document", "The id of the document.")
             putJsonObject("items") { itemsSchema() }
@@ -425,7 +425,7 @@ public class DocumentTools internal constructor(
         put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs; a numbered list in a style of its own has two spaces after its markers, as in `a.  text`, `I.  text`, `1)  text`.")
         putJsonObject("items") {
             put("type", "object")
-            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?, area?, font_size?, color?, width?, style_from?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it (after the page of near, when given); near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. where inside, with page and area ({x, y, width, height}), puts it in that area instead, at its top-left corner and as wide as it, whatever is there: the answer warns with past_area when it is higher than the area and overlaps when it covers something. The application computes the place otherwise, and the size from the page unless you give font_size (points); color is the blue of the models unless given; width (millimeters) is the width of its boxes, never made narrower; style_from is the id of a text box whose size and color it takes. Several new pages after the same page keep the order of their items. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
+            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?, area?, font_size?, color?, width?, style_from?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it (after the page of near, when given); near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. where inside, with page and area ({x, y, width, height}), puts it in that area instead, at its top-left corner and as wide as it, whatever is there: the answer warns with past_area when it is higher than the area and overlaps when it covers something. The application computes the place otherwise, and the size from the page unless you give font_size (points); color is the blue of the models unless given; width (millimeters) is the width of its boxes, never made narrower; style_from is the id of a text box whose size and color it takes. Several new pages after the same page keep the order of their items. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?): moves them by dx and dy millimeters and scales them around the top-left corner of the box holding them, staying on the page. kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"update_text\" (text, base, markdown?, font_size?, color?, alignment?, width?, x?, y?): changes a text box in any way with one item: its words, its style, the width its lines wrap on and its top-left corner, in millimeters; what is not given stays as it is. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
             putJsonObject("properties") {
                 putJsonObject("kind") {
                     put("type", "string")
@@ -438,6 +438,7 @@ public class DocumentTools internal constructor(
                         add(JsonPrimitive("place_elements"))
                         add(JsonPrimitive("reorder_elements"))
                         add(JsonPrimitive("restyle_text"))
+                        add(JsonPrimitive("update_text"))
                         add(JsonPrimitive("add_stroke"))
                         add(JsonPrimitive("restyle_stroke"))
                         add(JsonPrimitive("add_image"))
@@ -455,7 +456,7 @@ public class DocumentTools internal constructor(
 
     private fun proposalStatus() = AgentTool(
         name = "proposal_status",
-        description = "What became of a proposal: waiting, or the outcome of each item: accepted, rejected, or stale when what it was made on changed after you read it (read it again and propose again). Once decided, for each item, placed gives the boxes where its text went and changed the elements it made or changed, each with its id and the base to change it again by, without reading its page again.",
+        description = "What became of a proposal: waiting, or the outcome of each item: accepted, rejected, or stale when what it was made on changed after you read it (read it again and propose again). Once decided, for each item, placed gives the boxes where its text or its elements went, each with the id of its element, and changed the elements it made or changed, each with its id and the base to change it again by, without reading its page again.",
         inputSchema = schema(required = listOf("proposal")) { string("proposal", "The id answered by propose.") }
     ) { arguments, _ ->
         val id = arguments.requiredString("proposal")
@@ -668,6 +669,7 @@ internal class ProposalLimits(
         when (item) {
             is ProposalItem.ReplaceText -> item.markdown.length
             is ProposalItem.InsertText -> item.markdown.length
+            is ProposalItem.UpdateText -> item.markdown?.length ?: 0
             else -> 0
         }
     } <= maxPlannedLength
@@ -712,6 +714,7 @@ internal class ProposalLimits(
             val text = when (item) {
                 is ProposalItem.ReplaceText -> item.markdown
                 is ProposalItem.InsertText -> item.markdown
+                is ProposalItem.UpdateText -> item.markdown.orEmpty()
                 else -> ""
             }
             if (text.length > maxTextLength) refuse("A text of an item has at most $maxTextLength characters: use several items.")
@@ -758,6 +761,21 @@ internal class ProposalLimits(
                 }
                 if (item.alignment != null && ElementItems.parseAlignment(item.alignment) == null) refuse("alignment is start, center or end.")
                 if (item.color == null && item.fontSize == null && item.alignment == null) refuse("restyle_text needs color, font_size or alignment.")
+            }
+            is ProposalItem.UpdateText -> {
+                color(item.color)
+                if (item.markdown != null && item.markdown.isBlank()) refuse("A text cannot be blank: to remove a text box use remove_text.")
+                if (item.fontSize != null && (!item.fontSize.isFinite() || item.fontSize <= 0f || item.fontSize > ElementItems.MAX_FONT_SIZE)) {
+                    refuse("font_size is between 0 and ${ElementItems.MAX_FONT_SIZE}.")
+                }
+                if (item.alignment != null && ElementItems.parseAlignment(item.alignment) == null) refuse("alignment is start, center or end.")
+                if (item.width != null && (!item.width.isFinite() || item.width < MIN_TEXT_WIDTH_MM || item.width > PageItems.MAX_PAGE_SIDE_MM)) {
+                    refuse("width is at least $MIN_TEXT_WIDTH_MM millimeters, and fits its page.")
+                }
+                if (listOf(item.x, item.y).any { it != null && !it.isFinite() }) refuse("x and y are millimeters.")
+                if (listOf(item.markdown, item.fontSize, item.color, item.alignment, item.width, item.x, item.y).all { it == null }) {
+                    refuse("update_text needs something to change.")
+                }
             }
             is ProposalItem.AddStroke -> {
                 color(item.color)
@@ -875,6 +893,15 @@ private fun DrawDocument.beforeOf(item: ProposalItem): String? {
             null
         }
         is ProposalItem.RestyleText -> (findText(item.text) ?: missing("text \"${item.text.take(64)}\"")).second.text
+        is ProposalItem.UpdateText -> {
+            val (page, text) = findText(item.text) ?: missing("text \"${item.text.take(64)}\"")
+            val left = item.x ?: text.x
+            val top = item.y ?: text.y
+            if (left < 0f || top < 0f || top >= page.heightMm || left + (item.width ?: text.width) > page.widthMm) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "It would go outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
+            }
+            text.text
+        }
         is ProposalItem.AddStroke -> {
             val page = pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
             if (item.points.any { (x, y) -> x < 0f || y < 0f || x > page.widthMm || y > page.heightMm }) {
@@ -928,6 +955,7 @@ private fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
         is ProposalItem.DuplicatePage -> item.page
         is ProposalItem.SetPageFormat -> item.page
         is ProposalItem.RestyleText -> findText(item.text)?.first?.id
+        is ProposalItem.UpdateText -> findText(item.text)?.first?.id
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(this, item.stroke)?.first?.id
         else -> null
     } ?: return null
@@ -966,7 +994,7 @@ private fun Proposal.toStatus() = ProposalStatus(
     documentId,
     if (isWaiting) "waiting" else "decided",
     entries.map { it.outcome.wireName },
-    placed = if (isWaiting) null else entries.map { entry -> entry.placed.map { it.toEntry(null) } },
+    placed = if (isWaiting) null else entries.map { entry -> entry.placed.map { it.toEntry(null, known = true) } },
     changed = if (isWaiting) null else entries.map { it.changed }
 )
 
@@ -975,10 +1003,15 @@ private fun ProposalPlan.toAnswer(items: List<ProposalItem>) = PlanAnswer(
     this.items.mapIndexed { index, planned ->
         PlanItemEntry(
             kind = items[index].wireKind,
-            text = (items[index] as? ProposalItem.ReplaceText)?.text,
+            text = when (val item = items[index]) {
+                is ProposalItem.ReplaceText -> item.text
+                is ProposalItem.RestyleText -> item.text
+                is ProposalItem.UpdateText -> item.text
+                else -> null
+            },
             stale = planned.isStale,
             fontSize = planned.pieces.firstOrNull()?.fontSize,
-            pieces = planned.pieces.map { it.toEntry(pageOrder.indexOf(it.pageId)) },
+            pieces = planned.pieces.map { it.toEntry(pageOrder.indexOf(it.pageId), known = items[index] !is ProposalItem.InsertText) },
             pagesAdded = planned.pagesAdded,
             warnings = planned.warnings.map { it.toEntry() }
         )
@@ -995,6 +1028,7 @@ private val ProposalItem.wireKind: String
         is ProposalItem.PlaceElements -> "place_elements"
         is ProposalItem.ReorderElements -> "reorder_elements"
         is ProposalItem.RestyleText -> "restyle_text"
+        is ProposalItem.UpdateText -> "update_text"
         is ProposalItem.AddStroke -> "add_stroke"
         is ProposalItem.RestyleStroke -> "restyle_stroke"
         is ProposalItem.AddImage -> "add_image"
@@ -1005,13 +1039,15 @@ private val ProposalItem.wireKind: String
         is ProposalItem.RenameDocument -> "rename_document"
     }
 
-/** A piece as a client reads it; a page the plan would add has no id for it until it is there. */
-private fun PlannedPiece.toEntry(pageIndex: Int?) = PieceEntry(
+/**
+ * A piece as a client reads it; a page the plan would add has no id for it until it is there, and
+ * neither has a text it would add ([known]: the piece is of an element of the document).
+ */
+private fun PlannedPiece.toEntry(pageIndex: Int?, known: Boolean) = PieceEntry(
     page = pageId.takeIf { !isOnNewPage || pageIndex == null },
     pageIndex = pageIndex,
     newPage = isOnNewPage,
-    // Once placed it is a text box of the document
-    text = textId.takeIf { pageIndex == null },
+    id = textId.takeIf { known },
     x = box.left.tenths(),
     y = box.top.tenths(),
     width = box.width.tenths(),
@@ -1025,6 +1061,7 @@ private fun PlacementWarning.toEntry(): WarningEntry = when (this) {
     is PlacementWarning.Narrowed -> WarningEntry("narrowed", fromMm = fromMm.tenths())
     is PlacementWarning.Overlaps -> WarningEntry("overlaps", with = with)
     is PlacementWarning.PastArea -> WarningEntry("past_area", byMm = byMm.tenths())
+    PlacementWarning.OutsidePage -> WarningEntry("outside_page")
     is PlacementWarning.PastPageEnd -> WarningEntry("past_page_end", byMm = byMm.tenths())
     is PlacementWarning.ChainOverflow -> WarningEntry("chain_overflow", byMm = byMm.tenths())
 }
@@ -1280,7 +1317,7 @@ private data class PieceEntry(
     val page: String? = null,
     @SerialName("page_index") val pageIndex: Int? = null,
     @SerialName("new_page") val newPage: Boolean,
-    val text: String? = null,
+    val id: String? = null,
     val x: Float,
     val y: Float,
     val width: Float,

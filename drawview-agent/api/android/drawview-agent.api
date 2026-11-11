@@ -643,6 +643,13 @@ public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Narrow
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/drawview/agent/PlacementWarning$OutsidePage : io/github/valerioisufi/drawview/agent/PlacementWarning {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/PlacementWarning$OutsidePage;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps : io/github/valerioisufi/drawview/agent/PlacementWarning {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/PlacementWarning$Overlaps$Companion;
 	public static final field INK Ljava/lang/String;
@@ -1319,6 +1326,50 @@ public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$SetPageFormat$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$UpdateText : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;Ljava/lang/Float;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;Ljava/lang/Float;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Float;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/Float;
+	public final fun component8 ()Ljava/lang/Float;
+	public final fun component9 ()Ljava/lang/Float;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;Ljava/lang/Float;)Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/Float;Ljava/lang/Float;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlignment ()Ljava/lang/String;
+	public final fun getBase ()Ljava/lang/String;
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getFontSize ()Ljava/lang/Float;
+	public final fun getMarkdown ()Ljava/lang/String;
+	public final fun getText ()Ljava/lang/String;
+	public final fun getWidth ()Ljava/lang/Float;
+	public final fun getX ()Ljava/lang/Float;
+	public final fun getY ()Ljava/lang/Float;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$UpdateText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$UpdateText;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$UpdateText$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.agent
 
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawStroke
@@ -9,6 +10,9 @@ import io.github.valerioisufi.drawview.model.FractionalIndex
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.PageData
+import io.github.valerioisufi.drawview.model.change.TextData
+import io.github.valerioisufi.drawview.model.change.TextPlacement
+import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.placement.BesideAnchor
@@ -25,9 +29,11 @@ import kotlin.math.hypot
 import kotlin.math.max
 
 /**
- * A box of text a plan gives: new, or a text box as it would be.
+ * A box a plan gives: of a new text, or of a text box or another element as it would be.
  *
  * @param textId the id it has, or would have when accepted.
+ * @param markdown its text; empty for an element that is not a text.
+ * @param fontSize its size in points; `0` for an element that is not a text.
  * @param pageId the page it is on, or would be on: a page added by the plan has an id of the plan only.
  * @param isOnNewPage whether the plan adds that page.
  * @param next the box of the plan this one goes on into.
@@ -68,6 +74,9 @@ public sealed interface PlacementWarning {
     /** It is [byMm] higher than the area it was asked in. */
     public data class PastArea(val byMm: Float) : PlacementWarning
 
+    /** It would be partly outside its page. */
+    public data object OutsidePage : PlacementWarning
+
     /** It would pass the bottom margin of its page by [byMm]. */
     public data class PastPageEnd(val byMm: Float) : PlacementWarning
 
@@ -79,7 +88,8 @@ public sealed interface PlacementWarning {
  * What an item of a proposal would do.
  *
  * @param isStale what it was made on changed: it would not be applied.
- * @param pieces the boxes of its text, empty for an item without text.
+ * @param pieces the boxes of its text, or of the elements it moves or resizes as they would be; empty
+ *   for an item that does neither.
  * @param pagesAdded how many pages it adds.
  */
 public class PlannedItem(
@@ -150,7 +160,16 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                     pages.first { it.id == item.page }.excluded += item.elements.map { it.id }
                     PlannedItem(false, emptyList(), 0, emptyList())
                 }
-                is ProposalItem.PlaceElements, is ProposalItem.ReorderElements, is ProposalItem.RestyleText,
+                is ProposalItem.RestyleText -> {
+                    val (page, text) = document.findText(item.text)!!
+                    planMoved(document, pages, page, listOf(moved(text, ElementItems.restyled(text, item), measure)), measure, grown, chains.value)
+                }
+                is ProposalItem.UpdateText -> {
+                    val (page, text) = document.findText(item.text)!!
+                    planMoved(document, pages, page, listOf(moved(text, ElementItems.updated(text, item), measure)), measure, grown, chains.value)
+                }
+                is ProposalItem.PlaceElements -> planPlace(document, pages, item, measure, grown, chains.value)
+                is ProposalItem.ReorderElements,
                 is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage -> PlannedItem(false, emptyList(), 0, emptyList())
                 is ProposalItem.RemovePage -> {
                     // What comes after it does not go on it
@@ -192,6 +211,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.PlaceElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
         is ProposalItem.ReorderElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
         is ProposalItem.RestyleText -> document.findText(item.text)?.second?.base() != item.base
+        is ProposalItem.UpdateText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.AddStroke -> document.pageById(item.page) == null
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(document, item.stroke)?.second?.elementBase() != item.base
         is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
@@ -215,7 +235,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val after = text.getRotatedBounds(measure.height(item.markdown, text.width, text.fontSize))
         val warnings = mutableListOf<PlacementWarning>()
         // What it covered already is not its doing
-        val covered = coveredBy(document, planned, text.id, after, before, measure)
+        val covered = coveredBy(document, planned, setOf(text.id), after, before, measure)
         if (covered.isNotEmpty()) warnings += PlacementWarning.Overlaps(covered)
         val limit = page.heightMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM
         if (after.bottom > limit && after.bottom > before.bottom) {
@@ -228,17 +248,94 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         return PlannedItem(false, listOf(piece), 0, warnings)
     }
 
+    /** An element as an item would leave it: its box now and after, and its text when it is one. */
+    private class Moved(val element: DrawElement, val before: Rect, val after: Rect, val markdown: String = "", val fontSize: Float = 0f, val grows: Boolean = false)
+
+    /** [text] as [data] would leave it. */
+    private fun moved(text: DrawText, data: TextData, measure: TextMeasure): Moved {
+        val before = measure.boundsOf(text)
+        val as_ = DrawText(text.id).also { data.applyTo(it) }
+        val after = as_.getRotatedBounds(measure.height(data.text, data.width, data.fontSize))
+        return Moved(text, before, after, data.text, data.fontSize, grows = after.bottom > before.bottom)
+    }
+
+    private fun planPlace(
+        document: DrawDocument,
+        pages: List<PlannedPage>,
+        item: ProposalItem.PlaceElements,
+        measure: TextMeasure,
+        grown: MutableMap<String, Rect>,
+        chains: TextChains
+    ): PlannedItem {
+        val page = document.pageById(item.page)!!
+        val elements = ElementItems.elementsOf(page, item.elements)!!
+        val matrix = ElementItems.matrixOf(page, elements, item) ?: return PlannedItem(false, emptyList(), 0, emptyList())
+        val placements = ElementItems.placements(elements, matrix).associateBy { it.id }
+        val moved = elements.mapNotNull { element ->
+            if (element is DrawText) {
+                val placement = placements[element.id] as? TextPlacement ?: return@mapNotNull null
+                val data = element.toData().copy(x = placement.x, y = placement.y, width = placement.width, fontSize = placement.fontSize)
+                moved(element, data, measure).let { Moved(it.element, it.before, it.after, it.markdown, it.fontSize) }
+            } else {
+                page.boundsOf(element)?.let { Moved(element, it, matrix.mapRect(it)) }
+            }
+        }
+        return planMoved(document, pages, page, moved, measure, grown, chains)
+    }
+
     /**
-     * What [after], the box of a text ([textId]: the text box it is already), would cover that
-     * [before], its box now, did not.
+     * The elements [moved] of [page] where an item would leave them: what they would newly cover, and
+     * whether they would leave the page. The items after see them there.
      */
-    private fun coveredBy(document: DrawDocument, page: PlannedPage, textId: String?, after: Rect, before: Rect?, measure: TextMeasure): List<String> {
+    private fun planMoved(
+        document: DrawDocument,
+        pages: List<PlannedPage>,
+        page: DrawPage,
+        moved: List<Moved>,
+        measure: TextMeasure,
+        grown: MutableMap<String, Rect>,
+        chains: TextChains
+    ): PlannedItem {
+        val planned = pages.first { it.id == page.id }
+        val ids = moved.mapTo(mutableSetOf()) { it.element.id }
+        val covered = linkedSetOf<String>()
+        val limit = page.heightMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM
+        var past = 0f
+        var chained = false
+        var outside = false
+        for (one in moved) {
+            if (one.after != one.before) covered += coveredBy(document, planned, ids, one.after, one.before, measure)
+            if (one.after.left < -EDGE_MM || one.after.top < -EDGE_MM || one.after.right > page.widthMm + EDGE_MM) outside = true
+            if (one.after.bottom > limit && one.after.bottom > one.before.bottom) {
+                past = max(past, one.after.bottom - limit)
+                if (one.grows && chains.isChained(one.element.id)) chained = true
+            }
+        }
+        val warnings = buildList {
+            if (covered.isNotEmpty()) add(PlacementWarning.Overlaps(covered.toList()))
+            if (outside) add(PlacementWarning.OutsidePage)
+            if (past > 0f) add(if (chained) PlacementWarning.ChainOverflow(past) else PlacementWarning.PastPageEnd(past))
+        }
+        planned.excluded += ids
+        val pieces = moved.map { one ->
+            planned.boxes += one.after
+            grown[one.element.id] = one.after
+            PlannedPiece(one.element.id, one.markdown, page.id, false, one.after, one.fontSize, (one.element as? DrawText)?.next)
+        }
+        return PlannedItem(false, pieces, 0, warnings)
+    }
+
+    /**
+     * What [after], the box of a text or an element, would cover that [before], its box now, did not;
+     * [moving]: what moves with it, which it does not cover.
+     */
+    private fun coveredBy(document: DrawDocument, page: PlannedPage, moving: Set<String>, after: Rect, before: Rect?, measure: TextMeasure): List<String> {
         fun new(box: Rect) = box.overlaps(after) && (before == null || !box.overlaps(before))
         val model = page.model ?: return if (page.boxes.any { new(it) }) listOf(NEW_TEXT) else emptyList()
         val covered = linkedSetOf<String>()
         for (element in model.elements()) {
             when {
-                element.id == textId || element.id in page.excluded -> {}
+                element.id in moving || element.id in page.excluded -> {}
                 element is DrawText -> if (new(measure.boundsOf(element))) covered += element.id
                 element is DrawStroke -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
                 element is DrawPdf -> {
@@ -312,7 +409,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
             val place = chosen?.getOrNull(index)
             val box = place?.box ?: piece.box
             // The planner found it free; where the user put it may not be
-            if (place != null) covered += coveredBy(document, target, null, box, null, measure)
+            if (place != null) covered += coveredBy(document, target, emptySet(), box, null, measure)
             target.boxes += box
             // A piece going on onto a later page goes on from the piece before it: one text across the pages
             val goesOn = pieces.getOrNull(index + 1)?.let { it.newPage > piece.newPage } == true && pages.indexOf(targets[index + 1]) > pages.indexOf(target)
@@ -348,7 +445,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         if (place == null && box.bottom > area.bottom + FITS_MARGIN_MM) warnings += PlacementWarning.PastArea(box.bottom - area.bottom)
         val limit = target.heightMm - FreeSpace.DEFAULT_PAGE_MARGIN_MM
         if (box.bottom > limit) warnings += PlacementWarning.PastPageEnd(box.bottom - limit)
-        val covered = coveredBy(document, target, null, box, null, measure)
+        val covered = coveredBy(document, target, emptySet(), box, null, measure)
         if (covered.isNotEmpty()) warnings += PlacementWarning.Overlaps(covered)
         target.boxes += box
         return PlannedItem(false, listOf(PlannedPiece(newElementId(), item.markdown, target.id, target.model == null, box, fontSize, null, color)), 0, warnings)
@@ -470,6 +567,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         private const val MARGIN_WIDTH_MM = 60f
         private const val MARGIN_MIN_WIDTH_MM = 30f
         private const val FAR_FROM_ANCHOR_MM = 30f
+
+        /** Past an edge of its page by less than this, a box is still on it. */
+        private const val EDGE_MM = 0.5f
 
         /** Higher than its area by less than this, a text still fits it. */
         private const val FITS_MARGIN_MM = 0.5f

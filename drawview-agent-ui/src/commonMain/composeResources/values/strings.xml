@@ -16,6 +16,9 @@
     <string name="agent_item_place_elements">Move elements</string>
     <string name="agent_item_reorder_elements">Bring elements forward or back</string>
     <string name="agent_item_restyle_text">Change the style of a text</string>
+    <string name="agent_item_update_text">Change a text</string>
+    <string name="agent_detail_width">%1$s mm wide</string>
+    <string name="agent_detail_at">at %1$s, %2$s mm</string>
     <string name="agent_item_add_stroke">Draw a stroke</string>
     <string name="agent_item_restyle_stroke">Change the color or width of a stroke</string>
     <string name="agent_item_add_image">Add an image</string>
@@ -58,7 +61,6 @@
     <string name="agent_detail_color">color %1$s</string>
     <string name="agent_detail_font_size">size %1$s</string>
     <string name="agent_detail_alignment">aligned %1$s</string>
-    <string name="agent_detail_width">%1$s mm wide</string>
     <string name="agent_detail_size">%1$s × %2$s mm</string>
     <string name="agent_detail_background">background %1$s</string>
     <string name="agent_library_title">Proposed for the library</string>
@@ -88,6 +90,7 @@
     <string name="agent_warning_narrowed">Made narrow for lack of room</string>
     <string name="agent_warning_overlaps">Would cover other content of the page</string>
     <string name="agent_warning_past_area">Higher than the area asked for by %1$d mm</string>
+    <string name="agent_warning_outside_page">Would be partly outside the page</string>
     <string name="agent_warning_past_end">Would pass the end of the page by %1$d mm</string>
     <string name="agent_warning_chain">Its part no longer fits its box: the next boxes do not move</string>
     <string name="agent_show_on_page">Show on the page</string>

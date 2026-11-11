@@ -87,6 +87,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_r
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_place_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_text
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_update_text
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_stroke
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_image
@@ -111,6 +112,7 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warnin
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_far
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_narrowed
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_new_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_outside_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_overlaps
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_area
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_end
@@ -452,12 +454,13 @@ private fun EntryContent(
         val after = when (item) {
             is ProposalItem.ReplaceText -> item.markdown
             is ProposalItem.InsertText -> item.markdown
+            is ProposalItem.UpdateText -> item.markdown
             is ProposalItem.RenameDocument -> item.title
             else -> null
         }
         after?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
         if (stale) {
-            val onText = item is ProposalItem.ReplaceText || item is ProposalItem.RemoveText || item is ProposalItem.RestyleText
+            val onText = item is ProposalItem.ReplaceText || item is ProposalItem.RemoveText || item is ProposalItem.RestyleText || item is ProposalItem.UpdateText
             Text(
                 stringResource(if (onText) Res.string.agent_item_stale else Res.string.agent_item_stale_other),
                 style = MaterialTheme.typography.bodySmall,
@@ -491,7 +494,7 @@ private fun EntryContent(
 
 /** Whether it would hide or lose something, rather than only be less than ideal. */
 private val PlacementWarning.harmsThePage: Boolean
-    get() = this is PlacementWarning.Overlaps || this is PlacementWarning.PastPageEnd || this is PlacementWarning.ChainOverflow
+    get() = this is PlacementWarning.Overlaps || this is PlacementWarning.OutsidePage || this is PlacementWarning.PastPageEnd || this is PlacementWarning.ChainOverflow
 
 /** What is wrong with where an item goes, in words. */
 @Composable
@@ -502,6 +505,7 @@ private fun warningText(warning: PlacementWarning): String = when (warning) {
     is PlacementWarning.Narrowed -> stringResource(Res.string.agent_warning_narrowed)
     is PlacementWarning.Overlaps -> stringResource(Res.string.agent_warning_overlaps)
     is PlacementWarning.PastArea -> stringResource(Res.string.agent_warning_past_area, warning.byMm.roundToInt())
+    PlacementWarning.OutsidePage -> stringResource(Res.string.agent_warning_outside_page)
     is PlacementWarning.PastPageEnd -> stringResource(Res.string.agent_warning_past_end, warning.byMm.roundToInt())
     is PlacementWarning.ChainOverflow -> stringResource(Res.string.agent_warning_chain)
 }
@@ -517,6 +521,7 @@ private fun itemLabel(item: ProposalItem): String = stringResource(
         is ProposalItem.PlaceElements -> Res.string.agent_item_place_elements
         is ProposalItem.ReorderElements -> Res.string.agent_item_reorder_elements
         is ProposalItem.RestyleText -> Res.string.agent_item_restyle_text
+        is ProposalItem.UpdateText -> Res.string.agent_item_update_text
         is ProposalItem.AddStroke -> Res.string.agent_item_add_stroke
         is ProposalItem.RestyleStroke -> Res.string.agent_item_restyle_stroke
         is ProposalItem.AddImage -> Res.string.agent_item_add_image

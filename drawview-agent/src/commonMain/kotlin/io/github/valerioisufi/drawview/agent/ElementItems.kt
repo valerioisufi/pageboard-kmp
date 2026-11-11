@@ -20,6 +20,7 @@ import io.github.valerioisufi.drawview.model.change.Placement
 import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
+import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -131,19 +132,11 @@ internal object ElementItems {
         }
         is ProposalItem.RestyleText -> {
             val (page, text) = document.findText(item.text)!!
-            val data = text.toData()
-            listOf(
-                UpdateTexts(
-                    page.id,
-                    listOf(
-                        data.copy(
-                            color = item.color?.let { parseColor(it) } ?: data.color,
-                            fontSize = item.fontSize ?: data.fontSize,
-                            alignment = item.alignment?.let { parseAlignment(it) } ?: data.alignment
-                        )
-                    )
-                )
-            )
+            listOf(UpdateTexts(page.id, listOf(restyled(text, item))))
+        }
+        is ProposalItem.UpdateText -> {
+            val (page, text) = document.findText(item.text)!!
+            listOf(UpdateTexts(page.id, listOf(updated(text, item))))
         }
         is ProposalItem.AddStroke -> {
             val data = StrokeData(
@@ -180,11 +173,37 @@ internal object ElementItems {
         else -> emptyList()
     }
 
+    /** [text] with the style of [item]. */
+    fun restyled(text: DrawText, item: ProposalItem.RestyleText): TextData {
+        val data = text.toData()
+        return data.copy(
+            color = item.color?.let { parseColor(it) } ?: data.color,
+            fontSize = item.fontSize ?: data.fontSize,
+            alignment = item.alignment?.let { parseAlignment(it) } ?: data.alignment
+        )
+    }
+
+    /** [text] as [item] leaves it: a width given is the one its lines wrap on, whatever its text. */
+    fun updated(text: DrawText, item: ProposalItem.UpdateText): TextData {
+        val data = text.toData()
+        return data.copy(
+            text = item.markdown ?: data.text,
+            color = item.color?.let { parseColor(it) } ?: data.color,
+            fontSize = item.fontSize ?: data.fontSize,
+            alignment = item.alignment?.let { parseAlignment(it) } ?: data.alignment,
+            width = item.width ?: data.width,
+            autoWidth = if (item.width != null) false else data.autoWidth,
+            x = item.x ?: data.x,
+            y = item.y ?: data.y
+        )
+    }
+
     /** The ids of the elements [item] changes, to change each one by one item only. */
     fun targetsOf(item: ProposalItem): List<String> = when (item) {
         is ProposalItem.ReplaceText -> listOf(item.text)
         is ProposalItem.RemoveText -> listOf(item.text)
         is ProposalItem.RestyleText -> listOf(item.text)
+        is ProposalItem.UpdateText -> listOf(item.text)
         is ProposalItem.RestyleStroke -> listOf(item.stroke)
         is ProposalItem.RemoveElements -> item.elements.map { it.id }
         is ProposalItem.PlaceElements -> item.elements.map { it.id }

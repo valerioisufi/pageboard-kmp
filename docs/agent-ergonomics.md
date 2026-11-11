@@ -100,9 +100,10 @@ earlier items of the proposal added after that page.
  "width": 80, "x": 20, "y": 112}
 ```
 
-Every field but `text` and `base` is optional, one at least is needed. It becomes one `UpdateTexts`
-(words, color, alignment) and one `PlaceElements` with a `TextPlacement` (`x`, `y`, `width`,
-`fontSize`, `autoWidth` off when a width is given), in the operation of the proposal. `replace_text`
+Every field but `text` and `base` is optional, one at least is needed. It becomes one `UpdateTexts`,
+which carries the content of a text and its placement together (`autoWidth` off when a width is
+given), in the operation of the proposal. A corner or a width that would put the box outside its
+page is refused when proposed. `replace_text`
 and `restyle_text` stay, planned by the same code. An element is still changed by one item only:
 with `update_text` nothing needs two.
 
@@ -117,6 +118,8 @@ With the style given at the insertion, a new text needs no second item.
   the items after them see those boxes.
 * **`insert_text` warns `overlaps`** too, when what the plan gave it covers something (a place inside
   an area, or what the PDF draws there).
+* **A piece has the `id`** of its element once that exists: always in `placed`, and in a plan for
+  every item but an `insert_text`.
 * **`proposal_status`** gives, for each accepted item, `changed`: the id and the new `base` of every
   element it made or changed, beside `placed`.
 * **`propose` and `propose_library`** answer `mode`: `review` or `applied`. They take
@@ -225,7 +228,7 @@ without the ones after it.
 |---|---|---|---|
 | 1 | Defects and answers: the order of new pages; `mode` and `require_review`; `changed` in `proposal_status`; the instructions; a test accepting a proposal in the review and by `applyDirectly`, then `list_activity` (if it fails, the defect is fixed here). Tests: three `new_page` after one page in their order, `require_review` under `applyDirectly`, ids and bases usable for a second proposal without `read_page` | 10, 15, 7, 4 | done |
 | 2 | `insert_text` with `font_size`, `color`, `width`, `style_from`, `where: "inside"`, `near` with `new_page`; `past_area`; `overlaps` for an insertion. Tests: each field, refused values, a style from a box removed since, an area too small, what a preview says is what is applied | 1, 10 | done |
-| 3 | `update_text`; the boxes and warnings of `restyle_text`, `place_elements`, `update_text` in the plan, seen by the items after; `outside_page`. Tests: words, size, width and place in one operation and one undo, stale by `base`, converging on another device through the written operation, a text grown by a larger size reported | 2, 11, 8 | to do |
+| 3 | `update_text`; the boxes and warnings of `restyle_text`, `place_elements`, `update_text` in the plan, seen by the items after; `outside_page`. Tests: words, size, width and place in one operation and one undo, stale by `base`, converging on another device through the written operation, a text grown by a larger size reported | 2, 11, 8 | done |
 | 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | to do |
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | to do |
 | 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | to do |
