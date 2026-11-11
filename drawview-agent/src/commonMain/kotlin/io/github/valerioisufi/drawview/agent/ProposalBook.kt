@@ -41,12 +41,17 @@ public class ProposalBook(
         return proposal
     }
 
-    /** Writes the [outcomes] of the items of the proposal [id], all of them, and where their text went. */
-    internal fun resolve(id: String, outcomes: List<ItemOutcome>, placed: Map<Int, List<PlannedPiece>> = emptyMap()) {
+    /** Writes the [outcomes] of the items of the proposal [id], all of them, where their text went and what they changed. */
+    internal fun resolve(
+        id: String,
+        outcomes: List<ItemOutcome>,
+        placed: Map<Int, List<PlannedPiece>> = emptyMap(),
+        changed: Map<Int, List<ElementRef>> = emptyMap()
+    ) {
         state.update { current ->
             val updated = current.map { proposal ->
                 if (proposal.id != id) return@map proposal
-                proposal.copy(entries = proposal.entries.mapIndexed { index, entry -> entry.copy(outcome = outcomes[index], placed = placed[index].orEmpty()) })
+                proposal.copy(entries = proposal.entries.mapIndexed { index, entry -> entry.copy(outcome = outcomes[index], placed = placed[index].orEmpty(), changed = changed[index].orEmpty()) })
             }
             val decided = updated.count { !it.isWaiting }
             if (decided <= maxDecided) updated else {

@@ -50,6 +50,7 @@ public class ExternalAgents(
         val indexes = proposal.entries.indices.filter { it in accepted }
         val outcomes = MutableList(proposal.entries.size) { ItemOutcome.REJECTED }
         val placed = mutableMapOf<Int, List<PlannedPiece>>()
+        val changed = mutableMapOf<Int, List<ElementRef>>()
         if (indexes.isNotEmpty()) {
             val open = documents.open(proposal.documentId)
             if (open == null) {
@@ -75,13 +76,14 @@ public class ExternalAgents(
                     indexes.forEachIndexed { position, index ->
                         outcomes[index] = applied.outcomes[position]
                         applied.plan?.items?.get(position)?.let { placed[index] = it.pieces }
+                        applied.changed.getOrNull(position)?.let { changed[index] = it }
                     }
                 } finally {
                     documents.close(open)
                 }
             }
         }
-        proposals.resolve(proposalId, outcomes, placed)
+        proposals.resolve(proposalId, outcomes, placed, changed)
     }
 
     /**
@@ -171,19 +173,19 @@ public class ExternalAgents(
         outcome
     }
 
-    /**
-     * A new [proposal] of the client [connection]: applied at once when the user chose so, its document
-     * in an editor or not (it is in the [activity], to be undone); shown for its review otherwise.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    private suspend fun receivedLibrary(proposal: LibraryProposal, connection: String) {
+    /** A new [proposal] for the library: as [received]. */
+    private suspend fun receivedLibrary(proposal: LibraryProposal, review: Boolean) {
         // Reviewed in the sheet of the library otherwise
-        if (access.grants.value.applyDirectly) decideLibrary(proposal.id, proposal.items.indices.toSet())
+        if (access.grants.value.applyDirectly && !review) decideLibrary(proposal.id, proposal.items.indices.toSet())
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    private suspend fun received(proposal: Proposal, connection: String) {
-        if (access.grants.value.applyDirectly) {
+    /**
+     * A new [proposal]: applied at once when the user chose so and its client did not ask for a
+     * [review], its document in an editor or not (it is in the [activity], to be undone); shown for
+     * its review otherwise.
+     */
+    private suspend fun received(proposal: Proposal, review: Boolean) {
+        if (access.grants.value.applyDirectly && !review) {
             decide(proposal.id, proposal.entries.indices.toSet())
             return
         }

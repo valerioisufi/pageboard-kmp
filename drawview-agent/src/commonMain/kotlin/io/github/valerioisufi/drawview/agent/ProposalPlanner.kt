@@ -127,6 +127,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val pages = plannedPages(document)
         val grown = mutableMapOf<String, Rect>()
         val chains = lazy { TextChains.of(document) }
+        val added = mutableMapOf<String, String>()
         val planned = items.mapIndexed { index, item ->
             if (isStale(document, pages, item)) return@mapIndexed PlannedItem(true, emptyList(), 0, emptyList())
             when (item) {
@@ -136,9 +137,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                     pages.first { it.id == page.id }.excluded += item.text
                     PlannedItem(false, emptyList(), 0, emptyList())
                 }
-                is ProposalItem.InsertText -> planInsert(document, pages, item, measure, grown, chosen[index])
+                is ProposalItem.InsertText -> planInsert(document, pages, item, measure, grown, chosen[index], added)
                 is ProposalItem.AddPage -> {
-                    val page = newPageAfter(pages, pages.anchorOf(item.after)!!)
+                    val page = newPageAfter(pages, pages.anchorOf(item.after)!!, added)
                     PlannedItem(false, emptyList(), 1, emptyList(), listOf(page))
                 }
                 is ProposalItem.RemoveElements -> {
@@ -250,7 +251,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         item: ProposalItem.InsertText,
         measure: TextMeasure,
         grown: Map<String, Rect>,
-        chosen: List<ChosenPlace>?
+        chosen: List<ChosenPlace>?,
+        added: MutableMap<String, String>
     ): PlannedItem {
         val anchorRect = item.near?.let { near ->
             grown[near] ?: document.findText(near)!!.second.let { measure.boundsOf(it) }
@@ -277,15 +279,17 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
 
         val ids = pieces.map { newElementId() }
         val newPages = mutableListOf<AddPage>()
-        var lastPage = pageIndex
+        var lastPage: Int? = null
         val created = mutableMapOf<Int, PlannedPage>()
         val targets = pieces.mapIndexed { index, piece ->
             // The place the user chose counts, on a page of the document: a new page only when one is left there
             val place = chosen?.getOrNull(index)
             place?.pageId?.let { id -> pages.firstOrNull { it.id == id } } ?: if (piece.newPage == 0) page else created.getOrPut(piece.newPage) {
-                newPages += newPageAfter(pages, lastPage)
-                lastPage++
-                pages[lastPage]
+                // The first one after its page and what the items before added there, the others after it
+                val change = lastPage?.let { newPageAfter(pages, it) } ?: newPageAfter(pages, pageIndex, added)
+                newPages += change
+                added[page.id] = change.page.id
+                pages.first { it.id == change.page.id }.also { lastPage = pages.indexOf(it) }
             }
         }
         val planned = pieces.mapIndexed { index, piece ->
@@ -333,6 +337,16 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val others = PageOccupancy.of(model, pdfText = { engines.editors?.pdfLayout(document.id, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
         val boxes = texts.filter { it.id !in page.excluded }.map { measure.boundsOf(it) }
         return PageOccupancy(page.widthMm, page.heightMm, others.boxes + boxes + page.boxes, others.lineSpacingMm)
+    }
+
+    /**
+     * The change adding a page after the page [anchor] of [pages] and the pages the items before added
+     * after it ([added]: the last one, by the id of its page), so that they keep the order of their items.
+     */
+    private fun newPageAfter(pages: MutableList<PlannedPage>, anchor: Int, added: MutableMap<String, String>): AddPage {
+        val anchorId = pages[anchor].id
+        val last = added[anchorId]?.let { id -> pages.indexOfFirst { it.id == id }.takeIf { it >= 0 } } ?: anchor
+        return newPageAfter(pages, last).also { added[anchorId] = it.page.id }
     }
 
     /** The change adding a page after the page [index] of [pages], and the page added to them. */

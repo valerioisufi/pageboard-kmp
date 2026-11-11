@@ -303,6 +303,87 @@ class ExternalAgentsTest {
     }
 
     @Test
+    fun newPagesAfterOnePageKeepTheOrderOfTheirItems() = runTest {
+        val setup = setup(this, backgroundScope)
+        val first = setup.open.document.pages.first().id
+        fun onNewPage(markdown: String) = buildJsonObject {
+            put("kind", "insert_text")
+            put("markdown", markdown)
+            put("page", first)
+            put("new_page", true)
+        }
+        val id = setup.propose(
+            onNewPage("One"),
+            buildJsonObject {
+                put("kind", "add_page")
+                put("after", first)
+            },
+            onNewPage("Three")
+        )
+        setup.agents.decide(id, setOf(0, 1, 2))
+        val pages = setup.open.document.pages
+        assertEquals(listOf(emptyList(), listOf("One"), emptyList(), listOf("Three")), pages.map { page -> page.texts.map { it.text } })
+        assertEquals(pages.map { it.orderKey }.sorted(), pages.map { it.orderKey })
+    }
+
+    @Test
+    fun aReviewAskedByTheClientWaitsEvenWhenApplyingDirectly() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.agents.access.setApplyDirectly(true)
+        fun proposal(review: Boolean?) = buildJsonObject {
+            put("document", setup.documentId)
+            put("title", "A change")
+            put("items", JsonArray(listOf(insert("Text"))))
+            if (review != null) put("require_review", review)
+        }
+
+        val asked = setup.call("propose", proposal(review = true))
+        assertEquals("review", asked.string("mode"))
+        assertEquals("waiting", asked.string("state"))
+        assertTrue(setup.open.document.pages.first().texts.isEmpty())
+
+        val direct = setup.call("propose", proposal(review = null))
+        assertEquals("applied", direct.string("mode"))
+        assertEquals("decided", direct.string("state"))
+
+        setup.agents.access.setApplyDirectly(false)
+        assertEquals("review", setup.call("propose", proposal(review = false)).string("mode"))
+    }
+
+    @Test
+    fun whatAnItemMadeIsChangedAgainWithoutReadingThePage() = runTest {
+        val setup = setup(this, backgroundScope)
+        val old = setup.addText("old")
+        val base = setup.page().getValue("texts").jsonArray[0].jsonObject.string("base")
+        val id = setup.propose(insert("Made"), replace(old.id, base, "new"))
+        setup.agents.decide(id, setOf(0, 1))
+
+        val status = setup.call("proposal_status", buildJsonObject { put("proposal", id) })
+        val changed = status.getValue("changed").jsonArray.map { it.jsonArray.single().jsonObject }
+        val made = setup.open.document.pages.first().texts.first { it.text == "Made" }
+        assertEquals(listOf(made.id, old.id), changed.map { it.string("id") })
+        assertEquals(made.id, status.getValue("placed").jsonArray[0].jsonArray.single().jsonObject.string("text"))
+
+        val again = setup.propose(replace(made.id, changed[0].string("base"), "Made again"), replace(old.id, changed[1].string("base"), "newer"))
+        setup.agents.decide(again, setOf(0, 1))
+        assertEquals(listOf(ItemOutcome.ACCEPTED, ItemOutcome.ACCEPTED), setup.agents.proposals.find(again)!!.entries.map { it.outcome })
+        assertEquals("Made again", made.text)
+    }
+
+    @Test
+    fun theActivityListsWhatWasAcceptedInTheReviewAndAppliedAtOnce() = runTest {
+        val setup = setup(this, backgroundScope)
+        val reviewed = setup.propose(insert("Reviewed"))
+        setup.agents.decide(reviewed, setOf(0))
+        setup.agents.access.setApplyDirectly(true)
+        setup.propose(insert("Direct"))
+
+        val batches = setup.call("list_activity").getValue("batches").jsonArray
+        assertEquals(2, batches.size)
+        assertTrue(batches.all { it.jsonObject.string("document") == setup.documentId })
+    }
+
+    @Test
     fun aNewPageHasTheFormatOfThePageItFollows() = runTest {
         val setup = setup(this, backgroundScope)
         setup.open.edit { session ->

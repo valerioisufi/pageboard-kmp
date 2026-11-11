@@ -1245,8 +1245,10 @@ final class io.github.valerioisufi.drawview.agent/AgentToolException : kotlin/Ex
 }
 
 final class io.github.valerioisufi.drawview.agent/AppliedProposal { // io.github.valerioisufi.drawview.agent/AppliedProposal|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.agent/ItemOutcome>, io.github.valerioisufi.drawview.model.change/DocumentChange?, io.github.valerioisufi.drawview.agent/ProposalPlan? = ...) // io.github.valerioisufi.drawview.agent/AppliedProposal.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.agent.ItemOutcome>;io.github.valerioisufi.drawview.model.change.DocumentChange?;io.github.valerioisufi.drawview.agent.ProposalPlan?){}[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.agent/ItemOutcome>, io.github.valerioisufi.drawview.model.change/DocumentChange?, io.github.valerioisufi.drawview.agent/ProposalPlan? = ..., kotlin.collections/List<kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>> = ...) // io.github.valerioisufi.drawview.agent/AppliedProposal.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.agent.ItemOutcome>;io.github.valerioisufi.drawview.model.change.DocumentChange?;io.github.valerioisufi.drawview.agent.ProposalPlan?;kotlin.collections.List<kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>>){}[0]
 
+    final val changed // io.github.valerioisufi.drawview.agent/AppliedProposal.changed|{}changed[0]
+        final fun <get-changed>(): kotlin.collections/List<kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>> // io.github.valerioisufi.drawview.agent/AppliedProposal.changed.<get-changed>|<get-changed>(){}[0]
     final val inverse // io.github.valerioisufi.drawview.agent/AppliedProposal.inverse|{}inverse[0]
         final fun <get-inverse>(): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.agent/AppliedProposal.inverse.<get-inverse>|<get-inverse>(){}[0]
     final val outcomes // io.github.valerioisufi.drawview.agent/AppliedProposal.outcomes|{}outcomes[0]
@@ -1446,10 +1448,12 @@ final class io.github.valerioisufi.drawview.agent/ProposalBook { // io.github.va
 }
 
 final class io.github.valerioisufi.drawview.agent/ProposalEntry { // io.github.valerioisufi.drawview.agent/ProposalEntry|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/ProposalItem, kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ..., kotlin/Int? = ...) // io.github.valerioisufi.drawview.agent/ProposalEntry.<init>|<init>(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/ProposalItem, kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ..., kotlin/Int? = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ...) // io.github.valerioisufi.drawview.agent/ProposalEntry.<init>|<init>(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int?;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>){}[0]
 
     final val before // io.github.valerioisufi.drawview.agent/ProposalEntry.before|{}before[0]
         final fun <get-before>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalEntry.before.<get-before>|<get-before>(){}[0]
+    final val changed // io.github.valerioisufi.drawview.agent/ProposalEntry.changed|{}changed[0]
+        final fun <get-changed>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalEntry.changed.<get-changed>|<get-changed>(){}[0]
     final val item // io.github.valerioisufi.drawview.agent/ProposalEntry.item|{}item[0]
         final fun <get-item>(): io.github.valerioisufi.drawview.agent/ProposalItem // io.github.valerioisufi.drawview.agent/ProposalEntry.item.<get-item>|<get-item>(){}[0]
     final val outcome // io.github.valerioisufi.drawview.agent/ProposalEntry.outcome|{}outcome[0]
@@ -1464,7 +1468,8 @@ final class io.github.valerioisufi.drawview.agent/ProposalEntry { // io.github.v
     final fun component3(): io.github.valerioisufi.drawview.agent/ItemOutcome // io.github.valerioisufi.drawview.agent/ProposalEntry.component3|component3(){}[0]
     final fun component4(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> // io.github.valerioisufi.drawview.agent/ProposalEntry.component4|component4(){}[0]
     final fun component5(): kotlin/Int? // io.github.valerioisufi.drawview.agent/ProposalEntry.component5|component5(){}[0]
-    final fun copy(io.github.valerioisufi.drawview.agent/ProposalItem = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ..., kotlin/Int? = ...): io.github.valerioisufi.drawview.agent/ProposalEntry // io.github.valerioisufi.drawview.agent/ProposalEntry.copy|copy(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int?){}[0]
+    final fun component6(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalEntry.component6|component6(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.agent/ProposalItem = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/ItemOutcome = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> = ..., kotlin/Int? = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ...): io.github.valerioisufi.drawview.agent/ProposalEntry // io.github.valerioisufi.drawview.agent/ProposalEntry.copy|copy(io.github.valerioisufi.drawview.agent.ProposalItem;kotlin.String?;io.github.valerioisufi.drawview.agent.ItemOutcome;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int?;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalEntry.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalEntry.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalEntry.toString|toString(){}[0]

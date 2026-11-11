@@ -75,17 +75,18 @@ internal class AgentCli(
               pencilnotes read <document> [--page <n> [--strokes]] [--json]
               pencilnotes search "<text>" [--json]
               pencilnotes preview <document> --file <items.json> [--json]
-              pencilnotes propose <document> --file <items.json> [--title "<title>"]
+              pencilnotes propose <document> --file <items.json> [--title "<title>"] [--review]
               pencilnotes status <proposal> [--wait]
               pencilnotes folders [--json]
               pencilnotes trash [--json]
-              pencilnotes propose-library --file <items.json> [--title "<title>"]
+              pencilnotes propose-library --file <items.json> [--title "<title>"] [--review]
               pencilnotes activity [--json]
               pencilnotes undo <batch>
               pencilnotes call <tool> [--file <arguments.json>]
               pencilnotes mcp
 
             The items of a proposal and the tools are those of "pencilnotes mcp" (tools/list).
+            --review: the proposal waits for the user even when changes are applied at once.
             """.trimIndent()
         )
         return EXIT_USAGE
@@ -221,8 +222,10 @@ internal class AgentCli(
                 put("document", document)
                 put("title", parsed.option("--title") ?: file.nameWithoutExtension)
                 put("items", items)
+                if (parsed.has("--review")) put("require_review", true)
             })
             output.println(answer.text("proposal"))
+            if (answer.text("mode") == "applied") errors.println("Applied at once.")
             (answer["plan"] as? JsonObject)?.let { printWarnings(it, errors) }
             EXIT_OK
         }
@@ -316,8 +319,10 @@ internal class AgentCli(
             val answer = client.call("propose_library", buildJsonObject {
                 put("title", parsed.option("--title") ?: file.nameWithoutExtension)
                 put("items", items)
+                if (parsed.has("--review")) put("require_review", true)
             })
             output.println(answer.text("proposal"))
+            if (answer.text("mode") == "applied") errors.println("Applied at once.")
             EXIT_OK
         }
     }

@@ -5,7 +5,9 @@ import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.RemoveElements
+import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -19,8 +21,15 @@ public const val AGENT_TEXT_COLOR: Int = 0xFF1F5AA6.toInt()
  * @param outcomes the outcome of each item, in their order: accepted or stale.
  * @param inverse the change undoing them all, or `null` when nothing changed.
  * @param plan where their text went; `null` when nothing was planned.
+ * @param changed the elements each item made or changed, as they are after it, with the base to change
+ *   them again by; empty for an item that was not applied or only removed.
  */
-public class AppliedProposal(public val outcomes: List<ItemOutcome>, public val inverse: DocumentChange?, public val plan: ProposalPlan? = null)
+public class AppliedProposal(
+    public val outcomes: List<ItemOutcome>,
+    public val inverse: DocumentChange?,
+    public val plan: ProposalPlan? = null,
+    public val changed: List<List<ElementRef>> = emptyList()
+)
 
 /**
  * Turns the items accepted by the user into one [CompositeChange]: one operation, one entry of the
@@ -46,9 +55,14 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
         if (session.isReadOnly) return AppliedProposal(items.map { ItemOutcome.STALE }, null)
         val plan = planner.plan(document, items, chosen)
         val changes = mutableListOf<DocumentChange>()
+        val touched = mutableListOf<List<String>>()
         val outcomes = items.mapIndexed { index, item ->
             val planned = plan.items[index]
-            if (planned.isStale) return@mapIndexed ItemOutcome.STALE
+            if (planned.isStale) {
+                touched += emptyList<String>()
+                return@mapIndexed ItemOutcome.STALE
+            }
+            val from = changes.size
             when (item) {
                 is ProposalItem.ReplaceText -> {
                     val (page, text) = document.findText(item.text)!!
@@ -80,9 +94,23 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                 is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> changes += PageItems.changesOf(document, item)
                 else -> changes += ElementItems.changesOf(document, item)
             }
+            touched += changes.subList(from, changes.size).flatMap { it.elementsLeft() }.distinct()
             ItemOutcome.ACCEPTED
         }
         if (changes.isEmpty()) return AppliedProposal(outcomes, null, plan)
-        return AppliedProposal(outcomes, session.submit(CompositeChange(changes)), plan)
+        val inverse = session.submit(CompositeChange(changes))
+        val shown = document.pages.flatMap { page -> page.elements().filter { it.removed == null } }.associateBy { it.id }
+        val changed = touched.map { ids -> ids.mapNotNull { id -> shown[id]?.let { ElementRef(id, it.elementBase()) } } }
+        return AppliedProposal(outcomes, inverse, plan, changed)
+    }
+
+    /** The ids of the elements this change makes or changes, which are still there after it. */
+    private fun DocumentChange.elementsLeft(): List<String> = when (this) {
+        is AddElements -> elements.map { it.id }
+        is UpdateTexts -> texts.map { it.id }
+        is PlaceElements -> placements.map { it.id }
+        is ReorderElements -> orders.map { it.id }
+        is CompositeChange -> this.changes.flatMap { it.elementsLeft() }
+        else -> emptyList()
     }
 }
