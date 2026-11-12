@@ -288,6 +288,120 @@ class AgentCliTest {
         waitFor { agents.access.connections.value.isEmpty() }
     }
 
+    /** A bridge of a client of the protocol, its lines written and read by the test. */
+    private inner class Bridge {
+        private val toBridge = PipedOutputStream()
+        private val fromBridge = PipedInputStream(1 shl 16)
+        private val bridgeOutput = PipedOutputStream(fromBridge)
+        private val bridgeInput = PipedInputStream(toBridge, 1 shl 16)
+        val answers = fromBridge.bufferedReader()
+        val thread = thread {
+            AgentCli(directory, PrintStream(bridgeOutput), PrintStream(ByteArrayOutputStream()), bridgeInput, waitIntervalMs = 20, bridgeWaitMs = 300).run(listOf("mcp"))
+            bridgeOutput.close()
+        }
+
+        fun send(line: String) {
+            toBridge.write(line.toByteArray() + '\n'.code.toByte())
+            toBridge.flush()
+        }
+
+        /** Sends [line] and reads its answer. */
+        fun ask(line: String): String {
+            send(line)
+            return answers.readLine() ?: error("The bridge ended")
+        }
+
+        fun end() {
+            toBridge.close()
+            thread.join(10_000)
+            assertFalse(thread.isAlive)
+        }
+    }
+
+    private val initialize = """{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","clientInfo":{"name":"Claude","version":"1"}}}"""
+    private val initialized = """{"jsonrpc":"2.0","method":"notifications/initialized"}"""
+
+    private fun listDocuments(id: Int) = """{"jsonrpc":"2.0","id":$id,"method":"tools/call","params":{"name":"list_documents"}}"""
+
+    @Test
+    fun theBridgeStaysWhenTheApplicationIsNotRunningAndSaysSo() {
+        val bridge = Bridge()
+        val opened = bridge.ask(initialize)
+        assertTrue(opened.contains("\"id\":1") && opened.contains("2025-11-25") && opened.contains("not running"), opened)
+        bridge.send(initialized)
+        val refused = bridge.ask(listDocuments(2))
+        assertTrue(refused.contains("\"id\":2") && refused.contains("\"error\"") && refused.contains("not running"), refused)
+        assertTrue(bridge.ask("""{"jsonrpc":"2.0","id":3,"method":"ping"}""").contains("\"result\""))
+        assertTrue(bridge.thread.isAlive)
+        bridge.end()
+    }
+
+    @Test
+    fun theBridgeFindsTheApplicationStartedAfterIt() {
+        val bridge = Bridge()
+        assertTrue(bridge.ask(initialize).contains("not running"))
+        bridge.send(initialized)
+
+        startHost()
+        newDocument()
+        // Told by itself that the tools are there now
+        assertTrue(bridge.answers.readLine().contains("notifications/tools/list_changed"))
+        waitFor { agents.access.connections.value.any { it.name == "Claude" } }
+        val listed = bridge.ask(listDocuments(2))
+        assertTrue(listed.contains("Physics") && listed.contains("\"id\":2"), listed)
+        bridge.end()
+    }
+
+    @Test
+    fun theBridgeOutlivesTheApplicationRestarted() {
+        startHost()
+        newDocument()
+        val bridge = Bridge()
+        assertTrue(bridge.ask(initialize).contains("2025-11-25"))
+        bridge.send(initialized)
+        assertTrue(bridge.ask(listDocuments(2)).contains("Physics"))
+
+        // The application quits and starts again: another host on the same directory
+        host.stop()
+        waitFor { agents.access.connections.value.isEmpty() }
+        val again = AgentHost(directory, agents.access, AgentEndpoint(agents, "PencilNotes", "test"))
+        again.start()
+        try {
+            waitFor { AgentSocket.fileOf(directory).exists() }
+            // A request with no version is taken only from a client that opened with initialize: it was sent again
+            val listed = bridge.ask(listDocuments(3))
+            assertTrue(listed.contains("Physics") && listed.contains("\"id\":3"), listed)
+            waitFor { agents.access.connections.value.any { it.name == "Claude" } }
+            assertTrue(bridge.thread.isAlive)
+            bridge.end()
+        } finally {
+            again.stop()
+        }
+    }
+
+    @Test
+    fun theBridgeSaysSoWhenTheApplicationWentAwayAndComesBackWithIt() {
+        startHost()
+        newDocument()
+        val bridge = Bridge()
+        bridge.ask(initialize)
+        bridge.send(initialized)
+        host.stop()
+        waitFor { agents.access.connections.value.isEmpty() }
+        val refused = bridge.ask(listDocuments(2))
+        assertTrue(refused.contains("\"id\":2") && refused.contains("not running"), refused)
+
+        val again = AgentHost(directory, agents.access, AgentEndpoint(agents, "PencilNotes", "test"))
+        again.start()
+        try {
+            waitFor { AgentSocket.fileOf(directory).exists() }
+            assertTrue(bridge.ask(listDocuments(3)).contains("Physics"))
+            bridge.end()
+        } finally {
+            again.stop()
+        }
+    }
+
     @Test
     fun theBridgeAnswersWhatWasAskedBeforeItsInputEnded() {
         startHost()

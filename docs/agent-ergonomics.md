@@ -210,12 +210,21 @@ This reverses decision 8 of `docs/agent-full-access.md` (the activity in memory)
 
 ### The bridge (point 17)
 
-`pencilnotes mcp` stays alive whatever the application does. It keeps the `initialize` of its client;
-when the socket is not there or breaks, it waits up to 10 seconds for it (the application starting),
-sends `initialize` again, then the request; when it still cannot, it answers that request with a
-JSON-RPC error saying that PencilNotes is not running on these notes, and tries again on the next
-one. Phase 8 first reproduces "Connection closed" on a scratch directory, to be sure this is its
-cause.
+`pencilnotes mcp` (`McpBridge`) stays alive for as long as its client goes on. Both cases were
+reproduced by tests on the bridge as it was: the application not running when the client starts, and
+the application restarted between two calls; in both the bridge ended, which a client reports as
+"Connection closed".
+
+* It forwards one message at a time and keeps the `initialize` of its client. When the socket breaks
+  it waits up to 10 seconds for the application (it may be starting again), opens with the same
+  `initialize`, then sends the request.
+* A request the application did not take is asked again of the application that came back. A request
+  it took and did not answer is not asked twice: the answer says that it may have been done.
+* When the application is not there, a request is answered a JSON-RPC error saying that PencilNotes
+  is not running on these notes or the access is off, and the next one tries again.
+* A client opening while the application is not there is answered `initialize` by the bridge, with
+  that sentence as its instructions, and is kept; the bridge looks for the application every 2
+  seconds and sends `notifications/tools/list_changed` when it is there.
 
 ### Threats
 
@@ -243,7 +252,7 @@ without the ones after it.
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | done |
 | 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | done |
 | 7 | Reading: `read_pages`, `read_document` with `pdf_page`, `text_sizes` and `texts`, `render_page` with `area` and `overlay`, `read_guide`; the commands `read --pages`, `guide`. Tests: the bounds, a crop at the scale asked, each example of the guide parsed as it says | 12, 13, 14, 16 | done |
-| 8 | The bridge: "Connection closed" reproduced, then `mcp` waiting, reconnecting and answering errors. Tests against a socket: the application started after the bridge, restarted between two calls, absent | 17 | to do |
+| 8 | The bridge: "Connection closed" reproduced, then `mcp` waiting, reconnecting and answering errors. Tests against a socket: the application started after the bridge, restarted between two calls, absent | 17 | done |
 
 Phase 1 found no defect behind point 4: a batch accepted in the review or applied at once is listed
 by `list_activity`. The list was empty because the application had been restarted, which phase 4

@@ -1234,6 +1234,8 @@ final class io.github.valerioisufi.drawview.agent/AgentEndpoint { // io.github.v
             final fun <get-PROTOCOL_VERSION>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentEndpoint.Companion.PROTOCOL_VERSION.<get-PROTOCOL_VERSION>|<get-PROTOCOL_VERSION>(){}[0]
         final const val VERSION_KEY // io.github.valerioisufi.drawview.agent/AgentEndpoint.Companion.VERSION_KEY|{}VERSION_KEY[0]
             final fun <get-VERSION_KEY>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentEndpoint.Companion.VERSION_KEY.<get-VERSION_KEY>|<get-VERSION_KEY>(){}[0]
+
+        final fun legacyVersionFor(kotlin/String?): kotlin/String // io.github.valerioisufi.drawview.agent/AgentEndpoint.Companion.legacyVersionFor|legacyVersionFor(kotlin.String?){}[0]
     }
 }
 

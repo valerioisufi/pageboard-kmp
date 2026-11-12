@@ -47,6 +47,12 @@ public class AgentEndpoint(
         /** The key of the name of the client in the `_meta` of a request. */
         public const val CLIENT_INFO_KEY: String = "io.modelcontextprotocol/clientInfo"
 
+        /**
+         * The version a client opening with `initialize` is answered: the one it [requested] when it is
+         * served, the latest of those otherwise.
+         */
+        public fun legacyVersionFor(requested: String?): String = requested?.takeIf { it in LEGACY_VERSIONS } ?: LEGACY_VERSIONS.first()
+
         internal const val SERVER_INFO_KEY = "io.modelcontextprotocol/serverInfo"
         internal const val MAX_NESTING = 64
         internal val MODERN_VERSIONS = listOf(PROTOCOL_VERSION)
@@ -127,8 +133,7 @@ public class AgentEndpointConnection internal constructor(
     private fun initialize(params: JsonObject): JsonObject {
         legacy = true
         (params["clientInfo"] as? JsonObject)?.text("name")?.let { agents.access.rename(connection.id, it) }
-        val requested = params.text("protocolVersion")
-        val version = requested?.takeIf { it in AgentEndpoint.LEGACY_VERSIONS } ?: AgentEndpoint.LEGACY_VERSIONS.first()
+        val version = AgentEndpoint.legacyVersionFor(params.text("protocolVersion"))
         return buildJsonObject {
             put("protocolVersion", version)
             putJsonObject("capabilities") { putJsonObject("tools") {} }

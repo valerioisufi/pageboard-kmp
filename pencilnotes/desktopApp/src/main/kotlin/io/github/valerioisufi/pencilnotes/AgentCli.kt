@@ -10,7 +10,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.SocketChannel
 import java.nio.charset.StandardCharsets
-import kotlin.concurrent.thread
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -29,14 +28,15 @@ import kotlinx.serialization.json.putJsonObject
 /**
  * The commands of PencilNotes in a terminal: each one a client of the application running on the same
  * data directory, never opening its database. `mcp` is the same for a client of the Model Context
- * Protocol, forwarding its messages. See `docs/agent-tools.md`.
+ * Protocol, forwarding its messages for as long as the client goes on. See `docs/agent-tools.md`.
  */
 internal class AgentCli(
     private val dataDirectory: File,
     private val output: PrintStream = System.out,
     private val errors: PrintStream = System.err,
     private val input: InputStream = System.`in`,
-    private val waitIntervalMs: Long = 1000L
+    private val waitIntervalMs: Long = 1000L,
+    private val bridgeWaitMs: Long = 10_000L
 ) {
     /** Runs the command [args]; its exit code. */
     fun run(args: List<String>): Int {
@@ -390,35 +390,21 @@ internal class AgentCli(
         }
     }
 
-    /** Forwards the lines of a client of the protocol to the application and back, until one side ends. */
+    /** Forwards the lines of a client of the protocol to the application and back, until the client ends (see [McpBridge]). */
     private fun mcp(): Int {
-        val channel = open()
-        channel.use {
-            val done = thread(isDaemon = true, name = "agent-answers") {
+        McpBridge(
+            connect = {
                 try {
-                    val lines = BoundedLineReader(Channels.newInputStream(channel), MAX_ANSWER_BYTES)
-                    while (true) {
-                        val line = lines.readLine() ?: break
-                        output.println(line)
-                        output.flush()
-                    }
-                } catch (_: IOException) {
-                    // The application went away
+                    open()
+                } catch (_: Failure) {
+                    null
                 }
-            }
-            try {
-                val lines = BoundedLineReader(input, AgentEndpoint.MAX_MESSAGE_LENGTH)
-                while (done.isAlive) {
-                    val line = lines.readLine() ?: break
-                    channel.writeLine(line)
-                }
-                // Nothing more to ask: what was asked is still answered
-                channel.shutdownOutput()
-                done.join()
-            } catch (_: IOException) {
-                return EXIT_NOT_RUNNING
-            }
-        }
+            },
+            input = input,
+            output = output,
+            waitMs = bridgeWaitMs,
+            maxAnswerBytes = MAX_ANSWER_BYTES
+        ).run()
         return EXIT_OK
     }
 

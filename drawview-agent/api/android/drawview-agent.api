@@ -127,6 +127,7 @@ public final class io/github/valerioisufi/drawview/agent/AgentEndpoint {
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentEndpoint$Companion {
+	public final fun legacyVersionFor (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection {
