@@ -643,7 +643,7 @@ public class LectureAssistant(
      * otherwise).
      */
     public fun record(documentId: String, title: String, notebook: NotebookSource) {
-        if (isBusy) return
+        if (!canRecord) return
         scope.launch {
             withContext(stateContext) {
                 val allowed = requestMicrophone()
@@ -664,11 +664,14 @@ public class LectureAssistant(
      * Starts recording a lecture of the document [documentId] titled [title], seen through
      * [notebook] (the microphone allowed).
      *
+     * The transcriptions of whole recordings pause until it is over ([transcribing]): the one running
+     * at the end of the piece it is on.
+     *
      * @return `false` when another lecture is being recorded, or the microphone cannot be opened
      *   ([startError]).
      */
     public fun start(documentId: String, title: String, notebook: NotebookSource): Boolean {
-        if (isBusy) return false
+        if (!canRecord) return false
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
         val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt)
@@ -682,10 +685,15 @@ public class LectureAssistant(
             transcriber = if (canGenerate) transcribers.forUpdates(settings) else null,
             analyzes = canGenerate,
             handwriting = handwritingOf(documentId),
-            onFinished = { finished(it.lecture) }
+            onFinished = {
+                scope.launch(stateContext) { queue.release() }
+                finished(it.lecture)
+            }
         )
         return try {
             newRecorder.start()
+            // The speech model is its own until it is over
+            queue.hold()
             startError = null
             recorder = newRecorder
             shownLectures[documentId] = lecture
@@ -748,6 +756,9 @@ public class LectureAssistant(
      */
     public val isBusy: Boolean get() = activeRecorder != null || importing != null
 
+    /** Whether a lecture can be recorded here now: none is being recorded, or reviewed after its recording. */
+    public val canRecord: Boolean get() = activeRecorder == null
+
     /** Whether recordings can be imported and exported here (every platform chooses files). */
     public val canImportAndExport: Boolean get() = true
 
@@ -755,10 +766,10 @@ public class LectureAssistant(
      * Imports [file], a recording made elsewhere (a phone, a recorder), as a lecture of
      * [documentId] titled [title] (seen through [notebook], whose pages are [pageIds], read on
      * the thread of the state), in the background ([LectureImporter]): converted at once, then
-     * transcribed and reviewed at its turn, after the transcriptions asked before it
-     * ([transcribing]).
+     * transcribed and reviewed at its turn, after the transcriptions asked before it and after
+     * the recording going on here, if any ([transcribing]).
      *
-     * @return `false` when a lecture is being recorded here.
+     * @return `true`: an import is always taken.
      */
     public fun importRecording(
         documentId: String,
@@ -767,7 +778,6 @@ public class LectureAssistant(
         pageIds: () -> List<String>,
         file: ChosenFile
     ): Boolean {
-        if (activeRecorder != null) return false
         val startedAt = file.lastModified ?: currentTimeMillis()
         val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt).apply {
             documentTitle = title
@@ -778,7 +788,7 @@ public class LectureAssistant(
         importError = null
         shownLectures[documentId] = lecture
         isPanelOpen = true
-        val importer = LectureImporter(lecture, settingsStore) { transcribers.forRecording(settingsStore.settings) }
+        val importer = LectureImporter(lecture, settingsStore, queue.gate) { transcribers.forRecording(settingsStore.settings) }
         scope.launch {
             val transcribed = canGenerate
             val converted = try {
@@ -870,22 +880,22 @@ public class LectureAssistant(
      * before it its transcript when it has none (recorded on a device without the models: the
      * device that recorded it gets them too).
      *
-     * A transcription waits its turn after the ones asked before it ([transcribing]); the other
-     * devices leave the lecture to this one from when it starts ([GenerationLock]).
+     * A transcription waits its turn after the ones asked before it, and after the recording going
+     * on here ([transcribing]); the other devices leave the lecture to this one from when it starts
+     * ([GenerationLock]).
      *
-     * @return `false` when a lecture is being recorded here, the lecture is in the queue already, or
-     *   the models are not here.
+     * @return `false` when the lecture is in the queue already, or the models are not here.
      */
     public fun generate(lecture: Lecture, provider: ModelProvider): Boolean {
         if (!canGenerate || !lecture.canGenerateReview) return false
         // Written by another device now: left to it
         if (lecture.generatingElsewhere(currentTimeMillis()) != null) return false
         if (lecture.transcript.isEmpty() && lecture.hasAudio) {
-            if (activeRecorder != null || isTranscribing(lecture)) return false
+            if (isTranscribing(lecture)) return false
             importError = null
             lecture.generating = enqueueTranscription(lecture) {
                 holdingGeneration(lecture) {
-                    LectureImporter(lecture, settingsStore) { transcribers.forRecording(settingsStore.settings) }.transcribeAndReview(provider)
+                    LectureImporter(lecture, settingsStore, queue.gate) { transcribers.forRecording(settingsStore.settings) }.transcribeAndReview(provider)
                 }
             }
             return true
@@ -955,11 +965,11 @@ public class LectureAssistant(
     }
 
     /**
-     * Whether [lecture] can be transcribed again here: over, its audio here, the models here, no
-     * recording in progress here, not in the queue already, no other device writing it now.
+     * Whether [lecture] can be transcribed again here: over, its audio here, the models here, not
+     * in the queue already, no other device writing it now.
      */
     public fun canRetranscribe(lecture: Lecture): Boolean =
-        canGenerate && activeRecorder == null && !isTranscribing(lecture) && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
+        canGenerate && !isTranscribing(lecture) && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
             lecture.generatingElsewhere(currentTimeMillis()) == null
 
     /**
@@ -981,7 +991,7 @@ public class LectureAssistant(
             }
             // The model chosen when its turn comes
             val transcriber = transcribers.forRecording(settingsStore.settings)
-            holdingGeneration(lecture) { LectureRetranscriber(lecture, settingsStore, transcriber).run() }
+            holdingGeneration(lecture) { LectureRetranscriber(lecture, settingsStore, transcriber, queue.gate).run() }
         }
         return true
     }

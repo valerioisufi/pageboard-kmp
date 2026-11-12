@@ -875,6 +875,8 @@ final class io.github.valerioisufi.drawview.lecture/LectureAssistant { // io.git
         final fun <get-canGenerate>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canGenerate.<get-canGenerate>|<get-canGenerate>(){}[0]
     final val canImportAndExport // io.github.valerioisufi.drawview.lecture/LectureAssistant.canImportAndExport|{}canImportAndExport[0]
         final fun <get-canImportAndExport>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canImportAndExport.<get-canImportAndExport>|<get-canImportAndExport>(){}[0]
+    final val canRecord // io.github.valerioisufi.drawview.lecture/LectureAssistant.canRecord|{}canRecord[0]
+        final fun <get-canRecord>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canRecord.<get-canRecord>|<get-canRecord>(){}[0]
     final val canTranscribeHere // io.github.valerioisufi.drawview.lecture/LectureAssistant.canTranscribeHere|{}canTranscribeHere[0]
         final fun <get-canTranscribeHere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canTranscribeHere.<get-canTranscribeHere>|<get-canTranscribeHere>(){}[0]
     final val exportExtension // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportExtension|{}exportExtension[0]

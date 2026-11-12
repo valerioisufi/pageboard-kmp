@@ -355,6 +355,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getCanAnswerWithGemini ()Z
 	public final fun getCanGenerate ()Z
 	public final fun getCanImportAndExport ()Z
+	public final fun getCanRecord ()Z
 	public final fun getCanTranscribeHere ()Z
 	public final fun getDescribeArrival ()Lkotlin/jvm/functions/Function3;
 	public final fun getDocumentsWithLectures ()Ljava/util/Set;

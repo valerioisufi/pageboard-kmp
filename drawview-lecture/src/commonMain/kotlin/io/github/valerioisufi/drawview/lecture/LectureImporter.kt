@@ -23,10 +23,12 @@ import kotlinx.io.files.SystemFileSystem
  *
  * @param transcriber makes the transcriber when the transcription starts (the settings as they are
  *   then), closed at its end.
+ * @param gate what makes the transcription wait between two pieces (a recording going on).
  */
 internal class LectureImporter(
     private val lecture: Lecture,
     private val settingsStore: AssistantSettingsStore,
+    private val gate: TranscriptionGate? = null,
     private val transcriber: () -> Transcriber
 ) {
     /**
@@ -118,7 +120,7 @@ internal class LectureImporter(
         }
         val hints = { LecturePrompts.speechHints(settings, lecture.courseContext(), visibleSlides = emptyList()) }
         try {
-            RecordingTranscriber(lecture.recording, transcriber, hints).transcribe(durationMs) { chunk, progress ->
+            RecordingTranscriber(lecture.recording, transcriber, gate, lecture::transcriptionPaused, hints).transcribe(durationMs) { chunk, progress ->
                 lecture.setState {
                     transcript.addAll(chunk.segments)
                     chunk.usage?.let { usage += it }

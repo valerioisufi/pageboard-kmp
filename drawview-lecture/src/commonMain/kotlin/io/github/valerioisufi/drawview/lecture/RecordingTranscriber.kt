@@ -21,10 +21,16 @@ import kotlinx.coroutines.withContext
  * context), up to [Transcriber.parallelism] at the same time, delivered in order.
  *
  * @param hints what helps the recognition (the course: no slide is on screen).
+ * @param gate what makes it wait between two pieces (see [TranscriptionGate]): the pieces in flight
+ *   are delivered, the transcriber is closed (its model freed, loaded again at the next piece), and
+ *   it goes on from the next piece when the gate opens. Nothing transcribed is lost.
+ * @param onPaused told when it starts waiting at the gate (`true`) and when it goes on (`false`).
  */
 internal class RecordingTranscriber(
     private val recording: RecordingFile,
     private val transcriber: Transcriber,
+    private val gate: TranscriptionGate? = null,
+    private val onPaused: suspend (Boolean) -> Unit = {},
     private val hints: () -> SpeechHints
 ) {
     /** A piece transcribed: its text in segments of half a minute or so (none: nothing said), its tokens, where it ends. */
@@ -50,6 +56,13 @@ internal class RecordingTranscriber(
 
         suspend fun submit(chunk: AudioChunk) {
             while (pending.size >= transcriber.parallelism.coerceAtLeast(1)) deliverFirst()
+            if (gate?.isClosed == true) {
+                while (pending.isNotEmpty()) deliverFirst()
+                transcriber.close()
+                onPaused(true)
+                gate.awaitOpen()
+                onPaused(false)
+            }
             pending.addLast(
                 if (isSilent(chunk.samples, chunk.overlapSamples)) CompletableDeferred(Chunk(emptyList(), null, chunk.endMs))
                 else async { transcribe(chunk) }

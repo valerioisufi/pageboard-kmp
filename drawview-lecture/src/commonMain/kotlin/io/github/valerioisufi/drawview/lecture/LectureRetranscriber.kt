@@ -15,7 +15,8 @@ import kotlinx.coroutines.withContext
 internal class LectureRetranscriber(
     private val lecture: Lecture,
     private val settingsStore: AssistantSettingsStore,
-    private val transcriber: Transcriber
+    private val transcriber: Transcriber,
+    private val gate: TranscriptionGate? = null
 ) {
     /** Runs the transcription; the lecture is [LectureStatus.IMPORTING] already. */
     suspend fun run() {
@@ -24,7 +25,7 @@ internal class LectureRetranscriber(
         val segments = mutableListOf<TranscriptSegment>()
         try {
             val hints = { LecturePrompts.speechHints(settings, lecture.courseContext(), visibleSlides = emptyList()) }
-            RecordingTranscriber(lecture.recording, transcriber, hints).transcribe(lecture.elapsedMs) { chunk, progress ->
+            RecordingTranscriber(lecture.recording, transcriber, gate, lecture::transcriptionPaused, hints).transcribe(lecture.elapsedMs) { chunk, progress ->
                 segments.addAll(chunk.segments)
                 lecture.setState {
                     chunk.usage?.let { usage += it }

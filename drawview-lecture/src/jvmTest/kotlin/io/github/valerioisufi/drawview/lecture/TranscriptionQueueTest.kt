@@ -28,9 +28,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
@@ -61,13 +63,32 @@ class TranscriptionQueueTest {
     private val closed = Collections.synchronizedList(mutableListOf<Int>())
     private val gates = ConcurrentHashMap<Int, CompletableDeferred<Unit>>()
 
+    private val steps = ConcurrentHashMap<Int, Channel<Unit>>()
+
+    /** Lets every piece of the transcriber [index] go, from now on. */
     private fun gate(index: Int) = gates.getOrPut(index) { CompletableDeferred() }
 
+    /** Lets one piece of the transcriber [index] go for every unit sent. */
+    private fun step(index: Int) = steps.getOrPut(index) { Channel(Channel.UNLIMITED) }
+
+    /** Pieces of a second or so, so that a short recording has several. */
+    private var shortPieces = false
+
+    /** The microphone of the next recording; `null`: none can be opened. */
+    private var microphone: FakeMicrophone? = FakeMicrophone()
+
     private inner class HeldTranscriber(private val index: Int) : Transcriber {
+        override val pieceSeconds: Int get() = if (shortPieces) 1 else 60
+
         override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
             begun.add(index)
-            gate(index).await()
-            return Transcription(listOf(TranscriptSegment(0, 1_000, "Transcribed by $index")))
+            if (!gate(index).isCompleted) {
+                select {
+                    gate(index).onAwait {}
+                    step(index).onReceive {}
+                }
+            }
+            return Transcription(listOf(TranscriptSegment(0, 500, "Transcribed by $index")))
         }
 
         override suspend fun close() {
@@ -84,7 +105,7 @@ class TranscriptionQueueTest {
             )
         },
         client = GeminiClient(HttpClient(engine)),
-        captureFactory = { FakeMicrophone() },
+        captureFactory = { microphone },
         audioOutput = null,
         library = LectureLibrary(File(directory, "lectures").absolutePath),
         stateContext = stateContext,
@@ -92,10 +113,10 @@ class TranscriptionQueueTest {
         canGenerate = true
     )
 
-    /** A WAV file of three seconds of words: bursts of noise with pauses between them. */
-    private fun recording(name: String): File {
+    /** A WAV file of [seconds] of words: bursts of noise with pauses between them. */
+    private fun recording(name: String, seconds: Int = 3): File {
         val rate = 16_000
-        val frames = rate * 3
+        val frames = rate * seconds
         val random = Random(name.hashCode())
         val data = ByteBuffer.allocate(frames * 2).order(ByteOrder.LITTLE_ENDIAN)
         for (f in 0 until frames) {
@@ -112,22 +133,29 @@ class TranscriptionQueueTest {
     }
 
     /** Imports a recording named [name] in the document [documentId]: its lecture. */
-    private suspend fun import(name: String, documentId: String = "doc"): Lecture = withContext(stateContext) {
-        val file = recording("$name.wav")
+    private suspend fun import(name: String, documentId: String = "doc", seconds: Int = 3): Lecture = withContext(stateContext) {
+        val file = recording("$name.wav", seconds)
         assertTrue(assistant.importRecording(documentId, name, FakeNotebook(), { emptyList() }, ChosenFile(file.absolutePath, file.name, lastModified = null)))
         assistant.transcribing.last()
     }
 
     private suspend fun <T> onState(block: () -> T): T = withContext(stateContext) { block() }
 
-    /** Waits for [condition], read on the thread of the state. */
+    /**
+     * Waits for [condition], read on the thread of the state: longer than a review tried again
+     * takes (`Lecture.MAX_ATTEMPTS_WHEN_STOPPED`, some seconds apart).
+     */
     private suspend fun await(what: String, condition: () -> Boolean) {
         try {
-            withTimeout(20_000) {
+            withTimeout(60_000) {
                 while (!withContext(stateContext) { condition() }) delay(10)
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-            throw AssertionError("Timed out waiting for $what", e)
+            val state = withContext(stateContext) {
+                "transcribing ${assistant.transcribing.map { "${it.documentTitle}: ${it.status} ${it.importStep}" }}, " +
+                    "recording ${assistant.recorder?.lecture?.status}, made ${made.get()}, begun $begun, closed $closed"
+            }
+            throw AssertionError("Timed out waiting for $what ($state)", e)
         }
     }
 
@@ -259,5 +287,71 @@ class TranscriptionQueueTest {
         await("the second lecture to be over") { second.status == LectureStatus.FINISHED && assistant.transcribing.isEmpty() }
         assertEquals(listOf("Transcribed by 1"), onState { second.transcript.map { it.text } })
         await("the lecture to be released") { second.generation == null }
+    }
+
+    @Test
+    fun aRecordingPausesTheTranscriptionWhichGoesOnAfterIt() = runBlocking<Unit> {
+        shortPieces = true
+        val imported = import("imported", seconds = 8)
+        await("the first piece to be in flight") { begun.size == 1 }
+
+        // A recording starts in the middle of the piece
+        assertTrue(onState { assistant.canRecord })
+        assertTrue(onState { assistant.start("doc", "Live", FakeNotebook()) })
+        assertFalse(onState { assistant.canRecord })
+        assertFalse(onState { assistant.start("doc", "Another", FakeNotebook()) }, "one recording at a time")
+        // The piece in flight is finished and kept, then the model is freed and it waits
+        step(0).send(Unit)
+        await("the transcription to pause") { imported.importStep == ImportStep.WAITING }
+        assertEquals(1, onState { imported.transcript.size })
+        assertEquals(listOf(0), closed.toList())
+        assertEquals(listOf(imported), onState { assistant.transcribing })
+        delay(300)
+        assertEquals(1, begun.size, "no piece transcribed while the recording goes on")
+
+        // The recording over, it goes on from the next piece
+        onState { assistant.recorder!!.stop() }
+        await("the recording to be over") { assistant.canRecord }
+        await("the transcription to go on") { begun.size == 2 }
+        assertEquals(ImportStep.TRANSCRIBING, onState { imported.importStep })
+        gate(0).complete(Unit)
+        await("the import to be over") { imported.status == LectureStatus.FINISHED && assistant.transcribing.isEmpty() }
+        val pieces = begun.count { it == 0 }
+        assertTrue(pieces >= 3, "$pieces pieces")
+        assertEquals(pieces, onState { imported.transcript.size }, "a segment for every piece: none lost, none twice")
+        assertEquals(onState { imported.transcript.map { it.startMs } }.sorted(), onState { imported.transcript.map { it.startMs } }, "in their order")
+    }
+
+    @Test
+    fun anImportDuringARecordingWaitsForItsEnd() = runBlocking<Unit> {
+        assertTrue(onState { assistant.start("doc", "Live", FakeNotebook()) })
+        val recorded = onState { assistant.recorder!!.lecture }
+        val imported = import("imported")
+        await("the import to be converted") { imported.importStep == ImportStep.WAITING }
+        assertTrue(audioOf(imported).exists())
+        delay(300)
+        assertTrue(begun.isEmpty(), "nothing transcribed while the recording goes on")
+        assertEquals(LectureStatus.RECORDING, onState { recorded.status })
+
+        onState { assistant.recorder!!.stop() }
+        await("the import to start") { begun.isNotEmpty() }
+        // The transcriber of the recording was made first: the one of the import is the last one
+        assertEquals(listOf(made.get() - 1), begun.toList())
+        gate(made.get() - 1).complete(Unit)
+        await("the import to be over") { imported.status == LectureStatus.FINISHED && assistant.transcribing.isEmpty() }
+        assertEquals(1, onState { imported.transcript.size })
+    }
+
+    @Test
+    fun aRecordingThatCannotStartLeavesTheTranscriptionsGoing() = runBlocking<Unit> {
+        shortPieces = true
+        val imported = import("imported", seconds = 8)
+        await("the first piece to be in flight") { begun.size == 1 }
+        microphone = null
+        assertFalse(onState { assistant.start("doc", "Live", FakeNotebook()) })
+        assertTrue(onState { assistant.canRecord })
+        gate(0).complete(Unit)
+        await("the import to be over") { imported.status == LectureStatus.FINISHED && assistant.transcribing.isEmpty() }
+        assertTrue(closed.count { it == 0 } == 1, "never paused: closed once, at its end")
     }
 }

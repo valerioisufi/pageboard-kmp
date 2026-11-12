@@ -657,6 +657,11 @@ public class Lecture internal constructor(
     /** More audio was recorded: offered to the other devices (see LectureAttachments). */
     internal fun audioGrew() = onChanged(id)
 
+    /** Its transcription waits for a recording to end ([paused]), or goes on after it. */
+    internal suspend fun transcriptionPaused(paused: Boolean) = setState {
+        if (status == LectureStatus.IMPORTING) importStep = if (paused) ImportStep.WAITING else ImportStep.TRANSCRIBING
+    }
+
     /** Its audio is here now: received from the device that recorded it, or converted from a file imported. */
     internal suspend fun audioReceived() = setState {
         hasAudio = true
