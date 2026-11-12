@@ -221,6 +221,7 @@ public final class io/github/valerioisufi/drawview/lecture/ImportStep : java/lan
 	public static final field CONVERTING Lio/github/valerioisufi/drawview/lecture/ImportStep;
 	public static final field REVIEWING Lio/github/valerioisufi/drawview/lecture/ImportStep;
 	public static final field TRANSCRIBING Lio/github/valerioisufi/drawview/lecture/ImportStep;
+	public static final field WAITING Lio/github/valerioisufi/drawview/lecture/ImportStep;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/ImportStep;
 	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/ImportStep;
@@ -331,6 +332,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun answerWithGemini (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun canRetranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
 	public final fun canWriteContext (Ljava/lang/String;)Z
+	public final fun cancelTranscription (Lio/github/valerioisufi/drawview/lecture/Lecture;)V
 	public final fun changeSharing (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public final fun clearImportAndExportMessages ()V
 	public final fun contextOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
@@ -370,6 +372,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getRequestMicrophone ()Lkotlin/jvm/functions/Function1;
 	public final fun getSettingsStore ()Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;
 	public final fun getStartError ()Ljava/lang/String;
+	public final fun getTranscribing ()Ljava/util/List;
 	public final fun getTranscriptExportExtension ()Ljava/lang/String;
 	public final fun handwritingTexts (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/platform/ChosenFile;)Z
@@ -377,6 +380,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun isPanelOpen ()Z
 	public final fun isRecording ()Z
 	public final fun isRecordingSupported ()Z
+	public final fun isTranscribing (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
 	public final fun isWritingContext (Ljava/lang/String;)Z
 	public final fun lecturesOf (Ljava/lang/String;)Ljava/util/List;
 	public final fun onEditorHidden (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V

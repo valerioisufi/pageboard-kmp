@@ -414,7 +414,7 @@ private fun LectureHeader(assistant: LectureAssistant, documentId: String, lectu
     var expanded by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
     val shown = lectures.firstOrNull { it.directory == lecture.directory }
-    val isActive = assistant.activeRecorder?.lecture === lecture || assistant.importing === lecture
+    val isActive = assistant.activeRecorder?.lecture === lecture || assistant.isTranscribing(lecture)
     // The lecture shown when the student chose where to save it
     val exported = remember { arrayOfNulls<Lecture>(1) }
     val saveRecording = rememberFileSaver(stringResource(Res.string.lecture_export_title), RecordingExportType) { target ->
@@ -596,7 +596,7 @@ private fun RecordingSection(
     val canStart = !assistant.isBusy
     when {
         // Being recorded, or transcribed, on another device
-        lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && assistant.importing !== lecture -> {
+        lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && !assistant.isTranscribing(lecture) -> {
             val now = rememberNow()
             val silentMinutes = (now - lecture.recordingHeardAt) / 60_000
             if (lecture.recordingHeardAt > 0 && now - lecture.recordingHeardAt > LectureRecorder.SILENT_ELSEWHERE_MS) {
@@ -684,6 +684,7 @@ private fun ImportCard(lecture: Lecture) {
                         when (lecture.importStep) {
                             ImportStep.TRANSCRIBING -> Res.string.lecture_import_transcribing
                             ImportStep.REVIEWING -> Res.string.lecture_status_finalizing
+                            ImportStep.WAITING -> Res.string.lecture_import_waiting
                             else -> Res.string.lecture_import_converting
                         }
                     ),
@@ -695,7 +696,8 @@ private fun ImportCard(lecture: Lecture) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        val progress = lecture.importProgress
+        // Waiting its turn: nothing moves
+        val progress = if (lecture.importStep == ImportStep.WAITING) 0f else lecture.importProgress
         val track = MaterialTheme.colorScheme.surfaceContainerHighest
         if (progress < 0f) LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp)
         else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp, drawStopIndicator = {})

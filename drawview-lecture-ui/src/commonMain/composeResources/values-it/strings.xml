@@ -162,6 +162,7 @@
     <string name="lecture_import_title">Scegli la registrazione di una lezione</string>
     <string name="lecture_import_converting">Conversione dell\'audio…</string>
     <string name="lecture_import_transcribing">Trascrizione della registrazione…</string>
+    <string name="lecture_import_waiting">In attesa delle trascrizioni precedenti…</string>
     <string name="lecture_import_failed">Non si può importare la registrazione: %1$s</string>
     <string name="lecture_export_audio">Esporta l\'audio…</string>
     <string name="lecture_export_title">Salva l\'audio della lezione</string>

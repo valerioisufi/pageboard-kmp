@@ -500,7 +500,11 @@ class LectureRecorderTest {
         val transcriber = FakeTranscriber()
         val lecture = newLecture(settingsStore, engine, courseContext = "Analisi 1")
         val pages = listOf(PageContent(0, pageId = "10", slide = SlideText(1, 0, "Limiti")), PageContent(1, pageId = "11", slide = SlideText(1, 1, "Derivate")))
-        LectureImporter(lecture, settingsStore, transcriber).run(input.absolutePath, pages, listOf("10", "11"))
+        // Converted at once, then transcribed and reviewed at its turn
+        val importer = LectureImporter(lecture, settingsStore) { transcriber }
+        importer.convert(input.absolutePath, pages, listOf("10", "11"))
+        assertEquals(ImportStep.WAITING, lecture.importStep)
+        importer.transcribeAndReview(settingsStore.settings.reviewProvider, review = settingsStore.settings.reviewAtTheEnd)
 
         assertEquals(LectureStatus.FINISHED, lecture.status)
         assertTrue(lecture.elapsedMs in 125_000L..127_000L, "${lecture.elapsedMs}")
@@ -523,7 +527,7 @@ class LectureRecorderTest {
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val input = File(directory, "lezione.wav").apply { writeBytes(Wav.encode(ShortArray(5 * LECTURE_SAMPLE_RATE) { (it % 200 * 50).toShort() })) }
         val lecture = newLecture(settingsStore, engine)
-        LectureImporter(lecture, settingsStore, FakeTranscriber()).run(input.absolutePath, emptyList(), emptyList(), reviews = false)
+        LectureImporter(lecture, settingsStore) { FakeTranscriber() }.convert(input.absolutePath, emptyList(), emptyList(), transcribed = false)
 
         // Finished, to be reviewed by a device with the models
         assertEquals(LectureStatus.FINISHED, lecture.status)

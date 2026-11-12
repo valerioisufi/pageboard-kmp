@@ -102,8 +102,11 @@ public data class TokenUsage(
  */
 public enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 
-/** The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). */
-public enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
+/**
+ * The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). [WAITING]: its
+ * transcription waits for the ones asked before it (see `docs/transcription-queue.md`).
+ */
+public enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING, WAITING }
 
 /**
  * A page of the notebook seen during the lecture, as last seen, kept for the final review (also

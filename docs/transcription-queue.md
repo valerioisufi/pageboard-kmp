@@ -91,8 +91,15 @@ Read in the code; nothing measured yet (see phase 0).
   convert one after the other.
 * `generate` (when it transcribes) and `retranscribe` enqueue too. The generation lock that tells the
   other devices to leave the lecture alone (`holdingGeneration`) is taken when the job starts, not
-  while it waits: a lecture waiting here can still be taken by another device, and then leaves the
-  queue.
+  while it waits: it is refreshed while held, and a lecture waiting for an hour would look abandoned.
+  A lecture waiting is `IMPORTING` here, and the other devices see it so once it is saved or merged,
+  as an import today; when another device takes the lock, the job here is cancelled (as today,
+  `Lecture.showMerged`) and leaves the queue.
+* `cancelTranscription(lecture)` takes a lecture out, waiting or running: it becomes a finished
+  lecture with its audio and the transcript made so far, and is saved so.
+* An imported lecture is told that its audio is here when it is converted (`Lecture.audioReceived`):
+  before, a lecture just imported had `hasAudio` false until it was loaded again, so it could not be
+  exported or transcribed again from the panel it was imported in.
 * `start` (a recording) calls `hold()`, and `release()` when its recorder stops listening (the review
   of the recording needs no speech model). A lecture followed live does not hold the queue: as today
   it runs beside it (decision 3).
@@ -127,7 +134,7 @@ One commit per phase on `feat/transcription-queue`, with the checks of `CLAUDE.m
 | # | Phase | Status |
 |---|---|---|
 | 0 | Measure: a bench that pans and draws in a real window while whisper.cpp transcribes ten minutes of audio; the table above filled in; the target of requirement 4 | Waiting for a model (see below) |
-| 1 | `TranscriptionQueue`, `ImportStep.WAITING`, `importRecording` converting at once, `generate` and `retranscribe` enqueued, `canRecord`. Tests: two imports one after the other, an import during a retranscription, the order kept, a failed conversion leaving the queue as it was, a lecture taken out of the queue, the generation lock taken when the job starts | Not started |
+| 1 | `TranscriptionQueue`, `ImportStep.WAITING`, `importRecording` converting at once, `generate` and `retranscribe` enqueued, `transcribing`, `isTranscribing`, `cancelTranscription`, with the ABI of `drawview-lecture` re-recorded; the card of a lecture waiting says so. A recording here still refuses and is refused, until phase 2 pauses the queue. Tests (`TranscriptionQueueTest`): two imports one after the other, imports during a new transcription with the order kept, a file that is not audio leaving the queue as it was, a lecture taken out of the queue waiting and running, the generation lock taken when the job starts | Done |
 | 2 | Pausing: the gate in `RecordingTranscriber`, held by a recording. Tests: a recording started in the middle of a transcription (the piece in flight delivered, the model closed, nothing lost, it goes on after), an import during a recording waiting for its end, a recording that fails to start releasing the gate | Not started |
 | 3 | The panel: *New recording* and *Import* enabled by the new rules, the card of a lecture waiting with *Remove from the queue*, the notices. Tests: screenshots (`verifyRoborazziJvm`), the desktop application on a scratch directory | Not started |
 | 4 | The window: what phase 0 chose. Tests: the bench of phase 0 run again | Not started |

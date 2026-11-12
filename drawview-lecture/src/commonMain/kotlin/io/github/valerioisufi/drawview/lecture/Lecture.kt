@@ -657,6 +657,7 @@ public class Lecture internal constructor(
     /** More audio was recorded: offered to the other devices (see LectureAttachments). */
     internal fun audioGrew() = onChanged(id)
 
+    /** Its audio is here now: received from the device that recorded it, or converted from a file imported. */
     internal suspend fun audioReceived() = setState {
         hasAudio = true
         player?.refresh()

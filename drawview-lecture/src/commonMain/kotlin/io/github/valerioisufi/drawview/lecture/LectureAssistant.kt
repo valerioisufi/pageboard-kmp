@@ -41,12 +41,15 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.buffered
@@ -113,9 +116,25 @@ public class LectureAssistant(
     /** The suggestion the student is placing in the notebook, if any. */
     public var placingNote: NoteSuggestion? by mutableStateOf(null)
 
-    /** The lecture being imported, if any. */
-    public var importing: Lecture? by mutableStateOf(null)
-        private set
+    /** The imports whose audio is being converted, before their transcription waits its turn. */
+    private var converting: List<Lecture> by mutableStateOf(emptyList())
+
+    /**
+     * The lecture being imported or transcribed now, if any: the one whose transcription runs,
+     * else one whose audio is converted, else the first one waiting (see [transcribing]).
+     */
+    public val importing: Lecture? get() = queue.running ?: converting.firstOrNull() ?: queue.lectures.firstOrNull()
+
+    /**
+     * The lectures being imported or transcribed here (an import, a lecture received without a
+     * transcript, a lecture transcribed again), in their order: the one transcribed now, those
+     * waiting their turn (`ImportStep.WAITING`), then those still converted. One is transcribed at
+     * a time (see `docs/transcription-queue.md`).
+     */
+    public val transcribing: List<Lecture> get() = queue.lectures + converting
+
+    /** Whether [lecture] is being imported or transcribed here, or waits its turn to be. */
+    public fun isTranscribing(lecture: Lecture): Boolean = lecture in queue || converting.any { it === lecture }
 
     /** Why the last import failed (the file is not audio), if it did. */
     public var importError: String? by mutableStateOf(null)
@@ -155,6 +174,12 @@ public class LectureAssistant(
     private val handwritingReaders = mutableMapOf<String, HandwritingReader>()
     private val handwritingLock = SyncLock()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** The transcriptions of whole recordings, one at a time. */
+    private val queue = TranscriptionQueue(scope, stateContext)
+
+    /** The imports convert their audio one after the other. */
+    private val conversions = Mutex()
 
     private val lectureAttachments: LectureAttachments by lazy { LectureAttachments(sharing, scope) }
 
@@ -578,7 +603,7 @@ public class LectureAssistant(
 
     /** Shows the lecture [summary] in the panel of [documentId]. */
     public fun show(documentId: String, summary: LectureSummary) {
-        val active = importing?.takeIf { it.directory == summary.directory } ?: recorder?.lecture
+        val active = transcribing.firstOrNull { it.directory == summary.directory } ?: recorder?.lecture
         if (active != null && active.directory == summary.directory) {
             shownLectures[documentId] = active
             return
@@ -717,7 +742,10 @@ public class LectureAssistant(
         }
     }
 
-    /** Whether a recording or an import is in progress (one at a time). */
+    /**
+     * Whether a recording, an import or a transcription is in progress or waits its turn: what
+     * would be interrupted if the application quit now.
+     */
     public val isBusy: Boolean get() = activeRecorder != null || importing != null
 
     /** Whether recordings can be imported and exported here (every platform chooses files). */
@@ -726,10 +754,11 @@ public class LectureAssistant(
     /**
      * Imports [file], a recording made elsewhere (a phone, a recorder), as a lecture of
      * [documentId] titled [title] (seen through [notebook], whose pages are [pageIds], read on
-     * the thread of the state): converted, transcribed and reviewed ([LectureImporter]), in the
-     * background.
+     * the thread of the state), in the background ([LectureImporter]): converted at once, then
+     * transcribed and reviewed at its turn, after the transcriptions asked before it
+     * ([transcribing]).
      *
-     * @return `false` when a recording or an import is in progress.
+     * @return `false` when a lecture is being recorded here.
      */
     public fun importRecording(
         documentId: String,
@@ -738,30 +767,33 @@ public class LectureAssistant(
         pageIds: () -> List<String>,
         file: ChosenFile
     ): Boolean {
-        if (isBusy) return false
+        if (activeRecorder != null) return false
         val startedAt = file.lastModified ?: currentTimeMillis()
         val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt).apply {
             documentTitle = title
             status = LectureStatus.IMPORTING
+            importStep = ImportStep.CONVERTING
         }
-        importing = lecture
+        converting = converting + lecture
         importError = null
         shownLectures[documentId] = lecture
         isPanelOpen = true
+        val importer = LectureImporter(lecture, settingsStore) { transcribers.forRecording(settingsStore.settings) }
         scope.launch {
-            try {
-                // The course context first: it helps the transcription
-                if (contexts[documentId] == null) writeContextNow(documentId, notebook, onlyIfMissing = true)
-                val pages = try {
-                    notebook.allPages()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Throwable) {
-                    emptyList()
+            val transcribed = canGenerate
+            val converted = try {
+                conversions.withLock {
+                    val pages = try {
+                        notebook.allPages()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Throwable) {
+                        emptyList()
+                    }
+                    val ids = withContext(stateContext) { pageIds() }
+                    importer.convert(file.path, pages, ids, transcribed)
                 }
-                val ids = withContext(stateContext) { pageIds() }
-                val settings = settingsStore.settings
-                LectureImporter(lecture, settingsStore, transcribers.forRecording(settings)).run(file.path, pages, ids, reviews = canGenerate)
+                true
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -771,13 +803,66 @@ public class LectureAssistant(
                     importError = e.message ?: e::class.simpleName
                     if (shownLectures[documentId] === lecture) shownLectures.remove(documentId)
                 }
+                false
             } finally {
                 if (file.temporary) withContext(NonCancellable + Dispatchers.IO) { SystemFileSystem.delete(Path(file.path), mustExist = false) }
-                withContext(NonCancellable + stateContext) { importing = null }
-                refresh(documentId)
             }
+            withContext(NonCancellable + stateContext) {
+                // In the queue before it leaves the conversions: never out of both
+                if (converted && transcribed) {
+                    lecture.generating = enqueueTranscription(lecture) {
+                        // The course context first: it helps the transcription
+                        if (withContext(stateContext) { contexts[documentId] == null }) writeContextNow(documentId, notebook, onlyIfMissing = true)
+                        val settings = settingsStore.settings
+                        importer.transcribeAndReview(settings.reviewProvider, review = settings.reviewAtTheEnd)
+                    }
+                }
+                converting = converting.filterNot { it === lecture }
+            }
+            refresh(documentId)
         }
         return true
+    }
+
+    /**
+     * Puts [work], the transcription of [lecture], after the ones asked before it; the lecture is
+     * shown as waiting until its turn. Called on the thread of the state.
+     */
+    private fun enqueueTranscription(lecture: Lecture, work: suspend () -> Unit): Job {
+        lecture.status = LectureStatus.IMPORTING
+        lecture.importStep = ImportStep.WAITING
+        lecture.importProgress = -1f
+        return queue.enqueue(lecture, work).also { job ->
+            job.invokeOnCompletion {
+                scope.launch {
+                    // Stopped before its end (another device took it over)
+                    withContext(stateContext) { lecture.releaseReviewClaim() }
+                }
+                refresh(lecture.documentId)
+            }
+        }
+    }
+
+    /**
+     * Takes [lecture] out of the transcriptions here, whether it waits or is being transcribed: it
+     * stays a finished lecture, with its audio and the transcript made so far, transcribed on
+     * request ([generate], [retranscribe]).
+     */
+    public fun cancelTranscription(lecture: Lecture) {
+        if (lecture !in queue) return
+        val job = lecture.generating ?: return
+        scope.launch {
+            job.cancelAndJoin()
+            lecture.setState {
+                if (status == LectureStatus.IMPORTING) {
+                    status = LectureStatus.FINISHED
+                    importStep = null
+                    importProgress = -1f
+                }
+            }
+            lecture.persist()
+            refresh(lecture.documentId)
+        }
     }
 
     /**
@@ -785,40 +870,40 @@ public class LectureAssistant(
      * before it its transcript when it has none (recorded on a device without the models: the
      * device that recorded it gets them too).
      *
-     * @return `false` when a recording or an import is in progress, or the models are not here.
+     * A transcription waits its turn after the ones asked before it ([transcribing]); the other
+     * devices leave the lecture to this one from when it starts ([GenerationLock]).
+     *
+     * @return `false` when a lecture is being recorded here, the lecture is in the queue already, or
+     *   the models are not here.
      */
     public fun generate(lecture: Lecture, provider: ModelProvider): Boolean {
         if (!canGenerate || !lecture.canGenerateReview) return false
         // Written by another device now: left to it
         if (lecture.generatingElsewhere(currentTimeMillis()) != null) return false
-        val transcribes = lecture.transcript.isEmpty() && lecture.hasAudio
-        if (transcribes) {
-            if (isBusy) return false
-            importing = lecture
+        if (lecture.transcript.isEmpty() && lecture.hasAudio) {
+            if (activeRecorder != null || isTranscribing(lecture)) return false
             importError = null
-        } else if (!lecture.claimReview(provider)) {
-            // Shown as running at once: a second request is refused
-            return false
+            lecture.generating = enqueueTranscription(lecture) {
+                holdingGeneration(lecture) {
+                    LectureImporter(lecture, settingsStore) { transcribers.forRecording(settingsStore.settings) }.transcribeAndReview(provider)
+                }
+            }
+            return true
         }
+        // Shown as running at once: a second request is refused
+        if (!lecture.claimReview(provider)) return false
         lecture.generating = scope.launch {
             // The other devices leave it to this one (see GenerationLock)
             holdingGeneration(lecture) {
-                if (transcribes) {
-                    LectureImporter(lecture, settingsStore, transcribers.forRecording(settingsStore.settings)).transcribeAndReview(provider)
-                } else {
-                    // With the handwriting of the notebook not read yet, when it is open
-                    FinalReviewer(lecture, settingsStore, handwritingOf(lecture.documentId)).write(provider, editorNotebooks[lecture.documentId])
-                    lecture.persist()
-                }
+                // With the handwriting of the notebook not read yet, when it is open
+                FinalReviewer(lecture, settingsStore, handwritingOf(lecture.documentId)).write(provider, editorNotebooks[lecture.documentId])
+                lecture.persist()
             }
         }.also { job ->
             job.invokeOnCompletion {
                 scope.launch {
-                    withContext(stateContext) {
-                        if (transcribes) importing = null
-                        // Stopped before its end (another device took it over)
-                        lecture.releaseReviewClaim()
-                    }
+                    // Stopped before its end (another device took it over)
+                    withContext(stateContext) { lecture.releaseReviewClaim() }
                 }
                 refresh(lecture.documentId)
             }
@@ -871,34 +956,32 @@ public class LectureAssistant(
 
     /**
      * Whether [lecture] can be transcribed again here: over, its audio here, the models here, no
-     * recording or import in progress, no other device writing it now.
+     * recording in progress here, not in the queue already, no other device writing it now.
      */
     public fun canRetranscribe(lecture: Lecture): Boolean =
-        canGenerate && !isBusy && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
+        canGenerate && activeRecorder == null && !isTranscribing(lecture) && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
             lecture.generatingElsewhere(currentTimeMillis()) == null
 
     /**
      * Transcribes [lecture] again from its recording, on this computer, in the background
-     * ([LectureRetranscriber]); the other devices leave it to this one meanwhile ([GenerationLock]).
+     * ([LectureRetranscriber]), at its turn after the transcriptions asked before it
+     * ([transcribing]); the other devices leave it to this one from when it starts
+     * ([GenerationLock]).
      *
      * @return `false` when it cannot be transcribed again now ([canRetranscribe]).
      */
     public fun retranscribe(lecture: Lecture): Boolean {
         if (!canRetranscribe(lecture)) return false
-        val transcriber = transcribers.forRecording(settingsStore.settings)
         lecture.stopPlayback()
-        lecture.status = LectureStatus.IMPORTING
-        lecture.importStep = ImportStep.TRANSCRIBING
-        lecture.importProgress = 0f
-        importing = lecture
         importError = null
-        lecture.generating = scope.launch {
-            try {
-                holdingGeneration(lecture) { LectureRetranscriber(lecture, settingsStore, transcriber).run() }
-            } finally {
-                withContext(NonCancellable + stateContext) { importing = null }
-                refresh(lecture.documentId)
+        lecture.generating = enqueueTranscription(lecture) {
+            lecture.setState {
+                importStep = ImportStep.TRANSCRIBING
+                importProgress = 0f
             }
+            // The model chosen when its turn comes
+            val transcriber = transcribers.forRecording(settingsStore.settings)
+            holdingGeneration(lecture) { LectureRetranscriber(lecture, settingsStore, transcriber).run() }
         }
         return true
     }
@@ -957,7 +1040,7 @@ public class LectureAssistant(
      * notebook; not the one being recorded (here or elsewhere).
      */
     public fun delete(documentId: String, summary: LectureSummary) {
-        if (activeRecorder?.lecture?.directory == summary.directory || importing?.directory == summary.directory || summary.activeElsewhere) return
+        if (activeRecorder?.lecture?.directory == summary.directory || transcribing.any { it.directory == summary.directory } || summary.activeElsewhere) return
         if (shownLectures[documentId]?.directory == summary.directory) {
             shownLectures[documentId]?.stopPlayback()
             shownLectures.remove(documentId)

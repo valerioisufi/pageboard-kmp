@@ -13,24 +13,31 @@ import kotlinx.io.files.SystemFileSystem
 
 /**
  * Turns an audio file recorded elsewhere (a phone, a recorder) into a [lecture] of a notebook:
- * converted into the audio of the lectures, transcribed by [transcriber] ([RecordingTranscriber]),
- * then reviewed as a recorded lecture (unless the review is written on request). No live
- * suggestion: the review writes the notes and what is missing from the notebook (`pages`).
+ * converted into the audio of the lectures ([convert]), then, at its turn, transcribed by
+ * [transcriber] ([RecordingTranscriber]) and reviewed as a recorded lecture, unless the review is
+ * written on request ([transcribeAndReview]). No live suggestion: the review writes the notes and
+ * what is missing from the notebook (`pages`).
  *
  * A lecture recorded on a device without the models is transcribed and reviewed the same way
  * ([transcribeAndReview]).
+ *
+ * @param transcriber makes the transcriber when the transcription starts (the settings as they are
+ *   then), closed at its end.
  */
 internal class LectureImporter(
     private val lecture: Lecture,
     private val settingsStore: AssistantSettingsStore,
-    private val transcriber: Transcriber
+    private val transcriber: () -> Transcriber
 ) {
     /**
-     * Imports [input].
+     * Converts [input] into the audio of the lecture, and saves the lecture: from here on the
+     * recording is in the notebook, whatever happens to its transcription. [transcribed]: its
+     * transcription follows (waiting its turn); otherwise the lecture is finished with its audio
+     * only, for a device with the models.
      *
      * @throws IllegalArgumentException when [input] cannot be read as audio.
      */
-    suspend fun run(input: String, pages: List<PageContent>, pageIds: List<String>, reviews: Boolean = true) {
+    suspend fun convert(input: String, pages: List<PageContent>, pageIds: List<String>, transcribed: Boolean = true) {
         lecture.setState {
             importStep = ImportStep.CONVERTING
             importProgress = -1f
@@ -48,18 +55,19 @@ internal class LectureImporter(
             require(samples > 0) { "no audio in the file" }
             samples
         }
-        lecture.setState { elapsedMs = samplesToMs(samples) }
-        lecture.persist()
-        if (reviews) {
-            transcribeAndReview(settingsStore.settings.reviewProvider, review = settingsStore.settings.reviewAtTheEnd)
-        } else {
-            // No models here: the audio only, reviewed by a device with them
-            lecture.setState {
+        lecture.setState {
+            elapsedMs = samplesToMs(samples)
+            if (transcribed) {
+                importStep = ImportStep.WAITING
+            } else {
+                // No models here: the audio only, reviewed by a device with them
                 status = LectureStatus.FINISHED
                 importStep = null
             }
-            lecture.persist()
         }
+        // Its audio is here from now on: it can be played, exported and transcribed on request
+        lecture.audioReceived()
+        lecture.persist()
     }
 
     /**
@@ -72,8 +80,9 @@ internal class LectureImporter(
             elapsedMs
         }
         val settings = settingsStore.settings
+        val transcriber = transcriber()
         try {
-            transcribe(settings, durationMs)
+            transcribe(transcriber, settings, durationMs)
         } finally {
             transcriber.close()
         }
@@ -102,7 +111,7 @@ internal class LectureImporter(
      * The transcript, chunk after chunk, as fast as the transcription goes. A failure stops it: the
      * review goes on with the transcript made so far.
      */
-    private suspend fun transcribe(settings: AssistantSettings, durationMs: Long) {
+    private suspend fun transcribe(transcriber: Transcriber, settings: AssistantSettings, durationMs: Long) {
         lecture.setState {
             importStep = ImportStep.TRANSCRIBING
             importProgress = 0f
