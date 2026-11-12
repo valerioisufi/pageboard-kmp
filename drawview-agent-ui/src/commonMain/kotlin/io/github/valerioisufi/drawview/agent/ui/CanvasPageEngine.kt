@@ -4,8 +4,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.agent.PageEngine
+import io.github.valerioisufi.drawview.agent.PageMark
 import io.github.valerioisufi.drawview.canvas.platform.encodePng
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
@@ -18,6 +20,7 @@ import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.PdfInk
 import io.github.valerioisufi.drawview.model.PdfTextLayout
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect as ModelRect
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlinx.coroutines.Dispatchers
@@ -129,28 +132,64 @@ public class CanvasPageEngine(
         return red + green + blue <= PAPER_TOLERANCE
     }
 
-    override suspend fun renderPage(resources: List<DrawResource>, page: PageContentSnapshot, maxSidePx: Int): ByteArray? = drawing.withLock {
+    override suspend fun renderPage(
+        resources: List<DrawResource>,
+        page: PageContentSnapshot,
+        maxSidePx: Int,
+        area: ModelRect?,
+        marks: List<PageMark>
+    ): ByteArray? = drawing.withLock {
         withContext(Dispatchers.Default) {
-            val scale = maxSidePx / maxOf(page.widthMm, page.heightMm)
-            val width = ceil(page.widthMm * scale).toInt().coerceAtLeast(1)
-            val height = ceil(page.heightMm * scale).toInt().coerceAtLeast(1)
+            val shown = area ?: ModelRect(0f, 0f, page.widthMm, page.heightMm)
+            val scale = maxSidePx / maxOf(shown.width, shown.height)
+            val width = ceil(shown.width * scale).toInt().coerceAtLeast(1)
+            val height = ceil(shown.height * scale).toInt().coerceAtLeast(1)
             val bitmap = ImageBitmap(width, height)
+            val canvas = Canvas(bitmap)
+            val toCanvas = Matrix2D().postTranslate(-shown.left, -shown.top).postScale(scale, scale)
             // The renderer finds the files of the resources in a document
             val document = DrawDocument(addInitialPage = false).apply { resources.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
-                TileRenderer(pdfAdapter, textAdapter).apply { elements = this@CanvasPageEngine.elements }.renderPageContent(
-                    Canvas(bitmap), document, page, Matrix2D().postScale(scale, scale), Rect(0f, 0f, width.toFloat(), height.toFloat())
-                )
+                TileRenderer(pdfAdapter, textAdapter).apply { elements = this@CanvasPageEngine.elements }
+                    .renderPageContent(canvas, document, page, toCanvas, Rect(0f, 0f, width.toFloat(), height.toFloat()))
             } finally {
                 pdfAdapter?.close()
             }
+            for (mark in marks) drawMark(canvas, mark, shown, scale, toCanvas)
             encodePng(bitmap)
         }
     }
 
+    /** The outline of [mark] and its label inside its top-left corner, over a page drawn at [scale] pixels a millimeter. */
+    private fun drawMark(canvas: Canvas, mark: PageMark, shown: ModelRect, scale: Float, toCanvas: Matrix2D) {
+        val box = mark.box
+        val outline = Paint().apply {
+            color = Color(mark.color)
+            style = PaintingStyle.Stroke
+            strokeWidth = (MARK_WIDTH_MM * scale).coerceAtLeast(1.5f)
+        }
+        canvas.drawRect(Rect((box.left - shown.left) * scale, (box.top - shown.top) * scale, (box.right - shown.left) * scale, (box.bottom - shown.top) * scale), outline)
+        val label = DrawText().apply {
+            text = "**${mark.label}**"
+            x = box.left + MARK_LABEL_INSET_MM
+            y = box.top + MARK_LABEL_INSET_MM
+            width = MARK_LABEL_WIDTH_MM
+            fontSize = MARK_LABEL_SIZE
+            color = mark.color
+            background = LABEL_PAPER
+            markDirty()
+        }
+        textAdapter?.drawText(canvas, label, toCanvas, LABEL_PAPER)
+    }
+
     private companion object {
         const val MAX_CACHED_LAYOUTS = 64
+        const val MARK_WIDTH_MM = 0.35f
+        const val MARK_LABEL_INSET_MM = 0.6f
+        const val MARK_LABEL_WIDTH_MM = 12f
+        const val MARK_LABEL_SIZE = 8f
+        const val LABEL_PAPER = 0xFFFFFFFF.toInt()
 
         /** The cell of the free space of a page (see `FreeSpace`). */
         const val INK_CELL_MM = 2f

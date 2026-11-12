@@ -54,6 +54,7 @@ internal class AgentCli(
                 "propose-library" -> proposeLibrary(args.drop(1))
                 "activity" -> activity(args.drop(1))
                 "undo" -> undo(args.drop(1))
+                "guide" -> guide()
                 "call" -> call(args.drop(1))
                 "mcp" -> mcp()
                 else -> usage()
@@ -72,7 +73,7 @@ internal class AgentCli(
             """
             Usage:
               pencilnotes docs [--json]
-              pencilnotes read <document> [--page <n> [--strokes]] [--json]
+              pencilnotes read <document> [--page <n> [--strokes] | --pages <n,n,...>] [--json]
               pencilnotes search "<text>" [--json]
               pencilnotes preview <document> --file <items.json> [--json]
               pencilnotes propose <document> --file <items.json> [--title "<title>"] [--review]
@@ -82,6 +83,7 @@ internal class AgentCli(
               pencilnotes propose-library --file <items.json> [--title "<title>"] [--review]
               pencilnotes activity [--json]
               pencilnotes undo <batch>
+              pencilnotes guide
               pencilnotes call <tool> [--file <arguments.json>]
               pencilnotes mcp
 
@@ -112,7 +114,20 @@ internal class AgentCli(
         val document = parsed.positional.firstOrNull() ?: return usage()
         return connected { client ->
             val page = parsed.option("--page")
-            if (page == null) {
+            val several = parsed.option("--pages")
+            if (several != null) {
+                val indexes = several.split(',').map { it.trim().toIntOrNull() ?: throw Failure("--pages takes the indexes of pages, from 0, between commas.", EXIT_USAGE) }
+                val answer = client.call("read_pages", buildJsonObject {
+                    put("document", document)
+                    put("indexes", JsonArray(indexes.map { JsonPrimitive(it) }))
+                })
+                if (parsed.has("--json")) output.println(answer) else {
+                    for ((index, entry) in answer.array("pages").withIndex()) {
+                        if (index > 0) output.println()
+                        printPage(entry.jsonObject)
+                    }
+                }
+            } else if (page == null) {
                 val answer = client.call("read_document", buildJsonObject { put("document", document) })
                 if (parsed.has("--json")) output.println(answer) else {
                     output.println(answer.text("title"))
@@ -348,6 +363,12 @@ internal class AgentCli(
         }
     }
 
+    /** How to write in the notebook, as the application tells it. */
+    private fun guide(): Int = connected { client ->
+        output.println(client.call("read_guide", JsonObject(emptyMap())).text("guide"))
+        EXIT_OK
+    }
+
     /** Any tool, with the arguments in a file (none by default): its answer as JSON. */
     private fun call(args: List<String>): Int {
         val parsed = Arguments(args)
@@ -500,13 +521,13 @@ internal class AgentCli(
 
         /** The commands: what else is given to the application is not for this class. */
         val COMMANDS = setOf(
-            "docs", "read", "search", "preview", "propose", "status", "folders", "trash", "propose-library", "activity", "undo", "call",
+            "docs", "read", "search", "preview", "propose", "status", "folders", "trash", "propose-library", "activity", "undo", "call", "guide",
             "mcp", "help", "--help"
         )
 
         /** The longest answer read back: a page drawn as an image, in Base64, fits. */
         private const val MAX_ANSWER_BYTES = 64 * 1024 * 1024
-        private val VALUE_OPTIONS = setOf("--page", "--file", "--title")
+        private val VALUE_OPTIONS = setOf("--page", "--pages", "--file", "--title")
 
         private fun exitCodeOf(code: String?): Int = when (code) {
             "access_off" -> EXIT_NOT_RUNNING

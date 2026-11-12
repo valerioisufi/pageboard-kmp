@@ -82,6 +82,27 @@ class CanvasPageEngineTest {
     }
 
     @Test
+    fun aPartOfAPageIsDrawnAtTheSizeAskedWithItsMarks() = kotlinx.coroutines.runBlocking {
+        val page = io.github.valerioisufi.drawview.model.DrawPage(widthMm = 200f, heightMm = 100f).snapshotContent()
+        val engine = CanvasPageEngine(null)
+        fun decode(png: ByteArray) = javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(png))
+
+        val whole = decode(assertNotNull(engine.renderPage(emptyList(), page, 400)))
+        assertEquals(400 to 200, whole.width to whole.height)
+
+        // A part 50 x 25 mm at the same longest side: four times the detail
+        val mark = io.github.valerioisufi.drawview.agent.PageMark(io.github.valerioisufi.drawview.model.geometry.Rect(110f, 60f, 130f, 70f), "1", 0xFFD32F2F.toInt())
+        val part = decode(assertNotNull(engine.renderPage(emptyList(), page, 400, io.github.valerioisufi.drawview.model.geometry.Rect(100f, 50f, 150f, 75f), listOf(mark))))
+        assertEquals(400 to 200, part.width to part.height)
+        // The outline of the mark is where its box is in the part: 10 mm from its left, at 8 pixels a millimeter
+        fun isRed(x: Int, y: Int) = part.getRGB(x, y).let { ((it shr 16) and 0xFF) > 150 && ((it shr 8) and 0xFF) < 100 }
+        assertTrue(isRed(80, 120))
+        assertTrue(isRed(160, 240 - 81))
+        assertFalse(isRed(120, 120))
+        assertFalse(isRed(40, 40))
+    }
+
+    @Test
     fun withoutAPdfEngineOrAPageNothingIsTold() {
         assertNull(CanvasPageEngine(null).pdfInk("slides.pdf", 0))
         assertNull(CanvasPageEngine(null, pdfTiles = { FakePdf(210f, 297f) { } }).pdfInk("slides.pdf", 3))

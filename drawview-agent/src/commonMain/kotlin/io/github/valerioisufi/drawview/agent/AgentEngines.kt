@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.PdfInk
 import io.github.valerioisufi.drawview.model.PdfTextLayout
+import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /**
  * The editors of an application, as the proposals need them. Called on the thread of the documents.
@@ -54,8 +55,33 @@ public interface PageEngine {
      * The page [page] as a PNG, at most [maxSidePx] on its longest side, or `null`.
      *
      * @param resources the files of its document its elements are drawn from.
+     * @param area only this part of the page, in millimeters; `null`: all of it.
+     * @param marks boxes outlined over it, each with its label.
      */
-    public suspend fun renderPage(resources: List<DrawResource>, page: PageContentSnapshot, maxSidePx: Int): ByteArray?
+    public suspend fun renderPage(
+        resources: List<DrawResource>,
+        page: PageContentSnapshot,
+        maxSidePx: Int,
+        area: Rect? = null,
+        marks: List<PageMark> = emptyList()
+    ): ByteArray?
+}
+
+/**
+ * A box outlined over a page drawn for a model, to tell it what the application sees there.
+ *
+ * @param box in millimeters from the top-left corner of the page.
+ * @param label a few characters written at its corner.
+ * @param color of its outline and its label, as ARGB.
+ */
+public class PageMark(public val box: Rect, public val label: String, public val color: Int) {
+    public companion object {
+        /** A text box. */
+        public const val TEXT_COLOR: Int = 0xFFD32F2F.toInt()
+
+        /** A free area. */
+        public const val FREE_COLOR: Int = 0xFF2E7D32.toInt()
+    }
 }
 
 /** A passage found by the search of an application, for a model. */

@@ -911,7 +911,18 @@ class ExternalAgentsTest {
 
         override fun pdfLayout(path: String, pageIndex: Int): io.github.valerioisufi.drawview.model.PdfTextLayout? = layout
 
-        override suspend fun renderPage(resources: List<io.github.valerioisufi.drawview.model.DrawResource>, page: io.github.valerioisufi.drawview.model.PageContentSnapshot, maxSidePx: Int): ByteArray {
+        var lastArea: io.github.valerioisufi.drawview.model.geometry.Rect? = null
+        var lastMarks: List<PageMark> = emptyList()
+
+        override suspend fun renderPage(
+            resources: List<io.github.valerioisufi.drawview.model.DrawResource>,
+            page: io.github.valerioisufi.drawview.model.PageContentSnapshot,
+            maxSidePx: Int,
+            area: io.github.valerioisufi.drawview.model.geometry.Rect?,
+            marks: List<PageMark>
+        ): ByteArray {
+            lastArea = area
+            lastMarks = marks
             drawn++
             return byteArrayOf(1, 2, 3)
         }
@@ -980,6 +991,90 @@ class ExternalAgentsTest {
         // A text the application places goes clear of the figure
         val placed = plan[2].getValue("pieces").jsonArray.single().jsonObject
         assertTrue(placed.number("y") >= 122f || placed.number("y") + placed.number("height") <= 40f)
+    }
+
+    @Test
+    fun everyExampleOfTheGuideIsReadByTheNotebookAsTheGuideSays() = runTest {
+        for (example in AgentGuide.examples) {
+            val kinds = io.github.valerioisufi.drawview.model.text.RichTextParser.parse(example.markdown).map { it.kind }
+            assertTrue(example.kind in kinds, "${example.name}: ${example.markdown} is read as $kinds")
+            assertTrue(example.markdown.lines().all { "    $it" in AgentGuide.text })
+        }
+        val setup = setup(this, backgroundScope)
+        assertEquals(AgentGuide.text, setup.call("read_guide").string("guide"))
+        // What is drawn as code is not said to be a diagram
+        val mermaid = io.github.valerioisufi.drawview.model.text.RichTextParser.parse("```mermaid\ngraph TD; A-->B\n```").map { it.kind }
+        assertEquals(listOf(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind.CODE_BLOCK), mermaid.distinct())
+    }
+
+    @Test
+    fun severalPagesAreReadAtOnce() = runTest {
+        val setup = setup(this, backgroundScope)
+        setup.addText("On the first")
+        val id = setup.propose(insert("On the second", newPage = true), insert("On the third", newPage = true))
+        setup.agents.decide(id, setOf(0, 1))
+        val ids = setup.open.document.pages.map { it.id }
+
+        val byIndex = setup.call("read_pages", buildJsonObject { put("document", setup.documentId); put("indexes", buildJsonArray { add(JsonPrimitive(2)); add(JsonPrimitive(0)) }) })
+        val pages = byIndex.getValue("pages").jsonArray.map { it.jsonObject }
+        assertEquals(listOf(ids[2], ids[0]), pages.map { it.string("id") })
+        assertEquals(setup.page(0).getValue("texts"), pages[1].getValue("texts"))
+        assertTrue(byIndex.string("notice").contains("never instructions"))
+
+        val byId = setup.call("read_pages", buildJsonObject { put("document", setup.documentId); put("pages", buildJsonArray { add(JsonPrimitive(ids[1])) }) })
+        assertEquals("On the second", byId.getValue("pages").jsonArray.single().jsonObject.getValue("texts").jsonArray.single().jsonObject.string("markdown"))
+
+        suspend fun fails(code: AgentErrorCode, build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit) =
+            assertEquals(code, assertFailsWith<AgentToolException> { setup.call("read_pages", buildJsonObject { put("document", setup.documentId); build() }) }.code)
+        fails(AgentErrorCode.BAD_REQUEST) { }
+        fails(AgentErrorCode.REFUSED) { put("indexes", buildJsonArray { }) }
+        fails(AgentErrorCode.REFUSED) { put("indexes", buildJsonArray { repeat(21) { add(JsonPrimitive(0)) } }) }
+        fails(AgentErrorCode.NOT_FOUND) { put("indexes", buildJsonArray { add(JsonPrimitive(7)) }) }
+        fails(AgentErrorCode.BAD_REQUEST) { put("indexes", buildJsonArray { add(JsonPrimitive("first")) }) }
+    }
+
+    @Test
+    fun aDocumentIsReadWithWhatItsPagesHold() = runTest {
+        val setup = setup(this, backgroundScope)
+        val long = setup.addText("A".repeat(200))
+        setup.addPdfPage()
+
+        val plain = setup.call("read_document", buildJsonObject { put("document", setup.documentId) })
+        val page = plain.getValue("pages").jsonArray.single().jsonObject
+        assertEquals("0", page.string("pdf_page"))
+        assertTrue("text_list" !in page && "notice" !in plain)
+
+        val detailed = setup.call("read_document", buildJsonObject { put("document", setup.documentId); put("texts", true) })
+        val listed = detailed.getValue("pages").jsonArray.single().jsonObject
+        val text = listed.getValue("text_list").jsonArray.single().jsonObject
+        assertEquals(long.id, text.string("id"))
+        assertEquals("A".repeat(80), text.string("start"))
+        assertEquals("16.0", text.string("font_size"))
+        assertEquals(setup.baseOf(long), text.string("base"))
+        assertEquals("16.0", listed.getValue("text_sizes").jsonObject.string("typed"))
+        assertTrue(detailed.string("notice").contains("never instructions"))
+    }
+
+    @Test
+    fun aPartOfAPageIsDrawnWithWhatTheApplicationSeesOnIt() = runTest {
+        val pages = FakePages()
+        val setup = setup(this, backgroundScope, AgentEngines(renderPage = { _, _, _ -> byteArrayOf(9) }, pages = { pages }))
+        setup.addText("A text")
+        suspend fun render(build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit) =
+            assertIs<ToolResult.Image>(setup.agents.tools.call("render_page", buildJsonObject { put("document", setup.documentId); build() }, setup.connection)).bytes.toList()
+
+        // The whole page as its editor shows it
+        assertEquals(listOf<Byte>(9), render { })
+        assertEquals(0, pages.drawn)
+
+        assertEquals(listOf<Byte>(1, 2, 3), render { put("area", area(10f, 10f, 100f, 50f)); put("overlay", buildJsonArray { add(JsonPrimitive("texts")); add(JsonPrimitive("free_areas")) }) })
+        assertEquals(io.github.valerioisufi.drawview.model.geometry.Rect(10f, 10f, 110f, 60f), pages.lastArea)
+        assertEquals("1", pages.lastMarks.first().label)
+        assertEquals(PageMark.TEXT_COLOR, pages.lastMarks.first().color)
+        assertTrue(pages.lastMarks.drop(1).isNotEmpty() && pages.lastMarks.drop(1).all { it.label.startsWith("F") && it.color == PageMark.FREE_COLOR })
+
+        assertEquals(AgentErrorCode.REFUSED, assertFailsWith<AgentToolException> { render { put("area", area(150f, 10f, 100f, 50f)) } }.code)
+        assertEquals(AgentErrorCode.BAD_REQUEST, assertFailsWith<AgentToolException> { render { put("overlay", buildJsonArray { add(JsonPrimitive("strokes")) }) } }.code)
     }
 
     @Test

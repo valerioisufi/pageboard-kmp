@@ -109,6 +109,21 @@ class AgentCliTest {
     }
 
     @Test
+    fun severalPagesAreReadAtOnceAndTheGuideIsPrinted() {
+        startHost()
+        val id = newDocument()
+        val pages = run("read", id, "--pages", "0,0")
+        assertEquals(AgentCli.EXIT_OK, pages.code, pages.errors)
+        assertEquals(2, Regex("# Page 0").findAll(pages.output).count())
+        assertEquals(AgentCli.EXIT_NOT_FOUND, run("read", id, "--pages", "0,9").code)
+        assertEquals(AgentCli.EXIT_USAGE, run("read", id, "--pages", "one").code)
+
+        val guide = run("guide")
+        assertEquals(AgentCli.EXIT_OK, guide.code, guide.errors)
+        assertTrue(guide.output.contains("# Writing in the notebook"))
+    }
+
+    @Test
     fun aDocumentNotAllowedHasItsExitCode() {
         startHost()
         assertEquals(AgentCli.EXIT_NOT_GRANTED, run("read", "elsewhere").code)

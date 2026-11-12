@@ -111,7 +111,7 @@ abstract interface io.github.valerioisufi.drawview.agent/AgentJournal { // io.gi
 abstract interface io.github.valerioisufi.drawview.agent/PageEngine { // io.github.valerioisufi.drawview.agent/PageEngine|null[0]
     abstract fun pdfLayout(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.agent/PageEngine.pdfLayout|pdfLayout(kotlin.String;kotlin.Int){}[0]
     abstract fun textHeight(kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.drawview.agent/PageEngine.textHeight|textHeight(kotlin.String;kotlin.Float;kotlin.Float){}[0]
-    abstract suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawResource>, io.github.valerioisufi.drawview.model/PageContentSnapshot, kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.agent/PageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawResource>;io.github.valerioisufi.drawview.model.PageContentSnapshot;kotlin.Int){}[0]
+    abstract suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawResource>, io.github.valerioisufi.drawview.model/PageContentSnapshot, kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect? = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PageMark> = ...): kotlin/ByteArray? // io.github.valerioisufi.drawview.agent/PageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawResource>;io.github.valerioisufi.drawview.model.PageContentSnapshot;kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect?;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PageMark>){}[0]
     open fun pdfInk(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.model/PdfInk? // io.github.valerioisufi.drawview.agent/PageEngine.pdfInk|pdfInk(kotlin.String;kotlin.Int){}[0]
 }
 
@@ -1471,6 +1471,24 @@ final class io.github.valerioisufi.drawview.agent/LibraryProposal { // io.github
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/LibraryProposal.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/LibraryProposal.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryProposal.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/PageMark { // io.github.valerioisufi.drawview.agent/PageMark|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/String, kotlin/Int) // io.github.valerioisufi.drawview.agent/PageMark.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.String;kotlin.Int){}[0]
+
+    final val box // io.github.valerioisufi.drawview.agent/PageMark.box|{}box[0]
+        final fun <get-box>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.agent/PageMark.box.<get-box>|<get-box>(){}[0]
+    final val color // io.github.valerioisufi.drawview.agent/PageMark.color|{}color[0]
+        final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.agent/PageMark.color.<get-color>|<get-color>(){}[0]
+    final val label // io.github.valerioisufi.drawview.agent/PageMark.label|{}label[0]
+        final fun <get-label>(): kotlin/String // io.github.valerioisufi.drawview.agent/PageMark.label.<get-label>|<get-label>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.agent/PageMark.Companion|null[0]
+        final const val FREE_COLOR // io.github.valerioisufi.drawview.agent/PageMark.Companion.FREE_COLOR|{}FREE_COLOR[0]
+            final fun <get-FREE_COLOR>(): kotlin/Int // io.github.valerioisufi.drawview.agent/PageMark.Companion.FREE_COLOR.<get-FREE_COLOR>|<get-FREE_COLOR>(){}[0]
+        final const val TEXT_COLOR // io.github.valerioisufi.drawview.agent/PageMark.Companion.TEXT_COLOR|{}TEXT_COLOR[0]
+            final fun <get-TEXT_COLOR>(): kotlin/Int // io.github.valerioisufi.drawview.agent/PageMark.Companion.TEXT_COLOR.<get-TEXT_COLOR>|<get-TEXT_COLOR>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.agent/PlannedItem { // io.github.valerioisufi.drawview.agent/PlannedItem|null[0]

@@ -11,7 +11,7 @@ public final class io/github/valerioisufi/drawview/agent/ui/CanvasPageEngine : i
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun pdfInk (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfInk;
 	public fun pdfLayout (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
-	public fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun textHeight (Ljava/lang/String;FF)Ljava/lang/Float;
 }
 

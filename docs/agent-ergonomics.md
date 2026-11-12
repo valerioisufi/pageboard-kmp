@@ -170,10 +170,10 @@ The notes of the lecture assistant and the import of text use `PageOccupancy.of`
 
 | Tool | Change |
 |---|---|
-| `read_document` | Each page with `pdf_page` (the index in its PDF file, from 0) and `text_sizes`; with `texts: true`, each text box of each page by id, box, size and its first 80 characters, at most 2000 boxes |
-| `read_pages` (new) | `read_page` for at most 20 pages by id or index, without strokes |
-| `render_page` | `area` ({x, y, width, height} in millimeters): only that part, at `max_side`; `overlay`: `texts` and `free_areas` drawn as outlined boxes with their ids |
-| `read_guide` (new) | A fixed text: the Markdown of the notebook (headings, lists and their styles, tables, quotes, code, formulas inline and displayed), what is not there (Mermaid, HTML), the units, how a proposal goes. Every example in it is parsed by a test |
+| `read_document` | Each page with `pdf_page` (the index in its PDF file, from 0); with `texts: true`, each text box of each page by id, box, size, `base` and its first 80 characters, at most 2000 boxes, and the `text_sizes` of each page (they read the text of every PDF page, so they come only when asked) |
+| `read_pages` (new) | `read_page` for at most 20 pages by index or id, without strokes |
+| `render_page` | `area` ({x, y, width, height} in millimeters): only that part, at `max_side`; `overlay`: `texts` outlined in red and numbered from 1, `free_areas` in green as F1, F2…, both in the order `read_page` lists them. A part or an overlay is drawn by `PageEngine` (`PageMark`), the whole page by its editor when it is in one |
+| `read_guide` (new) | A fixed text (`AgentGuide`): the Markdown of the notebook (headings, lists and their styles, tables, quotes, code, formulas inline and displayed), what is not there (diagrams, HTML, images in the text), the units, how a proposal goes. Every example in it is parsed by a test |
 
 ### Proposals and activity kept (points 3, 4)
 
@@ -242,7 +242,7 @@ without the ones after it.
 | 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | done |
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | done |
 | 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | done |
-| 7 | Reading: `read_pages`, `read_document` with `pdf_page`, `text_sizes` and `texts`, `render_page` with `area` and `overlay`, `read_guide`; the commands `read --pages`, `guide`. Tests: the bounds, a crop at the scale asked, each example of the guide parsed as it says | 12, 13, 14, 16 | to do |
+| 7 | Reading: `read_pages`, `read_document` with `pdf_page`, `text_sizes` and `texts`, `render_page` with `area` and `overlay`, `read_guide`; the commands `read --pages`, `guide`. Tests: the bounds, a crop at the scale asked, each example of the guide parsed as it says | 12, 13, 14, 16 | done |
 | 8 | The bridge: "Connection closed" reproduced, then `mcp` waiting, reconnecting and answering errors. Tests against a socket: the application started after the bridge, restarted between two calls, absent | 17 | to do |
 
 Phase 1 found no defect behind point 4: a batch accepted in the review or applied at once is listed

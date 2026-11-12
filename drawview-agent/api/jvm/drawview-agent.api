@@ -619,12 +619,27 @@ public final class io/github/valerioisufi/drawview/agent/LibraryProposal {
 public abstract interface class io/github/valerioisufi/drawview/agent/PageEngine {
 	public fun pdfInk (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfInk;
 	public abstract fun pdfLayout (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
-	public abstract fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun renderPage$default (Lio/github/valerioisufi/drawview/agent/PageEngine;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/util/List;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun textHeight (Ljava/lang/String;FF)Ljava/lang/Float;
 }
 
 public final class io/github/valerioisufi/drawview/agent/PageEngine$DefaultImpls {
 	public static fun pdfInk (Lio/github/valerioisufi/drawview/agent/PageEngine;Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfInk;
+	public static synthetic fun renderPage$default (Lio/github/valerioisufi/drawview/agent/PageEngine;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/util/List;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PageMark {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/PageMark$Companion;
+	public static final field FREE_COLOR I
+	public static final field TEXT_COLOR I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/lang/String;I)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getColor ()I
+	public final fun getLabel ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PageMark$Companion {
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/PlacementWarning {
