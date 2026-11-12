@@ -11,8 +11,11 @@ import kotlin.math.sign
  * [SourceMapping]): the delimiters are not shown, so several offsets of the source are shown at the
  * same place, and the field moves the caret by the characters of the source.
  *
- * * A move (the arrows, Home and End, a word, with Shift too) that would leave the caret at the same
- *   place on the screen goes on in its direction: every press moves the caret.
+ * * A move by a key (the arrows, Home and End, a word, with Shift too) that would leave the caret at
+ *   the same place on the screen goes on in its direction: every press moves the caret.
+ * * A place given by a pointer (a mouse, a finger, a pen, a handle) is where the pointer is: it is
+ *   never moved on, only settled among the offsets shown there. Moved on, a drag starting at the
+ *   edge of a format would leave out the character it starts on (see docs/pointer-selection.md).
  * * Among the offsets shown at the same place, the caret takes the one inside the format on its
  *   left (typing goes on in the format of the character on the left, as in the word processors),
  *   never one in a marker that is not shown; a selection takes the offsets inside it, so that it
@@ -25,9 +28,10 @@ internal object CaretStops {
     /**
      * [newValue] with its selection on offsets where the caret can stand, moved by a move from
      * [oldValue] as above, shown by [mapping] (that of the text of both); `null` when the text
-     * changed, the selection did not, or it needs nothing.
+     * changed, the selection did not, or it needs nothing. [pointed] tells that a pointer gave the
+     * selection, from where it is on the screen, and no key moved it.
      */
-    fun moved(oldValue: TextFieldValue, newValue: TextFieldValue, mapping: SourceMapping): TextFieldValue? {
+    fun moved(oldValue: TextFieldValue, newValue: TextFieldValue, mapping: SourceMapping, pointed: Boolean = false): TextFieldValue? {
         if (oldValue.text != newValue.text || oldValue.selection == newValue.selection) return null
         if (mapping.sourceLength != newValue.text.length) return null
         val old = oldValue.selection
@@ -35,11 +39,11 @@ internal object CaretStops {
         val selection = if (new.collapsed) {
             // A caret: moved from where it was, or put
             val from = if (old.collapsed) old.start else if (new.start < old.min) old.min else old.max
-            TextRange(caret(mapping, settle(mapping, from, new.start)))
+            TextRange(caret(mapping, if (pointed) new.start else settle(mapping, from, new.start)))
         } else {
             // The end that moved goes on; the selection holds what it shows
-            val start = if (new.start == old.start) new.start else settle(mapping, old.start, new.start)
-            val end = if (new.end == old.end) new.end else settle(mapping, old.end, new.end)
+            val start = if (pointed || new.start == old.start) new.start else settle(mapping, old.start, new.start)
+            val end = if (pointed || new.end == old.end) new.end else settle(mapping, old.end, new.end)
             val forward = start <= end
             val first = inside(mapping, min(start, end), towardsEnd = true)
             val last = inside(mapping, max(start, end), towardsEnd = false)

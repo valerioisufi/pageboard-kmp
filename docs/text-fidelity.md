@@ -212,7 +212,8 @@ presented text (Information Expert).
   left (typing goes on in the format on its left, as in the word processors), after the marker of
   a list item, a quote or a heading. The source of a formula is made of stops (decision 3). The
   field applies them to what it gives the editor (its keys, a mouse, the touches, the handles),
-  where the presented text is; `keepCaretOutOfMarkers` stays for the moves the editor makes itself
+  where the presented text is (a place given by a pointer is settled and never moved on, since
+  `docs/pointer-selection.md`); `keepCaretOutOfMarkers` stays for the moves the editor makes itself
   (changed in phase 4: proposed first as a port of `TextEditorManager`, which would have added to
   the public API what only the field needs).
 * Deletion of what is seen: `SeenDeletion` (`drawview-canvas`, internal) takes the characters

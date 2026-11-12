@@ -227,11 +227,13 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     // The source the shown text presents
     val shownSource by rememberUpdatedState(value.text)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    // Whether a button of a mouse is down on the field: what the field selects then is where the pointer is
+    val mouseDown = remember { booleanArrayOf(false) }
     /**
      * Gives the editor what the user did: a move of the caret off what is not shown (see
-     * [CaretStops]), as the text is shown now.
+     * [CaretStops]), as the text is shown now. [pointed] tells that a pointer gave the selection.
      */
-    fun change(newValue: TextFieldValue, smartNewline: Boolean = true) {
+    fun change(newValue: TextFieldValue, smartNewline: Boolean = true, pointed: Boolean = false) {
         val current = editor.value
         if (current.text != shownSource) {
             editor.updateValue(newValue, smartNewline)
@@ -239,7 +241,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
         }
         // Off the fences of the blocks of code, then off what is not shown
         val offFences = CodeBlockCaret.moved(current, newValue, currentShown) ?: newValue
-        val stopped = CaretStops.moved(current, offFences, currentShown.mapping) ?: offFences
+        val stopped = CaretStops.moved(current, offFences, currentShown.mapping, pointed || mouseDown[0]) ?: offFences
         editor.updateValue(stopped, smartNewline)
     }
     /** The offset of the source under a point of the layout of the field, as it is shown now. */
@@ -321,12 +323,27 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     touch,
                     offsetAt = ::offsetAt,
                     value = { editor.value },
-                    onValue = { change(it) },
+                    onValue = { change(it, pointed = true) },
                     onTap = {
                         focusRequester.requestFocus()
                         keyboardController?.show()
                     }
                 )
+                // A mouse with a button down selects where it is, until the field has taken its release
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            if (event.changes.none { it.type == PointerType.Mouse }) continue
+                            if (event.changes.any { it.pressed }) {
+                                mouseDown[0] = true
+                            } else if (mouseDown[0]) {
+                                awaitPointerEvent(PointerEventPass.Final)
+                                mouseDown[0] = false
+                            }
+                        }
+                    }
+                }
                 // A click on an object (a block of code, a formula, a cell) puts the caret on the
                 // character clicked, and a drag from it selects through it (the field would take the
                 // object for one character)
@@ -544,7 +561,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     val point = Offset(local.x * LAYOUT_SCALE, local.y * LAYOUT_SCALE)
                     val offset = codeOffsetAt(result, currentShown, point)
                         ?: currentShown.mapping.transformedToOriginal(result.getOffsetForPosition(point))
-                    change(editor.value.copy(selection = TextRange(offset)))
+                    change(editor.value.copy(selection = TextRange(offset)), pointed = true)
                 }
             }
         )
@@ -596,7 +613,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 toScreen = ::toScreen,
                 toLayout = ::toLayout,
                 offsetAt = ::offsetAt,
-                onValue = { change(it) },
+                onValue = { change(it, pointed = true) },
                 color = LocalTextSelectionColors.current.handleColor
             )
         }
