@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.model.placement
 
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.PdfInk
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.PdfTextLayout
@@ -44,12 +45,24 @@ public class PageOccupancy(
             page: DrawPage,
             pdfText: (DrawPdf) -> PdfTextLayout? = { null },
             excluded: Set<String> = emptySet()
+        ): PageOccupancy = of(page, pdfText, { null }, excluded)
+
+        /**
+         * As [of], the PDF page by all it draws when [pdfInk] tells it: its figures and boxes too,
+         * which the lines of its text leave out.
+         */
+        public fun of(
+            page: DrawPage,
+            pdfText: (DrawPdf) -> PdfTextLayout?,
+            pdfInk: (DrawPdf) -> PdfInk?,
+            excluded: Set<String> = emptySet()
         ): PageOccupancy {
             val boxes = mutableListOf<Rect>()
             for (element in page.elements()) {
                 if (element.id in excluded || element is DrawTextMarkup) continue
                 if (element is DrawPdf) {
-                    boxes += pdfBoxes(page, pdfText(element))
+                    val ink = pdfInk(element)
+                    boxes += if (ink != null) ink.boxesIn(fitPdfPage(ink.width.toDouble(), ink.height.toDouble(), page.rect())) else pdfBoxes(page, pdfText(element))
                     continue
                 }
                 page.boundsOf(element)?.takeIf { !it.isEmpty }?.let { boxes += it }

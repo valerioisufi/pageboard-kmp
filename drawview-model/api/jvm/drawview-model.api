@@ -713,6 +713,17 @@ public final class io/github/valerioisufi/drawview/model/PageModelsKt {
 	public static final fun newElementId ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/drawview/model/PdfInk {
+	public fun <init> (FFII[Z)V
+	public final fun boxesIn (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Ljava/util/List;
+	public final fun getColumns ()I
+	public final fun getHeight ()F
+	public final fun getRows ()I
+	public final fun getWidth ()F
+	public final fun isEmpty ()Z
+	public final fun isTaken (II)Z
+}
+
 public final class io/github/valerioisufi/drawview/model/PdfTextLayout {
 	public fun <init> (FF[I[F)V
 	public final fun boxOf (I)Lio/github/valerioisufi/drawview/model/geometry/Rect;
@@ -2813,7 +2824,9 @@ public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy
 public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion {
 	public final fun lineSpacingOf (Lio/github/valerioisufi/drawview/model/PageBackground;)F
 	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 }
 
 public final class io/github/valerioisufi/drawview/model/placement/PageTextSizes {

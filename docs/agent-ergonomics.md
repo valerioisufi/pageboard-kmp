@@ -154,11 +154,13 @@ not stored (`docs/text-heights.md`). `AgentEditors.textHeight`, `pdfLayout` and 
 
 ### What a PDF page draws (point 5)
 
-`PdfInk` is a grid of the page, 2 mm a cell like `FreeSpace`, with the cells that are not paper: the
-application draws the PDF page alone, small, and marks the cells whose pixels differ from the
-background of the page. `PageOccupancy.of` takes `pdfInk` beside `pdfText` and adds its cells, joined
-in runs, to the boxes. A page that is one photograph is taken whole, as today. The grid of a PDF
-page is kept by its file and index: a PDF does not change.
+`PdfInk` (`drawview-model`) is a grid of the page, 2 mm a cell like `FreeSpace`, with the cells that
+are not paper. `CanvasPageEngine` draws the PDF page alone, 3 pixels a cell, takes as its paper the
+color of most of its pixels, and marks the cells with a pixel that differs from it; so a slide on a
+dark background is free where it is its background. `PageOccupancy.of` takes `pdfInk` beside
+`pdfText` and adds its cells, joined in boxes, in place of the lines of the text. A page that is one
+photograph is taken whole, as today. The grid of a PDF page is kept by its file and index: a PDF does
+not change. It is asked of `PageEngine` whether the document is in an editor or not.
 
 `free_areas`, the place of `insert_text` and every `overlaps` come from this occupancy, so they agree.
 The notes of the lecture assistant and the import of text use `PageOccupancy.of` too: they are given
@@ -239,13 +241,18 @@ without the ones after it.
 | 3 | `update_text`; the boxes and warnings of `restyle_text`, `place_elements`, `update_text` in the plan, seen by the items after; `outside_page`. Tests: words, size, width and place in one operation and one undo, stale by `base`, converging on another device through the written operation, a text grown by a larger size reported | 2, 11, 8 | done |
 | 4 | `AgentJournal`: proposals, library proposals and activity kept; `ExternalAgents` loading them. Tests: a waiting proposal accepted after a restart, a batch undone after a restart, stale after a change in between, a file of version 2, a truncated file and a batch that is not read all left untouched, the bounds | 3, 4 | done |
 | 5 | `PageEngine` in PencilNotes: measured heights, PDF layout and render with the document closed; `text_sizes` in `read_page`. Tests: a closed document answering `measured: true` with the heights of the same document in an editor, a slide with text no longer taken whole, the picture of a closed page; the desktop application on a scratch directory | 9, 6 | done |
-| 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | to do |
+| 6 | `PdfInk`: `PageOccupancy.of` with `pdfInk`, free areas and `overlaps` on what a PDF draws. Tests: a slide with a figure and no text under it, a scanned page, an empty PDF page, the time of a page measured; the screenshots of the free areas on real slides from `docs/test-data.md` | 5 | done |
 | 7 | Reading: `read_pages`, `read_document` with `pdf_page`, `text_sizes` and `texts`, `render_page` with `area` and `overlay`, `read_guide`; the commands `read --pages`, `guide`. Tests: the bounds, a crop at the scale asked, each example of the guide parsed as it says | 12, 13, 14, 16 | to do |
 | 8 | The bridge: "Connection closed" reproduced, then `mcp` waiting, reconnecting and answering errors. Tests against a socket: the application started after the bridge, restarted between two calls, absent | 17 | to do |
 
 Phase 1 found no defect behind point 4: a batch accepted in the review or applied at once is listed
 by `list_activity`. The list was empty because the application had been restarted, which phase 4
 answers. The command line gained `--review` for `propose` and `propose-library`.
+
+Phase 6 was checked on PDF pages drawn by the tests (a figure, a hairline, a dark background, an
+empty page, a photograph): the repository holds no PDF of slides. Reading what an A4 page draws takes
+5.6 ms on the Mac, the drawing of the PDF by PDFium apart. Looking at the free areas of real slides in
+the application is left to the user.
 
 Phases 1 to 3 remove the second and third rounds of that session; 4 removes the guessing after a
 restart; 5 and 6 make the answers true on any document; 7 and 8 are comfort.

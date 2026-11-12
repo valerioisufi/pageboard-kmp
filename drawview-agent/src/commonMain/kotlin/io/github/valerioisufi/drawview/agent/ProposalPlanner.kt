@@ -340,7 +340,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 element is DrawStroke -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
                 element is DrawPdf -> {
                     val others = model.elements().filter { it.id != element.id }.mapTo(mutableSetOf()) { it.id }
-                    val pdf = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, excluded = others)
+                    val pdf = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, pdfInk = { engines.pdfInk(document, it) }, excluded = others)
                     if (pdf.boxes.any { new(it) }) covered += PlacementWarning.Overlaps.PDF
                 }
                 else -> model.boundsOf(element)?.let { if (new(it)) covered += element.id }
@@ -481,7 +481,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     private fun occupancyOf(document: DrawDocument, page: PlannedPage, measure: TextMeasure): PageOccupancy {
         val model = page.model ?: return PageOccupancy(page.widthMm, page.heightMm, page.boxes.toList(), PageOccupancy.lineSpacingOf(page.background))
         val texts = model.texts.filter { it.removed == null }
-        val others = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
+        val others = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, pdfInk = { engines.pdfInk(document, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
         val boxes = texts.filter { it.id !in page.excluded }.map { measure.boundsOf(it) }
         return PageOccupancy(page.widthMm, page.heightMm, others.boxes + boxes + page.boxes, others.lineSpacingMm)
     }

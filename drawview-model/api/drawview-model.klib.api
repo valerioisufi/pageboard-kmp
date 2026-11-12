@@ -2117,6 +2117,7 @@ final class io.github.valerioisufi.drawview.model.placement/PageOccupancy { // i
     final object Companion { // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion|null[0]
         final fun lineSpacingOf(io.github.valerioisufi.drawview.model/PageBackground): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.lineSpacingOf|lineSpacingOf(io.github.valerioisufi.drawview.model.PageBackground){}[0]
         final fun of(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPdf, io.github.valerioisufi.drawview.model/PdfTextLayout?> = ..., kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPdf,io.github.valerioisufi.drawview.model.PdfTextLayout?>;kotlin.collections.Set<kotlin.String>){}[0]
+        final fun of(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPdf, io.github.valerioisufi.drawview.model/PdfTextLayout?>, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPdf, io.github.valerioisufi.drawview.model/PdfInk?>, kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPdf,io.github.valerioisufi.drawview.model.PdfTextLayout?>;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPdf,io.github.valerioisufi.drawview.model.PdfInk?>;kotlin.collections.Set<kotlin.String>){}[0]
     }
 }
 
@@ -3130,6 +3131,24 @@ final class io.github.valerioisufi.drawview.model/PageContentSnapshot { // io.gi
 
     final fun detached(): io.github.valerioisufi.drawview.model/PageContentSnapshot // io.github.valerioisufi.drawview.model/PageContentSnapshot.detached|detached(){}[0]
     final fun rect(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/PageContentSnapshot.rect|rect(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model/PdfInk { // io.github.valerioisufi.drawview.model/PdfInk|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/BooleanArray) // io.github.valerioisufi.drawview.model/PdfInk.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.BooleanArray){}[0]
+
+    final val columns // io.github.valerioisufi.drawview.model/PdfInk.columns|{}columns[0]
+        final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.drawview.model/PdfInk.columns.<get-columns>|<get-columns>(){}[0]
+    final val height // io.github.valerioisufi.drawview.model/PdfInk.height|{}height[0]
+        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.model/PdfInk.height.<get-height>|<get-height>(){}[0]
+    final val isEmpty // io.github.valerioisufi.drawview.model/PdfInk.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.drawview.model/PdfInk.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val rows // io.github.valerioisufi.drawview.model/PdfInk.rows|{}rows[0]
+        final fun <get-rows>(): kotlin/Int // io.github.valerioisufi.drawview.model/PdfInk.rows.<get-rows>|<get-rows>(){}[0]
+    final val width // io.github.valerioisufi.drawview.model/PdfInk.width|{}width[0]
+        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.model/PdfInk.width.<get-width>|<get-width>(){}[0]
+
+    final fun boxesIn(io.github.valerioisufi.drawview.model.geometry/Rect): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.model/PdfInk.boxesIn|boxesIn(io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
+    final fun isTaken(kotlin/Int, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model/PdfInk.isTaken|isTaken(kotlin.Int;kotlin.Int){}[0]
 }
 
 final class io.github.valerioisufi.drawview.model/PdfTextLayout { // io.github.valerioisufi.drawview.model/PdfTextLayout|null[0]

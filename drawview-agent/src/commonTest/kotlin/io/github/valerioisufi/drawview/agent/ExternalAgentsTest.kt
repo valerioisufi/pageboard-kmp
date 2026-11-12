@@ -899,8 +899,13 @@ class ExternalAgentsTest {
     }
 
     /** Pages laid out without an editor: every line 5 mm high, 40 characters wide. */
-    private class FakePages(private val layout: io.github.valerioisufi.drawview.model.PdfTextLayout? = null) : PageEngine {
+    private class FakePages(
+        private val layout: io.github.valerioisufi.drawview.model.PdfTextLayout? = null,
+        private val ink: io.github.valerioisufi.drawview.model.PdfInk? = null
+    ) : PageEngine {
         var drawn = 0
+
+        override fun pdfInk(path: String, pageIndex: Int): io.github.valerioisufi.drawview.model.PdfInk? = ink
 
         override fun textHeight(markdown: String, widthMm: Float, fontSize: Float): Float = markdown.lines().sumOf { (it.length + 39) / 40 } * 5f
 
@@ -935,6 +940,46 @@ class ExternalAgentsTest {
         val image = assertIs<ToolResult.Image>(setup.agents.tools.call("render_page", buildJsonObject { put("document", setup.documentId) }, setup.connection))
         assertEquals(listOf<Byte>(1, 2, 3), image.bytes.toList())
         assertEquals(1, pages.drawn)
+    }
+
+    private suspend fun Setup.addPdfPage() = open.edit { session ->
+        val page = session.document.pages.first()
+        session.submit(
+            CompositeChange(
+                listOf(
+                    io.github.valerioisufi.drawview.model.change.AddResource.of("pdf-resource", io.github.valerioisufi.drawview.model.DrawResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
+                    AddElements(page.id, listOf(io.github.valerioisufi.drawview.model.change.PdfData("pdf-element", "pdf-resource", 0)))
+                )
+            )
+        )
+    }
+
+    @Test
+    fun aFigureOfAPdfPageIsNotFreeSpaceAndCoveringItIsTold() = runTest {
+        // An A4 page whose PDF draws a figure with no text, in its upper half: 2 mm a cell
+        val columns = 105
+        val rows = 148
+        val taken = BooleanArray(columns * rows)
+        for (row in 20..60) for (column in 15..90) taken[row * columns + column] = true
+        val figure = io.github.valerioisufi.drawview.model.PdfInk(210f, 296f, columns, rows, taken)
+        val setup = setup(this, backgroundScope, AgentEngines(pages = { FakePages(ink = figure) }))
+        setup.addPdfPage()
+
+        val free = setup.page().getValue("free_areas").jsonArray.map { it.jsonObject }
+        assertTrue(free.isNotEmpty())
+        fun JsonObject.number(name: String) = string(name).toFloat()
+        // No free area crosses the figure, which is at 30..182 by 40..122 mm
+        assertTrue(free.none { it.number("x") < 182f && it.number("x") + it.number("width") > 30f && it.number("y") < 122f && it.number("y") + it.number("height") > 40f })
+
+        val over = setup.styled("On the figure") { put("where", "inside"); put("area", area(60f, 60f, 60f, 20f)) }
+        val beside = setup.styled("Under the figure") { put("where", "inside"); put("area", area(30f, 150f, 60f, 20f)) }
+        val plan = setup.preview(over, beside, insert("Wherever there is room"))
+        assertEquals(listOf("overlaps"), plan[0].warnings())
+        assertEquals(listOf("pdf"), plan[0].getValue("warnings").jsonArray.single().jsonObject.getValue("with").jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(emptyList(), plan[1].warnings())
+        // A text the application places goes clear of the figure
+        val placed = plan[2].getValue("pieces").jsonArray.single().jsonObject
+        assertTrue(placed.number("y") >= 122f || placed.number("y") + placed.number("height") <= 40f)
     }
 
     @Test

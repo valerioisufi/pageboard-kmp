@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.PageContentSnapshot
+import io.github.valerioisufi.drawview.model.PdfInk
 import io.github.valerioisufi.drawview.model.PdfTextLayout
 
 /**
@@ -45,6 +46,9 @@ public interface PageEngine {
 
     /** The text of the page [pageIndex] of the PDF file at [path], or `null` when it cannot be read. */
     public fun pdfLayout(path: String, pageIndex: Int): PdfTextLayout?
+
+    /** What the page [pageIndex] of the PDF file at [path] draws, text or not, or `null` when it cannot be told. */
+    public fun pdfInk(path: String, pageIndex: Int): PdfInk? = null
 
     /**
      * The page [page] as a PNG, at most [maxSidePx] on its longest side, or `null`.
@@ -108,5 +112,11 @@ public class AgentEngines(
         editors?.pdfLayout(document.id, pdf)?.let { return it }
         val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return null
         return pages?.invoke()?.pdfLayout(resource.path, pdf.pdfPageIndex)
+    }
+
+    /** What the PDF page [pdf] of [document] draws, as [pages] tells it. */
+    internal fun pdfInk(document: DrawDocument, pdf: DrawPdf): PdfInk? {
+        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return null
+        return pages?.invoke()?.pdfInk(resource.path, pdf.pdfPageIndex)
     }
 }

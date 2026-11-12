@@ -112,6 +112,7 @@ abstract interface io.github.valerioisufi.drawview.agent/PageEngine { // io.gith
     abstract fun pdfLayout(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.agent/PageEngine.pdfLayout|pdfLayout(kotlin.String;kotlin.Int){}[0]
     abstract fun textHeight(kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.drawview.agent/PageEngine.textHeight|textHeight(kotlin.String;kotlin.Float;kotlin.Float){}[0]
     abstract suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawResource>, io.github.valerioisufi.drawview.model/PageContentSnapshot, kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.agent/PageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawResource>;io.github.valerioisufi.drawview.model.PageContentSnapshot;kotlin.Int){}[0]
+    open fun pdfInk(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.model/PdfInk? // io.github.valerioisufi.drawview.agent/PageEngine.pdfInk|pdfInk(kotlin.String;kotlin.Int){}[0]
 }
 
 sealed interface io.github.valerioisufi.drawview.agent/LibraryItem { // io.github.valerioisufi.drawview.agent/LibraryItem|null[0]

@@ -617,9 +617,14 @@ public final class io/github/valerioisufi/drawview/agent/LibraryProposal {
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/PageEngine {
+	public fun pdfInk (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfInk;
 	public abstract fun pdfLayout (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
 	public abstract fun renderPage (Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun textHeight (Ljava/lang/String;FF)Ljava/lang/Float;
+}
+
+public final class io/github/valerioisufi/drawview/agent/PageEngine$DefaultImpls {
+	public static fun pdfInk (Lio/github/valerioisufi/drawview/agent/PageEngine;Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfInk;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/PlacementWarning {
