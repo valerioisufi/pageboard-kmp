@@ -29,6 +29,9 @@ import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.text.TextChains
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.shape.ShapeBox
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -58,6 +61,9 @@ public object FrameStyle {
     /** The handles of the sides of a text (its width): thickness and length. */
     internal const val SIDE_HANDLE_WIDTH_DP = 8f
     internal const val SIDE_HANDLE_LENGTH_DP = 24f
+
+    /** The handles of the sides of a shape (its width or its height): length along the side. */
+    internal const val SHAPE_SIDE_LENGTH_DP = 18f
 
     /** The guides of a box snapped to what is around it (see `SnapManager`): color and thickness. */
     public const val GUIDE_COLOR: Int = 0xFFE5397A.toInt()
@@ -90,7 +96,11 @@ public class SelectionFrame(
     public val mmToScreen: Matrix2D,
     /** Whether the text framed goes on from a box before it, and into a box after it (see `TextChains`). */
     internal val chainedAbove: Boolean = false,
-    internal val chainedBelow: Boolean = false
+    internal val chainedBelow: Boolean = false,
+    /** The ends of a line alone in the selection (start, end): its only handles, no frame drawn. */
+    internal val lineEnds: List<Offset> = emptyList(),
+    /** The middles of the sides of a shape alone in the selection (top, right, bottom, left), which resize it. */
+    internal val boxSides: List<Offset> = emptyList()
 ) {
     public val center: Offset
         get() = Offset(corners.sumOf { it.x.toDouble() }.toFloat() / 4f, corners.sumOf { it.y.toDouble() }.toFloat() / 4f)
@@ -116,6 +126,25 @@ public class SelectionFrame(
     /** The handle of the frame under [point] within [radius] pixels, if any. */
     internal fun handleAt(point: Offset, radius: Float): Handle? {
         fun near(handle: Offset) = hypot(point.x - handle.x, point.y - handle.y) <= radius
+        // The nearer end of a short line
+        if (lineEnds.size == 2) {
+            val start = hypot(point.x - lineEnds[0].x, point.y - lineEnds[0].y)
+            val end = hypot(point.x - lineEnds[1].x, point.y - lineEnds[1].y)
+            return when {
+                start <= radius && start <= end -> Handle.START
+                end <= radius -> Handle.END
+                else -> null
+            }
+        }
+        if (boxSides.size == 4) {
+            val side = boxSides.indices.firstOrNull { near(boxSides[it]) && !corners.any(::near) }
+            when (side) {
+                0 -> return Handle.TOP
+                1 -> return Handle.RIGHT
+                2 -> return Handle.BOTTOM
+                3 -> return Handle.LEFT
+            }
+        }
         return when {
             rotationHandle != null && near(rotationHandle) -> Handle.ROTATION
             scalesFromCorners && corners.any(::near) -> Handle.CORNER
@@ -125,8 +154,15 @@ public class SelectionFrame(
         }
     }
 
-    /** A handle of the frame. */
-    public enum class Handle { ROTATION, CORNER, LEFT, RIGHT }
+    /** The corner (0 top left, then clockwise) under [point] within [radius] pixels, if any. */
+    internal fun cornerAt(point: Offset, radius: Float): Int? =
+        corners.indices.firstOrNull { hypot(point.x - corners[it].x, point.y - corners[it].y) <= radius }
+
+    /**
+     * A handle of the frame: the knob turning it, a corner, a side; the ends of a line alone
+     * ([START], [END]).
+     */
+    public enum class Handle { ROTATION, CORNER, LEFT, RIGHT, TOP, BOTTOM, START, END }
 
     public companion object {
         /**
@@ -135,6 +171,7 @@ public class SelectionFrame(
         internal fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
             val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
+            controller.shapeEditing.single()?.let { (element, value) -> return ofShape(mmToScreen, element, value, controller.viewport.density) }
             val frame = of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
             val text = selection.texts.singleOrNull()?.takeIf { selection.isSingleText } ?: return frame
             val chains = TextChains.of(controller.document)
@@ -172,6 +209,23 @@ public class SelectionFrame(
         /** This frame marked as going on from a box before it ([above]) and into one after it ([below]). */
         private fun SelectionFrame.chained(above: Boolean, below: Boolean): SelectionFrame =
             if (!above && !below) this else SelectionFrame(corners, rotationHandle, rotationStemBase, sideHandles, scalesFromCorners, mmToScreen, above, below)
+
+        /**
+         * The frame of a shape alone in the selection: a line by its ends only, a shape of a box
+         * by its frame with the middles of its sides.
+         */
+        private fun ofShape(mmToScreen: Matrix2D, element: DrawCustomElement, value: ShapeElement, density: Float): SelectionFrame? {
+            val box = Rect(element.x, element.y, element.x + element.width, element.y + element.height)
+            val frame = of(mmToScreen, box, element.rotation, density, sideHandles = false, transformable = true) ?: return null
+            if (value.kind.isLine) {
+                val (start, end) = ShapeGeometry.lineEnds(ShapeBox(element.x, element.y, element.width, element.height, element.rotation))
+                val ends = listOf(start, end).map { mmToScreen.mapPoint(it.x, it.y).let { p -> Offset(p.x, p.y) } }
+                return SelectionFrame(frame.corners, null, frame.rotationStemBase, emptyList(), false, mmToScreen, lineEnds = ends)
+            }
+            val c = frame.corners
+            val sides = listOf((c[0] + c[1]) / 2f, (c[1] + c[2]) / 2f, (c[2] + c[3]) / 2f, (c[3] + c[0]) / 2f)
+            return SelectionFrame(c, frame.rotationHandle, frame.rotationStemBase, emptyList(), true, mmToScreen, boxSides = sides)
+        }
 
         private fun of(mmToScreen: Matrix2D, box: Rect, rotation: Float, density: Float, sideHandles: Boolean, transformable: Boolean): SelectionFrame? {
             val turn = Matrix2D().postRotate(rotation, box.center.x, box.center.y)
@@ -223,6 +277,8 @@ internal object SelectionOverlay {
     }
 
     fun draw(scope: DrawScope, controller: DrawViewController, selection: SelectionGroup, primary: Color) {
+        // A shape dragged by a handle: its draft is drawn instead (see `ShapeEditing`)
+        if (controller.shapeEditing.handleDraft != null) return
         val frame = SelectionFrame.compute(controller, selection) ?: return
         if (selection.isLifted) drawElements(scope, controller, selection.elements(), selection.pageIndex, frame.mmToScreen)
         drawFrame(scope, frame, primary, controller.viewport.density)
@@ -261,6 +317,15 @@ internal object SelectionOverlay {
     /** Draws [frame] and its handles, sized for the screen of [density]. */
     fun drawFrame(scope: DrawScope, frame: SelectionFrame, primary: Color, density: Float) = with(scope) {
         val stroke = FrameStyle.STROKE_DP * density
+        // A line: its ends only
+        if (frame.lineEnds.isNotEmpty()) {
+            val radius = FrameStyle.CORNER_HANDLE_DP * density
+            for (end in frame.lineEnds) {
+                drawCircle(Color.White, radius = radius, center = end)
+                drawCircle(primary, radius = radius, center = end, style = Stroke(width = stroke * 1.5f))
+            }
+            return@with
+        }
         val path = Path().apply {
             moveTo(frame.corners[0].x, frame.corners[0].y)
             for (i in 1 until 4) lineTo(frame.corners[i].x, frame.corners[i].y)
@@ -306,6 +371,25 @@ internal object SelectionOverlay {
         }
         if (frame.chainedAbove) chevron(frame.corners[0] + (frame.corners[1] - frame.corners[0]) * CHAIN_MARK_AT + ay * (size * 0.4f))
         if (frame.chainedBelow) chevron(frame.corners[3] + (frame.corners[2] - frame.corners[3]) * CHAIN_MARK_AT + ay * (size * 1.6f))
+
+        // The sides of a shape: small bars along them
+        if (frame.boxSides.isNotEmpty()) {
+            val width = FrameStyle.SIDE_HANDLE_WIDTH_DP * density
+            val length = FrameStyle.SHAPE_SIDE_LENGTH_DP * density
+            frame.boxSides.forEachIndexed { i, handle ->
+                val along = if (i % 2 == 0) frame.corners[1] - frame.corners[0] else frame.corners[2] - frame.corners[1]
+                val angle = atan2(along.y, along.x) * 180f / PI.toFloat()
+                translate(handle.x, handle.y) {
+                    rotate(angle, pivot = Offset.Zero) {
+                        val topLeft = Offset(-length / 2f, -width / 2f)
+                        val size = Size(length, width)
+                        val corner = CornerRadius(width / 2f, width / 2f)
+                        drawRoundRect(color = Color.White, topLeft = topLeft, size = size, cornerRadius = corner)
+                        drawRoundRect(color = primary, topLeft = topLeft, size = size, cornerRadius = corner, style = Stroke(width = stroke * 1.5f))
+                    }
+                }
+            }
+        }
 
         // Side (word-wrap) handles of a single text
         if (frame.sideHandles.isNotEmpty()) {

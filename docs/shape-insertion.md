@@ -229,7 +229,7 @@ edges.
 | 1 | `ShapeElement`, `ShapeKind`, `ShapeDash`, `ShapeHead`, `ShapeElementType` (`drawview.shape`, version 1, the checks), `ShapeGeometry` (paths, heads, hits by outline and by fill, anchors), `ShapeConstraints`; tests of every kind, of the hits, of the constraints, of hostile payloads; `ShapeElementFormatTest` recording a payload of every kind (the stored format); ABI of `drawview-model` recorded on purpose | Done |
 | 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Done |
 | 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Done |
-| 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Proposed |
+| 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Done |
 | 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Proposed |
 | 6 | The agent tools: `read_page` lists the shapes (kind, style, box); proposing shapes is left for later | Proposed |
 
@@ -320,6 +320,35 @@ edges.
   of 20 mm; nothing outside of the pages), `EditorPreferencesTest` (the style kept and read back,
   the defaults for preferences written before it and for values not understood). ABI of
   `drawview-canvas` recorded again on purpose.
+
+### Phase 4 results
+
+* `ShapeEditing` (`controller.shapeEditing`): `selectedShapes` (the shapes selected when the
+  selection holds shapes only), `restyle` and `changeKind` (every shape selected, one composite
+  change: the values and, when a line changes its heads or a kind goes from a line to a box, the
+  boxes; the result becomes the style of the tool), and the drag of a handle (`beginHandle`,
+  `dragHandle`, `endHandle`, `cancelHandle`) with `handleDraft` drawn as the shape being drawn,
+  with its label.
+* `SelectionFrame` of a shape alone: a line shows its two ends only (`Handle.START`, `END`), no
+  frame nor knob; a shape of a box its frame, its knob, its corners and a bar on the middle of
+  each side (`Handle.TOP`, `BOTTOM`, `LEFT`, `RIGHT`). `Handle` gains `TOP`, `BOTTOM`, `START`,
+  `END`. Several shapes, or shapes with other elements, keep the frame of any selection (moved,
+  turned, scaled evenly).
+* The handles: an end of a line moves alone, straightened at 15° and snapped to the anchors of
+  the other shapes as when it is drawn; a corner resizes the box from the opposite corner (Shift
+  keeps its proportions, a box nearly square becomes one, Alt resizes from the center, the guides
+  when the box is not turned); a side moves that side only. The shape is out of the tiles while it
+  is dragged (the lift of the selection), placed in one change at the up and selected again.
+* The shapes tool on a shape: a tap selects it (by its outline, inside when filled); a tap that
+  drops a selection only drops it; elsewhere a tap puts a shape.
+* `SelectionManager.selectCustomElements` selects several elements of the types at once (the
+  shapes restyled stay selected).
+* Tests (`ShapeToolTest`): an end of a line moved alone and straightened at 45°, still selected,
+  undone in one step; a corner resizing a box from the opposite corner, a side its width only;
+  two shapes restyled at once (and the tool), undone in one step; a box made an arrow, its box as
+  high as a line, at the same middle; a tap selecting a shape by its outline, a tap away dropping
+  it only, a tap inside a box without fill putting a new shape. ABI of `drawview-canvas` recorded
+  again on purpose.
 
 ## Decisions
 

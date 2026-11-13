@@ -316,6 +316,7 @@ private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveS
     }
 
     controller.shapeInserter.draft?.let { drawShapeDraft(controller, it, labels) }
+    controller.shapeEditing.handleDraft?.let { drawShapeDraft(controller, it, labels) }
 }
 
 /**

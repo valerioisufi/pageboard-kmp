@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorActivity
+import io.github.valerioisufi.drawview.canvas.controller.ShapeHandle
 import io.github.valerioisufi.drawview.canvas.controller.ShapeSnapper
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.tool.Tool
@@ -38,6 +39,7 @@ import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
@@ -132,6 +134,9 @@ internal class CanvasGestureHandler(
 
         /** Drawing a shape with the shapes tool (see `ShapeInserter`). */
         SHAPE,
+
+        /** Dragging a handle of a shape alone in the selection (see `ShapeEditing`). */
+        SHAPE_HANDLE,
         IGNORED
     }
 
@@ -177,6 +182,9 @@ internal class CanvasGestureHandler(
 
     /** A second finger held while a finger draws a shape: it forces its constraints, as Shift. */
     private var shapeForcedByFinger = false
+
+    /** The gesture dropped a selection: a tap of the shapes tool only drops it. */
+    private var droppedSelection = false
 
     /** Where the box of the text being written was when the gesture started moving it, and the move so far (page mm). */
     /** The corner of the text being written when its drag started, and the drag so far, in the world (its page may change). */
@@ -327,8 +335,9 @@ internal class CanvasGestureHandler(
             return
         }
 
-        if (mode == Mode.SHAPE && activeType == PointerType.Touch) shapeForcedByFinger = pressed.size >= 2
-        if (anyDown && pressed.size >= 2 && mode == Mode.SHAPE && activeType != PointerType.Mouse) {
+        val shaping = mode == Mode.SHAPE || mode == Mode.SHAPE_HANDLE
+        if (shaping && activeType == PointerType.Touch) shapeForcedByFinger = pressed.size >= 2
+        if (anyDown && pressed.size >= 2 && shaping && activeType != PointerType.Mouse) {
             // A finger held while a finger draws forces the shape; a palm while a pen draws is ignored
             changes.filter { it.id != activePointer }.forEach { it.consume() }
             return
@@ -467,15 +476,37 @@ internal class CanvasGestureHandler(
         }
 
         // Selection handles and body
+        droppedSelection = false
         val selection = controller.selectionManager.currentSelection
         if (selection != null) {
             val frame = SelectionFrame.compute(controller, selection)
             if (frame != null) {
-                val hitMode = when (frame.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.viewport.density))) {
+                val radius = FrameStyle.hitRadiusPx(change.type, controller.viewport.density)
+                val handle = frame.handleAt(position, radius)
+                // A shape alone: its ends, its corners and its sides edit it as a shape
+                val shapeHandle = if (controller.shapeEditing.single() == null) null else when (handle) {
+                    SelectionFrame.Handle.START -> ShapeHandle.End(start = true)
+                    SelectionFrame.Handle.END -> ShapeHandle.End(start = false)
+                    SelectionFrame.Handle.CORNER -> frame.cornerAt(position, radius)?.let { ShapeHandle.Corner(it) }
+                    SelectionFrame.Handle.TOP -> ShapeHandle.Side(0)
+                    SelectionFrame.Handle.RIGHT -> ShapeHandle.Side(1)
+                    SelectionFrame.Handle.BOTTOM -> ShapeHandle.Side(2)
+                    SelectionFrame.Handle.LEFT -> ShapeHandle.Side(3)
+                    else -> null
+                }
+                if (shapeHandle != null) {
+                    mode = Mode.SHAPE_HANDLE
+                    inkPageIndex = selection.pageIndex
+                    shapeForcedByFinger = false
+                    controller.shapeEditing.beginHandle(shapeHandle)
+                    return
+                }
+                val hitMode = when (handle) {
                     SelectionFrame.Handle.ROTATION -> Mode.SELECTION_ROTATE
                     SelectionFrame.Handle.CORNER -> Mode.SELECTION_SCALE
                     SelectionFrame.Handle.LEFT -> Mode.TEXT_RESIZE_LEFT
                     SelectionFrame.Handle.RIGHT -> Mode.TEXT_RESIZE_RIGHT
+                    SelectionFrame.Handle.TOP, SelectionFrame.Handle.BOTTOM, SelectionFrame.Handle.START, SelectionFrame.Handle.END,
                     null -> if (frame.contains(position)) Mode.SELECTION_MOVE else null
                 }
                 if (hitMode != null) {
@@ -488,6 +519,7 @@ internal class CanvasGestureHandler(
             }
             // Touch outside the selection: drop it and continue with the active tool
             controller.selectionManager.clearSelection()
+            droppedSelection = true
         }
 
         val stylusOnly = controller.isStylusOnlyMode
@@ -609,6 +641,7 @@ internal class CanvasGestureHandler(
             }
             Mode.TEXT_BOX -> live.textBoxDraft = null
             Mode.SHAPE -> controller.shapeInserter.cancel()
+            Mode.SHAPE_HANDLE -> controller.shapeEditing.cancelHandle()
             Mode.PAGE_REORDER -> return
             else -> {}
         }
@@ -710,6 +743,13 @@ internal class CanvasGestureHandler(
             }
 
             Mode.TEXT_BOX -> live.textBoxDraft = boxBetween(downPosition, position)
+
+            Mode.SHAPE_HANDLE -> {
+                controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
+                    controller.shapeEditing.dragHandle(Point(it.x, it.y), forced = shiftHeld || shapeForcedByFinger, fromCenter = freeGesture, free = primaryHeld)
+                }
+                updateAutoScroll(position)
+            }
 
             Mode.SHAPE -> {
                 if (movedBeyondSlop) {
@@ -946,10 +986,21 @@ internal class CanvasGestureHandler(
                 val inserter = controller.shapeInserter
                 if (wasTap) {
                     inserter.cancel()
-                    controller.viewport.screenToPageMm(inkPageIndex, downPosition)?.let { inserter.insertAt(inkPageIndex, Point(it.x, it.y)) }
+                    // A tap on a shape selects it; one dropping a selection only drops it
+                    val shape = shapeAt(position)
+                    when {
+                        shape != null -> controller.selectionManager.selectCustomElement(shape.first, shape.second)
+                        droppedSelection -> Unit
+                        else -> controller.viewport.screenToPageMm(inkPageIndex, downPosition)?.let { inserter.insertAt(inkPageIndex, Point(it.x, it.y)) }
+                    }
                 } else {
                     inserter.commit()
                 }
+                shapeForcedByFinger = false
+            }
+
+            Mode.SHAPE_HANDLE -> {
+                controller.shapeEditing.endHandle()
                 shapeForcedByFinger = false
             }
 
@@ -984,6 +1035,19 @@ internal class CanvasGestureHandler(
 
         mode = Mode.NONE
         activePointer = null
+    }
+
+    /** The shape under [position] (screen pixels), on top, with the index of its page: hit by its outline, or its inside when filled. */
+    private fun shapeAt(position: Offset): Pair<Int, DrawCustomElement>? {
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return null
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return null
+        val at = controller.viewport.screenToPageMm(pageIndex, position) ?: return null
+        val elements = controller.engines.elements
+        val shape = page.stack.lastOrNull { element ->
+            element is DrawCustomElement && element.type == ShapeElementType.id &&
+                !controller.hiddenElements.isHidden(element.id) && elements.hits(element, at.x, at.y)
+        } as? DrawCustomElement ?: return null
+        return pageIndex to shape
     }
 
     /**

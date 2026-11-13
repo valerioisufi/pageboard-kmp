@@ -40,8 +40,8 @@ public final class io/github/valerioisufi/drawview/canvas/FrameStyle {
 public final class io/github/valerioisufi/drawview/canvas/SelectionFrame {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Companion;
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun contains-3MmeM6k (JF)Z
 	public static synthetic fun contains-3MmeM6k$default (Lio/github/valerioisufi/drawview/canvas/SelectionFrame;JFILjava/lang/Object;)Z
 	public final fun getCenter-F1C5BW0 ()J
@@ -54,10 +54,14 @@ public final class io/github/valerioisufi/drawview/canvas/SelectionFrame$Compani
 }
 
 public final class io/github/valerioisufi/drawview/canvas/SelectionFrame$Handle : java/lang/Enum {
+	public static final field BOTTOM Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static final field CORNER Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field END Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static final field LEFT Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static final field RIGHT Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static final field ROTATION Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field START Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field TOP Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
 	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
@@ -304,6 +308,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getSelectionManager ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;
 	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun getShapeEditing ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeEditing;
 	public final fun getShapeInserter ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeInserter;
 	public final fun getShapeSnapper ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeSnapper;
 	public final fun getSnapManager ()Lio/github/valerioisufi/drawview/canvas/controller/SnapManager;
@@ -600,6 +605,15 @@ public final class io/github/valerioisufi/drawview/canvas/controller/ShapeDraft 
 	public final fun getWidthMm ()F
 	public final fun isAngleSnapped ()Z
 	public final fun isRegular ()Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeEditing {
+	public static final field $stable I
+	public final fun changeKind (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;I)V
+	public static synthetic fun changeKind$default (Lio/github/valerioisufi/drawview/canvas/controller/ShapeEditing;Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IILjava/lang/Object;)V
+	public final fun getHandleDraft ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeDraft;
+	public final fun getSelectedShapes ()Ljava/util/List;
+	public final fun restyle (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/ShapeInserter {

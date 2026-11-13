@@ -262,6 +262,19 @@ public class SelectionManager(private val controller: DrawViewController) {
     }
 
     /**
+     * Selects the elements [elements] of types of the application of the page [pageIndex] (one
+     * of them as [selectCustomElement], turned with it).
+     */
+    internal fun selectCustomElements(pageIndex: Int, elements: List<DrawCustomElement>) {
+        if (elements.size == 1) return selectCustomElement(pageIndex, elements[0])
+        clearSelection()
+        if (elements.isEmpty()) return
+        controller.document.pages.getOrNull(pageIndex) ?: return
+        val bounds = elements.map { it.getRotatedBounds() }.reduce { a, b -> a.union(b) }
+        setSelection(SelectionGroup(customs = elements.toMutableList(), boundingBox = bounds, pageIndex = pageIndex))
+    }
+
+    /**
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
     public fun selectText(pageIndex: Int, text: DrawText) {

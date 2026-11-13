@@ -146,6 +146,9 @@ public class DrawViewController(
     /** Draws the shapes of the shapes tool, and keeps what it draws next. */
     public val shapeInserter: ShapeInserter = ShapeInserter(this)
 
+    /** Edits the shapes selected as shapes: their ends, their boxes, their style. */
+    public val shapeEditing: ShapeEditing = ShapeEditing(this)
+
     /** The elements of the types added by the application. */
     public val customElementManager: CustomElementManager = CustomElementManager(this)
 
