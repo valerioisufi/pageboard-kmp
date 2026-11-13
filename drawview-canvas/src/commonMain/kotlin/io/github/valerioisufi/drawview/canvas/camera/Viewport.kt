@@ -63,18 +63,62 @@ public class Viewport internal constructor(
 
     private val cachedRenderMatrix = Matrix2D()
     private val cachedInverseMatrix = Matrix2D()
-    private var initialAnchor: Triple<Int, Float, Float>? = null
+    private var initialAnchor: Anchor? = null
+
+    /**
+     * A point of a page: the index of the page, the point as fractions (`0..1`) of its width and
+     * height, and the zoom to show it at (`null`: the zoom of whoever centers on it).
+     */
+    private class Anchor(val pageIndex: Int, val x: Float, val y: Float, val scale: Float? = null)
 
     /**
      * Remembers the page and normalized coordinates (`0..1`) to center on when the canvas is laid
-     * out for the first time.
+     * out for the first time, at [scale] (`null`: the pages as wide as the canvas).
      */
-    internal fun setInitialAnchor(pageIndex: Int, normX: Float, normY: Float) {
-        initialAnchor = Triple(pageIndex, normX.coerceIn(0f, 1f), normY.coerceIn(0f, 1f))
+    internal fun setInitialAnchor(pageIndex: Int, normX: Float, normY: Float, scale: Float? = null) {
+        initialAnchor = Anchor(pageIndex, normX.coerceIn(0f, 1f), normY.coerceIn(0f, 1f), scale)
+    }
+
+    /**
+     * Where the document is looked at: the page under the center of the canvas, the point of it
+     * there and the zoom, or `null` before the canvas is laid out. Before the first layout, the
+     * place it will show.
+     */
+    public fun currentPlace(): DocumentPlace? {
+        val anchor = initialAnchor ?: currentAnchor() ?: return null
+        val page = document.pages.getOrNull(anchor.pageIndex) ?: return null
+        return DocumentPlace(
+            pageId = page.id,
+            pageNumber = anchor.pageIndex + 1,
+            x = anchor.x,
+            y = anchor.y,
+            scale = anchor.scale ?: if (initialAnchor != null) 1f else camera.getCurrentScale()
+        )
+    }
+
+    /**
+     * Shows [place]: its point at the center of the canvas, at its zoom (within the bounds of the
+     * camera). The page is found by its id, else by its number (the last page when there are
+     * fewer). Before the first layout, remembers it for the first layout. Returns `false` when
+     * the document has no page.
+     */
+    public fun showPlace(place: DocumentPlace): Boolean {
+        val pages = document.pages
+        if (pages.isEmpty()) return false
+        val index = pages.indexOfFirst { it.id == place.pageId }.takeIf { it >= 0 }
+            ?: (place.pageNumber - 1).coerceIn(0, pages.lastIndex)
+        val anchor = Anchor(index, place.x.coerceIn(0f, 1f), place.y.coerceIn(0f, 1f), place.scale)
+        if (width > 0f && height > 0f && centerOn(anchor, camera.getCurrentScale())) {
+            camera.restoreToBounds(animated = false)
+            requestRedraw()
+        } else {
+            initialAnchor = anchor
+        }
+        return true
     }
 
     /** The page under the center of the canvas, and the point of it there (normalized), or `null`. */
-    private fun currentAnchor(): Triple<Int, Float, Float>? {
+    private fun currentAnchor(): Anchor? {
         if (width <= 0f || layout.pagesRectOnWindow.isEmpty()) return null
         val center = screenToWorld(Offset(width / 2f, height / 2f))
         val rects = layout.pagesRectOnWindow
@@ -87,7 +131,7 @@ public class Viewport internal constructor(
             }
         }
         val r = rects[target]
-        return Triple(
+        return Anchor(
             target,
             ((center.x - r.left) / r.width).coerceIn(0f, 1f),
             ((center.y - r.top) / r.height).coerceIn(0f, 1f)
@@ -129,16 +173,16 @@ public class Viewport internal constructor(
     }
 
     /**
-     * Centers the camera, at [scale], on the point of a page [anchor] names (its index and the
-     * point, normalized): `false` when that page is not laid out.
+     * Centers the camera on the point of a page [anchor] names, at its zoom (else at [scale]):
+     * `false` when that page is not laid out.
      */
-    private fun centerOn(anchor: Triple<Int, Float, Float>?, scale: Float): Boolean {
-        if (anchor == null || anchor.first !in layout.pagesRectOnWindow.indices || width <= 0f || height <= 0f) return false
-        val r = layout.pagesRectOnWindow[anchor.first]
+    private fun centerOn(anchor: Anchor?, scale: Float): Boolean {
+        if (anchor == null || anchor.pageIndex !in layout.pagesRectOnWindow.indices || width <= 0f || height <= 0f) return false
+        val r = layout.pagesRectOnWindow[anchor.pageIndex]
         camera.centerOnWorldPoint(
-            worldX = r.left + r.width * anchor.second,
-            worldY = r.top + r.height * anchor.third,
-            scale = scale,
+            worldX = r.left + r.width * anchor.x,
+            worldY = r.top + r.height * anchor.y,
+            scale = anchor.scale ?: scale,
             screenWidth = width,
             screenHeight = height
         )

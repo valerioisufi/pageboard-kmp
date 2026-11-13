@@ -108,8 +108,52 @@ public final class io/github/valerioisufi/drawview/canvas/camera/CameraPhysicsEn
 	public final fun update (J)V
 }
 
+public final class io/github/valerioisufi/drawview/canvas/camera/DocumentPlace {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace$Companion;
+	public static final field FORMAT_VERSION I
+	public fun <init> (Ljava/lang/String;IFFFI)V
+	public synthetic fun <init> (Ljava/lang/String;IFFFIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()I
+	public final fun copy (Ljava/lang/String;IFFFI)Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;Ljava/lang/String;IFFFIILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;
+	public final fun encode ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPageNumber ()I
+	public final fun getScale ()F
+	public final fun getVersion ()I
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/canvas/camera/DocumentPlace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/camera/DocumentPlace$Companion {
+	public final fun decode (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/canvas/camera/Viewport {
 	public static final field $stable I
+	public final fun currentPlace ()Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;
 	public final fun firstVisiblePageIndex ()Ljava/lang/Integer;
 	public final fun fitWidth ()V
 	public final fun getCamera ()Lio/github/valerioisufi/drawview/canvas/camera/CameraPhysicsEngine;
@@ -124,6 +168,7 @@ public final class io/github/valerioisufi/drawview/canvas/camera/Viewport {
 	public final fun setDensity (F)V
 	public final fun setSize (FF)V
 	public final fun showNextPage ()V
+	public final fun showPlace (Lio/github/valerioisufi/drawview/canvas/camera/DocumentPlace;)Z
 	public final fun showPreviousPage ()V
 	public final fun visiblePages ()Ljava/util/List;
 	public final fun zoomIn ()V

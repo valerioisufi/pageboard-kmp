@@ -205,6 +205,52 @@ final class io.github.valerioisufi.drawview.canvas.camera/CameraPhysicsEngine { 
     final fun update(kotlin/Long) // io.github.valerioisufi.drawview.canvas.camera/CameraPhysicsEngine.update|update(kotlin.Long){}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.camera/DocumentPlace { // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace|null[0]
+    constructor <init>(kotlin/String, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Int = ...) // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.<init>|<init>(kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int){}[0]
+
+    final val pageId // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val pageNumber // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.pageNumber|{}pageNumber[0]
+        final fun <get-pageNumber>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.pageNumber.<get-pageNumber>|<get-pageNumber>(){}[0]
+    final val scale // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.scale|{}scale[0]
+        final fun <get-scale>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.scale.<get-scale>|<get-scale>(){}[0]
+    final val version // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.version|{}version[0]
+        final fun <get-version>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.version.<get-version>|<get-version>(){}[0]
+    final val x // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.x|{}x[0]
+        final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.x.<get-x>|<get-x>(){}[0]
+    final val y // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.y|{}y[0]
+        final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.y.<get-y>|<get-y>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component3|component3(){}[0]
+    final fun component4(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component4|component4(){}[0]
+    final fun component5(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component5|component5(){}[0]
+    final fun component6(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.canvas.camera/DocumentPlace // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.copy|copy(kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int){}[0]
+    final fun encode(): kotlin/String // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.encode|encode(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.canvas.camera/DocumentPlace> { // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.canvas.camera/DocumentPlace // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.canvas.camera/DocumentPlace) // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.canvas.camera.DocumentPlace){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.Companion|null[0]
+        final const val FORMAT_VERSION // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.Companion.FORMAT_VERSION|{}FORMAT_VERSION[0]
+            final fun <get-FORMAT_VERSION>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.Companion.FORMAT_VERSION.<get-FORMAT_VERSION>|<get-FORMAT_VERSION>(){}[0]
+
+        final fun decode(kotlin/String): io.github.valerioisufi.drawview.canvas.camera/DocumentPlace? // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.Companion.decode|decode(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.canvas.camera/DocumentPlace> // io.github.valerioisufi.drawview.canvas.camera/DocumentPlace.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.canvas.camera/Viewport { // io.github.valerioisufi.drawview.canvas.camera/Viewport|null[0]
     final val camera // io.github.valerioisufi.drawview.canvas.camera/Viewport.camera|{}camera[0]
         final fun <get-camera>(): io.github.valerioisufi.drawview.canvas.camera/CameraPhysicsEngine // io.github.valerioisufi.drawview.canvas.camera/Viewport.camera.<get-camera>|<get-camera>(){}[0]
@@ -219,6 +265,7 @@ final class io.github.valerioisufi.drawview.canvas.camera/Viewport { // io.githu
     final var width // io.github.valerioisufi.drawview.canvas.camera/Viewport.width|{}width[0]
         final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/Viewport.width.<get-width>|<get-width>(){}[0]
 
+    final fun currentPlace(): io.github.valerioisufi.drawview.canvas.camera/DocumentPlace? // io.github.valerioisufi.drawview.canvas.camera/Viewport.currentPlace|currentPlace(){}[0]
     final fun firstVisiblePageIndex(): kotlin/Int? // io.github.valerioisufi.drawview.canvas.camera/Viewport.firstVisiblePageIndex|firstVisiblePageIndex(){}[0]
     final fun fitWidth() // io.github.valerioisufi.drawview.canvas.camera/Viewport.fitWidth|fitWidth(){}[0]
     final fun mostVisiblePageIndex(): kotlin/Int? // io.github.valerioisufi.drawview.canvas.camera/Viewport.mostVisiblePageIndex|mostVisiblePageIndex(){}[0]
@@ -227,6 +274,7 @@ final class io.github.valerioisufi.drawview.canvas.camera/Viewport { // io.githu
     final fun pixelsPerMm(kotlin/Int): kotlin/Float // io.github.valerioisufi.drawview.canvas.camera/Viewport.pixelsPerMm|pixelsPerMm(kotlin.Int){}[0]
     final fun setSize(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.camera/Viewport.setSize|setSize(kotlin.Float;kotlin.Float){}[0]
     final fun showNextPage() // io.github.valerioisufi.drawview.canvas.camera/Viewport.showNextPage|showNextPage(){}[0]
+    final fun showPlace(io.github.valerioisufi.drawview.canvas.camera/DocumentPlace): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.camera/Viewport.showPlace|showPlace(io.github.valerioisufi.drawview.canvas.camera.DocumentPlace){}[0]
     final fun showPreviousPage() // io.github.valerioisufi.drawview.canvas.camera/Viewport.showPreviousPage|showPreviousPage(){}[0]
     final fun visiblePages(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.camera/CalcPage.PageRectWithIndex> // io.github.valerioisufi.drawview.canvas.camera/Viewport.visiblePages|visiblePages(){}[0]
     final fun zoomIn() // io.github.valerioisufi.drawview.canvas.camera/Viewport.zoomIn|zoomIn(){}[0]
@@ -1466,6 +1514,8 @@ final object io.github.valerioisufi.drawview.canvas/TextMarkupPainter { // io.gi
 final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop|#static{}io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop[0]
@@ -1533,6 +1583,8 @@ final fun <#A: kotlin/Any?> (io.github.valerioisufi.drawview.model/DrawDocument)
 final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_CalcPage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_CalcPage_PageRectWithIndex$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_CameraPhysicsEngine$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_DocumentPlace$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_DocumentPlace_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.camera/io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop_getter|io_github_valerioisufi_drawview_canvas_camera_Viewport$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_Collaborator$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_CollaboratorPresence$stableprop_getter(){}[0]
