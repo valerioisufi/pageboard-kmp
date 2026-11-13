@@ -34,6 +34,7 @@ import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
+import io.github.valerioisufi.drawview.lecture.WhisperModel
 import io.github.valerioisufi.drawview.lecture.testing.FakeMicrophone
 import io.github.valerioisufi.drawview.lecture.testing.FakeNotebook
 import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
@@ -167,6 +168,51 @@ class LecturePanelScreenshotTest {
             onNodeWithText("Lecture").performClick()
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/lecture-settings-lecture.png")
+        }
+    }
+
+    /**
+     * The speech model on a Mac with Apple Silicon: its encoder for the Neural Engine to download, then
+     * downloaded (docs/transcription-queue.md). Elsewhere there is no such row, and nothing to see.
+     *
+     * The files of the model are made in the data directory of the tests only (`drawview.dataDir`), never
+     * over one already there, and only those made here are deleted.
+     */
+    @Test
+    fun settingsOnTheNeuralEngine() {
+        val store = AssistantSettingsStore(File(root, "settings.json").absolutePath, MemorySecrets())
+        val models = assistant(LectureLibrary(File(root, "empty").absolutePath)).localModels
+        if (!models.usesNeuralEngine) return
+        val dataDir = File(checkNotNull(System.getProperty("drawview.dataDir")) { "the tests run on their own data directory" }).canonicalFile
+        val model = File(models.whisperPath(WhisperModel.LARGE_V3_TURBO_Q5)).canonicalFile
+        val encoder = File(models.encoderPath(WhisperModel.LARGE_V3_TURBO_Q5)).canonicalFile
+        check(model.toPath().startsWith(dataDir.toPath()) && encoder.toPath().startsWith(dataDir.toPath())) { "$model is not in $dataDir" }
+        check(!model.exists() && !encoder.exists()) { "$model or its encoder is already there" }
+        try {
+            model.parentFile.mkdirs()
+            model.writeBytes(ByteArray(1))
+            runDesktopComposeUiTest(width = 1000, height = 900) {
+                setContent {
+                    DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                        Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                        AssistantSettingsDialog(store, models, onDismiss = {})
+                    }
+                }
+                models.refresh()
+                waitUntil(timeoutMillis = 10_000) { WhisperModel.LARGE_V3_TURBO_Q5 in models.whisperModels }
+                waitForIdle()
+                onNodeWithText("Download for the Neural Engine (1.2 GB)").assertExists()
+                captureToImage().captureRoboImage("screenshots/lecture-settings-neural-engine.png")
+                encoder.mkdirs()
+                models.refresh()
+                waitUntil(timeoutMillis = 10_000) { WhisperModel.LARGE_V3_TURBO_Q5 in models.encoders }
+                waitForIdle()
+                onNodeWithText("Runs on the Neural Engine").assertExists()
+                captureToImage().captureRoboImage("screenshots/lecture-settings-neural-engine-ready.png")
+            }
+        } finally {
+            if (model.length() == 1L) model.delete()
+            if (encoder.list()?.isEmpty() == true) encoder.delete()
         }
     }
 

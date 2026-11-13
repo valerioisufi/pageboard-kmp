@@ -569,11 +569,45 @@ private fun TranscriptionSetup(settings: AssistantSettings, localModels: LocalMo
     val error = localModels.downloadError?.takeIf { it.first == chosen.fileName }?.second
     when {
         progress != null -> DownloadProgress(progress)
-        chosen in localModels.whisperModels -> Ready(chosen.label + " · " + stringResource(Res.string.lecture_whisper_ready))
+        chosen in localModels.whisperModels -> {
+            Ready(chosen.label + " · " + stringResource(Res.string.lecture_whisper_ready))
+            if (localModels.usesNeuralEngine) NeuralEngineSetup(chosen, localModels)
+        }
         else -> {
             error?.let { Hint(stringResource(Res.string.lecture_local_download_failed, it)) }
             TonalButton(onClick = { localModels.downloadWhisper(chosen) }) {
                 Text(stringResource(Res.string.lecture_local_download, formatSize(chosen.sizeBytes)))
+            }
+        }
+    }
+}
+
+/**
+ * The encoder of [model] for the Neural Engine of a Mac (docs/transcription-queue.md): downloaded, being
+ * downloaded or prepared, or to download.
+ */
+@Composable
+private fun NeuralEngineSetup(model: WhisperModel, localModels: LocalModels) {
+    val name = model.encoderFileName
+    val progress = localModels.downloads[name]
+    val error = localModels.downloadError?.takeIf { it.first == name }?.second
+    when {
+        model in localModels.encoders && name !in localModels.preparing ->
+            Ready(stringResource(Res.string.lecture_whisper_neural_engine_ready))
+        name in localModels.preparing -> Row(verticalAlignment = Alignment.CenterVertically) {
+            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, trackColor = MaterialTheme.colorScheme.primaryContainer)
+            Spacer(Modifier.width(8.dp))
+            Hint(stringResource(Res.string.lecture_whisper_neural_engine_preparing))
+        }
+        progress != null -> {
+            Hint(stringResource(Res.string.lecture_whisper_neural_engine))
+            DownloadProgress(progress)
+        }
+        else -> {
+            Hint(stringResource(Res.string.lecture_whisper_neural_engine))
+            error?.let { Hint(stringResource(Res.string.lecture_local_download_failed, it)) }
+            TonalButton(onClick = { localModels.downloadEncoder(model) }) {
+                Text(stringResource(Res.string.lecture_whisper_neural_engine_download, formatSize(model.encoderSizeBytes)))
             }
         }
     }

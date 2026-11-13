@@ -138,6 +138,10 @@
     <string name="lecture_settings_whisper_file_hint">Un tuo file ggml di whisper.cpp, al posto del modello scelto sopra.</string>
     <string name="lecture_whisper_model">Modello di riconoscimento vocale</string>
     <string name="lecture_whisper_ready">Scaricato</string>
+    <string name="lecture_whisper_neural_engine">Il Neural Engine di questo Mac tiene fluida la finestra mentre una lezione si trascrive, e trascrive un po\' più veloce.</string>
+    <string name="lecture_whisper_neural_engine_download">Scarica per il Neural Engine (%1$s)</string>
+    <string name="lecture_whisper_neural_engine_preparing">Preparazione per il Neural Engine (circa mezzo minuto)…</string>
+    <string name="lecture_whisper_neural_engine_ready">Funziona sul Neural Engine</string>
     <string name="lecture_whisper_unavailable">Le lezioni si trascrivono su un computer, nell\'app desktop: qui si registrano, e un computer ne scrive le note.</string>
     <string name="lecture_language_auto">Automatica</string>
     <string name="lecture_local_ollama_checking">Ricerca di Ollama…</string>
