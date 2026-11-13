@@ -172,7 +172,13 @@ scratch directory, and the model of the user read through a link:
 * Core ML left free to choose (`MLComputeUnitsAll`, as whisper.cpp asks) put the encoder on the
   Neural Engine: the same numbers as with the Neural Engine forced. No patch of whisper.cpp is needed.
 * The model loads in 0.3 s once Core ML has compiled the encoder for the Neural Engine. The first
-  load, which compiles it, was not timed: phase 5 measures it.
+  load, which compiles it, takes 36 s (phase 5, with the cache of Core ML moved to an empty
+  directory by `CFFIXED_USER_HOME`). Core ML keeps what it compiled in the caches of the
+  application (`~/Library/Caches/<application>/com.apple.e5rt.e5bundlecache`): once a computer and
+  application, and again after an update of macOS may drop it.
+* With the bridge of phase 5: without the encoder file the window and the speed are as before
+  (33-35 frames a second, 26-28×); with a directory Core ML cannot load, whisper.cpp says so and
+  encodes on the GPU, the same words heard.
 
 ### Design of phase 4 onwards
 
@@ -186,7 +192,8 @@ Approved by the user, 2026-11-13.
   its size and its SHA-256, the ones above.
 * **`LocalModels` downloads it** (Controller, as it does the models): `encoders`, the models whose
   encoder is on the computer; `downloadEncoder(model)`, the zip as a `.part`, its size and SHA-256
-  checked, extracted, the zip deleted; `usesNeuralEngine`, true on a Mac with Apple Silicon only (on an
+  checked, extracted, the zip deleted, then the model loaded once and freed, so that Core ML
+  compiles the encoder there (*Preparing*) and not at the first lecture; `usesNeuralEngine`, true on a Mac with Apple Silicon only (on an
   Intel Mac Core ML has no Neural Engine to give).
 * **`EncoderArchive` extracts it** (Pure Fabrication, `jvmMain`): into a `.part` directory renamed when
   complete, the entries of `__MACOSX` skipped, an entry going out of the directory refused, the bytes
@@ -208,7 +215,7 @@ One commit per phase on `feat/transcription-queue`, with the checks of `CLAUDE.m
 | 2 | Pausing: `TranscriptionGate`, checked by `RecordingTranscriber` between two pieces and held by a recording here; `canRecord`, with the ABI of `drawview-lecture` re-recorded; an import, a first transcription and a new one are taken during a recording too. Tests (`TranscriptionQueueTest`): a recording started in the middle of a transcription (the piece in flight delivered, the model closed, a segment for every piece, it goes on after), an import during a recording waiting for its end, a recording that cannot start leaving the transcriptions going | Done |
 | 3 | The panel: *Record* enabled by `canRecord` and *Import* always; the card of a lecture waiting (for its turn, or for the recording to end) with *Remove from the queue*, of one being transcribed with *Stop*; the notice of a recording elsewhere, and of the other recordings in the queue. Tests: `LecturePanelQueueTest` (the buttons while a lecture is transcribed and while one is recorded, a lecture taken out waiting and stopped running, from its card), the screenshot `lecture-recording-notices` re-recorded (`verifyRoborazziJvm`). The desktop application on a scratch directory was not run: it needs a speech model (phase 0) | Done |
 | 4 | The Neural Engine measured: the bench prints the load time and the first words heard; the table above | Done |
-| 5 | The bridge with Core ML on macOS, falling back without the encoder; `WhisperTranscriberTest` and the transcription of the bench with and without the encoder file; the first load (Core ML compiling) timed with the cache of Core ML empty | Not done |
+| 5 | The bridge with Core ML on macOS, falling back without the encoder; `WhisperTranscriberTest` and the transcription of the bench with the encoder, without it and with a broken one; the first load (Core ML compiling) timed with the cache of Core ML empty: 36 s. The bench prints the first load of every way. darwin-x86_64 was not built | Done |
 | 6 | `WhisperModel` encoder fields, `LocalModels.encoders`, `downloadEncoder`, `usesNeuralEngine`, `EncoderArchive`, with the ABI of `drawview-lecture` re-recorded. Tests: an archive extracted, one with an entry outside the directory refused, one with the wrong SHA-256 refused and deleted, a download stopped leaving nothing | Not done |
 | 7 | The settings: the encoder under the model, downloaded after a model on Apple Silicon; screenshot; the desktop application on a scratch directory, the encoder downloaded there and a lecture imported while panning | Not done |
 

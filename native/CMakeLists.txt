@@ -325,7 +325,9 @@ set(DRAWVIEW_WHISPER_DIR "" CACHE PATH "Source of whisper.cpp")
 file(TO_CMAKE_PATH "${DRAWVIEW_WHISPER_DIR}" DRAWVIEW_WHISPER_DIR) # Windows paths from Gradle
 if(DRAWVIEW_BUILD_JNI AND NOT ANDROID AND EXISTS "${DRAWVIEW_WHISPER_DIR}/include/whisper.h")
     # Static libraries inside the bridge, for any machine of the platform (not only the one
-    # building it); Metal on macOS, its shaders embedded in the library
+    # building it); Metal on macOS, its shaders embedded in the library, and the encoder through Core
+    # ML (the Neural Engine) when its compiled model lies next to the model, on the GPU otherwise
+    # (docs/transcription-queue.md, "The encoder on the Neural Engine")
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
     set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -336,6 +338,8 @@ if(DRAWVIEW_BUILD_JNI AND NOT ANDROID AND EXISTS "${DRAWVIEW_WHISPER_DIR}/includ
     if(APPLE)
         set(GGML_METAL ON CACHE BOOL "" FORCE)
         set(GGML_METAL_EMBED_LIBRARY ON CACHE BOOL "" FORCE)
+        set(WHISPER_COREML ON CACHE BOOL "" FORCE)
+        set(WHISPER_COREML_ALLOW_FALLBACK ON CACHE BOOL "" FORCE)
     endif()
     add_subdirectory("${DRAWVIEW_WHISPER_DIR}" whisper EXCLUDE_FROM_ALL)
 

@@ -131,7 +131,10 @@ class TranscriptionWindowBenchmark {
             println("|---|---|---|---|---|---|---|---|---|")
             report("Nothing", measure(intervals, seconds), speed = null)
             for (way in ways) {
+                // The first load of a way: Core ML compiles the encoder for the Neural Engine, once a computer
+                val loading = System.nanoTime()
                 val handle = whisper.load(model, way.gpu)
+                println("${way.name}: first load in ${"%.1f".format((System.nanoTime() - loading) / 1e9)} s")
                 check(handle != 0L) { "cannot load $model" }
                 val stop = AtomicBoolean(false)
                 // The recording transcribed again and again, a piece of a minute at a time, as an import does
