@@ -91,7 +91,7 @@
     <string name="lecture_modality_audio">audio</string>
     <string name="lecture_modality_document">PDF</string>
     <string name="lecture_settings_local_url">Indirizzo di Ollama</string>
-    <string name="lecture_recording_elsewhere">È in corso la registrazione di «%1$s»: una lezione alla volta.</string>
+    <string name="lecture_recording_elsewhere">È in corso la registrazione di «%1$s»: una registrazione alla volta.</string>
     <string name="lecture_delete">Elimina questa lezione</string>
     <string name="lecture_delete_title">Eliminare la lezione?</string>
     <string name="lecture_delete_message">Vengono eliminati la registrazione, la trascrizione, i suggerimenti e la revisione della lezione del %1$s, anche sui dispositivi con cui condividi il quaderno. Gli appunti inseriti nel quaderno restano.</string>
@@ -162,7 +162,13 @@
     <string name="lecture_import_title">Scegli la registrazione di una lezione</string>
     <string name="lecture_import_converting">Conversione dell\'audio…</string>
     <string name="lecture_import_transcribing">Trascrizione della registrazione…</string>
-    <string name="lecture_import_waiting">In attesa delle trascrizioni precedenti…</string>
+    <string name="lecture_import_waiting">In attesa del suo turno…</string>
+    <string name="lecture_import_waiting_recording">In attesa che finisca la registrazione…</string>
+    <string name="lecture_import_remove">Togli dalla coda</string>
+    <plurals name="lecture_transcriptions_beside">
+        <item quantity="one">Un\'altra registrazione è nella coda delle trascrizioni</item>
+        <item quantity="other">Altre %1$d registrazioni sono nella coda delle trascrizioni</item>
+    </plurals>
     <string name="lecture_import_failed">Non si può importare la registrazione: %1$s</string>
     <string name="lecture_export_audio">Esporta l\'audio…</string>
     <string name="lecture_export_title">Salva l\'audio della lezione</string>

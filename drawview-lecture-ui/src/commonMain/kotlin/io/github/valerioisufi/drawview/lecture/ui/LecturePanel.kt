@@ -235,20 +235,21 @@ private fun IdleSection(assistant: LectureAssistant, documentId: String, onStart
         LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_unsupported), NoticeTone.Neutral)
         return
     }
-    val canStart = !assistant.isBusy
+    // A recording at a time; an import is always taken, and waits its turn to be transcribed
+    val canRecord = assistant.canRecord
     Text(
         stringResource(if (assistant.canGenerate) Res.string.lecture_idle_description else Res.string.lecture_record_only_description),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     if (assistant.canGenerate) PrivacyNote(privacyNote(assistant.settingsStore.settings))
-    Button(onClick = onStart, enabled = canStart, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+    Button(onClick = onStart, enabled = canRecord, modifier = Modifier.fillMaxWidth().height(56.dp)) {
         Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(10.dp))
         Text(stringResource(Res.string.lecture_action_record), style = MaterialTheme.typography.titleMedium)
     }
     if (assistant.canImportAndExport) {
-        OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+        OutlineButton(onClick = onImport, modifier = Modifier.fillMaxWidth().height(48.dp)) {
             Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.lecture_action_import))
@@ -593,7 +594,7 @@ private fun RecordingSection(
     onStart: () -> Unit,
     onImport: () -> Unit
 ) {
-    val canStart = !assistant.isBusy
+    val canRecord = assistant.canRecord
     when {
         // Being recorded, or transcribed, on another device
         lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && !assistant.isTranscribing(lecture) -> {
@@ -618,7 +619,7 @@ private fun RecordingSection(
             }
         }
 
-        lecture.status == LectureStatus.IMPORTING -> ImportCard(lecture)
+        lecture.status == LectureStatus.IMPORTING -> ImportCard(assistant, lecture)
 
         lecture.status == LectureStatus.RECORDING && recorder != null -> {
             val settings = assistant.settingsStore.settings
@@ -654,13 +655,13 @@ private fun RecordingSection(
         else -> {
             if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlineButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
+                OutlineButton(onClick = onStart, enabled = canRecord, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
                     Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (assistant.canImportAndExport) {
-                    OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
+                    OutlineButton(onClick = onImport, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
                         Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -672,35 +673,64 @@ private fun RecordingSection(
     }
 }
 
-/** A recording imported from elsewhere: converted, transcribed, reviewed, with its progress. */
+/**
+ * A recording being imported or transcribed here: converted, waiting its turn, transcribed, reviewed,
+ * with its progress. While it waits or is transcribed it can be taken out of the queue.
+ */
 @Composable
-private fun ImportCard(lecture: Lecture) {
+private fun ImportCard(assistant: LectureAssistant, lecture: Lecture) {
+    val step = lecture.importStep
+    val waiting = step == ImportStep.WAITING
+    ImportCard(
+        title = stringResource(
+            when (step) {
+                ImportStep.TRANSCRIBING -> Res.string.lecture_import_transcribing
+                ImportStep.REVIEWING -> Res.string.lecture_status_finalizing
+                // For the recording going on here, or for the transcriptions asked before it
+                ImportStep.WAITING -> if (assistant.canRecord) Res.string.lecture_import_waiting else Res.string.lecture_import_waiting_recording
+                else -> Res.string.lecture_import_converting
+            }
+        ),
+        duration = lecture.elapsedMs.takeIf { it > 0 }?.let { formatLectureTime(it) },
+        // Waiting its turn: nothing moves, what was transcribed before a pause stays
+        progress = if (waiting) lecture.importProgress.coerceAtLeast(0f) else lecture.importProgress,
+        remove = when {
+            !assistant.isTranscribing(lecture) -> null
+            waiting -> stringResource(Res.string.lecture_import_remove)
+            step == ImportStep.TRANSCRIBING -> stringResource(Res.string.lecture_action_stop)
+            else -> null
+        },
+        onRemove = { assistant.cancelTranscription(lecture) }
+    )
+}
+
+/**
+ * The card of a recording being imported or transcribed: what is happening ([title]), how long the
+ * recording is ([duration]), the [progress] of the step (0..1, negative when unknown), and the
+ * action taking it out of the queue ([remove], `null`: none).
+ */
+@Composable
+internal fun ImportCard(title: String, duration: String?, progress: Float, remove: String? = null, onRemove: () -> Unit = {}) {
     PanelCard {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             IconTile(DrawViewIcons.Upload, MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    stringResource(
-                        when (lecture.importStep) {
-                            ImportStep.TRANSCRIBING -> Res.string.lecture_import_transcribing
-                            ImportStep.REVIEWING -> Res.string.lecture_status_finalizing
-                            ImportStep.WAITING -> Res.string.lecture_import_waiting
-                            else -> Res.string.lecture_import_converting
-                        }
-                    ),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                if (lecture.elapsedMs > 0) {
-                    Text(formatLectureTime(lecture.elapsedMs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                if (duration != null) {
+                    Text(duration, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
         Spacer(Modifier.height(12.dp))
-        // Waiting its turn: nothing moves
-        val progress = if (lecture.importStep == ImportStep.WAITING) 0f else lecture.importProgress
         val track = MaterialTheme.colorScheme.surfaceContainerHighest
         if (progress < 0f) LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp)
         else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp, drawStopIndicator = {})
+        // Under the bar: beside the title it would leave the title no room in a narrow panel
+        if (remove != null) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onRemove) { Text(remove, maxLines = 1) }
+            }
+        }
     }
 }
 
@@ -719,12 +749,16 @@ private fun Progress(text: String) {
  */
 @Composable
 private fun Notices(assistant: LectureAssistant, lecture: Lecture?, recorder: LectureRecorder?, onOpenSettings: () -> Unit) {
-    // One lecture at a time: another document may be recording or importing
-    val recordingElsewhere = (assistant.activeRecorder?.takeIf { it !== recorder }?.lecture ?: assistant.importing)
-        ?.takeIf { it !== lecture }
+    // One recording at a time: another document may be recording
+    val recordingElsewhere = assistant.activeRecorder?.takeIf { it !== recorder }?.lecture?.takeIf { it !== lecture }
     val settings = stringResource(Res.string.lecture_action_settings)
     recordingElsewhere?.let {
         LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle), NoticeTone.Neutral)
+    }
+    // The other recordings being transcribed here, or waiting to be: nothing waits for them but the next one
+    val transcribedBeside = assistant.transcribing.count { it !== lecture }
+    if (transcribedBeside > 0) {
+        LectureNotice(DrawViewIcons.Upload, pluralStringResource(Res.plurals.lecture_transcriptions_beside, transcribedBeside, transcribedBeside), NoticeTone.Neutral)
     }
     assistant.startError?.let {
         LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_problem_start, it), NoticeTone.Error)

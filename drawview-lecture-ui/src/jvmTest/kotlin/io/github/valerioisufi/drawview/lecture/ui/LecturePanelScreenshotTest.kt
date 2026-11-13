@@ -130,14 +130,15 @@ class LecturePanelScreenshotTest {
                         Column(modifier = Modifier.width(340.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             RecordingCard("42:10", level = 0.6f, status = "Topic: one-sided limits", onStop = {})
                             RecordingCard("42:10", level = 0f, status = "Recording the audio and the pages you look at.", onStop = {}, compact = true)
-                            PanelCard {
-                                Text("Converting the audio…", style = MaterialTheme.typography.titleSmall)
-                            }
+                            ImportCard("Converting the audio…", duration = null, progress = -1f)
+                            ImportCard("Transcribing the recording…", duration = "1:32:10", progress = 0.4f, remove = "Stop")
+                            ImportCard("Waiting for its turn…", duration = "48:05", progress = 0f, remove = "Remove from the queue")
                         }
                         Column(modifier = Modifier.width(360.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             LectureNotice(DrawViewIcons.Key, "Set the Gemini API key in the settings.", NoticeTone.Error, action = "Settings" to {})
                             LectureNotice(DrawViewIcons.Mic, "The system is using the microphone (a call, Siri): the recording goes on as soon as it gives it back.", NoticeTone.Warning)
                             LectureNotice(DrawViewIcons.Users, "Being recorded on Marta’s iPad · 12:30", NoticeTone.Info)
+                            LectureNotice(DrawViewIcons.Upload, "2 other recordings are in the queue of the transcriptions", NoticeTone.Neutral)
                             LectureNotice(DrawViewIcons.Sparkles, "gemma4:12b is reviewing the lecture on this computer: 2140 tokens written.", NoticeTone.Neutral)
                         }
                     }
