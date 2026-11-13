@@ -7,11 +7,9 @@
     <string name="lecture_action_settings">Settings</string>
     <string name="lecture_action_close">Close</string>
     <string name="lecture_action_go">Go</string>
-    <string name="lecture_action_retry">Retry</string>
     <string name="lecture_action_new_recording">New recording</string>
     <string name="lecture_idle_description">While you take notes, the assistant listens to the lecture: every few minutes it compares what is said with the slides and with what you wrote, and suggests what is missing.</string>
     <string name="lecture_unsupported">The recording is available in the desktop app only, for now.</string>
-    <string name="lecture_status_recording">Recording · %1$s</string>
     <string name="lecture_status_finalizing">Reviewing the whole lecture…</string>
     <string name="lecture_status_finished">Lecture finished · %1$s</string>
     <string name="lecture_status_analyzing">Analyzing the last minute with %1$s…</string>
@@ -98,12 +96,9 @@
     <string name="lecture_action_delete">Delete</string>
     <string name="lecture_review_generate">Generate the review</string>
     <string name="lecture_review_pending">The review of this lecture has not been written yet.</string>
-    <string name="lecture_indicator_open">Open</string>
-    <string name="lecture_indicator_reviewing">Reviewing «%1$s»…</string>
     <string name="lecture_exit_title">A lecture is being recorded</string>
     <string name="lecture_exit_message">The recording is saved: you can generate its review when you open the notebook again.</string>
     <string name="lecture_exit_confirm">Stop and exit</string>
-    <string name="lecture_settings_models">Models</string>
     <string name="lecture_settings_local_section">On this computer</string>
     <string name="lecture_settings_gemini_section">Gemini (online)</string>
     <string name="lecture_settings_lecture_section">Lecture</string>

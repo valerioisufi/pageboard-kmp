@@ -8,16 +8,6 @@ plugins {
 description = "The DrawView lecture assistant without its UI: recording, transcription, the models, the lectures of the documents and their sharing"
 
 kotlin {
-    applyDefaultHierarchyTemplate {
-        common {
-            // Targets whose Compose canvas is backed by Skia (skiko): desktop and iOS.
-            group("skiko") {
-                withJvm()
-                withIos()
-            }
-        }
-    }
-
     val nativeDir = rootProject.layout.projectDirectory.dir("native")
     listOf(
         iosArm64() to "iphoneos",

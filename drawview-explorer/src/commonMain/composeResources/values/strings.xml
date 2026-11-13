@@ -5,7 +5,6 @@
     <string name="explorer_fab_state_expanded">Expanded</string>
     <string name="explorer_fab_state_collapsed">Collapsed</string>
     <string name="explorer_fab_toggle_menu">Toggle menu</string>
-    <string name="explorer_fab_close_menu">Close menu</string>
     <string name="explorer_dialog_new_note">New note</string>
     <string name="explorer_dialog_new_folder">Create folder</string>
     <string name="explorer_input_name">Choose a name</string>
@@ -15,7 +14,6 @@
     <string name="explorer_action_details">Info</string>
     <string name="explorer_action_rename">Rename</string>
     <string name="explorer_action_move_to">Move to</string>
-    <string name="explorer_action_move">Move</string>
     <string name="explorer_action_delete">Delete</string>
     <string name="explorer_action_select_all">Select all</string>
     <string name="explorer_action_clear_selection">Clear selection</string>
@@ -27,12 +25,10 @@
     <string name="explorer_sort_last_opened">Last open</string>
     <string name="explorer_sort_invert">Invert order</string>
     <string name="explorer_sort_folders_on_top">Keep folders on top</string>
-    <string name="explorer_recents_title">Recents</string>
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">No folders found</string>
     <string name="explorer_move_here">Move here</string>
     <string name="explorer_error_create_failed">Error during creation</string>
-    <string name="explorer_shared">Shared with other devices</string>
     <string name="explorer_action_open">Open</string>
     <string name="explorer_action_open_in_new_window">Open in new window</string>
     <string name="explorer_command_sort_by">Sort by %1$s</string>
@@ -83,8 +79,6 @@
     <string name="explorer_empty_shared_body">The notes shared with other devices appear here.</string>
     <string name="explorer_move_subtitle">%1$s · from %2$s</string>
     <string name="explorer_delete_shared">“%1$s” is shared: the others keep their copy.</string>
-    <string name="explorer_drop_title">Drop to make a note of it</string>
-    <string name="explorer_drop_body">A PDF or an image becomes a note of %1$s, named after the file</string>
     <string name="explorer_drag_move_to">Move to %1$s</string>
     <string name="explorer_new_note_paper">Paper</string>
     <string name="explorer_paper_blank">Blank</string>
@@ -92,7 +86,6 @@
     <string name="explorer_paper_grid">Grid</string>
     <string name="explorer_paper_dotted">Dotted</string>
     <string name="explorer_input_name_short">Name</string>
-    <string name="explorer_new_item">New</string>
     <plurals name="explorer_notes_count">
         <item quantity="one">%1$d note</item>
         <item quantity="other">%1$d notes</item>
@@ -129,7 +122,6 @@
     <string name="explorer_trash_empty_state">The Trash is empty</string>
     <string name="explorer_trash_empty_state_body">What you delete stays here for 30 days.</string>
     <string name="explorer_trash_open">Trash</string>
-    <string name="explorer_trash_restored">“%1$s” restored</string>
     <plurals name="explorer_trash_moved_many">
         <item quantity="one">%1$d item moved to the Trash</item>
         <item quantity="other">%1$d items moved to the Trash</item>

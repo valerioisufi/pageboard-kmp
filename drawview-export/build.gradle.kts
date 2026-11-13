@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     id("drawview.compose.library")
 }
@@ -7,17 +5,6 @@ plugins {
 description = "Export of DrawView documents as PDF files and images (the exporters and the use case, without their dialog)"
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            // Targets whose Compose canvas is backed by Skia (skiko): desktop and iOS.
-            group("skiko") {
-                withJvm()
-                withIos()
-            }
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-canvas"))
@@ -25,7 +12,6 @@ kotlin {
             api(project(":drawview-store"))
             implementation(project(":drawview-pdf"))
             implementation(project(":drawview-latex"))
-            implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)

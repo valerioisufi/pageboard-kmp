@@ -7,11 +7,9 @@
     <string name="lecture_action_settings">Impostazioni</string>
     <string name="lecture_action_close">Chiudi</string>
     <string name="lecture_action_go">Vai</string>
-    <string name="lecture_action_retry">Riprova</string>
     <string name="lecture_action_new_recording">Nuova registrazione</string>
     <string name="lecture_idle_description">Mentre prendi appunti, l\'assistente ascolta la lezione: ogni pochi minuti confronta quello che viene detto con le slide e con quello che hai scritto, e ti suggerisce ciò che manca.</string>
     <string name="lecture_unsupported">Per ora la registrazione è disponibile solo nell\'app desktop.</string>
-    <string name="lecture_status_recording">In registrazione · %1$s</string>
     <string name="lecture_status_finalizing">Revisione dell\'intera lezione…</string>
     <string name="lecture_status_finished">Lezione terminata · %1$s</string>
     <string name="lecture_status_analyzing">Analisi dell\'ultimo minuto con %1$s…</string>
@@ -98,12 +96,9 @@
     <string name="lecture_action_delete">Elimina</string>
     <string name="lecture_review_generate">Genera la revisione</string>
     <string name="lecture_review_pending">La revisione di questa lezione non è ancora stata scritta.</string>
-    <string name="lecture_indicator_open">Apri</string>
-    <string name="lecture_indicator_reviewing">Revisione di «%1$s»…</string>
     <string name="lecture_exit_title">Registrazione in corso</string>
     <string name="lecture_exit_message">La registrazione viene salvata: potrai generare la revisione quando riapri il quaderno.</string>
     <string name="lecture_exit_confirm">Interrompi ed esci</string>
-    <string name="lecture_settings_models">Modelli</string>
     <string name="lecture_settings_local_section">Su questo computer</string>
     <string name="lecture_settings_gemini_section">Gemini (online)</string>
     <string name="lecture_settings_lecture_section">Lezione</string>

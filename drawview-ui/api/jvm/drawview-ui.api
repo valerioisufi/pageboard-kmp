@@ -514,22 +514,8 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/Array0
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Drawable0_commonMainKt {
-	public static final fun getIcon_add_link (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_attach_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_cut (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_ink_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_ink_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_ink_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_lasso_select (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_pan_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_sticky_note (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_text_fields (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getIcon_visibility (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getImg_folder (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
 	public static final fun getLogo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
 	public static final fun getMaschera_color_wheel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getRuler (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_commonMainKt {
@@ -592,12 +578,10 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$st
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String0_commonMainKt {
 	public static final fun getAbout_dialog_app_description (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getAbout_dialog_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getAbout_dialog_freetype_notice (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getAbout_dialog_libraries_header (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getAbout_dialog_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getAbout_dialog_version (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getApp_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getColor_picker_hex (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getColor_picker_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_bring_forward (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_bring_to_front (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -626,7 +610,6 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getCommon_action_undo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommon_button_apply (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommon_button_cancel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_label_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommon_label_not_available (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommon_state_loading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getContext_menu_action_add_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -640,7 +623,6 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getDialog_override_bg_dismiss (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDialog_override_bg_message (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDialog_override_bg_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_action_collapse (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_action_expand (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_created_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_elements_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -649,9 +631,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getDocument_info_label_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_value_dimensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_menu_about_licenses (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_menu_document_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_menu_settings (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_menu_stylus_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_read_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_add_preset (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -671,17 +651,13 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getDraw_toolbar_action_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_brush_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_label_eraser_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_label_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_highlighter_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_highlighter_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_label_text_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_option_images_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_option_select_all (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_title_lasso_mode (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_title_text_settings (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDrawing_mode (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getEditor_action_extensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getEditor_page_indicator (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_as_notes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -690,9 +666,6 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_clean (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_clean_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
 	public static final fun getImport_text_from_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_label (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -703,6 +676,9 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getMenu_edit (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
 	public static final fun getMenu_help (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_tools (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -793,9 +769,6 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getTable_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_column_left (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
 	public static final fun getTable_column_right (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_delete_column (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -806,6 +779,9 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
 	public static final fun getText_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_background_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

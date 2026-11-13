@@ -47,6 +47,14 @@ source sets not used).
 `SpeechSource` and stripped by `WhisperTranscriber`, the page backgrounds drawn by hand in
 `PageGridOverlay` and `PageTemplateConfigurator`, `ExportSheetState` repeating `ExportContents`.
 
+**Found while fixing**: the release workflow publishes without `-Pdrawview.pdfium.desktop=all`,
+so the `drawview-pdf` jar on Maven Central holds the PDFium of the runner only (Linux), while the
+native workflow checks all of them.
+
+**Also while fixing**: the screenshot `agent_marks` of `drawview-agent-ui` was older than the shapes
+tool in the bar (main at 58029db4 fails it): recorded again. `TranscriptionQueueTest` timed out
+once under the load of the whole build, and passes alone.
+
 **Findings dropped** (false, or right as they are):
 
 * `StrokeEntity.hashCode` on fewer fields than `equals` is correct: equal entities still have equal
@@ -103,7 +111,7 @@ source sets not used).
 |-------|---------|--------|
 | 1 | Bugs 1–7 of the starting point, with tests (agent counts, `NoChange`) | done |
 | 2 | Dead code: private/`internal`/native/app symbols, orphan KDoc, no-ops and wasted allocations, placeholder tests | done |
-| 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, catalog, unused dependencies/plugins/source sets, the pdfium linker flags limited to `drawview-pdf`, `windows-aarch64` aligned in CI | to do |
+| 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, the unused table of the search index, catalog, unused dependencies/plugins/source sets, PDFium of every desktop in the released jar | done |
 | 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | to do |
 | 5 | The directories of the data found by their paths | to do |
 | 6 | Public API with no caller (part 1B of the audit), removed by the user's choice, with `updateKotlinAbi` | waits for the user |
@@ -126,6 +134,9 @@ Taken alone, revertible:
 * The sample on iOS does not declare `drawview://`, though `ContentView.swift` handles it:
   PencilNotes declares it for its invitations, and two applications claiming the same scheme leave
   iOS choosing one of them.
+* The accessors of the strings and drawables removed from `drawview-ui` and `drawview-explorer`
+  are public (`Res`, used by the other modules): they leave the ABI dumps, recorded with
+  `updateKotlinAbi`. `DrawableResourcesTest` goes with the last vector drawable it checked.
 * `DocumentChange.changesNothing` (true for the change undoing an `AddResource` only) is new public
   API of `drawview-model`, recorded in its dump.
 
@@ -141,6 +152,8 @@ Checked again when removing them, they stay:
   later in a coroutine as a `LaunchedEffect` would.
 * `PdfSearchSource.version` opening an adapter: it asks whether the PDF engine works now (its
   native library may be missing), not whether it is given.
+* `windows-aarch64`: the native scripts can build it by hand; packaging it needs a runner of its
+  own in CI, a choice of the user.
 * The PDFium linker flags of every library's iOS tests: every library whose tests link
   `drawview-pdf`, even through another module, needs them.
 * `api(project(":drawview-sync-lan"))` in `drawview-sync-ui`: `Collaboration` takes a

@@ -3,7 +3,6 @@
     <string name="common_state_loading">Cargando…</string>
     <string name="common_label_not_available">N/D</string>
     <string name="document_info_action_expand">Expandir info</string>
-    <string name="document_info_action_collapse">Ocultar info</string>
     <string name="document_info_label_created_date">Creado el</string>
     <string name="document_info_label_modified_date">Modificado</string>
     <string name="document_info_label_pages">Páginas</string>
@@ -23,11 +22,7 @@
     <string name="editor_action_extensions">Acciones</string>
     <string name="common_action_undo">Deshacer</string>
     <string name="common_action_redo">Rehacer</string>
-    <string name="common_label_color">Color</string>
-    <string name="draw_toolbar_label_brush_size">Tamaño del Pincel</string>
     <string name="draw_toolbar_action_ink_pen">Bolígrafo</string>
-    <string name="draw_toolbar_label_highlighter_color">Color del Marcador</string>
-    <string name="draw_toolbar_label_highlighter_size">Tamaño del Marcador</string>
     <string name="draw_toolbar_action_highlighter">Marcador</string>
     <string name="draw_toolbar_action_text_markup">Marcar texto</string>
     <string name="text_markup_highlight">Resaltar</string>
@@ -86,7 +81,6 @@
     <string name="context_menu_action_copy_page">Copiar página</string>
     <string name="context_menu_action_paste_page">Pegar página después</string>
     <string name="context_menu_action_edit_background">Editar Fondo</string>
-    <string name="draw_menu_settings">Ajustes</string>
     <string name="draw_menu_stylus_only">Modo solo Lápiz</string>
     <string name="draw_menu_document_background">Fondo del documento</string>
     <string name="dialog_override_bg_title">¿Aplicar a todas las páginas?</string>
@@ -165,8 +159,6 @@
     <string name="about_dialog_version">Versión 1.0.0</string>
     <string name="about_dialog_app_description">Aplicación multiplataforma para dibujo y notas desarrollada con Kotlin Multiplatform y Compose Multiplatform.</string>
     <string name="about_dialog_libraries_header">Bibliotecas de código abierto y licencias</string>
-    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
-    <string name="draw_menu_about_licenses">Acerca de y Licencias</string>
     <string name="about_dialog_close">Cerrar</string>
     <string name="draw_read_only">Solo lectura</string>
     <!-- Menus and commands -->
@@ -206,8 +198,6 @@
     <string name="tool_settings_text_hint">El tamaño, el color y la alineación usados por última vez se aplican a los textos nuevos.</string>
     <string name="tool_settings_markup_hint">Ajustes: toca uno para marcar con él, toca el elegido para cambiarlo.</string>
     <string name="editor_page_indicator">Página %1$d de %2$d</string>
-    <string name="color_picker_hex">Hex</string>
-    <string name="drawing_mode">Modo dibujo</string>
     <plurals name="editor_pages_count">
         <item quantity="one">%1$d página</item>
         <item quantity="other">%1$d páginas</item>

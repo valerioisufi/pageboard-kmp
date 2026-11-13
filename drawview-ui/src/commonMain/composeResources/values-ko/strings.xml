@@ -3,7 +3,6 @@
     <string name="common_state_loading">로딩 중…</string>
     <string name="common_label_not_available">해당 없음</string>
     <string name="document_info_action_expand">정보 펼치기</string>
-    <string name="document_info_action_collapse">정보 접기</string>
     <string name="document_info_label_created_date">생성일</string>
     <string name="document_info_label_modified_date">수정일</string>
     <string name="document_info_label_pages">페이지</string>
@@ -23,11 +22,7 @@
     <string name="editor_action_extensions">작업</string>
     <string name="common_action_undo">실행 취소</string>
     <string name="common_action_redo">다시 실행</string>
-    <string name="common_label_color">색상</string>
-    <string name="draw_toolbar_label_brush_size">브러시 크기</string>
     <string name="draw_toolbar_action_ink_pen">펜</string>
-    <string name="draw_toolbar_label_highlighter_color">형광펜 색상</string>
-    <string name="draw_toolbar_label_highlighter_size">형광펜 크기</string>
     <string name="draw_toolbar_action_highlighter">형광펜</string>
     <string name="draw_toolbar_action_text_markup">텍스트 표시</string>
     <string name="text_markup_highlight">강조 표시</string>
@@ -86,7 +81,6 @@
     <string name="context_menu_action_copy_page">페이지 복사</string>
     <string name="context_menu_action_paste_page">다음에 페이지 붙여넣기</string>
     <string name="context_menu_action_edit_background">배경 편집</string>
-    <string name="draw_menu_settings">설정</string>
     <string name="draw_menu_stylus_only">스타일러스 전용 모드</string>
     <string name="draw_menu_document_background">문서 배경</string>
     <string name="dialog_override_bg_title">모든 페이지에 적용하시겠습니까?</string>
@@ -165,8 +159,6 @@
     <string name="about_dialog_version">버전 1.0.0</string>
     <string name="about_dialog_app_description">Kotlin Multiplatform 및 Compose Multiplatform으로 구축된 크로스 플랫폼 드로잉 및 메모 앱.</string>
     <string name="about_dialog_libraries_header">오픈 소스 라이브러리 및 라이선스</string>
-    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
-    <string name="draw_menu_about_licenses">정보 및 라이선스</string>
     <string name="about_dialog_close">닫기</string>
     <string name="draw_read_only">읽기 전용</string>
     <!-- Menus and commands -->
@@ -206,8 +198,6 @@
     <string name="tool_settings_text_hint">마지막으로 사용한 크기, 색, 정렬이 새 텍스트의 기본값이 됩니다.</string>
     <string name="tool_settings_markup_hint">프리셋: 눌러서 표시하고, 선택한 프리셋을 눌러 바꿉니다.</string>
     <string name="editor_page_indicator">%2$d페이지 중 %1$d페이지</string>
-    <string name="color_picker_hex">16진수</string>
-    <string name="drawing_mode">그리기 모드</string>
     <plurals name="editor_pages_count">
         <item quantity="other">%1$d페이지</item>
     </plurals>

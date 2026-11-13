@@ -5,7 +5,6 @@
     <string name="explorer_fab_state_expanded">확장됨</string>
     <string name="explorer_fab_state_collapsed">축소됨</string>
     <string name="explorer_fab_toggle_menu">메뉴 전환</string>
-    <string name="explorer_fab_close_menu">메뉴 닫기</string>
     <string name="explorer_dialog_new_note">새 노트</string>
     <string name="explorer_dialog_new_folder">폴더 만들기</string>
     <string name="explorer_input_name">이름 선택</string>
@@ -15,7 +14,6 @@
     <string name="explorer_action_details">정보</string>
     <string name="explorer_action_rename">이름 변경</string>
     <string name="explorer_action_move_to">이동</string>
-    <string name="explorer_action_move">이동</string>
     <string name="explorer_action_delete">삭제</string>
     <string name="explorer_action_select_all">모두 선택</string>
     <string name="explorer_action_clear_selection">선택 취소</string>
@@ -27,12 +25,10 @@
     <string name="explorer_sort_last_opened">최근 열어본 시간</string>
     <string name="explorer_sort_invert">순서 반전</string>
     <string name="explorer_sort_folders_on_top">폴더를 항상 위에 표시</string>
-    <string name="explorer_recents_title">최근 항목</string>
     <string name="explorer_root_folder">홈</string>
     <string name="explorer_move_empty_state">폴더를 찾을 수 없습니다</string>
     <string name="explorer_move_here">여기로 이동</string>
     <string name="explorer_error_create_failed">생성 중 오류 발생</string>
-    <string name="explorer_shared">다른 기기와 공유됨</string>
     <string name="explorer_action_open">열기</string>
     <string name="explorer_action_open_in_new_window">새 창에서 열기</string>
     <string name="explorer_command_sort_by">정렬 기준: %1$s</string>
@@ -83,8 +79,6 @@
     <string name="explorer_empty_shared_body">다른 기기와 공유한 노트가 여기에 표시됩니다.</string>
     <string name="explorer_move_subtitle">%1$s · %2$s에서</string>
     <string name="explorer_delete_shared">“%1$s”은(는) 공유되어 있습니다. 다른 사람의 사본은 유지됩니다.</string>
-    <string name="explorer_drop_title">놓아서 노트로 만들기</string>
-    <string name="explorer_drop_body">PDF나 이미지가 파일 이름으로 %1$s의 노트가 됩니다</string>
     <string name="explorer_drag_move_to">%1$s(으)로 이동</string>
     <string name="explorer_new_note_paper">용지</string>
     <string name="explorer_paper_blank">빈 용지</string>
@@ -92,7 +86,6 @@
     <string name="explorer_paper_grid">모눈</string>
     <string name="explorer_paper_dotted">점선</string>
     <string name="explorer_input_name_short">이름</string>
-    <string name="explorer_new_item">새로 만들기</string>
     <plurals name="explorer_notes_count">
         <item quantity="other">노트 %1$d개</item>
     </plurals>
@@ -125,7 +118,6 @@
     <string name="explorer_trash_empty_state">휴지통이 비어 있습니다</string>
     <string name="explorer_trash_empty_state_body">삭제한 항목은 30일 동안 여기에 보관됩니다.</string>
     <string name="explorer_trash_open">휴지통</string>
-    <string name="explorer_trash_restored">‘%1$s’을(를) 복원했습니다</string>
     <plurals name="explorer_trash_moved_many">
         <item quantity="other">항목 %1$d개를 휴지통으로 이동했습니다</item>
     </plurals>

@@ -4,7 +4,6 @@ plugins {
     id("drawview.compose.library")
     // The JNI library of MicroTeX in the desktop jar
     id("drawview.jvm.natives")
-    alias(libs.plugins.kotlinSerialization)
 }
 
 description = "LaTeX formulas for DrawView, rendered by MicroTeX"
@@ -55,7 +54,6 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

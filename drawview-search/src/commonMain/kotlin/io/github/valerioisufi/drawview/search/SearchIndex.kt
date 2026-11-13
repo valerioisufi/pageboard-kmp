@@ -729,13 +729,6 @@ public class SearchIndex(
                 "scale REAL NOT NULL, " +
                 "bytes BLOB NOT NULL)"
         )
-        conn.execSQL(
-            "CREATE TABLE IF NOT EXISTS handwriting (" +
-                "blockKey TEXT PRIMARY KEY NOT NULL, " +
-                "documentId TEXT NOT NULL, " +
-                "pageId TEXT NOT NULL, " +
-                "text TEXT NOT NULL)"
-        )
     }
 
     private fun readMeta(conn: SQLiteConnection): Map<String, String> {

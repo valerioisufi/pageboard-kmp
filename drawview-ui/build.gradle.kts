@@ -1,6 +1,5 @@
 plugins {
     id("drawview.compose.library")
-    alias(libs.plugins.kotlinSerialization)
     // Screenshot tests of the components (recordRoborazziJvm, verifyRoborazziJvm)
     alias(libs.plugins.roborazzi)
 }
@@ -26,9 +25,7 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {

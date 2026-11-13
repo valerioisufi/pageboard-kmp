@@ -64,7 +64,7 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew publishToMavenCentral -Pdrawview.native.prebuilt=true
+        run: ./gradlew publishToMavenCentral -Pdrawview.native.prebuilt=true -Pdrawview.pdfium.desktop=all
       - name: PDFium for the iOS applications
         run: |
           ./gradlew assemblePdfiumXcframework

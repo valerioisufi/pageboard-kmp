@@ -3,7 +3,6 @@
     <string name="common_state_loading">読み込み中…</string>
     <string name="common_label_not_available">N/A</string>
     <string name="document_info_action_expand">情報を展開</string>
-    <string name="document_info_action_collapse">情報を折りたたむ</string>
     <string name="document_info_label_created_date">作成日</string>
     <string name="document_info_label_modified_date">変更日</string>
     <string name="document_info_label_pages">ページ数</string>
@@ -23,11 +22,7 @@
     <string name="editor_action_extensions">アクション</string>
     <string name="common_action_undo">元に戻す</string>
     <string name="common_action_redo">やり直す</string>
-    <string name="common_label_color">色</string>
-    <string name="draw_toolbar_label_brush_size">ブラシのサイズ</string>
     <string name="draw_toolbar_action_ink_pen">ペン</string>
-    <string name="draw_toolbar_label_highlighter_color">蛍光ペンの色</string>
-    <string name="draw_toolbar_label_highlighter_size">蛍光ペンのサイズ</string>
     <string name="draw_toolbar_action_highlighter">蛍光ペン</string>
     <string name="draw_toolbar_action_text_markup">テキストをマーク</string>
     <string name="text_markup_highlight">ハイライト</string>
@@ -86,7 +81,6 @@
     <string name="context_menu_action_copy_page">ページをコピー</string>
     <string name="context_menu_action_paste_page">後にページを貼り付け</string>
     <string name="context_menu_action_edit_background">背景を編集</string>
-    <string name="draw_menu_settings">設定</string>
     <string name="draw_menu_stylus_only">スタイラス専用モード</string>
     <string name="draw_menu_document_background">ドキュメントの背景</string>
     <string name="dialog_override_bg_title">すべてのページに適用しますか？</string>
@@ -165,8 +159,6 @@
     <string name="about_dialog_version">バージョン 1.0.0</string>
     <string name="about_dialog_app_description">Kotlin Multiplatform と Compose Multiplatform で構築されたクロスプラットフォーム描画・ノート作成アプリ。</string>
     <string name="about_dialog_libraries_header">オープンソースライブラリとライセンス</string>
-    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
-    <string name="draw_menu_about_licenses">アプリ情報とライセンス</string>
     <string name="about_dialog_close">閉じる</string>
     <string name="draw_read_only">閲覧のみ</string>
     <!-- Menus and commands -->
@@ -206,8 +198,6 @@
     <string name="tool_settings_text_hint">最後に使ったサイズ、色、配置が新しいテキストの既定になります。</string>
     <string name="tool_settings_markup_hint">プリセット：タップして使い、選択中のものをタップして変更します。</string>
     <string name="editor_page_indicator">%2$d ページ中 %1$d ページ</string>
-    <string name="color_picker_hex">16進数</string>
-    <string name="drawing_mode">描画モード</string>
     <plurals name="editor_pages_count">
         <item quantity="other">%1$d ページ</item>
     </plurals>

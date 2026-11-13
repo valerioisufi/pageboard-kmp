@@ -5,7 +5,6 @@
     <string name="explorer_fab_state_expanded">Erweitert</string>
     <string name="explorer_fab_state_collapsed">Zugeklappt</string>
     <string name="explorer_fab_toggle_menu">Menü umschalten</string>
-    <string name="explorer_fab_close_menu">Menü schließen</string>
     <string name="explorer_dialog_new_note">Neue Notiz</string>
     <string name="explorer_dialog_new_folder">Ordner erstellen</string>
     <string name="explorer_input_name">Namen wählen</string>
@@ -15,7 +14,6 @@
     <string name="explorer_action_details">Info</string>
     <string name="explorer_action_rename">Umbenennen</string>
     <string name="explorer_action_move_to">Verschieben nach</string>
-    <string name="explorer_action_move">Verschieben</string>
     <string name="explorer_action_delete">Löschen</string>
     <string name="explorer_action_select_all">Alles auswählen</string>
     <string name="explorer_action_clear_selection">Auswahl aufheben</string>
@@ -27,12 +25,10 @@
     <string name="explorer_sort_last_opened">Zuletzt geöffnet</string>
     <string name="explorer_sort_invert">Reihenfolge umkehren</string>
     <string name="explorer_sort_folders_on_top">Ordner oben behalten</string>
-    <string name="explorer_recents_title">Zuletzt verwendet</string>
     <string name="explorer_root_folder">Startseite</string>
     <string name="explorer_move_empty_state">Keine Ordner gefunden</string>
     <string name="explorer_move_here">Hierher verschieben</string>
     <string name="explorer_error_create_failed">Fehler beim Erstellen</string>
-    <string name="explorer_shared">Mit anderen Geräten geteilt</string>
     <string name="explorer_action_open">Öffnen</string>
     <string name="explorer_action_open_in_new_window">In neuem Fenster öffnen</string>
     <string name="explorer_command_sort_by">Sortieren nach: %1$s</string>
@@ -83,8 +79,6 @@
     <string name="explorer_empty_shared_body">Mit anderen Geräten geteilte Notizen erscheinen hier.</string>
     <string name="explorer_move_subtitle">%1$s · aus %2$s</string>
     <string name="explorer_delete_shared">„%1$s“ ist geteilt: Die anderen behalten ihre Kopie.</string>
-    <string name="explorer_drop_title">Ablegen, um eine Notiz daraus zu machen</string>
-    <string name="explorer_drop_body">Ein PDF oder Bild wird zu einer Notiz in %1$s, benannt nach der Datei</string>
     <string name="explorer_drag_move_to">Nach %1$s verschieben</string>
     <string name="explorer_new_note_paper">Papier</string>
     <string name="explorer_paper_blank">Leer</string>
@@ -92,7 +86,6 @@
     <string name="explorer_paper_grid">Kariert</string>
     <string name="explorer_paper_dotted">Gepunktet</string>
     <string name="explorer_input_name_short">Name</string>
-    <string name="explorer_new_item">Neu</string>
     <plurals name="explorer_notes_count">
         <item quantity="one">%1$d Notiz</item>
         <item quantity="other">%1$d Notizen</item>
@@ -129,7 +122,6 @@
     <string name="explorer_trash_empty_state">Der Papierkorb ist leer</string>
     <string name="explorer_trash_empty_state_body">Was du löschst, bleibt hier 30 Tage lang.</string>
     <string name="explorer_trash_open">Papierkorb</string>
-    <string name="explorer_trash_restored">„%1$s“ wiederhergestellt</string>
     <plurals name="explorer_trash_moved_many">
         <item quantity="one">%1$d Objekt in den Papierkorb verschoben</item>
         <item quantity="other">%1$d Objekte in den Papierkorb verschoben</item>

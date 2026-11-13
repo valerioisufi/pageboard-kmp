@@ -5,7 +5,6 @@
     <string name="explorer_fab_state_expanded">Espanso</string>
     <string name="explorer_fab_state_collapsed">Chiuso</string>
     <string name="explorer_fab_toggle_menu">Apri/Chiudi menu</string>
-    <string name="explorer_fab_close_menu">Chiudi menu</string>
     <string name="explorer_dialog_new_note">Nuova nota</string>
     <string name="explorer_dialog_new_folder">Crea cartella</string>
     <string name="explorer_input_name">Scegli un nome</string>
@@ -15,7 +14,6 @@
     <string name="explorer_action_details">Info</string>
     <string name="explorer_action_rename">Rinomina</string>
     <string name="explorer_action_move_to">Sposta in</string>
-    <string name="explorer_action_move">Sposta</string>
     <string name="explorer_action_delete">Elimina</string>
     <string name="explorer_action_select_all">Seleziona tutto</string>
     <string name="explorer_action_clear_selection">Annulla selezione</string>
@@ -27,12 +25,10 @@
     <string name="explorer_sort_last_opened">Ultima apertura</string>
     <string name="explorer_sort_invert">Inverti ordine</string>
     <string name="explorer_sort_folders_on_top">Mantieni cartelle in alto</string>
-    <string name="explorer_recents_title">Recenti</string>
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">Nessuna cartella trovata</string>
     <string name="explorer_move_here">Sposta qui</string>
     <string name="explorer_error_create_failed">Errore durante la creazione</string>
-    <string name="explorer_shared">Condiviso con altri dispositivi</string>
     <string name="explorer_action_open">Apri</string>
     <string name="explorer_action_open_in_new_window">Apri in una nuova finestra</string>
     <string name="explorer_command_sort_by">Ordina per %1$s</string>
@@ -83,8 +79,6 @@
     <string name="explorer_empty_shared_body">Le note condivise con altri dispositivi compaiono qui.</string>
     <string name="explorer_move_subtitle">%1$s · da %2$s</string>
     <string name="explorer_delete_shared">“%1$s” è condivisa: gli altri conservano la loro copia.</string>
-    <string name="explorer_drop_title">Rilascia per farne una nota</string>
-    <string name="explorer_drop_body">Un PDF o un’immagine diventa una nota di %1$s, con il nome del file</string>
     <string name="explorer_drag_move_to">Sposta in %1$s</string>
     <string name="explorer_new_note_paper">Carta</string>
     <string name="explorer_paper_blank">Bianca</string>
@@ -92,7 +86,6 @@
     <string name="explorer_paper_grid">A quadretti</string>
     <string name="explorer_paper_dotted">A puntini</string>
     <string name="explorer_input_name_short">Nome</string>
-    <string name="explorer_new_item">Nuovo</string>
     <plurals name="explorer_notes_count">
         <item quantity="one">%1$d nota</item>
         <item quantity="other">%1$d note</item>
@@ -129,7 +122,6 @@
     <string name="explorer_trash_empty_state">Il Cestino è vuoto</string>
     <string name="explorer_trash_empty_state_body">Ciò che elimini resta qui per 30 giorni.</string>
     <string name="explorer_trash_open">Cestino</string>
-    <string name="explorer_trash_restored">“%1$s” ripristinato</string>
     <plurals name="explorer_trash_moved_many">
         <item quantity="one">%1$d elemento spostato nel Cestino</item>
         <item quantity="other">%1$d elementi spostati nel Cestino</item>

@@ -10,7 +10,6 @@ plugins {
 
 dependencies {
     implementation(project(":pencilnotes-shared"))
-    implementation(project(":drawview-canvas"))
     implementation(project(":drawview-ui"))
     // Every pending change written before the application exits (DrawViewSessions)
     implementation(project(":drawview-session"))
@@ -18,8 +17,6 @@ dependencies {
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
-
-    implementation(libs.compose.uiToolingPreview)
 
     // The clients of the external models: the socket and the commands (docs/agent-tools.md)
     implementation(project(":drawview-agent"))
