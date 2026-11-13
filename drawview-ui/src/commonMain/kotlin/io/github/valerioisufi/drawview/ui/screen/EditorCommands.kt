@@ -4,11 +4,11 @@ import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -21,27 +21,28 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
-import io.github.valerioisufi.drawview.ui.editor.rememberClipboardText
 import io.github.valerioisufi.drawview.canvas.controller.PageManager
+import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
-import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.CopiedElements
 import io.github.valerioisufi.drawview.model.change.CopiedPages
 import io.github.valerioisufi.drawview.model.change.StackMove
-import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.editor.rememberClipboardText
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.generated.resources.command_bring_forward
 import io.github.valerioisufi.drawview.ui.generated.resources.command_bring_to_front
 import io.github.valerioisufi.drawview.ui.generated.resources.command_close
 import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
+import io.github.valerioisufi.drawview.ui.generated.resources.command_insert_shape
 import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
@@ -68,14 +69,25 @@ import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_actio
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_grid_view
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_highlighter
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_image
-import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_text
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_pdf
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_text
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_increase_font_size
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_ink_pen
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_lasso
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_pan
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_shapes
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text_markup
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_center
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_end
+import io.github.valerioisufi.drawview.ui.generated.resources.table_align_start
+import io.github.valerioisufi.drawview.ui.generated.resources.table_column_left
+import io.github.valerioisufi.drawview.ui.generated.resources.table_column_right
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_column
+import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_row
+import io.github.valerioisufi.drawview.ui.generated.resources.table_row_above
+import io.github.valerioisufi.drawview.ui.generated.resources.table_row_below
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
@@ -90,18 +102,8 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbering
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_quote
-import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_table
-import io.github.valerioisufi.drawview.ui.generated.resources.table_row_above
-import io.github.valerioisufi.drawview.ui.generated.resources.table_row_below
-import io.github.valerioisufi.drawview.ui.generated.resources.table_column_left
-import io.github.valerioisufi.drawview.ui.generated.resources.table_column_right
-import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_row
-import io.github.valerioisufi.drawview.ui.generated.resources.table_delete_column
-import io.github.valerioisufi.drawview.ui.generated.resources.table_delete
-import io.github.valerioisufi.drawview.ui.generated.resources.table_align_start
-import io.github.valerioisufi.drawview.ui.generated.resources.table_align_center
-import io.github.valerioisufi.drawview.ui.generated.resources.table_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_table
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
@@ -378,6 +380,16 @@ internal class EditorCommands internal constructor(
         pages.addNewPageAfter(controller.viewport.mostVisiblePageIndex() ?: (controller.document.pages.size - 1))
     }
 
+    /** A shape of the kind chosen in the shapes tool, in the middle of the page shown, selected. */
+    val insertShape = Command(
+        "insert-shape", label(Res.string.command_insert_shape), CommandGroup.INSERT, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Shapes) },
+        isEnabled = writable
+    ) {
+        if (!controller.isDrawingMode) controller.toggleDrawingMode()
+        controller.shapeInserter.insertInView()
+    }
+
     val importPdf = Command(
         "import-pdf", label(Res.string.draw_toolbar_action_import_pdf), CommandGroup.INSERT, section = 1,
         icon = { rememberVectorPainter(DrawViewIcons.FileText) },
@@ -454,6 +466,7 @@ internal class EditorCommands internal constructor(
 
     val pen = tool(Tool.INK_PEN, Res.string.draw_toolbar_action_ink_pen, DrawViewIcons.Pen, Key.P)
     val highlighter = tool(Tool.INK_HIGHLIGHTER, Res.string.draw_toolbar_action_highlighter, DrawViewIcons.Highlighter, Key.H)
+    val shapeTool = tool(Tool.SHAPES, Res.string.draw_toolbar_action_shapes, DrawViewIcons.Shapes, Key.S)
     val textMarkup = tool(
         Tool.TEXT_MARKUP, Res.string.draw_toolbar_action_text_markup, DrawViewIcons.TextMarkup, Key.U,
         // The text of the PDF pages, where the PDFs are drawn
@@ -655,10 +668,10 @@ internal class EditorCommands internal constructor(
         close, rename,
         undo, redo, cut, copy, paste, pastePlain, delete,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes,
-        addPage, importPdf, importImage, importText,
+        addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack,
-        drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,
+        drawingMode, pen, highlighter, shapeTool, textMarkup, eraser, text, lasso, pan, previousTool,
         about
     ) + formats
 

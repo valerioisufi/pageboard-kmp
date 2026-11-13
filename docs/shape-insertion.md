@@ -230,7 +230,7 @@ edges.
 | 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Done |
 | 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Done |
 | 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Done |
-| 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Proposed |
+| 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Done, the drawing by hand left to the user |
 | 6 | The agent tools: `read_page` lists the shapes (kind, style, box); proposing shapes is left for later | Proposed |
 
 ### Phase 1 results
@@ -350,6 +350,30 @@ edges.
   it only, a tap inside a box without fill putting a new shape. ABI of `drawview-canvas` recorded
   again on purpose.
 
+### Phase 5 results
+
+* The Shapes button after the highlighter (`Tool.SHAPES`, letter `S`): its icon is the shape
+  chosen, drawn by the renderer in the color of the icons, with the dot of its color. Its popover
+  (`ShapeSettings`, `drawview-ui`, `screen/ShapeSettings.kt`): the grid of the eleven shapes, each
+  drawn in the style chosen (a dashed red ellipse shows every shape dashed and red); the inks of
+  the pen and the color wheel; the width in points; the outline (solid, dashed, dotted); the fill
+  of a box (none, tinted at a fifth, solid, following the color) or the head of an arrow (open,
+  filled); the hint of the gestures.
+* The selection bar of shapes only has "Shape Style": the same popover on the shapes selected
+  (`SelectedShapesTarget`: each keeps its kind for a change of style, takes the kind chosen in the
+  grid).
+* The commands: the tool (`tool-shapes`, `S`) and "Shape" in the menu Insert (`insert-shape`): the
+  shape chosen in the tool in the middle of the page shown, selected.
+* The strings in the seven languages (28 of them). The bar counts one tool more (`DrawScreen`).
+* What changed from the design: the menu Insert has one "Shape" (the kind chosen in the tool), not
+  every kind: the commands have no submenus, and eleven items would crowd the menu.
+* Screenshots: `shape-popovers` (ui, light and dark) new; the 64 of `drawview-explorer` with the
+  bar of the tools recorded again (the bar has the shapes button; on a phone the floating tools
+  scroll one more button); the others of ui, sync-ui, lecture-ui and export-ui unchanged. ABI of
+  `drawview-ui` recorded again (its strings).
+* The desktop application starts on a scratch directory with the branch; drawing the shapes by
+  hand in it, moving them, exporting them to PDF and syncing them is left to the user.
+
 ## Decisions
 
 * **A shape is an element of a built-in type, not a stroke** (revertible until it is released):
@@ -364,6 +388,7 @@ edges.
   going back to the button; the handles of the last shape are there to correct it.
 * **One style for the tool, the last one used** (revertible), not presets as the pen: the shapes
   of a page look the same without managing presets.
+* **One "Shape" in the menu Insert** (revertible): the kind chosen in the tool.
 * **Ctrl / ⌘ draws a shape freely** (revertible), Alt / ⌥ from its center: the convention of the
   drawing applications, where elsewhere in the editor Alt makes a gesture free.
 * **A second finger forces the constraints only while a finger draws** (revertible): while a pen

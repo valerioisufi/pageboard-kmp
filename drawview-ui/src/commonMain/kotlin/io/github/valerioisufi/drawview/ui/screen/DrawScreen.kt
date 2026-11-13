@@ -272,7 +272,7 @@ private fun DrawScreenContent(
                 var extensionsWidth by remember { mutableStateOf(0.dp) }
                 val pdfTools = if (controller.tileManager.tileRenderer.pdfAdapter != null) 1 else 0
                 val textMarkupShown = pdfTools == 1 && hasPdfPages
-                val toolCount = 2 + 6 + (if (textMarkupShown) 1 else 0) + 1 + pdfTools
+                val toolCount = 2 + 7 + (if (textMarkupShown) 1 else 0) + 1 + pdfTools
                 // The top bar starts after the controls of the window (the traffic lights of macOS)
                 val decorWidth = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
                 // The actions of the extensions behind one button where they leave the title too

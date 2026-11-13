@@ -34,8 +34,12 @@ import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.CommandMenu
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
+import io.github.valerioisufi.drawview.ui.components.ToolPopover
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.generated.resources.shape_style
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
+import io.github.valerioisufi.drawview.ui.screen.SelectedShapesTarget
+import io.github.valerioisufi.drawview.ui.screen.ShapeSettings
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.elevation
@@ -82,6 +86,10 @@ internal fun SelectionActionBar(
                 BarDivider()
                 ArrangeAction(commands)
             }
+            if (controller.shapeEditing.selectedShapes.isNotEmpty()) {
+                BarDivider()
+                ShapeStyleAction(controller)
+            }
             if (hasTexts) {
                 BarDivider()
                 // Size, color and alignment of the selected texts, as in the editor
@@ -89,6 +97,23 @@ internal fun SelectionActionBar(
                     TextStyleControls(texts, commands)
                 }
             }
+        }
+    }
+}
+
+/**
+ * The button of the selection bar opening the style of the shapes selected (the settings of the
+ * shapes tool, applied to them): the shape it draws, its color and its outline.
+ */
+@Composable
+private fun ShapeStyleAction(controller: DrawViewController) {
+    var expanded by remember { mutableStateOf(false) }
+    val target = remember(controller) { SelectedShapesTarget(controller) }
+    val label = stringResource(Res.string.shape_style)
+    Box {
+        BarAction(DrawViewIcons.Shapes, label, { expanded = true })
+        ToolPopover(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ShapeSettings(target, label, withHint = false)
         }
     }
 }

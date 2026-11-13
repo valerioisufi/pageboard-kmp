@@ -26,6 +26,11 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.ShapeToolStyle
+import io.github.valerioisufi.drawview.model.shape.ShapeDash
+import io.github.valerioisufi.drawview.model.shape.ShapeKind
+import io.github.valerioisufi.drawview.ui.screen.ShapeSettings
+import io.github.valerioisufi.drawview.ui.screen.ShapeToolTarget
 import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.placement.BesideAnchor
@@ -127,6 +132,32 @@ class ComponentScreenshotTest {
                     Popover { MarkupSettings(controller) }
                     Menu()
                 }
+            }
+        }
+    }
+
+    /**
+     * The popovers of the shapes: the tool with a box chosen (its fill), with an arrow (its
+     * heads), and the style of shapes selected.
+     */
+    @Test
+    fun shapePopovers() = listOf(false, true).forEach { dark ->
+        capture("shape-popovers-${if (dark) "dark" else "light"}", width = 1000, height = 760, dark = dark) {
+            val box = remember { DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)) }
+            val arrow = remember {
+                DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                    shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.LINE, heads = 1, stroke = 0xFF1F5FBF.toInt(), widthMm = 0.7f))
+                }
+            }
+            val dashed = remember {
+                DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                    shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.ELLIPSE, stroke = 0xFFD23B3B.toInt(), dash = ShapeDash.DASHED, fill = 0x33D23B3B))
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
+                Popover { ShapeSettings(ShapeToolTarget(box), "Shapes", withHint = true) }
+                Popover { ShapeSettings(ShapeToolTarget(arrow), "Shapes", withHint = false) }
+                Popover { ShapeSettings(ShapeToolTarget(dashed), "Shape Style", withHint = false) }
             }
         }
     }

@@ -489,6 +489,13 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
         // Much wider range for the highlighters, linear only up to 8 pt
         InkSettings(controller, Tool.INK_HIGHLIGHTER, stringResource(Res.string.tool_highlighter), InkPalette.highlights, HybridScale(1f..30f, linearThreshold = 8f, linearProportion = 0.3f))
     }
+    val shapeTarget = remember(controller) { ShapeToolTarget(controller) }
+    ToolWithSettings(
+        controller, Tool.SHAPES, commands.shapeTool, DrawViewIcons.Shapes, openSettings, { openSettings = it },
+        iconContent = { ShapeToolIcon(controller.shapeInserter.style) }
+    ) {
+        ShapeSettings(shapeTarget, shapesTitle(), withHint = true)
+    }
     if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
         ToolWithSettings(controller, Tool.TEXT_MARKUP, commands.textMarkup, DrawViewIcons.TextMarkup, openSettings, { openSettings = it }) {
             MarkupSettings(controller)
@@ -542,11 +549,13 @@ private fun ToolWithSettings(
     icon: ImageVector,
     openSettings: Tool?,
     onOpenSettings: (Tool?) -> Unit,
+    iconContent: (@Composable () -> Unit)? = null,
     settings: @Composable ColumnScope.() -> Unit
 ) {
     val selected = controller.selectedTool == tool
     val ink = when (tool) {
         Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP -> controller.toolManager.activePreset(tool)?.let { Color(it.color).copy(alpha = 1f) }
+        Tool.SHAPES -> Color(controller.shapeInserter.style.stroke)
         Tool.TEXT -> Color(controller.textDefaults.color)
         else -> null
     }
@@ -570,7 +579,7 @@ private fun ToolWithSettings(
         onDismissRequest = { onOpenSettings(null) },
         dropDownMenu = settings
     ) {
-        Icon(icon, contentDescription = command.label())
+        if (iconContent != null) iconContent() else Icon(icon, contentDescription = command.label())
     }
 }
 

@@ -603,6 +603,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getCommand_bring_to_front (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_fit_width (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_insert_shape (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_next_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -667,6 +668,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getDraw_toolbar_action_ink_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_lasso (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_pan (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_action_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_toolbar_label_brush_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -688,11 +690,11 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_clean (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_clean_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_from_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
+	public static final fun getImport_text_from_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_label (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_preview (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -762,11 +764,38 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getPlacement_next (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_previous (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_spot (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_arrow (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_diamond (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_double_arrow (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_ellipse (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_tinted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_head_filled (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_head_open (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_heads (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_hexagon (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_kind (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_line (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_dashed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_dotted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_pentagon (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_rectangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_right_triangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_rounded_rectangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_style (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_triangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getStylus_mode_activated (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_column_left (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
 	public static final fun getTable_column_right (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTable_delete_column (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -793,9 +822,6 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_editor_action_quote (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
 	public static final fun getText_editor_action_table (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -813,8 +839,10 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getTool_settings_markup_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_presets (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_shapes_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_shapes_tool_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider : androidx/core/content/FileProvider {

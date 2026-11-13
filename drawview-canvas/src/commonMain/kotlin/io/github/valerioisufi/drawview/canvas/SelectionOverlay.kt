@@ -27,11 +27,11 @@ import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
-import io.github.valerioisufi.drawview.model.text.TextChains
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.shape.ShapeBox
 import io.github.valerioisufi.drawview.model.shape.ShapeElement
 import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import io.github.valerioisufi.drawview.model.text.TextChains
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.hypot
