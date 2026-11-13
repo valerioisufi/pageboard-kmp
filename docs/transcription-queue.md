@@ -216,7 +216,7 @@ One commit per phase on `feat/transcription-queue`, with the checks of `CLAUDE.m
 | 3 | The panel: *Record* enabled by `canRecord` and *Import* always; the card of a lecture waiting (for its turn, or for the recording to end) with *Remove from the queue*, of one being transcribed with *Stop*; the notice of a recording elsewhere, and of the other recordings in the queue. Tests: `LecturePanelQueueTest` (the buttons while a lecture is transcribed and while one is recorded, a lecture taken out waiting and stopped running, from its card), the screenshot `lecture-recording-notices` re-recorded (`verifyRoborazziJvm`). The desktop application on a scratch directory was not run: it needs a speech model (phase 0) | Done |
 | 4 | The Neural Engine measured: the bench prints the load time and the first words heard; the table above | Done |
 | 5 | The bridge with Core ML on macOS, falling back without the encoder; `WhisperTranscriberTest` and the transcription of the bench with the encoder, without it and with a broken one; the first load (Core ML compiling) timed with the cache of Core ML empty: 36 s. The bench prints the first load of every way. darwin-x86_64 was not built | Done |
-| 6 | `WhisperModel` encoder fields, `LocalModels.encoders`, `downloadEncoder`, `usesNeuralEngine`, `EncoderArchive`, with the ABI of `drawview-lecture` re-recorded. Tests: an archive extracted, one with an entry outside the directory refused, one with the wrong SHA-256 refused and deleted, a download stopped leaving nothing | Not done |
+| 6 | `WhisperModel` encoder fields, `LocalModels.encoders`, `downloadEncoder`, `preparing`, `usesNeuralEngine`, `EncoderArchive` (`JvmEncoderArchive`), with the ABI of `drawview-lecture` re-recorded. Tests (`LocalModelsTest`, `EncoderArchiveTest`): the encoder following the model on the Neural Engine, extracted without `__MACOSX`, the zip deleted and the model loaded once; nothing more without a Neural Engine; a zip with the wrong SHA-256, one going out of its directory and one not found leaving nothing; the turbo models sharing their encoder; an encoder in place of the one there, an entry of another directory, too many bytes and no Core ML model refused | Done |
 | 7 | The settings: the encoder under the model, downloaded after a model on Apple Silicon; screenshot; the desktop application on a scratch directory, the encoder downloaded there and a lecture imported while panning | Not done |
 
 ## Decisions
@@ -236,6 +236,10 @@ Taken alone, revertible, unless they say otherwise.
    microphone closes: one hook (`onFinished`, called by every way a recording ends), and a review
    written by a local model needs the memory too. The plan first said "when its recorder stops
    listening".
+7. **The encoder is prepared outside the queue**: the model loaded once after the download may be a
+   second model in memory for half a minute, if a lecture is being transcribed then. It happens once.
+8. **The SHA-256 of the encoders is written in the code**, the one Hugging Face gives for the files of
+   whisper.cpp (2026-11-13): a new encoder published there is refused until the code knows it.
 
 ## Left for later
 

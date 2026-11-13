@@ -719,16 +719,21 @@ public final class io/github/valerioisufi/drawview/lecture/LectureTask$Companion
 
 public final class io/github/valerioisufi/drawview/lecture/LocalModels {
 	public static final field $stable I
+	public final fun downloadEncoder (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)V
 	public final fun downloadWhisper (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)V
+	public final fun encoderPath (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)Ljava/lang/String;
 	public final fun findOnNetwork ()V
 	public final fun getCanTranscribe ()Z
 	public final fun getDownloadError ()Lkotlin/Pair;
 	public final fun getDownloads ()Landroidx/compose/runtime/snapshots/SnapshotStateMap;
+	public final fun getEncoders ()Ljava/util/Set;
 	public final fun getFoundServers ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getInstalled ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getNearbyHosts ()Lkotlin/jvm/functions/Function1;
 	public final fun getOllamaState ()Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
 	public final fun getOllamaVersion ()Ljava/lang/String;
+	public final fun getPreparing ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
+	public final fun getUsesNeuralEngine ()Z
 	public final fun getWhisperModels ()Ljava/util/Set;
 	public final fun isInstalled (Ljava/lang/String;)Z
 	public final fun isSearching ()Z
@@ -1251,6 +1256,8 @@ public final class io/github/valerioisufi/drawview/lecture/WhisperModel : java/l
 	public static final field LARGE_V3_TURBO Lio/github/valerioisufi/drawview/lecture/WhisperModel;
 	public static final field LARGE_V3_TURBO_Q5 Lio/github/valerioisufi/drawview/lecture/WhisperModel;
 	public static final field SMALL Lio/github/valerioisufi/drawview/lecture/WhisperModel;
+	public final fun getEncoderFileName ()Ljava/lang/String;
+	public final fun getEncoderSizeBytes ()J
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getFileName ()Ljava/lang/String;
 	public final fun getLabel ()Ljava/lang/String;
