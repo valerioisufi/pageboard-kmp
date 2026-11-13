@@ -4,7 +4,7 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.littleEndianToShorts
-import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
+import io.github.valerioisufi.drawview.platform.dataDirectory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -87,7 +87,7 @@ internal class WhisperTranscriber internal constructor(
         private val json = Json { ignoreUnknownKeys = true }
 
         /** Folder of the speech recognition models: `whisper` next to `lectures`. */
-        fun modelsDirectory(): String = lectureDataDirectory().substringBeforeLast('/') + "/whisper"
+        fun modelsDirectory(): String = dataDirectory() + "/whisper"
 
         /** The model of [settings], or the largest one in [modelsDirectory]. */
         fun modelPath(settings: AssistantSettings): String {

@@ -42,4 +42,11 @@ public object DeviceProfile {
 }
 
 /** The directory of the data of the application (the documents' resources are in it). */
-public fun dataDirectory(): String = PlatformFiles.resourcesDirectory().trimEnd('/').substringBeforeLast('/')
+public fun dataDirectory(): String = parentDirectory(PlatformFiles.resourcesDirectory())
+
+/** The directory holding [path], with the separators of every system (`\` on Windows). */
+internal fun parentDirectory(path: String): String {
+    val trimmed = path.trimEnd('/', '\\')
+    val last = trimmed.lastIndexOfAny(charArrayOf('/', '\\'))
+    return if (last < 0) trimmed else trimmed.substring(0, last)
+}
