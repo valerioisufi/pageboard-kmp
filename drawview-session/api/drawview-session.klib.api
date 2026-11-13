@@ -36,14 +36,14 @@ final class io.github.valerioisufi.drawview.session/EditorSession { // io.github
     final var document // io.github.valerioisufi.drawview.session/EditorSession.document|{}document[0]
         final fun <get-document>(): io.github.valerioisufi.drawview.store/OpenDocument? // io.github.valerioisufi.drawview.session/EditorSession.document.<get-document>|<get-document>(){}[0]
 
-    final suspend fun flush() // io.github.valerioisufi.drawview.session/EditorSession.flush|flush(){}[0]
     final fun saveWriting() // io.github.valerioisufi.drawview.session/EditorSession.saveWriting|saveWriting(){}[0]
+    final suspend fun flush() // io.github.valerioisufi.drawview.session/EditorSession.flush|flush(){}[0]
 }
 
 final object io.github.valerioisufi.drawview.session/DrawViewSessions { // io.github.valerioisufi.drawview.session/DrawViewSessions|null[0]
     final fun find(kotlin/String): io.github.valerioisufi.drawview.session/EditorSession? // io.github.valerioisufi.drawview.session/DrawViewSessions.find|find(kotlin.String){}[0]
-    final suspend fun flushAll() // io.github.valerioisufi.drawview.session/DrawViewSessions.flushAll|flushAll(){}[0]
     final fun saveWriting() // io.github.valerioisufi.drawview.session/DrawViewSessions.saveWriting|saveWriting(){}[0]
+    final suspend fun flushAll() // io.github.valerioisufi.drawview.session/DrawViewSessions.flushAll|flushAll(){}[0]
 }
 
 final val io.github.valerioisufi.drawview.session/io_github_valerioisufi_drawview_session_DocumentEditorViewModel$stableprop // io.github.valerioisufi.drawview.session/io_github_valerioisufi_drawview_session_DocumentEditorViewModel$stableprop|#static{}io_github_valerioisufi_drawview_session_DocumentEditorViewModel$stableprop[0]
