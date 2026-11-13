@@ -150,7 +150,7 @@
     <string name="lecture_local_ollama_install">Get Ollama</string>
     <string name="lecture_local_check_again">Check again</string>
     <string name="lecture_local_download">Download %1$s</string>
-    <string name="lecture_local_downloading">Downloading… %1$d%%</string>
+    <string name="lecture_local_downloading">Downloading… %1$d%</string>
     <string name="lecture_local_downloading_unknown">Downloading…</string>
     <string name="lecture_local_download_failed">The download failed: %1$s</string>
     <string name="lecture_local_reads_images">reads images</string>

@@ -1020,6 +1020,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddElements : io
 	public final fun copy (Ljava/lang/String;Ljava/util/List;Z)Lio/github/valerioisufi/drawview/model/change/AddElements;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddElements;Ljava/lang/String;Ljava/util/List;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddElements;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getElements ()Ljava/util/List;
 	public final fun getLostVersions ()Z
 	public final fun getPageId ()Ljava/lang/String;
@@ -1054,6 +1055,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddPage : io/git
 	public final fun copy (Lio/github/valerioisufi/drawview/model/change/PageData;)Lio/github/valerioisufi/drawview/model/change/AddPage;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddPage;Lio/github/valerioisufi/drawview/model/change/PageData;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddPage;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getPage ()Lio/github/valerioisufi/drawview/model/change/PageData;
 	public fun hashCode ()I
 	public fun orders ()Lkotlin/sequences/Sequence;
@@ -1086,6 +1088,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddResource : io
 	public final fun copy (Lio/github/valerioisufi/drawview/model/change/ResourceData;)Lio/github/valerioisufi/drawview/model/change/AddResource;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddResource;Lio/github/valerioisufi/drawview/model/change/ResourceData;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddResource;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getResource ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
 	public fun hashCode ()I
 	public fun orders ()Lkotlin/sequences/Sequence;
@@ -1205,6 +1208,7 @@ public final class io/github/valerioisufi/drawview/model/change/CompositeChange 
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/CompositeChange;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/CompositeChange;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getChanges ()Ljava/util/List;
+	public fun getChangesNothing ()Z
 	public fun hashCode ()I
 	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
@@ -1312,6 +1316,7 @@ public final class io/github/valerioisufi/drawview/model/change/CustomElementDat
 public abstract interface class io/github/valerioisufi/drawview/model/change/DocumentChange {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/DocumentChange$Companion;
 	public abstract fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public fun getChangesNothing ()Z
 	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
@@ -1322,6 +1327,7 @@ public final class io/github/valerioisufi/drawview/model/change/DocumentChange$C
 }
 
 public final class io/github/valerioisufi/drawview/model/change/DocumentChange$DefaultImpls {
+	public static fun getChangesNothing (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Z
 	public static fun orders (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lkotlin/sequences/Sequence;
 	public static fun prepare (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public static fun stamps (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lkotlin/sequences/Sequence;
@@ -1631,6 +1637,7 @@ public final class io/github/valerioisufi/drawview/model/change/MovePages : io/g
 	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/MovePages;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/MovePages;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/MovePages;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getMoves ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun orders ()Lkotlin/sequences/Sequence;
@@ -1916,6 +1923,7 @@ public final class io/github/valerioisufi/drawview/model/change/PlaceElements : 
 	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/PlaceElements;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PlaceElements;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PlaceElements;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getPlacements ()Ljava/util/List;
 	public final fun getToPageId ()Ljava/lang/String;
@@ -1961,6 +1969,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemoveElements :
 	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RemoveElements;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getIds ()Ljava/util/List;
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -1996,6 +2005,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemovePage : io/
 	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/RemovePage;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RemovePage;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RemovePage;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getSaw ()Lio/github/valerioisufi/drawview/model/Versions;
 	public fun hashCode ()I
@@ -2029,6 +2039,7 @@ public final class io/github/valerioisufi/drawview/model/change/RenameDocument :
 	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/RenameDocument;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RenameDocument;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RenameDocument;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun orders ()Lkotlin/sequences/Sequence;
@@ -2061,6 +2072,7 @@ public final class io/github/valerioisufi/drawview/model/change/ReorderElements 
 	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ReorderElements;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getOrders ()Ljava/util/List;
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -2128,6 +2140,7 @@ public final class io/github/valerioisufi/drawview/model/change/RestyleMarkups :
 	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getStyles ()Ljava/util/List;
 	public fun hashCode ()I
@@ -2163,6 +2176,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetDocumentDefau
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;FFLio/github/valerioisufi/drawview/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public fun getChangesNothing ()Z
 	public final fun getHeightMm ()F
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
@@ -2199,6 +2213,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetPageFormat : 
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/SetPageFormat;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/SetPageFormat;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public fun getChangesNothing ()Z
 	public final fun getHeightMm ()F
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getWidthMm ()F
@@ -2471,6 +2486,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateElementCon
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;I[B)V
 	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getId ()Ljava/lang/String;
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getPayload ()[B
@@ -2506,6 +2522,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateTexts : io
 	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/UpdateTexts;
 	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/UpdateTexts;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/UpdateTexts;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getChangesNothing ()Z
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getTexts ()Ljava/util/List;
 	public fun hashCode ()I

@@ -68,8 +68,7 @@ fun main() {
                 val docCommands = remember { CommandHost() }
                 val docWindowState = rememberDrawViewWindowState("doc-$documentId")
                 var docTitle by remember { mutableStateOf("DrawView") }
-                val session = remember(documentId) { DrawViewSessions.find(documentId) }
-                val isDirty = session?.controller?.historyManager?.canUndo == true
+                var docModified by remember { mutableStateOf(false) }
 
                 Window(
                     onCloseRequest = {
@@ -85,8 +84,8 @@ fun main() {
                     icon = appIcon,
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
-                    SetWindowDocumentModified(isDirty)
                     DrawViewWindowDecor(state = docWindowState) {
+                        SetWindowDocumentModified(docModified)
                         DrawViewMenuBar(docCommands)
                         WindowMinimumSize()
                         SampleDocumentWindow(
@@ -100,7 +99,8 @@ fun main() {
                                 }
                             },
                             commandHost = docCommands,
-                            onTitleChange = { docTitle = "$it — DrawView" }
+                            onTitleChange = { docTitle = "$it — DrawView" },
+                            onModifiedChange = { docModified = it }
                         )
                     }
                 }

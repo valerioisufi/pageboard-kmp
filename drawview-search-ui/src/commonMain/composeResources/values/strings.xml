@@ -19,7 +19,7 @@
     <string name="search_model_delete">Remove</string>
     <string name="search_model_use">Active</string>
     <string name="search_model_select">Use</string>
-    <string name="search_model_downloading">%1$s of %2$s (%3$d%%)</string>
+    <string name="search_model_downloading">%1$s of %2$s (%3$d%)</string>
     <string name="search_model_failed">Download failed: %1$s</string>
     <string name="search_runtime_unavailable">On-device models are not supported on this platform. Search uses full-text matching.</string>
     <string name="search_ask_title">Ask your notes</string>

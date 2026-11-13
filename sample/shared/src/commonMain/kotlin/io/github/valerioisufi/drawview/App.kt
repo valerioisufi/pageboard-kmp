@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
@@ -81,7 +82,8 @@ fun SampleDocumentWindow(
     documentId: String,
     onClose: () -> Unit,
     commandHost: CommandHost = remember { CommandHost() },
-    onTitleChange: (String) -> Unit = {}
+    onTitleChange: (String) -> Unit = {},
+    onModifiedChange: (Boolean) -> Unit = {}
 ) {
     val engines = remember {
         DrawViewEngines(
@@ -99,9 +101,13 @@ fun SampleDocumentWindow(
             }
         }
         val session = editorViewModel.session
-        LaunchedEffect(session?.controller?.document?.name) {
-            session?.controller?.document?.name?.let(onTitleChange)
+        val title = session?.controller?.document?.observe { name }?.value
+        LaunchedEffect(title) {
+            title?.let(onTitleChange)
         }
+        // Whether the document has changes to undo, for the frame of the window
+        val modified = session?.controller?.historyManager?.canUndo == true
+        LaunchedEffect(modified) { onModifiedChange(modified) }
         CommandRoot(host = commandHost) {
             if (session != null) {
                 EditorSessionScreen(

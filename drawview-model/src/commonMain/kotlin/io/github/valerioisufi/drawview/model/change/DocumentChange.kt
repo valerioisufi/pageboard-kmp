@@ -48,6 +48,9 @@ public sealed interface DocumentChange {
      */
     public fun applyTo(context: ChangeContext): DocumentChange?
 
+    /** Whether this change changes nothing whatever the document (the change undoing [AddResource]). */
+    public val changesNothing: Boolean get() = false
+
     /**
      * Does now the slow work of applying it that needs no document (e.g. modeling the strokes it
      * adds again from their inputs, with [modeller]: the one of the document), e.g. on another
@@ -886,6 +889,8 @@ public data class AddResource(val resource: ResourceData) : DocumentChange {
 @SerialName("none")
 internal data object NoChange : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange = NoChange
+
+    override val changesNothing: Boolean get() = true
 }
 
 /**

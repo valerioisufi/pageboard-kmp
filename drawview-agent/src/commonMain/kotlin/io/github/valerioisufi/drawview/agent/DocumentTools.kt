@@ -161,7 +161,9 @@ public class DocumentTools internal constructor(
                 var measured = true
                 val pages = document.pages.mapIndexed { index, page ->
                     val entry = PageEntry(
-                        page.id, index, page.widthMm, page.heightMm, page.texts.size, page.strokes.size, page.images.size, page.pdfs.size, page.pageBase(),
+                        page.id, index, page.widthMm, page.heightMm,
+                        page.texts.count { it.removed == null }, page.strokes.count { it.removed == null },
+                        page.images.count { it.removed == null }, page.pdfs.count { it.removed == null }, page.pageBase(),
                         pdfPage = page.pdfs.firstOrNull { it.removed == null }?.pdfPageIndex
                     )
                     if (!withTexts) return@mapIndexed entry
@@ -228,7 +230,7 @@ public class DocumentTools internal constructor(
     /** A page as [session] holds it, with the files and pages of its PDF pages, whose text is read apart. */
     private fun pageContent(session: DocumentSession, page: DrawPage, listStrokes: Boolean, area: AgentArea?): Pair<PageContent, List<Pair<String, Int>>> {
         val geometry = planner.geometryOf(session.document, page)
-        val strokes = page.elements().filterIsInstance<DrawStroke>()
+        val strokes = page.strokes.filter { it.removed == null }
         val listed = if (!listStrokes) null else strokes.filter { area == null || it.bounds.overlaps(area.rect) }
         return PageContent(
             id = page.id,
@@ -238,7 +240,7 @@ public class DocumentTools internal constructor(
             measured = geometry.isMeasured,
             base = page.pageBase(),
             background = if (page.hasCustomBackground) PageItems.kindOf(page.background) else "document",
-            strokes = page.strokes.size,
+            strokes = strokes.size,
             texts = page.texts.filter { it.removed == null }.sortedWith(compareBy({ it.y }, { it.x })).map {
                 val box = geometry.textBoxes.getValue(it.id)
                 TextEntry(
@@ -269,7 +271,7 @@ public class DocumentTools internal constructor(
             textSizes = planner.textSizesOf(session.document, page).let { sizes ->
                 TextSizesEntry(sizes.typed, sizes.slide?.halves(), sizes.handwriting?.halves(), planner.noteSizeOf(session.document, page))
             }
-        ) to page.pdfs.mapNotNull { pdf -> session.document.findResource(pdf.resourceId)?.let { it.path to pdf.pdfPageIndex } }
+        ) to page.pdfs.filter { it.removed == null }.mapNotNull { pdf -> session.document.findResource(pdf.resourceId)?.let { it.path to pdf.pdfPageIndex } }
     }
 
     /** [read] with the text of its PDF page and the transcription of its handwriting, when known. */

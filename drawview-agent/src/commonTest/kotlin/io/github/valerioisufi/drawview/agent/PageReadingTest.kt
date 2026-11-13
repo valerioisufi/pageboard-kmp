@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -129,6 +130,22 @@ class PageReadingTest {
         val page = setup.readPage(strokes = true)
         assertEquals(500, page.getValue("stroke_list").jsonArray.size)
         assertEquals(7, page.getValue("strokes_left_out").jsonPrimitive.int)
+    }
+
+    @Test
+    fun theStrokesErasedAreNotRead() = runTest {
+        val setup = setup(this, backgroundScope)
+        val kept = setup.addStroke(20f, 30f)
+        val erased = setup.addStroke(20f, 250f)
+        setup.open.edit { session -> session.submit(RemoveElements(session.document.pages[0].id, listOf(erased.id))) }
+
+        val page = setup.readPage(strokes = true)
+        assertEquals(1, page.getValue("strokes").jsonPrimitive.int)
+        assertEquals(listOf(kept.id), page.getValue("stroke_list").jsonArray.map { it.jsonObject.string("id") })
+        assertTrue(page.getValue("ink_area").jsonObject.number("height") < 50f, "$page")
+        val listed = setup.call("read_document", buildJsonObject { put("document", setup.documentId) })
+            .getValue("pages").jsonArray.single().jsonObject
+        assertEquals(1, listed.getValue("strokes").jsonPrimitive.int)
     }
 
     @Test

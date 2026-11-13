@@ -68,6 +68,14 @@ class ContentPasteTest {
     }
 
     @Test
+    fun theChangeUndoingAResourceChangesNothing() {
+        val device = Device()
+        val undo = device.session.submit(AddResource.of("r", DrawResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
+        assertTrue(assertNotNull(undo).changesNothing)
+        assertFalse(AddResource.of("s", DrawResource.ResourceType.IMAGE, "/files/b.png", "hash-b").changesNothing)
+    }
+
+    @Test
     fun elementsPastedInAnotherDocumentKeepTheirLookAndStack() {
         val source = source()
         val page = source.page

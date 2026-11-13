@@ -169,8 +169,8 @@ internal fun unchangedSince(document: DrawDocument, change: DocumentChange, stam
         is RenameDocument -> document.titleVersion <= stamp
         is SetDocumentDefaults -> document.defaultsVersion <= stamp
         is AddResource -> true
-        // The inverse of an AddResource: it changes nothing (internal to the model, known by its name)
-        else -> change.toString() == "NoChange"
+        // The inverse of an AddResource
+        else -> change.changesNothing
     }
 }
 

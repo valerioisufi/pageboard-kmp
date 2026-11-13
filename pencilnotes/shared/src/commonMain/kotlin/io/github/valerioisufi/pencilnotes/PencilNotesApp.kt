@@ -277,6 +277,7 @@ fun PencilNotesDocumentWindow(
     onClose: () -> Unit,
     commandHost: CommandHost = remember { CommandHost() },
     onTitleChange: (String) -> Unit = {},
+    onModifiedChange: (Boolean) -> Unit = {},
     agents: PencilNotesAgents? = null
 ) {
     PencilNotesTheme {
@@ -304,6 +305,9 @@ fun PencilNotesDocumentWindow(
         LaunchedEffect(title) {
             title?.let(onTitleChange)
         }
+        // Whether the document has changes to undo, for the frame of the window
+        val modified = session?.controller?.historyManager?.canUndo == true
+        LaunchedEffect(modified) { onModifiedChange(modified) }
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
             CommandRoot(host = commandHost) {
                 if (session != null) {

@@ -282,13 +282,12 @@ public class SearchEngine(
 
     private fun toSearchHit(scored: ScoredChunk, query: String): SearchHit {
         val chunk = scored.indexed.chunk
-        val snippetSource = if (chunk.kind == SearchChunkKind.TITLE) chunk.text else chunk.text
         return SearchHit(
             anchor = chunk.anchor,
             kind = chunk.kind,
             title = chunk.title,
             text = chunk.text,
-            snippet = snippetOf(snippetSource, query),
+            snippet = snippetOf(chunk.text, query),
             score = scored.score
         )
     }

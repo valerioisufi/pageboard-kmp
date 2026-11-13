@@ -145,7 +145,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                 val docCommands = remember { CommandHost() }
                 val docWindowState = rememberDrawViewWindowState("doc-$documentId")
                 var docTitle by remember { mutableStateOf("PencilNotes") }
-                val session = remember(documentId) { DrawViewSessions.find(documentId) }
+                var docModified by remember { mutableStateOf(false) }
 
                 Window(
                     onCloseRequest = {
@@ -160,7 +160,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
                     DrawViewWindowDecor(state = docWindowState) {
-                        SetWindowDocumentModified(session?.controller?.historyManager?.canUndo == true)
+                        SetWindowDocumentModified(docModified)
                         DrawViewMenuBar(docCommands)
                         WindowMinimumSize()
                         PencilNotesDocumentWindow(
@@ -173,6 +173,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                             },
                             commandHost = docCommands,
                             onTitleChange = { docTitle = it },
+                            onModifiedChange = { docModified = it },
                             agents = agents
                         )
                     }

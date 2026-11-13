@@ -7,5 +7,5 @@
         <item name="postSplashScreenTheme">@style/Theme.PencilNotes</item>
     </style>
 
-    <style name="Theme.PencilNotes" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.PencilNotes" parent="android:Theme.Material.NoActionBar" />
 </resources>

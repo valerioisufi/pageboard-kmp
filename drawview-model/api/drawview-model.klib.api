@@ -309,6 +309,9 @@ abstract interface io.github.valerioisufi.drawview.model/StrokeEngineDelegate { 
 }
 
 sealed interface io.github.valerioisufi.drawview.model.change/DocumentChange { // io.github.valerioisufi.drawview.model.change/DocumentChange|null[0]
+    open val changesNothing // io.github.valerioisufi.drawview.model.change/DocumentChange.changesNothing|{}changesNothing[0]
+        open fun <get-changesNothing>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/DocumentChange.changesNothing.<get-changesNothing>|<get-changesNothing>(){}[0]
+
     abstract fun applyTo(io.github.valerioisufi.drawview.model.change/ChangeContext): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/DocumentChange.applyTo|applyTo(io.github.valerioisufi.drawview.model.change.ChangeContext){}[0]
     open fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/DocumentChange.orders|orders(){}[0]
     open fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/DocumentChange.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]

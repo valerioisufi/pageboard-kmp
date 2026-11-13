@@ -150,7 +150,7 @@
     <string name="lecture_local_ollama_install">Scarica Ollama</string>
     <string name="lecture_local_check_again">Ricontrolla</string>
     <string name="lecture_local_download">Scarica %1$s</string>
-    <string name="lecture_local_downloading">Download in corso… %1$d%%</string>
+    <string name="lecture_local_downloading">Download in corso… %1$d%</string>
     <string name="lecture_local_downloading_unknown">Download in corso…</string>
     <string name="lecture_local_download_failed">Il download non è riuscito: %1$s</string>
     <string name="lecture_local_reads_images">legge le immagini</string>
