@@ -2,6 +2,15 @@ package io.github.valerioisufi.drawview.agent.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performMouseInput
+import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.change.StrokeData
+import io.github.valerioisufi.drawview.model.newElementId
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
@@ -170,6 +179,120 @@ class AgentReviewEditorTest {
 
         scene.controller.historyManager.undo()
         assertEquals(listOf("Old text"), scene.texts)
+    }
+
+    /** The marks drawn over the canvas now, or none. */
+    private fun DesktopComposeUiTest.marksShown(): Boolean = onAllNodesWithTag(MARKS_TAG).fetchSemanticsNodes().isNotEmpty()
+
+    /** Where the point ([xMm], [yMm]) of the first page is on the screen. */
+    private fun Scene.onScreen(xMm: Float, yMm: Float): Offset =
+        assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(xMm, yMm).let { Offset(it.x, it.y) }
+
+    @Test
+    fun whatAProposalWouldDoIsDrawnOnThePageWhileItIsReviewed() = scene { scene ->
+        // More to change: a text to remove and a stroke to move
+        val old = DrawText().apply {
+            text = "see page 4 (old)"
+            x = 20f; y = 60f; width = 100f; height = 10f; fontSize = 16f
+        }
+        val stroke = StrokeData(
+            id = newElementId(),
+            points = listOf(StrokePoint(30f, 110f, 0.5f, 0L), StrokePoint(60f, 125f, 0.5f, 8L), StrokePoint(90f, 110f, 0.5f, 16L)),
+            tool = StrokeTool.PRESSURE_PEN,
+            size = 1f,
+            color = 0xFF000000.toInt()
+        )
+        val page = scene.controller.document.pages.first()
+        scene.controller.session.submit(AddElements.of(page, listOf(old)))
+        scene.controller.session.submit(AddElements(page.id, listOf(stroke)))
+        waitForIdle()
+        assertFalse(marksShown(), "nothing proposed, nothing drawn")
+
+        val id = runBlocking {
+            val read = scene.call("read_page", buildJsonObject { put("document", scene.documentId); put("strokes", true) })
+            fun baseOf(list: String, element: String) = read.getValue(list).jsonArray.map { it.jsonObject }
+                .first { it.getValue("id").jsonPrimitive.content == element }.getValue("base").jsonPrimitive.content
+            scene.call(
+                "propose",
+                buildJsonObject {
+                    put("document", scene.documentId)
+                    put("title", "Lay out the page")
+                    put(
+                        "items",
+                        JsonArray(
+                            listOf(
+                                buildJsonObject {
+                                    put("kind", "replace_text")
+                                    put("text", scene.text.id)
+                                    put("base", baseOf("texts", scene.text.id))
+                                    put("markdown", "**Gauss's law**: the flux through a closed surface")
+                                },
+                                buildJsonObject {
+                                    put("kind", "remove_text")
+                                    put("text", old.id)
+                                    put("base", baseOf("texts", old.id))
+                                },
+                                buildJsonObject {
+                                    put("kind", "place_elements")
+                                    put("page", page.id)
+                                    put("elements", JsonArray(listOf(buildJsonObject { put("id", stroke.id); put("base", baseOf("stroke_list", stroke.id)) })))
+                                    put("dx", 60f)
+                                    put("dy", 40f)
+                                },
+                                buildJsonObject {
+                                    put("kind", "add_stroke")
+                                    put("page", page.id)
+                                    put("points", JsonArray(listOf(listOf(30f, 200f), listOf(70f, 215f), listOf(110f, 200f)).map { point -> JsonArray(point.map { JsonPrimitive(it) }) }))
+                                    put("color", "#C0392B")
+                                    put("width", 1.5f)
+                                },
+                                buildJsonObject {
+                                    put("kind", "insert_text")
+                                    put("markdown", "## Summary\nThe four equations, side by side.")
+                                },
+                                buildJsonObject {
+                                    put("kind", "set_page_format")
+                                    put("page", page.id)
+                                    put("base", read.getValue("base").jsonPrimitive.content)
+                                    put("background", "grid")
+                                }
+                            )
+                        )
+                    )
+                }
+            ).getValue("proposal").jsonPrimitive.content
+        }
+        awaitPanel()
+        awaitInRealTime { marksShown() }
+        // Nothing is applied by looking
+        assertEquals(setOf("Old text", "see page 4 (old)"), scene.texts.toSet())
+        assertFalse(scene.controller.historyManager.canUndo && scene.texts.size != 2)
+        waitForIdle()
+        onRoot().captureRoboImage("screenshots/agent_marks.png")
+
+        // The canvas under the marks is used as always: a wheel on a mark pans it
+        val before = scene.onScreen(20f, 60f)
+        onRoot().performMouseInput {
+            moveTo(scene.onScreen(60f, 65f))
+            scroll(3f)
+        }
+        waitForIdle()
+        assertTrue(scene.onScreen(20f, 60f).y < before.y, "the page from $before to ${scene.onScreen(20f, 60f)}")
+        assertTrue(marksShown())
+
+        // An item chosen in the list brings the page to what it changes
+        scene.controller.viewport.panBy(0f, -2_000f)
+        waitForIdle()
+        onNodeWithText("Remove a text").performClick()
+        awaitInRealTime { scene.onScreen(20f, 60f).y in 0f..800f }
+        onNodeWithText("Remove a text").performClick()
+        waitForIdle()
+
+        // Decided: nothing left on the page
+        onNodeWithText("Reject all").performClick()
+        awaitInRealTime { !scene.agents.proposals.find(id)!!.isWaiting }
+        awaitInRealTime { !marksShown() }
+        assertEquals(setOf("Old text", "see page 4 (old)"), scene.texts.toSet())
     }
 
     @Test

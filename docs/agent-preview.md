@@ -37,7 +37,8 @@ Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Protect
    * a page removed with a red veil on the whole page, a page moved, duplicated or given another
      format with a label on it; a page added shown in the list only (it is not there yet).
 2. **The list and the page go together**: choosing an item brings the page to what it changes and
-   marks it stronger; an item unchecked is drawn faint; a mark on the page clicked selects its item.
+   marks it stronger; an item unchecked is drawn faint. (A mark clicked on the page selecting its
+   item was asked first and left out: decision 5.)
 3. **What is drawn is what would be applied**: the marks come from the same plan as the application
    of the proposal, on the document as it is now, and follow it when it changes. A stale item is
    drawn as stale, where the element still is.
@@ -90,9 +91,9 @@ change: the marks are for the interface, and are not sent to a client.
 
 ### Drawing
 
-`ProposalMarks(controller, plan, selection)` in the overlay: for every page on the screen, a `Canvas`
-clipped to the page and mapped by `pageMmToScreen`, drawing the frames, the veils, the arrows and the
-strokes; the texts of `ADDED` and `CHANGED` marks composed with the presenter of the page at the
+`ProposalMarksLayer(controller, marks)` in the overlay: one `Canvas` over the canvas of the editor,
+each mark clipped to its page and mapped by `pageMmToScreen`, only for the pages on the screen,
+drawing the frames, the veils, the arrows and the strokes (`drawnMarks` chooses them and how strongly); the texts of `ADDED` and `CHANGED` marks composed with the presenter of the page at the
 scale of the page, over a paper background so that the old words do not show through. The overlay
 reads the camera as the other overlays of the editor do, so it follows a pan and a zoom frame by
 frame without composing again.
@@ -111,7 +112,7 @@ One commit per phase on `feat/agent-preview`, with the checks of `CLAUDE.md`.
 | # | Phase | Status |
 |---|---|---|
 | 1 | `PlannedMark` and `PlannedItem.marks` for every item (`ProposalMarks`), with the ABI of `drawview-agent` re-recorded. Tests (`ProposalMarksTest`): the marks of each kind of item, a text changed in place and one given another place, an item after one that removes, a stale item where what it was about still is and none when it is gone. A box outside its page is clipped when drawn (phase 2) | Done |
-| 2 | `ProposalMarks` in the overlay: frames, veils, arrows, strokes and the pages; `ReviewSelection`, the list and the page together. Tests: a real editor (the marks of a proposal on the page it changes, following a pan, gone when it is decided, the canvas still taking a stroke), screenshots (`verifyRoborazziJvm`) | Not started |
+| 2 | `ProposalMarksLayer` in the overlay of the review: frames, veils, arrows, the strokes added and the pages with their label; `ReviewSelection`, an item chosen in the list bringing the page to it and standing out, one left out drawn faint; the plans made with the places the user chose. Tests: `ProposalMarksLayerTest` (which marks are drawn and how strongly), `AgentReviewEditorTest` in a real editor (nothing drawn before a proposal, its marks while it is reviewed, nothing applied by looking, a wheel on a mark still panning the canvas, an item chosen bringing the page back, nothing left once decided), the screenshot `agent_marks` (`verifyRoborazziJvm`) | Done |
 | 3 | The words of the texts added and changed drawn as the page would draw them. Tests: screenshots, a real editor | Not started |
 | 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`); the clicks in its window left to the user | Not started |
 
@@ -125,6 +126,12 @@ Taken alone, revertible.
 3. **A page added is not drawn**: it would move every page after it on the canvas before anything is
    accepted. It stays in the list.
 4. **No miniatures before and after in the panel** (the user chose the page).
+5. **A mark takes no pointer**: clicking one does not select its item. The layer only draws, so that
+   a pen, a finger and a wheel on a mark reach the canvas as always (requirement 5); a mark taking
+   clicks would take strokes from the page under it. The list chooses, the page shows.
+6. **The colors of the marks are fixed** (green, red, blue, amber, gray), not those of the theme: they
+   are drawn on the paper of the page, which does not follow the theme, and the green of the theme is
+   the color of what the application itself selects.
 
 ## Left for later
 

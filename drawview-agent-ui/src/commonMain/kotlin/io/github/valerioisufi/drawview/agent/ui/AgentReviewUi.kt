@@ -1,6 +1,8 @@
 package io.github.valerioisufi.drawview.agent.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,6 +34,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,6 +51,8 @@ import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
 import io.github.valerioisufi.drawview.agent.PlacementWarning
+import io.github.valerioisufi.drawview.agent.PlannedItem
+import io.github.valerioisufi.drawview.agent.PlannedMark
 import io.github.valerioisufi.drawview.agent.PlannedPiece
 import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalEntry
@@ -149,6 +155,14 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
     /** The places the user chose for the items of a proposal, until it is decided. */
     private val chosenPlaces = mutableStateMapOf<String, Map<Int, List<ChosenPlace>>>()
 
+    /** What the user chose of each proposal being reviewed, for its list and for its marks on the page. */
+    private val selections = mutableStateMapOf<String, ReviewSelection>()
+
+    /** The plans of the proposals waiting on a document, while its review is shown: what is drawn on its pages. */
+    private val shownPlans = mutableStateMapOf<String, Map<String, ProposalPlan>>()
+
+    private fun selectionOf(proposalId: String): ReviewSelection = selections.getOrPut(proposalId) { ReviewSelection() }
+
     private fun accessCommand(documentId: String) = Command(
         id = "external_models",
         label = { stringResource(Res.string.agent_command) },
@@ -210,6 +224,14 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             LaunchedEffect(documentId, waiting) {
                 if (waiting > 0) openPanels += documentId
             }
+            // What the proposals being reviewed would do, on the pages: while their panel is shown
+            val plans = shownPlans[documentId]
+            if (plans != null && documentId in openPanels) {
+                val waitingHere = proposals.filter { it.documentId == documentId && it.isWaiting }
+                val labels = waitingHere.associate { proposal -> proposal.id to proposal.entries.map { itemLabel(it.item) } }
+                val marks = drawnMarks(waitingHere, plans, selections) { proposal, index -> labels[proposal.id]?.getOrNull(index) }
+                if (marks.isNotEmpty()) ProposalMarksLayer(context.controller, marks, Modifier.matchParentSize())
+            }
             if (accessOf == documentId) {
                 Access(documentId, onDismiss = { accessOf = null })
             }
@@ -241,12 +263,19 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         }
         var stale by remember { mutableStateOf<Map<String, Set<Int>>>(emptyMap()) }
         var plans by remember { mutableStateOf<Map<String, ProposalPlan>>(emptyMap()) }
-        LaunchedEffect(all, changes) {
+        val places = chosenPlaces.toMap()
+        LaunchedEffect(all, changes, places) {
             val waiting = proposals.filter { it.isWaiting }
             stale = waiting.associate { it.id to agents.staleItems(it) }
             // A plan takes time on the thread of the document: not at every stroke
             delay(PLAN_DELAY_MS)
-            plans = waiting.mapNotNull { proposal -> agents.plan(proposal)?.let { proposal.id to it } }.toMap()
+            // With the places the user chose: what is drawn on the page is what would be applied
+            plans = waiting.mapNotNull { proposal -> agents.plan(proposal, places[proposal.id].orEmpty())?.let { proposal.id to it } }.toMap()
+            shownPlans[documentId] = plans
+        }
+        // The marks go with the review
+        DisposableEffect(documentId) {
+            onDispose { shownPlans.remove(documentId) }
         }
         val placing = stringResource(Res.string.agent_placing)
         ReviewList(
@@ -262,8 +291,11 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             onShow = { id, index ->
                 agents.proposals.find(id)?.let { proposal -> scope.launch { show(proposal, index, controller, placing) } }
             },
+            selectionOf = ::selectionOf,
+            onChoose = { id, index -> plans[id]?.items?.getOrNull(index)?.let { goTo(it, controller) } },
             onDecide = { id, accepted ->
                 val chosen = chosenPlaces.remove(id).orEmpty()
+                selections.remove(id)
                 scope.launch { agents.decide(id, accepted, chosen) }
             },
             modifier = Modifier.fillMaxWidth()
@@ -309,6 +341,15 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         )
     }
 
+    /** Brings the page to what [item] changes: its first mark on a page there is, where it goes when it moves. */
+    private fun goTo(item: PlannedItem, controller: DrawViewController) {
+        val mark = item.marks.firstOrNull { !it.isOnNewPage } ?: return
+        val page = controller.document.pages.indexOfFirst { it.id == mark.pageId }
+        if (page < 0) return
+        val onPage = mark.kind == PlannedMark.Kind.PAGE_REMOVED || mark.kind == PlannedMark.Kind.PAGE_CHANGED
+        if (onPage) controller.pageManager.jumpToPage(page) else controller.pageManager.jumpToPage(page, mark.toBox ?: mark.box)
+    }
+
     /** The place of [piece] for the editor: on its page, or on a new page after the last page there is. */
     private fun spotOf(piece: PlannedPiece, plan: ProposalPlan, pageIds: List<String>): PlacementSpot? {
         if (!piece.isOnNewPage) return pageIds.indexOf(piece.pageId).takeIf { it >= 0 }?.let { PlacementSpot(it, piece.box) }
@@ -332,7 +373,9 @@ internal fun ReviewList(
     warnings: Map<String, Map<Int, List<PlacementWarning>>> = emptyMap(),
     shown: Map<String, Set<Int>> = emptyMap(),
     chosen: Map<String, Set<Int>> = emptyMap(),
-    onShow: (String, Int) -> Unit = { _, _ -> }
+    onShow: (String, Int) -> Unit = { _, _ -> },
+    selectionOf: ((String) -> ReviewSelection)? = null,
+    onChoose: (String, Int) -> Unit = { _, _ -> }
 ) {
     val waiting = proposals.filter { it.isWaiting }
     val decided = proposals.filterNot { it.isWaiting }.asReversed()
@@ -356,7 +399,9 @@ internal fun ReviewList(
                     shown[proposal.id].orEmpty(),
                     chosen[proposal.id].orEmpty(),
                     onShow,
-                    onDecide
+                    onDecide,
+                    selectionOf?.invoke(proposal.id) ?: remember(proposal.id) { ReviewSelection() },
+                    onChoose
                 )
             }
         }
@@ -382,9 +427,11 @@ private fun ProposalCard(
     shown: Set<Int>,
     chosen: Set<Int>,
     onShow: (String, Int) -> Unit,
-    onDecide: (String, Set<Int>) -> Unit
+    onDecide: (String, Set<Int>) -> Unit,
+    selection: ReviewSelection,
+    onChoose: (String, Int) -> Unit
 ) {
-    val unchecked = remember(proposal.id) { mutableStateSetOf<Int>() }
+    val unchecked = selection.unchecked
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -400,7 +447,19 @@ private fun ProposalCard(
             )
             proposal.entries.forEachIndexed { index, entry ->
                 val isStale = index in stale
-                Row(verticalAlignment = Alignment.Top) {
+                val isLookedAt = selection.chosen == index
+                // Choosing an item brings the page to what it changes, and makes its marks stand out
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isLookedAt) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f) else Color.Transparent)
+                        .clickable {
+                            selection.chosen = if (isLookedAt) null else index
+                            if (!isLookedAt) onChoose(proposal.id, index)
+                        }
+                ) {
                     Checkbox(
                         checked = !isStale && index !in unchecked,
                         enabled = !isStale,
