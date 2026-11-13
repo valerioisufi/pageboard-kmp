@@ -940,12 +940,16 @@ public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines
 
 public abstract interface class io/github/valerioisufi/drawview/canvas/render/ElementRenderer {
 	public abstract fun draw (Landroidx/compose/ui/graphics/Canvas;Ljava/lang/Object;FF)V
+	public fun erasedBy (Ljava/lang/Object;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
 	public abstract fun getType ()Lio/github/valerioisufi/drawview/model/ElementType;
 	public fun hits (Ljava/lang/Object;FFFF)Z
+	public fun vectors (Ljava/lang/Object;FF)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderer$DefaultImpls {
+	public static fun erasedBy (Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;Ljava/lang/Object;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
 	public static fun hits (Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;Ljava/lang/Object;FFFF)Z
+	public static fun vectors (Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;Ljava/lang/Object;FF)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderers {
@@ -953,8 +957,10 @@ public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderer
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers$Companion;
 	public fun <init> (Ljava/util/Collection;)V
 	public final fun draw (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
+	public final fun erasedBy (Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;F)Z
 	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;
 	public final fun hits (Lio/github/valerioisufi/drawview/model/DrawCustomElement;FF)Z
+	public final fun vectorsOf (Lio/github/valerioisufi/drawview/model/DrawCustomElement;)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderers$Companion {
@@ -973,6 +979,25 @@ public final class io/github/valerioisufi/drawview/canvas/render/ImageCache {
 
 public final class io/github/valerioisufi/drawview/canvas/render/ImageCache$Companion {
 	public final fun getShared ()Lio/github/valerioisufi/drawview/canvas/render/ImageCache;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ShapeElementRenderer : io/github/valerioisufi/drawview/canvas/render/ElementRenderer {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/render/ShapeElementRenderer;
+	public fun draw (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)V
+	public synthetic fun draw (Landroidx/compose/ui/graphics/Canvas;Ljava/lang/Object;FF)V
+	public fun erasedBy (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
+	public synthetic fun erasedBy (Ljava/lang/Object;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
+	public synthetic fun getType ()Lio/github/valerioisufi/drawview/model/ElementType;
+	public fun getType ()Lio/github/valerioisufi/drawview/model/shape/ShapeElementType;
+	public fun hits (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FFFF)Z
+	public synthetic fun hits (Ljava/lang/Object;FFFF)Z
+	public fun vectors (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
+	public synthetic fun vectors (Ljava/lang/Object;FF)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ShapeElementRendererKt {
+	public static final fun drawVectors (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaImage {

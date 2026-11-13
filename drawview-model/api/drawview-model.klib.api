@@ -2108,6 +2108,52 @@ final class io.github.valerioisufi.drawview.model.geometry/Rect { // io.github.v
     }
 }
 
+final class io.github.valerioisufi.drawview.model.geometry/VectorDot { // io.github.valerioisufi.drawview.model.geometry/VectorDot|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Int) // io.github.valerioisufi.drawview.model.geometry/VectorDot.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Int){}[0]
+
+    final val argb // io.github.valerioisufi.drawview.model.geometry/VectorDot.argb|{}argb[0]
+        final fun <get-argb>(): kotlin/Int // io.github.valerioisufi.drawview.model.geometry/VectorDot.argb.<get-argb>|<get-argb>(){}[0]
+    final val center // io.github.valerioisufi.drawview.model.geometry/VectorDot.center|{}center[0]
+        final fun <get-center>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.geometry/VectorDot.center.<get-center>|<get-center>(){}[0]
+    final val radiusMm // io.github.valerioisufi.drawview.model.geometry/VectorDot.radiusMm|{}radiusMm[0]
+        final fun <get-radiusMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.geometry/VectorDot.radiusMm.<get-radiusMm>|<get-radiusMm>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.geometry/VectorDrawing { // io.github.valerioisufi.drawview.model.geometry/VectorDrawing|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorFill> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorLine> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorDot> = ...) // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.VectorFill>;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.VectorLine>;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.VectorDot>){}[0]
+
+    final val dots // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.dots|{}dots[0]
+        final fun <get-dots>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorDot> // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.dots.<get-dots>|<get-dots>(){}[0]
+    final val fills // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.fills|{}fills[0]
+        final fun <get-fills>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorFill> // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.fills.<get-fills>|<get-fills>(){}[0]
+    final val isEmpty // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val lines // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.lines|{}lines[0]
+        final fun <get-lines>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/VectorLine> // io.github.valerioisufi.drawview.model.geometry/VectorDrawing.lines.<get-lines>|<get-lines>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.geometry/VectorFill { // io.github.valerioisufi.drawview.model.geometry/VectorFill|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Int) // io.github.valerioisufi.drawview.model.geometry/VectorFill.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Int){}[0]
+
+    final val argb // io.github.valerioisufi.drawview.model.geometry/VectorFill.argb|{}argb[0]
+        final fun <get-argb>(): kotlin/Int // io.github.valerioisufi.drawview.model.geometry/VectorFill.argb.<get-argb>|<get-argb>(){}[0]
+    final val points // io.github.valerioisufi.drawview.model.geometry/VectorFill.points|{}points[0]
+        final fun <get-points>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.geometry/VectorFill.points.<get-points>|<get-points>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.geometry/VectorLine { // io.github.valerioisufi.drawview.model.geometry/VectorLine|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Boolean, kotlin/Int, kotlin/Float) // io.github.valerioisufi.drawview.model.geometry/VectorLine.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Boolean;kotlin.Int;kotlin.Float){}[0]
+
+    final val argb // io.github.valerioisufi.drawview.model.geometry/VectorLine.argb|{}argb[0]
+        final fun <get-argb>(): kotlin/Int // io.github.valerioisufi.drawview.model.geometry/VectorLine.argb.<get-argb>|<get-argb>(){}[0]
+    final val closed // io.github.valerioisufi.drawview.model.geometry/VectorLine.closed|{}closed[0]
+        final fun <get-closed>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/VectorLine.closed.<get-closed>|<get-closed>(){}[0]
+    final val points // io.github.valerioisufi.drawview.model.geometry/VectorLine.points|{}points[0]
+        final fun <get-points>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.geometry/VectorLine.points.<get-points>|<get-points>(){}[0]
+    final val widthMm // io.github.valerioisufi.drawview.model.geometry/VectorLine.widthMm|{}widthMm[0]
+        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.geometry/VectorLine.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.placement/BesideAnchor : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/BesideAnchor|null[0]
     constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect?) // io.github.valerioisufi.drawview.model.placement/BesideAnchor.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect?){}[0]
 
@@ -2494,10 +2540,12 @@ final class io.github.valerioisufi.drawview.model.shape/ShapeElement { // io.git
 }
 
 final class io.github.valerioisufi.drawview.model.shape/ShapePath { // io.github.valerioisufi.drawview.model.shape/ShapePath|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Boolean, kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.model.shape/ShapePath.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Boolean, kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.model.shape/ShapePath.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
 
     final val closed // io.github.valerioisufi.drawview.model.shape/ShapePath.closed|{}closed[0]
         final fun <get-closed>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.closed.<get-closed>|<get-closed>(){}[0]
+    final val cornered // io.github.valerioisufi.drawview.model.shape/ShapePath.cornered|{}cornered[0]
+        final fun <get-cornered>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.cornered.<get-cornered>|<get-cornered>(){}[0]
     final val filled // io.github.valerioisufi.drawview.model.shape/ShapePath.filled|{}filled[0]
         final fun <get-filled>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.filled.<get-filled>|<get-filled>(){}[0]
     final val points // io.github.valerioisufi.drawview.model.shape/ShapePath.points|{}points[0]
@@ -3737,13 +3785,20 @@ final object io.github.valerioisufi.drawview.model.shape/ShapeElementType : io.g
 }
 
 final object io.github.valerioisufi.drawview.model.shape/ShapeGeometry { // io.github.valerioisufi.drawview.model.shape/ShapeGeometry|null[0]
+    final const val MAX_DASHES // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.MAX_DASHES|{}MAX_DASHES[0]
+        final fun <get-MAX_DASHES>(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.MAX_DASHES.<get-MAX_DASHES>|<get-MAX_DASHES>(){}[0]
+    final const val MITER_LIMIT // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.MITER_LIMIT|{}MITER_LIMIT[0]
+        final fun <get-MITER_LIMIT>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.MITER_LIMIT.<get-MITER_LIMIT>|<get-MITER_LIMIT>(){}[0]
+
     final fun anchors(io.github.valerioisufi.drawview.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.anchors|anchors(io.github.valerioisufi.drawview.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun drawing(io.github.valerioisufi.drawview.model.shape/ShapeElement, kotlin/Float, kotlin/Float): io.github.valerioisufi.drawview.model.geometry/VectorDrawing // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.drawing|drawing(io.github.valerioisufi.drawview.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
     final fun headLength(io.github.valerioisufi.drawview.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.headLength|headLength(io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
     final fun hits(io.github.valerioisufi.drawview.model.shape/ShapeElement, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.hits|hits(io.github.valerioisufi.drawview.model.shape.ShapeElement;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
     final fun lineBox(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.shape/ShapeElement): io.github.valerioisufi.drawview.model.shape/ShapeBox // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineBox|lineBox(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
     final fun lineEnds(io.github.valerioisufi.drawview.model.shape/ShapeBox): kotlin/Pair<io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineEnds|lineEnds(io.github.valerioisufi.drawview.model.shape.ShapeBox){}[0]
     final fun lineHeight(io.github.valerioisufi.drawview.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineHeight|lineHeight(io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
     final fun paths(io.github.valerioisufi.drawview.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.drawview.model.shape/ShapePath> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.paths|paths(io.github.valerioisufi.drawview.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun touchesSegment(io.github.valerioisufi.drawview.model.shape/ShapeElement, io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.touchesSegment|touchesSegment(io.github.valerioisufi.drawview.model.shape.ShapeElement;io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.shape/ShapeRecognizer { // io.github.valerioisufi.drawview.model.shape/ShapeRecognizer|null[0]

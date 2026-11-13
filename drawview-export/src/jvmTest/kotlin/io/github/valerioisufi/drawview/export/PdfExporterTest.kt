@@ -17,6 +17,7 @@ import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPdf
@@ -28,8 +29,16 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.encode
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.shape.ShapeDash
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import io.github.valerioisufi.drawview.model.shape.ShapeHead
+import io.github.valerioisufi.drawview.model.shape.ShapeKind
 import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfInfo
@@ -348,6 +357,32 @@ class PdfExporterTest {
             ),
             writer.calls
         )
+    }
+
+    @Test
+    fun theShapesAreVectors() = runBlocking {
+        val document = DrawDocument(title = "Shapes", defaultBackground = PageBackground.Solid())
+        val page = document.pages[0]
+        page.add(DrawCustomElement(ShapeElementType.id).apply {
+            payload = ShapeElementType.encode(ShapeElement(ShapeKind.RECTANGLE, 0xFF000000.toInt(), 1f, ShapeDash.DASHED))
+            x = 20f; y = 20f; width = 60f; height = 40f; rotation = 0f
+        })
+        val arrow = ShapeElement(ShapeKind.LINE, 0xFF000000.toInt(), 1f, endHead = ShapeHead.FILLED)
+        val box = ShapeGeometry.lineBox(Point(20f, 100f), Point(120f, 100f), arrow)
+        page.add(DrawCustomElement(ShapeElementType.id).apply {
+            payload = ShapeElementType.encode(arrow)
+            x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
+        })
+        val pdf = tempFile("shapes", ".pdf")
+        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        assertEquals(0, result.skipped)
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/Image" !in bytes, "no image in the PDF")
+        val rendered = render(pdf, 0)
+        assertTrue(rendered.isDark(rendered.mm(20.5f, 40f)) || rendered.isDark(rendered.mm(20.5f, 37f)), "the left side of the box")
+        assertTrue(!rendered.isDark(rendered.mm(50f, 40f)), "nothing inside the box")
+        assertTrue(rendered.isDark(rendered.mm(70f, 100f)), "the shaft of the arrow")
+        assertTrue(rendered.isDark(rendered.mm(118f, 100f)), "its filled head")
     }
 
     @Test

@@ -12,10 +12,16 @@ import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.ElementType
 import io.github.valerioisufi.drawview.model.encode
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.serialization.Serializable
@@ -89,6 +95,30 @@ class ElementRenderersTest {
         assertSame(value, renderers.valueOf(element))
         element.payload = FillType.encode(Fill(BLUE))
         assertEquals(Fill(BLUE), renderers.valueOf(element))
+    }
+
+    @Test
+    fun theShapesAreDrawnByEveryEditorAsVectors() {
+        // No renderer given by the application: the shapes of the libraries are drawn all the same
+        val shape = element(ShapeElementType.id, ShapeElementType.encode(ShapeElement(ShapeKind.RECTANGLE, RED, 2f)))
+        val pixels = ImageBitmap(40, 40).also { ElementRenderers.None.draw(Canvas(it), shape, Matrix2D()) }.toPixelMap()
+        assertEquals(Color(RED), pixels[11, 20], "its outline, inside its box")
+        assertEquals(Color.Transparent, pixels[20, 20], "no fill")
+        assertNotNull(ElementRenderers.None.vectorsOf(shape))
+        assertNull(renderers.vectorsOf(element(FillType.id, FillType.encode(Fill(RED)))), "drawn as an image")
+        // Hit by its outline only
+        assertTrue(ElementRenderers.None.hits(shape, 10.5f, 20f))
+        assertFalse(ElementRenderers.None.hits(shape, 20f, 20f))
+    }
+
+    @Test
+    fun theEraserErasesTheShapesOnly() {
+        val shape = element(ShapeElementType.id, ShapeElementType.encode(ShapeElement(ShapeKind.ELLIPSE, RED, 1f)))
+        assertTrue(ElementRenderers.None.erasedBy(shape, Point(5f, 20f), Point(15f, 20f), 1f), "across its outline")
+        assertFalse(ElementRenderers.None.erasedBy(shape, Point(18f, 20f), Point(22f, 20f), 1f), "inside, without fill")
+        val fill = element(FillType.id, FillType.encode(Fill(RED)))
+        assertFalse(renderers.erasedBy(fill, Point(5f, 20f), Point(35f, 20f), 4f), "a type that does not say it is erased")
+        assertFalse(renderers.erasedBy(element("org.other.type", byteArrayOf()), Point(5f, 20f), Point(35f, 20f), 4f))
     }
 
     private companion object {

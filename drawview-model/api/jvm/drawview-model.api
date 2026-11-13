@@ -2769,6 +2769,37 @@ public final class io/github/valerioisufi/drawview/model/geometry/Rect$Companion
 	public final fun getZero ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
 }
 
+public final class io/github/valerioisufi/drawview/model/geometry/VectorDot {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;FI)V
+	public final fun getArgb ()I
+	public final fun getCenter ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getRadiusMm ()F
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/VectorDrawing {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDots ()Ljava/util/List;
+	public final fun getFills ()Ljava/util/List;
+	public final fun getLines ()Ljava/util/List;
+	public final fun isEmpty ()Z
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/VectorFill {
+	public fun <init> (Ljava/util/List;I)V
+	public final fun getArgb ()I
+	public final fun getPoints ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/VectorLine {
+	public fun <init> (Ljava/util/List;ZIF)V
+	public final fun getArgb ()I
+	public final fun getClosed ()Z
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getWidthMm ()F
+}
+
 public final class io/github/valerioisufi/drawview/model/placement/BesideAnchor : io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
 	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;)V
 	public fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
@@ -3158,13 +3189,17 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeElementType 
 
 public final class io/github/valerioisufi/drawview/model/shape/ShapeGeometry {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeGeometry;
+	public static final field MAX_DASHES I
+	public static final field MITER_LIMIT F
 	public final fun anchors (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Ljava/util/List;
+	public final fun drawing (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;
 	public final fun headLength (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)F
 	public final fun hits (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
 	public final fun lineBox (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)Lio/github/valerioisufi/drawview/model/shape/ShapeBox;
 	public final fun lineEnds (Lio/github/valerioisufi/drawview/model/shape/ShapeBox;)Lkotlin/Pair;
 	public final fun lineHeight (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)F
 	public final fun paths (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Ljava/util/List;
+	public final fun touchesSegment (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
 }
 
 public final class io/github/valerioisufi/drawview/model/shape/ShapeHead : java/lang/Enum {
@@ -3209,9 +3244,10 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeKt {
 }
 
 public final class io/github/valerioisufi/drawview/model/shape/ShapePath {
-	public fun <init> (Ljava/util/List;ZZZ)V
-	public synthetic fun <init> (Ljava/util/List;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;ZZZZ)V
+	public synthetic fun <init> (Ljava/util/List;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getClosed ()Z
+	public final fun getCornered ()Z
 	public final fun getFilled ()Z
 	public final fun getPoints ()Ljava/util/List;
 	public final fun getSolid ()Z

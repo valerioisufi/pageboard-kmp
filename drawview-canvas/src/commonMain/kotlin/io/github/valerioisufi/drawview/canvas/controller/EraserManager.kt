@@ -6,12 +6,14 @@ import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.geometry.HitTesting
+import io.github.valerioisufi.drawview.model.geometry.Point
 import kotlin.math.max
 import kotlin.math.min
 
 /**
  * "Live eraser": removes the strokes whose mesh intersects the capsule swept by the eraser tip
- * (and the marks of the text of the PDFs it touches) as soon as it touches them; what a gesture
+ * (and the marks of the text of the PDFs and the elements whose type says it erases them, the
+ * shapes, it touches) as soon as it touches them; what a gesture
  * erases is undone at once.
  */
 internal class EraserManager(private val controller: DrawViewController) {
@@ -54,6 +56,13 @@ internal class EraserManager(private val controller: DrawViewController) {
                 if (HitTesting.meshIntersectsCapsule(stroke.mesh, a.x, a.y, b.x, b.y, radiusMm)) {
                     toRemove.add(stroke)
                 }
+            }
+            val elements = controller.engines.elements
+            for (custom in page.customElements) {
+                if (controller.hiddenElements.isHidden(custom.id)) continue
+                val cb = custom.getRotatedBounds()
+                if (cb.left >= capsule.right || capsule.left >= cb.right || cb.top >= capsule.bottom || capsule.top >= cb.bottom) continue
+                if (elements.erasedBy(custom, Point(a.x, a.y), Point(b.x, b.y), radiusMm)) toRemove.add(custom)
             }
             val markupsToRemove = page.markups.filter { markup ->
                 val pointsToMm = markup.pointsToPageMm(page)

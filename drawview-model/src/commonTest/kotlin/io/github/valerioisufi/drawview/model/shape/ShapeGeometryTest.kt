@@ -26,12 +26,30 @@ class ShapeGeometryTest {
                 assertTrue(point.x >= 1f - 1e-3f && point.x <= 39f + 1e-3f, "$kind: $point")
                 assertTrue(point.y >= 1f - 1e-3f && point.y <= 19f + 1e-3f, "$kind: $point")
             }
-            // The outline reaches the edges of the box it fills
-            near(1f, path.points.minOf { it.x }, 0.02f)
-            near(39f, path.points.maxOf { it.x }, 0.02f)
-            near(1f, path.points.minOf { it.y }, 0.02f)
-            near(19f, path.points.maxOf { it.y }, 0.02f)
         }
+        // The shapes with no sharp corner reach the edges of their box with their outline
+        for (kind in listOf(ShapeKind.RECTANGLE, ShapeKind.ROUNDED_RECTANGLE, ShapeKind.ELLIPSE)) {
+            val points = ShapeGeometry.paths(shape(kind, width = 2f), 40f, 20f).single().points
+            near(1f, points.minOf { it.x }, 0.02f)
+            near(39f, points.maxOf { it.x }, 0.02f)
+            near(1f, points.minOf { it.y }, 0.02f)
+            near(19f, points.maxOf { it.y }, 0.02f)
+        }
+    }
+
+    @Test
+    fun theMitersOfASharpCornerStayInsideTheBox() {
+        // A right triangle in a flat box: its corner at the bottom right is sharp, its miter
+        // reaches along the bisector of its angle
+        val half = 0.5f
+        val path = ShapeGeometry.paths(shape(ShapeKind.RIGHT_TRIANGLE, width = 2 * half), 40f, 10f).single().points
+        val corner = path[1]
+        val angle = kotlin.math.atan2(path[2].y - path[0].y, path[1].x - path[2].x)
+        val reach = half / kotlin.math.sin(angle / 2f)
+        val tipX = corner.x + reach * kotlin.math.cos(angle / 2f)
+        near(40f, tipX, 0.05f)
+        // Its sides close to the box: not shrunk more than needed
+        assertTrue(path[0].x < 1f && path[2].y > 9f, "$path")
     }
 
     @Test
@@ -44,7 +62,8 @@ class ShapeGeometryTest {
         assertEquals(6, ShapeGeometry.paths(shape(ShapeKind.HEXAGON), 10f, 10f).single().points.size)
         val apex = ShapeGeometry.paths(shape(ShapeKind.TRIANGLE), 10f, 10f).single().points.first()
         near(5f, apex.x)
-        near(0.5f, apex.y)
+        // Its miter reaches the top of the box: 0.5 mm over the sine of half its angle
+        near(0.5f / kotlin.math.sin(kotlin.math.atan2(0.5f, 1f)), apex.y, 0.05f)
     }
 
     @Test
@@ -73,7 +92,10 @@ class ShapeGeometryTest {
         assertEquals(2, paths.size)
         val head = paths[1]
         assertFalse(head.closed)
-        assertEquals(Point(30f, height / 2f), head.points[1])
+        // Its tip pulled in by its miter, which ends at the end of the line
+        val tip = head.points[1]
+        near(30f - 0.5f / kotlin.math.sin(28f * kotlin.math.PI.toFloat() / 180f), tip.x)
+        near(height / 2f, tip.y)
         // The head is inside the box
         for (p in head.points) assertTrue(p.y in 0f..height, "$p in $height")
 
@@ -90,7 +112,7 @@ class ShapeGeometryTest {
     fun theHeadOfAShortLineIsBounded() {
         val arrow = shape(ShapeKind.LINE, width = 2f).copy(endHead = ShapeHead.OPEN)
         val head = ShapeGeometry.paths(arrow, 4f, ShapeGeometry.lineHeight(arrow))[1].points
-        assertTrue(head.first().x >= 4f - 4f * 0.45f - 1e-3f, "${head.first()}")
+        assertTrue((head[0] - head[1]).distance <= 4f * 0.45f + 1e-3f, "$head")
     }
 
     @Test
@@ -121,6 +143,51 @@ class ShapeGeometryTest {
         val line = shape(ShapeKind.LINE)
         assertTrue(ShapeGeometry.hits(line, Point(15f, 2.4f), 30f, 4f, 0.5f))
         assertFalse(ShapeGeometry.hits(line, Point(15f, 3.9f), 30f, 4f, 0.5f))
+    }
+
+    @Test
+    fun theDrawingOfAShape() {
+        val solid = ShapeGeometry.drawing(shape(ShapeKind.RECTANGLE, fill = 0x33FF0000), 40f, 20f)
+        assertEquals(1, solid.fills.size)
+        assertEquals(0x33FF0000, solid.fills.single().argb)
+        assertTrue(solid.lines.single().closed)
+
+        val dashed = ShapeGeometry.drawing(shape(ShapeKind.RECTANGLE).copy(dash = ShapeDash.DASHED), 40f, 20f)
+        assertTrue(dashed.lines.size in 10..30, "${dashed.lines.size} dashes")
+        assertTrue(dashed.lines.none { it.closed })
+        // A dash turning a corner keeps it
+        assertTrue(dashed.lines.any { it.points.size > 2 })
+
+        val dotted = ShapeGeometry.drawing(shape(ShapeKind.LINE).copy(dash = ShapeDash.DOTTED), 30f, 4f)
+        assertEquals(Point(0f, 2f), dotted.dots.first().center)
+        assertEquals(Point(30f, 2f), dotted.dots.last().center)
+        assertTrue(dotted.lines.isEmpty())
+
+        // A filled head is filled in the color of the line, even dotted
+        val arrow = shape(ShapeKind.LINE).copy(dash = ShapeDash.DOTTED, endHead = ShapeHead.FILLED)
+        val heads = ShapeGeometry.drawing(arrow, 30f, ShapeGeometry.lineHeight(arrow))
+        assertEquals(1, heads.fills.size)
+        assertEquals(0xFF000000.toInt(), heads.fills.single().argb)
+        assertTrue(heads.lines.isEmpty())
+    }
+
+    @Test
+    fun aHugeBoxHasABoundedDrawing() {
+        val value = shape(ShapeKind.ELLIPSE, ShapeElement.MIN_WIDTH_MM).copy(dash = ShapeDash.DOTTED)
+        val drawing = ShapeGeometry.drawing(value, 1e7f, 1e7f)
+        assertTrue(drawing.dots.size <= ShapeGeometry.MAX_DASHES)
+        val dashed = ShapeGeometry.drawing(shape(ShapeKind.RECTANGLE, ShapeElement.MIN_WIDTH_MM).copy(dash = ShapeDash.DASHED), 1e7f, 1e7f)
+        assertTrue(dashed.lines.size <= ShapeGeometry.MAX_DASHES)
+    }
+
+    @Test
+    fun theEraserTouchesTheOutlineOrTheFill() {
+        val empty = shape(ShapeKind.RECTANGLE)
+        assertTrue(ShapeGeometry.touchesSegment(empty, Point(-5f, 10f), Point(5f, 10f), 0.5f, 40f, 20f))
+        assertFalse(ShapeGeometry.touchesSegment(empty, Point(10f, 10f), Point(30f, 10f), 0.5f, 40f, 20f))
+        assertTrue(ShapeGeometry.touchesSegment(empty, Point(10f, 10f), Point(30f, 10f), 9f, 40f, 20f), "a wide eraser reaches it")
+        val full = shape(ShapeKind.RECTANGLE, fill = 0x33000000)
+        assertTrue(ShapeGeometry.touchesSegment(full, Point(10f, 10f), Point(30f, 10f), 0.5f, 40f, 20f))
     }
 
     @Test

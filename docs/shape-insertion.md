@@ -227,7 +227,7 @@ edges.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `ShapeElement`, `ShapeKind`, `ShapeDash`, `ShapeHead`, `ShapeElementType` (`drawview.shape`, version 1, the checks), `ShapeGeometry` (paths, heads, hits by outline and by fill, anchors), `ShapeConstraints`; tests of every kind, of the hits, of the constraints, of hostile payloads; `ShapeElementFormatTest` recording a payload of every kind (the stored format); ABI of `drawview-model` recorded on purpose | Done |
-| 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Proposed |
+| 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Done |
 | 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Proposed |
 | 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Proposed |
 | 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Proposed |
@@ -251,6 +251,39 @@ edges.
 * Tests: `ShapeGeometryTest`, `ShapeConstraintsTest`, `ShapeElementFormatTest` (a payload of
   every kind recorded, read back; a width out of bounds, an unknown kind and a newer version not
   read; 5000 random or damaged payloads, never a failure, never a value out of its checks).
+
+### Phase 2 results
+
+* `ShapeElementRenderer` (`drawview-canvas`, `render/`) is in every `ElementRenderers`, also in
+  `ElementRenderers.None`: the editors, the thumbnails, the image export and the agent's pages
+  draw the shapes without the application giving anything. A renderer the application gives for
+  the same type would replace it.
+* The vectors: `VectorDrawing` (`drawview-model`, `geometry/`: fills, lines, dots) is what
+  `ShapeGeometry.drawing` gives, what `Canvas.drawVectors` draws and what `PdfExporter` writes as
+  paths. `ElementRenderer.vectors` (by default `null`, an image as before) and
+  `ElementRenderers.vectorsOf` replace the `VectorElement` of the design: one optional method
+  rather than a second interface.
+* The dashes and the dots are cut by the geometry, not by the painter: the PDF writer strokes
+  plain paths only, and the two must look the same. A polygon has a dash bent around each corner
+  and the others spread evenly on its sides (a dot on each corner); a curve and a line have a whole
+  number of them; 1000 at most on a part of an outline, longer ones beyond.
+* The corners: mitered with the limit of the PDF (10), so that the editor and the PDF match; a
+  polygon is moved in until the miter of its sharpest corner touches its box, so that nothing is
+  drawn outside it (the tiles and the hits stay within the box). A filled head is filled only;
+  the tip of an open head is pulled in by its miter.
+* The eraser: `ElementRenderer.erasedBy` (by default never: a type of an application is not
+  erased unless it says so) and `ElementRenderers.erasedBy`; `EraserManager` asks it for the
+  elements of the types whose box the eraser crosses. The shapes are erased by their outline, or
+  their inside when filled (`ShapeGeometry.touchesSegment`).
+* What changed from the design: no screenshot test in `drawview-canvas`, which has no Roborazzi;
+  a pixel test of the renderer, a PDF rendered back, and a sheet of every kind and style looked
+  at by hand. The screenshots of the shapes come with the UI (phase 5).
+* Tests: `ShapeGeometryTest` (drawings, dashes, dots, bounded on a huge box, the miters inside the
+  box, the eraser), `ElementRenderersTest` (the shapes drawn by `None`, as vectors, hit by their
+  outline, erased; a type of an application never erased), `PdfExporterTest.theShapesAreVectors`
+  (no image in the PDF, the box and the arrow drawn), `ShapeToolTest` (the eraser across the
+  inside of a box keeps it, across its side erases it, undone in one step). ABI of `drawview-model`
+  and `drawview-canvas` recorded again on purpose.
 
 ## Decisions
 

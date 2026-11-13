@@ -11,6 +11,8 @@ import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.ElementType
 import io.github.valerioisufi.drawview.model.decode
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.geometry.VectorDrawing
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
 
@@ -30,15 +32,28 @@ public interface ElementRenderer<T : Any> {
 
     /** Whether the point ([xMm], [yMm]) of the box hits the element (by default, its whole box). */
     public fun hits(value: T, xMm: Float, yMm: Float, widthMm: Float, heightMm: Float): Boolean = true
+
+    /**
+     * [value] as vectors in a box of `widthMm` x `heightMm` millimeters, written as such in the
+     * PDF; `null` (by default) to have it drawn by [draw] as an image.
+     */
+    public fun vectors(value: T, widthMm: Float, heightMm: Float): VectorDrawing? = null
+
+    /**
+     * Whether the eraser, a capsule of [radiusMm] around the segment [from] - [to] of the box,
+     * erases [value]; by default never (the eraser erases what is drawn by hand).
+     */
+    public fun erasedBy(value: T, from: Point, to: Point, radiusMm: Float, widthMm: Float, heightMm: Float): Boolean = false
 }
 
 /**
- * The element types an application draws (see [ElementRenderer]): the elements of the other types
- * (another application, a newer version) are drawn as a placeholder in their box. Given to the
- * editors, the thumbnails and the export by [DrawViewEngines.elements].
+ * The element types an application draws (see [ElementRenderer]), with the ones of the libraries
+ * (the shapes, [ShapeElementRenderer]): the elements of the other types (another application, a
+ * newer version) are drawn as a placeholder in their box. Given to the editors, the thumbnails and
+ * the export by [DrawViewEngines.elements].
  */
 public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
-    private val byType: Map<String, ElementRenderer<*>> = renderers.associateBy { it.type.id }
+    private val byType: Map<String, ElementRenderer<*>> = (BUILT_IN + renderers).associateBy { it.type.id }
 
     private val lock = SyncLock()
 
@@ -101,6 +116,32 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
         return renderer.hitsValue(value, local.x, local.y, element.width, element.height)
     }
 
+    /** [element] as vectors in its box (see [ElementRenderer.vectors]), or `null` when it is drawn as an image. */
+    public fun vectorsOf(element: DrawCustomElement): VectorDrawing? {
+        if (element.width <= 0f || element.height <= 0f) return null
+        val renderer = byType[element.type] ?: return null
+        val value = valueOf(element) ?: return null
+        return renderer.vectorsValue(value, element.width, element.height)
+    }
+
+    /**
+     * Whether the eraser, a capsule of [radiusMm] around the segment [from] - [to] of the page,
+     * erases [element] (see [ElementRenderer.erasedBy]); never an element of a type not known.
+     */
+    public fun erasedBy(element: DrawCustomElement, from: Point, to: Point, radiusMm: Float): Boolean {
+        val renderer = byType[element.type] ?: return false
+        val value = valueOf(element) ?: return false
+        return renderer.erasedByValue(value, element.toLocal(from.x, from.y), element.toLocal(to.x, to.y), radiusMm, element.width, element.height)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> ElementRenderer<T>.vectorsValue(value: Any, widthMm: Float, heightMm: Float) =
+        vectors(value as T, widthMm, heightMm)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> ElementRenderer<T>.erasedByValue(value: Any, from: Point, to: Point, radiusMm: Float, widthMm: Float, heightMm: Float) =
+        erasedBy(value as T, from, to, radiusMm, widthMm, heightMm)
+
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any> ElementRenderer<T>.drawValue(canvas: Canvas, value: Any, widthMm: Float, heightMm: Float) =
         draw(canvas, value as T, widthMm, heightMm)
@@ -126,7 +167,10 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     public companion object {
-        /** No type of an application: their elements are drawn as placeholders. */
+        /** The types of the libraries, drawn by every editor. */
+        private val BUILT_IN: List<ElementRenderer<*>> = listOf(ShapeElementRenderer)
+
+        /** No type of an application (the ones of the libraries only): their elements are drawn as placeholders. */
         public val None: ElementRenderers = ElementRenderers(emptyList())
 
         private const val MAX_VALUES = 256

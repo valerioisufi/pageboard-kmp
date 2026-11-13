@@ -29,7 +29,9 @@ import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.geometry.VectorDrawing
 import io.github.valerioisufi.drawview.model.pdfPointsToPageMm
 import io.github.valerioisufi.drawview.model.triangleOutline
 import io.github.valerioisufi.drawview.pdf.PdfFont
@@ -466,9 +468,13 @@ public class PdfExporter(
             return writer.addMarkup(kind, markup.rects.map(toPage::mapRect), markup.color, drawn)
         }
 
-        /** [element] drawn by its renderer at 300 dpi, without its rotation, then placed. */
+        /**
+         * [element] as the vectors its type gives, or drawn by its renderer at 300 dpi, without
+         * its rotation, then placed.
+         */
         private fun writeCustomElement(element: DrawCustomElement): Boolean {
             if (element.width <= 0f || element.height <= 0f) return true
+            elements.vectorsOf(element)?.let { return writeVectors(it, element) }
             val scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(element.width, element.height))
             val width = ceil(element.width * scale).toInt().coerceAtLeast(1)
             val height = ceil(element.height * scale).toInt().coerceAtLeast(1)
@@ -478,6 +484,38 @@ public class PdfExporter(
             val pixels = IntArray(width * height).also { bitmap.readPixels(it) }
             if (pixels.all { it ushr 24 == 0 }) return true
             return writer.drawImage(pixels, width, height, boxToPage(element.x, element.y, element.width, element.height, element.rotation))
+        }
+
+        /** [drawing] in the box of [element] (millimeters of the box), as paths of the PDF. */
+        private fun writeVectors(drawing: VectorDrawing, element: DrawCustomElement): Boolean {
+            val boxToPt = Matrix2D()
+                .postRotate(element.rotation, element.width / 2f, element.height / 2f)
+                .postTranslate(element.x, element.y)
+                .postConcat(mmToPt)
+            val scale = boxToPt.scaleFactor
+            fun xy(points: List<Point>) = FloatArray(points.size * 2) { i -> if (i % 2 == 0) points[i / 2].x else points[i / 2].y }.also(boxToPt::mapPoints)
+            var written = true
+            for (fill in drawing.fills) {
+                written = writer.fillPath(PdfPath().apply { addPolygon(xy(fill.points)) }, fill.argb) && written
+            }
+            for (line in drawing.lines) {
+                val points = xy(line.points)
+                if (points.size < 4) continue
+                val path = PdfPath()
+                path.moveTo(points[0], points[1])
+                var i = 2
+                while (i + 1 < points.size) {
+                    path.lineTo(points[i], points[i + 1])
+                    i += 2
+                }
+                if (line.closed) path.close()
+                written = writer.strokePath(path, line.argb, line.widthMm * scale) && written
+            }
+            for (dot in drawing.dots) {
+                val center = xy(listOf(dot.center))
+                written = writer.fillPath(PdfPath().apply { addCircle(center[0], center[1], dot.radiusMm * scale) }, dot.argb) && written
+            }
+            return written
         }
 
         private fun writeImage(image: DrawImage): Boolean {
