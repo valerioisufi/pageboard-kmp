@@ -21,7 +21,15 @@ public class CustomElementManager internal constructor(private val controller: D
      * millimeters), on top of the others, and selects it; `null` when the page does not exist or
      * the document may only be read.
      */
-    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement? {
+    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement? =
+        add(type, value, pageIndex, box, rotation = 0f, select = select)
+
+    /**
+     * Adds an element of [type] of value [value] to the page [pageIndex], in [box] (page
+     * millimeters) turned by [rotation] degrees around its center, on top of the others, and
+     * selects it; `null` when the page does not exist or the document may only be read.
+     */
+    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, rotation: Float, select: Boolean = true): DrawCustomElement? {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         if (box.isEmpty) return null
         val element = DrawCustomElement(type.id).apply {
@@ -31,6 +39,7 @@ public class CustomElementManager internal constructor(private val controller: D
             y = box.top
             width = box.width
             height = box.height
+            this.rotation = rotation
         }
         controller.session.submit(AddElements.of(page, listOf(element))) ?: return null
         if (select) controller.selectionManager.selectCustomElement(pageIndex, element)

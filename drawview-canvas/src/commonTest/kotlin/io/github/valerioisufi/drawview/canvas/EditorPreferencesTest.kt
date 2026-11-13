@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.canvas
 
 import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.drawview.canvas.controller.ToolManager
 import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
 import io.github.valerioisufi.drawview.canvas.tool.Tool
@@ -9,6 +10,9 @@ import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.shape.ShapeDash
+import io.github.valerioisufi.drawview.model.shape.ShapeHead
+import io.github.valerioisufi.drawview.model.shape.ShapeKind
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -57,11 +61,30 @@ class EditorPreferencesTest {
             ),
             preferences
         )
-        // Written before the shapes: they are on
+        // Written before the shapes: they are on, the shapes tool draws its default
         assertTrue(preferences!!.isShapeRecognitionEnabled)
+        assertEquals(ShapeToolStyle(), preferences.shapeTool.toStyle())
         val tools = ToolManager().apply { applyPreferences(preferences) }
         // The presets are a snapshot list, equal to a plain list on the JVM only: their content is compared
         assertEquals(ToolManager.defaultPresets().getValue(Tool.ERASER), tools.presetsOf(Tool.ERASER).toList())
+    }
+
+    @Test
+    fun theStyleOfTheShapesToolIsKeptAndWhatIsNotUnderstoodIsItsDefault() = runTest(UnconfinedTestDispatcher()) {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val style = ShapeToolStyle(ShapeKind.LINE, 0xFFE53935.toInt(), 1f, ShapeDash.DASHED, fill = 0x33E53935, heads = 2, head = ShapeHead.FILLED)
+        controller.shapeInserter.updateStyle(style)
+        val text = controller.preferences.value.encode()
+        val other = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        other.applyPreferences(DrawPreferences.decode(text)!!)
+        assertEquals(style, other.shapeInserter.style)
+        assertEquals(ShapeHead.FILLED, style.element().startHead)
+        assertNull(style.element().fill, "a line has no fill")
+
+        // A kind of a later version, a width out of bounds, heads not understood: the defaults
+        val later = """{"shapeTool":{"kind":"STAR","widthMm":99.0,"dash":"WAVY","heads":7,"head":"NONE","stroke":-1}}"""
+        val read = DrawPreferences.decode(later)!!.shapeTool.toStyle()
+        assertEquals(ShapeToolStyle(stroke = -1), read)
     }
 
     @Test

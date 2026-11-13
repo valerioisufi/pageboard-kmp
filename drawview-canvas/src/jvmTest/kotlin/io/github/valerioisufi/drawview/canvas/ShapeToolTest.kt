@@ -10,15 +10,24 @@ import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.decode
+import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.shape.ShapeBox
 import io.github.valerioisufi.drawview.model.shape.ShapeElement
 import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import io.github.valerioisufi.drawview.model.shape.ShapeHead
 import io.github.valerioisufi.drawview.model.shape.ShapeKind
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -41,6 +50,120 @@ class ShapeToolTest {
         assertEquals(0, shapes(controller).size)
         controller.undo()
         assertEquals(1, shapes(controller).size)
+    }
+
+    @Test
+    fun aDragDrawsABoxSelectedUndoneInOneStep() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        scene.drag(controller.screen(40f, 40f), controller.screen(100f, 70f))
+        val shape = shapes(controller).single()
+        assertEquals(ShapeKind.RECTANGLE, ShapeElementType.decode(shape)?.kind)
+        near(40f, shape.x); near(40f, shape.y); near(60f, shape.width); near(30f, shape.height)
+        assertEquals(listOf(shape), controller.selectionManager.currentSelection?.customs?.toList())
+        assertEquals(Tool.SHAPES, controller.selectedTool, "the tool stays chosen")
+        assertNull(controller.shapeInserter.draft)
+        controller.undo()
+        assertEquals(0, shapes(controller).size)
+    }
+
+    @Test
+    fun aBoxNearlySquareIsASquare() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.ELLIPSE))
+        scene.drag(controller.screen(40f, 40f), controller.screen(80f, 78f))
+        val shape = shapes(controller).single()
+        near(40f, shape.width); near(40f, shape.height)
+    }
+
+    @Test
+    fun aSecondFingerHeldForcesTheSquare() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        val from = controller.screen(40f, 40f)
+        val to = controller.screen(100f, 60f)
+        var time = 1_000L
+        scene.send(PointerEventType.Press, from, time)
+        for (i in 1..10) {
+            time += 16L
+            val position = from + (to - from) * (i / 10f)
+            if (i == 3) scene.sendTwo(PointerEventType.Press, position, controller.screen(150f, 150f), time)
+            else if (i > 3) scene.sendTwo(PointerEventType.Move, position, controller.screen(150f, 150f), time)
+            else scene.send(PointerEventType.Move, position, time)
+        }
+        // The finger drawing lifted first, then the one held
+        scene.sendPointerEvent(
+            eventType = PointerEventType.Release,
+            pointers = listOf(
+                ComposeScenePointer(PointerId(0), to, pressed = false, type = PointerType.Touch),
+                ComposeScenePointer(PointerId(1), controller.screen(150f, 150f), pressed = true, type = PointerType.Touch)
+            ),
+            timeMillis = time + 16L
+        )
+        scene.sendPointerEvent(
+            eventType = PointerEventType.Release,
+            pointers = listOf(ComposeScenePointer(PointerId(1), controller.screen(150f, 150f), pressed = false, type = PointerType.Touch)),
+            timeMillis = time + 32L
+        )
+        scene.render()
+        val shape = shapes(controller).single()
+        near(60f, shape.width); near(60f, shape.height)
+    }
+
+    @Test
+    fun aLineNearlyLevelIsLevelAndAnArrowHasItsHead() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.LINE, heads = 1))
+        scene.drag(controller.screen(40f, 100f), controller.screen(100f, 102f))
+        val shape = shapes(controller).single()
+        val value = ShapeElementType.decode(shape)!!
+        assertEquals(ShapeHead.OPEN, value.endHead)
+        assertEquals(0f, shape.rotation)
+        val (start, end) = ShapeGeometry.lineEnds(ShapeBox(shape.x, shape.y, shape.width, shape.height, shape.rotation))
+        near(40f, start.x); near(100f, start.y)
+        near(100f, end.y)
+        near(Point(60f, 2f).distance, end.x - start.x)
+    }
+
+    @Test
+    fun theEndOfALineSnapsToTheCornerOfABox() = withCanvas { scene, controller ->
+        controller.customElementManager.add(ShapeElementType, ShapeElement(ShapeKind.RECTANGLE, BLACK, 0.5f), 0, Rect(100f, 100f, 140f, 130f), select = false)
+        controller.selectTool(Tool.SHAPES)
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.LINE, heads = 1))
+        // Ends a little away from the top left corner of the box (its outline is inside the box)
+        scene.drag(controller.screen(40f, 60f), controller.screen(101.5f, 101f))
+        val line = shapes(controller).last()
+        val (_, end) = ShapeGeometry.lineEnds(ShapeBox(line.x, line.y, line.width, line.height, line.rotation))
+        near(100.25f, end.x, 0.05f); near(100.25f, end.y, 0.05f)
+    }
+
+    @Test
+    fun aTapPutsAShapeOfAStandardSize() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.TRIANGLE))
+        scene.drag(controller.screen(60f, 60f), controller.screen(60f, 60f))
+        val shape = shapes(controller).single()
+        near(20f, shape.width); near(20f, shape.height)
+        near(50f, shape.x); near(50f, shape.y)
+    }
+
+    @Test
+    fun aShapeOutsideOfThePagesIsNoShape() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        scene.drag(Offset(2f, 2f), Offset(5f, 300f))
+        assertEquals(0, shapes(controller).size)
+    }
+
+    private fun near(expected: Float, actual: Float, tolerance: Float = 0.3f) =
+        assertTrue(abs(expected - actual) <= tolerance, "expected $expected, was $actual")
+
+    private fun ImageComposeScene.sendTwo(type: PointerEventType, first: Offset, second: Offset, timeMillis: Long, secondPressed: Boolean = true) {
+        sendPointerEvent(
+            eventType = type,
+            pointers = listOf(
+                ComposeScenePointer(PointerId(0), first, pressed = true, type = PointerType.Touch),
+                ComposeScenePointer(PointerId(1), second, pressed = secondPressed, type = PointerType.Touch)
+            ),
+            timeMillis = timeMillis
+        )
     }
 
     private fun DrawViewController.screen(xMm: Float, yMm: Float): Offset =

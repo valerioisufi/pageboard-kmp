@@ -14,6 +14,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -29,15 +30,25 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.ShapeDraft
 import io.github.valerioisufi.drawview.canvas.geometry.mapRect
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
+import io.github.valerioisufi.drawview.canvas.geometry.toComposeMatrix
+import io.github.valerioisufi.drawview.canvas.render.drawVectors
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
 
 /**
@@ -134,7 +145,7 @@ public fun DrawCanvas(
     ) {
         // Each canvas in a layer of its own: drawing one again leaves the other as it was recorded
         Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawContent(controller, ink, animationTick, collaboratorsOverlay, labels) }
-        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawLive(controller, live, ink) }
+        Canvas(Modifier.fillMaxSize().graphicsLayer()) { drawLive(controller, live, ink, labels) }
         ink.Content()
     }
 }
@@ -271,7 +282,7 @@ private fun DrawScope.drawContent(
  * The live state over the content: the stroke in progress (when its layer draws in Compose), the
  * cursor of the eraser and of the pens, the box of a new text.
  */
-private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveState, ink: LiveInkLayer) {
+private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveState, ink: LiveInkLayer, labels: TextMeasurer) {
     @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
     ink.draw(this, controller)
 
@@ -303,7 +314,79 @@ private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveS
             style = Stroke(width = FrameStyle.STROKE_DP * controller.viewport.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
         )
     }
+
+    controller.shapeInserter.draft?.let { drawShapeDraft(controller, it, labels) }
 }
+
+/**
+ * The shape being drawn with the shapes tool, as it will be, the anchors of the other shapes near
+ * the pointer (the one its end snapped to ringed) and its size by the pointer.
+ */
+private fun DrawScope.drawShapeDraft(controller: DrawViewController, draft: ShapeDraft, labels: TextMeasurer) {
+    val mmToScreen = controller.viewport.pageMmToScreen(draft.pageIndex) ?: return
+    val box = draft.box
+    if (box.width > 0f && box.height > 0f) {
+        val boxToScreen = Matrix2D()
+            .postRotate(box.rotation, box.width / 2f, box.height / 2f)
+            .postTranslate(box.x, box.y)
+            .postConcat(mmToScreen)
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.concat(boxToScreen.toComposeMatrix())
+            canvas.drawVectors(ShapeGeometry.drawing(draft.value, box.width, box.height))
+            canvas.restore()
+        }
+    }
+    val primary = Color(controller.themeColors.primaryColor)
+    val density = controller.viewport.density
+    drawShapeSize(draft, mmToScreen.mapPoint(draft.end.x, draft.end.y).let { Offset(it.x, it.y) }, labels, primary)
+    if (draft.anchors.isEmpty() && draft.anchor == null) return
+    for (anchor in draft.anchors) {
+        val point = mmToScreen.mapPoint(anchor.x, anchor.y)
+        drawCircle(Color.White, radius = ANCHOR_DOT_DP * density + density, center = Offset(point.x, point.y))
+        drawCircle(primary.copy(alpha = 0.7f), radius = ANCHOR_DOT_DP * density, center = Offset(point.x, point.y))
+    }
+    draft.anchor?.let { anchor ->
+        val point = mmToScreen.mapPoint(anchor.x, anchor.y)
+        drawCircle(primary, radius = ANCHOR_RING_DP * density, center = Offset(point.x, point.y), style = Stroke(width = 2f * density))
+    }
+}
+
+/**
+ * The size of the shape being drawn below and to the right of [pointer] (above it near the
+ * bottom of the canvas): `42 × 30 mm`, or `56 mm · 30°` for a line; in the color of the theme
+ * when a constraint holds (a square, an angle of 15°, an anchor).
+ */
+private fun DrawScope.drawShapeSize(draft: ShapeDraft, pointer: Offset, labels: TextMeasurer, primary: Color) {
+    val text = if (draft.value.kind.isLine) {
+        "${millimeters(draft.widthMm)} mm · ${draft.angleDegrees.roundToInt() % 360}°"
+    } else {
+        "${millimeters(draft.widthMm)} × ${millimeters(draft.heightMm)} mm"
+    }
+    val held = draft.isRegular || draft.isAngleSnapped || draft.anchor != null
+    val label = labels.measure(text, TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium))
+    val padding = 6.dp.toPx()
+    val gap = 16.dp.toPx()
+    val width = label.size.width + padding * 2
+    val height = label.size.height + padding
+    val left = (pointer.x + gap).coerceAtMost(size.width - width).coerceAtLeast(0f)
+    val top = (if (pointer.y + gap + height > size.height) pointer.y - gap - height else pointer.y + gap).coerceAtLeast(0f)
+    drawRoundRect(
+        color = if (held) primary else Color(0xE6303030),
+        topLeft = Offset(left, top),
+        size = Size(width, height),
+        cornerRadius = CornerRadius(6.dp.toPx())
+    )
+    drawText(label, topLeft = Offset(left + padding, top + padding / 2))
+}
+
+/** [mm] with one decimal under 10 mm, whole above. */
+private fun millimeters(mm: Float): String =
+    if (mm < 10f) ((mm * 10f).roundToInt() / 10f).toString() else mm.roundToInt().toString()
+
+/** The dots of the anchors of the shapes, and the ring of the one snapped to, on the screen. */
+private const val ANCHOR_DOT_DP = 3f
+private const val ANCHOR_RING_DP = 8f
 
 /** The text of a pending placement in [box] (page millimeters), in a dashed frame. */
 private fun DrawScope.drawPlacementPreview(

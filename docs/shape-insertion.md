@@ -228,7 +228,7 @@ edges.
 |---|---|---|
 | 1 | `ShapeElement`, `ShapeKind`, `ShapeDash`, `ShapeHead`, `ShapeElementType` (`drawview.shape`, version 1, the checks), `ShapeGeometry` (paths, heads, hits by outline and by fill, anchors), `ShapeConstraints`; tests of every kind, of the hits, of the constraints, of hostile payloads; `ShapeElementFormatTest` recording a payload of every kind (the stored format); ABI of `drawview-model` recorded on purpose | Done |
 | 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Done |
-| 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Proposed |
+| 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Done |
 | 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Proposed |
 | 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Proposed |
 | 6 | The agent tools: `read_page` lists the shapes (kind, style, box); proposing shapes is left for later | Proposed |
@@ -285,6 +285,42 @@ edges.
   inside of a box keeps it, across its side erases it, undone in one step). ABI of `drawview-model`
   and `drawview-canvas` recorded again on purpose.
 
+### Phase 3 results
+
+* `Tool.SHAPES` (after the highlighter in the enum) and `Mode.SHAPE` in `CanvasGestureHandler`:
+  the first down on a page starts a shape (outside of the pages, or in a document that may only be
+  read, the gesture pans); the moves past the slop draw it; the up adds it, a tap puts one of a
+  standard size. The selection keeps its handles first: the shape just drawn is selected, so a
+  drag on it moves it and a drag elsewhere draws the next one.
+* `ShapeInserter` (`controller.shapeInserter`): `style` (a `ShapeToolStyle`: the kind, the colors,
+  the outline, the fill and the heads, kept while another kind is chosen), `draft` (a `ShapeDraft`:
+  the shape being drawn, its size or its length and angle, the constraint that holds, the anchors
+  near the pointer), `begin`, `update`, `commit`, `cancel`, `insertAt` and `insertInView` (for the
+  command of phase 5). A tap puts a box of 20 mm (a rectangle 30 x 20), a line of 30 mm.
+* `CustomElementManager.add` with a rotation (an overload: the box of a line is turned along it).
+* The snaps: the corner being dragged snaps to the guides (`SnapEngine.snapPoint`,
+  `SnapManager.snapPoint`); the ends of a line snap to the anchors of the other shapes within
+  12 dp (`SnapManager.anchorFor`, `anchorsNear`), the anchors within 48 dp shown as dots, the one
+  taken ringed. `ShapeGeometry.anchors` takes the corners of the outline drawn (not of a thinner
+  one): an arrow ends on the line of the box.
+* The keys: Shift forces the constraints, Alt / ⌥ draws from the center, Ctrl / ⌘ draws freely
+  (no constraint by itself, no guide, no anchor). A second finger held while a finger draws forces
+  them, as Shift; a finger while a pen draws is a palm and does nothing.
+* The label is drawn by the canvas by the pointer: `42 × 30 mm`, `56 mm · 30°`, in the color of
+  the theme while a constraint holds (a square, an angle of 15°, an anchor). Numbers only: no
+  string to translate in `drawview-canvas`.
+* `DrawPreferences.shapeTool` (`ShapeToolPreferences`, the last of its fields): the names of the
+  kinds as text, so that a kind of a later version, a width out of bounds or anything not
+  understood is read as its default rather than failing the whole preferences.
+* What changed from the design: the label is in the canvas (phase 3), not in `drawview-ui`; Ctrl /
+  ⌘ makes a shape free, since Alt draws it from its center (elsewhere in the editor Alt is free).
+* Tests: `ShapeToolTest` (a drag draws a box, selected, the tool still chosen, undone in one step;
+  an ellipse nearly round is a circle; a second finger held makes a square; a line nearly level is
+  level, an arrow with its head; the end of a line on the corner of a box; a tap puts a triangle
+  of 20 mm; nothing outside of the pages), `EditorPreferencesTest` (the style kept and read back,
+  the defaults for preferences written before it and for values not understood). ABI of
+  `drawview-canvas` recorded again on purpose.
+
 ## Decisions
 
 * **A shape is an element of a built-in type, not a stroke** (revertible until it is released):
@@ -299,6 +335,10 @@ edges.
   going back to the button; the handles of the last shape are there to correct it.
 * **One style for the tool, the last one used** (revertible), not presets as the pen: the shapes
   of a page look the same without managing presets.
+* **Ctrl / ⌘ draws a shape freely** (revertible), Alt / ⌥ from its center: the convention of the
+  drawing applications, where elsewhere in the editor Alt makes a gesture free.
+* **A second finger forces the constraints only while a finger draws** (revertible): while a pen
+  draws, a hand on the screen is a palm.
 * **The shapes held at the end of a stroke stay strokes** (revertible): the pen keeps its look,
   and nothing a user drew changes.
 

@@ -494,8 +494,8 @@ public object ShapeGeometry {
 
     /**
      * The anchors of [value] in a box of [width] x [height] millimeters, where the ends of a line
-     * snap: the corners and the middles of the sides of a shape of a box and its center, the ends
-     * and the middle of a line.
+     * snap: the corners and the middles of the sides of the outline of a shape of a box (of its box
+     * for a curve) and its center, the ends and the middle of a line.
      */
     public fun anchors(value: ShapeElement, width: Float, height: Float): List<Point> {
         val middle = Point(width / 2f, height / 2f)
@@ -503,7 +503,7 @@ public object ShapeGeometry {
         val outline = when (value.kind) {
             // The extremes of the curves: the middles of the sides of the box
             ShapeKind.ELLIPSE, ShapeKind.ROUNDED_RECTANGLE -> null
-            else -> paths(value.copy(widthMm = ShapeElement.MIN_WIDTH_MM), width, height).first().points
+            else -> paths(value, width, height).first().points
         }
         val sides = listOf(Point(width / 2f, 0f), Point(width, height / 2f), Point(width / 2f, height), Point(0f, height / 2f))
         if (outline == null) return sides + middle

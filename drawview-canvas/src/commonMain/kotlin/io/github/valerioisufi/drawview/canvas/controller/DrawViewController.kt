@@ -143,6 +143,9 @@ public class DrawViewController(
     /** Turns the strokes held still at their end into their shapes. */
     public val shapeSnapper: ShapeSnapper = ShapeSnapper(this)
 
+    /** Draws the shapes of the shapes tool, and keeps what it draws next. */
+    public val shapeInserter: ShapeInserter = ShapeInserter(this)
+
     /** The elements of the types added by the application. */
     public val customElementManager: CustomElementManager = CustomElementManager(this)
 
@@ -344,6 +347,7 @@ public class DrawViewController(
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
         shapeSnapper.applyPreferences(preferences)
+        shapeInserter.applyPreferences(preferences)
         toolManager.applyPreferences(preferences)
         preferencesState.value = currentPreferences()
     }
@@ -359,7 +363,8 @@ public class DrawViewController(
         textDefaults = textDefaults,
         isSnapEnabled = snapManager.isEnabled,
         presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() },
-        isShapeRecognitionEnabled = shapeSnapper.isEnabled
+        isShapeRecognitionEnabled = shapeSnapper.isEnabled,
+        shapeTool = ShapeToolPreferences.of(shapeInserter.style)
     )
 
     // ==========================================================

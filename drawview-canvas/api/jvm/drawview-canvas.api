@@ -222,7 +222,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/Collaborato
 
 public final class io/github/valerioisufi/drawview/canvas/controller/CustomElementManager {
 	public static final field $stable I
+	public final fun add (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;FZ)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
 	public final fun add (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;Z)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public static synthetic fun add$default (Lio/github/valerioisufi/drawview/canvas/controller/CustomElementManager;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;FZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
 	public static synthetic fun add$default (Lio/github/valerioisufi/drawview/canvas/controller/CustomElementManager;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
 	public final fun update (Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;)Z
 }
@@ -231,20 +233,22 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawPrefere
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;Z)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
 	public final fun component4 ()Z
 	public final fun component5 ()Ljava/util/Map;
 	public final fun component6 ()Z
-	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;Z)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public final fun component7 ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
+	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getLastSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getPresets ()Ljava/util/Map;
+	public final fun getShapeTool ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
 	public final fun getTextDefaults ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
 	public fun hashCode ()I
 	public final fun isShapeRecognitionEnabled ()Z
@@ -300,6 +304,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getSelectionManager ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;
 	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun getShapeInserter ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeInserter;
 	public final fun getShapeSnapper ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeSnapper;
 	public final fun getSnapManager ()Lio/github/valerioisufi/drawview/canvas/controller/SnapManager;
 	public final fun getTextAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;
@@ -580,11 +585,116 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SelectionMa
 	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
 }
 
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeDraft {
+	public static final field $stable I
+	public fun <init> (ILio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/shape/ShapeBox;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FFFZZLio/github/valerioisufi/drawview/model/geometry/Point;Ljava/util/List;)V
+	public final fun getAnchor ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getAnchors ()Ljava/util/List;
+	public final fun getAngleDegrees ()F
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/shape/ShapeBox;
+	public final fun getEnd ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getHeightMm ()F
+	public final fun getPageIndex ()I
+	public final fun getStart ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getValue ()Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public final fun getWidthMm ()F
+	public final fun isAngleSnapped ()Z
+	public final fun isRegular ()Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeInserter {
+	public static final field $stable I
+	public final fun getDraft ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeDraft;
+	public final fun getStyle ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;
+	public final fun insertAt (ILio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public final fun insertInView ()Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public final fun updateStyle (Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;)V
+}
+
 public final class io/github/valerioisufi/drawview/canvas/controller/ShapeSnapper {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun isEnabled ()Z
 	public final fun updateEnabled (Z)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;IFLjava/lang/String;Ljava/lang/Integer;ILjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;IFLjava/lang/String;Ljava/lang/Integer;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/Integer;
+	public final fun component6 ()I
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;IFLjava/lang/String;Ljava/lang/Integer;ILjava/lang/String;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;Ljava/lang/String;IFLjava/lang/String;Ljava/lang/Integer;ILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDash ()Ljava/lang/String;
+	public final fun getFill ()Ljava/lang/Integer;
+	public final fun getHead ()Ljava/lang/String;
+	public final fun getHeads ()I
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getStroke ()I
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun toStyle ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle$Companion;
+	public static final field DEFAULT_STROKE I
+	public static final field DEFAULT_WIDTH_MM F
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;ILio/github/valerioisufi/drawview/model/shape/ShapeHead;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;ILio/github/valerioisufi/drawview/model/shape/ShapeHead;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public final fun component5 ()Ljava/lang/Integer;
+	public final fun component6 ()I
+	public final fun component7 ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;ILio/github/valerioisufi/drawview/model/shape/ShapeHead;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;ILio/github/valerioisufi/drawview/model/shape/ShapeHead;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;
+	public final fun element ()Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDash ()Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public final fun getFill ()Ljava/lang/Integer;
+	public final fun getHead ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun getHeads ()I
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public final fun getStroke ()I
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public final fun takingStyleOf (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeToolStyle$Companion {
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager {
@@ -1339,6 +1449,7 @@ public final class io/github/valerioisufi/drawview/canvas/tool/Tool : java/lang/
 	public static final field INK_PEN Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public static final field LAZO Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public static final field PAN Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field SHAPES Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public static final field TEXT Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public static final field TEXT_MARKUP Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;

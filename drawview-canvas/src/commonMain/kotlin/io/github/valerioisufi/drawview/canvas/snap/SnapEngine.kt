@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.snap
 
+import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.abs
 import kotlin.math.max
@@ -63,6 +64,21 @@ internal object SnapEngine {
             if (!onRow) y?.line?.let { add(SnapGuide(vertical = false, it.position, min(it.from, moved.left), max(it.to, moved.right))) }
         }
         return Snapped(dx, dy, guides)
+    }
+
+    /**
+     * Aligns [point] (a corner being dragged) with [targets]: its x with a vertical line, its y with
+     * a horizontal one, each when within [tolerance].
+     */
+    fun snapPoint(point: Point, targets: SnapTargets, tolerance: Float): Snapped {
+        val x = nearest(listOf(point.x), targets.xs, tolerance)
+        val y = nearest(listOf(point.y), targets.ys, tolerance)
+        val moved = Point(point.x + (x?.delta ?: 0f), point.y + (y?.delta ?: 0f))
+        val guides = buildList {
+            x?.line?.let { add(SnapGuide(vertical = true, it.position, min(it.from, moved.y), max(it.to, moved.y))) }
+            y?.line?.let { add(SnapGuide(vertical = false, it.position, min(it.from, moved.x), max(it.to, moved.x))) }
+        }
+        return Snapped(x?.delta ?: 0f, y?.delta ?: 0f, guides)
     }
 
     /**

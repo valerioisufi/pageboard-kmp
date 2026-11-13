@@ -13,6 +13,10 @@ import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.shape.ShapeBox
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
 
 /**
  * Snapping of the boxes being moved, resized or created: what they can be aligned with on their
@@ -53,6 +57,51 @@ public class SnapManager(private val controller: DrawViewController) {
             ?: return Point.Zero
         return Point(snapped.dx, snapped.dy)
     }
+
+    /**
+     * Where [point] (page millimeters of the page [pageIndex], a corner being dragged) goes to be
+     * aligned with the elements of its page except [moved]; [point] itself when snapping is off or
+     * the gesture is [free].
+     */
+    internal fun snapPoint(pageIndex: Int, point: Point, moved: Collection<DrawElement>, free: Boolean = false): Point {
+        val snapped = snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapPoint(point, targets, tolerance) } ?: return point
+        return Point(point.x + snapped.dx, point.y + snapped.dy)
+    }
+
+    /**
+     * The anchors of the shapes of the page [pageIndex] (their corners, the middles of their sides,
+     * their centers, see [ShapeGeometry.anchors]) within [reach] millimeters of [point], but the
+     * ones of [except]; nearest first.
+     */
+    internal fun anchorsNear(pageIndex: Int, point: Point, reach: Float, except: String? = null): List<Point> {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return emptyList()
+        val anchors = ArrayList<Point>()
+        for (element in page.customElements) {
+            if (element.id == except || element.type != ShapeElementType.id) continue
+            if (controller.hiddenElements.isHidden(element.id)) continue
+            if (!element.getRotatedBounds().inflate(reach).let { point.x in it.left..it.right && point.y in it.top..it.bottom }) continue
+            val value = controller.engines.elements.valueOf(element) as? ShapeElement ?: continue
+            val box = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
+            for (anchor in ShapeGeometry.anchors(value, element.width, element.height)) {
+                val onPage = box.toPage(anchor)
+                if ((onPage - point).distance <= reach) anchors += onPage
+            }
+        }
+        return anchors.sortedBy { (it - point).distance }
+    }
+
+    /**
+     * The anchor of a shape of the page [pageIndex] [point] snaps to (within a few dp on the
+     * screen), or `null`; none when snapping is off or the gesture is [free].
+     */
+    internal fun anchorFor(pageIndex: Int, point: Point, except: String? = null, free: Boolean = false): Point? {
+        if (!isEnabled || free) return null
+        return anchorsNear(pageIndex, point, toMm(pageIndex, ANCHOR_DP), except).firstOrNull()
+    }
+
+    /** [dp] on the screen in millimeters of the page [pageIndex]. */
+    internal fun toMm(pageIndex: Int, dp: Float): Float =
+        dp * controller.viewport.density / controller.viewport.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
 
     /**
      * How much the vertical edge at [x] (a side of a box from [top] to [bottom], being dragged)
@@ -111,5 +160,8 @@ public class SnapManager(private val controller: DrawViewController) {
     private companion object {
         /** How near a line is near enough to snap to it, on the screen. */
         const val TOLERANCE_DP = 6f
+
+        /** How near an anchor of a shape is near enough for the end of a line to snap to it, on the screen. */
+        const val ANCHOR_DP = 12f
     }
 }

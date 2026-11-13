@@ -7,6 +7,9 @@ public enum class Tool {
     INK_PEN,
     INK_HIGHLIGHTER,
 
+    /** Draws lines, arrows and shapes of a box by a drag (see `ShapeInserter`). */
+    SHAPES,
+
     /** Highlights, underlines or strikes out the text of the PDFs. */
     TEXT_MARKUP,
     ERASER,

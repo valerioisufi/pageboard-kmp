@@ -43,7 +43,9 @@ public data class DrawPreferences(
     val isSnapEnabled: Boolean = true,
     val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets(),
     /** Whether a stroke held still at its end becomes its shape (see `ShapeSnapper`). */
-    val isShapeRecognitionEnabled: Boolean = true
+    val isShapeRecognitionEnabled: Boolean = true,
+    /** What the shapes tool draws (see `ShapeInserter`). */
+    val shapeTool: ShapeToolPreferences = ShapeToolPreferences()
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
     public fun encode(): String = json.encodeToString(serializer(), this)

@@ -37,6 +37,7 @@ import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
@@ -128,6 +129,9 @@ internal class CanvasGestureHandler(
 
         /** Dragging an end of the selected text of a PDF. */
         TEXT_HANDLE,
+
+        /** Drawing a shape with the shapes tool (see `ShapeInserter`). */
+        SHAPE,
         IGNORED
     }
 
@@ -166,6 +170,13 @@ internal class CanvasGestureHandler(
 
     /** ⌥ / Alt held: the gesture moves and places freely, without snapping. */
     private var freeGesture = false
+
+    /** The keys held for a shape being drawn: Shift forces its constraints, Ctrl / ⌘ makes it free. */
+    private var shiftHeld = false
+    private var primaryHeld = false
+
+    /** A second finger held while a finger draws a shape: it forces its constraints, as Shift. */
+    private var shapeForcedByFinger = false
 
     /** Where the box of the text being written was when the gesture started moving it, and the move so far (page mm). */
     /** The corner of the text being written when its drag started, and the drag so far, in the world (its page may change). */
@@ -262,6 +273,8 @@ internal class CanvasGestureHandler(
         val changes = event.changes
         changes.firstOrNull()?.let { lastEventTime = it.uptimeMillis }
         freeGesture = event.keyboardModifiers.isAltPressed
+        shiftHeld = event.keyboardModifiers.isShiftPressed
+        primaryHeld = event.keyboardModifiers.isCtrlPressed || event.keyboardModifiers.isMetaPressed
 
         when (event.type) {
             PointerEventType.Scroll -> {
@@ -311,6 +324,13 @@ internal class CanvasGestureHandler(
             // The stroke shows where the ink lands
             live.setInkCursor(null)
             onFirstDown(pressed[0], event)
+            return
+        }
+
+        if (mode == Mode.SHAPE && activeType == PointerType.Touch) shapeForcedByFinger = pressed.size >= 2
+        if (anyDown && pressed.size >= 2 && mode == Mode.SHAPE && activeType != PointerType.Mouse) {
+            // A finger held while a finger draws forces the shape; a palm while a pen draws is ignored
+            changes.filter { it.id != activePointer }.forEach { it.consume() }
             return
         }
 
@@ -481,6 +501,22 @@ internal class CanvasGestureHandler(
             return
         }
 
+        if (tool == Tool.SHAPES) {
+            val pageIndex = controller.viewport.findPageIndexAtScreen(position)
+            val at = pageIndex?.let { controller.viewport.screenToPageMm(it, position) }
+            if (pageIndex == null || at == null || controller.session.isReadOnly) {
+                // Outside of any page: the gesture pans the canvas
+                startPan()
+                longPressCandidate = !isStylus
+                return
+            }
+            mode = Mode.SHAPE
+            inkPageIndex = pageIndex
+            shapeForcedByFinger = false
+            controller.shapeInserter.begin(pageIndex, Point(at.x, at.y), free = primaryHeld)
+            return
+        }
+
         if (tool == Tool.TEXT) {
             mode = Mode.TEXT_TAP
             longPressCandidate = !isStylus
@@ -572,6 +608,7 @@ internal class CanvasGestureHandler(
                 controller.selectionManager.applyTransformation()
             }
             Mode.TEXT_BOX -> live.textBoxDraft = null
+            Mode.SHAPE -> controller.shapeInserter.cancel()
             Mode.PAGE_REORDER -> return
             else -> {}
         }
@@ -673,6 +710,15 @@ internal class CanvasGestureHandler(
             }
 
             Mode.TEXT_BOX -> live.textBoxDraft = boxBetween(downPosition, position)
+
+            Mode.SHAPE -> {
+                if (movedBeyondSlop) {
+                    controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
+                        controller.shapeInserter.update(Point(it.x, it.y), forced = shiftHeld || shapeForcedByFinger, fromCenter = freeGesture, free = primaryHeld)
+                    }
+                    updateAutoScroll(position)
+                }
+            }
 
             Mode.PLACE_ITEM -> {
                 if (movedBeyondSlop) controller.placementManager.moveItem(placementItem, position, placementGrab)
@@ -894,6 +940,17 @@ internal class CanvasGestureHandler(
             Mode.TEXT_BOX -> {
                 live.textBoxDraft = null
                 onTextBoxDrawn(boxBetween(downPosition, position))
+            }
+
+            Mode.SHAPE -> {
+                val inserter = controller.shapeInserter
+                if (wasTap) {
+                    inserter.cancel()
+                    controller.viewport.screenToPageMm(inkPageIndex, downPosition)?.let { inserter.insertAt(inkPageIndex, Point(it.x, it.y)) }
+                } else {
+                    inserter.commit()
+                }
+                shapeForcedByFinger = false
             }
 
             Mode.PLACE_TAP -> {
