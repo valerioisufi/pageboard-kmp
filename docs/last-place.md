@@ -40,8 +40,8 @@ Variations).
    the window, the same zoom.
 2. **A place asked wins**: a search result, a lecture note, a proposal of an agent opening the
    document on a page go there, not to the last place.
-3. **The place survives a killed process**: it is kept while the user moves, not only when the
-   document is closed.
+3. **The place survives a killed process**: it is written when the application goes to the
+   background (the system kills a process only there), not only when the document is closed.
 4. **Pages changed meanwhile**: the place is kept by the id of the page, so pages added or moved
    before it (here or by another device) do not move it; a page deleted falls back to the page at
    the same number, clamped to the last page.
@@ -95,9 +95,9 @@ public data class DocumentPlace(
 
 * In `load`, after the controller is made and before `then`: the place read from the preferences,
   given to `viewport.showPlace`. `then` runs after, so a jump wins (requirement 2).
-* While the editor is open: `snapshotFlow { camera.moveCount }` debounced (1 s) writes the place
-  when it changed; at `closeSession` the place is written once more (in the persistence scope, so
-  it is written while the editor goes).
+* When the screen of the editor stops (the application in the background) or goes, as for the
+  text being written (`EditorSession.saveWriting`), the place is written; at `closeSession` it is
+  written with the changes of the document, and on the desktop exit by `flushAll`.
 * Only in the `DocumentEditorViewModel` given a `PreferenceStore`; without one, nothing changes.
 
 ## Plan
@@ -105,7 +105,7 @@ public data class DocumentPlace(
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `DocumentPlace` with its format and tests (round trip, versions and values not understood, clamps); `Viewport.currentPlace` and `showPlace`, the initial anchor with a scale; tests in `drawview-canvas` (place restored before and after the layout, page moved, page deleted, another window size, a jump after the place winning); ABI of `drawview-canvas` recorded again on purpose | Done |
-| 2 | `DocumentEditorViewModel` reads the place before `then` and writes it while the camera settles and at close; tests in `drawview-session` with a `PreferenceStore` in memory (reopen at the place, a `then` jump winning, a value not understood); the desktop application on a scratch directory; the checks of the phase | Proposed |
+| 2 | `DocumentEditorViewModel` reads the place before `then` and writes it while the camera settles and at close; tests in `drawview-session` with a `PreferenceStore` in memory (reopen at the place, a `then` jump winning, a value not understood); the desktop application on a scratch directory; the checks of the phase | Done |
 
 No screenshot should change (`verifyRoborazziJvm` of ui, explorer).
 
@@ -133,6 +133,39 @@ No screenshot should change (`verifyRoborazziJvm` of ui, explorer).
   `Viewport.currentPlace` and `showPlace` added, nothing removed.
 * Nothing stored or sent changed yet: the place is kept by phase 2.
 
+### Phase 2 results
+
+* `DocumentEditorViewModel.load` reads `drawview.place.<documentId>` with the preferences of the
+  editor, before the editor is made, and gives the place to `viewport.showPlace` once the editor
+  is made: `then` runs after, so a place asked by whoever opens the document wins. A text not
+  understood is ignored (`DocumentPlace.decode` gives `null`): the document opens at its top.
+* `EditorSession` keeps the place, given the `PreferenceStore` of the view model (none: nothing
+  kept, as before):
+  * `notePlace()` notes the place on the main thread; `savePlace()` notes it and writes it in the
+    persistence scope; the write is skipped when the text is the one kept already (read at the
+    opening or written last), under a mutex.
+  * `closeSession()` notes the place; `flush()` writes it after the changes of the document (which
+    matter more, and keep their timing), before `store.flush()`. So the desktop exit
+    (`saveWriting` then `flushAll`) keeps it too.
+  * `saveWriting()` (the screen stopped, the application in the background, the editor going)
+    saves the place too, so a process killed in the background keeps it. Nothing is written while
+    the camera moves (decision 3).
+* Tests: `LastPlaceTest` (`drawview-session`, 5, each "process" a store of its own on the same
+  storage: a document closed opens again on its page at its zoom; the place written when the
+  screen stops, nothing closed or flushed, and read by another process; a jump asked at the opening wins;
+  a text not understood opens the top; each document has its own place). The tests of the text
+  being written still pass.
+* Checks: `jvmTest` of every module (the whole suite, `--rerun-tasks`), the Android and iOS
+  compilations, the two Android applications, the screenshots of ui unchanged. `checkKotlinAbi`
+  fails on `drawview-session` (the order of `flush` and `flushAll` in the klib dump) and
+  `drawview-ui` (string resources of another change), as on main at 53dc7f0a: no change of this
+  work. The desktop application run on a scratch directory (`-Ddrawview.dataDir`): it starts,
+  makes its database, no error; its window was not driven by hand, the tests going through the
+  same calls. Trying it on the user's devices (close a document on a page, reopen it) is left to
+  the user.
+* Nothing sent changed; the Room schema did not change (a row of the `preferences` table per
+  document opened). The public API of `drawview-session` did not change.
+
 ## Decisions
 
 Proposed on 2026-11-13, each one revertible:
@@ -141,8 +174,12 @@ Proposed on 2026-11-13, each one revertible:
    The other choice, the page only at the zoom of the opening, is one line to change.
 2. **Kept in the local preferences**, per device, one key per document: no Room migration, no
    protocol change. Two devices of the user each remember their own place.
-3. **Written while moving (debounced 1 s) and at close**, so a process killed in the background
-   keeps it.
+3. **Written when the screen stops or goes, at close and at exit**, so a process killed in the
+   background keeps it. A crash of the application loses the place since it went to the
+   background last. A first version also wrote it 1 s after the camera rested
+   (`snapshotFlow { camera.moveCount }` in the scope of the view model): with it the tests of
+   `drawview-agent-ui`, whose editors are never closed, failed under the load of the whole suite
+   (Compose laid out on two threads), and passed without it; it was dropped.
 4. **By the id of the page**, with its number as fallback.
 5. **A jump asked at the opening wins** over the last place.
 

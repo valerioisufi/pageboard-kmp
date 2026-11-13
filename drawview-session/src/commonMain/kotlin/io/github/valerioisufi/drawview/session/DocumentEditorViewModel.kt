@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.valerioisufi.drawview.canvas.camera.DocumentPlace
 import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
@@ -15,6 +16,7 @@ import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
+import kotlin.concurrent.Volatile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +26,17 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * The editing session of an open document.
  */
 public class EditorSession internal constructor(
     public val documentId: String,
-    internal val documents: OpenDocuments
+    internal val documents: OpenDocuments,
+    /** Where the place the document is looked at is kept (see `docs/last-place.md`), if anywhere. */
+    private val preferences: PreferenceStore? = null
 ) {
     internal val store: DocumentStore get() = documents.store
 
@@ -48,18 +54,60 @@ public class EditorSession internal constructor(
      */
     internal val persistenceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val placeLock = Mutex()
+
+    // The place seen last (on the main thread), and the one in the preferences, as text
+    @Volatile private var placeSeen: String? = null
+    @Volatile private var placeKept: String? = null
+
     /**
      * Saves the text being written in the document, its box staying open (see
-     * `TextEditorManager.saveWriting`), so that it survives the process; on the main thread.
+     * `TextEditorManager.saveWriting`), and the place the document is looked at, so that they
+     * survive the process; on the main thread.
      */
     public fun saveWriting() {
         controller?.textEditorManager?.saveWriting()
+        savePlace()
+    }
+
+    /** The place [text] read from the preferences when the document was opened. */
+    internal fun placeRead(text: String) {
+        placeSeen = text
+        placeKept = text
+    }
+
+    /**
+     * Notes the place the document is looked at, on the main thread: written by [flush] (see
+     * [savePlace] to write it at once).
+     */
+    internal fun notePlace() {
+        controller?.viewport?.currentPlace()?.let { placeSeen = it.encode() }
+    }
+
+    /** Notes the place the document is looked at and writes it, on the main thread. */
+    internal fun savePlace() {
+        if (preferences == null) return
+        notePlace()
+        persistenceScope.launch { writePlace() }
+    }
+
+    /** Writes the place noted last, unless it is the one kept already. */
+    private suspend fun writePlace() {
+        val store = preferences ?: return
+        placeLock.withLock {
+            val text = placeSeen ?: return
+            if (text == placeKept) return
+            store.setPreference(placeKey(documentId), text)
+            placeKept = text
+        }
     }
 
     /** Writes every pending change of the session. */
     public suspend fun flush() {
         controller?.flushPersistence()
         document?.flush()
+        // After the changes of the document, which matter more
+        writePlace()
         store.flush()
     }
 }
@@ -102,7 +150,7 @@ public class DocumentEditorViewModel(
             return
         }
         closeSession()
-        val newSession = EditorSession(documentId, documents)
+        val newSession = EditorSession(documentId, documents, preferences)
         session = newSession
         DrawViewSessions.register(newSession)
         viewModelScope.launch {
@@ -121,7 +169,7 @@ public class DocumentEditorViewModel(
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
-            val newSession = EditorSession(document.id, documents)
+            val newSession = EditorSession(document.id, documents, preferences)
             session = newSession
             DrawViewSessions.register(newSession)
             load(newSession)
@@ -149,6 +197,9 @@ public class DocumentEditorViewModel(
         }
         store.updateLastOpened(session.documentId)
         val kept = preferences?.preference(EDITOR_PREFERENCES)?.let(DrawPreferences::decode)
+        // Where the document was left on this device (see docs/last-place.md)
+        val placeText = preferences?.preference(placeKey(session.documentId))
+        val place = placeText?.let(DocumentPlace::decode)
         if (this.session !== session) return
         val controller = DrawViewController(
             document = open.document,
@@ -162,6 +213,8 @@ public class DocumentEditorViewModel(
             kept?.let(::applyPreferences)
         }
         session.controller = controller
+        // Shown at the first layout; a place asked by whoever opened the document (`then`) comes after and wins
+        if (place != null && placeText != null && controller.viewport.showPlace(place)) session.placeRead(placeText)
         // The preferences of the user kept as they change
         preferences?.let { store ->
             viewModelScope.launch {
@@ -179,6 +232,8 @@ public class DocumentEditorViewModel(
         val current = session ?: return
         // The box being written closed and saved, before the editor goes
         current.controller?.textEditorManager?.finishEditing()
+        // The place it was left at, written with its changes
+        current.notePlace()
         session = null
         DrawViewSessions.close(current)
     }
@@ -251,3 +306,6 @@ public object DrawViewSessions {
 
 /** The key of the preferences of the editor in a [PreferenceStore]. */
 private const val EDITOR_PREFERENCES = "drawview.editor"
+
+/** The key of the place the document [documentId] is looked at, in a [PreferenceStore]. */
+internal fun placeKey(documentId: String): String = "drawview.place.$documentId"
