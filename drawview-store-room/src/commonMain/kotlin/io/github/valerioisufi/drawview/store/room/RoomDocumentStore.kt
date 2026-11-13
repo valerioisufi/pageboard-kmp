@@ -41,7 +41,7 @@ import kotlinx.coroutines.withContext
  * [DocumentStore] backed by the Room database (Android, desktop and iOS).
  */
 public class RoomDocumentStore(
-    public val database: DrawDatabase,
+    internal val database: DrawDatabase,
     override val strokeModeller: StrokeModeller = InkStrokeModeller
 ) : DocumentStore, PreferenceStore {
     internal val repository = DrawDocumentRepository(database, strokeModeller)

@@ -193,8 +193,8 @@ class LibrarySearchStateTest {
     @Test
     fun theTrashIsSearchedByName() = runTest {
         val viewModel = library()
-        viewModel.deleteFile(viewModel.named("Limit cycles"))
-        viewModel.deleteFile(viewModel.named("Physics"))
+        viewModel.deleteFiles(listOf(viewModel.named("Limit cycles")))
+        viewModel.deleteFiles(listOf(viewModel.named("Physics")))
 
         viewModel.showSection(Section.TRASH)
         assertEquals(2, viewModel.shownTrash.size)
@@ -264,7 +264,7 @@ class LibrarySearchStateTest {
 
         viewModel.showFolder(null)
         viewModel.search("o")
-        viewModel.moveFile(motion, null)
+        viewModel.moveFiles(listOf(motion), null)
         viewModel.search("")
         assertEquals(listOf("Analysis", "Physics", "Limit cycles", "Motion"), viewModel.shownNames)
     }

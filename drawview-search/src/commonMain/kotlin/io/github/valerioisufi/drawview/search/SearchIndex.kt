@@ -445,24 +445,6 @@ public class SearchIndex(
             .take(limit)
     }
 
-    /** All chunks currently in the active index. */
-    public fun allChunks(): List<IndexedChunk> = syncLock(lock) {
-        checkNotClosed()
-        val list = ArrayList<IndexedChunk>()
-        val sql = """
-            SELECT id, documentId, sourceId, kind, anchorType, pageId, pageNumber,
-                   leftMm, topMm, rightMm, bottomMm, lectureId, startMs, title, text, hash
-            FROM chunks
-            ORDER BY id ASC
-        """.trimIndent()
-        readConnection.prepare(sql).use { stmt ->
-            while (stmt.step()) {
-                list.add(readIndexedChunk(stmt))
-            }
-        }
-        list
-    }
-
     override fun close() {
         syncLock(lock) {
             if (closed) return

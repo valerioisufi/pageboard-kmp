@@ -194,9 +194,6 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
             emptyList()
         }
 
-    /** Whether a search, a filter or a section other than the folders changes what is shown. */
-    val isNarrowed: Boolean get() = isSearching || filter != LibraryFilter.All || section != Section.HOME
-
     /** The current folder with the folders under it, at any depth; `null` in the root. */
     private val folderTreeShown: Set<String>? by derivedStateOf {
         val root = currentFolderId ?: return@derivedStateOf null
@@ -363,11 +360,6 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** The identifier of the folder of the root holding the current one, `null` in the root. */
     val currentRootFolderId: String? get() = directoryIdSequence.firstOrNull()
-
-    /** The most recently opened documents. */
-    val recentFiles: List<FileItem> by derivedStateOf {
-        documents.sortedByDescending { it.lastOpenedAt }.take(RECENT_FILES_LIMIT).map { it.toFileItem() }
-    }
 
     /** The items selected, by their [FileItem.key]: what they are is read from the library. */
     private val selectedKeys = mutableStateListOf<String>()
@@ -588,10 +580,6 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         }
     }
 
-    fun deleteFile(file: FileItem) = deleteFiles(listOf(file))
-
-    fun moveFile(file: FileItem, targetFolderId: String?) = moveFiles(listOf(file), targetFolderId)
-
     /**
      * Whether [files] can be moved into [targetFolderId]: one of them at least is elsewhere (each
      * has its own folder, in a search or a section), and no folder would go into itself or into a
@@ -675,10 +663,6 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         selectedKeys.addAll(shownFiles.map { it.key })
     }
 
-    fun deleteSelected() = deleteFiles(selectedItems.toList())
-
-    fun moveSelected(targetFolderId: String?) = moveFiles(selectedItems.toList(), targetFolderId)
-
     /** Moves [files] (the selected ones, or one of a menu) to the trash, leaving the selection; told by [trashNotice]. */
     fun deleteFiles(files: List<FileItem>) {
         unselect(files)
@@ -733,7 +717,6 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     }
 
     private companion object {
-        const val RECENT_FILES_LIMIT = 10
 
         /** The notes of the section of the recent ones. */
         const val RECENT_SECTION_LIMIT = 30

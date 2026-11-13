@@ -143,7 +143,6 @@ public final class io/github/valerioisufi/drawview/model/DrawDocument {
 	public final fun getId ()Ljava/lang/String;
 	public final fun getLastOpenedAt ()Ljava/lang/Long;
 	public final fun getModifiedAt ()J
-	public final fun getName ()Ljava/lang/String;
 	public final fun getPages ()Ljava/util/List;
 	public final fun getRemovedPages ()Ljava/util/Map;
 	public final fun getResources ()Ljava/util/List;
@@ -168,7 +167,6 @@ public final class io/github/valerioisufi/drawview/model/DrawDocument {
 	public final fun setDefaultsVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public final fun setLastOpenedAt (Ljava/lang/Long;)V
 	public final fun setModifiedAt (J)V
-	public final fun setName (Ljava/lang/String;)V
 	public final fun setTitle (Ljava/lang/String;)V
 	public final fun setTitleVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
 }
@@ -849,12 +847,10 @@ public final class io/github/valerioisufi/drawview/model/StrokeEngineDelegate$De
 
 public final class io/github/valerioisufi/drawview/model/StrokeMesh {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/StrokeMesh$Companion;
-	public fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;)V
-	public synthetic fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> ([F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;)V
+	public synthetic fun <init> ([F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun computeBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getColor ()I
-	public final fun getId ()Ljava/lang/String;
 	public final fun getIndices ()[S
 	public final fun getInputToolType ()Lio/github/valerioisufi/drawview/model/InputToolType;
 	public final fun getOutline ()Lio/github/valerioisufi/drawview/model/StrokeOutline;
@@ -865,7 +861,6 @@ public final class io/github/valerioisufi/drawview/model/StrokeMesh {
 	public final fun getTool ()Lio/github/valerioisufi/drawview/model/StrokeTool;
 	public final fun getTriangleCount ()I
 	public final fun getVertexCount ()I
-	public fun hashCode ()I
 	public final fun isEmpty ()Z
 	public final fun transformed (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public final fun withPoints (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/StrokeMesh;

@@ -868,12 +868,6 @@ public class DrawDocument(
             markChanged()
         }
 
-    public var name: String
-        get() = title
-        set(value) {
-            title = value
-        }
-
     @Volatile public var modifiedAt: Long = modifiedAt
     public var lastOpenedAt: Long? = null
 

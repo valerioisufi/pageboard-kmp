@@ -475,9 +475,9 @@ private fun DrawScreenContent(
             val targetPage = pageIds?.firstOrNull()?.let { controller.document.pageById(it) } ?: controller.document.pages.getOrNull(targetIndex)
             PageTemplateConfigurator(
                 subtitle = if (pageIds != null) {
-                    pluralStringResource(Res.plurals.page_config_subtitle_pages, pageIds.size, pageIds.size, controller.document.name)
+                    pluralStringResource(Res.plurals.page_config_subtitle_pages, pageIds.size, pageIds.size, controller.document.title)
                 } else {
-                    stringResource(Res.string.page_config_subtitle_page, targetIndex + 1, controller.document.name)
+                    stringResource(Res.string.page_config_subtitle_page, targetIndex + 1, controller.document.title)
                 },
                 initialDimension = targetPage?.dimension ?: Dimension.A4(),
                 initialBackground = targetPage?.background ?: PageBackground.Solid(),
@@ -501,7 +501,7 @@ private fun DrawScreenContent(
             // The document as it changes, while the sheet is open
             document.observeChanges()
             PageTemplateConfigurator(
-                subtitle = stringResource(Res.string.page_config_subtitle_document, document.name),
+                subtitle = stringResource(Res.string.page_config_subtitle_document, document.title),
                 initialDimension = Dimension(document.defaultWidthMm.mm, document.defaultHeightMm.mm),
                 initialBackground = document.defaultBackground,
                 onApply = { newDimension, newBackground ->

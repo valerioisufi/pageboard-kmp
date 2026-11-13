@@ -259,7 +259,7 @@ class LibrarySearchNavigationTest {
 
     @Test
     fun theTrashShowsOnlyWhatItHolds() = library { viewModel ->
-        viewModel.deleteFile(viewModel.shownFiles.first { it.name == "Limit cycles" })
+        viewModel.deleteFiles(listOf(viewModel.shownFiles.first { it.name == "Limit cycles" }))
         viewModel.showSection(Section.TRASH)
         waitForIdle()
         search("xyz")

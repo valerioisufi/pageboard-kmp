@@ -78,7 +78,7 @@ internal fun DocumentInfoSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     // Renamed elsewhere (another device), as it changes
-    val title = document?.observe { name }?.value ?: stringResource(Res.string.common_state_loading)
+    val title = document?.observe { title }?.value ?: stringResource(Res.string.common_state_loading)
     val scope = rememberCoroutineScope()
     // The name being written (null: none) and why it is not taken
     var draft by remember { mutableStateOf<TextFieldValue?>(null) }

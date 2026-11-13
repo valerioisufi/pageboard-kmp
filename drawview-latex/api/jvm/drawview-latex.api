@@ -158,16 +158,6 @@ public final class io/github/valerioisufi/drawview/latex/TexOp$Translate : io/gi
 	public final fun getDy ()F
 }
 
-public final class io/nano/tex/Alignment {
-	public static final field $stable I
-	public static final field BOTTOM I
-	public static final field CENTER I
-	public static final field INSTANCE Lio/nano/tex/Alignment;
-	public static final field LEFT I
-	public static final field RIGHT I
-	public static final field TOP I
-}
-
 public final class io/nano/tex/Font {
 	public static final field $stable I
 	public static final field BOLD I

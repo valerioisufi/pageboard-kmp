@@ -200,8 +200,8 @@ class LibraryCommandsTest {
         val (commands, shown) = pair
         viewModel.createFile(FileType.FILE, "Note")
         viewModel.createFile(FileType.FOLDER, "Math")
-        viewModel.deleteFile(viewModel.item("Note"))
-        viewModel.deleteFile(viewModel.item("Math"))
+        viewModel.deleteFiles(listOf(viewModel.item("Note")))
+        viewModel.deleteFiles(listOf(viewModel.item("Math")))
         assertEquals(listOf("Math"), viewModel.trashNotice?.names, "the last one told")
         assertEquals(setOf("Note", "Math"), viewModel.trash.map { it.name }.toSet())
 
@@ -216,7 +216,7 @@ class LibraryCommandsTest {
         assertTrue(viewModel.trash.isEmpty())
 
         viewModel.showFolder(null)
-        viewModel.deleteFile(viewModel.item("Math"))
+        viewModel.deleteFiles(listOf(viewModel.item("Math")))
         commands.emptyTrash()
         assertEquals(LibraryDialog.EmptyTrash, shown.dialog)
         viewModel.emptyTrash()

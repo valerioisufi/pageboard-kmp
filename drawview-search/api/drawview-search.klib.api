@@ -379,7 +379,6 @@ final class io.github.valerioisufi.drawview.search/SearchIndex : kotlin/AutoClos
     final val revision // io.github.valerioisufi.drawview.search/SearchIndex.revision|{}revision[0]
         final fun <get-revision>(): kotlinx.coroutines.flow/StateFlow<kotlin/Long> // io.github.valerioisufi.drawview.search/SearchIndex.revision.<get-revision>|<get-revision>(){}[0]
 
-    final fun allChunks(): kotlin.collections/List<io.github.valerioisufi.drawview.search/IndexedChunk> // io.github.valerioisufi.drawview.search/SearchIndex.allChunks|allChunks(){}[0]
     final fun close() // io.github.valerioisufi.drawview.search/SearchIndex.close|close(){}[0]
     final fun completeRebuild() // io.github.valerioisufi.drawview.search/SearchIndex.completeRebuild|completeRebuild(){}[0]
     final fun documentVersions(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.search/SearchIndex.documentVersions|documentVersions(kotlin.String){}[0]

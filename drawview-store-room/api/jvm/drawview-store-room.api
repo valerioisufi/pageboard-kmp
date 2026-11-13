@@ -15,7 +15,6 @@ public final class io/github/valerioisufi/drawview/store/room/RoomDocumentStore 
 	public fun deleteDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getDatabase ()Lio/github/valerioisufi/drawview/store/room/db/DrawDatabase;
 	public fun getDocuments ()Lkotlinx/coroutines/flow/Flow;
 	public fun getFolders ()Lkotlinx/coroutines/flow/Flow;
 	public fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;

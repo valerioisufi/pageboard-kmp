@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.model
 
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
-import kotlin.random.Random
 
 /**
  * A renderable chunk of a stroke mesh whose vertices can be addressed with 16-bit indices
@@ -21,14 +20,13 @@ public class MeshPartition(
  * strokes), together with the inputs that generated it.
  *
  * Meshes with more than 65535 vertices are split in several [partitions]: [positions] and
- * [indices] always describe the first one.
+ * [indices] always describe the first one. A mesh is equal to itself only, as the stroke it draws.
  *
  * @property outline The shape of the stroke as closed polygons, from the same modeling as the
  * triangles: the strokes are drawn by filling it, antialiased. `null` when the modeller cannot
  * give it (the Kotlin one): the triangles are drawn instead.
  */
 public class StrokeMesh(
-    public val id: String = generateId(),
     public val positions: FloatArray,
     public val indices: ShortArray,
     public val color: Int,
@@ -113,35 +111,8 @@ public class StrokeMesh(
         )
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is StrokeMesh) return false
-
-        if (id != other.id) return false
-        if (!positions.contentEquals(other.positions)) return false
-        if (!indices.contentEquals(other.indices)) return false
-        if (color != other.color) return false
-        if (tool != other.tool) return false
-        if (size != other.size) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + positions.contentHashCode()
-        result = 31 * result + indices.contentHashCode()
-        result = 31 * result + color.hashCode()
-        result = 31 * result + tool.hashCode()
-        result = 31 * result + size.hashCode()
-        return result
-    }
-
     public companion object {
         private const val MAX_PARTITION_VERTICES = 65535
-
-        private fun generateId(): String =
-            "stroke_${Random.nextLong(100_000_000, 999_999_999)}"
 
         /**
          * Builds a [StrokeMesh] from a 32-bit indexed triangle list, splitting it into

@@ -101,7 +101,7 @@ fun SampleDocumentWindow(
             }
         }
         val session = editorViewModel.session
-        val title = session?.controller?.document?.observe { name }?.value
+        val title = session?.controller?.document?.observe { title }?.value
         LaunchedEffect(title) {
             title?.let(onTitleChange)
         }

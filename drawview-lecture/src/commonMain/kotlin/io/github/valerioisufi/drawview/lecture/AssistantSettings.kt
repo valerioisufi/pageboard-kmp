@@ -127,9 +127,6 @@ public data class AssistantSettings(
     /** Provider of the final review. */
     val reviewProvider: ModelProvider get() = task(LectureTask.FINAL_REVIEW).provider
 
-    /** Local model of the final review. */
-    val localModel: String get() = task(LectureTask.FINAL_REVIEW).local
-
     /** The local models of the requests made during the lecture (kept loaded until its end). */
     val liveLocalModels: Set<String>
         get() = listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { task(it) }

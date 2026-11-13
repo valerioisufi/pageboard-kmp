@@ -114,7 +114,7 @@ once under the load of the whole build, and passes alone.
 | 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, the unused table of the search index, catalog, unused dependencies/plugins/source sets, PDFium of every desktop in the released jar | done |
 | 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | done |
 | 5 | The directories of the data found by their paths | done |
-| 6 | Public API with no caller (part 1B of the audit), removed by the user's choice, with `updateKotlinAbi` | waits for the user |
+| 6 | Public API judged on its merit (the user asked for it whatever its callers): the leftovers removed, the rest kept | done |
 
 Each phase is one commit on `feat/cleanup`, after the checks of `CLAUDE.md` (`jvmTest
 checkKotlinAbi`, the Android/iOS compilations and the two apps, `verifyRoborazziJvm` when the UI
@@ -182,6 +182,41 @@ Checked again when removing them, they stay:
   provider of the cryptography at run time.
 * `compose.materialIconsExtended` in `drawview-ui` and `drawview-lecture-ui`: they draw `Undo`,
   `Redo`, `Code`, `Mic`.
+
+## The public API (phase 6)
+
+The user asked to judge each candidate on whether it makes sense as API, called or not.
+
+**Removed** (recorded with `updateKotlinAbi`):
+
+* `DrawDocument.name`: an alias of `title` kept from before; its callers read `title`.
+* `StrokeMesh.id`: a random id that no copy of the mesh kept (`withPoints`, `transformed`), and made
+  `equals` an identity anyway while `hashCode` hashed every vertex. A mesh is now equal to itself
+  only, as before, without the cost.
+* `io.nano.tex.Alignment` (JVM and iOS only): constants of MicroTeX nothing passes.
+* `AssistantSettings.localModel`: a getter named for every local model, giving the one of the final
+  review only; `task(LectureTask.FINAL_REVIEW).local` says it.
+* `SearchIndex.allChunks()`, `RoomDocumentStore.database` (now internal: the store is the API, not
+  its database).
+* `FileExplorerViewModel.isNarrowed`, `recentFiles` and the single-item doubles `deleteFile`,
+  `moveFile`, `deleteSelected`, `moveSelected` of `deleteFiles` and `moveFiles`.
+* Six public icons no screen draws (`File`, `Flag`, `History`, `Move`, `Outline`, `Settings`).
+* `PdfiumNative.nInit`/`nDestroy` and their JNI functions: the bridge initializes PDFium itself.
+* `Font.styledFace` (private, never read).
+
+**Kept**, though nothing calls them today:
+
+* The units and shapes of a general type: `Dimension.A3`/`A5`, `Matrix2D.preTranslate`/`preScale`/
+  `mapRadius`, `PdfSize.aspectRatio`, the design `seed` color.
+* The counterparts and lifecycles: `DesktopWindowManager.openLibrary` (of `closeLibrary`),
+  `LaTeX.release`, `LaTeX.setDebug`, the setters of `TeXRender`, `Graphics2D.lockColor`/
+  `unlockColor` (a formula drawn in one color). The JNI functions of MicroTeX on Android are
+  registered by a table: a Kotlin method removed would fail it.
+* The extension points: `ElementRenderers.get`, `KeyValueStorage`, `InMemorySharedDocuments`,
+  `RelayConfig.NONE`, `ReferenceWindow` (the window sizes of the screenshot tests of every module).
+* What the tests use to test (`TileCache.contains`, `SyncCodec.decodeOrThrow`,
+  `InkStrokeEngine.addPoint`…), and the C functions of the native bridges.
+* `SharingState.closed` and `InvitationGrant.createdAt`: stored.
 
 ## Left for later
 

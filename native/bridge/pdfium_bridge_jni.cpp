@@ -6,14 +6,6 @@
 
 extern "C" {
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nInit(JNIEnv*, jclass) {
-    pdfium_init();
-}
-
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nDestroy(JNIEnv*, jclass) {
-    pdfium_destroy();
-}
-
 JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nOpenDocument(
     JNIEnv* env, jclass, jstring jpath, jstring jpass) {
     const char* path = env->GetStringUTFChars(jpath, nullptr);

@@ -516,8 +516,6 @@ final class io.github.valerioisufi.drawview.lecture/AssistantSettings { // io.gi
         final fun <get-generateHere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/AssistantSettings.generateHere.<get-generateHere>|<get-generateHere>(){}[0]
     final val liveLocalModels // io.github.valerioisufi.drawview.lecture/AssistantSettings.liveLocalModels|{}liveLocalModels[0]
         final fun <get-liveLocalModels>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/AssistantSettings.liveLocalModels.<get-liveLocalModels>|<get-liveLocalModels>(){}[0]
-    final val localModel // io.github.valerioisufi.drawview.lecture/AssistantSettings.localModel|{}localModel[0]
-        final fun <get-localModel>(): kotlin/String // io.github.valerioisufi.drawview.lecture/AssistantSettings.localModel.<get-localModel>|<get-localModel>(){}[0]
     final val localUrl // io.github.valerioisufi.drawview.lecture/AssistantSettings.localUrl|{}localUrl[0]
         final fun <get-localUrl>(): kotlin/String // io.github.valerioisufi.drawview.lecture/AssistantSettings.localUrl.<get-localUrl>|<get-localUrl>(){}[0]
     final val notesLanguage // io.github.valerioisufi.drawview.lecture/AssistantSettings.notesLanguage|{}notesLanguage[0]

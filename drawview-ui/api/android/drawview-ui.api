@@ -1029,10 +1029,8 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getExternalLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEye ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEyeOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getFile ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFilePlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFileText ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getFlag ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFolder ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFolderInput ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFolderOpen ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -1040,7 +1038,6 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getGlobe ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getGrid ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getHash ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getHistory ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getHome ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getImage ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getInfo ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -1057,8 +1054,6 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getMonitor ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getMoreHorizontal ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getMoreVertical ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getMove ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getOutline ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getPageGrid ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getPan ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getPause ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -1072,7 +1067,6 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getRotateCcw ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getRotateCw ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getSearch ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getSettings ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getShare ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getShield ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getSliders ()Landroidx/compose/ui/graphics/vector/ImageVector;

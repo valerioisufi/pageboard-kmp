@@ -183,7 +183,7 @@ internal fun PageGridOverlay(
                         maxLines = 1
                     )
                     Text(
-                        text = document.name + " · " + pluralStringResource(Res.plurals.editor_pages_count, document.pages.size, document.pages.size),
+                        text = document.title + " · " + pluralStringResource(Res.plurals.editor_pages_count, document.pages.size, document.pages.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

@@ -301,7 +301,7 @@ fun PencilNotesDocumentWindow(
         val session = editorViewModel.session
         // The title of the window, renamed with the document (from its title, the library or
         // another device)
-        val title = session?.controller?.document?.observe { name }?.value
+        val title = session?.controller?.document?.observe { title }?.value
         LaunchedEffect(title) {
             title?.let(onTitleChange)
         }

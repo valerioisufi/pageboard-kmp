@@ -20,8 +20,6 @@ final class io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl : io
 final class io.github.valerioisufi.drawview.store.room/RoomDocumentStore : io.github.valerioisufi.drawview.store/DocumentStore, io.github.valerioisufi.drawview.store/PreferenceStore { // io.github.valerioisufi.drawview.store.room/RoomDocumentStore|null[0]
     constructor <init>(io.github.valerioisufi.drawview.store.room.db/DrawDatabase, io.github.valerioisufi.drawview.model/StrokeModeller = ...) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.drawview.store.room.db.DrawDatabase;io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
 
-    final val database // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.database|{}database[0]
-        final fun <get-database>(): io.github.valerioisufi.drawview.store.room.db/DrawDatabase // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.database.<get-database>|<get-database>(){}[0]
     final val documents // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents|{}documents[0]
         final fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/DocumentSummary>> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents.<get-documents>|<get-documents>(){}[0]
     final val folders // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.folders|{}folders[0]

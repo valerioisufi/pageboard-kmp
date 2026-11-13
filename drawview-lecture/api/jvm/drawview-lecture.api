@@ -31,7 +31,6 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun getChunkSeconds ()I
 	public final fun getGenerateHere ()Z
 	public final fun getLiveLocalModels ()Ljava/util/Set;
-	public final fun getLocalModel ()Ljava/lang/String;
 	public final fun getLocalUrl ()Ljava/lang/String;
 	public final fun getNotesLanguage ()Ljava/lang/String;
 	public final fun getNotesSeconds ()I

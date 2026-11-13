@@ -154,7 +154,7 @@ class SearchScreenshotTest {
                     height = 280,
                     dark = dark
                 ) {
-                    SearchResultCardPreview(title = doc.name, matches = matches)
+                    SearchResultCardPreview(title = doc.title, matches = matches)
                 }
             }
         }

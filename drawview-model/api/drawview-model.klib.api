@@ -2848,9 +2848,6 @@ final class io.github.valerioisufi.drawview.model/DrawDocument { // io.github.va
     final var modifiedAt // io.github.valerioisufi.drawview.model/DrawDocument.modifiedAt|{}modifiedAt[0]
         final fun <get-modifiedAt>(): kotlin/Long // io.github.valerioisufi.drawview.model/DrawDocument.modifiedAt.<get-modifiedAt>|<get-modifiedAt>(){}[0]
         final fun <set-modifiedAt>(kotlin/Long) // io.github.valerioisufi.drawview.model/DrawDocument.modifiedAt.<set-modifiedAt>|<set-modifiedAt>(kotlin.Long){}[0]
-    final var name // io.github.valerioisufi.drawview.model/DrawDocument.name|{}name[0]
-        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.model/DrawDocument.name.<get-name>|<get-name>(){}[0]
-        final fun <set-name>(kotlin/String) // io.github.valerioisufi.drawview.model/DrawDocument.name.<set-name>|<set-name>(kotlin.String){}[0]
     final var pages // io.github.valerioisufi.drawview.model/DrawDocument.pages|{}pages[0]
         final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage> // io.github.valerioisufi.drawview.model/DrawDocument.pages.<get-pages>|<get-pages>(){}[0]
     final var resources // io.github.valerioisufi.drawview.model/DrawDocument.resources|{}resources[0]
@@ -3454,12 +3451,10 @@ final class io.github.valerioisufi.drawview.model/Stamp : kotlin/Comparable<io.g
 }
 
 final class io.github.valerioisufi.drawview.model/StrokeMesh { // io.github.valerioisufi.drawview.model/StrokeMesh|null[0]
-    constructor <init>(kotlin/String = ..., kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/MeshPartition> = ..., io.github.valerioisufi.drawview.model/InputToolType = ..., io.github.valerioisufi.drawview.model/StrokeOutline? = ...) // io.github.valerioisufi.drawview.model/StrokeMesh.<init>|<init>(kotlin.String;kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.drawview.model.MeshPartition>;io.github.valerioisufi.drawview.model.InputToolType;io.github.valerioisufi.drawview.model.StrokeOutline?){}[0]
+    constructor <init>(kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/MeshPartition> = ..., io.github.valerioisufi.drawview.model/InputToolType = ..., io.github.valerioisufi.drawview.model/StrokeOutline? = ...) // io.github.valerioisufi.drawview.model/StrokeMesh.<init>|<init>(kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.drawview.model.MeshPartition>;io.github.valerioisufi.drawview.model.InputToolType;io.github.valerioisufi.drawview.model.StrokeOutline?){}[0]
 
     final val color // io.github.valerioisufi.drawview.model/StrokeMesh.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.model/StrokeMesh.color.<get-color>|<get-color>(){}[0]
-    final val id // io.github.valerioisufi.drawview.model/StrokeMesh.id|{}id[0]
-        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.model/StrokeMesh.id.<get-id>|<get-id>(){}[0]
     final val indices // io.github.valerioisufi.drawview.model/StrokeMesh.indices|{}indices[0]
         final fun <get-indices>(): kotlin/ShortArray // io.github.valerioisufi.drawview.model/StrokeMesh.indices.<get-indices>|<get-indices>(){}[0]
     final val inputToolType // io.github.valerioisufi.drawview.model/StrokeMesh.inputToolType|{}inputToolType[0]
@@ -3484,8 +3479,6 @@ final class io.github.valerioisufi.drawview.model/StrokeMesh { // io.github.vale
         final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.drawview.model/StrokeMesh.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
 
     final fun computeBounds(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/StrokeMesh.computeBounds|computeBounds(){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model/StrokeMesh.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model/StrokeMesh.hashCode|hashCode(){}[0]
     final fun transformed(io.github.valerioisufi.drawview.model.geometry/Matrix2D): io.github.valerioisufi.drawview.model/StrokeMesh // io.github.valerioisufi.drawview.model/StrokeMesh.transformed|transformed(io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
     final fun withPoints(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>): io.github.valerioisufi.drawview.model/StrokeMesh // io.github.valerioisufi.drawview.model/StrokeMesh.withPoints|withPoints(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>){}[0]
 

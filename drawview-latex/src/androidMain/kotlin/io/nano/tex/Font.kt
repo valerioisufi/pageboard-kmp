@@ -15,9 +15,7 @@ public class Font private constructor(
     public val typeface: Typeface,
     public val size: Float,
     public val style: Int = 0,
-    public val file: String? = null,
-    /** Whether [typeface] is a face of [style] (not synthesized). */
-    private val styledFace: Boolean = false
+    public val file: String? = null
 ) {
     public fun deriveFont(style: Int): Font {
         if (typeface.style == style) return this
@@ -44,7 +42,7 @@ public class Font private constructor(
             // The fonts of the text of the formulas, when the application gives them: the style
             // synthesized over the regular one when it does not give it
             val wanted = style and (TexFont.BOLD or TexFont.ITALIC)
-            textTypeface(wanted)?.let { return Font(it, size, wanted, styledFace = true) }
+            textTypeface(wanted)?.let { return Font(it, size, wanted) }
             textTypeface(0)?.let { return Font(Typeface.create(it, wanted), size, wanted) }
             return Font(Typeface.create(name, style), size, wanted)
         }

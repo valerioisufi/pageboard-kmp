@@ -65,7 +65,6 @@ class FileExplorerViewModelTest {
         assertTrue(viewModel.names.isEmpty())
         viewModel.createFile(FileType.FILE, "Inside")
         assertEquals(listOf("Inside"), viewModel.names)
-        assertEquals(listOf("Inside", "A note", "b note").toSet(), viewModel.recentFiles.map { it.name }.toSet())
 
         assertTrue(viewModel.canNavigateBack)
         assertTrue(viewModel.backFolder())
@@ -107,7 +106,7 @@ class FileExplorerViewModelTest {
         assertTrue(viewModel.selectionMode)
         assertFalse(viewModel.isValidMove(null), "the items are already in the root")
         assertTrue(viewModel.isValidMove(archive.id))
-        viewModel.moveSelected(archive.id)
+        viewModel.moveFiles(viewModel.selectedItems.toList(), archive.id)
         assertFalse(viewModel.selectionMode)
         assertEquals(listOf("Archive"), viewModel.names)
 
@@ -123,11 +122,11 @@ class FileExplorerViewModelTest {
         assertEquals(listOf("One", "Two"), viewModel.names)
         viewModel.selectAll()
         assertEquals(2, viewModel.selectedItems.size)
-        viewModel.deleteSelected()
+        viewModel.deleteFiles(viewModel.selectedItems.toList())
         assertTrue(viewModel.names.isEmpty())
 
         viewModel.navigateBack()
-        viewModel.deleteFile(viewModel.item("Old"))
+        viewModel.deleteFiles(listOf(viewModel.item("Old")))
         assertTrue(viewModel.names.isEmpty())
     }
 

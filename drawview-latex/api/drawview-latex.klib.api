@@ -300,19 +300,6 @@ final object io.github.valerioisufi.drawview.latex/LatexEngine { // io.github.va
     final suspend fun initialize(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.initialize|initialize(){}[0]
 }
 
-final object io.nano.tex/Alignment { // io.nano.tex/Alignment|null[0]
-    final const val BOTTOM // io.nano.tex/Alignment.BOTTOM|{}BOTTOM[0]
-        final fun <get-BOTTOM>(): kotlin/Int // io.nano.tex/Alignment.BOTTOM.<get-BOTTOM>|<get-BOTTOM>(){}[0]
-    final const val CENTER // io.nano.tex/Alignment.CENTER|{}CENTER[0]
-        final fun <get-CENTER>(): kotlin/Int // io.nano.tex/Alignment.CENTER.<get-CENTER>|<get-CENTER>(){}[0]
-    final const val LEFT // io.nano.tex/Alignment.LEFT|{}LEFT[0]
-        final fun <get-LEFT>(): kotlin/Int // io.nano.tex/Alignment.LEFT.<get-LEFT>|<get-LEFT>(){}[0]
-    final const val RIGHT // io.nano.tex/Alignment.RIGHT|{}RIGHT[0]
-        final fun <get-RIGHT>(): kotlin/Int // io.nano.tex/Alignment.RIGHT.<get-RIGHT>|<get-RIGHT>(){}[0]
-    final const val TOP // io.nano.tex/Alignment.TOP|{}TOP[0]
-        final fun <get-TOP>(): kotlin/Int // io.nano.tex/Alignment.TOP.<get-TOP>|<get-TOP>(){}[0]
-}
-
 final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop[0]
 final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop[0]
 final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop[0]
@@ -334,7 +321,6 @@ final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_
 final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop[0]
 final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop[0]
 final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop[0]
-final val io.nano.tex/io_nano_tex_Alignment$stableprop // io.nano.tex/io_nano_tex_Alignment$stableprop|#static{}io_nano_tex_Alignment$stableprop[0]
 final val io.nano.tex/io_nano_tex_Font$stableprop // io.nano.tex/io_nano_tex_Font$stableprop|#static{}io_nano_tex_Font$stableprop[0]
 final val io.nano.tex/io_nano_tex_Graphics2D$stableprop // io.nano.tex/io_nano_tex_Graphics2D$stableprop|#static{}io_nano_tex_Graphics2D$stableprop[0]
 final val io.nano.tex/io_nano_tex_Rect$stableprop // io.nano.tex/io_nano_tex_Rect$stableprop|#static{}io_nano_tex_Rect$stableprop[0]
@@ -360,7 +346,6 @@ final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_
 final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter(){}[0]
-final fun io.nano.tex/io_nano_tex_Alignment$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Alignment$stableprop_getter|io_nano_tex_Alignment$stableprop_getter(){}[0]
 final fun io.nano.tex/io_nano_tex_Font$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Font$stableprop_getter|io_nano_tex_Font$stableprop_getter(){}[0]
 final fun io.nano.tex/io_nano_tex_Graphics2D$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Graphics2D$stableprop_getter|io_nano_tex_Graphics2D$stableprop_getter(){}[0]
 final fun io.nano.tex/io_nano_tex_Rect$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Rect$stableprop_getter|io_nano_tex_Rect$stableprop_getter(){}[0]

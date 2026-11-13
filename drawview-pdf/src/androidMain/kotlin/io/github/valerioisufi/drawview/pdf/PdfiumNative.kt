@@ -18,12 +18,6 @@ internal object PdfiumNative {
     }
 
     @JvmStatic
-    external fun nInit()
-
-    @JvmStatic
-    external fun nDestroy()
-
-    @JvmStatic
     external fun nOpenDocument(path: String, password: String?): Long
 
     @JvmStatic
