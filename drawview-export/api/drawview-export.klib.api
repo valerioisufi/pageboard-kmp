@@ -86,6 +86,11 @@ sealed interface io.github.valerioisufi.drawview.export/ExportJobState { // io.g
 }
 
 sealed interface io.github.valerioisufi.drawview.export/ExportScope { // io.github.valerioisufi.drawview.export/ExportScope|null[0]
+    open val formats // io.github.valerioisufi.drawview.export/ExportScope.formats|{}formats[0]
+        open fun <get-formats>(): kotlin.collections/List<io.github.valerioisufi.drawview.export/ExportFormat> // io.github.valerioisufi.drawview.export/ExportScope.formats.<get-formats>|<get-formats>(){}[0]
+    open val isSingleDocument // io.github.valerioisufi.drawview.export/ExportScope.isSingleDocument|{}isSingleDocument[0]
+        open fun <get-isSingleDocument>(): kotlin/Boolean // io.github.valerioisufi.drawview.export/ExportScope.isSingleDocument.<get-isSingleDocument>|<get-isSingleDocument>(){}[0]
+
     final class Folder : io.github.valerioisufi.drawview.export/ExportScope { // io.github.valerioisufi.drawview.export/ExportScope.Folder|null[0]
         constructor <init>(kotlin/String?) // io.github.valerioisufi.drawview.export/ExportScope.Folder.<init>|<init>(kotlin.String?){}[0]
 

@@ -4,10 +4,8 @@ import io.github.valerioisufi.drawview.agent.AgentEndpoint
 import java.io.IOException
 import java.io.InputStream
 import java.io.PrintStream
-import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.SocketChannel
-import java.nio.charset.StandardCharsets
 import kotlin.concurrent.thread
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -234,11 +232,6 @@ internal class McpBridge(
             put("message", message)
         }
     }.toString()
-
-    private fun SocketChannel.writeLine(line: String) {
-        val bytes = ByteBuffer.wrap((line + "\n").toByteArray(StandardCharsets.UTF_8))
-        while (bytes.hasRemaining()) write(bytes)
-    }
 
     private companion object {
         /** An error of the server, in the range JSON-RPC leaves to it. */

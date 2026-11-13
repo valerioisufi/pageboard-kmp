@@ -8,6 +8,17 @@ import kotlinx.coroutines.CancellationException
  * a folder or the Home.
  */
 public sealed interface ExportScope {
+    /** Whether the pages of one note are exported. */
+    public val isSingleDocument: Boolean get() = this is Pages
+
+    /** The formats offered for this scope, the first being the default. */
+    public val formats: List<ExportFormat>
+        get() = if (isSingleDocument) {
+            listOf(ExportFormat.PDF, ExportFormat.IMAGES)
+        } else {
+            listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF)
+        }
+
     /** The pages [pageIds] of the document [documentId], all of them when `null`. */
     public class Pages(public val documentId: String, public val pageIds: Set<String>? = null) : ExportScope
 
@@ -43,16 +54,11 @@ public class ExportContents(
     public val pages: Int,
     public val folders: Map<String, FolderSummary> = emptyMap()
 ) {
-    /** Whether the pages of one note are exported. */
-    public val isSingleDocument: Boolean get() = scope is ExportScope.Pages
+    /** Whether the pages of one note are exported (see [ExportScope.isSingleDocument]). */
+    public val isSingleDocument: Boolean get() = scope.isSingleDocument
 
-    /** The formats offered for these contents, the first being the default. */
-    public val formats: List<ExportFormat>
-        get() = if (isSingleDocument) {
-            listOf(ExportFormat.PDF, ExportFormat.IMAGES)
-        } else {
-            listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF)
-        }
+    /** The formats offered for these contents, the first being the default (see [ExportScope.formats]). */
+    public val formats: List<ExportFormat> get() = scope.formats
 
     /**
      * The name of the file of these contents in [format], [pages] of them exported, named

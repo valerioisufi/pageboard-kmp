@@ -3,7 +3,7 @@ package io.nano.tex
 import kotlin.jvm.JvmField
 
 /**
- * 2D bounding rectangle used by TeX text measurement (fields read through JNI on the JVM).
+ * 2D bounding rectangle used by TeX text measurement (fields read through JNI on the JVM and Android).
  */
 public class Rect(
     @JvmField public var x: Float = 0f,

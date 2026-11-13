@@ -51,7 +51,7 @@ internal class ExportSheetState(
     var contents: ExportContents? by mutableStateOf(null)
 
     var format: ExportFormat by mutableStateOf(
-        if (scope is ExportScope.Pages) preferences.singleFormat else preferences.multipleFormat
+        if (scope.isSingleDocument) preferences.singleFormat else preferences.multipleFormat
     )
 
     var pages: PageChoice by mutableStateOf(if (selectedPages.isNotEmpty()) PageChoice.SELECTED else PageChoice.ALL)
@@ -67,11 +67,10 @@ internal class ExportSheetState(
     var editedName: String? by mutableStateOf(null)
 
     /** Whether the pages of one note are exported (they can be chosen). */
-    val isSingleDocument: Boolean get() = scope is ExportScope.Pages
+    val isSingleDocument: Boolean get() = scope.isSingleDocument
 
     /** The formats offered. */
-    val formats: List<ExportFormat>
-        get() = if (isSingleDocument) listOf(ExportFormat.PDF, ExportFormat.IMAGES) else listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF)
+    val formats: List<ExportFormat> get() = scope.formats
 
     /** The choices of pages offered for a note: all, the page on screen, the pages selected, a range. */
     val pageChoices: List<PageChoice>

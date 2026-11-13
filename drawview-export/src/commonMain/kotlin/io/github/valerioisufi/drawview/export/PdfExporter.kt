@@ -596,7 +596,7 @@ public class PdfExporter(
         const val MAX_IMAGE_SIDE = 4096
 
         /** Where the control points of a cubic curve drawing a quarter of a circle are on its tangents. */
-        const val CIRCLE_KAPPA = 0.5523f
+        const val CIRCLE_KAPPA = 0.5522848f
     }
 }
 

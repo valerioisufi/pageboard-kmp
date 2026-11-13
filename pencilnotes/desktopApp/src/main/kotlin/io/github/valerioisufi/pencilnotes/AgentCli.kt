@@ -6,10 +6,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.PrintStream
 import java.net.StandardProtocolFamily
-import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.SocketChannel
-import java.nio.charset.StandardCharsets
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -520,11 +518,6 @@ internal class AgentCli(
             "not_granted" -> EXIT_NOT_GRANTED
             "not_found" -> EXIT_NOT_FOUND
             else -> EXIT_REFUSED
-        }
-
-        private fun SocketChannel.writeLine(line: String) {
-            val bytes = ByteBuffer.wrap((line + "\n").toByteArray(StandardCharsets.UTF_8))
-            while (bytes.hasRemaining()) write(bytes)
         }
 
         private fun JsonObject.text(name: String): String? = (get(name) as? JsonPrimitive)?.contentOrNull

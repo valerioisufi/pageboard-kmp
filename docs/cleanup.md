@@ -93,8 +93,8 @@ once under the load of the whole build, and passes alone.
   public `isNoChange`, or `NoChange` made public), instead of `AgentActivity` reading a name.
   The directories of the data are found as the parents of their paths (`kotlinx.io.files.Path`),
   not by cutting the text at the last `/`, which fails with the separators of Windows
-  (`dataDirectory`, `WhisperTranscriber.modelsDirectory`). The text sizes take one `PT_TO_MM`; the
-  PDF circles one exact `CIRCLE_KAPPA`.
+  (`dataDirectory`, `WhisperTranscriber.modelsDirectory`). The PDF circles take one exact
+  `CIRCLE_KAPPA`.
 * **Creator.** The desktop window that opens a session hands it to its frame: the document window
   gives its `EditorSession` back (a callback or a `State`), and the frame reads the dirty state
   from it, instead of looking it up once in a registry.
@@ -112,8 +112,8 @@ once under the load of the whole build, and passes alone.
 | 1 | Bugs 1–7 of the starting point, with tests (agent counts, `NoChange`) | done |
 | 2 | Dead code: private/`internal`/native/app symbols, orphan KDoc, no-ops and wasted allocations, placeholder tests | done |
 | 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, the unused table of the search index, catalog, unused dependencies/plugins/source sets, PDFium of every desktop in the released jar | done |
-| 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | to do |
-| 5 | The directories of the data found by their paths | to do |
+| 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | done |
+| 5 | The directories of the data found by their paths | done |
 | 6 | Public API with no caller (part 1B of the audit), removed by the user's choice, with `updateKotlinAbi` | waits for the user |
 
 Each phase is one commit on `feat/cleanup`, after the checks of `CLAUDE.md` (`jvmTest
@@ -125,10 +125,10 @@ be used while removing it is kept and noted here.
 
 Taken alone, revertible:
 
-* `TextSizes.PT_TO_MM` keeps `0.3527f`, and `TextBackground` uses it. Changing it to `25.4f / 72f`
-  (as the plan first said) would size every text written so far a little larger, and a line could
-  wrap at another word; the background of a text moves by less than a micrometre. The page
-  measures (`Dimension`, points of the PDF) keep their exact `1 / 2.83465f`.
+* The three values of `PT_TO_MM` stay. `TextSizes.PT_TO_MM` (`0.3527f`) sizes every text written so
+  far: `25.4f / 72f` would make them a little larger, and a line could wrap at another word. The
+  fill of a text (`TextBackground`, exact) moves visibly with the other one (its test and
+  `text-backgrounds` screenshot see it). The page measures (`Dimension`) keep their `1 / 2.83465f`.
 * `DocumentTools` keeps the field `pdf_pages` of its output: the external models read it.
 * The schemas `8.json`–`15.json` stay.
 * The sample on iOS does not declare `drawview://`, though `ContentView.swift` handles it:
@@ -137,6 +137,8 @@ Taken alone, revertible:
 * The accessors of the strings and drawables removed from `drawview-ui` and `drawview-explorer`
   are public (`Res`, used by the other modules): they leave the ABI dumps, recorded with
   `updateKotlinAbi`. `DrawableResourcesTest` goes with the last vector drawable it checked.
+* `ExportScope.isSingleDocument` and `ExportScope.formats` are new public API of `drawview-export`;
+  `io.nano.tex.Rect` of Android gets the `toString` of the other platforms.
 * `DocumentChange.changesNothing` (true for the change undoing an `AddResource` only) is new public
   API of `drawview-model`, recorded in its dump.
 

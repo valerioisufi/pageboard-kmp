@@ -7,6 +7,16 @@ plugins {
 description = "Google Ink stroke modeller of DrawView: the strokes as the editor draws them, native on every platform"
 
 kotlin {
+    applyDefaultHierarchyTemplate {
+        common {
+            // The JNI code of the JVM and of Android, the same on both
+            group("jvmAndAndroid") {
+                withJvm()
+                withCompilations { it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.androidJvm }
+            }
+        }
+    }
+
     val nativeDir = rootProject.layout.projectDirectory.dir("native")
     listOf(
         iosArm64() to "iphoneos",

@@ -6,6 +6,8 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.UnixDomainSocketAddress
+import java.nio.ByteBuffer
+import java.nio.channels.SocketChannel
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -103,4 +105,10 @@ internal class BoundedLineReader(private val input: InputStream, private val max
     private companion object {
         const val NEWLINE = '\n'.code.toByte()
     }
+}
+
+/** Writes [line] and a line feed to this socket, in UTF-8, all of it. */
+internal fun SocketChannel.writeLine(line: String) {
+    val bytes = ByteBuffer.wrap((line + "\n").toByteArray(StandardCharsets.UTF_8))
+    while (bytes.hasRemaining()) write(bytes)
 }
