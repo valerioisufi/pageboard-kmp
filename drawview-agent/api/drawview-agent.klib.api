@@ -1494,16 +1494,61 @@ final class io.github.valerioisufi.drawview.agent/PageMark { // io.github.valeri
 }
 
 final class io.github.valerioisufi.drawview.agent/PlannedItem { // io.github.valerioisufi.drawview.agent/PlannedItem|null[0]
-    constructor <init>(kotlin/Boolean, kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlacementWarning>, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/AddPage> = ...) // io.github.valerioisufi.drawview.agent/PlannedItem.<init>|<init>(kotlin.Boolean;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlacementWarning>;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.AddPage>){}[0]
+    constructor <init>(kotlin/Boolean, kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlacementWarning>, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/AddPage> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedMark> = ...) // io.github.valerioisufi.drawview.agent/PlannedItem.<init>|<init>(kotlin.Boolean;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedPiece>;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlacementWarning>;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.AddPage>;kotlin.collections.List<io.github.valerioisufi.drawview.agent.PlannedMark>){}[0]
 
     final val isStale // io.github.valerioisufi.drawview.agent/PlannedItem.isStale|{}isStale[0]
         final fun <get-isStale>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/PlannedItem.isStale.<get-isStale>|<get-isStale>(){}[0]
+    final val marks // io.github.valerioisufi.drawview.agent/PlannedItem.marks|{}marks[0]
+        final fun <get-marks>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedMark> // io.github.valerioisufi.drawview.agent/PlannedItem.marks.<get-marks>|<get-marks>(){}[0]
     final val pagesAdded // io.github.valerioisufi.drawview.agent/PlannedItem.pagesAdded|{}pagesAdded[0]
         final fun <get-pagesAdded>(): kotlin/Int // io.github.valerioisufi.drawview.agent/PlannedItem.pagesAdded.<get-pagesAdded>|<get-pagesAdded>(){}[0]
     final val pieces // io.github.valerioisufi.drawview.agent/PlannedItem.pieces|{}pieces[0]
         final fun <get-pieces>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlannedPiece> // io.github.valerioisufi.drawview.agent/PlannedItem.pieces.<get-pieces>|<get-pieces>(){}[0]
     final val warnings // io.github.valerioisufi.drawview.agent/PlannedItem.warnings|{}warnings[0]
         final fun <get-warnings>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/PlacementWarning> // io.github.valerioisufi.drawview.agent/PlannedItem.warnings.<get-warnings>|<get-warnings>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/PlannedMark { // io.github.valerioisufi.drawview.agent/PlannedMark|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/PlannedMark.Kind, kotlin/String, io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.geometry/Rect? = ..., kotlin/String? = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin.collections/List<kotlin/Float> = ..., kotlin/Float = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.agent/PlannedMark.<init>|<init>(io.github.valerioisufi.drawview.agent.PlannedMark.Kind;kotlin.String;io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.geometry.Rect?;kotlin.String?;kotlin.String;kotlin.Float;kotlin.Int;kotlin.collections.List<kotlin.Float>;kotlin.Float;kotlin.Boolean){}[0]
+
+    final val box // io.github.valerioisufi.drawview.agent/PlannedMark.box|{}box[0]
+        final fun <get-box>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.agent/PlannedMark.box.<get-box>|<get-box>(){}[0]
+    final val color // io.github.valerioisufi.drawview.agent/PlannedMark.color|{}color[0]
+        final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.agent/PlannedMark.color.<get-color>|<get-color>(){}[0]
+    final val elementId // io.github.valerioisufi.drawview.agent/PlannedMark.elementId|{}elementId[0]
+        final fun <get-elementId>(): kotlin/String? // io.github.valerioisufi.drawview.agent/PlannedMark.elementId.<get-elementId>|<get-elementId>(){}[0]
+    final val fontSize // io.github.valerioisufi.drawview.agent/PlannedMark.fontSize|{}fontSize[0]
+        final fun <get-fontSize>(): kotlin/Float // io.github.valerioisufi.drawview.agent/PlannedMark.fontSize.<get-fontSize>|<get-fontSize>(){}[0]
+    final val isOnNewPage // io.github.valerioisufi.drawview.agent/PlannedMark.isOnNewPage|{}isOnNewPage[0]
+        final fun <get-isOnNewPage>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/PlannedMark.isOnNewPage.<get-isOnNewPage>|<get-isOnNewPage>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.agent/PlannedMark.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.agent/PlannedMark.Kind // io.github.valerioisufi.drawview.agent/PlannedMark.kind.<get-kind>|<get-kind>(){}[0]
+    final val markdown // io.github.valerioisufi.drawview.agent/PlannedMark.markdown|{}markdown[0]
+        final fun <get-markdown>(): kotlin/String // io.github.valerioisufi.drawview.agent/PlannedMark.markdown.<get-markdown>|<get-markdown>(){}[0]
+    final val pageId // io.github.valerioisufi.drawview.agent/PlannedMark.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.drawview.agent/PlannedMark.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val points // io.github.valerioisufi.drawview.agent/PlannedMark.points|{}points[0]
+        final fun <get-points>(): kotlin.collections/List<kotlin/Float> // io.github.valerioisufi.drawview.agent/PlannedMark.points.<get-points>|<get-points>(){}[0]
+    final val strokeWidth // io.github.valerioisufi.drawview.agent/PlannedMark.strokeWidth|{}strokeWidth[0]
+        final fun <get-strokeWidth>(): kotlin/Float // io.github.valerioisufi.drawview.agent/PlannedMark.strokeWidth.<get-strokeWidth>|<get-strokeWidth>(){}[0]
+    final val toBox // io.github.valerioisufi.drawview.agent/PlannedMark.toBox|{}toBox[0]
+        final fun <get-toBox>(): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.agent/PlannedMark.toBox.<get-toBox>|<get-toBox>(){}[0]
+
+    final enum class Kind : kotlin/Enum<io.github.valerioisufi.drawview.agent/PlannedMark.Kind> { // io.github.valerioisufi.drawview.agent/PlannedMark.Kind|null[0]
+        enum entry ADDED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.ADDED|null[0]
+        enum entry CHANGED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.CHANGED|null[0]
+        enum entry MOVED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.MOVED|null[0]
+        enum entry PAGE_CHANGED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.PAGE_CHANGED|null[0]
+        enum entry PAGE_REMOVED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.PAGE_REMOVED|null[0]
+        enum entry REMOVED // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.REMOVED|null[0]
+        enum entry STALE // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.STALE|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.agent/PlannedMark.Kind> // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.agent/PlannedMark.Kind // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.agent/PlannedMark.Kind> // io.github.valerioisufi.drawview.agent/PlannedMark.Kind.values|values#static(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.agent/PlannedPiece { // io.github.valerioisufi.drawview.agent/PlannedPiece|null[0]

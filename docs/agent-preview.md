@@ -64,8 +64,9 @@ Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Protect
 
 ### The marks
 
-`PlannedMark(pageId, box, kind, toBox, text, points, color)`, with `kind` one of `ADDED`, `REMOVED`,
-`MOVED`, `CHANGED`, `PAGE_REMOVED`, `PAGE_CHANGED`:
+`PlannedMark(kind, pageId, box, toBox, elementId, markdown, fontSize, color, points, strokeWidth,
+isOnNewPage)`, with `kind` one of `ADDED`, `REMOVED`, `MOVED`, `CHANGED`, `PAGE_REMOVED`,
+`PAGE_CHANGED`, and `STALE` for an item that would not be applied, where what it was about still is:
 
 | Item | Marks |
 |---|---|
@@ -80,8 +81,11 @@ Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Protect
 | `move_page`, `duplicate_page`, `set_page_format` | `PAGE_CHANGED` |
 | `add_page`, `rename_document` | None: in the list |
 
-The planner already walks every item on the pages as the items before it leave them; the marks are
-what it knows at that point. `pieces` stays as it is for the tools (`preview_proposal`), which do not
+The planner already walks every item on the pages as the items before it leave them. `ProposalMarks`
+makes the marks afterwards, from the document as it is and from what the planner found for the item
+(the boxes of its texts and of what it moves): an element is changed by one item of a proposal only
+(`ProposalLimits`), so its box now is its box before the item. The box of a text is as high as its
+words are laid out (`TextMeasure`), as everywhere in a plan. `pieces` stays as it is for the tools (`preview_proposal`), which do not
 change: the marks are for the interface, and are not sent to a client.
 
 ### Drawing
@@ -106,7 +110,7 @@ One commit per phase on `feat/agent-preview`, with the checks of `CLAUDE.md`.
 
 | # | Phase | Status |
 |---|---|---|
-| 1 | `PlannedMark` and `PlannedItem.marks` for every item, with the ABI of `drawview-agent` re-recorded. Tests: the marks of each kind of item, an item seeing what the ones before it did, a stale item, a box outside its page | Not started |
+| 1 | `PlannedMark` and `PlannedItem.marks` for every item (`ProposalMarks`), with the ABI of `drawview-agent` re-recorded. Tests (`ProposalMarksTest`): the marks of each kind of item, a text changed in place and one given another place, an item after one that removes, a stale item where what it was about still is and none when it is gone. A box outside its page is clipped when drawn (phase 2) | Done |
 | 2 | `ProposalMarks` in the overlay: frames, veils, arrows, strokes and the pages; `ReviewSelection`, the list and the page together. Tests: a real editor (the marks of a proposal on the page it changes, following a pan, gone when it is decided, the canvas still taking a stroke), screenshots (`verifyRoborazziJvm`) | Not started |
 | 3 | The words of the texts added and changed drawn as the page would draw them. Tests: screenshots, a real editor | Not started |
 | 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`); the clicks in its window left to the user | Not started |

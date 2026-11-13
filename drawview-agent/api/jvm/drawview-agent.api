@@ -744,12 +744,42 @@ public final class io/github/valerioisufi/drawview/agent/PlacementWarning$Split 
 }
 
 public final class io/github/valerioisufi/drawview/agent/PlannedItem {
-	public fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;)V
-	public synthetic fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (ZLjava/util/List;ILjava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getMarks ()Ljava/util/List;
 	public final fun getPagesAdded ()I
 	public final fun getPieces ()Ljava/util/List;
 	public final fun getWarnings ()Ljava/util/List;
 	public final fun isStale ()Z
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlannedMark {
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/lang/String;Ljava/lang/String;FILjava/util/List;FZ)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/geometry/Rect;Ljava/lang/String;Ljava/lang/String;FILjava/util/List;FZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getColor ()I
+	public final fun getElementId ()Ljava/lang/String;
+	public final fun getFontSize ()F
+	public final fun getKind ()Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public final fun getMarkdown ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getStrokeWidth ()F
+	public final fun getToBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun isOnNewPage ()Z
+}
+
+public final class io/github/valerioisufi/drawview/agent/PlannedMark$Kind : java/lang/Enum {
+	public static final field ADDED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field CHANGED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field MOVED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field PAGE_CHANGED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field PAGE_REMOVED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field REMOVED Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static final field STALE Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/agent/PlannedMark$Kind;
 }
 
 public final class io/github/valerioisufi/drawview/agent/PlannedPiece {

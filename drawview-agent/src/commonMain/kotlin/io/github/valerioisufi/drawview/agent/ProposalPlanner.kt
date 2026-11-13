@@ -91,14 +91,19 @@ public sealed interface PlacementWarning {
  * @param pieces the boxes of its text, or of the elements it moves or resizes as they would be; empty
  *   for an item that does neither.
  * @param pagesAdded how many pages it adds.
+ * @param marks what it does on the pages, for the review to draw it there (see [PlannedMark]).
  */
 public class PlannedItem(
     public val isStale: Boolean,
     public val pieces: List<PlannedPiece>,
     public val pagesAdded: Int,
     public val warnings: List<PlacementWarning>,
-    internal val newPages: List<AddPage> = emptyList()
-)
+    internal val newPages: List<AddPage> = emptyList(),
+    public val marks: List<PlannedMark> = emptyList()
+) {
+    /** This item with its [marks]. */
+    internal fun marked(marks: List<PlannedMark>): PlannedItem = PlannedItem(isStale, pieces, pagesAdded, warnings, newPages, marks)
+}
 
 /**
  * What a list of items would do to a document as it is now.
@@ -180,7 +185,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 is ProposalItem.MovePage, is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> PlannedItem(false, emptyList(), 0, emptyList())
             }
         }
-        return ProposalPlan(measure.isMeasured, planned, pages.map { it.id })
+        // What each item does on the pages, for the review: from the document as it is and from its plan
+        val marked = planned.mapIndexed { index, item -> item.marked(ProposalMarks.of(document, items[index], item, measure)) }
+        return ProposalPlan(measure.isMeasured, marked, pages.map { it.id })
     }
 
     /** The geometry of [page] for a model: how its texts are laid out, and where there is room. */
