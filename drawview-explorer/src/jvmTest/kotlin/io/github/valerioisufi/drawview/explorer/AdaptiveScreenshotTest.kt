@@ -17,6 +17,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextInputSelection
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
@@ -190,7 +192,13 @@ class AdaptiveScreenshotTest {
 
     /** A search without results: why, under the field. */
     @Test
-    fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {
+    fun librarySearch() = capture(
+        "library-search",
+        ReferenceWindow.PHONE,
+        dark = false,
+        // The caret blinks: its blink begun again right before the capture, the same at every run
+        beforeCapture = { onNode(hasSetTextAction()).performTextInputSelection(TextRange("derivata".length)) }
+    ) {
         onNode(hasSetTextAction()).performTextInput("derivata")
     }
 

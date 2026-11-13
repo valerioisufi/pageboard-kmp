@@ -77,6 +77,8 @@ internal fun capture(
     extension: EditorExtension? = null,
     clipboard: String? = null,
     macWindow: Boolean = false,
+    /** Run once the pages and the thumbnails are drawn, right before the capture. */
+    beforeCapture: DesktopComposeUiTest.() -> Unit = {},
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
 ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
     val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -124,6 +126,7 @@ internal fun capture(
     waitForIdle()
     actions(viewModels)
     awaitPagesDrawn(viewModels, thumbnails.value)
+    beforeCapture()
 
     val theme = if (dark) "dark" else "light"
     val mac = if (macWindow) "-mac" else ""
