@@ -196,8 +196,12 @@ class AdaptiveScreenshotTest {
         "library-search",
         ReferenceWindow.PHONE,
         dark = false,
-        // The caret blinks: its blink begun again right before the capture, the same at every run
-        beforeCapture = { onNode(hasSetTextAction()).performTextInputSelection(TextRange("derivata".length)) }
+        // The caret blinks: moved, then put back at the end of the field right before the capture,
+        // it begins its blink again, shown, the same at every run
+        beforeCapture = {
+            onNode(hasSetTextAction()).performTextInputSelection(TextRange.Zero)
+            onNode(hasSetTextAction()).performTextInputSelection(TextRange("derivata".length))
+        }
     ) {
         onNode(hasSetTextAction()).performTextInput("derivata")
     }
