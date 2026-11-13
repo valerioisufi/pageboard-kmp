@@ -14,7 +14,7 @@ Controller, Low Coupling, High Cohesion, Pure Fabrication, Protected Variations)
 
 ## Starting point
 
-Read in the code; nothing measured yet (see phase 0).
+Read in the code. What phase 0 then measured is in "The window", under the design.
 
 ### One thing at a time
 
@@ -114,18 +114,88 @@ piece in progress is finished first: with whisper, some tens of seconds at most.
 
 ### The window
 
-Decided by phase 0, which measures on the Mac of the user, with the model the user uses, the frames of
-a pan and of a stroke: alone, with a transcription running, and with each of these, one at a time:
+Measured by phase 0 (`TranscriptionWindowBenchmark`, on a Mac with 4 performance and 6 efficiency
+cores, 2026-11-13): a real window of the editor of 1200 × 900 on a page of 30 texts and
+250 strokes, zoomed and panned at every frame, while `ggml-large-v3-turbo-q5_0` transcribes four
+minutes of speech again and again in pieces of a minute. The time between two frames over 15 s, and
+how many seconds of audio are transcribed in a second:
 
-| Candidate | Cost |
-|---|---|
-| Fewer decoder threads than performance cores (2 instead of 4) | A slower decoder |
-| The decoder threads at a lower priority (`QOS_CLASS_UTILITY` in the bridge) | They move to the efficiency cores under load |
-| Shorter pieces to the encoder, so that the GPU is given back more often | More pieces |
-| The encoder on the CPU while the window is in front | Much slower |
-| The record built off the thread of the interface, the transcript shown appended and not rebuilt | None |
+| What transcribes | Frames a second | Median | 99% | Longest | Frames over 50 ms | Speed |
+|---|---|---|---|---|---|---|
+| Nothing | 60 | 16.7 ms | 17.9 ms | 23 ms | 0 | – |
+| The GPU, 4 threads (as it was) | 34 | 16.7 ms | 383 ms | 402 ms | 20 | 26.4× |
+| The GPU, 2 threads | 35 | 16.7 ms | 368 ms | 401 ms | 20 | 26.4× |
+| The GPU, 1 thread | 36 | 16.7 ms | 334 ms | 384 ms | 21 | 26.4× |
+| The processor, 4 threads | 60 | 16.7 ms | 17.7 ms | 25 ms | 0 | 5.7× |
+| The processor, 6 threads | 60 | 16.7 ms | 18.5 ms | 19 ms | 0 | 5.9× |
+| The processor, 8 threads | 60 | 16.7 ms | 19.2 ms | 26 ms | 0 | 5.6× |
+| The processor, 10 threads | 60 | 16.7 ms | 25.9 ms | 55 ms | 1 | 4.3× |
 
-Only what the measure shows to matter is done, and the speed of the transcription is measured with it.
+* **It is the GPU, not the threads.** On the GPU the window stops for about 0.4 s more than once a
+  second, half of the time in all, whatever the threads of the decoder: the encoder of whisper.cpp
+  runs as one long piece of work of the GPU, and the frame of the window waits for it.
+* **On the processor the window is as without a transcription**, and the transcription is 4.6 times
+  slower: an hour and a half of lecture in 16 minutes instead of three and a half. More threads than
+  the performance cores do not make it faster.
+* The work on the thread of the interface at every piece (the record built, the transcript rebuilt)
+  does not show: no frame is late on the processor.
+* The Metal backend of whisper.cpp 1.9.4 splits a graph into 9 command buffers at most, and does not
+  let a caller choose how many: making the work of the GPU finer would mean patching it.
+
+Proposed from this, and turned down by the user (2026-11-13): the speech model on the processor
+while the window of the application is in front, on the GPU otherwise. It was written and taken out
+again; nothing of it is in the code.
+
+### The encoder on the Neural Engine
+
+whisper.cpp 1.9.4 can run its encoder through Core ML (`WHISPER_COREML`), from a second file next to
+the model: `ggml-large-v3-turbo-encoder.mlmodelc` beside `ggml-large-v3-turbo-q5_0.bin` (the `-q5_0`
+is dropped from the name, so one encoder serves both turbo models). The authors of whisper.cpp
+publish it compiled, zipped, in the same repository as the models: 1,173,393,014 bytes for
+large-v3-turbo, 163,083,239 for small, 37,922,638 for base. The decoder stays where it is (the GPU,
+or the processor).
+
+Measured the same way (2026-11-13), with the bridge built with Core ML, the encoder downloaded into a
+scratch directory, and the model of the user read through a link:
+
+| What transcribes | Frames a second | Median | 99% | Longest | Frames over 50 ms | Speed |
+|---|---|---|---|---|---|---|
+| Nothing | 60 | 16.7 ms | 17.9 ms | 18 ms | 0 | – |
+| The GPU, 4 threads, without the encoder file (as it is) | 32 | 16.7 ms | 384 ms | 416 ms | 21 | 27.4× |
+| The Neural Engine, the decoder on the GPU, 4 threads | 60 | 16.7 ms | 17.6 ms | 28 ms | 0 | 29.3× |
+| The Neural Engine, the decoder on the processor, 4 threads | 60 | 16.7 ms | 17.6 ms | 18 ms | 0 | 25.1× |
+
+* **The window is as without a transcription, and the transcription is faster than today.** The
+  short pieces of work of the decoder on the GPU do not hold a frame back; the long one was the
+  encoder.
+* The first minute heard is the same word for word in the three ways.
+* Core ML left free to choose (`MLComputeUnitsAll`, as whisper.cpp asks) put the encoder on the
+  Neural Engine: the same numbers as with the Neural Engine forced. No patch of whisper.cpp is needed.
+* The model loads in 0.3 s once Core ML has compiled the encoder for the Neural Engine. The first
+  load, which compiles it, was not timed: phase 5 measures it.
+
+### Design of phase 4 onwards
+
+Approved by the user, 2026-11-13.
+
+* **The build** (`native/CMakeLists.txt`): on macOS, whisper.cpp with `WHISPER_COREML` and
+  `WHISPER_COREML_ALLOW_FALLBACK`. Without the encoder file, or with one Core ML cannot load,
+  whisper.cpp encodes on the GPU as today (Protected Variations: nothing else of the transcriber
+  knows about Core ML).
+* **`WhisperModel` knows its encoder** (Information Expert): the name of the file (`encoderFileName`),
+  its size and its SHA-256, the ones above.
+* **`LocalModels` downloads it** (Controller, as it does the models): `encoders`, the models whose
+  encoder is on the computer; `downloadEncoder(model)`, the zip as a `.part`, its size and SHA-256
+  checked, extracted, the zip deleted; `usesNeuralEngine`, true on a Mac with Apple Silicon only (on an
+  Intel Mac Core ML has no Neural Engine to give).
+* **`EncoderArchive` extracts it** (Pure Fabrication, `jvmMain`): into a `.part` directory renamed when
+  complete, the entries of `__MACOSX` skipped, an entry going out of the directory refused, the bytes
+  extracted bounded. A native library loads what is in it, so only a zip whose SHA-256 is the known
+  one is opened.
+* **The settings show it** under the model chosen, where `usesNeuralEngine`: *Neural Engine: keeps the
+  window smooth while transcribing* with *Download (1.2 GB)*, or ready ✓. Downloading a model on
+  such a Mac downloads its encoder after it.
+* Nothing stored changes: the encoder is a new file in the directory of the models, not a format.
 
 ## Phases
 
@@ -133,18 +203,14 @@ One commit per phase on `feat/transcription-queue`, with the checks of `CLAUDE.m
 
 | # | Phase | Status |
 |---|---|---|
-| 0 | Measure: a bench that pans and draws in a real window while whisper.cpp transcribes ten minutes of audio; the table above filled in; the target of requirement 4 | Waiting for a model (see below) |
+| 0 | Measure: `TranscriptionWindowBenchmark`, a real window of the editor panned at every frame while whisper.cpp transcribes four minutes of speech, on the GPU and on the processor with 1 to 10 threads; the table above. The target of requirement 4: no frame over 50 ms, as without a transcription | Done |
 | 1 | `TranscriptionQueue`, `ImportStep.WAITING`, `importRecording` converting at once, `generate` and `retranscribe` enqueued, `transcribing`, `isTranscribing`, `cancelTranscription`, with the ABI of `drawview-lecture` re-recorded; the card of a lecture waiting says so. A recording here still refuses and is refused, until phase 2 pauses the queue. Tests (`TranscriptionQueueTest`): two imports one after the other, imports during a new transcription with the order kept, a file that is not audio leaving the queue as it was, a lecture taken out of the queue waiting and running, the generation lock taken when the job starts | Done |
 | 2 | Pausing: `TranscriptionGate`, checked by `RecordingTranscriber` between two pieces and held by a recording here; `canRecord`, with the ABI of `drawview-lecture` re-recorded; an import, a first transcription and a new one are taken during a recording too. Tests (`TranscriptionQueueTest`): a recording started in the middle of a transcription (the piece in flight delivered, the model closed, a segment for every piece, it goes on after), an import during a recording waiting for its end, a recording that cannot start leaving the transcriptions going | Done |
 | 3 | The panel: *Record* enabled by `canRecord` and *Import* always; the card of a lecture waiting (for its turn, or for the recording to end) with *Remove from the queue*, of one being transcribed with *Stop*; the notice of a recording elsewhere, and of the other recordings in the queue. Tests: `LecturePanelQueueTest` (the buttons while a lecture is transcribed and while one is recorded, a lecture taken out waiting and stopped running, from its card), the screenshot `lecture-recording-notices` re-recorded (`verifyRoborazziJvm`). The desktop application on a scratch directory was not run: it needs a speech model (phase 0) | Done |
-| 4 | The window: what phase 0 chose. Tests: the bench of phase 0 run again | Not started |
-
-### What phase 0 needs
-
-A whisper model. The one of the user is in the data directory of PencilNotes, which is never touched
-while verifying. Either the user allows reading that one file (read only, by its path, from a scratch
-data directory), or a model is downloaded into the scratch directory (the user says which: about
-570 MB for `ggml-large-v3-turbo-q5_0.bin`).
+| 4 | The Neural Engine measured: the bench prints the load time and the first words heard; the table above | Done |
+| 5 | The bridge with Core ML on macOS, falling back without the encoder; `WhisperTranscriberTest` and the transcription of the bench with and without the encoder file; the first load (Core ML compiling) timed with the cache of Core ML empty | Not done |
+| 6 | `WhisperModel` encoder fields, `LocalModels.encoders`, `downloadEncoder`, `usesNeuralEngine`, `EncoderArchive`, with the ABI of `drawview-lecture` re-recorded. Tests: an archive extracted, one with an entry outside the directory refused, one with the wrong SHA-256 refused and deleted, a download stopped leaving nothing | Not done |
+| 7 | The settings: the encoder under the model, downloaded after a model on Apple Silicon; screenshot; the desktop application on a scratch directory, the encoder downloaded there and a lecture imported while panning | Not done |
 
 ## Decisions
 
@@ -166,6 +232,8 @@ Taken alone, revertible, unless they say otherwise.
 
 ## Left for later
 
+* The window on a computer without a Neural Engine (Windows, Linux, an Intel Mac): the work of the
+  GPU made finer, by patching the Metal backend of whisper.cpp, or the processor chosen by a setting.
 * Keeping the queue across the runs of the application.
 * Choosing the order of what waits.
 * The transcription on Android and iOS, where there is no whisper.cpp.
