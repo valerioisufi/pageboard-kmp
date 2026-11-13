@@ -113,8 +113,8 @@ One commit per phase on `feat/agent-preview`, with the checks of `CLAUDE.md`.
 |---|---|---|
 | 1 | `PlannedMark` and `PlannedItem.marks` for every item (`ProposalMarks`), with the ABI of `drawview-agent` re-recorded. Tests (`ProposalMarksTest`): the marks of each kind of item, a text changed in place and one given another place, an item after one that removes, a stale item where what it was about still is and none when it is gone. A box outside its page is clipped when drawn (phase 2) | Done |
 | 2 | `ProposalMarksLayer` in the overlay of the review: frames, veils, arrows, the strokes added and the pages with their label; `ReviewSelection`, an item chosen in the list bringing the page to it and standing out, one left out drawn faint; the plans made with the places the user chose. Tests: `ProposalMarksLayerTest` (which marks are drawn and how strongly), `AgentReviewEditorTest` in a real editor (nothing drawn before a proposal, its marks while it is reviewed, nothing applied by looking, a wheel on a mark still panning the canvas, an item chosen bringing the page back, nothing left once decided), the screenshot `agent_marks` (`verifyRoborazziJvm`) | Done |
-| 3 | The words of the texts added and changed drawn as the page would draw them. Tests: screenshots, a real editor | Not started |
-| 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`); the clicks in its window left to the user | Not started |
+| 3 | The words of the texts added and changed drawn as the page would draw them (`MarkdownText`), at the corner of their box, on the paper of their page, laid out once and placed by the camera where they are drawn; only those of the pages on the screen are composed. Tests: `AgentReviewEditorTest` (the words of the text changed and of the text added are on the page, a wheel on them still pans the canvas), the screenshot `agent_marks` re-recorded | Done |
+| 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`): the review is opened and looked at by clicks in its window | Left to the user |
 
 ## Decisions
 
@@ -135,6 +135,9 @@ Taken alone, revertible.
 
 ## Left for later
 
+* The words drawn on the page are laid out by `MarkdownText`, the box of the plan by the editor: a
+  long text may end a little above or below the frame of its mark. They are not clipped to their
+  page.
 * What was applied without a review (`applyDirectly`) shown on the page from the activity, beside its
   *Undo*.
 * The proposals for the library (documents and folders), which have no page.

@@ -268,16 +268,20 @@ class AgentReviewEditorTest {
         assertEquals(setOf("Old text", "see page 4 (old)"), scene.texts.toSet())
         assertFalse(scene.controller.historyManager.canUndo && scene.texts.size != 2)
         waitForIdle()
+        // The words of the text changed and of the text added, on the page
+        assertEquals(2, onAllNodesWithTag(MARK_TEXT_TAG).fetchSemanticsNodes().size)
         onRoot().captureRoboImage("screenshots/agent_marks.png")
 
-        // The canvas under the marks is used as always: a wheel on a mark pans it
-        val before = scene.onScreen(20f, 60f)
-        onRoot().performMouseInput {
-            moveTo(scene.onScreen(60f, 65f))
-            scroll(3f)
+        // The canvas under the marks is used as always: a wheel on a mark, and on the words of one, pans it
+        for (point in listOf(scene.onScreen(60f, 65f), scene.onScreen(40f, 23f))) {
+            val before = scene.onScreen(20f, 60f)
+            onRoot().performMouseInput {
+                moveTo(point)
+                scroll(1f)
+            }
+            waitForIdle()
+            assertTrue(scene.onScreen(20f, 60f).y < before.y, "the page from $before to ${scene.onScreen(20f, 60f)}")
         }
-        waitForIdle()
-        assertTrue(scene.onScreen(20f, 60f).y < before.y, "the page from $before to ${scene.onScreen(20f, 60f)}")
         assertTrue(marksShown())
 
         // An item chosen in the list brings the page to what it changes

@@ -1,12 +1,22 @@
 package io.github.valerioisufi.drawview.agent.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateSet
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -17,15 +27,19 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.agent.PlannedMark
@@ -33,6 +47,8 @@ import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalPlan
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.TextSizes
+import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -120,6 +136,79 @@ internal object MarkColors {
  */
 @Composable
 internal fun ProposalMarksLayer(controller: DrawViewController, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
+    Box(modifier) {
+        MarkFrames(controller, marks, Modifier.matchParentSize())
+        MarkTexts(controller, marks)
+    }
+}
+
+/**
+ * The words of the texts added and changed, as the page would draw them ([MarkdownText]), each one at
+ * the corner of its box on its page: laid out once at [LAYOUT_PX_PER_MM], then placed and scaled by
+ * the camera where they are drawn, so that a pan and a zoom compose nothing. Under them the paper of
+ * their page, so that the words they replace do not show through. Only the texts of the pages on the
+ * screen are composed.
+ */
+@Composable
+private fun MarkTexts(controller: DrawViewController, marks: List<DrawnMark>) {
+    val texts = marks.filter { it.mark.markdown.isNotBlank() && (it.mark.kind == PlannedMark.Kind.ADDED || it.mark.kind == PlannedMark.Kind.CHANGED) }
+    if (texts.isEmpty()) return
+    // The pages on the screen: read at every frame, composed again only when they change
+    val visible by remember(controller) {
+        derivedStateOf {
+            controller.version
+            controller.viewport.camera.moveCount
+            controller.viewport.visiblePages().mapTo(HashSet()) { it.index }
+        }
+    }
+    val pages = controller.document.pages
+    // Laid out in pixels of the layout, whatever the density of the screen
+    CompositionLocalProvider(LocalDensity provides Density(1f, 1f)) {
+        for (drawn in texts) {
+            val mark = drawn.mark
+            val index = pages.indexOfFirst { it.id == mark.pageId }
+            if (index < 0 || index !in visible) continue
+            val paper = Color(pages[index].background.backgroundColor)
+            key(mark.pageId, mark.elementId, mark.box, mark.markdown, mark.fontSize) {
+                Box(
+                    modifier = Modifier
+                        // As wide as its box, also when the box is wider than the canvas at this scale
+                        .wrapContentSize(Alignment.TopStart, unbounded = true)
+                        .graphicsLayer {
+                            @Suppress("UNUSED_VARIABLE") val frame = controller.version
+                            @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
+                            val matrix = controller.viewport.pageMmToScreen(index)
+                            if (matrix == null) {
+                                alpha = 0f
+                                return@graphicsLayer
+                            }
+                            val corner = matrix.mapPoint(mark.box.left, mark.box.top)
+                            transformOrigin = TransformOrigin(0f, 0f)
+                            translationX = corner.x
+                            translationY = corner.y
+                            scaleX = matrix.scaleFactor / LAYOUT_PX_PER_MM
+                            scaleY = scaleX
+                            alpha = if (drawn.emphasis == Emphasis.FAINT) FAINT_ALPHA else 1f
+                        }
+                        .width((mark.box.width * LAYOUT_PX_PER_MM).dp)
+                        .heightIn(min = (mark.box.height * LAYOUT_PX_PER_MM).dp)
+                        .background(paper)
+                        .testTag(MARK_TEXT_TAG)
+                ) {
+                    MarkdownText(
+                        mark.markdown,
+                        color = Color(mark.color),
+                        style = TextStyle(fontSize = (mark.fontSize * TextSizes.PT_TO_MM * LAYOUT_PX_PER_MM).sp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** The frames, the veils, the arrows and the strokes of [marks], drawn over the canvas. */
+@Composable
+private fun MarkFrames(controller: DrawViewController, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
     val measurer = rememberTextMeasurer()
     Canvas(modifier.testTag(MARKS_TAG)) {
         // Read here: a pan, a zoom or a change of the pages draws again, and composes nothing
@@ -143,6 +232,12 @@ internal fun ProposalMarksLayer(controller: DrawViewController, marks: List<Draw
 
 /** The tag of the layer of the marks, for the tests. */
 internal const val MARKS_TAG: String = "agent-marks"
+
+/** The tag of the words of a text added or changed, drawn on the page, for the tests. */
+internal const val MARK_TEXT_TAG: String = "agent-mark-text"
+
+/** The pixels of the layout of a text per millimeter of its page: scaled to the screen where it is drawn. */
+private const val LAYOUT_PX_PER_MM = 8f
 
 private fun io.github.valerioisufi.drawview.model.geometry.Rect.toCompose(): Rect = Rect(left, top, right, bottom)
 
