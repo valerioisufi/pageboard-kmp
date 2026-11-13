@@ -1,6 +1,14 @@
 package io.github.valerioisufi.drawview.agent
 
 import io.github.valerioisufi.drawview.model.DrawCustomElement
+import io.github.valerioisufi.drawview.model.shape.ShapeKind
+import io.github.valerioisufi.drawview.model.shape.ShapeHead
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeDash
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.encode
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawStroke
@@ -210,5 +218,31 @@ class PageReadingTest {
         val read = setup.readPage().getValue("custom_elements").jsonArray.single().jsonObject
         assertEquals("chart", read.string("type"))
         assertEquals(60f, read.number("height"))
+    }
+
+    @Test
+    fun aShapeIsReadAsAShape() = runTest {
+        val setup = setup(this, backgroundScope)
+        val value = ShapeElement(ShapeKind.LINE, 0xFF1F5FBF.toInt(), 0.5f, ShapeDash.DASHED, startHead = ShapeHead.OPEN)
+        val box = ShapeGeometry.lineBox(Point(20f, 40f), Point(80f, 40f), value)
+        val arrow = DrawCustomElement(ShapeElementType.id).apply {
+            payload = ShapeElementType.encode(value)
+            x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
+        }
+        val rectangle = DrawCustomElement(ShapeElementType.id).apply {
+            payload = ShapeElementType.encode(ShapeElement(ShapeKind.RECTANGLE, 0xFF000000.toInt(), 0.5f, fill = 0x33000000))
+            x = 10f; y = 60f; width = 40f; height = 20f
+        }
+        setup.open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(arrow, rectangle))) }
+        val read = setup.readPage().getValue("custom_elements").jsonArray.map { it.jsonObject.getValue("shape").jsonObject }
+        // The head at the start: read from its tail (the end) to its head (the start)
+        assertEquals("arrow", read[0].string("kind"))
+        assertEquals("dashed", read[0].string("outline"))
+        assertEquals("#1F5FBF", read[0].string("color"))
+        assertEquals(listOf(80f, 40f), read[0].getValue("from").jsonArray.map { it.jsonPrimitive.float })
+        assertEquals(listOf(20f, 40f), read[0].getValue("to").jsonArray.map { it.jsonPrimitive.float })
+        assertEquals("rectangle", read[1].string("kind"))
+        assertEquals("#00000033", read[1].string("fill"))
+        assertNull(read[1]["from"])
     }
 }

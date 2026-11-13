@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.agent
 
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -9,7 +10,13 @@ import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.decode
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.shape.ShapeBox
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
+import io.github.valerioisufi.drawview.model.shape.ShapeElementType
+import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
+import io.github.valerioisufi.drawview.model.shape.ShapeHead
 import io.github.valerioisufi.drawview.model.placement.FreeSpace
 import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
 import io.github.valerioisufi.drawview.store.OpenDocument
@@ -249,7 +256,10 @@ public class DocumentTools internal constructor(
             pdfs = page.pdfs.filter { it.removed == null }.map { PdfEntry(it.id, it.pdfPageIndex, it.elementBase()) },
             customElements = page.customElements.filter { it.removed == null }.map { element ->
                 val box = element.getRotatedBounds()
-                CustomEntry(element.id, element.type, box.left.tenths(), box.top.tenths(), box.width.tenths(), box.height.tenths(), element.elementBase())
+                CustomEntry(
+                    element.id, element.type, box.left.tenths(), box.top.tenths(), box.width.tenths(), box.height.tenths(), element.elementBase(),
+                    shape = ShapeElementType.decode(element)?.let { shapeEntryOf(element, it) }
+                )
             },
             strokeList = listed?.take(MAX_STROKES_LISTED)?.map { it.toEntry() },
             strokesLeftOut = listed?.let { (it.size - MAX_STROKES_LISTED).takeIf { n -> n > 0 } },
@@ -1386,8 +1396,51 @@ private data class CustomEntry(
     val y: Float,
     val width: Float,
     val height: Float,
-    val base: String
+    val base: String,
+    /** What a shape of the shapes tool is (its type `drawview.shape`). */
+    val shape: ShapeEntry? = null
 )
+
+/**
+ * A shape of the shapes tool as a model reads it: its kind (`line`, `arrow`, `double_arrow`,
+ * `rectangle`, ...), its outline, its fill; the ends of a line ([from], [to], page millimeters).
+ */
+@Serializable
+private data class ShapeEntry(
+    val kind: String,
+    val color: String,
+    val width: Float,
+    val outline: String,
+    val fill: String? = null,
+    val from: List<Float>? = null,
+    val to: List<Float>? = null,
+    val rotation: Float? = null
+)
+
+/** [value], the value of [element], as [ShapeEntry]. */
+private fun shapeEntryOf(element: DrawCustomElement, value: ShapeElement): ShapeEntry {
+    val box = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
+    val heads = listOf(value.startHead, value.endHead).count { it != ShapeHead.NONE }
+    val kind = when {
+        !value.kind.isLine -> value.kind.name.lowercase()
+        heads == 2 -> "double_arrow"
+        // An arrow is read from its tail to its head
+        heads == 1 -> "arrow"
+        else -> "line"
+    }
+    var ends = if (value.kind.isLine) ShapeGeometry.lineEnds(box) else null
+    if (ends != null && value.startHead != ShapeHead.NONE && value.endHead == ShapeHead.NONE) ends = ends.second to ends.first
+    return ShapeEntry(
+        kind = kind,
+        color = colorHex(value.stroke),
+        width = value.widthMm.tenths().coerceAtLeast(0.1f),
+        outline = value.dash.name.lowercase(),
+        fill = value.fill?.let(::colorHex),
+        from = ends?.first?.let { listOf(it.x.tenths(), it.y.tenths()) },
+        to = ends?.second?.let { listOf(it.x.tenths(), it.y.tenths()) },
+        rotation = element.rotation.takeIf { !value.kind.isLine && it != 0f }?.tenths()
+    )
+}
 
 @Serializable
 private data class StrokeEntry(
