@@ -54,10 +54,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
-/**
- * The scenes of the screenshot tests: a library with folders and notes, a note opened in the
- * editor, the window recorded once the pages are drawn.
- */
+// The scenes of the screenshot tests: a library with folders and notes, a note opened in the
+// editor, the window recorded once the pages are drawn.
 
 /**
  * Shows a library with folders and notes in [window], does [actions] and records the window

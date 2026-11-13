@@ -413,10 +413,4 @@ internal object SelectionOverlay {
 
     /** Where the chevrons of a chain are along their edge. */
     private const val CHAIN_MARK_AT = 0.85f
-
-    /** Bounds of the frame in screen pixels (used for culling and menus). */
-    fun bounds(frame: SelectionFrame): Rect {
-        val points = frame.corners + listOfNotNull(frame.rotationHandle)
-        return Rect(points.minOf { it.x }, points.minOf { it.y }, points.maxOf { it.x }, points.maxOf { it.y })
-    }
 }

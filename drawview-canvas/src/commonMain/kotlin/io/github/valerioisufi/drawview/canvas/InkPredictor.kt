@@ -37,7 +37,6 @@ internal class KalmanInkPredictor(private val density: () -> Float) : InkPredict
     private val y = AxisFilter()
     private var samples = 0
     private var lastTime = 0L
-    private var lastPosition = Offset.Zero
 
     override fun start() {
         samples = 0
@@ -59,7 +58,6 @@ internal class KalmanInkPredictor(private val density: () -> Float) : InkPredict
         }
         samples++
         lastTime = timeMs
-        lastPosition = position
     }
 
     override fun predict(horizonMs: Long): List<PredictedPoint> {

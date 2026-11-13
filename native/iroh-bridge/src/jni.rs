@@ -215,15 +215,6 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_pathRtt(
-    _env: *mut JNIEnv,
-    _this: jobject,
-    connection: jlong,
-) -> jlong {
-    bridge::path(connection as u64).map(|(_, rtt)| rtt).unwrap_or(0)
-}
-
-#[unsafe(no_mangle)]
 pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_closeConnection(
     _env: *mut JNIEnv,
     _this: jobject,

@@ -157,86 +157,9 @@ public class Dimension(public val width: Measure, public val height: Measure) {
     }
 
     /**
-     * Calculates required pixel width to maintain the page's exact physical aspect ratio,
-     * given known pixel height constraints.
-     */
-    internal fun calcWidthFromHeightPx(heightPx: Px): Float {
-        return (width.mm * heightPx.px) / height.mm
-    }
-
-    /**
-     * Translates physical page height into screen pixels based on DPI.
-     */
-    internal fun calcHeightFromResolutionPxInch(resolutionPxInch: Float): Float {
-        return height.inch * resolutionPxInch
-    }
-
-    /**
-     * Translates physical page width into screen pixels based on DPI.
-     */
-    internal fun calcWidthFromResolutionPxInch(resolutionPxInch: Float): Float {
-        return width.inch * resolutionPxInch
-    }
-
-    /**
-     * Calculates corresponding scaled pixel length on the canvas for a physical measurement.
-     */
-    internal fun calcPxFromDim(dim: Measure, length: Px, lengthType: Length = Length.WIDTH): Float {
-        return when (lengthType) {
-            Length.WIDTH -> (dim.mm / width.mm) * length.px
-            Length.HEIGHT -> (dim.mm / height.mm) * length.px
-        }
-    }
-
-    /**
-     * Projects a screen-dependent pixel measurement back into an absolute physical [Measure].
-     */
-    internal fun calcDimFromPx(dimPx: Float, length: Px, lengthType: Length = Length.WIDTH): Measure {
-        return when (lengthType) {
-            Length.WIDTH -> Measure(dimPx * width.mm / length.px, Measure.Unit.MM)
-            Length.HEIGHT -> Measure(dimPx * height.mm / length.px, Measure.Unit.MM)
-        }
-    }
-
-    /**
-     * Maps an X-axis screen coordinate to an absolute document coordinate in typographical points.
-     */
-    internal fun calcXPt(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.pt / rectPage.width
-
-    /**
-     * Maps a Y-axis screen coordinate to an absolute document coordinate in typographical points.
-     */
-    internal fun calcYPt(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.pt / rectPage.height
-
-    /**
-     * Maps an absolute document X-axis coordinate in points to a screen pixel coordinate.
-     */
-    internal fun calcXPx(xPt: Float, rectPage: Rect): Float = (xPt * rectPage.width / width.pt) + rectPage.left
-
-    /**
-     * Maps an absolute document Y-axis coordinate in points to a screen pixel coordinate.
-     */
-    internal fun calcYPx(yPt: Float, rectPage: Rect): Float = (yPt * rectPage.height / height.pt) + rectPage.top
-
-    /**
      * Maps an X-axis screen coordinate to an absolute document coordinate in millimeters.
      */
     public fun calcXMm(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.mm / rectPage.width
-
-    /**
-     * Maps a Y-axis screen coordinate to an absolute document coordinate in millimeters.
-     */
-    internal fun calcYMm(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.mm / rectPage.height
-
-    /**
-     * Maps an absolute document X coordinate in millimeters to a screen pixel coordinate.
-     */
-    internal fun calcXPxFromMm(xMm: Float, rectPage: Rect): Float = (xMm * rectPage.width / width.mm) + rectPage.left
-
-    /**
-     * Maps an absolute document Y coordinate in millimeters to a screen pixel coordinate.
-     */
-    internal fun calcYPxFromMm(yMm: Float, rectPage: Rect): Float = (yMm * rectPage.height / height.mm) + rectPage.top
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

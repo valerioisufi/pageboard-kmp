@@ -422,16 +422,6 @@ public fun aboutLibraryAction(): LibraryAction = remember {
     ) { onDone -> AboutLicensesDialog(onDismiss = onDone) }
 }
 
-/** Opens the About & Licenses dialog of the application (see `LocalAboutAppInfo`). */
-@Composable
-internal fun AboutLicensesButton() {
-    var showAboutDialog by remember { mutableStateOf(false) }
-    DesignIconButton(DrawViewIcons.Info, stringResource(DrawViewRes.string.about_dialog_title), { showAboutDialog = true })
-    if (showAboutDialog) {
-        AboutLicensesDialog(onDismiss = { showAboutDialog = false })
-    }
-}
-
 /**
  * System back (Android back gesture, Escape on the desktop, ...) while it has something to do:
  * otherwise the platform handles it (e.g. Android closes the application).

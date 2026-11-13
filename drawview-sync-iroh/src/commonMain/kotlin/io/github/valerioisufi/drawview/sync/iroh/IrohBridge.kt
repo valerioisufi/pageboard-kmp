@@ -52,9 +52,6 @@ internal interface IrohBridge {
     /** What [connection] goes through now: [PATH_NONE], [PATH_DIRECT] or [PATH_RELAY]. */
     fun pathKind(connection: Long): Int
 
-    /** The round-trip time of [connection] now, in milliseconds. */
-    fun pathRtt(connection: Long): Long
-
     /** Closes [connection] and its streams. */
     fun closeConnection(connection: Long)
 

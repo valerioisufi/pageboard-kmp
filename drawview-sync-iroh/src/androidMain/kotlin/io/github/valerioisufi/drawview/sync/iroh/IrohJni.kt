@@ -19,7 +19,6 @@ internal object IrohJni : IrohBridge {
     external override fun accept(endpoint: Long, timeoutMs: Long): Long
     external override fun remoteId(connection: Long): String?
     external override fun pathKind(connection: Long): Int
-    external override fun pathRtt(connection: Long): Long
     external override fun closeConnection(connection: Long)
     external override fun openStream(connection: Long): Long
     external override fun acceptStream(connection: Long, timeoutMs: Long): Long

@@ -95,11 +95,4 @@ public class SignedMembership(public val bytes: ByteArray, internal val signatur
             null
         }
     }
-
-    /** The membership without checking who signed it (the first one of a joiner, see [Invitation.owner]). */
-    internal fun peek(): Membership? = try {
-        Membership.json.decodeFromString(Membership.serializer(), bytes.decodeToString())
-    } catch (_: Exception) {
-        null
-    }
 }

@@ -288,12 +288,6 @@ public fun NavigationItem(
     }
 }
 
-/** [content] in the [color] of the content (the icons and texts of a bar). */
-@Composable
-internal fun WithContentColor(color: Color, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalContentColor provides color, content = content)
-}
-
 /** A message of the design: the inverse surface rounded 12 dp, its action in the inverse primary. */
 @Composable
 public fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {

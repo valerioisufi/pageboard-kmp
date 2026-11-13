@@ -388,8 +388,9 @@ internal object LecturePrompts {
     /**
      * The pages around the visible ones in text, the same for every provider, then the images: the
      * visible pages as they look and the close-ups of what the student just wrote.
+     *
+     * @param slidesAbove pages whose slide is in the text of the slides opening the request.
      */
-    /** @param slidesAbove pages whose slide is in the text of the slides opening the request. */
     private fun notebookParts(notebook: NotebookSnapshot, slidesAbove: Set<String> = emptySet()): List<PromptPart> {
         val parts = mutableListOf<PromptPart>()
         val withImage = notebook.pageImages.mapTo(mutableSetOf()) { it.pageIndex }

@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -96,7 +97,8 @@ public fun AskNotesCard(
     val trimmed = query.trim()
     if (trimmed.length < 3) return
 
-    val installedIds by (search.installedModels?.installed ?: MutableStateFlow(emptySet())).collectAsState()
+    val noModels = remember { MutableStateFlow(emptySet<String>()) }
+    val installedIds by (search.installedModels?.installed ?: noModels).collectAsState()
     val hasLocalAnswerModel = search.runtimeAvailable && (
         search.answerModelSpec.id in installedIds ||
             ModelCatalog.GEMMA_4_E2B.id in installedIds ||

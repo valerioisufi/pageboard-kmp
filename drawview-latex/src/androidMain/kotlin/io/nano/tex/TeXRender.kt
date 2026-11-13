@@ -1,9 +1,9 @@
 package io.nano.tex
 
 /**
- * A parsed formula (native object released by [release] or when garbage collected).
+ * A formula laid out by MicroTeX (native), drawn on a [Graphics2D] at its size; its native object
+ * is released by [release], or when it is garbage collected.
  */
-/** A formula laid out by MicroTeX (native), drawn on a [Graphics2D] at its size. */
 public class TeXRender internal constructor(private var nativePtr: Long) {
 
     private var recorder: ActionRecorder? = null

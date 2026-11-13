@@ -50,9 +50,6 @@ internal class RecordingFile(directory: String) {
 
     fun durationMs(): Long = samplesToMs(samples())
 
-    /** The whole file (e.g. sent to Gemini, as [MIME_TYPE]). */
-    fun readEncoded(): ByteArray? = if (!exists) null else SystemFileSystem.source(path).buffered().use { it.readByteArray() }
-
     /** Reads [durationMs] of audio from [startMs] (while recording or after [finish]). */
     fun readSegment(startMs: Long, durationMs: Long): ShortArray? =
         readSamples(msToSamples(startMs.coerceAtLeast(0L)), msToSamples(durationMs))
@@ -162,6 +159,5 @@ internal class RecordingFile(directory: String) {
 
     companion object {
         const val FILE_NAME = "audio.opus"
-        const val MIME_TYPE = "audio/ogg"
     }
 }

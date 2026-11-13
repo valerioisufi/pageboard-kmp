@@ -240,7 +240,6 @@ public class Lecture internal constructor(
     public fun generatingElsewhere(now: Long): GenerationLock? = generation?.takeIf { it.device != device && it.holds(now) }
 
 
-    /** The final review can be written (again): the recording is over and no review is running. */
     /** Whether this device writes what the models write (now: it is a setting). */
     public val generates: Boolean get() = generatesHere()
 
@@ -653,7 +652,6 @@ public class Lecture internal constructor(
         }
     }
 
-    /** Its audio was received from the device that recorded it. */
     /** More audio was recorded: offered to the other devices (see LectureAttachments). */
     internal fun audioGrew() = onChanged(id)
 

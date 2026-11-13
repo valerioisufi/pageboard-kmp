@@ -195,8 +195,6 @@ public class DrawViewController(
             selectionManager.lassoMode = value
         }
 
-    internal val isPanMode: Boolean get() = toolManager.isPanTool
-
     public val canUndo: Boolean get() = historyManager.canUndo
     public val canRedo: Boolean get() = historyManager.canRedo
 

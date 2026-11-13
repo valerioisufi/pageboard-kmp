@@ -83,35 +83,29 @@ source sets not used).
   `DrawPage.shownElements()` (or the existing filter, applied once in `pageContent`) is the only
   source of counts, strokes and PDFs. `DocumentChange` says itself whether it changes nothing (a
   public `isNoChange`, or `NoChange` made public), instead of `AgentActivity` reading a name.
-  `PlatformFiles` owns the data directory (`DeviceProfile.dataDirectory`, `modelsDirectory`). One
-  `PT_TO_MM = 25.4f / 72f` in `drawview-model`, one `CIRCLE_KAPPA` beside the path code.
+  The directories of the data are found as the parents of their paths (`kotlinx.io.files.Path`),
+  not by cutting the text at the last `/`, which fails with the separators of Windows
+  (`dataDirectory`, `WhisperTranscriber.modelsDirectory`). The text sizes take one `PT_TO_MM`; the
+  PDF circles one exact `CIRCLE_KAPPA`.
 * **Creator.** The desktop window that opens a session hands it to its frame: the document window
   gives its `EditorSession` back (a callback or a `State`), and the frame reads the dirty state
   from it, instead of looking it up once in a registry.
-* **Pure Fabrication.** A shared `jvmAndAndroid` source set (an intermediate `jvmCommon` group in
-  `drawview.kmp.library`) holds the code of the JNI twins once; `restrictToOwner` moves to
-  `drawview-platform`; one `SwitchRow` in `drawview-ui`; one `writeLine` helper beside the socket
-  code of the agent.
-* **Low Coupling.** `drawview-store-room` stops depending on `drawview-ink`: the stroke modeller
-  is given by the application, as `KeyValueDocumentStore` already does. `drawview-sync-ui` takes
-  `drawview-sync-lan` as `implementation`. The dependencies, plugins and source sets nobody uses go.
-  `FileExplorerViewModel` stops importing Compose resources and UI tags (the UI maps them).
-* **Polymorphism / Protected Variations.** `DrawViewMenuBar` reads the conventions of the window
-  (`currentAdaptiveInfo().conventions`), not the global. `TeXRender` on the JVM gets the explicit
-  `release()` it has on Android. The duplicated page backgrounds draw through the renderer of
-  `drawview-canvas` (an internal function made reachable to `drawview-ui`, or a small public one).
-* **Indirection.** `DocumentStore` users that need preferences take a `PreferenceStore` given by
-  the application instead of downcasting `store as? PreferenceStore`.
+* **Pure Fabrication.** Code identical on every target goes to `commonMain` (`TeXException`,
+  `Rect` of MicroTeX); code identical on the JVM and Android goes to a `jvmAndAndroid` group of the
+  module (`InkNative`, the stroke engine delegate of `drawview-ink`); one `writeLine` beside the
+  socket code of the agent; the rule of the formats in `ExportScope`, read by `ExportContents`
+  and `ExportSheetState`.
+* **Low Coupling.** The dependencies, plugins and source sets nobody uses go.
 
 ## Phases
 
 | Phase | Content | Status |
 |-------|---------|--------|
 | 1 | Bugs 1–7 of the starting point, with tests (agent counts, `NoChange`) | done |
-| 2 | Dead code: private/`internal`/native/app symbols, orphan KDoc, no-ops and wasted allocations, placeholder tests | to do |
+| 2 | Dead code: private/`internal`/native/app symbols, orphan KDoc, no-ops and wasted allocations, placeholder tests | done |
 | 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, catalog, unused dependencies/plugins/source sets, the pdfium linker flags limited to `drawview-pdf`, `windows-aarch64` aligned in CI | to do |
-| 4 | Duplicates: `jvmAndAndroid` source set and its twins, constants, `restrictToOwner`, `codePointAt`, `SwitchRow`, `writeLine`, WAV round trip, `ExportSheetState` on `ExportContents`, page backgrounds | to do |
-| 5 | Couplings: `store-room` without `ink`, `sync-ui` dependencies, `PreferenceStore` given, `dataDirectory` in `PlatformFiles`, explorer view model without UI types, menu bar conventions, `TeXRender.release` on the JVM | to do |
+| 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | to do |
+| 5 | The directories of the data found by their paths | to do |
 | 6 | Public API with no caller (part 1B of the audit), removed by the user's choice, with `updateKotlinAbi` | waits for the user |
 
 Each phase is one commit on `feat/cleanup`, after the checks of `CLAUDE.md` (`jvmTest
@@ -123,9 +117,10 @@ be used while removing it is kept and noted here.
 
 Taken alone, revertible:
 
-* `PT_TO_MM` becomes `25.4f / 72f` everywhere: texts sized with `0.3527f` may move by less than a
-  hundredth of a millimetre per point. Text heights are laid out, not stored, so nothing stored
-  changes.
+* `TextSizes.PT_TO_MM` keeps `0.3527f`, and `TextBackground` uses it. Changing it to `25.4f / 72f`
+  (as the plan first said) would size every text written so far a little larger, and a line could
+  wrap at another word; the background of a text moves by less than a micrometre. The page
+  measures (`Dimension`, points of the PDF) keep their exact `1 / 2.83465f`.
 * `DocumentTools` keeps the field `pdf_pages` of its output: the external models read it.
 * The schemas `8.json`–`15.json` stay.
 * The sample on iOS does not declare `drawview://`, though `ContentView.swift` handles it:
@@ -134,9 +129,52 @@ Taken alone, revertible:
 * `DocumentChange.changesNothing` (true for the change undoing an `AddResource` only) is new public
   API of `drawview-model`, recorded in its dump.
 
+## Findings kept while fixing
+
+Checked again when removing them, they stay:
+
+* `Font.styledFace` (`io.nano.tex`, Android), `AssistantSettings.localModel`,
+  `SharingState.closed` and `InvitationGrant.createdAt`: public API (phase 6). The sharing state is
+  also stored: its fields are not removed without a migration.
+* `PageOnScreen.index`: read by the tests of the export sheet, which build it.
+* The empty `onDispose` of `DrawScreen`: the text adapter is set when the effect is applied, not
+  later in a coroutine as a `LaunchedEffect` would.
+* `PdfSearchSource.version` opening an adapter: it asks whether the PDF engine works now (its
+  native library may be missing), not whether it is given.
+* The PDFium linker flags of every library's iOS tests: every library whose tests link
+  `drawview-pdf`, even through another module, needs them.
+* `api(project(":drawview-sync-lan"))` in `drawview-sync-ui`: `Collaboration` takes a
+  `LanDiscovery` in its public constructor.
+* `drawview-store-room` depending on `drawview-ink`: `DrawViewStore.default` loads the strokes of
+  the user with `InkStrokeModeller`, and only the applications could choose it instead; that comes
+  with the global objects, below.
+* `documents.store as? PreferenceStore`: a default the callers can replace, not a downcast they
+  must live with; making every `DocumentStore` a `PreferenceStore` would bind the third-party stores.
+* `platformConventions` in `DrawViewMenuBar`: the menu bar is composed outside `AdaptiveRoot`,
+  where the conventions of the window are not known yet.
+* `FileExplorerViewModel` with Compose resources and tags: `drawview-explorer` is a Compose module,
+  and the tags are given by the applications as they are shown.
+* `TeXRender.release` on the JVM: nothing would call it (the one of Android has no caller either,
+  phase 6).
+* The two page backgrounds drawn by hand (`PageGridOverlay`, `PageTemplateConfigurator`): drawing
+  them with the renderer of `drawview-canvas` needs a public drawing function and changes how the
+  thumbnails look (later, below). Their `PageBackground.Solid` branches are there for the `when`
+  to be exhaustive.
+* The WAV made by `SpeechSource` and read back by `WhisperTranscriber`: it is the format of the
+  public `Transcriber`, which any engine can take; 44 bytes a piece.
+* The two switch rows of `ShareSheet`: one has an icon and a hint, the other neither.
+* `cryptography.provider.optimal` in `drawview-sync`: no code names it, but it registers the
+  provider of the cryptography at run time.
+* `compose.materialIconsExtended` in `drawview-ui` and `drawview-lecture-ui`: they draw `Undo`,
+  `Redo`, `Code`, `Mic`.
+
 ## Left for later
 
 Each needs a plan of its own:
+
+* **One drawing of the page backgrounds** for the editor, the page grid and the template picker.
+* **The duplicates across modules** (`codePointAt` in `drawview-pdf` and `drawview-export`, the
+  `SwitchRow` of four UI modules): sharing them needs public API in a lower module.
 
 * **The monoliths**: `SyncEngine` (connections, operations, resources and attachments, presence),
   `DocumentTools` (DTOs, schemas, handlers by domain), `LecturePanel`, `EditorToolbar`,

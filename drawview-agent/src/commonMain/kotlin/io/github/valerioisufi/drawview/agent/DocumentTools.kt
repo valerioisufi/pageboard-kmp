@@ -768,7 +768,6 @@ public class DocumentTools internal constructor(
         const val MAX_PAGES_READ = 20
         const val MAX_TEXTS_LISTED = 2000
         const val TEXT_START_LENGTH = 80
-        const val OVERLAY_LABEL_SIZE = 9f
         const val DEFAULT_IMAGE_WIDTH_MM = 100f
         const val MAX_STROKE_POINTS = 2000
         const val MAX_QUERY_LENGTH = 1000

@@ -86,12 +86,6 @@ internal object IrohCinterop : IrohBridge {
         if (dv_iroh_path(connection.toULong(), kind.ptr, rtt.ptr) == DV_IROH_OK) kind.value else IrohBridge.PATH_NONE
     }
 
-    override fun pathRtt(connection: Long): Long = memScoped {
-        val kind = alloc<IntVar>()
-        val rtt = alloc<LongVar>()
-        if (dv_iroh_path(connection.toULong(), kind.ptr, rtt.ptr) == DV_IROH_OK) rtt.value else 0
-    }
-
     override fun closeConnection(connection: Long): Unit = dv_iroh_close_connection(connection.toULong())
 
     override fun openStream(connection: Long): Long = memScoped {

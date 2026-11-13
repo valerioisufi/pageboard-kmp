@@ -1065,8 +1065,6 @@ public class DrawDocument(
 
     public fun findResource(resourceId: String): DrawResource? = resources.firstOrNull { it.id == resourceId }
 
-    internal fun pageByRenderKey(renderKey: Long): DrawPage? = pages.firstOrNull { it.renderKey == renderKey }
-
     private companion object {
         val pageOrder: Comparator<DrawPage> = compareBy<DrawPage>({ it.orderKey }, { it.id })
     }

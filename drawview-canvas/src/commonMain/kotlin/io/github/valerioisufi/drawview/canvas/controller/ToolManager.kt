@@ -92,11 +92,9 @@ public class ToolManager(
     public fun activePreset(tool: Tool = selectedTool): ToolPreset? = presetsOf(tool).getOrNull(selectedPresetIndex(tool))
 
     internal val isPanTool: Boolean get() = selectedTool == Tool.PAN
-    internal val isTextTool: Boolean get() = selectedTool == Tool.TEXT
     internal val isLassoTool: Boolean get() = selectedTool == Tool.LAZO
     internal val isEraserTool: Boolean get() = selectedTool == Tool.ERASER
     internal val isInkTool: Boolean get() = selectedTool == Tool.INK_PEN || selectedTool == Tool.INK_HIGHLIGHTER
-    internal val isTextMarkupTool: Boolean get() = selectedTool == Tool.TEXT_MARKUP
 
     /** The tool chosen before the selected one (the Apple Pencil switches back to it). */
     public var previousTool: Tool by mutableStateOf(Tool.INK_PEN)

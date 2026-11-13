@@ -218,9 +218,6 @@ public object HitTesting {
         return cx * cx + cy * cy
     }
 
-    internal fun pointSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float): Float =
-        sqrt(pointSegmentDistanceSq(px, py, ax, ay, bx, by))
-
     private fun segmentSegmentDistanceSq(
         p1x: Float, p1y: Float, p2x: Float, p2y: Float,
         q1x: Float, q1y: Float, q2x: Float, q2y: Float

@@ -18,12 +18,6 @@ internal object DrawViewRadius {
     /** The tool buttons, the wells of the thumbnails. */
     val Large = 16.dp
 
-    /** The cards of the folders, the floating action button, the previews. */
-    val ExtraLarge = 20.dp
-
-    /** The cards of the notes, the popovers, the dialogs of the tools. */
-    val ExtraLarge2 = 24.dp
-
     /** The sheets, the dialogs. */
     val ExtraLarge3 = 28.dp
 }

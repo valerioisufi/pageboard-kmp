@@ -619,7 +619,6 @@ class PdfExporterTest {
         const val PT_PER_MM = 72f / 25.4f
         const val WHITE = 0xFFFFFFFF.toInt()
 
-        /** A 300 x 200 page with a black square in its bottom-left corner and "Hash functions". */
         /** Red, blue, green, yellow. */
         val QUADRANTS = intArrayOf(0xFFFF0000.toInt(), 0xFF0000FF.toInt(), 0xFF00FF00.toInt(), 0xFFFFFF00.toInt())
 

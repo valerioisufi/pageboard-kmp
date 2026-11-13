@@ -159,24 +159,4 @@ internal object TilePyramid {
         outMatrix.postScale(lodScale, lodScale)
         return outMatrix
     }
-
-    /**
-     * Calculates the transformation matrix mapping World Space coordinates
-     * into the local pixel coordinates [0..TILE_SIZE, 0..TILE_SIZE] of the tile bitmap.
-     */
-    fun getWorldToTileMatrix(
-        key: TileKey,
-        pageWorldRect: Rect,
-        outMatrix: Matrix2D = Matrix2D()
-    ): Matrix2D {
-        val lodScale = getScaleForLod(key.lod)
-        val size = TILE_SIZE / lodScale
-        val worldLeft = pageWorldRect.left + key.col * size
-        val worldTop = pageWorldRect.top + key.row * size
-
-        outMatrix.reset()
-        outMatrix.postTranslate(-worldLeft, -worldTop)
-        outMatrix.postScale(lodScale, lodScale)
-        return outMatrix
-    }
 }

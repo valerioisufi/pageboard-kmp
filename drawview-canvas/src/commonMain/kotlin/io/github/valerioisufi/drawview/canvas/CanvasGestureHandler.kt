@@ -186,7 +186,6 @@ internal class CanvasGestureHandler(
     /** The gesture dropped a selection: a tap of the shapes tool only drops it. */
     private var droppedSelection = false
 
-    /** Where the box of the text being written was when the gesture started moving it, and the move so far (page mm). */
     /** The corner of the text being written when its drag started, and the drag so far, in the world (its page may change). */
     private var editorMoveOrigin = Offset.Zero
     private var editorMoveOffset = Offset.Zero

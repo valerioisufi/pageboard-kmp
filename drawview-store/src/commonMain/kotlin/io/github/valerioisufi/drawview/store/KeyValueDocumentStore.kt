@@ -117,10 +117,6 @@ public class KeyValueDocumentStore(
 
     override val persistence: DocumentPersistence get() = this
 
-    /** `false` after a write has been rejected by the storage (e.g. quota exceeded). */
-    internal var lastWriteSucceeded: Boolean = true
-        private set
-
     // ==========================================================
     // DocumentStore
     // ==========================================================
@@ -456,7 +452,6 @@ public class KeyValueDocumentStore(
         syncLock(lock) {
             PlatformFiles.readBytes(resource.path)?.let { bytes ->
                 if (!storage.set(resourceKey(resource.path), Base64.encode(bytes))) {
-                    lastWriteSucceeded = false
                     println("DrawView: the storage quota does not allow saving the resource ${resource.path}")
                 }
             }
@@ -620,7 +615,7 @@ public class KeyValueDocumentStore(
 
     override suspend fun setPreference(key: String, value: String?) {
         if (value == null) storage.remove(PREFERENCE_PREFIX + key)
-        else if (!storage.set(PREFERENCE_PREFIX + key, value)) lastWriteSucceeded = false
+        else storage.set(PREFERENCE_PREFIX + key, value)
     }
 
     // ==========================================================
@@ -727,9 +722,7 @@ public class KeyValueDocumentStore(
     }
 
     private fun writeIndexLocked() {
-        if (!storage.set(INDEX_KEY, json.encodeToString(StoredIndex.serializer(), index))) {
-            lastWriteSucceeded = false
-        }
+        storage.set(INDEX_KEY, json.encodeToString(StoredIndex.serializer(), index))
     }
 
     private fun writeDocumentLocked(document: DrawDocument) {
@@ -739,12 +732,7 @@ public class KeyValueDocumentStore(
         // What the library tells of the content (published with the next summaries)
         updateSummaryLocked(document.id) { it.copy(pageCount = pageCount, hasPdf = hasPdf) }
         val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))
-        if (!written) {
-            lastWriteSucceeded = false
-            println("DrawView: the storage quota does not allow saving the document ${document.id}")
-        } else {
-            lastWriteSucceeded = true
-        }
+        if (!written) println("DrawView: the storage quota does not allow saving the document ${document.id}")
     }
 
     @OptIn(ExperimentalEncodingApi::class)

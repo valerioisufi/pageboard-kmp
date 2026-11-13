@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -38,7 +37,6 @@ internal class AgentHost(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val clients = ConcurrentHashMap.newKeySet<SocketChannel>()
     private var server: ServerSocketChannel? = null
-    private var serverJob: Job? = null
 
     /** Follows the setting of the user, until [stop]. */
     fun start() {
@@ -68,7 +66,7 @@ internal class AgentHost(
             return
         }
         server = channel
-        serverJob = scope.launch { accept(channel) }
+        scope.launch { accept(channel) }
     }
 
     private suspend fun accept(server: ServerSocketChannel) {
@@ -119,7 +117,6 @@ internal class AgentHost(
     private fun closeAll() {
         val listening = server
         server = null
-        serverJob = null
         try {
             listening?.close()
         } catch (_: IOException) {

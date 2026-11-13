@@ -734,7 +734,6 @@ public class LectureAssistant(
         }
     }
 
-    /** The handwriting of the notebook [documentId], transcribed once for all its lectures (and shared with its devices). */
     /**
      * The handwriting of document [documentId] read so far, by key of block (see
      * [io.github.valerioisufi.drawview.lecture.handwriting.blockKey]): as last saved, also by a
@@ -1060,10 +1059,6 @@ public class LectureAssistant(
             library.records.withLock { library.delete(summary.directory) }
             refreshNow(documentId)
         }
-    }
-
-    internal fun clearStartError() {
-        startError = null
     }
 
     /** Ends the recording right away (the application is exiting); see [LectureRecorder.finishNow]. */

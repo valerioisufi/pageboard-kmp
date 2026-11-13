@@ -308,16 +308,12 @@ private fun Handle(
         Canvas(Modifier.size(TouchSelection.HANDLE_TARGET)) {
             val r = TouchSelection.HANDLE_SIZE.toPx() / 2f
             val center = Offset(size.width / 2f, (size.height - 2f * r) / 2f + r)
-            // A drop: a circle with the corner pointing at the text
+            // A drop: a circle with the corner pointing at the text (the caret's turned up)
             val drop = Path().apply {
                 addOval(Rect(center, r))
                 addRect(Rect(Offset(if (kind == HandleKind.START) center.x else center.x - r, center.y - r), Size(r, r)))
             }
-            if (kind == HandleKind.CARET) {
-                rotate(45f, center) { drawPath(Path().apply { addOval(Rect(center, r)); addRect(Rect(Offset(center.x - r, center.y - r), Size(r, r))) }, color) }
-            } else {
-                drawPath(drop, color)
-            }
+            if (kind == HandleKind.CARET) rotate(45f, center) { drawPath(drop, color) } else drawPath(drop, color)
         }
     }
 }

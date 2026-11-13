@@ -423,9 +423,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         sortOption = option
     }
 
-    /**
-     * NAVIGATION
-     */
+    // Navigation
+
     /** Enters [folder], wherever it was found: its path is the one from the root. */
     fun enterFolder(folder: FileItem) {
         if (folder.type == FileType.FOLDER) showFolder(folder.id)
@@ -464,9 +463,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     fun getSubFolders(parentId: String?): List<FolderSummary> =
         folders.filter { it.parentId == parentId }.sortedBy { it.name }
 
-    /**
-     * FILE OPERATIONS
-     */
+    // File operations
 
     /**
      * The error of a name for a new item in the current folder, or for the new name of
@@ -617,9 +614,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         FileType.FILE -> store.moveDocument(file.id, targetFolderId)
     }
 
-    /**
-     * SELECTION
-     */
+    // Selection
+
     /** Whether [file] is marked: selected, or with its details shown. */
     fun isSelected(file: FileItem): Boolean = file.key in selectedKeys || file.key == detailsKey
 

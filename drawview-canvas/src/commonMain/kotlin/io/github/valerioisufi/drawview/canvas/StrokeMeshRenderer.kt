@@ -32,15 +32,3 @@ internal expect class StrokeMeshPainter() {
      */
     fun drawOutline(canvas: Canvas, outline: StrokeOutline, color: Color, transform: Matrix2D? = null)
 }
-
-/**
- * Convenience overload allocating a [StrokeMeshPainter] for a single draw call.
- */
-internal fun Canvas.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
-    StrokeMeshPainter().draw(this, mesh, transform)
-}
-
-internal fun DrawScope.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
-    if (mesh.isEmpty) return
-    drawIntoCanvas { canvas -> canvas.drawStrokeMesh(mesh, transform) }
-}

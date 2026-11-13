@@ -83,7 +83,6 @@ internal object OggOpus {
         return bytes
     }
 
-    const val FLAG_CONTINUED = 1
     const val FLAG_FIRST = 2
     const val FLAG_LAST = 4
 

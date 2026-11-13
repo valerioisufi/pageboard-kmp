@@ -112,12 +112,6 @@ internal val DarkColorScheme = darkColorScheme(
     onTertiaryFixedVariant = md_theme_onTertiaryFixedVariant,
 )
 
-/** The color scheme of the design in the light theme. */
-internal val DrawViewLightColors: ColorScheme get() = LightColorScheme
-
-/** The color scheme of the design in the dark theme. */
-internal val DrawViewDarkColors: ColorScheme get() = DarkColorScheme
-
 /**
  * Material 3 theme of DrawView, as the design draws it (docs/ui-design.md): the palette of the
  * design (or the dynamic colors of the system on Android 12+, or the schemes of an application),

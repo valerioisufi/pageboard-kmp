@@ -572,10 +572,6 @@ public class LectureRecorder internal constructor(
         }
     }
 
-    /**
-     * What the student is looking at (with the handwriting transcribed so far), or `null` when the
-     * document is closed.
-     */
     /** Remembers the pages the student is looking at, when the notebook is open (not analyzed). */
     private suspend fun rememberPagesSeen() {
         val snapshot = captureNotebook(imagePages = IMAGE_PAGES) ?: return

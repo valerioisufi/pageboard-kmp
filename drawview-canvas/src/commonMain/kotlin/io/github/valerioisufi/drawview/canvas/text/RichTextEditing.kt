@@ -680,7 +680,6 @@ public object RichTextEditing {
         // Where each line starts, and how much it changed before it
         val starts = ArrayList<Int>()
         val shifts = ArrayList<Int>()
-        var shift = 0
         var lineStart = first
         while (true) {
             val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0 || it > last) last else it }
@@ -688,7 +687,6 @@ public object RichTextEditing {
             val length = BlockQuote.markerLength(text, lineStart)
             when {
                 removing -> {
-                    shift -= length
                     shifts += -length
                     out.append(text, lineStart + length, lineEnd)
                 }
@@ -697,7 +695,6 @@ public object RichTextEditing {
                     out.append(text, lineStart, lineEnd)
                 }
                 else -> {
-                    shift += BlockQuote.MARKER.length
                     shifts += BlockQuote.MARKER.length
                     out.append(BlockQuote.MARKER).append(text, lineStart, lineEnd)
                 }

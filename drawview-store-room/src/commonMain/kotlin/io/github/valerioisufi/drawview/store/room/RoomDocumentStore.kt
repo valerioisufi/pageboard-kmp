@@ -189,10 +189,6 @@ internal fun FolderEntity.toSummary() = FolderSummary(
 )
 
 /**
- * Creates the default [DocumentStore] of the platform.
- */
-
-/**
  * Process-wide document store: the database must not be opened more than once.
  */
 public object DrawViewStore {

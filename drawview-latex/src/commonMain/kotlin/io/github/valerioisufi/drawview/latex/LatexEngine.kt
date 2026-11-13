@@ -75,11 +75,6 @@ public object LatexEngine {
     }
 
     /**
-     * Checks if the native TeX C++ library is loaded and ready.
-     */
-    internal fun isNativeReady(): Boolean = LatexPlatformEngine.isNativeReady()
-
-    /**
      * Sanitizes raw LaTeX input by stripping delimiter markers ($$, $, \[, \]),
      * balancing unclosed braces during real-time typing, and prepending empty
      * bases to lone exponents/subscripts.
@@ -178,26 +173,6 @@ public object LatexEngine {
      * the system. Set before the first formula.
      */
     public fun setTextFonts(byStyle: Map<Int, ByteArray>): Unit = TexTextFonts.set(byStyle)
-
-    /**
-     * Renders a LaTeX formula directly into an ImageBitmap with transparent background.
-     */
-    internal fun renderToBitmap(
-        latex: String,
-        fontSizePx: Float,
-        color: Color,
-        paddingPx: Float = 0f
-    ): ImageBitmap? = renderFormula(latex, fontSizePx, color, paddingPx)?.bitmap
-
-    /**
-     * Renders a LaTeX formula directly into an ImageBitmap using an ARGB integer color.
-     */
-    internal fun renderToBitmap(
-        latex: String,
-        fontSizePx: Float,
-        colorArgb: Int,
-        paddingPx: Float = 0f
-    ): ImageBitmap? = renderFormula(latex, fontSizePx, colorArgb, paddingPx)?.bitmap
 
     /**
      * Generates an error warning badge ImageBitmap for invalid LaTeX syntax.

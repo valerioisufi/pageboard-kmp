@@ -447,8 +447,6 @@ public class TileManager(
         }
     }
 
-    private fun generationOf(pageKey: Long): Int = syncLock(lock) { pageGenerations[pageKey] ?: 0 }
-
     private fun bumpGeneration(pageKey: Long) {
         syncLock(lock) {
             pageGenerations[pageKey] = (pageGenerations[pageKey] ?: 0) + 1

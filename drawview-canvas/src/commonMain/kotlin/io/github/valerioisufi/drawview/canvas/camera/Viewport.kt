@@ -234,11 +234,6 @@ public class Viewport internal constructor(
         return inverse.mapOffset(screenPoint)
     }
 
-    internal fun worldToScreen(worldPoint: Offset): Offset {
-        val render = camera.getRenderMatrix(Matrix2D())
-        return render.mapOffset(worldPoint)
-    }
-
     /** Matrix mapping the millimeters of page [pageIndex] to world space. */
     internal fun pageMmToWorld(pageIndex: Int): Matrix2D? {
         val page = document.pages.getOrNull(pageIndex) ?: return null
@@ -359,21 +354,6 @@ public class Viewport internal constructor(
         if (dx == 0f && dy == 0f) return
         camera.stopAllAnimations()
         camera.onDrag(dx, dy, 1f, width / 2f, height / 2f)
-        requestRedraw()
-    }
-
-    internal fun centerDocument() {
-        if (width <= 0f || height <= 0f) return
-        val content = layout.contentRect
-        if (content.isEmpty) return
-        camera.centerOnWorldPoint(
-            worldX = content.center.x,
-            worldY = content.top + (height / 2f),
-            scale = 1f,
-            screenWidth = width,
-            screenHeight = height
-        )
-        camera.restoreToBounds(animated = false)
         requestRedraw()
     }
 }

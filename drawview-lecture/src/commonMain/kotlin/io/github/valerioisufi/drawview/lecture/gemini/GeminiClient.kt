@@ -124,18 +124,12 @@ internal class GeminiException(internal val statusCode: Int, message: String) : 
     val isDailyQuota: Boolean
         get() = statusCode == 429 && (message.orEmpty().contains("per_day", ignoreCase = true) || (retryAfterMs ?: 0) > DAILY_WAIT_MS)
 
-    /** The input tokens a minute allowed by the plan, when the request was refused for them ("limit: 10000"). */
-    val tokensPerMinuteLimit: Long?
-        get() = if (statusCode != 429 || !message.orEmpty().contains("input_token_count", ignoreCase = true)) null
-        else LIMIT.find(message.orEmpty())?.groupValues?.get(1)?.toLongOrNull()
-
     /** The model the quota is of ("model: gemini-3.5-transcribe"), if the API says. */
     val quotaModel: String?
         get() = MODEL.find(message.orEmpty())?.groupValues?.get(1)
 
     private companion object {
         val RETRY_IN = Regex("""retry in\s+(?:(\d+)h)?(?:(\d+)m(?!s))?(?:([0-9]+(?:\.[0-9]+)?)s)?""", RegexOption.IGNORE_CASE)
-        val LIMIT = Regex("""limit:\s*(\d+)""")
         val MODEL = Regex("""model:\s*([\w.\-]+)""")
 
         /** A wait longer than this: the quota of the day. */
