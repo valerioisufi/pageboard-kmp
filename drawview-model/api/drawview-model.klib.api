@@ -33,6 +33,65 @@ final enum class io.github.valerioisufi.drawview.model.change/StackMove : kotlin
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.change/StackMove> // io.github.valerioisufi.drawview.model.change/StackMove.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.model.shape/ShapeDash : kotlin/Enum<io.github.valerioisufi.drawview.model.shape/ShapeDash> { // io.github.valerioisufi.drawview.model.shape/ShapeDash|null[0]
+    enum entry DASHED // io.github.valerioisufi.drawview.model.shape/ShapeDash.DASHED|null[0]
+    enum entry DOTTED // io.github.valerioisufi.drawview.model.shape/ShapeDash.DOTTED|null[0]
+    enum entry SOLID // io.github.valerioisufi.drawview.model.shape/ShapeDash.SOLID|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.model.shape/ShapeDash.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.shape/ShapeDash> // io.github.valerioisufi.drawview.model.shape/ShapeDash.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.shape/ShapeDash // io.github.valerioisufi.drawview.model.shape/ShapeDash.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.shape/ShapeDash> // io.github.valerioisufi.drawview.model.shape/ShapeDash.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.model.shape/ShapeDash.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.shape/ShapeDash> // io.github.valerioisufi.drawview.model.shape/ShapeDash.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.model.shape/ShapeDash.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+final enum class io.github.valerioisufi.drawview.model.shape/ShapeHead : kotlin/Enum<io.github.valerioisufi.drawview.model.shape/ShapeHead> { // io.github.valerioisufi.drawview.model.shape/ShapeHead|null[0]
+    enum entry FILLED // io.github.valerioisufi.drawview.model.shape/ShapeHead.FILLED|null[0]
+    enum entry NONE // io.github.valerioisufi.drawview.model.shape/ShapeHead.NONE|null[0]
+    enum entry OPEN // io.github.valerioisufi.drawview.model.shape/ShapeHead.OPEN|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.model.shape/ShapeHead.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.shape/ShapeHead> // io.github.valerioisufi.drawview.model.shape/ShapeHead.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.shape/ShapeHead // io.github.valerioisufi.drawview.model.shape/ShapeHead.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.shape/ShapeHead> // io.github.valerioisufi.drawview.model.shape/ShapeHead.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.model.shape/ShapeHead.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.shape/ShapeHead> // io.github.valerioisufi.drawview.model.shape/ShapeHead.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.model.shape/ShapeHead.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+final enum class io.github.valerioisufi.drawview.model.shape/ShapeKind : kotlin/Enum<io.github.valerioisufi.drawview.model.shape/ShapeKind> { // io.github.valerioisufi.drawview.model.shape/ShapeKind|null[0]
+    enum entry DIAMOND // io.github.valerioisufi.drawview.model.shape/ShapeKind.DIAMOND|null[0]
+    enum entry ELLIPSE // io.github.valerioisufi.drawview.model.shape/ShapeKind.ELLIPSE|null[0]
+    enum entry HEXAGON // io.github.valerioisufi.drawview.model.shape/ShapeKind.HEXAGON|null[0]
+    enum entry LINE // io.github.valerioisufi.drawview.model.shape/ShapeKind.LINE|null[0]
+    enum entry PENTAGON // io.github.valerioisufi.drawview.model.shape/ShapeKind.PENTAGON|null[0]
+    enum entry RECTANGLE // io.github.valerioisufi.drawview.model.shape/ShapeKind.RECTANGLE|null[0]
+    enum entry RIGHT_TRIANGLE // io.github.valerioisufi.drawview.model.shape/ShapeKind.RIGHT_TRIANGLE|null[0]
+    enum entry ROUNDED_RECTANGLE // io.github.valerioisufi.drawview.model.shape/ShapeKind.ROUNDED_RECTANGLE|null[0]
+    enum entry TRIANGLE // io.github.valerioisufi.drawview.model.shape/ShapeKind.TRIANGLE|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.model.shape/ShapeKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.shape/ShapeKind> // io.github.valerioisufi.drawview.model.shape/ShapeKind.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val isLine // io.github.valerioisufi.drawview.model.shape/ShapeKind.isLine|{}isLine[0]
+        final fun <get-isLine>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeKind.isLine.<get-isLine>|<get-isLine>(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.shape/ShapeKind // io.github.valerioisufi.drawview.model.shape/ShapeKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.shape/ShapeKind> // io.github.valerioisufi.drawview.model.shape/ShapeKind.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.model.shape/ShapeKind.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.shape/ShapeKind> // io.github.valerioisufi.drawview.model.shape/ShapeKind.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.model.shape/ShapeKind.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
 final enum class io.github.valerioisufi.drawview.model.text.code/CodeTokenKind : kotlin/Enum<io.github.valerioisufi.drawview.model.text.code/CodeTokenKind> { // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind|null[0]
     enum entry ANNOTATION // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.ANNOTATION|null[0]
     enum entry COMMENT // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.COMMENT|null[0]
@@ -2352,6 +2411,101 @@ final class io.github.valerioisufi.drawview.model.shape/Polyline : io.github.val
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Polyline.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.model.shape/ShapeBox { // io.github.valerioisufi.drawview.model.shape/ShapeBox|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ...) // io.github.valerioisufi.drawview.model.shape/ShapeBox.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final val center // io.github.valerioisufi.drawview.model.shape/ShapeBox.center|{}center[0]
+        final fun <get-center>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/ShapeBox.center.<get-center>|<get-center>(){}[0]
+    final val height // io.github.valerioisufi.drawview.model.shape/ShapeBox.height|{}height[0]
+        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.height.<get-height>|<get-height>(){}[0]
+    final val rotation // io.github.valerioisufi.drawview.model.shape/ShapeBox.rotation|{}rotation[0]
+        final fun <get-rotation>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.rotation.<get-rotation>|<get-rotation>(){}[0]
+    final val width // io.github.valerioisufi.drawview.model.shape/ShapeBox.width|{}width[0]
+        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.width.<get-width>|<get-width>(){}[0]
+    final val x // io.github.valerioisufi.drawview.model.shape/ShapeBox.x|{}x[0]
+        final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.x.<get-x>|<get-x>(){}[0]
+    final val y // io.github.valerioisufi.drawview.model.shape/ShapeBox.y|{}y[0]
+        final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.y.<get-y>|<get-y>(){}[0]
+
+    final fun component1(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.component1|component1(){}[0]
+    final fun component2(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.component3|component3(){}[0]
+    final fun component4(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.component4|component4(){}[0]
+    final fun component5(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeBox.component5|component5(){}[0]
+    final fun copy(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model.shape/ShapeBox // io.github.valerioisufi.drawview.model.shape/ShapeBox.copy|copy(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeBox.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeBox.hashCode|hashCode(){}[0]
+    final fun toLocal(io.github.valerioisufi.drawview.model.geometry/Point): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/ShapeBox.toLocal|toLocal(io.github.valerioisufi.drawview.model.geometry.Point){}[0]
+    final fun toPage(io.github.valerioisufi.drawview.model.geometry/Point): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/ShapeBox.toPage|toPage(io.github.valerioisufi.drawview.model.geometry.Point){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/ShapeBox.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.shape/ShapeElement { // io.github.valerioisufi.drawview.model.shape/ShapeElement|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.shape/ShapeKind, kotlin/Int, kotlin/Float, io.github.valerioisufi.drawview.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.drawview.model.shape/ShapeHead = ..., io.github.valerioisufi.drawview.model.shape/ShapeHead = ...) // io.github.valerioisufi.drawview.model.shape/ShapeElement.<init>|<init>(io.github.valerioisufi.drawview.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.drawview.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.drawview.model.shape.ShapeHead;io.github.valerioisufi.drawview.model.shape.ShapeHead){}[0]
+
+    final val dash // io.github.valerioisufi.drawview.model.shape/ShapeElement.dash|{}dash[0]
+        final fun <get-dash>(): io.github.valerioisufi.drawview.model.shape/ShapeDash // io.github.valerioisufi.drawview.model.shape/ShapeElement.dash.<get-dash>|<get-dash>(){}[0]
+    final val endHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.endHead|{}endHead[0]
+        final fun <get-endHead>(): io.github.valerioisufi.drawview.model.shape/ShapeHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.endHead.<get-endHead>|<get-endHead>(){}[0]
+    final val fill // io.github.valerioisufi.drawview.model.shape/ShapeElement.fill|{}fill[0]
+        final fun <get-fill>(): kotlin/Int? // io.github.valerioisufi.drawview.model.shape/ShapeElement.fill.<get-fill>|<get-fill>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.model.shape/ShapeElement.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.model.shape/ShapeKind // io.github.valerioisufi.drawview.model.shape/ShapeElement.kind.<get-kind>|<get-kind>(){}[0]
+    final val startHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.startHead|{}startHead[0]
+        final fun <get-startHead>(): io.github.valerioisufi.drawview.model.shape/ShapeHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.startHead.<get-startHead>|<get-startHead>(){}[0]
+    final val stroke // io.github.valerioisufi.drawview.model.shape/ShapeElement.stroke|{}stroke[0]
+        final fun <get-stroke>(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeElement.stroke.<get-stroke>|<get-stroke>(){}[0]
+    final val widthMm // io.github.valerioisufi.drawview.model.shape/ShapeElement.widthMm|{}widthMm[0]
+        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeElement.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.shape/ShapeKind // io.github.valerioisufi.drawview.model.shape/ShapeElement.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeElement.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeElement.component3|component3(){}[0]
+    final fun component4(): io.github.valerioisufi.drawview.model.shape/ShapeDash // io.github.valerioisufi.drawview.model.shape/ShapeElement.component4|component4(){}[0]
+    final fun component5(): kotlin/Int? // io.github.valerioisufi.drawview.model.shape/ShapeElement.component5|component5(){}[0]
+    final fun component6(): io.github.valerioisufi.drawview.model.shape/ShapeHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.component6|component6(){}[0]
+    final fun component7(): io.github.valerioisufi.drawview.model.shape/ShapeHead // io.github.valerioisufi.drawview.model.shape/ShapeElement.component7|component7(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.shape/ShapeKind = ..., kotlin/Int = ..., kotlin/Float = ..., io.github.valerioisufi.drawview.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.drawview.model.shape/ShapeHead = ..., io.github.valerioisufi.drawview.model.shape/ShapeHead = ...): io.github.valerioisufi.drawview.model.shape/ShapeElement // io.github.valerioisufi.drawview.model.shape/ShapeElement.copy|copy(io.github.valerioisufi.drawview.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.drawview.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.drawview.model.shape.ShapeHead;io.github.valerioisufi.drawview.model.shape.ShapeHead){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeElement.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeElement.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/ShapeElement.toString|toString(){}[0]
+    final fun withKind(io.github.valerioisufi.drawview.model.shape/ShapeKind): io.github.valerioisufi.drawview.model.shape/ShapeElement // io.github.valerioisufi.drawview.model.shape/ShapeElement.withKind|withKind(io.github.valerioisufi.drawview.model.shape.ShapeKind){}[0]
+    final fun withStyleOf(io.github.valerioisufi.drawview.model.shape/ShapeElement): io.github.valerioisufi.drawview.model.shape/ShapeElement // io.github.valerioisufi.drawview.model.shape/ShapeElement.withStyleOf|withStyleOf(io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.shape/ShapeElement> { // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.model.shape/ShapeElement // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.model.shape/ShapeElement) // io.github.valerioisufi.drawview.model.shape/ShapeElement.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion|null[0]
+        final const val MAX_WIDTH_MM // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.MAX_WIDTH_MM|{}MAX_WIDTH_MM[0]
+            final fun <get-MAX_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.MAX_WIDTH_MM.<get-MAX_WIDTH_MM>|<get-MAX_WIDTH_MM>(){}[0]
+        final const val MIN_WIDTH_MM // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.MIN_WIDTH_MM|{}MIN_WIDTH_MM[0]
+            final fun <get-MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.MIN_WIDTH_MM.<get-MIN_WIDTH_MM>|<get-MIN_WIDTH_MM>(){}[0]
+
+        final val $childSerializers // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.shape/ShapeElement> // io.github.valerioisufi.drawview.model.shape/ShapeElement.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.shape/ShapePath { // io.github.valerioisufi.drawview.model.shape/ShapePath|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Boolean, kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.model.shape/ShapePath.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val closed // io.github.valerioisufi.drawview.model.shape/ShapePath.closed|{}closed[0]
+        final fun <get-closed>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.closed.<get-closed>|<get-closed>(){}[0]
+    final val filled // io.github.valerioisufi.drawview.model.shape/ShapePath.filled|{}filled[0]
+        final fun <get-filled>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.filled.<get-filled>|<get-filled>(){}[0]
+    final val points // io.github.valerioisufi.drawview.model.shape/ShapePath.points|{}points[0]
+        final fun <get-points>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/ShapePath.points.<get-points>|<get-points>(){}[0]
+    final val solid // io.github.valerioisufi.drawview.model.shape/ShapePath.solid|{}solid[0]
+        final fun <get-solid>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapePath.solid.<get-solid>|<get-solid>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.github.valerioisufi.drawview.model.text.code/CodeToken|null[0]
     constructor <init>(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model.text.code/CodeToken.<init>|<init>(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
 
@@ -3537,6 +3691,59 @@ final object io.github.valerioisufi.drawview.model.placement/TextSizePolicy { //
     final fun forNote(io.github.valerioisufi.drawview.model.placement/PageTextSizes, kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.forNote|forNote(io.github.valerioisufi.drawview.model.placement.PageTextSizes;kotlin.Float){}[0]
     final fun nearestPreset(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.nearestPreset|nearestPreset(kotlin.Float){}[0]
     final fun smaller(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.smaller|smaller(kotlin.Float){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model.shape/ShapeConstraints { // io.github.valerioisufi.drawview.model.shape/ShapeConstraints|null[0]
+    final const val ANGLE_STEP_DEGREES // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ANGLE_STEP_DEGREES|{}ANGLE_STEP_DEGREES[0]
+        final fun <get-ANGLE_STEP_DEGREES>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ANGLE_STEP_DEGREES.<get-ANGLE_STEP_DEGREES>|<get-ANGLE_STEP_DEGREES>(){}[0]
+    final const val ANGLE_TOLERANCE_DEGREES // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ANGLE_TOLERANCE_DEGREES|{}ANGLE_TOLERANCE_DEGREES[0]
+        final fun <get-ANGLE_TOLERANCE_DEGREES>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ANGLE_TOLERANCE_DEGREES.<get-ANGLE_TOLERANCE_DEGREES>|<get-ANGLE_TOLERANCE_DEGREES>(){}[0]
+    final const val SQUARE_TOLERANCE // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.SQUARE_TOLERANCE|{}SQUARE_TOLERANCE[0]
+        final fun <get-SQUARE_TOLERANCE>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.SQUARE_TOLERANCE.<get-SQUARE_TOLERANCE>|<get-SQUARE_TOLERANCE>(){}[0]
+
+    final fun box(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Boolean, kotlin/Boolean): io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.box|box(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun line(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Boolean): io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.line|line(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Boolean){}[0]
+
+    final class ConstrainedBox { // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Boolean) // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Boolean){}[0]
+
+        final val box // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox.box|{}box[0]
+            final fun <get-box>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox.box.<get-box>|<get-box>(){}[0]
+        final val regular // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox.regular|{}regular[0]
+            final fun <get-regular>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedBox.regular.<get-regular>|<get-regular>(){}[0]
+    }
+
+    final class ConstrainedLine { // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Boolean) // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Boolean){}[0]
+
+        final val angleDegrees // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.angleDegrees|{}angleDegrees[0]
+            final fun <get-angleDegrees>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.angleDegrees.<get-angleDegrees>|<get-angleDegrees>(){}[0]
+        final val end // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.end|{}end[0]
+            final fun <get-end>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.end.<get-end>|<get-end>(){}[0]
+        final val snapped // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.snapped|{}snapped[0]
+            final fun <get-snapped>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.snapped.<get-snapped>|<get-snapped>(){}[0]
+
+        final fun length(io.github.valerioisufi.drawview.model.geometry/Point): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeConstraints.ConstrainedLine.length|length(io.github.valerioisufi.drawview.model.geometry.Point){}[0]
+    }
+}
+
+final object io.github.valerioisufi.drawview.model.shape/ShapeElementType : io.github.valerioisufi.drawview.model/ElementType<io.github.valerioisufi.drawview.model.shape/ShapeElement> { // io.github.valerioisufi.drawview.model.shape/ShapeElementType|null[0]
+    final val id // io.github.valerioisufi.drawview.model.shape/ShapeElementType.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.model.shape/ShapeElementType.id.<get-id>|<get-id>(){}[0]
+    final val serializer // io.github.valerioisufi.drawview.model.shape/ShapeElementType.serializer|{}serializer[0]
+        final fun <get-serializer>(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.shape/ShapeElement> // io.github.valerioisufi.drawview.model.shape/ShapeElementType.serializer.<get-serializer>|<get-serializer>(){}[0]
+    final val version // io.github.valerioisufi.drawview.model.shape/ShapeElementType.version|{}version[0]
+        final fun <get-version>(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/ShapeElementType.version.<get-version>|<get-version>(){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model.shape/ShapeGeometry { // io.github.valerioisufi.drawview.model.shape/ShapeGeometry|null[0]
+    final fun anchors(io.github.valerioisufi.drawview.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.anchors|anchors(io.github.valerioisufi.drawview.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun headLength(io.github.valerioisufi.drawview.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.headLength|headLength(io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
+    final fun hits(io.github.valerioisufi.drawview.model.shape/ShapeElement, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.hits|hits(io.github.valerioisufi.drawview.model.shape.ShapeElement;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun lineBox(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.shape/ShapeElement): io.github.valerioisufi.drawview.model.shape/ShapeBox // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineBox|lineBox(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
+    final fun lineEnds(io.github.valerioisufi.drawview.model.shape/ShapeBox): kotlin/Pair<io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineEnds|lineEnds(io.github.valerioisufi.drawview.model.shape.ShapeBox){}[0]
+    final fun lineHeight(io.github.valerioisufi.drawview.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.lineHeight|lineHeight(io.github.valerioisufi.drawview.model.shape.ShapeElement){}[0]
+    final fun paths(io.github.valerioisufi.drawview.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.drawview.model.shape/ShapePath> // io.github.valerioisufi.drawview.model.shape/ShapeGeometry.paths|paths(io.github.valerioisufi.drawview.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.shape/ShapeRecognizer { // io.github.valerioisufi.drawview.model.shape/ShapeRecognizer|null[0]

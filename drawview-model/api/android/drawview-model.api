@@ -3041,10 +3041,180 @@ public final class io/github/valerioisufi/drawview/model/shape/Shape$DefaultImpl
 	public static fun getHasCorners (Lio/github/valerioisufi/drawview/model/shape/Shape;)Z
 }
 
+public final class io/github/valerioisufi/drawview/model/shape/ShapeBox {
+	public fun <init> (FFFFF)V
+	public synthetic fun <init> (FFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun copy (FFFFF)Lio/github/valerioisufi/drawview/model/shape/ShapeBox;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/ShapeBox;FFFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/ShapeBox;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCenter ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getHeight ()F
+	public final fun getRotation ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public final fun toLocal (Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun toPage (Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeConstraints {
+	public static final field ANGLE_STEP_DEGREES F
+	public static final field ANGLE_TOLERANCE_DEGREES F
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeConstraints;
+	public static final field SQUARE_TOLERANCE F
+	public final fun box (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;ZZ)Lio/github/valerioisufi/drawview/model/shape/ShapeConstraints$ConstrainedBox;
+	public final fun line (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;Z)Lio/github/valerioisufi/drawview/model/shape/ShapeConstraints$ConstrainedLine;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeConstraints$ConstrainedBox {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;Z)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getRegular ()Z
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeConstraints$ConstrainedLine {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;FZ)V
+	public final fun getAngleDegrees ()F
+	public final fun getEnd ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getSnapped ()Z
+	public final fun length (Lio/github/valerioisufi/drawview/model/geometry/Point;)F
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeDash : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/shape/ShapeDash$Companion;
+	public static final field DASHED Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public static final field DOTTED Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public static final field SOLID Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeDash$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeElement {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/shape/ShapeElement$Companion;
+	public static final field MAX_WIDTH_MM F
+	public static final field MIN_WIDTH_MM F
+	public fun <init> (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public final fun component5 ()Ljava/lang/Integer;
+	public final fun component6 ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun component7 ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/shape/ShapeKind;IFLio/github/valerioisufi/drawview/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;Lio/github/valerioisufi/drawview/model/shape/ShapeHead;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDash ()Lio/github/valerioisufi/drawview/model/shape/ShapeDash;
+	public final fun getEndHead ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun getFill ()Ljava/lang/Integer;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public final fun getStartHead ()Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public final fun getStroke ()I
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun withKind (Lio/github/valerioisufi/drawview/model/shape/ShapeKind;)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public final fun withStyleOf (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/shape/ShapeElement$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeElement$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeElement$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeElementType : io/github/valerioisufi/drawview/model/ElementType {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeElementType;
+	public fun getId ()Ljava/lang/String;
+	public fun getSerializer ()Lkotlinx/serialization/KSerializer;
+	public fun getVersion ()I
+	public fun migrate ([BI)Lio/github/valerioisufi/drawview/model/shape/ShapeElement;
+	public synthetic fun migrate ([BI)Ljava/lang/Object;
+	public fun searchText (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)Ljava/lang/String;
+	public synthetic fun searchText (Ljava/lang/Object;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeGeometry {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeGeometry;
+	public final fun anchors (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Ljava/util/List;
+	public final fun headLength (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)F
+	public final fun hits (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Z
+	public final fun lineBox (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)Lio/github/valerioisufi/drawview/model/shape/ShapeBox;
+	public final fun lineEnds (Lio/github/valerioisufi/drawview/model/shape/ShapeBox;)Lkotlin/Pair;
+	public final fun lineHeight (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;)F
+	public final fun paths (Lio/github/valerioisufi/drawview/model/shape/ShapeElement;FF)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeHead : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/shape/ShapeHead$Companion;
+	public static final field FILLED Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public static final field NONE Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public static final field OPEN Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/shape/ShapeHead;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeHead$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeKind : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/shape/ShapeKind$Companion;
+	public static final field DIAMOND Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field ELLIPSE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field HEXAGON Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field LINE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field PENTAGON Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field RECTANGLE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field RIGHT_TRIANGLE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field ROUNDED_RECTANGLE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static final field TRIANGLE Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun isLine ()Z
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/shape/ShapeKind;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeKind$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/model/shape/ShapeKt {
 	public static final field SHAPE_INPUT_SPACING_MM F
 	public static final fun strokeInputs (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;F)Ljava/util/List;
 	public static synthetic fun strokeInputs$default (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapePath {
+	public fun <init> (Ljava/util/List;ZZZ)V
+	public synthetic fun <init> (Ljava/util/List;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getClosed ()Z
+	public final fun getFilled ()Z
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getSolid ()Z
 }
 
 public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
