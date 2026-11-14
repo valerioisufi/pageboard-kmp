@@ -448,6 +448,7 @@ public abstract class io/github/valerioisufi/drawview/ui/extension/EditorExtensi
 	public fun getPageGridActions ()Lkotlin/jvm/functions/Function1;
 	public fun getPanels ()Lkotlin/jvm/functions/Function1;
 	public fun getReadOnlyNote ()Lkotlin/jvm/functions/Function3;
+	public fun getTextSuggestions ()Lio/github/valerioisufi/drawview/ui/extension/TextSuggester;
 	public fun getToolbarActions ()Lkotlin/jvm/functions/Function4;
 	public final fun plus (Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
 }
@@ -459,6 +460,7 @@ public final class io/github/valerioisufi/drawview/ui/extension/EditorExtensionB
 	public final fun pageGridActions (Lkotlin/jvm/functions/Function1;)V
 	public final fun panels (Lkotlin/jvm/functions/Function1;)V
 	public final fun readOnlyNote (Lkotlin/jvm/functions/Function3;)V
+	public final fun textSuggestions (Lio/github/valerioisufi/drawview/ui/extension/TextSuggester;)V
 	public final fun toolbarActions (Lkotlin/jvm/functions/Function4;)V
 }
 
@@ -516,6 +518,25 @@ public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection
 	public final fun getDocumentIds ()Ljava/util/List;
 	public final fun getFolderIds ()Ljava/util/List;
 	public final fun getThumbnail ()Lkotlin/jvm/functions/Function1;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/TextBeingWritten {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;IILjava/lang/String;)V
+	public final fun getCaret ()I
+	public final fun getPageIndex ()I
+	public final fun getSource ()Ljava/lang/String;
+	public final fun getTextId ()Ljava/lang/String;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ui/extension/TextSuggester {
+	public abstract fun suggest (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lio/github/valerioisufi/drawview/ui/extension/TextBeingWritten;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/TextSuggestion {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getText ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/ActualResourceCollectorsKt {

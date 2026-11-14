@@ -51,9 +51,16 @@ public abstract class EditorExtension {
     public open val pageGridActions: (context: EditorContext) -> List<Command> get() = { emptyList() }
 
     /**
+     * What follows the caret of the text box being written, suggested by the extension (e.g. a
+     * model completing the sentence); `null` when it suggests nothing (see [TextSuggester]).
+     */
+    public open val textSuggestions: TextSuggester? get() = null
+
+    /**
      * The contributions of this extension followed by those of [other]: toolbar actions, commands,
      * panels and actions of the page grid in this order, [other]'s overlay drawn over this one, the
-     * note of the read only documents of this one if it has one.
+     * note of the read only documents of this one if it has one, the suggestion of this one if it
+     * suggests something.
      */
     public operator fun plus(other: EditorExtension): EditorExtension = CombinedExtension(this, other)
 }
@@ -73,6 +80,7 @@ public class EditorExtensionBuilder internal constructor() {
     private var panels: ((EditorContext) -> List<EditorPanel>)? = null
     private var readOnlyNote: (@Composable (EditorContext) -> String?)? = null
     private var pageGridActions: ((EditorContext) -> List<Command>)? = null
+    private var textSuggestions: TextSuggester? = null
 
     /** See [EditorExtension.toolbarActions]. */
     public fun toolbarActions(content: @Composable RowScope.(context: EditorContext) -> Unit) {
@@ -104,6 +112,11 @@ public class EditorExtensionBuilder internal constructor() {
         pageGridActions = of
     }
 
+    /** See [EditorExtension.textSuggestions]. */
+    public fun textSuggestions(suggester: TextSuggester) {
+        textSuggestions = suggester
+    }
+
     internal fun build(): EditorExtension {
         val toolbar = toolbarActions
         val overlay = canvasOverlay
@@ -111,6 +124,7 @@ public class EditorExtensionBuilder internal constructor() {
         val panelsOf = panels
         val note = readOnlyNote
         val gridActions = pageGridActions
+        val suggester = textSuggestions
         return object : EditorExtension() {
             override val toolbarActions get() = toolbar ?: super.toolbarActions
             override val canvasOverlay get() = overlay ?: super.canvasOverlay
@@ -118,6 +132,7 @@ public class EditorExtensionBuilder internal constructor() {
             override val panels get() = panelsOf ?: super.panels
             override val readOnlyNote get() = note ?: super.readOnlyNote
             override val pageGridActions get() = gridActions ?: super.pageGridActions
+            override val textSuggestions get() = suggester
         }
     }
 }
@@ -136,4 +151,13 @@ private class CombinedExtension(private val first: EditorExtension, private val 
     override val panels: (EditorContext) -> List<EditorPanel> = { context -> first.panels(context) + second.panels(context) }
     override val readOnlyNote: @Composable (EditorContext) -> String? = { context -> first.readOnlyNote(context) ?: second.readOnlyNote(context) }
     override val pageGridActions: (EditorContext) -> List<Command> = { context -> first.pageGridActions(context) + second.pageGridActions(context) }
+
+    // The suggestion of the first extension, else of the second
+    override val textSuggestions: TextSuggester? = when {
+        first.textSuggestions == null -> second.textSuggestions
+        second.textSuggestions == null -> first.textSuggestions
+        else -> TextSuggester { context, writing ->
+            first.textSuggestions?.suggest(context, writing) ?: second.textSuggestions?.suggest(context, writing)
+        }
+    }
 }

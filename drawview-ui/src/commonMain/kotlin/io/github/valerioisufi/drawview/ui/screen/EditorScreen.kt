@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.ui.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigationevent.NavigationEventInfo
@@ -12,6 +13,8 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
+import io.github.valerioisufi.drawview.ui.extension.LocalTextSuggestions
+import io.github.valerioisufi.drawview.ui.extension.TextSuggestions
 
 /**
  * The editor of the document of [context] with the contributions of [extension] (top bar actions,
@@ -43,18 +46,22 @@ public fun EditorScreen(
             val extensionCommands = remember(extension, context) { extension?.commands?.invoke(context).orEmpty() }
             val extensionPanels = remember(extension, context) { extension?.panels?.invoke(context).orEmpty() }
             val extensionPageGridActions = remember(extension, context) { extension?.pageGridActions?.invoke(context).orEmpty() }
-            DrawScreen(
-                controller = controller,
-                location = location,
-                onNavigateBack = onClose,
-                toolbarActions = { extension?.toolbarActions?.invoke(this, context) },
-                panels = extensionPanels,
-                canvasOverlay = { extension?.canvasOverlay?.invoke(this, context) },
-                extraCommands = extensionCommands,
-                pageGridActions = extensionPageGridActions,
-                readOnlyNote = { extension?.readOnlyNote?.invoke(context) },
-                renamer = renamer
-            )
+            val suggester = extension?.textSuggestions
+            val suggestions = remember(suggester, context) { suggester?.let { TextSuggestions(it, context) } }
+            CompositionLocalProvider(LocalTextSuggestions provides suggestions) {
+                DrawScreen(
+                    controller = controller,
+                    location = location,
+                    onNavigateBack = onClose,
+                    toolbarActions = { extension?.toolbarActions?.invoke(this, context) },
+                    panels = extensionPanels,
+                    canvasOverlay = { extension?.canvasOverlay?.invoke(this, context) },
+                    extraCommands = extensionCommands,
+                    pageGridActions = extensionPageGridActions,
+                    readOnlyNote = { extension?.readOnlyNote?.invoke(context) },
+                    renamer = renamer
+                )
+            }
         }
     }
 }

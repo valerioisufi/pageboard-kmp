@@ -39,4 +39,17 @@ class EditorExtensionTest {
         assertEquals(listOf("first", "second"), both.commands(context).map { it.id })
         assertEquals(listOf("grid"), both.pageGridActions(context).map { it.id })
     }
+
+    @Test
+    fun theFirstExtensionThatSuggestsWins() = runTest {
+        val context = EditorContext(DrawViewController(DrawDocument(), backgroundScope))
+        val writing = TextBeingWritten("The flux thr", caret = 12, pageIndex = 0, textId = "t")
+        val silent = EditorExtension { textSuggestions { _, _ -> null } }
+        val words = EditorExtension { textSuggestions { _, w -> TextSuggestion(if (w.source.endsWith("thr")) "ough" else "") } }
+        val other = EditorExtension { textSuggestions { _, _ -> TextSuggestion("other") } }
+
+        assertEquals("ough", (silent + words + other).textSuggestions?.suggest(context, writing)?.text)
+        assertEquals("other", (other + words).textSuggestions?.suggest(context, writing)?.text)
+        assertEquals(null, (EditorExtension { } + EditorExtension { }).textSuggestions)
+    }
 }
