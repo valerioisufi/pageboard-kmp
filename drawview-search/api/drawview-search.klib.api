@@ -439,6 +439,36 @@ final class io.github.valerioisufi.drawview.search/UnembeddedChunk { // io.githu
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.search/UnembeddedChunk.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.search/WordCount { // io.github.valerioisufi.drawview.search/WordCount|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // io.github.valerioisufi.drawview.search/WordCount.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final val count // io.github.valerioisufi.drawview.search/WordCount.count|{}count[0]
+        final fun <get-count>(): kotlin/Int // io.github.valerioisufi.drawview.search/WordCount.count.<get-count>|<get-count>(){}[0]
+    final val word // io.github.valerioisufi.drawview.search/WordCount.word|{}word[0]
+        final fun <get-word>(): kotlin/String // io.github.valerioisufi.drawview.search/WordCount.word.<get-word>|<get-word>(){}[0]
+
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.search/WordCount.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.search/WordCounts { // io.github.valerioisufi.drawview.search/WordCounts|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.search/WordCounts.<init>|<init>(){}[0]
+
+    final val size // io.github.valerioisufi.drawview.search/WordCounts.size|{}size[0]
+        final fun <get-size>(): kotlin/Int // io.github.valerioisufi.drawview.search/WordCounts.size.<get-size>|<get-size>(){}[0]
+
+    final fun add(kotlin/String) // io.github.valerioisufi.drawview.search/WordCounts.add|add(kotlin.String){}[0]
+    final fun addAll(io.github.valerioisufi.drawview.search/WordCounts) // io.github.valerioisufi.drawview.search/WordCounts.addAll|addAll(io.github.valerioisufi.drawview.search.WordCounts){}[0]
+    final fun count(kotlin/String): kotlin/Int // io.github.valerioisufi.drawview.search/WordCounts.count|count(kotlin.String){}[0]
+    final fun withPrefix(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.search/WordCount> // io.github.valerioisufi.drawview.search/WordCounts.withPrefix|withPrefix(kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.search/WordCounts.Companion|null[0]
+        final const val MIN_LENGTH // io.github.valerioisufi.drawview.search/WordCounts.Companion.MIN_LENGTH|{}MIN_LENGTH[0]
+            final fun <get-MIN_LENGTH>(): kotlin/Int // io.github.valerioisufi.drawview.search/WordCounts.Companion.MIN_LENGTH.<get-MIN_LENGTH>|<get-MIN_LENGTH>(){}[0]
+
+        final fun wordsOf(kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.search/WordCounts.Companion.wordsOf|wordsOf(kotlin.String){}[0]
+    }
+}
+
 final object io.github.valerioisufi.drawview.search/EmbeddingPrompts { // io.github.valerioisufi.drawview.search/EmbeddingPrompts|null[0]
     final const val DEFAULT_DIMENSIONS // io.github.valerioisufi.drawview.search/EmbeddingPrompts.DEFAULT_DIMENSIONS|{}DEFAULT_DIMENSIONS[0]
         final fun <get-DEFAULT_DIMENSIONS>(): kotlin/Int // io.github.valerioisufi.drawview.search/EmbeddingPrompts.DEFAULT_DIMENSIONS.<get-DEFAULT_DIMENSIONS>|<get-DEFAULT_DIMENSIONS>(){}[0]
