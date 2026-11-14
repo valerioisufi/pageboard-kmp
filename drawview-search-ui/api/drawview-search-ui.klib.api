@@ -13,6 +13,8 @@ final class io.github.valerioisufi.drawview.search.ui/ContentSearch : io.github.
         final fun <get-answerer>(): io.github.valerioisufi.drawview.search/NotesAnswerer // io.github.valerioisufi.drawview.search.ui/ContentSearch.answerer.<get-answerer>|<get-answerer>(){}[0]
     final val downloads // io.github.valerioisufi.drawview.search.ui/ContentSearch.downloads|{}downloads[0]
         final fun <get-downloads>(): io.github.valerioisufi.drawview.ml/ModelDownloads? // io.github.valerioisufi.drawview.search.ui/ContentSearch.downloads.<get-downloads>|<get-downloads>(){}[0]
+    final val editorExtension // io.github.valerioisufi.drawview.search.ui/ContentSearch.editorExtension|{}editorExtension[0]
+        final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.search.ui/ContentSearch.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]
     final val embeddingSpec // io.github.valerioisufi.drawview.search.ui/ContentSearch.embeddingSpec|{}embeddingSpec[0]
         final fun <get-embeddingSpec>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.search.ui/ContentSearch.embeddingSpec.<get-embeddingSpec>|<get-embeddingSpec>(){}[0]
     final val engine // io.github.valerioisufi.drawview.search.ui/ContentSearch.engine|{}engine[0]

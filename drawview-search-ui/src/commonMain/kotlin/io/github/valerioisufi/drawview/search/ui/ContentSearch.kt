@@ -27,6 +27,7 @@ import io.github.valerioisufi.drawview.search.DocumentSearchResult
 import io.github.valerioisufi.drawview.search.DocumentSearchSource
 import io.github.valerioisufi.drawview.search.IndexingConditions
 import io.github.valerioisufi.drawview.search.IndexingProgress
+import io.github.valerioisufi.drawview.search.NoteVocabulary
 import io.github.valerioisufi.drawview.search.NotesAnswer
 import io.github.valerioisufi.drawview.search.NotesAnswerer
 import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
@@ -38,6 +39,7 @@ import io.github.valerioisufi.drawview.search.SearchIndex
 import io.github.valerioisufi.drawview.search.SearchIndexer
 import io.github.valerioisufi.drawview.search.SearchSource
 import io.github.valerioisufi.drawview.store.DocumentStore
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -213,8 +215,21 @@ public class ContentSearch(
      */
     public fun start(scope: CoroutineScope) {
         activeScope = scope
+        vocabulary = NoteVocabulary(index, scope)
         indexer.start(scope)
         scope.launchSearchCollector()
+    }
+
+    /** The words of the notes for the suggestions while writing, once [start]ed. */
+    private var vocabulary: NoteVocabulary? = null
+
+    /**
+     * The extension of the editors that suggests the end of the word being written from the words
+     * of the notes: of the document, of its slides, handwriting and lectures, of the library
+     * (`docs/writing-suggestions.md`). Before [start], from the document only.
+     */
+    public val editorExtension: EditorExtension = EditorExtension {
+        textSuggestions(NoteWordSuggester(vocabulary = { vocabulary }))
     }
 
     /** Closes the index, once the scope given to [start] is cancelled. */

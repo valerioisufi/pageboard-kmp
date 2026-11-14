@@ -33,6 +33,7 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/
 	public final fun getAnswerer ()Lio/github/valerioisufi/drawview/search/NotesAnswerer;
 	public final fun getCurrentAnswer ()Lio/github/valerioisufi/drawview/search/NotesAnswer;
 	public final fun getDownloads ()Lio/github/valerioisufi/drawview/ml/ModelDownloads;
+	public final fun getEditorExtension ()Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
 	public final fun getEmbeddingSpec ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
 	public final fun getEngine ()Lio/github/valerioisufi/drawview/search/SearchEngine;
 	public fun getHeaderContent ()Lkotlin/jvm/functions/Function4;

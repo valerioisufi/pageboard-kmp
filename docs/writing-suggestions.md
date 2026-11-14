@@ -60,8 +60,8 @@ Variations).
 | The words of a text with their counts, as written; the words of a prefix | `WordCounts` (search) | Information Expert, Pure Fabrication |
 | The texts of a document, or of all, as the index keeps them | `SearchIndex.texts(documentId, kinds)` (search) | Information Expert |
 | The vocabulary of the library and of each document, built off the main thread, rebuilt when the index changes | `NoteVocabulary` (search) | Pure Fabrication, Low Coupling |
-| The completion of a word for the text being written: the layers weighted, the rules of the caret | `NoteWordSuggester : TextSuggester` (search-ui) | Polymorphism, Protected Variations |
-| The suggester given to the editors | `ContentSearch.editorExtension` (search-ui) | Creator |
+| The completion of a word for the text being written: the layers weighted, the rules of the caret | `NoteWordSuggester : TextSuggester` (search-ui, internal) | Polymorphism, Protected Variations |
+| The suggester given to the editors, the vocabulary created when the search starts | `ContentSearch.editorExtension`, `ContentSearch.start` (search-ui) | Creator |
 | Whether the editor asks at all | `DrawPreferences.areTextSuggestionsEnabled` (canvas), the command "Writing Suggestions" (ui) | Information Expert, Controller |
 | The suggester in every editor of PencilNotes | `PencilNotesServices.editorExtension` | Creator |
 
@@ -95,14 +95,18 @@ Variations).
 
 ### The suggestion (`NoteWordSuggester`)
 
-* The prefix is the word before the caret, at least 3 letters (`MIN_PREFIX`), not in a formula or
-  a link (the parse of the source says where the caret is).
+* The prefix is the word before the caret, at least 3 characters starting with a letter
+  (`MIN_PREFIX`), not followed by a letter, not a command of LaTeX (`\alp`), not in a formula, in
+  code or in the address of a link left open on its line (the `$` and the backticks counted).
 * Score of a word: `3 × count in the document open + 2 × count in its indexed content + 1 × count
-  in the library` (the document open counted from `context.document`, the box being written
-  without its last word, as the sample does).
+  in the library`. The document open is counted from `context.document` (its texts read on the
+  main thread, counted on `Dispatchers.Default`), the box being written without the word being
+  written. The form suggested is that of the first layer that has the word.
 * A word is suggested only when it adds at least 2 letters, and when it is clearly the best: its
   score at least `MIN_SHARE` (0.5) of the scores of all the words with that prefix, and seen at
-  least twice (`MIN_COUNT`). One word of the notes is no suggestion.
+  least twice (`MIN_COUNT`), and no other word has the same score. One word of the notes is no
+  suggestion.
+* The letters typed keep their case; typed all in capitals, the rest of the word is too.
 * The answer is the rest of the word, with no space after it: the student goes on as they like.
 
 ### The switch
@@ -119,7 +123,7 @@ Variations).
 |-------|---------|--------|
 | 1 | `WordCounts` in `drawview-search`: the words of a text without the notation (formulas, code, addresses), the form written most often by lower case, `withPrefix`; tests (Italian accents, capitals, apostrophes, formulas); ABI of `drawview-search` | Done |
 | 2 | `SearchIndex.texts` and `NoteVocabulary`: built off the main thread, a document again when the index changed, the library at most every 2 minutes, the 8 documents asked for last kept; tests on an in-memory index; ABI of `drawview-search` | Done |
-| 3 | `NoteWordSuggester` and `ContentSearch.editorExtension` in `drawview-search-ui`: the prefix, the layers, the thresholds; tests on documents and on an index; ABI of `drawview-search-ui` | Proposed |
+| 3 | `NoteWordSuggester` (internal) and `ContentSearch.editorExtension` in `drawview-search-ui`: the prefix, the layers, the thresholds, the vocabulary created by `start`; tests of the prefix and of the completion; ABI of `drawview-search-ui` | Done |
 | 4 | The switch: `DrawPreferences.areTextSuggestionsEnabled`, read from the JSON of today as on (test), the editor not asking when off, the checked command with its strings; ABI of `drawview-canvas` and `drawview-ui` | Proposed |
 | 5 | PencilNotes: `search.editorExtension` in `PencilNotesServices.editorExtension`; the desktop app run on a scratch data directory with a PDF and a text, the suggestions checked by hand | Proposed |
 
