@@ -445,6 +445,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public static synthetic fun addNewPageAfter$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;ILio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public final fun addNewPageAtBottom (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public static synthetic fun addNewPageAtBottom$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;Lio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun addNewPageBefore (ILio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public static synthetic fun addNewPageBefore$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;ILio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public final fun applyDocumentTemplateChange (Lio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;Z)V
 	public final fun canDeletePages (Ljava/util/Collection;)Z
 	public final fun canPastePages ()Z
@@ -455,6 +457,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun deletePage (I)V
 	public final fun deletePages (Ljava/util/Collection;)V
 	public final fun deletedPagesAt (J)Ljava/util/List;
+	public final fun duplicatePages (Ljava/util/Collection;)V
 	public final fun finishPageReorderMode ()V
 	public final fun getContextMenuTargetPageIndex ()I
 	public final fun getDeleted ()Lkotlinx/coroutines/flow/SharedFlow;

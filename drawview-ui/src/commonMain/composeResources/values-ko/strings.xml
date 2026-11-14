@@ -78,6 +78,9 @@
     <string name="page_grid_action_done">완료</string>
     <string name="page_grid_action_select_all">모두 선택</string>
     <string name="context_menu_action_add_page_after">다음에 페이지 추가</string>
+    <string name="context_menu_action_add_page_before">앞에 페이지 추가</string>
+    <string name="context_menu_action_duplicate_page">페이지 복제</string>
+    <string name="page_grid_action_duplicate">복제</string>
     <string name="context_menu_action_copy_page">페이지 복사</string>
     <string name="context_menu_action_paste_page">다음에 페이지 붙여넣기</string>
     <string name="context_menu_action_edit_background">배경 편집</string>

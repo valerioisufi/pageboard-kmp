@@ -116,6 +116,16 @@ public class PageManager internal constructor(private val controller: DrawViewCo
         return insertPage(target, template)
     }
 
+    /**
+     * Inserts a new page right before [pageIndex] (at the end when the index is invalid), of the
+     * format of [template]: by default the page it goes before, so that it is like its neighbor;
+     * `null`: the format of the document.
+     */
+    public fun addNewPageBefore(pageIndex: Int, template: DrawPage? = pageBefore(pageIndex)): DrawPage {
+        val target = if (pageIndex in document.pages.indices) pageIndex else document.pages.size
+        return insertPage(target, template)
+    }
+
     private fun insertPage(index: Int, template: DrawPage?): DrawPage {
         controller.selectionManager.clearSelection()
         val page = newPage(index, template)
@@ -192,6 +202,23 @@ public class PageManager internal constructor(private val controller: DrawViewCo
     public fun pastePagesAfter(ids: Collection<String>) {
         val last = pagesOf(ids).lastOrNull() ?: return
         pastePages(document.pages.indexOf(last))
+    }
+
+    /**
+     * Duplicates the pages [ids] with all their content, in the order of the document, right after
+     * the last of them, in one change (one step to undo), and shows the first copy. The clipboard
+     * of the application is left as it is. The elements of a file not on this device are left out
+     * (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
+     */
+    public fun duplicatePages(ids: Collection<String>) {
+        if (controller.isReadOnly) return
+        val pages = pagesOf(ids).takeIf { it.isNotEmpty() } ?: return
+        controller.selectionManager.clearSelection()
+        val index = document.pages.indexOf(pages.last()) + 1
+        val pasted = document.copyPages(pages).pasteInto(document, index)
+        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        controller.session.submit(pasted.change ?: return) ?: return
+        jumpToPage(document.pages.indexOf(pasted.pages.first()))
     }
 
     /** Whether pages were copied, in this document or another one (see [EditorClipboard]). */

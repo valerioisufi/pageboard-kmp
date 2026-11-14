@@ -291,6 +291,11 @@ internal class EditorCommands internal constructor(
         if (writable()) controller.pageManager.pastePagesAfter(ids)
     }
 
+    /** Duplicates the pages [ids] with their content after the last of them (see [PageManager.duplicatePages]). */
+    fun duplicatePages(ids: Collection<String>) {
+        if (writable()) controller.pageManager.duplicatePages(ids)
+    }
+
     /** Whether pages were copied, to be pasted after a page (see [PageManager.pastePages]). */
     fun canPastePages(): Boolean = writable() && controller.pageManager.canPastePages()
 

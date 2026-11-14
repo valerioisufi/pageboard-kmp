@@ -161,6 +161,7 @@ internal fun PageGridOverlay(
                 canDelete = pageManager.canDeletePages(selection.pageIds),
                 onCopy = commands?.let { { it.copyPages(selection.pageIds) } },
                 onPaste = { commands?.pastePagesAfter(selection.pageIds) },
+                onDuplicate = { pageManager.duplicatePages(selection.pageIds) },
                 onEditBackground = { editBackground(selection.pageIds) },
                 onDelete = { pageManager.deletePages(selection.pageIds) },
                 extensionActions = extensionActions
@@ -440,6 +441,24 @@ internal fun PageGridOverlay(
                                             menuExpanded = false
                                             pageManager.contextMenuTargetPageIndex = index
                                             pageManager.addNewPageAfter(index)
+                                        }
+                                    )
+                                    MenuItem(
+                                        text = stringResource(Res.string.context_menu_action_add_page_before),
+                                        icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                                        onClick = {
+                                            menuExpanded = false
+                                            pageManager.contextMenuTargetPageIndex = index
+                                            pageManager.addNewPageBefore(index)
+                                        }
+                                    )
+                                    MenuItem(
+                                        text = stringResource(Res.string.context_menu_action_duplicate_page),
+                                        icon = rememberVectorPainter(DrawViewIcons.CopyPlus),
+                                        onClick = {
+                                            menuExpanded = false
+                                            pageManager.contextMenuTargetPageIndex = index
+                                            pageManager.duplicatePages(targets)
                                         }
                                     )
                                     if (commands != null) {
@@ -732,6 +751,7 @@ private fun PageSelectionBar(
     canDelete: Boolean,
     onCopy: (() -> Unit)?,
     onPaste: () -> Unit,
+    onDuplicate: () -> Unit,
     onEditBackground: () -> Unit,
     onDelete: () -> Unit,
     extensionActions: List<Command> = emptyList()
@@ -771,6 +791,9 @@ private fun PageSelectionBar(
                     action.icon?.let { Icon(it(), contentDescription = label, tint = colors.onSurface, modifier = Modifier.size(22.dp)) }
                 }
             }
+        }
+        if (writable) {
+            DesignIconButton(DrawViewIcons.CopyPlus, stringResource(Res.string.page_grid_action_duplicate), onDuplicate, enabled = some, tint = colors.onSurface)
         }
         if (writable && !compact) {
             if (canPaste) {

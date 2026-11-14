@@ -86,6 +86,9 @@
     <string name="page_grid_action_done">Fine</string>
     <string name="page_grid_action_select_all">Seleziona tutto</string>
     <string name="context_menu_action_add_page_after">Aggiungi pagina dopo</string>
+    <string name="context_menu_action_add_page_before">Aggiungi pagina prima</string>
+    <string name="context_menu_action_duplicate_page">Duplica pagina</string>
+    <string name="page_grid_action_duplicate">Duplica</string>
     <string name="context_menu_action_copy_page">Copia pagina</string>
     <string name="context_menu_action_paste_page">Incolla pagina dopo</string>
     <string name="context_menu_action_edit_background">Modifica Sfondo</string>

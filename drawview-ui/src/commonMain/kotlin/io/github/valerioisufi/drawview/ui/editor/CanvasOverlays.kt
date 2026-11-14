@@ -204,6 +204,22 @@ internal fun CanvasContextMenu(
                 }
             )
             MenuItem(
+                text = stringResource(Res.string.context_menu_action_add_page_before),
+                icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                onClick = {
+                    controller.contextMenuPosition = null
+                    pageManager.addNewPageBefore(pageManager.contextMenuTargetPageIndex)
+                }
+            )
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_duplicate_page),
+                icon = rememberVectorPainter(DrawViewIcons.CopyPlus),
+                onClick = {
+                    controller.contextMenuPosition = null
+                    controller.document.pages.getOrNull(pageManager.contextMenuTargetPageIndex)?.let { commands.duplicatePages(listOf(it.id)) }
+                }
+            )
+            MenuItem(
                 text = stringResource(Res.string.context_menu_action_copy_page),
                 icon = rememberVectorPainter(DrawViewIcons.Copy),
                 onClick = {
