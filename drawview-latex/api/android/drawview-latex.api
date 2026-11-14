@@ -1,7 +1,7 @@
 public final class io/github/valerioisufi/drawview/latex/LatexEngine : io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer {
 	public static final field $stable I
 	public fun <init> ()V
-	public final fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/latex/TexDrawing;
+	public fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaDrawing;
 	public final fun initialize (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun prepare (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -27,133 +27,6 @@ public final class io/github/valerioisufi/drawview/latex/LatexResult {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/latex/TexDrawing {
-	public static final field $stable I
-	public fun <init> (IIFLjava/util/List;)V
-	public final fun getBaselineRatio ()F
-	public final fun getHeight ()I
-	public final fun getOps ()Ljava/util/List;
-	public final fun getWidth ()I
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexFont {
-	public static final field $stable I
-	public static final field BOLD I
-	public static final field Companion Lio/github/valerioisufi/drawview/latex/TexFont$Companion;
-	public static final field ITALIC I
-	public fun <init> (Ljava/lang/String;IFZZ)V
-	public final fun getFakeBold ()Z
-	public final fun getFakeItalic ()Z
-	public final fun getFile ()Ljava/lang/String;
-	public final fun getSize ()F
-	public final fun getStyle ()I
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexFont$Companion {
-}
-
-public abstract interface class io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field Companion Lio/github/valerioisufi/drawview/latex/TexOp$Companion;
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$Companion {
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$DrawLine : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FFFF)V
-	public final fun getX1 ()F
-	public final fun getX2 ()F
-	public final fun getY1 ()F
-	public final fun getY2 ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$DrawRect : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FFFFZ)V
-	public final fun getFill ()Z
-	public final fun getHeight ()F
-	public final fun getWidth ()F
-	public final fun getX ()F
-	public final fun getY ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$DrawRoundRect : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FFFFFFZ)V
-	public final fun getFill ()Z
-	public final fun getHeight ()F
-	public final fun getRx ()F
-	public final fun getRy ()F
-	public final fun getWidth ()F
-	public final fun getX ()F
-	public final fun getY ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$DrawText : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (Ljava/lang/String;FF)V
-	public final fun getText ()Ljava/lang/String;
-	public final fun getX ()F
-	public final fun getY ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$Reset : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/latex/TexOp$Reset;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$Rotate : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FFF)V
-	public final fun getAngle ()F
-	public final fun getPx ()F
-	public final fun getPy ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$Scale : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FF)V
-	public final fun getSx ()F
-	public final fun getSy ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$SetColor : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (I)V
-	public final fun getArgb ()I
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$SetFont : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/latex/TexFont;)V
-	public final fun getFont ()Lio/github/valerioisufi/drawview/latex/TexFont;
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$SetStroke : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FFII)V
-	public final fun getCap ()I
-	public final fun getJoin ()I
-	public final fun getWidth ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$SetStrokeWidth : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (F)V
-	public final fun getWidth ()F
-}
-
-public final class io/github/valerioisufi/drawview/latex/TexOp$Translate : io/github/valerioisufi/drawview/latex/TexOp {
-	public static final field $stable I
-	public fun <init> (FF)V
-	public final fun getDx ()F
-	public final fun getDy ()F
-}
-
 public final class io/nano/tex/Font {
 	public static final field $stable I
 	public static final field Companion Lio/nano/tex/Font$Companion;
@@ -164,7 +37,7 @@ public final class io/nano/tex/Font {
 	public final fun getSize ()F
 	public final fun getStyle ()I
 	public final fun getTypeface ()Landroid/graphics/Typeface;
-	public final fun toTexFont ()Lio/github/valerioisufi/drawview/latex/TexFont;
+	public final fun toTexFont ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaFont;
 }
 
 public final class io/nano/tex/Font$Companion {

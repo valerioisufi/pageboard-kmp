@@ -203,6 +203,13 @@ public interface FormulaRenderer {
      * when it is invalid or the engine is not ready.
      */
     public fun render(latex: String, fontSizePx: Float, colorArgb: Int): FormulaImage?
+
+    /**
+     * The formula [latex] (see [sanitize]) as the engine draws it [fontSizePx] high in
+     * [colorArgb], e.g. for the export to write it as vectors; `null` when it is invalid, the
+     * engine is not ready, or it draws images only (the default).
+     */
+    public fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing? = null
 }
 
 /** A formula drawn by a [FormulaRenderer]: its [bitmap] and the place of its baseline (0 top, 1 bottom). */

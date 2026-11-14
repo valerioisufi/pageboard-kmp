@@ -212,6 +212,7 @@ abstract interface io.github.valerioisufi.drawview.canvas.render.tile/FormulaRen
     abstract fun render(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage? // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.render|render(kotlin.String;kotlin.Float;kotlin.Int){}[0]
     abstract fun sanitize(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.sanitize|sanitize(kotlin.String){}[0]
     abstract suspend fun prepare(kotlin.collections/Map<io.github.valerioisufi.drawview.canvas.render.tile/TextFace, kotlin/ByteArray> = ...) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.prepare|prepare(kotlin.collections.Map<io.github.valerioisufi.drawview.canvas.render.tile.TextFace,kotlin.ByteArray>){}[0]
+    open fun drawing(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing? // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.drawing|drawing(kotlin.String;kotlin.Float;kotlin.Int){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter { // io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter|null[0]
@@ -232,6 +233,135 @@ abstract interface io.github.valerioisufi.drawview.canvas.render.tile/TextTileAd
     final object Companion { // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion|null[0]
         final const val NO_PAPER // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion.NO_PAPER|{}NO_PAPER[0]
             final fun <get-NO_PAPER>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion.NO_PAPER.<get-NO_PAPER>|<get-NO_PAPER>(){}[0]
+    }
+}
+
+sealed interface io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp|null[0]
+    final class DrawLine : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+        final val x1 // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.x1|{}x1[0]
+            final fun <get-x1>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.x1.<get-x1>|<get-x1>(){}[0]
+        final val x2 // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.x2|{}x2[0]
+            final fun <get-x2>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.x2.<get-x2>|<get-x2>(){}[0]
+        final val y1 // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.y1|{}y1[0]
+            final fun <get-y1>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.y1.<get-y1>|<get-y1>(){}[0]
+        final val y2 // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.y2|{}y2[0]
+            final fun <get-y2>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawLine.y2.<get-y2>|<get-y2>(){}[0]
+    }
+
+    final class DrawRect : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+
+        final val fill // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.fill|{}fill[0]
+            final fun <get-fill>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.fill.<get-fill>|<get-fill>(){}[0]
+        final val height // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.height|{}height[0]
+            final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.height.<get-height>|<get-height>(){}[0]
+        final val width // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.width.<get-width>|<get-width>(){}[0]
+        final val x // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRect.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class DrawRoundRect : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+
+        final val fill // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.fill|{}fill[0]
+            final fun <get-fill>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.fill.<get-fill>|<get-fill>(){}[0]
+        final val height // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.height|{}height[0]
+            final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.height.<get-height>|<get-height>(){}[0]
+        final val rx // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.rx|{}rx[0]
+            final fun <get-rx>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.rx.<get-rx>|<get-rx>(){}[0]
+        final val ry // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.ry|{}ry[0]
+            final fun <get-ry>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.ry.<get-ry>|<get-ry>(){}[0]
+        final val width // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.width.<get-width>|<get-width>(){}[0]
+        final val x // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawRoundRect.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class DrawText : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText|null[0]
+        constructor <init>(kotlin/String, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.<init>|<init>(kotlin.String;kotlin.Float;kotlin.Float){}[0]
+
+        final val text // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.text.<get-text>|<get-text>(){}[0]
+        final val x // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.DrawText.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class Rotate : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+        final val angle // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.angle|{}angle[0]
+            final fun <get-angle>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.angle.<get-angle>|<get-angle>(){}[0]
+        final val px // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.px|{}px[0]
+            final fun <get-px>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.px.<get-px>|<get-px>(){}[0]
+        final val py // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.py|{}py[0]
+            final fun <get-py>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Rotate.py.<get-py>|<get-py>(){}[0]
+    }
+
+    final class Scale : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+        final val sx // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale.sx|{}sx[0]
+            final fun <get-sx>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale.sx.<get-sx>|<get-sx>(){}[0]
+        final val sy // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale.sy|{}sy[0]
+            final fun <get-sy>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Scale.sy.<get-sy>|<get-sy>(){}[0]
+    }
+
+    final class SetColor : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetColor|null[0]
+        constructor <init>(kotlin/Int) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetColor.<init>|<init>(kotlin.Int){}[0]
+
+        final val argb // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetColor.argb|{}argb[0]
+            final fun <get-argb>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetColor.argb.<get-argb>|<get-argb>(){}[0]
+    }
+
+    final class SetFont : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetFont|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont?) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetFont.<init>|<init>(io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont?){}[0]
+
+        final val font // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetFont.font|{}font[0]
+            final fun <get-font>(): io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont? // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetFont.font.<get-font>|<get-font>(){}[0]
+    }
+
+    final class SetStroke : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+
+        final val cap // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.cap|{}cap[0]
+            final fun <get-cap>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.cap.<get-cap>|<get-cap>(){}[0]
+        final val join // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.join|{}join[0]
+            final fun <get-join>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.join.<get-join>|<get-join>(){}[0]
+        final val width // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStroke.width.<get-width>|<get-width>(){}[0]
+    }
+
+    final class SetStrokeWidth : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStrokeWidth|null[0]
+        constructor <init>(kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStrokeWidth.<init>|<init>(kotlin.Float){}[0]
+
+        final val width // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStrokeWidth.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.SetStrokeWidth.width.<get-width>|<get-width>(){}[0]
+    }
+
+    final class Translate : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+        final val dx // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate.dx|{}dx[0]
+            final fun <get-dx>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate.dx.<get-dx>|<get-dx>(){}[0]
+        final val dy // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate.dy|{}dy[0]
+            final fun <get-dy>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Translate.dy.<get-dy>|<get-dy>(){}[0]
+    }
+
+    final object Companion // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Companion|null[0]
+
+    final object Reset : io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Reset|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Reset.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Reset.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp.Reset.toString|toString(){}[0]
     }
 }
 
@@ -1312,6 +1442,41 @@ final class io.github.valerioisufi.drawview.canvas.port/EditorPorts { // io.gith
         final fun <get-rendering>(): io.github.valerioisufi.drawview.canvas.port/EditorRendering // io.github.valerioisufi.drawview.canvas.port/EditorPorts.rendering.<get-rendering>|<get-rendering>(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp>) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp>){}[0]
+
+    final val baselineRatio // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.baselineRatio|{}baselineRatio[0]
+        final fun <get-baselineRatio>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.baselineRatio.<get-baselineRatio>|<get-baselineRatio>(){}[0]
+    final val height // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.height.<get-height>|<get-height>(){}[0]
+    final val ops // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.ops|{}ops[0]
+        final fun <get-ops>(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/FormulaOp> // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.ops.<get-ops>|<get-ops>(){}[0]
+    final val width // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaDrawing.width.<get-width>|<get-width>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont|null[0]
+    constructor <init>(kotlin/String?, kotlin/Int, kotlin/Float, kotlin/Boolean, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.<init>|<init>(kotlin.String?;kotlin.Int;kotlin.Float;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val fakeBold // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.fakeBold|{}fakeBold[0]
+        final fun <get-fakeBold>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.fakeBold.<get-fakeBold>|<get-fakeBold>(){}[0]
+    final val fakeItalic // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.fakeItalic|{}fakeItalic[0]
+        final fun <get-fakeItalic>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.fakeItalic.<get-fakeItalic>|<get-fakeItalic>(){}[0]
+    final val file // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.file|{}file[0]
+        final fun <get-file>(): kotlin/String? // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.file.<get-file>|<get-file>(){}[0]
+    final val size // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.size|{}size[0]
+        final fun <get-size>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.size.<get-size>|<get-size>(){}[0]
+    final val style // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.style|{}style[0]
+        final fun <get-style>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.style.<get-style>|<get-style>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.Companion|null[0]
+        final const val BOLD // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.Companion.BOLD|{}BOLD[0]
+            final fun <get-BOLD>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.Companion.BOLD.<get-BOLD>|<get-BOLD>(){}[0]
+        final const val ITALIC // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.Companion.ITALIC|{}ITALIC[0]
+            final fun <get-ITALIC>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/FormulaFont.Companion.ITALIC.<get-ITALIC>|<get-ITALIC>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage|null[0]
     constructor <init>(androidx.compose.ui.graphics/ImageBitmap, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage.<init>|<init>(androidx.compose.ui.graphics.ImageBitmap;kotlin.Float){}[0]
 
@@ -1782,7 +1947,21 @@ final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.history/io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop // io.github.valerioisufi.drawview.canvas.history/io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop // io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop|#static{}io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop[0]
@@ -1869,7 +2048,21 @@ final fun io.github.valerioisufi.drawview.canvas.platform/isJpeg(kotlin/ByteArra
 final fun io.github.valerioisufi.drawview.canvas.platform/jpegOrientation(kotlin/ByteArray): kotlin/Int // io.github.valerioisufi.drawview.canvas.platform/jpegOrientation|jpegOrientation(kotlin.ByteArray){}[0]
 final fun io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter|io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/fitPdfPage(kotlin/Double, kotlin/Double, androidx.compose.ui.geometry/Rect): androidx.compose.ui.geometry/Rect // io.github.valerioisufi.drawview.canvas.render.tile/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;androidx.compose.ui.geometry.Rect){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaDrawing$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaFont$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawLine$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRect$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawRoundRect$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_DrawText$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Reset$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Rotate$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Scale$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetColor$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetFont$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStroke$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_SetStrokeWidth$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaOp_Translate$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter(){}[0]

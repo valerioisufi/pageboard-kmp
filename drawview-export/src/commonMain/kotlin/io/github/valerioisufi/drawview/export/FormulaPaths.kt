@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.export
 
-import io.github.valerioisufi.drawview.latex.TexDrawing
-import io.github.valerioisufi.drawview.latex.TexFont
-import io.github.valerioisufi.drawview.latex.TexOp
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.TrueTypeFont
@@ -10,24 +10,24 @@ import kotlin.math.PI
 import kotlin.math.max
 
 /** A shape of a formula: [path] filled with [argb], or stroked [strokeWidth] wide. */
-internal class TexShape(val path: PdfPath, val argb: Int, val strokeWidth: Float = 0f)
+internal class FormulaShape(val path: PdfPath, val argb: Int, val strokeWidth: Float = 0f)
 
 /**
- * The shapes of a formula as MicroTeX draws it (see [TexDrawing]): its characters as the outlines
+ * The shapes of a formula as MicroTeX draws it (see [FormulaDrawing]): its characters as the outlines
  * of their glyphs, its rules and lines as paths, mapped by `toPage` from the pixels of the drawing.
  * It follows the graphics of the platforms (`io.nano.tex.Graphics2D`): the translations and the
  * scales applied to the coordinates, the rotations to what follows them, the styles a font has not
  * synthesized (bold outset, italic slanted).
  *
- * @param fonts the TrueType font of a [TexFont] (a file of the TeX resources, or the text of the
+ * @param fonts the TrueType font of a [FormulaFont] (a file of the TeX resources, or the text of the
  *   formulas), or `null` when it cannot be read: its characters are left out.
  */
-internal class TexPaths(private val fonts: (TexFont) -> TrueTypeFont?) {
+internal class FormulaPaths(private val fonts: (FormulaFont) -> TrueTypeFont?) {
 
-    fun shapes(drawing: TexDrawing, toPage: Matrix2D): List<TexShape> = Replay(toPage).apply { drawing.ops.forEach(::play) }.shapes
+    fun shapes(drawing: FormulaDrawing, toPage: Matrix2D): List<FormulaShape> = Replay(toPage).apply { drawing.ops.forEach(::play) }.shapes
 
     private inner class Replay(private val toPage: Matrix2D) {
-        val shapes = mutableListOf<TexShape>()
+        val shapes = mutableListOf<FormulaShape>()
 
         // The transformation of the coordinates (scales and translation)
         private var sx = 1f
@@ -41,7 +41,7 @@ internal class TexPaths(private val fonts: (TexFont) -> TrueTypeFont?) {
         private var pivotY = 0f
         private val canvas = Matrix2D()
 
-        private var font: TexFont? = null
+        private var font: FormulaFont? = null
         private var color = 0xFF000000.toInt()
         private var strokeWidth = 1f
         private val pageScale = toPage.scaleFactor
@@ -49,28 +49,28 @@ internal class TexPaths(private val fonts: (TexFont) -> TrueTypeFont?) {
         private fun x(x: Float) = x * sx + tx
         private fun y(y: Float) = y * sy + ty
 
-        fun play(op: TexOp) {
+        fun play(op: FormulaOp) {
             when (op) {
-                is TexOp.SetFont -> font = op.font
-                is TexOp.SetColor -> color = op.argb
-                is TexOp.SetStrokeWidth -> strokeWidth = op.width
-                is TexOp.SetStroke -> strokeWidth = op.width
-                is TexOp.Translate -> {
+                is FormulaOp.SetFont -> font = op.font
+                is FormulaOp.SetColor -> color = op.argb
+                is FormulaOp.SetStrokeWidth -> strokeWidth = op.width
+                is FormulaOp.SetStroke -> strokeWidth = op.width
+                is FormulaOp.Translate -> {
                     tx += sx * op.dx
                     ty += sy * op.dy
                 }
-                is TexOp.Scale -> {
+                is FormulaOp.Scale -> {
                     sx *= op.sx
                     sy *= op.sy
                 }
-                is TexOp.Rotate -> {
+                is FormulaOp.Rotate -> {
                     val deg = (op.angle / PI * 180).toFloat()
                     degrees += deg
                     pivotX = x(op.px)
                     pivotY = y(op.py)
                     canvas.preConcat(Matrix2D().postRotate(deg, pivotX, pivotY))
                 }
-                TexOp.Reset -> {
+                FormulaOp.Reset -> {
                     if (degrees != 0f) canvas.preConcat(Matrix2D().postRotate(-degrees, pivotX, pivotY))
                     sx = 1f
                     sy = 1f
@@ -80,21 +80,21 @@ internal class TexPaths(private val fonts: (TexFont) -> TrueTypeFont?) {
                     pivotX = 0f
                     pivotY = 0f
                 }
-                is TexOp.DrawText -> text(op.text, x(op.x), y(op.y))
-                is TexOp.DrawLine -> {
+                is FormulaOp.DrawText -> text(op.text, x(op.x), y(op.y))
+                is FormulaOp.DrawLine -> {
                     val path = PdfPath()
                     path.moveTo(map(x(op.x1), y(op.y1)))
                     path.lineTo(map(x(op.x2), y(op.y2)))
                     // As on a bitmap, a line is at least a pixel wide
-                    shapes += TexShape(path, color, max(1f, sy * strokeWidth) * pageScale)
+                    shapes += FormulaShape(path, color, max(1f, sy * strokeWidth) * pageScale)
                 }
-                is TexOp.DrawRect -> {
+                is FormulaOp.DrawRect -> {
                     val path = PdfPath().apply { addPolygon(rect(x(op.x), y(op.y), sx * op.width, sy * op.height)) }
-                    shapes += if (op.fill) TexShape(path, color) else TexShape(path, color, sy * strokeWidth * pageScale)
+                    shapes += if (op.fill) FormulaShape(path, color) else FormulaShape(path, color, sy * strokeWidth * pageScale)
                 }
-                is TexOp.DrawRoundRect -> {
+                is FormulaOp.DrawRoundRect -> {
                     val path = roundRect(x(op.x), y(op.y), sx * op.width, sy * op.height, sx * op.rx, sy * op.ry)
-                    shapes += if (op.fill) TexShape(path, color) else TexShape(path, color, sy * strokeWidth * pageScale)
+                    shapes += if (op.fill) FormulaShape(path, color) else FormulaShape(path, color, sy * strokeWidth * pageScale)
                 }
             }
         }
@@ -125,9 +125,9 @@ internal class TexPaths(private val fonts: (TexFont) -> TrueTypeFont?) {
                 penX += ttf.advance(glyph) * scale * scaleX
             }
             if (path.isEmpty) return
-            shapes += TexShape(path, color)
+            shapes += FormulaShape(path, color)
             // The fake bold outsets the outlines (Skia: from 1/24 of the size at 9 px to 1/32 at 36 px)
-            if (font.fakeBold) shapes += TexShape(path, color, 2f * fakeBoldOutset(size) * pageScale)
+            if (font.fakeBold) shapes += FormulaShape(path, color, 2f * fakeBoldOutset(size) * pageScale)
         }
 
         /** A closed contour of quadratic curves through [point] (two points off the curve imply one between them). */

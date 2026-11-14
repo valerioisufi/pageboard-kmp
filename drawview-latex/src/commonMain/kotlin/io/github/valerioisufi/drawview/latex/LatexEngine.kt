@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
 
 /**
  * Platform binding of the native MicroTeX engine.
@@ -20,7 +22,7 @@ internal expect object LatexPlatformEngine {
     fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float): LatexResult?
 
     /** The drawing of a sanitized formula (see [LatexEngine.drawing]), or `null`. */
-    fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing?
+    fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing?
     fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap
 }
 
@@ -96,10 +98,10 @@ public class LatexEngine : FormulaRenderer {
 
     /**
      * The formula [latex] as MicroTeX draws it at [fontSizePx] in [colorArgb], the same on every
-     * platform (characters of its fonts, lines, rectangles: see [TexDrawing]), e.g. to write it as
-     * vectors; `null` when it is invalid or the engine is not initialized yet.
+     * platform (characters of its fonts, lines, rectangles: see [FormulaDrawing]), e.g. to write it
+     * as vectors; `null` when it is invalid or the engine is not initialized yet.
      */
-    public fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+    override fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing? {
         val clean = sanitizeLatexString(latex)
         if (clean.isBlank() || !LatexPlatformEngine.isNativeReady()) return null
         return try {
@@ -116,9 +118,9 @@ public class LatexEngine : FormulaRenderer {
     /** The style of the text fonts of MicroTeX for [face] (`null` for the code and the symbols). */
     private fun texStyle(face: TextFace): Int? = when (face) {
         TextFace.REGULAR -> 0
-        TextFace.BOLD -> TexFont.BOLD
-        TextFace.ITALIC -> TexFont.ITALIC
-        TextFace.BOLD_ITALIC -> TexFont.BOLD or TexFont.ITALIC
+        TextFace.BOLD -> FormulaFont.BOLD
+        TextFace.ITALIC -> FormulaFont.ITALIC
+        TextFace.BOLD_ITALIC -> FormulaFont.BOLD or FormulaFont.ITALIC
         TextFace.MONO, TextFace.MONO_BOLD, TextFace.SYMBOLS -> null
     }
 }

@@ -125,7 +125,7 @@ until the release (see the release checklist at the end).
 | `drawview-search-ui` | `ContentSearch` of the library, PDF source, model settings, "Ask your notes" card | search, explorer, ui | yes | — |
 | `drawview-agent` | what an external model reads and proposes: tools, proposals, access, its messages (see [agent-tools.md](agent-tools.md)) | store | no | — |
 | `drawview-agent-ui` | the review of the proposals in the editor, the access of the clients | agent, session | yes | — |
-| `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf, latex | yes (graphics) | — |
+| `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf | yes (graphics) | — |
 | `drawview-export-ui` | export dialog and extension | export, ui | yes | — |
 | `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, `-iroh` | Android shared libraries, one engine each | — | — | one each |
 
@@ -241,8 +241,9 @@ applications never declare them.
   implementations of the ports of the canvas (`PdfiumEngine.createTileAdapter`, a `LatexEngine`
   is a `FormulaRenderer`); the application builds a `DrawViewEngines` with them and gives
   it to the editor and the library; `drawview-ui`, `drawview-explorer` and `drawview-lecture` no
-  longer depend on `drawview-pdf` and `drawview-latex`. Only `drawview-export` uses them directly
-  (it writes PDFs and the formulas as vectors).
+  longer depend on `drawview-pdf` and `drawview-latex`. Only `drawview-export` uses PDFium
+  directly (it writes the PDFs); it takes the vectors of the formulas from the formula renderer
+  (`FormulaRenderer.drawing`, `docs/vector-formulas.md`).
 * The controller receives the engines: it creates the PDF adapter of its renderer (Creator) and
   draws the texts again when the formula renderer becomes ready (Information Expert), so that
   `DrawScreen` no longer reaches into the renderer.

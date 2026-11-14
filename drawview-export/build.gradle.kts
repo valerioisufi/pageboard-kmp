@@ -11,7 +11,6 @@ kotlin {
             // The documents exported: those of the store of the application
             api(project(":drawview-store"))
             implementation(project(":drawview-pdf"))
-            implementation(project(":drawview-latex"))
             implementation(libs.compose.ui)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
@@ -22,8 +21,9 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
-            // The texts of the documents drawn as in the editor (PdfExporterTest)
+            // The texts of the documents drawn as in the editor, the formulas by MicroTeX (PdfExporterTest)
             implementation(project(":drawview-ui"))
+            implementation(project(":drawview-latex"))
         }
     }
 }

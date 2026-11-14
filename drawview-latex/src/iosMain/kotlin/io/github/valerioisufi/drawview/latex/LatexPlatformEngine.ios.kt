@@ -36,6 +36,7 @@ import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
 
 /**
  * Registry of the Kotlin objects referenced by the native engine through opaque handles.
@@ -181,7 +182,7 @@ internal actual object LatexPlatformEngine {
             }
         }
 
-    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? =
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing? =
         syncLock(engineLock) {
             if (!initialized) return@syncLock null
             val render = tex_parse(latex, 0, fontSizePx, 0f, colorArgb)
@@ -194,7 +195,7 @@ internal actual object LatexPlatformEngine {
                 } finally {
                     TexObjects.releaseRecorder(recorderHandle)
                 }
-                TexDrawing(
+                FormulaDrawing(
                     tex_render_get_width(render),
                     tex_render_get_height(render),
                     tex_render_get_baseline(render).coerceIn(0f, 1f),

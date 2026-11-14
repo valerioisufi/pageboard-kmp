@@ -133,7 +133,8 @@ Variations).
   they come, checked by their hash, then moved, as the attachments are (no change of what travels).
 * **Indirection.** `FormulaRenderer` gives the vectors of a formula (`drawing(latex, size)`, the
   operations `TexOp` already has), so `drawview-export` takes the formulas from `DrawViewEngines`
-  and no longer depends on `drawview-latex` nor, for the PDF writer, on more than a port.
+  and no longer depends on `drawview-latex`. It keeps `drawview-pdf`: writing PDFs is what it is
+  for, and a port of the writer waits for a second one (`docs/vector-formulas.md`).
 * **Controller.** The secondary window of PencilNotes is built by the same function as the main
   editor, with the assistant, the collaboration and the search of the application (they become
   instances shared by the windows, from B).
@@ -159,7 +160,7 @@ Variations).
 | 7 | C. `DocumentTools` split | – | to do |
 | 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | to do |
 | 9 | C. `LectureAssistant`, `LecturePanel`, `EditorToolbar` split | – | to do |
-| 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` and `pdf` | 4 | to do |
+| 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` | 4 | done (`docs/vector-formulas.md`) |
 | 11 | D. The lecture assistant on `ModelBackend` and `drawview-ml` (phase 4 of `docs/local-models.md`) | 9 | to do |
 | 12 | E. Page backgrounds, cross-module duplicates, translations | – | to do |
 

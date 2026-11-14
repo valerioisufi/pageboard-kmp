@@ -1,7 +1,7 @@
 package io.nano.tex
 
 import android.graphics.Typeface
-import io.github.valerioisufi.drawview.latex.TexFont
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
 import io.github.valerioisufi.drawview.latex.TexTextFonts
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 
@@ -22,14 +22,14 @@ public class Font private constructor(
         return Font(Typeface.create(typeface, style), size, style, file)
     }
 
-    /** This font for a [io.github.valerioisufi.drawview.latex.TexDrawing][io.github.valerioisufi.drawview.latex.TexDrawing]. */
-    public fun toTexFont(): TexFont {
-        val bold = style and TexFont.BOLD != 0
-        val italic = style and TexFont.ITALIC != 0
+    /** This font for a [io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing][io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing]. */
+    public fun toTexFont(): FormulaFont {
+        val bold = style and FormulaFont.BOLD != 0
+        val italic = style and FormulaFont.ITALIC != 0
         return if (file != null) {
-            TexFont(file, style, size, fakeBold = bold, fakeItalic = italic)
+            FormulaFont(file, style, size, fakeBold = bold, fakeItalic = italic)
         } else {
-            TexFont(null, style, size, fakeBold = false, fakeItalic = false)
+            FormulaFont(null, style, size, fakeBold = false, fakeItalic = false)
         }
     }
 
@@ -41,7 +41,7 @@ public class Font private constructor(
         public fun create(name: String, style: Int, size: Float): Font {
             // The fonts of the text of the formulas, when the application gives them: the style
             // synthesized over the regular one when it does not give it
-            val wanted = style and (TexFont.BOLD or TexFont.ITALIC)
+            val wanted = style and (FormulaFont.BOLD or FormulaFont.ITALIC)
             textTypeface(wanted)?.let { return Font(it, size, wanted) }
             textTypeface(0)?.let { return Font(Typeface.create(it, wanted), size, wanted) }
             return Font(Typeface.create(name, style), size, wanted)

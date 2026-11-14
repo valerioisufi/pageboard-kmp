@@ -1,6 +1,6 @@
 package io.nano.tex
 
-import io.github.valerioisufi.drawview.latex.TexFont
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
 import io.github.valerioisufi.drawview.latex.TexTextFonts
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
@@ -25,18 +25,18 @@ public class Font(
 ) {
     public fun deriveFont(style: Int): Font = if (style == this.style) this else Font(typeface, size, style, file)
 
-    /** This font for a [io.github.valerioisufi.drawview.latex.TexDrawing]: the style synthesized over the file as [toSkiaFont] does. */
-    public fun toTexFont(): TexFont {
+    /** This font for a [io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing]: the style synthesized over the file as [toSkiaFont] does. */
+    public fun toTexFont(): FormulaFont {
         val tfStyle = typeface?.fontStyle
         val boldFace = tfStyle != null && tfStyle.weight >= 600
         val italicFace = tfStyle != null && tfStyle.slant != org.jetbrains.skia.FontSlant.UPRIGHT
         val bold = style and BOLD != 0
         val italic = style and ITALIC != 0
         return if (file != null) {
-            TexFont(file, style, size, fakeBold = bold && !boldFace, fakeItalic = italic && !italicFace)
+            FormulaFont(file, style, size, fakeBold = bold && !boldFace, fakeItalic = italic && !italicFace)
         } else {
-            val textStyle = (if (bold || boldFace) TexFont.BOLD else 0) or (if (italic || italicFace) TexFont.ITALIC else 0)
-            TexFont(null, textStyle, size, fakeBold = false, fakeItalic = false)
+            val textStyle = (if (bold || boldFace) FormulaFont.BOLD else 0) or (if (italic || italicFace) FormulaFont.ITALIC else 0)
+            FormulaFont(null, textStyle, size, fakeBold = false, fakeItalic = false)
         }
     }
 

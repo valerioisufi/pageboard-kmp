@@ -10,6 +10,7 @@ import io.nano.tex.TeXRender
 import java.io.File
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
 
 internal actual object LatexPlatformEngine {
 
@@ -71,11 +72,11 @@ internal actual object LatexPlatformEngine {
         }
     }
 
-    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing? {
         if (!isNativeReady()) return null
         return synchronized(lock) {
             val render: TeXRender = LaTeX.instance().parse(latex, fontSizePx, colorArgb)
-            TexDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
+            FormulaDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
         }
     }
 

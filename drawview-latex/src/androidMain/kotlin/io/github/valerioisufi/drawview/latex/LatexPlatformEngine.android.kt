@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import java.io.File
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
 
 internal actual object LatexPlatformEngine {
 
@@ -52,12 +53,12 @@ internal actual object LatexPlatformEngine {
         }
     }
 
-    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): FormulaDrawing? {
         if (!isNativeReady()) return null
         return synchronized(lock) {
             val render = LaTeX.instance().parse(latex, fontSizePx, colorArgb)
             try {
-                TexDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
+                FormulaDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
             } finally {
                 render.release()
             }

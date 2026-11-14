@@ -15,7 +15,7 @@ public class TeXRender internal constructor(private var nativePtr: Long) {
     public val textSize: Float get() = nGetTextSize(nativePtr)
 
     /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
-    public fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
+    public fun ops(): List<io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp> {
         val r = ActionRecorder()
         nDraw(nativePtr, r, 0, 0)
         return r.toOps()

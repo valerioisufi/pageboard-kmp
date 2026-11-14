@@ -1189,6 +1189,31 @@ public final class io/github/valerioisufi/drawview/canvas/render/ShapeElementRen
 	public static final fun drawVectors (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/geometry/VectorDrawing;)V
 }
 
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaDrawing {
+	public static final field $stable I
+	public fun <init> (IIFLjava/util/List;)V
+	public final fun getBaselineRatio ()F
+	public final fun getHeight ()I
+	public final fun getOps ()Ljava/util/List;
+	public final fun getWidth ()I
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaFont {
+	public static final field $stable I
+	public static final field BOLD I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaFont$Companion;
+	public static final field ITALIC I
+	public fun <init> (Ljava/lang/String;IFZZ)V
+	public final fun getFakeBold ()Z
+	public final fun getFakeItalic ()Z
+	public final fun getFile ()Ljava/lang/String;
+	public final fun getSize ()F
+	public final fun getStyle ()I
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaFont$Companion {
+}
+
 public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaImage {
 	public static final field $stable I
 	public fun <init> (Landroidx/compose/ui/graphics/ImageBitmap;F)V
@@ -1196,7 +1221,110 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaIma
 	public final fun getBitmap ()Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
+public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Companion;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$DrawLine : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FFFF)V
+	public final fun getX1 ()F
+	public final fun getX2 ()F
+	public final fun getY1 ()F
+	public final fun getY2 ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$DrawRect : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FFFFZ)V
+	public final fun getFill ()Z
+	public final fun getHeight ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$DrawRoundRect : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FFFFFFZ)V
+	public final fun getFill ()Z
+	public final fun getHeight ()F
+	public final fun getRx ()F
+	public final fun getRy ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$DrawText : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;FF)V
+	public final fun getText ()Ljava/lang/String;
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Reset : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Reset;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Rotate : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FFF)V
+	public final fun getAngle ()F
+	public final fun getPx ()F
+	public final fun getPy ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Scale : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getSx ()F
+	public final fun getSy ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$SetColor : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (I)V
+	public final fun getArgb ()I
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$SetFont : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaFont;)V
+	public final fun getFont ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaFont;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$SetStroke : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FFII)V
+	public final fun getCap ()I
+	public final fun getJoin ()I
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$SetStrokeWidth : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (F)V
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp$Translate : io/github/valerioisufi/drawview/canvas/render/tile/FormulaOp {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getDx ()F
+	public final fun getDy ()F
+}
+
 public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer {
+	public fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaDrawing;
 	public abstract fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
 	public abstract fun prepare (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun prepare$default (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -1205,6 +1333,7 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/render/ti
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer$DefaultImpls {
+	public static fun drawing (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaDrawing;
 	public static synthetic fun prepare$default (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
