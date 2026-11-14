@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.PlacementItem
 import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
 import io.github.valerioisufi.drawview.canvas.controller.PlacementSpot
@@ -21,6 +20,7 @@ import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
 import io.github.valerioisufi.drawview.model.placement.ReadingOrder
 import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
 import io.github.valerioisufi.drawview.model.text.TextSizes
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -46,36 +46,36 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * @param onCancel called when the placement is cancelled.
      */
     fun startPlacement(
-        controller: DrawViewController,
+        editor: EditorContext,
         suggestion: NoteSuggestion,
         lecture: LongRange?,
         handwriting: Map<String, String> = emptyMap(),
         onInserted: () -> Unit,
         onCancel: () -> Unit
     ): Boolean {
-        val document = controller.document
-        val pageIndex = suggestion.resolvedPageIndex(document) ?: controller.viewport.firstVisiblePageIndex() ?: return false
+        val document = editor.document.document
+        val pageIndex = suggestion.resolvedPageIndex(document) ?: editor.pages.firstVisiblePageIndex() ?: return false
         val page = document.pages.getOrNull(pageIndex) ?: return false
         val content = contentOf(suggestion)
-        val anchor = anchorOf(controller, page, suggestion, lecture, handwriting)
+        val anchor = anchorOf(editor, page, suggestion, lecture, handwriting)
         val policy = NotePlacement.policyOf(suggestion.kind, anchor)
-        val (size, spots) = sizedPlaces(sizeOf(controller, page), policy, anchor) { fontSize ->
-            controller.placementManager.spotsFor(pageIndex, noteBlock(content, page, suggestion.kind, anchor, fontSize), policy)
+        val (size, spots) = sizedPlaces(sizeOf(editor, page), policy, anchor) { fontSize ->
+            editor.placement.spotsFor(pageIndex, noteBlock(content, page, suggestion.kind, anchor, fontSize), policy)
         }
         val widthMm = spots.firstOrNull()?.box?.width ?: NotePlacement.widthOf(suggestion.kind, anchor, page.widthMm)
         val note = newText(content, widthMm, measureHeightMm(content, size, widthMm), size)
-        if (spots.isEmpty()) controller.pageManager.jumpToPage(pageIndex)
+        if (spots.isEmpty()) editor.pages.jumpToPage(pageIndex)
 
-        controller.placementManager.start(
+        editor.placement.start(
             PlacementRequest(
                 preview = note,
                 spots = spots,
                 label = suggestion.title.ifBlank { suggestion.content.lineSequence().first() }.trim(),
                 onPlace = { spot ->
-                    controller.historyManager.group {
-                        val target = controller.placementManager.pagesFor(listOf(spot)).single() ?: return@group
-                        place(controller, target, note, spot)
-                        controller.selectionManager.selectText(target.index, note)
+                    editor.document.group {
+                        val target = editor.placement.pagesFor(listOf(spot)).single() ?: return@group
+                        place(editor, target, note, spot)
+                        editor.edits.selectText(target.index, note)
                     }
                     onInserted()
                 },
@@ -94,7 +94,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * @param onInserted called with the notes put in the notebook (those that fit nowhere stay out).
      */
     fun startPlacementAll(
-        controller: DrawViewController,
+        editor: EditorContext,
         suggestions: List<NoteSuggestion>,
         lecture: LongRange?,
         label: String,
@@ -102,9 +102,9 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         onInserted: (List<NoteSuggestion>) -> Unit,
         onCancel: () -> Unit
     ): Boolean {
-        val document = controller.document
-        val placement = controller.placementManager
-        val visible = controller.viewport.firstVisiblePageIndex()
+        val document = editor.document.document
+        val placement = editor.placement
+        val visible = editor.pages.firstVisiblePageIndex()
         val items = mutableListOf<PlacementItem>()
         val placed = mutableListOf<NoteSuggestion>()
         val byPage = suggestions.groupBy { it.resolvedPageIndex(document) ?: visible }
@@ -112,10 +112,10 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
             val page = pageIndex?.let { document.pages.getOrNull(it) } ?: continue
             var occupancy = placement.occupancyOf(page.index)
             var newPage = PageOccupancy(page.widthMm, page.heightMm, emptyList(), PageOccupancy.lineSpacingOf(page.background))
-            val pageSize = sizeOf(controller, page)
+            val pageSize = sizeOf(editor, page)
             for (suggestion in notes.sortedBy { it.atMs }) {
                 val content = contentOf(suggestion)
-                val anchor = anchorOf(controller, page, suggestion, lecture, handwriting)
+                val anchor = anchorOf(editor, page, suggestion, lecture, handwriting)
                 val policy = NotePlacement.policyOf(suggestion.kind, anchor)
                 val current = occupancy
                 val (size, found) = sizedPlaces(pageSize, policy, anchor) { fontSize ->
@@ -142,11 +142,11 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
                 items = items,
                 label = label,
                 onPlace = { spots ->
-                    controller.historyManager.group {
+                    editor.document.group {
                         val pages = placement.pagesFor(spots)
                         for ((index, spot) in spots.withIndex()) {
                             val target = pages[index] ?: continue
-                            place(controller, target, items[index].preview, spot)
+                            place(editor, target, items[index].preview, spot)
                         }
                     }
                     onInserted(placed)
@@ -171,7 +171,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         PlacementBlock(NotePlacement.widthOf(kind, anchor, page.widthMm)) { width -> measureHeightMm(content, fontSize, width) }
 
     /** The size of a note on [page]: like the texts typed there, the slide, the handwriting, or a new text (see [TextSizePolicy]). */
-    private fun sizeOf(controller: DrawViewController, page: DrawPage): Float = controller.textPlacer.sizeOfPage(page)
+    private fun sizeOf(editor: EditorContext, page: DrawPage): Float = editor.placement.sizeOfPage(page)
 
     /**
      * The places [placesAt] finds for a note at [size]; for a note in the margin ([InMargin]) whose
@@ -194,23 +194,23 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * What [suggestion] is about on [page]: the words it quotes (typed, handwritten as read in
      * [handwriting], or of the slide), else the writing of the moment it was said during [lecture].
      */
-    private fun anchorOf(controller: DrawViewController, page: DrawPage, suggestion: NoteSuggestion, lecture: LongRange?, handwriting: Map<String, String>): MmRect? {
+    private fun anchorOf(editor: EditorContext, page: DrawPage, suggestion: NoteSuggestion, lecture: LongRange?, handwriting: Map<String, String>): MmRect? {
         if (suggestion.anchor.isNotBlank()) {
             val blocks = inkBlocksOf(page.index, page.id, page.strokes).mapNotNull { block -> handwriting[block.key]?.takeIf { it.isNotBlank() }?.let { block.bounds to it } }
-            LectureAnchors.quoteAnchor(page, suggestion.anchor, blocks, controller.placementManager.pdfTextOf(page.index))?.let { return it }
+            LectureAnchors.quoteAnchor(page, suggestion.anchor, blocks, editor.placement.pdfTextOf(page.index))?.let { return it }
         }
         if (lecture == null || suggestion.fromFinalReview) return null
         return LectureAnchors.anchorOf(page, lecture.first + suggestion.atMs, lecture.first, lecture.last)
     }
 
     /** Adds [note] to [page] in the box of [spot], its height laid out again on its width. */
-    private fun place(controller: DrawViewController, page: DrawPage, note: DrawText, spot: PlacementSpot) {
+    private fun place(editor: EditorContext, page: DrawPage, note: DrawText, spot: PlacementSpot) {
         note.width = min(spot.box.width, page.widthMm)
         note.height = measureHeightMm(note.text, note.fontSize, note.width)
         note.x = spot.box.left.coerceIn(0f, max(0f, page.widthMm - note.width))
         note.y = spot.box.top.coerceIn(0f, max(0f, page.heightMm - note.height))
         note.markDirty()
-        addText(controller, page, note)
+        addText(editor, page, note)
     }
 
     /**
@@ -220,8 +220,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * a formula, a code block or a list item; at the end of the notebook when [startPageIndex] is
      * `null`. Shown before it is confirmed, undone at once; the first piece shown once inserted.
      */
-    fun startReviewPlacement(controller: DrawViewController, markdown: String, startPageIndex: Int?, label: String, onInserted: () -> Unit = {}): Boolean =
-        startReviewPlacement(controller, listOf(startPageIndex to markdown), label, onInserted)
+    fun startReviewPlacement(editor: EditorContext, markdown: String, startPageIndex: Int?, label: String, onInserted: () -> Unit = {}): Boolean =
+        startReviewPlacement(editor, listOf(startPageIndex to markdown), label, onInserted)
 
     /**
      * Lets the student place the [parts] of a review, each flowed from its page (see the other
@@ -229,8 +229,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * the pages they are about. The parts of one page are flowed together, in their order; those
      * of the end go after the last page.
      */
-    fun startReviewPlacement(controller: DrawViewController, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean =
-        controller.textPlacer.start(parts, ASSISTANT_TEXT_COLOR, label, measure = { textAdapter.measure(it) }, onInserted = onInserted)
+    fun startReviewPlacement(editor: EditorContext, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean =
+        editor.placement.placeTexts(parts, ASSISTANT_TEXT_COLOR, label, measure = { textAdapter.measure(it) }, onInserted = onInserted)
 
     private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = DrawText().apply {
         text = content
@@ -241,8 +241,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         markDirty()
     }
 
-    private fun addText(controller: DrawViewController, page: DrawPage, item: DrawText) {
-        controller.session.submit(AddElements.of(page, listOf(item)))
+    private fun addText(editor: EditorContext, page: DrawPage, item: DrawText) {
+        editor.document.submit(AddElements.of(page, listOf(item)))
     }
 
     /** Height in millimeters of [markdown] laid out on [widthMm], as the canvas draws it. */

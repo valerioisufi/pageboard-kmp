@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.export.ui
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,10 +8,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportJobs
 import io.github.valerioisufi.drawview.export.ExportScope
@@ -60,11 +60,10 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
      * alone, and the pages selected in the page grid are, when there are some.
      */
     private fun showSheet(context: EditorContext) {
-        val controller = context.controller
-        val pageOnScreen = controller.viewport.mostVisiblePageIndex()?.let { index ->
-            controller.document.pages.getOrNull(index)?.let { PageOnScreen(it.id, index) }
+        val pageOnScreen = context.pages.mostVisiblePageIndex()?.let { index ->
+            context.document.document.pages.getOrNull(index)?.let { PageOnScreen(it.id, index) }
         }
-        val selection = controller.pageManager.selection
+        val selection = context.pages.selection
         val selected = if (selection.isActive) selection.pageIds.toSet() else emptySet()
         editorExport = EditorExport(
             context.documentId,
@@ -88,7 +87,7 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
         label = { stringResource(Res.string.export_action) },
         group = CommandGroup.FILE,
         icon = { rememberVectorPainter(DrawViewIcons.Share) },
-        isEnabled = { context.controller.pageManager.selection.count > 0 }
+        isEnabled = { context.pages.selection.count > 0 }
     ) { showSheet(context) }
 
     /**

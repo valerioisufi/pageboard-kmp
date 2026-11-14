@@ -7,8 +7,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.canvas.controller.Collaborator
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.drawview.canvas.controller.EditorActivity
+import io.github.valerioisufi.drawview.canvas.port.EditorDocument
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawText
@@ -48,9 +49,9 @@ private const val INK_FADE_MS = 300f
  * of this device, and fade away once drawn (the stroke of the document takes their place).
  */
 @Composable
-internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String, controller: DrawViewController) {
+internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String, document: EditorDocument, presence: CollaboratorPresence) {
     // This device
-    LaunchedEffect(collaboration, documentId, controller) {
+    LaunchedEffect(collaboration, documentId, document, presence) {
         var sent: EditorActivity? = null
         var sentAt = 0L
         suspend fun send(activity: EditorActivity?) {
@@ -65,15 +66,15 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
             }
         }
         // As it changes, at most every PRESENCE_INTERVAL_MS (meanwhile the state keeps the last one)
-        controller.presence.activity.collect { activity ->
+        presence.activity.collect { activity ->
             send(activity)
             delay(PRESENCE_INTERVAL_MS)
         }
     }
 
     // The others
-    LaunchedEffect(collaboration, documentId, controller) {
-        val drawing = CollaboratorsDrawing(controller, documentId)
+    LaunchedEffect(collaboration, documentId, document, presence) {
+        val drawing = CollaboratorsDrawing(document, presence, documentId)
         try {
             coroutineScope {
                 launch { collaboration.presences.collect(drawing::update) }
@@ -124,7 +125,7 @@ private fun EditorActivity?.toPresence(documentId: String): Presence {
  * The other devices on the document [documentId] as drawn over it, updated by their presences
  * and moved on every [frame] while [moving].
  */
-private class CollaboratorsDrawing(private val controller: DrawViewController, private val documentId: String) {
+private class CollaboratorsDrawing(private val document: EditorDocument, private val presence: CollaboratorPresence, private val documentId: String) {
 
     private class Peer(val replica: String) {
         var name = ""
@@ -178,7 +179,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
     }
 
     init {
-        controller.session.addObserver(moves)
+        document.addObserver(moves)
     }
 
     fun update(presences: List<Presence>) {
@@ -228,7 +229,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
         // Found again while some are missing (not received yet)
         if (selection.ids != peer.selectionIds || peer.selection.size < selection.ids.size) {
             peer.selectionIds = selection.ids
-            peer.selection = selection.ids.mapNotNull { controller.document.findElement(it)?.second }
+            peer.selection = selection.ids.mapNotNull { document.document.findElement(it)?.second }
         }
         peer.selectionPageId = selection.pageId
         if (selection.isMoving) {
@@ -308,7 +309,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
                 }
             }
         }
-        controller.presence.collaborators = peers.values.map {
+        presence.collaborators = peers.values.map {
             Collaborator(
                 id = it.replica,
                 name = it.name,
@@ -330,10 +331,10 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
     }
 
     fun release() {
-        controller.session.removeObserver(moves)
+        document.removeObserver(moves)
         peers.values.forEach { it.engine?.release() }
         peers.clear()
-        controller.presence.collaborators = emptyList()
+        presence.collaborators = emptyList()
     }
 }
 

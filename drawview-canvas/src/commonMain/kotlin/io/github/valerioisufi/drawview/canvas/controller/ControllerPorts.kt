@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.controller
 
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.port.EditorDocument
@@ -21,9 +22,10 @@ import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
+import io.github.valerioisufi.drawview.model.placement.PlacementPlanner
 import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
-import androidx.compose.ui.geometry.Rect as ComposeRect
 
 /** The ports of [controller], each answered by the manager that holds what it gives. */
 internal fun portsOf(controller: DrawViewController): EditorPorts = EditorPorts(
@@ -78,6 +80,8 @@ private class PlacementPort(private val placement: PlacementManager, private val
     override fun cancel() = placement.cancel()
     override fun spotsFor(pageIndex: Int, block: PlacementBlock, policy: PlacementPolicy): List<PlacementSpot> = placement.spotsFor(pageIndex, block, policy)
     override fun pagesFor(spots: List<PlacementSpot>, template: (DrawPage) -> DrawPage?): List<DrawPage?> = placement.pagesFor(spots, template)
+    override fun occupancyOf(pageIndex: Int, excluded: Set<String>): PageOccupancy = placement.occupancyOf(pageIndex, excluded)
+    override val planner: PlacementPlanner get() = placement.planner
     override fun pdfTextOf(pageIndex: Int): PdfTextLayout? = placement.pdfTextOf(pageIndex)
     override val canPlaceByTopic: Boolean get() = texts.canPlaceByTopic
 

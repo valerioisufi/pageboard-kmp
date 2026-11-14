@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.port
 
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence
@@ -20,9 +21,10 @@ import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
+import io.github.valerioisufi.drawview.model.placement.PlacementPlanner
 import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
-import androidx.compose.ui.geometry.Rect as ComposeRect
 
 /**
  * What the editor of one document offers to the code added to it (the extensions of the UI): the
@@ -121,6 +123,12 @@ public interface EditorPlacement {
 
     /** The pages of [spots], the new ones added (from [template]); `null` for a page that cannot be added. */
     public fun pagesFor(spots: List<PlacementSpot>, template: (DrawPage) -> DrawPage? = { it }): List<DrawPage?>
+
+    /** What is on the page [pageIndex], as the placement sees it, without the elements [excluded]. */
+    public fun occupancyOf(pageIndex: Int, excluded: Set<String> = emptySet()): PageOccupancy
+
+    /** The planner of the spots, for several items placed together on what [occupancyOf] gives. */
+    public val planner: PlacementPlanner
 
     /** The text of the PDF page under the page [pageIndex], with its layout, when known. */
     public fun pdfTextOf(pageIndex: Int): PdfTextLayout?

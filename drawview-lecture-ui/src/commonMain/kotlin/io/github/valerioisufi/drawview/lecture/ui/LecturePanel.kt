@@ -1,7 +1,5 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +61,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ImportStep
@@ -98,6 +96,7 @@ import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.components.OutlineButton
 import io.github.valerioisufi.drawview.ui.components.SegmentedChoice
 import io.github.valerioisufi.drawview.ui.components.TonalButton
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as UiRes
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
@@ -109,6 +108,7 @@ import io.github.valerioisufi.drawview.ui.util.formatShortDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
@@ -126,9 +126,9 @@ internal class LecturePanelState {
  * composed with the editor, the panel shown or not.
  */
 @Composable
-internal fun LectureEditorEffects(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
-    DisposableEffect(assistant, documentId, controller) {
-        val notebook = ControllerNotebookSource(controller)
+internal fun LectureEditorEffects(assistant: LectureAssistant, documentId: String, editor: EditorContext) {
+    DisposableEffect(assistant, documentId, editor) {
+        val notebook = ControllerNotebookSource(editor)
         assistant.onEditorShown(documentId, notebook)
         onDispose { assistant.onEditorHidden(documentId, notebook) }
     }
@@ -142,7 +142,7 @@ internal fun LectureEditorEffects(assistant: LectureAssistant, documentId: Strin
 internal fun lecturePanel(
     assistant: LectureAssistant,
     documentId: String,
-    controller: DrawViewController,
+    editor: EditorContext,
     state: LecturePanelState
 ): EditorPanel = EditorPanel(
     id = "lecture",
@@ -159,7 +159,7 @@ internal fun lecturePanel(
             tint = MaterialTheme.colorScheme.onSurface
         )
     },
-    content = { PanelContent(assistant, documentId, controller, state) }
+    content = { PanelContent(assistant, documentId, editor, state) }
 )
 
 /** The settings of the assistant, while asked. */
@@ -179,11 +179,11 @@ private val PanelPadding = 20.dp
  * above the tabs scrolls when it is long (a short window).
  */
 @Composable
-internal fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController, state: LecturePanelState) {
+internal fun PanelContent(assistant: LectureAssistant, documentId: String, editor: EditorContext, state: LecturePanelState) {
     val lecture = assistant.shownLecture(documentId)
     val recorder = assistant.recorderOf(documentId)
     val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
-        assistant.importRecording(documentId, controller.document.title, assistant.notebookOf(documentId, controller), { controller.document.pages.map { it.id } }, file)
+        assistant.importRecording(documentId, editor.document.document.title, assistant.notebookOf(documentId, editor), { editor.document.document.pages.map { it.id } }, file)
     }
     val onImport = {
         assistant.clearImportAndExportMessages()
@@ -193,7 +193,7 @@ internal fun PanelContent(assistant: LectureAssistant, documentId: String, contr
         // A key is needed only when something is sent to Gemini
         val settings = assistant.settingsStore.settings
         if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) state.settingsShown = true
-        else assistant.record(documentId, controller.document.title, assistant.notebookOf(documentId, controller))
+        else assistant.record(documentId, editor.document.document.title, assistant.notebookOf(documentId, editor))
     }
     val onOpenSettings = { state.settingsShown = true }
 
@@ -212,11 +212,11 @@ internal fun PanelContent(assistant: LectureAssistant, documentId: String, contr
                 } else {
                     LectureHeader(assistant, documentId, lecture, recordingHere = recorder?.lecture === lecture && lecture.status == LectureStatus.RECORDING)
                     RecordingSection(assistant, lecture, recorder, onStart = onStart, onImport = onImport)
-                    ProfessorPageBanner(lecture, controller)
+                    ProfessorPageBanner(lecture, editor)
                 }
                 Notices(assistant, lecture, recorder, onOpenSettings)
             }
-            if (lecture != null) LectureTabs(assistant, lecture, controller)
+            if (lecture != null) LectureTabs(assistant, lecture, editor)
         }
     }
 }
@@ -829,18 +829,17 @@ private fun formatWait(ms: Long): String {
 
 /** "The lecturer is on page N" (and the topic), with Go: shown when that page is not on screen. */
 @Composable
-private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController) {
+private fun ProfessorPageBanner(lecture: Lecture, editor: EditorContext) {
     val page = lecture.professorPageIndex ?: return
     if (lecture.status != LectureStatus.RECORDING) return
     // Recomputed at every redraw, recomposed only when the visible pages change
-    val visible by remember(controller) {
+    val visible by remember(editor) {
         derivedStateOf {
-            controller.version
-            controller.viewport.camera.moveCount
-            controller.viewport.visiblePages().map { it.index }
+            editor.pages.frames
+            editor.pages.visiblePageIndices()
         }
     }
-    if (page in visible || page !in controller.document.pages.indices) return
+    if (page in visible || page !in editor.document.document.pages.indices) return
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -858,7 +857,7 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.weight(1f)
         )
-        TonalButton(onClick = { controller.pageManager.jumpToPage(page) }) {
+        TonalButton(onClick = { editor.pages.jumpToPage(page) }) {
             Text(stringResource(Res.string.lecture_action_go))
         }
     }
@@ -873,7 +872,7 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
  * the outline, the review) and the one chosen; the player above the others while it plays.
  */
 @Composable
-private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController) {
+private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, editor: EditorContext) {
     var tab by remember(lecture) { mutableIntStateOf(0) }
     val newCount = lecture.suggestions.count { it.status == SuggestionStatus.NEW }
     val labels = listOf(
@@ -884,8 +883,8 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     )
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    val inserter = remember(fontFamilyResolver, notesFonts, controller.engines) {
-        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas, controller.engines.code))
+    val inserter = remember(fontFamilyResolver, notesFonts, editor.rendering.engines) {
+        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, editor.rendering.engines.formulas, editor.rendering.engines.code))
     }
 
     SegmentedChoice(
@@ -902,10 +901,10 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     }
     Box(modifier = Modifier.fillMaxSize()) {
         when (tab) {
-            0 -> NotesTab(assistant, lecture, controller, inserter)
+            0 -> NotesTab(assistant, lecture, editor, inserter)
             1 -> TranscriptTab(lecture)
             2 -> OutlineTab(assistant, lecture)
-            else -> ReviewTab(assistant, lecture, controller, inserter)
+            else -> ReviewTab(assistant, lecture, editor, inserter)
         }
     }
 }
@@ -915,7 +914,7 @@ private fun Lecture.timeSpan(): LongRange = startedAt..(startedAt + elapsedMs + 
 
 /** The notes suggested: the new ones on their cards, those handled under them (folded). */
 @Composable
-private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController, inserter: NoteInserter) {
+private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, editor: EditorContext, inserter: NoteInserter) {
     val newNotes = lecture.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     val handled = lecture.suggestions.filter { it.status != SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     var showHandled by remember { mutableStateOf(false) }
@@ -937,7 +936,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                         assistant.placingNote = null
                         scope.launch {
                             inserter.startPlacementAll(
-                                controller = controller,
+                                editor = editor,
                                 suggestions = newNotes,
                                 lecture = lecture.timeSpan(),
                                 label = label,
@@ -958,13 +957,13 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
         items(newNotes, key = { it.id }) { note ->
             SuggestionCard(
                 note = note,
-                pageIndex = note.resolvedPageIndex(controller.document),
+                pageIndex = note.resolvedPageIndex(editor.document.document),
                 canListen = lecture.canPlayAudio,
                 placing = assistant.placingNote?.id == note.id,
                 onInsert = {
                     scope.launch {
                         val started = inserter.startPlacement(
-                            controller = controller,
+                            editor = editor,
                             suggestion = note,
                             lecture = lecture.timeSpan(),
                             handwriting = assistant.handwritingTexts(lecture.documentId),
@@ -977,7 +976,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                         if (started) assistant.placingNote = note
                     }
                 },
-                onCancelPlacing = { controller.placementManager.cancel() },
+                onCancelPlacing = { editor.placement.cancel() },
                 onListen = { lecture.play(note) },
                 onAlreadyNoted = { lecture.updateSuggestion(note.id, SuggestionStatus.ALREADY_NOTED) },
                 onDismiss = { lecture.updateSuggestion(note.id, SuggestionStatus.DISMISSED) }
@@ -1009,7 +1008,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
             }
             if (showHandled) {
                 items(handled, key = { it.id }) { note ->
-                    HandledRow(note, pageIndex = note.resolvedPageIndex(controller.document), onRestore = { lecture.updateSuggestion(note.id, SuggestionStatus.NEW) })
+                    HandledRow(note, pageIndex = note.resolvedPageIndex(editor.document.document), onRestore = { lecture.updateSuggestion(note.id, SuggestionStatus.NEW) })
                 }
             }
         }
@@ -1343,7 +1342,7 @@ private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
 private fun ReviewTab(
     assistant: LectureAssistant,
     lecture: Lecture,
-    controller: DrawViewController,
+    editor: EditorContext,
     inserter: NoteInserter
 ) {
     val settings = assistant.settingsStore.settings
@@ -1386,14 +1385,14 @@ private fun ReviewTab(
                 PanelCard(outlined = true) { SelectionContainer { MarkdownText(review, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium) } }
                 val reviewLabel = stringResource(Res.string.lecture_review_placing)
                 val scope = rememberCoroutineScope()
-                InsertPagesCard(controller, byTopic = controller.textPlacer.canPlaceByTopic) { place, pageIndex ->
+                InsertPagesCard(editor, byTopic = editor.placement.canPlaceByTopic) { place, pageIndex ->
                     if (place == ReviewPlace.TOPIC) {
                         scope.launch {
-                            val parts = controller.textPlacer.partsByTopic(review, fallbackPage = pageIndex)
-                            inserter.startReviewPlacement(controller, parts, reviewLabel)
+                            val parts = editor.placement.partsByTopic(review, fallbackPage = pageIndex)
+                            inserter.startReviewPlacement(editor, parts, reviewLabel)
                         }
                     } else {
-                        inserter.startReviewPlacement(controller, review, if (place == ReviewPlace.END) null else pageIndex, reviewLabel)
+                        inserter.startReviewPlacement(editor, review, if (place == ReviewPlace.END) null else pageIndex, reviewLabel)
                     }
                 }
             }
@@ -1516,12 +1515,11 @@ private fun UsageLines(usage: TokenUsage) {
  * the notebook, and Insert.
  */
 @Composable
-private fun InsertPagesCard(controller: DrawViewController, byTopic: Boolean, onInsert: (place: ReviewPlace, pageIndex: Int?) -> Unit) {
-    val currentPage by remember(controller) {
+private fun InsertPagesCard(editor: EditorContext, byTopic: Boolean, onInsert: (place: ReviewPlace, pageIndex: Int?) -> Unit) {
+    val currentPage by remember(editor) {
         derivedStateOf {
-            controller.version
-            controller.viewport.camera.moveCount
-            controller.viewport.mostVisiblePageIndex()
+            editor.pages.frames
+            editor.pages.mostVisiblePageIndex()
         }
     }
     var choice by remember(byTopic) { mutableStateOf(if (byTopic) ReviewPlace.TOPIC else ReviewPlace.PAGE) }

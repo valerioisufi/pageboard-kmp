@@ -11,9 +11,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
@@ -28,10 +28,10 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextMeasurer
@@ -45,10 +45,10 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.agent.PlannedMark
 import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalPlan
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.ui.components.MarkdownText
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -126,7 +126,7 @@ internal object MarkColors {
 }
 
 /**
- * Draws [marks] over the canvas of [controller], each one on its page where the page is on the
+ * Draws [marks] over the canvas of the editor of [context], each one on its page where the page is on the
  * screen (Pure Fabrication): what is added in green, what is removed under a red veil, what moves
  * with a dashed frame where it is, a frame where it goes and an arrow between, what changes where it
  * is in amber, a page changed as a whole with its frame and its label.
@@ -135,10 +135,10 @@ internal object MarkColors {
  * pages are read while drawing, so the marks follow a pan and a zoom without being composed again.
  */
 @Composable
-internal fun ProposalMarksLayer(controller: DrawViewController, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
+internal fun ProposalMarksLayer(context: EditorContext, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
     Box(modifier) {
-        MarkFrames(controller, marks, Modifier.matchParentSize())
-        MarkTexts(controller, marks)
+        MarkFrames(context, marks, Modifier.matchParentSize())
+        MarkTexts(context, marks)
     }
 }
 
@@ -150,18 +150,17 @@ internal fun ProposalMarksLayer(controller: DrawViewController, marks: List<Draw
  * screen are composed.
  */
 @Composable
-private fun MarkTexts(controller: DrawViewController, marks: List<DrawnMark>) {
+private fun MarkTexts(context: EditorContext, marks: List<DrawnMark>) {
     val texts = marks.filter { it.mark.markdown.isNotBlank() && (it.mark.kind == PlannedMark.Kind.ADDED || it.mark.kind == PlannedMark.Kind.CHANGED) }
     if (texts.isEmpty()) return
     // The pages on the screen: read at every frame, composed again only when they change
-    val visible by remember(controller) {
+    val visible by remember(context) {
         derivedStateOf {
-            controller.version
-            controller.viewport.camera.moveCount
-            controller.viewport.visiblePages().mapTo(HashSet()) { it.index }
+            context.pages.frames
+            context.pages.visiblePageIndices().toHashSet()
         }
     }
-    val pages = controller.document.pages
+    val pages = context.document.document.pages
     // Laid out in pixels of the layout, whatever the density of the screen
     CompositionLocalProvider(LocalDensity provides Density(1f, 1f)) {
         for (drawn in texts) {
@@ -175,9 +174,8 @@ private fun MarkTexts(controller: DrawViewController, marks: List<DrawnMark>) {
                         // As wide as its box, also when the box is wider than the canvas at this scale
                         .wrapContentSize(Alignment.TopStart, unbounded = true)
                         .graphicsLayer {
-                            @Suppress("UNUSED_VARIABLE") val frame = controller.version
-                            @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
-                            val matrix = controller.viewport.pageMmToScreen(index)
+                            @Suppress("UNUSED_VARIABLE") val frame = context.pages.frames
+                            val matrix = context.pages.pageMmToScreen(index)
                             if (matrix == null) {
                                 alpha = 0f
                                 return@graphicsLayer
@@ -208,20 +206,19 @@ private fun MarkTexts(controller: DrawViewController, marks: List<DrawnMark>) {
 
 /** The frames, the veils, the arrows and the strokes of [marks], drawn over the canvas. */
 @Composable
-private fun MarkFrames(controller: DrawViewController, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
+private fun MarkFrames(context: EditorContext, marks: List<DrawnMark>, modifier: Modifier = Modifier) {
     val measurer = rememberTextMeasurer()
     Canvas(modifier.testTag(MARKS_TAG)) {
         // Read here: a pan, a zoom or a change of the pages draws again, and composes nothing
-        @Suppress("UNUSED_VARIABLE") val frame = controller.version
-        @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
-        val pages = controller.document.pages
+        @Suppress("UNUSED_VARIABLE") val frame = context.pages.frames
+        val pages = context.document.document.pages
         val indexes = HashMap<String, Int>(pages.size)
         pages.forEachIndexed { index, page -> indexes[page.id] = index }
         val screen = Rect(Offset.Zero, size)
         val matrices = HashMap<Int, Matrix2D?>()
         for (drawn in marks) {
             val index = indexes[drawn.mark.pageId] ?: continue
-            val matrix = matrices.getOrPut(index) { controller.viewport.pageMmToScreen(index) } ?: continue
+            val matrix = matrices.getOrPut(index) { context.pages.pageMmToScreen(index) } ?: continue
             val page = matrix.mapRect(pages[index].rect()).toCompose()
             // Only the pages on the screen
             if (!page.overlaps(screen)) continue

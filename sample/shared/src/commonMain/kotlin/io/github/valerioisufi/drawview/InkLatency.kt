@@ -10,17 +10,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 
 /**
  * Measures the latency of the ink (see `docs/ink-latency.md`): a button of the toolbar switches the
- * measure on, and the report of the last stroke is shown over the canvas and printed.
+ * measure on, and the report of the last stroke is shown over the canvas and printed. A measure of
+ * the editor, not of an extension: the sample reads it from the editor of its session.
  */
 fun inkLatencyExtension(): EditorExtension = EditorExtension(
     toolbarActions = { context ->
-        val controller = context.controller
+        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@EditorExtension
         EditorActionButton(
             DrawViewIcons.Clock,
             "Measure the latency of the ink",
@@ -29,7 +31,7 @@ fun inkLatencyExtension(): EditorExtension = EditorExtension(
         )
     },
     canvasOverlay = { context ->
-        val controller = context.controller
+        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@EditorExtension
         val report by controller.inkLatency.collectAsState()
         LaunchedEffect(report) { report?.let { println("DrawView $it") } }
         val shown = report

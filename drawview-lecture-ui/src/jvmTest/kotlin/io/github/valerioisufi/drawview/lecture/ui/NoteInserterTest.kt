@@ -6,12 +6,13 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.model.DrawDocument
-import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.mm
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -56,7 +57,7 @@ class NoteInserterTest {
         controller.write(30f, atMs = 60_000)
         val written = controller.write(150f, atMs = 600_000)
         var inserted = false
-        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note("a", atMs = 605_000), lecture, onInserted = { inserted = true }, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(controller), note("a", atMs = 605_000), lecture, onInserted = { inserted = true }, onCancel = {}))
 
         val spot = assertNotNull(controller.placementManager.spots.single())
         assertEquals(0, spot.pageIndex)
@@ -75,7 +76,7 @@ class NoteInserterTest {
         val quoted = controller.write(40f, atMs = 60_000).apply { text = "Teorema di Bolzano" }
         controller.write(200f, atMs = 600_000)
         val note = note("a", atMs = 605_000).copy(anchor = "il teorema di Bolzano")
-        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, lecture, onInserted = {}, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(controller), note, lecture, onInserted = {}, onCancel = {}))
 
         val spot = assertNotNull(controller.placementManager.spots.single())
         assertTrue(spot.box.top >= quoted.y + quoted.height && spot.box.top < quoted.y + 25f, "below the quoted words: ${spot.box}")
@@ -95,7 +96,7 @@ class NoteInserterTest {
         page.add(stroke)
         val key = inkBlocksOf(0, page.id, page.strokes).single().key
         val note = note("a", atMs = 605_000).copy(anchor = "la serie geometrica")
-        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, null, handwriting = mapOf(key to "serie geometrica di ragione q"), onInserted = {}, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(controller), note, null, handwriting = mapOf(key to "serie geometrica di ragione q"), onInserted = {}, onCancel = {}))
 
         val spot = assertNotNull(controller.placementManager.spots.single())
         // A definition: in the margin beside it
@@ -106,14 +107,14 @@ class NoteInserterTest {
     fun aNoteTakesTheSizeOfTheTextsTypedOnItsPage() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         controller.write(30f, atMs = 60_000).apply { fontSize = 14f; text = "The notes the student typed at fourteen points" }
-        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note("a", atMs = 60_000), lecture, onInserted = {}, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(controller), note("a", atMs = 60_000), lecture, onInserted = {}, onCancel = {}))
         assertEquals(14f, assertNotNull(controller.placementManager.request?.preview).fontSize)
         controller.placementManager.cancel()
 
         // Nothing typed: the size of a new text
         val empty = controller(backgroundScope)
         empty.updateTextDefaults(empty.textDefaults.copy(fontSize = 12f))
-        assertTrue(NoteInserter(NoLayout).startPlacement(empty, note("b", atMs = 60_000), null, onInserted = {}, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(empty), note("b", atMs = 60_000), null, onInserted = {}, onCancel = {}))
         assertEquals(12f, assertNotNull(empty.placementManager.request?.preview).fontSize)
     }
 
@@ -128,7 +129,7 @@ class NoteInserterTest {
         typed(135f, 10f, 65f, 86f)
         typed(135f, 131f, 65f, 150f)
         val note = NoteSuggestion(id = "m", kind = NoteKind.DEFINITION, title = "Definition", content = "one\ntwo\nthree\nfour", anchor = "student at fourteen")
-        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, null, onInserted = {}, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacement(EditorContext(controller), note, null, onInserted = {}, onCancel = {}))
 
         val spot = assertNotNull(controller.placementManager.spots.single())
         assertEquals(12f, assertNotNull(controller.placementManager.request?.preview).fontSize)
@@ -143,7 +144,7 @@ class NoteInserterTest {
         controller.document.pages[1].add(DrawText().apply { width = 210f; height = 297f; text = "Full" })
         val notes = listOf(note("a", 60_000), note("b", 70_000), note("c", 80_000), note("d", 90_000, pageIndex = 1))
         var inserted = emptyList<NoteSuggestion>()
-        assertTrue(NoteInserter(NoLayout).startPlacementAll(controller, notes, lecture, "4 notes", onInserted = { inserted = it }, onCancel = {}))
+        assertTrue(NoteInserter(NoLayout).startPlacementAll(EditorContext(controller), notes, lecture, "4 notes", onInserted = { inserted = it }, onCancel = {}))
 
         val spots = controller.placementManager.spots.map { assertNotNull(it) }
         assertEquals(4, spots.size)
@@ -164,7 +165,7 @@ class NoteInserterTest {
     fun theSectionsOfAReviewGoNextToTheirPagesAndTheRestAtTheEnd() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope, pages = 3)
         val parts = listOf(2 to "## Second topic\nAbout page 3.", 0 to "## First topic\nAbout page 1.", null to "## Elsewhere\nAbout nothing.")
-        assertTrue(NoteInserter(NoLayout).startReviewPlacement(controller, parts, "Review"))
+        assertTrue(NoteInserter(NoLayout).startReviewPlacement(EditorContext(controller), parts, "Review"))
         assertTrue(controller.placementManager.confirm())
 
         val pages = controller.document.pages
@@ -184,7 +185,7 @@ class NoteInserterTest {
         // Paragraphs enough for more than one page
         val review = (1..80).joinToString("\n\n") { "Paragraph $it of the review." }
 
-        assertTrue(NoteInserter(NoLayout).startReviewPlacement(controller, review, startPageIndex = 0, label = "Review"))
+        assertTrue(NoteInserter(NoLayout).startReviewPlacement(EditorContext(controller), review, startPageIndex = 0, label = "Review"))
         assertTrue(controller.placementManager.confirm())
 
         // The free space of the page shown first, then new pages

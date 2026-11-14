@@ -1088,6 +1088,9 @@ public final class io/github/valerioisufi/drawview/canvas/port/EditorPages$Defau
 public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorPlacement {
 	public abstract fun cancel ()V
 	public abstract fun getCanPlaceByTopic ()Z
+	public abstract fun getPlanner ()Lio/github/valerioisufi/drawview/model/placement/PlacementPlanner;
+	public abstract fun occupancyOf (ILjava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public static synthetic fun occupancyOf$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;ILjava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 	public abstract fun pagesFor (Ljava/util/List;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
 	public static synthetic fun pagesFor$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
 	public abstract fun partsByTopic (Ljava/lang/String;Ljava/lang/Integer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1100,6 +1103,7 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/port/Edit
 }
 
 public final class io/github/valerioisufi/drawview/canvas/port/EditorPlacement$DefaultImpls {
+	public static synthetic fun occupancyOf$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;ILjava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 	public static synthetic fun pagesFor$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
 	public static synthetic fun placeTexts$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
 }

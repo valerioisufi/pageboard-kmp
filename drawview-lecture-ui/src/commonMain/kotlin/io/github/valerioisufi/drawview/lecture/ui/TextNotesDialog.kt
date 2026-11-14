@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.TextImport
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.ModelProvider
@@ -29,6 +28,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.editor.TEXT_TO_NOTES_COMMAND_ID
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.coroutines.cancellation.CancellationException
@@ -44,17 +44,17 @@ internal class TextNotesState {
 
 /**
  * The command the sheet of the import offers ([TEXT_TO_NOTES_COMMAND_ID]): takes the text waiting
- * in [controller] and opens the dialog of the notes ([TextNotesDialog]).
+ * in [editor] and opens the dialog of the notes ([TextNotesDialog]).
  */
-internal fun textToNotesCommand(state: TextNotesState, controller: DrawViewController) = Command(
+internal fun textToNotesCommand(state: TextNotesState, editor: EditorContext) = Command(
     id = TEXT_TO_NOTES_COMMAND_ID,
     label = { stringResource(Res.string.lecture_text_notes_title) },
     group = CommandGroup.INSERT,
     section = 1,
-    isEnabled = { controller.pendingTextImport != null && !controller.isReadOnly }
+    isEnabled = { editor.edits.pendingTextImport != null && !editor.document.isReadOnly }
 ) {
-    state.import = controller.pendingTextImport
-    controller.pendingTextImport = null
+    state.import = editor.edits.pendingTextImport
+    editor.edits.pendingTextImport = null
 }
 
 /**
@@ -64,13 +64,13 @@ internal fun textToNotesCommand(state: TextNotesState, controller: DrawViewContr
  * moment.
  */
 @Composable
-internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, controller: DrawViewController, state: TextNotesState) {
+internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, editor: EditorContext, state: TextNotesState) {
     val import = state.import ?: return
     val scope = rememberCoroutineScope()
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    val inserter = remember(fontFamilyResolver, notesFonts, controller.engines) {
-        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas, controller.engines.code))
+    val inserter = remember(fontFamilyResolver, notesFonts, editor.rendering.engines) {
+        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, editor.rendering.engines.formulas, editor.rendering.engines.code))
     }
     var estimate by remember(import) { mutableStateOf<TextNotesEstimate?>(null) }
     var running by remember(import) { mutableStateOf(false) }
@@ -79,7 +79,7 @@ internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, co
     LaunchedEffect(import) { estimate = assistant.estimateTextNotes(documentId, import.text) }
     val backToText = {
         state.import = null
-        controller.pendingTextImport = import
+        editor.edits.pendingTextImport = import
     }
     val label = stringResource(Res.string.lecture_text_notes_title)
 
@@ -96,7 +96,7 @@ internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, co
                         state.import = null
                         scope.launch {
                             inserter.startPlacementAll(
-                                controller, notes.notes, lecture = null, label = label,
+                                editor, notes.notes, lecture = null, label = label,
                                 handwriting = assistant.handwritingTexts(documentId), onInserted = {}, onCancel = {}
                             )
                         }

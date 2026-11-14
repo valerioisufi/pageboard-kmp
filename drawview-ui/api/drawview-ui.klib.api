@@ -386,10 +386,20 @@ final class io.github.valerioisufi.drawview.ui.extension/DocumentTag { // io.git
 final class io.github.valerioisufi.drawview.ui.extension/EditorContext { // io.github.valerioisufi.drawview.ui.extension/EditorContext|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.ui.extension/EditorContext.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
-    final val controller // io.github.valerioisufi.drawview.ui.extension/EditorContext.controller|{}controller[0]
-        final fun <get-controller>(): io.github.valerioisufi.drawview.canvas.controller/DrawViewController // io.github.valerioisufi.drawview.ui.extension/EditorContext.controller.<get-controller>|<get-controller>(){}[0]
+    final val document // io.github.valerioisufi.drawview.ui.extension/EditorContext.document|{}document[0]
+        final fun <get-document>(): io.github.valerioisufi.drawview.canvas.port/EditorDocument // io.github.valerioisufi.drawview.ui.extension/EditorContext.document.<get-document>|<get-document>(){}[0]
     final val documentId // io.github.valerioisufi.drawview.ui.extension/EditorContext.documentId|{}documentId[0]
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.ui.extension/EditorContext.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val edits // io.github.valerioisufi.drawview.ui.extension/EditorContext.edits|{}edits[0]
+        final fun <get-edits>(): io.github.valerioisufi.drawview.canvas.port/EditorEdits // io.github.valerioisufi.drawview.ui.extension/EditorContext.edits.<get-edits>|<get-edits>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.ui.extension/EditorContext.pages|{}pages[0]
+        final fun <get-pages>(): io.github.valerioisufi.drawview.canvas.port/EditorPages // io.github.valerioisufi.drawview.ui.extension/EditorContext.pages.<get-pages>|<get-pages>(){}[0]
+    final val placement // io.github.valerioisufi.drawview.ui.extension/EditorContext.placement|{}placement[0]
+        final fun <get-placement>(): io.github.valerioisufi.drawview.canvas.port/EditorPlacement // io.github.valerioisufi.drawview.ui.extension/EditorContext.placement.<get-placement>|<get-placement>(){}[0]
+    final val presence // io.github.valerioisufi.drawview.ui.extension/EditorContext.presence|{}presence[0]
+        final fun <get-presence>(): io.github.valerioisufi.drawview.canvas.controller/CollaboratorPresence // io.github.valerioisufi.drawview.ui.extension/EditorContext.presence.<get-presence>|<get-presence>(){}[0]
+    final val rendering // io.github.valerioisufi.drawview.ui.extension/EditorContext.rendering|{}rendering[0]
+        final fun <get-rendering>(): io.github.valerioisufi.drawview.canvas.port/EditorRendering // io.github.valerioisufi.drawview.ui.extension/EditorContext.rendering.<get-rendering>|<get-rendering>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.ui.extension/EditorExtension { // io.github.valerioisufi.drawview.ui.extension/EditorExtension|null[0]

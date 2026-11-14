@@ -431,8 +431,13 @@ public final class io/github/valerioisufi/drawview/ui/extension/DocumentTag {
 public final class io/github/valerioisufi/drawview/ui/extension/EditorContext {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
-	public final fun getController ()Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/canvas/port/EditorDocument;
 	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun getEdits ()Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;
+	public final fun getPages ()Lio/github/valerioisufi/drawview/canvas/port/EditorPages;
+	public final fun getPlacement ()Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;
+	public final fun getPresence ()Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;
+	public final fun getRendering ()Lio/github/valerioisufi/drawview/canvas/port/EditorRendering;
 }
 
 public final class io/github/valerioisufi/drawview/ui/extension/EditorExtension {

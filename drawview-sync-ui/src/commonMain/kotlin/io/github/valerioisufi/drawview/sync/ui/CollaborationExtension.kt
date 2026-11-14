@@ -34,7 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.Collaborator
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
@@ -74,10 +74,10 @@ public fun Collaboration.editorExtension(): EditorExtension {
             ShareAction(this@editorExtension, context.documentId, command)
         },
         canvasOverlay = { context ->
-            CollaboratorsLayer(this@editorExtension, context.documentId, context.controller)
-            WritingElsewhereNotice(context.controller)
+            CollaboratorsLayer(this@editorExtension, context.documentId, context.document, context.presence)
+            WritingElsewhereNotice(context.presence)
             if (sharing.documentId == context.documentId) {
-                ShareDialog(this@editorExtension, context.documentId, context.controller.document.title, onDismiss = { sharing.documentId = null })
+                ShareDialog(this@editorExtension, context.documentId, context.document.document.title, onDismiss = { sharing.documentId = null })
             }
         },
         commands = { context -> listOf(shareCommand(context.documentId)) },
@@ -104,10 +104,10 @@ private const val WRITING_ELSEWHERE_NOTICE_MS = 2_500L
  * [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.editsRefused]), for a moment at the top of the canvas.
  */
 @Composable
-private fun BoxScope.WritingElsewhereNotice(controller: DrawViewController) {
-    var writer by remember(controller) { mutableStateOf<Collaborator?>(null) }
-    LaunchedEffect(controller) {
-        controller.presence.editsRefused.collectLatest {
+private fun BoxScope.WritingElsewhereNotice(presence: CollaboratorPresence) {
+    var writer by remember(presence) { mutableStateOf<Collaborator?>(null) }
+    LaunchedEffect(presence) {
+        presence.editsRefused.collectLatest {
             writer = it
             delay(WRITING_ELSEWHERE_NOTICE_MS)
             writer = null

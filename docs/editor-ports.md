@@ -97,7 +97,7 @@ Variations).
 | Phase | Content | Status |
 |-------|---------|--------|
 | 1 | The ports in `drawview-canvas`, implemented by the managers and given by the controller; no caller moved | done |
-| 2 | `EditorContext` of ports; the extensions of the lecture assistant, the collaboration, the agent, the export, the sample moved; `controller` internal | to do |
+| 2 | `EditorContext` of ports; the extensions of the lecture assistant, the collaboration, the agent, the export, the sample moved; `controller` internal | done |
 | 3 | `EditorExtension` as an abstract class with its builder and `CombinedExtension`; the extensions and the consumer check moved | to do |
 | 4 | The constructors of the managers internal | to do |
 
@@ -121,6 +121,11 @@ Taken alone, revertible:
   delegating to the manager that holds the information, rather than by the managers implementing
   the interfaces: the managers keep their own API, and a port can gather two of them
   (`EditorPlacement`: the placement and the texts by topic).
+* **`EditorPlacement` gives the occupancy of a page and the planner** too: the lecture assistant
+  places several notes at once on the spots it plans itself, on what the page already holds.
+* **The sample's ink latency reads the editor through `DrawViewSessions`**, by the document of the
+  context, as the agent editors of the applications already do: the sample is a host, not an
+  extension.
 
 ## Left for later
 

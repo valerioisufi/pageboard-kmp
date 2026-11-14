@@ -8,9 +8,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderer
 import io.github.valerioisufi.drawview.model.ElementType
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -90,18 +90,18 @@ object ShapeRenderer : ElementRenderer<Shape> {
 fun shapesExtension(): EditorExtension = EditorExtension(
     toolbarActions = { context ->
         val next = remember(context) { ShapeSequence() }
-        EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(context.controller, next.next()) })
+        EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(context, next.next()) })
     }
 )
 
-private fun addShape(controller: DrawViewController, shape: Shape) {
-    val pageIndex = controller.viewport.mostVisiblePageIndex() ?: return
-    val page = controller.document.pages.getOrNull(pageIndex) ?: return
+private fun addShape(context: EditorContext, shape: Shape) {
+    val pageIndex = context.pages.mostVisiblePageIndex() ?: return
+    val page = context.document.document.pages.getOrNull(pageIndex) ?: return
     val side = min(page.widthMm, page.heightMm) / 4f
     val box = io.github.valerioisufi.drawview.model.geometry.Rect(
         (page.widthMm - side) / 2f, (page.heightMm - side) / 2f, (page.widthMm + side) / 2f, (page.heightMm + side) / 2f
     )
-    controller.customElementManager.add(ShapeType, shape, pageIndex, box)
+    context.edits.addCustomElement(ShapeType, shape, pageIndex, box)
 }
 
 private class ShapeSequence {

@@ -40,6 +40,7 @@ import io.github.valerioisufi.drawview.lecture.testing.FakeNotebook
 import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
 import io.github.valerioisufi.drawview.lecture.writeLectureRecord
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
@@ -94,7 +95,7 @@ class LecturePanelScreenshotTest {
         val assistant = assistant(library)
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         runDesktopComposeUiTest(width = 428, height = 920) {
-            setContent { Panel { PanelContent(assistant, "doc", controller, LecturePanelState()) } }
+            setContent { Panel { PanelContent(assistant, "doc", EditorContext(controller), LecturePanelState()) } }
             assistant.onEditorShown("doc", FakeNotebook())
             waitUntil(timeoutMillis = 10_000) { assistant.shownLecture("doc") != null && assistant.lecturesOf("doc").isNotEmpty() }
             waitForIdle()
@@ -115,7 +116,7 @@ class LecturePanelScreenshotTest {
         val assistant = assistant(LectureLibrary(File(root, "empty").absolutePath))
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         runDesktopComposeUiTest(width = 428, height = 600) {
-            setContent { Panel { PanelContent(assistant, "doc", controller, LecturePanelState()) } }
+            setContent { Panel { PanelContent(assistant, "doc", EditorContext(controller), LecturePanelState()) } }
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/lecture-idle.png")
         }

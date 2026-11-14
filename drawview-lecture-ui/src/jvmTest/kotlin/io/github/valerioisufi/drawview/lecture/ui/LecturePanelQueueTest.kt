@@ -28,6 +28,7 @@ import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcription
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.io.File
 import java.nio.ByteBuffer
@@ -112,7 +113,7 @@ class LecturePanelQueueTest {
             setContent {
                 DrawViewTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        key(shown) { PanelContent(assistant, shown, controller, LecturePanelState()) }
+                        key(shown) { PanelContent(assistant, shown, EditorContext(controller), LecturePanelState()) }
                     }
                 }
             }

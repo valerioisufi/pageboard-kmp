@@ -34,8 +34,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,13 +43,12 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.agent.AGENT_TEXT_COLOR
 import io.github.valerioisufi.drawview.agent.AgentBatch
 import io.github.valerioisufi.drawview.agent.AgentConnection
-import io.github.valerioisufi.drawview.agent.LibraryItem
-import io.github.valerioisufi.drawview.agent.LibraryProposal
-import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.AgentGrants
 import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
 import io.github.valerioisufi.drawview.agent.ItemOutcome
+import io.github.valerioisufi.drawview.agent.LibraryItem
+import io.github.valerioisufi.drawview.agent.LibraryProposal
 import io.github.valerioisufi.drawview.agent.PlacementWarning
 import io.github.valerioisufi.drawview.agent.PlannedItem
 import io.github.valerioisufi.drawview.agent.PlannedMark
@@ -58,51 +57,52 @@ import io.github.valerioisufi.drawview.agent.Proposal
 import io.github.valerioisufi.drawview.agent.ProposalEntry
 import io.github.valerioisufi.drawview.agent.ProposalItem
 import io.github.valerioisufi.drawview.agent.ProposalPlan
+import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_accept_selected
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_clients
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changed
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changes
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_title
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_title
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_unavailable
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undo
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undone
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_all_note
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_clients
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_direct_note
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_full_warning
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_document
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_document_note
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_enable
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_enable_note
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_full_warning
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_how
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_no_clients
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_access_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changed
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_changes
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_title
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_unavailable
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undo
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_activity_undone
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_close
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_command
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_decided_title
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_page
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_page
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_move_page
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_duplicate_page
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_set_page_format
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_rename_document
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_elements
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_place_elements
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_text
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_update_text
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_stroke
-import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_image
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_stroke
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_duplicate_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_insert
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_insert_new_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_move_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_place_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_elements
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_page
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_rename_document
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_replace
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_text
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_set_page_format
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_stale
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_stale_other
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_update_text
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_title
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_accepted
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_rejected
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_outcome_stale
@@ -123,7 +123,6 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warnin
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_area
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_past_end
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_warning_split
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.PlacementItem
 import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
 import io.github.valerioisufi.drawview.canvas.controller.PlacementSpot
@@ -132,6 +131,7 @@ import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
@@ -230,36 +230,36 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
                 val waitingHere = proposals.filter { it.documentId == documentId && it.isWaiting }
                 val labels = waitingHere.associate { proposal -> proposal.id to proposal.entries.map { itemLabel(it.item) } }
                 val marks = drawnMarks(waitingHere, plans, selections) { proposal, index -> labels[proposal.id]?.getOrNull(index) }
-                if (marks.isNotEmpty()) ProposalMarksLayer(context.controller, marks, Modifier.matchParentSize())
+                if (marks.isNotEmpty()) ProposalMarksLayer(context, marks, Modifier.matchParentSize())
             }
             if (accessOf == documentId) {
                 Access(documentId, onDismiss = { accessOf = null })
             }
         },
         commands = { context -> listOf(accessCommand(context.documentId)) },
-        panels = { context -> listOf(reviewPanel(context.documentId, context.controller)) }
+        panels = { context -> listOf(reviewPanel(context.documentId, context)) }
     )
 
-    private fun reviewPanel(documentId: String, controller: DrawViewController) = EditorPanel(
+    private fun reviewPanel(documentId: String, context: EditorContext) = EditorPanel(
         id = "external_models",
         title = { stringResource(Res.string.agent_review_title) },
         isOpen = { documentId in openPanels },
         onClose = { openPanels -= documentId },
         icon = DrawViewIcons.Sparkles,
-        content = { ReviewContent(documentId, controller) }
+        content = { ReviewContent(documentId, context) }
     )
 
     @Composable
-    private fun ReviewContent(documentId: String, controller: DrawViewController) {
+    private fun ReviewContent(documentId: String, context: EditorContext) {
         val all by agents.proposals.proposals.collectAsState()
         val proposals = all.filter { it.documentId == documentId }
         val scope = rememberCoroutineScope()
         // What is stale follows the document
         var changes by remember { mutableIntStateOf(0) }
-        DisposableEffect(controller) {
+        DisposableEffect(context) {
             val observer = ChangeObserver { changes++ }
-            controller.session.addObserver(observer)
-            onDispose { controller.session.removeObserver(observer) }
+            context.document.addObserver(observer)
+            onDispose { context.document.removeObserver(observer) }
         }
         var stale by remember { mutableStateOf<Map<String, Set<Int>>>(emptyMap()) }
         var plans by remember { mutableStateOf<Map<String, ProposalPlan>>(emptyMap()) }
@@ -289,10 +289,10 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             },
             chosen = chosenPlaces.mapValues { it.value.keys },
             onShow = { id, index ->
-                agents.proposals.find(id)?.let { proposal -> scope.launch { show(proposal, index, controller, placing) } }
+                agents.proposals.find(id)?.let { proposal -> scope.launch { show(proposal, index, context, placing) } }
             },
             selectionOf = ::selectionOf,
-            onChoose = { id, index -> plans[id]?.items?.getOrNull(index)?.let { goTo(it, controller) } },
+            onChoose = { id, index -> plans[id]?.items?.getOrNull(index)?.let { goTo(it, context) } },
             onDecide = { id, accepted ->
                 val chosen = chosenPlaces.remove(id).orEmpty()
                 selections.remove(id)
@@ -306,14 +306,14 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
      * Shows the text of an item where it would go: a new text to look at, move and confirm, what it
      * replaces by going to its box. Nothing is applied until the proposal is.
      */
-    private suspend fun show(proposal: Proposal, index: Int, controller: DrawViewController, label: String) {
+    private suspend fun show(proposal: Proposal, index: Int, context: EditorContext, label: String) {
         val plan = agents.plan(proposal, chosenPlaces[proposal.id].orEmpty()) ?: return
         val pieces = plan.items.getOrNull(index)?.pieces.orEmpty()
-        val pages = controller.document.pages
+        val pages = context.document.document.pages
         if (proposal.entries.getOrNull(index)?.item !is ProposalItem.InsertText) {
             val piece = pieces.firstOrNull() ?: return
             val page = pages.indexOfFirst { it.id == piece.pageId }
-            if (page >= 0) controller.pageManager.jumpToPage(page, piece.box)
+            if (page >= 0) context.pages.jumpToPage(page, piece.box)
             return
         }
         val items = pieces.mapNotNull { piece ->
@@ -329,7 +329,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             PlacementItem(preview, listOf(spot))
         }
         if (items.size != pieces.size || items.isEmpty()) return
-        controller.placementManager.start(
+        context.placement.start(
             PlacementRequest(
                 items = items,
                 label = label,
@@ -342,12 +342,12 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
     }
 
     /** Brings the page to what [item] changes: its first mark on a page there is, where it goes when it moves. */
-    private fun goTo(item: PlannedItem, controller: DrawViewController) {
+    private fun goTo(item: PlannedItem, context: EditorContext) {
         val mark = item.marks.firstOrNull { !it.isOnNewPage } ?: return
-        val page = controller.document.pages.indexOfFirst { it.id == mark.pageId }
+        val page = context.document.document.pages.indexOfFirst { it.id == mark.pageId }
         if (page < 0) return
         val onPage = mark.kind == PlannedMark.Kind.PAGE_REMOVED || mark.kind == PlannedMark.Kind.PAGE_CHANGED
-        if (onPage) controller.pageManager.jumpToPage(page) else controller.pageManager.jumpToPage(page, mark.toBox ?: mark.box)
+        if (onPage) context.pages.jumpToPage(page) else context.pages.jumpToPage(page, mark.toBox ?: mark.box)
     }
 
     /** The place of [piece] for the editor: on its page, or on a new page after the last page there is. */

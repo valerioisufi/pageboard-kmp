@@ -3,8 +3,7 @@ package io.github.valerioisufi.drawview.lecture.ui
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
-import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.canvas.port.EditorRendering
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.NotebookSnapshot
 import io.github.valerioisufi.drawview.lecture.NotebookSource
@@ -27,6 +26,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -35,26 +35,26 @@ import kotlinx.coroutines.withContext
 
 /**
  * [NotebookSource] of an open editor: the text of the slides comes from the PDF adapter of
- * [controller] (PDFium), the images from its tile renderer (paper, PDF, images, texts and ink, as
+ * [editor] (PDFium), the images from its tile renderer (paper, PDF, images, texts and ink, as
  * on screen).
  */
-internal class ControllerNotebookSource(private val controller: DrawViewController) : NotebookSource {
+internal class ControllerNotebookSource(private val editor: EditorContext) : NotebookSource {
     /** Text of the PDF pages, by resource and page (read once). */
     private val slideTexts = mutableMapOf<Pair<String, Int>, String>()
     private val slideTextsLock = SyncLock()
 
-    override val documentTitle: String get() = controller.document.title
+    override val documentTitle: String get() = editor.document.document.title
 
     override suspend fun strokeIds(): Set<String> = withContext(Dispatchers.Default) {
-        controller.document.pages
+        editor.document.document.pages
             .flatMapTo(mutableSetOf()) { page -> page.snapshotContent().strokes.map { it.id } }
     }
 
     override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int): NotebookSnapshot {
-        val document = controller.document
+        val document = editor.document.document
         // Camera and layout: read on the UI thread
         val (visible, pages) = withContext(Dispatchers.Main) {
-            controller.viewport.visiblePages().map { it.index } to document.pages.toList()
+            editor.pages.visiblePageIndices() to document.pages.toList()
         }
         return withContext(Dispatchers.Default) {
             val visibleIndexes = visible.filter { it in pages.indices }.ifEmpty { if (pages.isEmpty()) emptyList() else listOf(0) }
@@ -63,7 +63,7 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
             val around = ((first - textPages)..(last + textPages))
                 .filter { it in pages.indices && it !in visibleIndexes }
                 .sortedBy { if (it < first) first - it else it - last }
-            val renderer = controller.tileManager.tileRenderer
+            val renderer = editor.rendering
             val contents = pages.map { it.snapshotContent() }
             val pdfNumbers = pdfNumbers(contents)
 
@@ -86,7 +86,7 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
                     return@mapNotNull null
                 }
                 val bitmap = try {
-                    renderer.renderThumbnail(document, pages[index], PAGE_WIDTH_PX)
+                    renderer.renderThumbnail(document, contents[index], PAGE_WIDTH_PX)
                 } catch (_: Throwable) {
                     null
                 }
@@ -119,10 +119,10 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
         }
     }
 
-    override suspend fun pageIds(): List<String> = withContext(Dispatchers.Main) { controller.document.pages.map { it.id } }
+    override suspend fun pageIds(): List<String> = withContext(Dispatchers.Main) { editor.document.document.pages.map { it.id } }
 
     override suspend fun allPages(): List<PageContent> {
-        val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
+        val pages = withContext(Dispatchers.Main) { editor.document.document.pages.toList() }
         return withContext(Dispatchers.Default) {
             val contents = pages.map { it.snapshotContent() }
             val pdfNumbers = pdfNumbers(contents)
@@ -146,14 +146,14 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
     )
 
     override suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> {
-        val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
+        val pages = withContext(Dispatchers.Main) { editor.document.document.pages.toList() }
         return withContext(Dispatchers.Default) {
             pageIndexes.filter { it in pages.indices }.flatMap { index -> inkBlocksOf(index, pages[index].id, pages[index].snapshotContent().strokes) }
         }
     }
 
     override suspend fun renderInk(block: InkBlock): ByteArray? {
-        val document = controller.document
+        val document = editor.document.document
         val pages = withContext(Dispatchers.Main) { document.pages.toList() }
         return withContext(Dispatchers.Default) {
             val page = pages.firstOrNull { it.id == block.pageId } ?: pages.getOrNull(block.pageIndex) ?: return@withContext null
@@ -162,22 +162,22 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
             if (strokes.isEmpty()) return@withContext null
             // The ink alone, on white: the slide behind would confuse the reading
             val ink = PageContentSnapshot(strokes, emptyList(), emptyList(), emptyList(), PageBackground.Solid(), content.widthMm, content.heightMm)
-            renderRegion(controller.tileManager.tileRenderer, document, ink, block.pageIndex, unionOf(strokes.map { it.bounds }))?.jpeg
+            renderRegion(editor.rendering, document, ink, block.pageIndex, unionOf(strokes.map { it.bounds }))?.jpeg
         }
     }
 
     /** The text of a PDF page, without the empty lines, at most `MAX_SLIDE_TEXT_CHARS`. */
     private fun slideText(resourceId: String, pdfPageIndex: Int): String {
         syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] }?.let { return it }
-        val resource = controller.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }
-        val text = cleanSlideText(resource?.let { controller.tileManager.tileRenderer.pdfAdapter?.getPageText(it.path, pdfPageIndex) }.orEmpty())
+        val resource = editor.document.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }
+        val text = cleanSlideText(resource?.let { editor.rendering.pdfPageText(it.path, pdfPageIndex) }.orEmpty())
         syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] = text }
         return text
     }
 
     /** Renders [region] of the page (with its background), at most [CROP_MAX_SIDE_PX] pixels. */
     private fun renderRegion(
-        renderer: TileRenderer,
+        renderer: EditorRendering,
         document: DrawDocument,
         content: PageContentSnapshot,
         pageIndex: Int,
@@ -233,6 +233,6 @@ private val DrawStroke.isHandwriting: Boolean
 
 private fun union(a: Rect, b: Rect) = Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
 
-/** The notebook of the editor [controller] of [documentId], for the recordings of the document. */
-internal fun LectureAssistant.notebookOf(documentId: String, controller: DrawViewController): NotebookSource =
-    editorNotebook(documentId) { ControllerNotebookSource(controller) }
+/** The notebook of [editor], the editor of [documentId], for the recordings of the document. */
+internal fun LectureAssistant.notebookOf(documentId: String, editor: EditorContext): NotebookSource =
+    editorNotebook(documentId) { ControllerNotebookSource(editor) }
