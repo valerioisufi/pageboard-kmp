@@ -37,7 +37,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
      * A document or a folder of the library.
      *
      * @param folderId the folder holding it, `null` in the root.
-     * @param isShared a document shared with other devices.
+     * @param isShared a document shared with other devices, or a folder shared with what it holds.
      * @param pageCount the pages of a document.
      * @param hasPdf a document one of whose pages holds a PDF.
      * @param noteCount the documents of a folder, at any depth.
@@ -144,7 +144,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         createdAt = createdAt,
         modifiedAt = modifiedAt,
         folderId = parentId,
-        noteCount = noteCounts[id] ?: 0
+        noteCount = noteCounts[id] ?: 0,
+        isShared = isShared
     )
 
     /** Content of the current folder, in the chosen order. */

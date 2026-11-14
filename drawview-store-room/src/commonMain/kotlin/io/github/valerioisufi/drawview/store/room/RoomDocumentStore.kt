@@ -57,6 +57,7 @@ public class RoomDocumentStore(
     private val allDocuments = fileRepository.getAllDocumentsFlow().sharedQuery()
     private val allFolders = fileRepository.getAllFoldersFlow().sharedQuery()
     private val sharedIds = sharedDocuments.getIdsFlow().sharedQuery()
+    private val spaceRoots = database.spaceDao().rootFoldersFlow().sharedQuery()
 
     override val documents: Flow<List<DocumentSummary>> =
         combine(allDocumentsWithContent, allFolders, sharedIds) { list, folders, shared ->
@@ -67,9 +68,10 @@ public class RoomDocumentStore(
         }.distinctUntilChanged()
 
     override val folders: Flow<List<FolderSummary>> =
-        combine(allDocuments, allFolders) { documents, list ->
+        combine(allDocuments, allFolders, spaceRoots) { documents, list, roots ->
             val trash = FileRepository.trashOf(documents, list, emptySet())
-            list.filter { trash.isFolderLive(it.id) }.map { it.toSummary() }
+            val shared = roots.toSet()
+            list.filter { trash.isFolderLive(it.id) }.map { it.toSummary().copy(isShared = it.id in shared) }
         }.distinctUntilChanged()
 
     override val trash: Flow<List<TrashedItem>> =

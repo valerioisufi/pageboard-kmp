@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.explorer
 
+import io.github.valerioisufi.drawview.store.space.StoredSpace
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -87,6 +88,8 @@ internal fun capture(
     val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = storeScope, clock = { FIXED_TIME }, newFolderId = { "folder-${++folders}" })
     store.createFolder("Analysis", parentId = null)
     store.createFolder("Physics", parentId = null)
+    // Physics shared with other devices (docs/shared-folders.md): its badge
+    store.saveSpace(StoredSpace("space", rootFolderId = "folder-2"))
     store.createDocument(NOTE, background = PageBackground.Ruled())
     store.createDocument("Exercises", background = PageBackground.Grid())
     store.createDocument("Lab report")

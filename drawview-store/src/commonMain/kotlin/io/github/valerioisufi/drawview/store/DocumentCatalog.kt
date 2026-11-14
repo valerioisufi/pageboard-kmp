@@ -25,14 +25,17 @@ public data class DocumentSummary(
 )
 
 /**
- * A folder of the document library (`parentId == null` for the folders of the root).
+ * A folder of the document library (`parentId == null` for the folders of the root); [isShared]:
+ * it is shared with other devices with what it holds (the root of a shared folder, see
+ * `docs/shared-folders.md`).
  */
 public data class FolderSummary(
     val id: String,
     val name: String,
     val parentId: String? = null,
     val createdAt: Long,
-    val modifiedAt: Long
+    val modifiedAt: Long,
+    val isShared: Boolean = false
 )
 
 /**

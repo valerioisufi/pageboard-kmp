@@ -131,7 +131,7 @@ internal fun ColumnScope.ItemDetails(item: FileItem, actions: ItemActions, previ
             .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(20.dp))
             .padding(vertical = 24.dp)
     ) {
-        if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 88.dp)
+        if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 88.dp, shared = item.isShared)
     }
     Spacer(modifier = Modifier.height(18.dp))
     Text(item.name, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -235,7 +235,7 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
                         .offset(x = ((index - pile.size + 1) * 14).dp)
                         .rotate(turn)
                 ) {
-                    if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else Box(contentAlignment = Alignment.Center) { FolderTile(item.id, size = 72.dp) }
+                    if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else Box(contentAlignment = Alignment.Center) { FolderTile(item.id, size = 72.dp, shared = item.isShared) }
                 }
             }
         }
@@ -302,7 +302,7 @@ internal fun ItemSheet(item: FileItem, itemCommands: List<Command>, actions: Ite
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.width(36.dp).height(48.dp)) {
-                if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 36.dp)
+                if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 36.dp, shared = item.isShared)
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)

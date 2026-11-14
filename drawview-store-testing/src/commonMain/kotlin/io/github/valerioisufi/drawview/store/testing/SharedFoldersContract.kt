@@ -33,8 +33,10 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     assertTrue(store.createFolder("Course", null))
     val course = store.folders.first().single()
     val space = StoredSpace("space", course.id, sharing = "secret", readOnly = false)
+    assertFalse(store.folders.first().single().isShared)
     store.saveSpace(space)
     assertEquals(listOf(space), store.spaces())
+    assertTrue(store.folders.first().single().isShared, "the root of a shared folder told")
 
     val item = CatalogItem("f", CatalogItemKind.FOLDER, inSpace = true, broughtBy = "bob", presence = Stamp(1, 0, "bob"), name = "Week 1", named = Stamp(1, 0, "bob"))
     val first = CatalogOperation(OperationId("bob", 1), Stamp(1, 0, "bob"), AddFolder("f", "Week 1", null))
@@ -92,6 +94,7 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     assertEquals(emptyMap(), store.catalogVersionVector("space"))
     assertEquals(emptyMap(), store.catalogProofs("space", listOf(OperationId("ada", 1))))
     assertEquals(setOf(course.id, "f", "g"), store.folders.first().map { it.id }.toSet())
+    assertTrue(store.folders.first().none { it.isShared }, "shared no more")
     assertNotNull(store.documents.first().singleOrNull { it.id == document.id })
     assertEquals(emptyList(), reopened().spaces())
 }

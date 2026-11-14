@@ -681,12 +681,14 @@ final class io.github.valerioisufi.drawview.store/DocumentSummary { // io.github
 }
 
 final class io.github.valerioisufi.drawview.store/FolderSummary { // io.github.valerioisufi.drawview.store/FolderSummary|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Long, kotlin/Long) // io.github.valerioisufi.drawview.store/FolderSummary.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long;kotlin.Long){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Long, kotlin/Long, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.store/FolderSummary.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long;kotlin.Long;kotlin.Boolean){}[0]
 
     final val createdAt // io.github.valerioisufi.drawview.store/FolderSummary.createdAt|{}createdAt[0]
         final fun <get-createdAt>(): kotlin/Long // io.github.valerioisufi.drawview.store/FolderSummary.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
     final val id // io.github.valerioisufi.drawview.store/FolderSummary.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store/FolderSummary.id.<get-id>|<get-id>(){}[0]
+    final val isShared // io.github.valerioisufi.drawview.store/FolderSummary.isShared|{}isShared[0]
+        final fun <get-isShared>(): kotlin/Boolean // io.github.valerioisufi.drawview.store/FolderSummary.isShared.<get-isShared>|<get-isShared>(){}[0]
     final val modifiedAt // io.github.valerioisufi.drawview.store/FolderSummary.modifiedAt|{}modifiedAt[0]
         final fun <get-modifiedAt>(): kotlin/Long // io.github.valerioisufi.drawview.store/FolderSummary.modifiedAt.<get-modifiedAt>|<get-modifiedAt>(){}[0]
     final val name // io.github.valerioisufi.drawview.store/FolderSummary.name|{}name[0]
@@ -699,7 +701,8 @@ final class io.github.valerioisufi.drawview.store/FolderSummary { // io.github.v
     final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.store/FolderSummary.component3|component3(){}[0]
     final fun component4(): kotlin/Long // io.github.valerioisufi.drawview.store/FolderSummary.component4|component4(){}[0]
     final fun component5(): kotlin/Long // io.github.valerioisufi.drawview.store/FolderSummary.component5|component5(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Long = ..., kotlin/Long = ...): io.github.valerioisufi.drawview.store/FolderSummary // io.github.valerioisufi.drawview.store/FolderSummary.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long;kotlin.Long){}[0]
+    final fun component6(): kotlin/Boolean // io.github.valerioisufi.drawview.store/FolderSummary.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Long = ..., kotlin/Long = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.store/FolderSummary // io.github.valerioisufi.drawview.store/FolderSummary.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long;kotlin.Long;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store/FolderSummary.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store/FolderSummary.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store/FolderSummary.toString|toString(){}[0]

@@ -50,6 +50,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_details
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_notes_count
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_tag_shared
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
@@ -179,7 +180,7 @@ internal fun FolderCard(item: FileItem, actions: ItemActions, modifier: Modifier
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            FolderTile(item.id)
+            FolderTile(item.id, shared = item.isShared)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleSmall, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
@@ -196,9 +197,12 @@ internal fun FolderCard(item: FileItem, actions: ItemActions, modifier: Modifier
     }
 }
 
-/** The tile of a folder: its icon on the container of one of the three tones, the same for a folder every time. */
+/**
+ * The tile of a folder: its icon on the container of one of the three tones, the same for a folder
+ * every time; [shared]: a folder shared with other devices, its badge in a corner.
+ */
 @Composable
-internal fun FolderTile(folderId: String, size: Dp = 44.dp) {
+internal fun FolderTile(folderId: String, size: Dp = 44.dp, shared: Boolean = false) {
     val colors = MaterialTheme.colorScheme
     val (container, content) = when (folderId.hashCode().mod(3)) {
         0 -> colors.primaryContainer to colors.onPrimaryContainer
@@ -212,6 +216,20 @@ internal fun FolderTile(folderId: String, size: Dp = 44.dp) {
             .background(container, RoundedCornerShape(size * 14 / 44))
     ) {
         Icon(DrawViewIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(size / 2))
+        if (shared) {
+            val badge = size * 9 / 22
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = badge / 4, y = badge / 4)
+                    .size(badge)
+                    .background(colors.primary, CircleShape)
+                    .border(1.5.dp, colors.surface, CircleShape)
+            ) {
+                Icon(DrawViewIcons.Users, contentDescription = stringResource(Res.string.explorer_tag_shared), tint = colors.onPrimary, modifier = Modifier.size(badge * 3 / 5))
+            }
+        }
     }
 }
 
@@ -241,7 +259,7 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.width(48.dp).height(64.dp)) {
-                if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 44.dp)
+                if (item.type == FileType.FILE) DocumentThumbnail(item, actions.thumbnails) else FolderTile(item.id, size = 44.dp, shared = item.isShared)
                 if (selected) SelectedCheck(modifier = Modifier.align(Alignment.TopEnd).offset(x = 10.dp, y = (-6).dp))
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {

@@ -10,6 +10,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Upsert
 import io.github.valerioisufi.drawview.model.Stamp
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A shared folder (a space, see `docs/shared-folders.md`): its root in the library
@@ -70,6 +71,10 @@ internal class CatalogProofEntity(
 internal interface SpaceDao {
     @Query("SELECT * FROM spaces")
     suspend fun spaces(): List<SpaceEntity>
+
+    /** The roots of the shared folders (not the library), as they change. */
+    @Query("SELECT rootFolderId FROM spaces WHERE rootFolderId IS NOT NULL")
+    fun rootFoldersFlow(): Flow<List<String>>
 
     @Query("SELECT * FROM spaces WHERE id = :spaceId")
     suspend fun space(spaceId: String): SpaceEntity?

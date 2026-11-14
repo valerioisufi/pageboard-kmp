@@ -115,7 +115,7 @@ public class KeyValueDocumentStore(
     private val _documents = MutableStateFlow(sortedSummaries(index))
     override val documents: StateFlow<List<DocumentSummary>> = _documents.asStateFlow()
 
-    private val _folders = MutableStateFlow(folderSummaries(index))
+    private val _folders = MutableStateFlow(syncLock(lock) { folderSummaries(index) })
     override val folders: StateFlow<List<FolderSummary>> = _folders.asStateFlow()
 
     private val _trash = MutableStateFlow(index.trash().items)
@@ -585,12 +585,19 @@ public class KeyValueDocumentStore(
 
     override suspend fun spaces(): List<StoredSpace> = syncLock(lock) { spaceValues.spaces() }
 
-    override suspend fun saveSpace(space: StoredSpace): Unit = syncLock(lock) {
-        val value = spaceValues.valueOf(space.id) ?: StoredSpaceValue()
-        spaceValues.write(space.id, value.copy(rootFolderId = space.rootFolderId, sharing = space.sharing, readOnly = space.readOnly))
+    override suspend fun saveSpace(space: StoredSpace) {
+        syncLock(lock) {
+            val value = spaceValues.valueOf(space.id) ?: StoredSpaceValue()
+            spaceValues.write(space.id, value.copy(rootFolderId = space.rootFolderId, sharing = space.sharing, readOnly = space.readOnly))
+        }
+        // The root of a shared folder is told in the folders
+        publishSummaries()
     }
 
-    override suspend fun removeSpace(spaceId: String): Unit = syncLock(lock) { spaceValues.remove(spaceId) }
+    override suspend fun removeSpace(spaceId: String) {
+        syncLock(lock) { spaceValues.remove(spaceId) }
+        publishSummaries()
+    }
 
     override suspend fun catalogItems(spaceId: String): List<CatalogItem> = syncLock(lock) { spaceValues.valueOf(spaceId)?.items.orEmpty() }
 
@@ -807,9 +814,11 @@ public class KeyValueDocumentStore(
             .map { it.toSummary(isShared = it.id in index.sharingSecrets) }
     }
 
+    /** The folders out of the trash, the roots of the shared folders told (under [lock]). */
     private fun folderSummaries(index: StoredIndex): List<FolderSummary> {
         val trash = index.trash()
-        return index.folders.filter { trash.isFolderLive(it.id) }.sortedBy { it.name }.map { it.toSummary() }
+        val shared = spaceValues.spaces().mapNotNullTo(mutableSetOf()) { it.rootFolderId }
+        return index.folders.filter { trash.isFolderLive(it.id) }.sortedBy { it.name }.map { it.toSummary().copy(isShared = it.id in shared) }
     }
 
     public companion object {

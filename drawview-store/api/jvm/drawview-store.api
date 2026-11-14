@@ -94,15 +94,16 @@ public final class io/github/valerioisufi/drawview/store/DocumentSummary {
 }
 
 public final class io/github/valerioisufi/drawview/store/FolderSummary {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJ)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()J
 	public final fun component5 ()J
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJ)Lio/github/valerioisufi/drawview/store/FolderSummary;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/FolderSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/FolderSummary;
+	public final fun component6 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)Lio/github/valerioisufi/drawview/store/FolderSummary;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/FolderSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/FolderSummary;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCreatedAt ()J
 	public final fun getId ()Ljava/lang/String;
@@ -110,6 +111,7 @@ public final class io/github/valerioisufi/drawview/store/FolderSummary {
 	public final fun getName ()Ljava/lang/String;
 	public final fun getParentId ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun isShared ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
