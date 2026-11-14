@@ -7,7 +7,7 @@
 
 // Library unique name: <DrawView-KMP:drawview-export-ui>
 final class io.github.valerioisufi.drawview.export.ui/DocumentExportUi { // io.github.valerioisufi.drawview.export.ui/DocumentExportUi|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, kotlin/String? = ...) // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;kotlin.String?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, kotlin/String? = ..., io.github.valerioisufi.drawview.export/MarkdownAppendix? = ...) // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;kotlin.String?;io.github.valerioisufi.drawview.export.MarkdownAppendix?){}[0]
 
     final val editorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]

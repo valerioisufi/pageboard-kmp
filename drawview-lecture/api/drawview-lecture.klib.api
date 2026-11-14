@@ -996,6 +996,7 @@ final class io.github.valerioisufi.drawview.lecture/LectureAssistant { // io.git
     final fun isTranscribing(io.github.valerioisufi.drawview.lecture/Lecture): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isTranscribing|isTranscribing(io.github.valerioisufi.drawview.lecture.Lecture){}[0]
     final fun isWritingContext(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isWritingContext|isWritingContext(kotlin.String){}[0]
     final fun lecturesOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureSummary> // io.github.valerioisufi.drawview.lecture/LectureAssistant.lecturesOf|lecturesOf(kotlin.String){}[0]
+    final suspend fun markdownOf(kotlin/String, io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels, kotlin/Function1<kotlin/Long, kotlin/String>): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureAssistant.markdownOf|markdownOf(kotlin.String;io.github.valerioisufi.drawview.lecture.LectureMarkdown.Labels;kotlin.Function1<kotlin.Long,kotlin.String>){}[0]
     final fun onEditorHidden(kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource) // io.github.valerioisufi.drawview.lecture/LectureAssistant.onEditorHidden|onEditorHidden(kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
     final fun onEditorShown(kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource) // io.github.valerioisufi.drawview.lecture/LectureAssistant.onEditorShown|onEditorShown(kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
     final fun openLectureAt(kotlin/String, kotlin/String, kotlin/Long = ...) // io.github.valerioisufi.drawview.lecture/LectureAssistant.openLectureAt|openLectureAt(kotlin.String;kotlin.String;kotlin.Long){}[0]
@@ -1032,6 +1033,7 @@ final class io.github.valerioisufi.drawview.lecture/LectureLibrary { // io.githu
     final fun list(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureSummary> // io.github.valerioisufi.drawview.lecture/LectureLibrary.list|list(kotlin.String){}[0]
     final fun load(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureRecord? // io.github.valerioisufi.drawview.lecture/LectureLibrary.load|load(kotlin.String){}[0]
     final fun newLectureDirectory(kotlin/String, kotlin/Long): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureLibrary.newLectureDirectory|newLectureDirectory(kotlin.String;kotlin.Long){}[0]
+    final fun records(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureRecord> // io.github.valerioisufi.drawview.lecture/LectureLibrary.records|records(kotlin.String){}[0]
     final fun saveContext(kotlin/String, io.github.valerioisufi.drawview.lecture/CourseContext): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureLibrary.saveContext|saveContext(kotlin.String;io.github.valerioisufi.drawview.lecture.CourseContext){}[0]
     final fun sharingOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureSharingSettings // io.github.valerioisufi.drawview.lecture/LectureLibrary.sharingOf|sharingOf(kotlin.String){}[0]
     final fun writeContext(kotlin/String, io.github.valerioisufi.drawview.lecture/CourseContext): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureLibrary.writeContext|writeContext(kotlin.String;io.github.valerioisufi.drawview.lecture.CourseContext){}[0]
@@ -1662,6 +1664,32 @@ final object io.github.valerioisufi.drawview.lecture/LectureAnchors { // io.gith
 
     final fun anchorOf(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Long, kotlin/Long, kotlin/Long): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.lecture/LectureAnchors.anchorOf|anchorOf(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
     final fun quoteAnchor(io.github.valerioisufi.drawview.model/DrawPage, kotlin/String, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/String>> = ..., io.github.valerioisufi.drawview.model/PdfTextLayout? = ...): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.lecture/LectureAnchors.quoteAnchor|quoteAnchor(io.github.valerioisufi.drawview.model.DrawPage;kotlin.String;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.drawview.model.geometry.Rect,kotlin.String>>;io.github.valerioisufi.drawview.model.PdfTextLayout?){}[0]
+}
+
+final object io.github.valerioisufi.drawview.lecture/LectureMarkdown { // io.github.valerioisufi.drawview.lecture/LectureMarkdown|null[0]
+    final fun write(kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureRecord>, io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels, kotlin/Function1<kotlin/Long, kotlin/String>): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.write|write(kotlin.collections.List<io.github.valerioisufi.drawview.lecture.LectureRecord>;io.github.valerioisufi.drawview.lecture.LectureMarkdown.Labels;kotlin.Function1<kotlin.Long,kotlin.String>){}[0]
+
+    final class Labels { // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin.collections/Map<io.github.valerioisufi.drawview.lecture/NoteKind, kotlin/String>) // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.collections.Map<io.github.valerioisufi.drawview.lecture.NoteKind,kotlin.String>){}[0]
+
+        final val kinds // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.kinds|{}kinds[0]
+            final fun <get-kinds>(): kotlin.collections/Map<io.github.valerioisufi.drawview.lecture/NoteKind, kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.kinds.<get-kinds>|<get-kinds>(){}[0]
+        final val lecture // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.lecture|{}lecture[0]
+            final fun <get-lecture>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.lecture.<get-lecture>|<get-lecture>(){}[0]
+        final val lectures // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.lectures|{}lectures[0]
+            final fun <get-lectures>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.lectures.<get-lectures>|<get-lectures>(){}[0]
+        final val notes // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.notes|{}notes[0]
+            final fun <get-notes>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.notes.<get-notes>|<get-notes>(){}[0]
+        final val outline // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.outline|{}outline[0]
+            final fun <get-outline>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.outline.<get-outline>|<get-outline>(){}[0]
+        final val summary // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.summary|{}summary[0]
+            final fun <get-summary>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.summary.<get-summary>|<get-summary>(){}[0]
+
+        final object Companion { // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.Companion|null[0]
+            final val ENGLISH // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.Companion.ENGLISH|{}ENGLISH[0]
+                final fun <get-ENGLISH>(): io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels // io.github.valerioisufi.drawview.lecture/LectureMarkdown.Labels.Companion.ENGLISH.<get-ENGLISH>|<get-ENGLISH>(){}[0]
+        }
+    }
 }
 
 final object io.github.valerioisufi.drawview.lecture/NotePlacement { // io.github.valerioisufi.drawview.lecture/NotePlacement|null[0]

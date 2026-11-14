@@ -102,6 +102,11 @@ public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExten
 	public static final fun editorExtension (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
 }
 
+public final class io/github/valerioisufi/drawview/lecture/ui/LectureMarkdownLabelsKt {
+	public static final fun lectureMarkdownLabels (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun markdownInLanguage (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource : io/github/valerioisufi/drawview/search/SearchSource {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/ui/LectureSearchSource$Companion;

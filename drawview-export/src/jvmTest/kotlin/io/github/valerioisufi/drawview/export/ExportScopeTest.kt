@@ -91,7 +91,7 @@ class ExportScopeTest {
         val contents = export.resolve(ExportScope.Pages(id))
         assertEquals("Lecture 1: Limits", contents.name)
         assertEquals(4, contents.pages)
-        assertEquals(listOf(ExportFormat.PDF, ExportFormat.IMAGES), contents.formats)
+        assertEquals(listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN), contents.formats)
         assertEquals("Lecture 1_ Limits.pdf", contents.fileName(ExportFormat.PDF, fallbackName = "Notes"))
         assertEquals("Lecture 1_ Limits.zip", contents.fileName(ExportFormat.IMAGES, fallbackName = "Notes"))
         assertEquals("Lecture 1_ Limits.png", contents.fileName(ExportFormat.IMAGES, pages = 1, fallbackName = "Notes"))

@@ -24,6 +24,8 @@
     <string name="export_format_per_note_hint">ZIP に、フォルダごと</string>
     <string name="export_format_combined">1 つの PDF</string>
     <string name="export_format_combined_hint">ノートを順に並べて</string>
+    <string name="export_format_markdown">Markdown</string>
+    <string name="export_format_markdown_hint">テキストと講義のメモ</string>
     <string name="export_pages">ページ</string>
     <string name="export_pages_all">すべて</string>
     <string name="export_pages_on_screen">このページ</string>

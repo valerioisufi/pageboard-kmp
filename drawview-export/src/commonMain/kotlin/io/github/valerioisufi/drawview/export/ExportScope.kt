@@ -14,7 +14,7 @@ public sealed interface ExportScope {
     /** The formats offered for this scope, the first being the default. */
     public val formats: List<ExportFormat>
         get() = if (isSingleDocument) {
-            listOf(ExportFormat.PDF, ExportFormat.IMAGES)
+            listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN)
         } else {
             listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF)
         }
@@ -80,25 +80,37 @@ public enum class ExportFormat {
     PDF_PER_DOCUMENT,
 
     /** Several notes one after the other in one PDF. */
-    COMBINED_PDF;
+    COMBINED_PDF,
+
+    /** The text of one note as Markdown, with what the application adds (see [MarkdownExporter]). */
+    MARKDOWN;
 
     /** The extension of the file written for [pages] pages, without the dot. */
     public fun extension(pages: Int): String = when (this) {
         PDF, COMBINED_PDF -> "pdf"
         IMAGES -> if (pages == 1) "png" else "zip"
         PDF_PER_DOCUMENT -> "zip"
+        MARKDOWN -> "md"
     }
 
     /** The media type of the file written for [pages] pages. */
     public fun mimeType(pages: Int): String = when (extension(pages)) {
         "pdf" -> "application/pdf"
         "png" -> "image/png"
+        "md" -> "text/markdown"
         else -> "application/zip"
     }
 }
 
-/** The exporters of the formats: [pdf] for the PDFs, [image] for the images of the pages. */
-public class ExportWriters(public val pdf: PdfExporter, public val image: PageImageExporter? = null)
+/**
+ * The exporters of the formats: [pdf] for the PDFs, [image] for the images of the pages, [markdown]
+ * for the text.
+ */
+public class ExportWriters(
+    public val pdf: PdfExporter,
+    public val image: PageImageExporter? = null,
+    public val markdown: MarkdownExporter = MarkdownExporter()
+)
 
 /**
  * How far an export is: the [fraction] written (0 to 1), the note being read ([item] of [items],

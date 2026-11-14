@@ -56,6 +56,10 @@ import io.github.valerioisufi.drawview.export.ExportJobs
 import io.github.valerioisufi.drawview.export.ExportRequest
 import io.github.valerioisufi.drawview.export.ExportScope
 import io.github.valerioisufi.drawview.export.ExportWriters
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_markdown_hint
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_markdown
+import io.github.valerioisufi.drawview.export.MarkdownExporter
+import io.github.valerioisufi.drawview.export.MarkdownAppendix
 import io.github.valerioisufi.drawview.export.PageImageExporter
 import io.github.valerioisufi.drawview.export.PdfExporter
 import io.github.valerioisufi.drawview.export.ui.generated.resources.Res
@@ -127,7 +131,8 @@ internal fun ExportSheet(
     jobs: ExportJobs,
     appName: String?,
     thumbnail: (suspend () -> ImageBitmap?)?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    markdownAppendix: MarkdownAppendix? = null
 ) {
     LaunchedEffect(state, state.includeSubfolders) {
         state.contents = export.resolve(state.scope, state.includeSubfolders)
@@ -150,7 +155,8 @@ internal fun ExportSheet(
                 options = state.options(),
                 writers = ExportWriters(
                     pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName, elements = engines.elements, formulas = engines.formulas),
-                    image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images)
+                    image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images),
+                    markdown = MarkdownExporter(markdownAppendix)
                 ),
                 path = target.path,
                 fileName = state.fileName(fallbackName),
@@ -279,12 +285,15 @@ internal fun ExportSheetContent(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        SwitchRow(
-            text = stringResource(Res.string.export_background),
-            hint = stringResource(Res.string.export_background_hint),
-            checked = state.backgroundPattern,
-            onCheckedChange = { state.backgroundPattern = it }
-        )
+        // The paper is drawn on the pages, not in a text
+        if (state.format != ExportFormat.MARKDOWN) {
+            SwitchRow(
+                text = stringResource(Res.string.export_background),
+                hint = stringResource(Res.string.export_background_hint),
+                checked = state.backgroundPattern,
+                onCheckedChange = { state.backgroundPattern = it }
+            )
+        }
         if (state.hasFolders) {
             SwitchRow(
                 text = stringResource(Res.string.export_subfolders),
@@ -391,6 +400,7 @@ private fun formatTexts(format: ExportFormat, pages: Int): Pair<StringResource, 
     }
     ExportFormat.PDF_PER_DOCUMENT -> Res.string.export_format_per_note to Res.string.export_format_per_note_hint
     ExportFormat.COMBINED_PDF -> Res.string.export_format_combined to Res.string.export_format_combined_hint
+    ExportFormat.MARKDOWN -> Res.string.export_format_markdown to Res.string.export_format_markdown_hint
 }
 
 private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
@@ -398,6 +408,7 @@ private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
     ExportFormat.IMAGES -> DrawViewIcons.Image
     ExportFormat.PDF_PER_DOCUMENT -> DrawViewIcons.Layers
     ExportFormat.COMBINED_PDF -> DrawViewIcons.BookOpen
+    ExportFormat.MARKDOWN -> DrawViewIcons.Hash
 }
 
 /** The label of a group of choices. */

@@ -88,6 +88,7 @@ public final class io/github/valerioisufi/drawview/export/ExportFailure$Companio
 public final class io/github/valerioisufi/drawview/export/ExportFormat : java/lang/Enum {
 	public static final field COMBINED_PDF Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field IMAGES Lio/github/valerioisufi/drawview/export/ExportFormat;
+	public static final field MARKDOWN Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field PDF Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field PDF_PER_DOCUMENT Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public final fun extension (I)Ljava/lang/String;
@@ -249,9 +250,10 @@ public final class io/github/valerioisufi/drawview/export/ExportScope$Pages : io
 
 public final class io/github/valerioisufi/drawview/export/ExportWriters {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;Lio/github/valerioisufi/drawview/export/MarkdownExporter;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;Lio/github/valerioisufi/drawview/export/MarkdownExporter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getImage ()Lio/github/valerioisufi/drawview/export/PageImageExporter;
+	public final fun getMarkdown ()Lio/github/valerioisufi/drawview/export/MarkdownExporter;
 	public final fun getPdf ()Lio/github/valerioisufi/drawview/export/PdfExporter;
 }
 
@@ -260,6 +262,19 @@ public final class io/github/valerioisufi/drawview/export/FolderDocumentItem {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;)V
 	public final fun getRelativePath ()Ljava/lang/String;
 	public final fun getSummary ()Lio/github/valerioisufi/drawview/store/DocumentSummary;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/export/MarkdownAppendix {
+	public abstract fun of (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/export/MarkdownExporter {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/export/MarkdownAppendix;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun hasText (Lio/github/valerioisufi/drawview/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun write (Lio/github/valerioisufi/drawview/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/export/PageImageExporter : io/github/valerioisufi/drawview/export/DocumentExporter {

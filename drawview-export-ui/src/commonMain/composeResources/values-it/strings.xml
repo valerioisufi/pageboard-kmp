@@ -26,6 +26,8 @@
     <string name="export_format_per_note_hint">In uno ZIP, con le loro cartelle</string>
     <string name="export_format_combined">Un unico PDF</string>
     <string name="export_format_combined_hint">Le note una dopo l’altra</string>
+    <string name="export_format_markdown">Markdown</string>
+    <string name="export_format_markdown_hint">Il testo, con gli appunti delle lezioni</string>
     <string name="export_pages">Pagine</string>
     <string name="export_pages_all">Tutte</string>
     <string name="export_pages_on_screen">Questa pagina</string>

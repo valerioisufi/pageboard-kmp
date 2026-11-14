@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportJobs
 import io.github.valerioisufi.drawview.export.ExportScope
+import io.github.valerioisufi.drawview.export.MarkdownAppendix
 import io.github.valerioisufi.drawview.export.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_action
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_all_action
@@ -41,8 +42,14 @@ import org.jetbrains.compose.resources.stringResource
  *
  * @param documents the documents of the application (those of its library).
  * @param appName the name of the application, written in the PDFs as the one that made them.
+ * @param markdownAppendix what the application adds to the Markdown of a note (e.g. the notes of
+ *   its lectures), see [MarkdownAppendix].
  */
-public class DocumentExportUi(documents: OpenDocuments, private val appName: String? = null) {
+public class DocumentExportUi(
+    documents: OpenDocuments,
+    private val appName: String? = null,
+    private val markdownAppendix: MarkdownAppendix? = null
+) {
     private val export = DocumentExport(documents)
 
     /** The exports asked, running one after the other while the application runs. */
@@ -109,7 +116,7 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
             }
             // The first page of the note, or of the first note among several
             val thumbnail = (selection as? LibrarySelection.Items)?.thumbnail
-            ExportSheet(state, export, jobs, appName, thumbnail = thumbnail, onDismiss = onDone)
+            ExportSheet(state, export, jobs, appName, thumbnail = thumbnail, onDismiss = onDone, markdownAppendix = markdownAppendix)
         }
     )
 
@@ -131,7 +138,7 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
                     .padding(start = 16.dp, end = 16.dp, bottom = 64.dp)
             )
             editorExport?.takeIf { it.documentId == context.documentId }?.let {
-                ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null })
+                ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null }, markdownAppendix = markdownAppendix)
             }
         }
         commands { context -> listOf(exportCommand(context)) }

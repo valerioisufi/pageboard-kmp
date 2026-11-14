@@ -175,7 +175,26 @@ public class DocumentExport(private val documents: OpenDocuments) {
             ExportFormat.PDF, ExportFormat.IMAGES -> exportPages(contents, format, options, writers, path, progress)
             ExportFormat.PDF_PER_DOCUMENT -> exportPdfPerDocument(contents, options, writers, path, progress)
             ExportFormat.COMBINED_PDF -> exportCombined(contents, options, writers, path, progress)
+            ExportFormat.MARKDOWN -> exportMarkdown(contents, options, writers, path, progress)
         }
+    }
+
+    /** The text of the note of [contents] as Markdown (see [MarkdownExporter]). */
+    private suspend fun exportMarkdown(
+        contents: ExportContents,
+        options: ExportOptions,
+        writers: ExportWriters,
+        path: String,
+        progress: (ExportProgress) -> Unit
+    ): ExportOutcome {
+        val scope = contents.scope as? ExportScope.Pages ?: throw IllegalArgumentException("Markdown exports the text of one note")
+        val pageOptions = ExportOptions(scope.pageIds ?: options.pageIds, options.backgroundPattern, options.pageIndices)
+        val content = content(scope.documentId, pageOptions) ?: throw ExportException(ExportFailure.DOCUMENT_MISSING)
+        progress(ExportProgress(0f, 1, 1, content.title))
+        if (!writers.markdown.hasText(content, scope.documentId)) throw ExportException(ExportFailure.NOTHING_TO_EXPORT)
+        write(path, writers.markdown.write(content, scope.documentId).encodeToByteArray())
+        progress(ExportProgress(1f, 1, 1, content.title))
+        return ExportOutcome(documents = 1, pages = content.pages.size, skipped = 0, skippedIn = emptyList())
     }
 
     /** The pages of the note of [contents] as a PDF, an image, or a ZIP of images. */

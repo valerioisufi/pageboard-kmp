@@ -24,6 +24,8 @@
     <string name="export_format_per_note_hint">ZIP으로, 폴더 구조 유지</string>
     <string name="export_format_combined">하나의 PDF</string>
     <string name="export_format_combined_hint">노트를 차례로 이어서</string>
+    <string name="export_format_markdown">Markdown</string>
+    <string name="export_format_markdown_hint">텍스트와 강의 노트</string>
     <string name="export_pages">페이지</string>
     <string name="export_pages_all">전체</string>
     <string name="export_pages_on_screen">이 페이지</string>

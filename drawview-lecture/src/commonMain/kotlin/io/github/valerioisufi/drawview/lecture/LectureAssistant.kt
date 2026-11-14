@@ -601,6 +601,13 @@ public class LectureAssistant(
     /** The extension of the exported transcript. */
     public val transcriptExportExtension: String get() = "txt"
 
+    /**
+     * The lectures of the note [documentId] as Markdown, with [labels], their dates written by
+     * [date] (see [LectureMarkdown]); empty when they have nothing to say.
+     */
+    public suspend fun markdownOf(documentId: String, labels: LectureMarkdown.Labels, date: (Long) -> String): String =
+        withContext(Dispatchers.IO) { LectureMarkdown.write(library.records(documentId), labels, date) }
+
     public fun clearImportAndExportMessages() {
         work.importError = null
         exportResult = null

@@ -9,6 +9,8 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.DeviceModels
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.ui.createLectureAssistant
+import io.github.valerioisufi.drawview.lecture.ui.markdownInLanguage
+import io.github.valerioisufi.drawview.export.MarkdownAppendix
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
@@ -66,8 +68,15 @@ object PencilNotesServices {
     val collaboration: Collaboration =
         createCollaboration(PencilNotesData.documents, attachments = lectureAssistant.attachments, internet = IrohInternet)
 
-    /** The documents exported as PDF or as the image of a page, and the exports going on. */
-    val export: DocumentExportUi = DocumentExportUi(PencilNotesData.documents, appName = "PencilNotes")
+    /**
+     * The documents exported as PDF, as the image of a page or as Markdown (with the notes of their
+     * lectures), and the exports going on.
+     */
+    val export: DocumentExportUi = DocumentExportUi(
+        PencilNotesData.documents,
+        appName = "PencilNotes",
+        markdownAppendix = MarkdownAppendix { documentId -> lectureAssistant.markdownInLanguage(documentId) }
+    )
 
     /** The notes are indexed while no lecture is recorded or transcribed. */
     private val indexingConditions = MutableIndexingConditions(initialCanIndex = true)

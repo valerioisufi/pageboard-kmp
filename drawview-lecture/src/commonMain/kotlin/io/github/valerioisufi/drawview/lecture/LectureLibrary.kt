@@ -140,6 +140,12 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /**
+     * The lectures of [documentId] as they are saved, the most recent first, read only: none is
+     * recovered (see [load]), so that it can be read while a lecture is recorded, e.g. to export them.
+     */
+    public fun records(documentId: String): List<LectureRecord> = list(documentId).mapNotNull { readRecord(it.directory) }
+
+    /**
      * Reads the lecture saved in [directory]. A lecture saved while recording here is recovered:
      * the application stopped (closed or crashed) during the recording, whose audio is kept as far
      * as written (the lecture saved again, finished). Must not be called for

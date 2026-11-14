@@ -273,4 +273,6 @@
     <string name="lecture_hint_review_device">Rilegge la trascrizione e i tuoi appunti su questo dispositivo; alla fine il modello viene liberato. Un modello più grande legge meglio e impiega di più (Gemma 4 12B su un computer).</string>
     <string name="lecture_device_delete">Elimina</string>
     <string name="lecture_device_cancel">Annulla il download</string>
+    <string name="lecture_markdown_lectures">Lezioni</string>
+    <string name="lecture_markdown_lecture">Lezione del %1$s (%2$s)</string>
 </resources>

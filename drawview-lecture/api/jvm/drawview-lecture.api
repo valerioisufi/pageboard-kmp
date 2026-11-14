@@ -403,6 +403,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun isTranscribing (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
 	public final fun isWritingContext (Ljava/lang/String;)Z
 	public final fun lecturesOf (Ljava/lang/String;)Ljava/util/List;
+	public final fun markdownOf (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun onEditorHidden (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
 	public final fun onEditorShown (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
 	public final fun openLectureAt (Ljava/lang/String;Ljava/lang/String;J)V
@@ -440,6 +441,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureLibrary {
 	public final fun list (Ljava/lang/String;)Ljava/util/List;
 	public final fun load (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureRecord;
 	public final fun newLectureDirectory (Ljava/lang/String;J)Ljava/lang/String;
+	public final fun records (Ljava/lang/String;)Ljava/util/List;
 	public final fun saveContext (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/CourseContext;)Z
 	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
 	public final fun writeContext (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/CourseContext;)Z
@@ -447,6 +449,28 @@ public final class io/github/valerioisufi/drawview/lecture/LectureLibrary {
 
 public final class io/github/valerioisufi/drawview/lecture/LectureLibraryKt {
 	public static final fun writeLectureRecord (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureRecord;)Z
+}
+
+public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureMarkdown;
+	public final fun write (Ljava/util/List;Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
+	public final fun getKinds ()Ljava/util/Map;
+	public final fun getLecture ()Ljava/lang/String;
+	public final fun getLectures ()Ljava/lang/String;
+	public final fun getNotes ()Ljava/lang/String;
+	public final fun getOutline ()Ljava/lang/String;
+	public final fun getSummary ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels$Companion {
+	public final fun getENGLISH ()Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;
 }
 
 public final class io/github/valerioisufi/drawview/lecture/LectureModelsKt {
