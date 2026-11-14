@@ -134,4 +134,11 @@
         <item quantity="one">%1$d item will be deleted for good.</item>
         <item quantity="other">%1$d items will be deleted for good.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">Undo Move to Trash</string>
+    <string name="explorer_trash_read_only">In the Trash · read only</string>
+    <string name="explorer_trash_preview">Show the pages</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="one">Delete %1$d item for good?</item>
+        <item quantity="other">Delete %1$d items for good?</item>
+    </plurals>
 </resources>

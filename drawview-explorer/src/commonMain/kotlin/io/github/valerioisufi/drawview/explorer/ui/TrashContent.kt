@@ -1,6 +1,24 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isMetaPressed
+import androidx.compose.ui.input.pointer.isShiftPressed
+import androidx.compose.ui.input.pointer.pointerInput
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_clear_selection
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_select_all
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_preview
+import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,11 +90,17 @@ internal fun daysLeft(item: TrashedItem, now: Long): Int {
 /**
  * The Trash of the library ([FileExplorerViewModel.Section.TRASH]): how long it keeps what is
  * deleted and Empty Trash, then a row for each item with Restore and Delete for good (asked
- * first, see [LibraryCommands.deleteForGood]); why there is nothing when it is empty.
+ * first, see [LibraryCommands.deleteForGood]); why there is nothing when it is empty. A tap on a
+ * document shows its pages when [previews] (see [TrashPreview]); a long press, or a click with
+ * ⌘/Ctrl or Shift, selects, and the bar of the selection takes the place of the line on top.
  */
-internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp) {
+internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp, previews: Boolean = false) {
     val items = viewModel.shownTrash
     item(key = "trash-info", span = { GridItemSpan(maxLineSpan) }) {
+        if (viewModel.selectingTrash) {
+            TrashSelectionBar(viewModel, commands, compact, margin)
+            return@item
+        }
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = margin, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -123,20 +147,105 @@ internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, comman
         return
     }
     items(items, key = { "trash:${it.id}" }, span = { GridItemSpan(maxLineSpan) }) { item ->
-        TrashRow(item, viewModel, commands, compact, margin, modifier = Modifier.animateItem())
+        TrashRow(item, viewModel, commands, compact, margin, previews, modifier = Modifier.animateItem())
     }
 }
 
-/** An item of the trash: its icon, its name, where it was and the days it has left, its actions. */
+/**
+ * The bar of the items of the trash selected: how many, Select all, Restore, Delete for good (asked
+ * first) and Done.
+ */
 @Composable
-private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp, modifier: Modifier = Modifier) {
+private fun TrashSelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp) {
+    val colors = MaterialTheme.colorScheme
+    val count = viewModel.trashSelection.size
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = (margin - 12.dp).coerceAtLeast(0.dp), end = (margin - 8.dp).coerceAtLeast(0.dp), top = 2.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.explorer_action_clear_selection), onClick = { viewModel.clearTrashSelection() })
+        Text(
+            stringResource(Res.string.explorer_selected_count, count),
+            style = MaterialTheme.typography.titleMedium,
+            color = colors.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        DesignIconButton(DrawViewIcons.CheckCheck, stringResource(Res.string.explorer_action_select_all), onClick = { viewModel.selectAllTrash() })
+        val restore = { viewModel.restore(viewModel.selectedTrash) }
+        if (compact) {
+            DesignIconButton(DrawViewIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = restore, style = IconButtonStyle.Tonal)
+        } else {
+            TonalButton(onClick = restore) {
+                Icon(DrawViewIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(Res.string.explorer_trash_restore), maxLines = 1)
+            }
+        }
+        if (commands != null) {
+            DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.explorer_trash_delete_forever), onClick = { commands.deleteForGood(viewModel.selectedTrash) }, tint = colors.error)
+        }
+    }
+}
+
+/** The keys held at the last press of a pointer on a row (read by its click). */
+private class HeldKeys {
+    var value: PointerKeyboardModifiers? = null
+}
+
+/**
+ * An item of the trash: its icon, its name, where it was and the days it has left, its actions. A
+ * click shows the pages of a document ([previews]) or, while items are selected, selects it.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, commands: LibraryCommands?, compact: Boolean, margin: Dp, previews: Boolean, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
+    val selected = item.id in viewModel.trashSelection
+    val held = remember { HeldKeys() }
+    val apple = currentAdaptiveInfo().conventions.shortcutModifier == ShortcutModifier.COMMAND
+    val previewLabel = stringResource(Res.string.explorer_trash_preview)
     Row(
-        modifier = modifier.fillMaxWidth().padding(start = margin, end = (margin - 8.dp).coerceAtLeast(0.dp), top = 10.dp, bottom = 10.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = (margin - 12.dp).coerceAtLeast(0.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) colors.secondaryContainer else Color.Transparent)
+            .pointerInput(held) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press) held.value = event.keyboardModifiers
+                    }
+                }
+            }
+            .combinedClickable(
+                onClickLabel = previewLabel.takeIf { previews && item.kind == TrashedItem.Kind.DOCUMENT && !viewModel.selectingTrash },
+                onClick = {
+                    val keys = held.value
+                    when {
+                        keys != null && keys.isShiftPressed -> viewModel.selectTrashRange(item)
+                        keys != null && (if (apple) keys.isMetaPressed else keys.isCtrlPressed) -> viewModel.toggleTrash(item)
+                        viewModel.selectingTrash -> viewModel.toggleTrash(item)
+                        previews && item.kind == TrashedItem.Kind.DOCUMENT -> viewModel.previewed = item
+                    }
+                },
+                onLongClick = { viewModel.toggleTrash(item) }
+            )
+            .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        if (viewModel.selectingTrash) {
+            if (selected) {
+                Icon(DrawViewIcons.CheckCircle, contentDescription = null, tint = colors.primary, modifier = Modifier.size(22.dp))
+            } else {
+                Box(modifier = Modifier.size(22.dp).padding(1.dp).border(2.dp, colors.outline, CircleShape))
+            }
+        }
         Box(contentAlignment = Alignment.Center, modifier = Modifier.width(48.dp).height(56.dp)) {
             when (item.kind) {
                 TrashedItem.Kind.FOLDER -> FolderTile(item.id, size = 44.dp)
@@ -158,7 +267,8 @@ private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, comman
             }
             Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        // A phone has room for the icon only
+        // A phone has room for the icon only; nothing while items are selected (the bar acts on them)
+        if (viewModel.selectingTrash) return@Row
         if (compact) {
             DesignIconButton(DrawViewIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = { viewModel.restore(item) }, style = IconButtonStyle.Tonal)
         } else {

@@ -134,4 +134,11 @@
         <item quantity="one">%1$d elemento verrà eliminato definitivamente.</item>
         <item quantity="other">%1$d elementi verranno eliminati definitivamente.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">Annulla lo spostamento nel Cestino</string>
+    <string name="explorer_trash_read_only">Nel Cestino · sola lettura</string>
+    <string name="explorer_trash_preview">Mostra le pagine</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="one">Eliminare definitivamente %1$d elemento?</item>
+        <item quantity="other">Eliminare definitivamente %1$d elementi?</item>
+    </plurals>
 </resources>

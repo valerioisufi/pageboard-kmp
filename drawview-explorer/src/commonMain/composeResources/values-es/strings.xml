@@ -134,4 +134,11 @@
         <item quantity="one">%1$d elemento se eliminará definitivamente.</item>
         <item quantity="other">%1$d elementos se eliminarán definitivamente.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">Deshacer mover a la papelera</string>
+    <string name="explorer_trash_read_only">En la papelera · solo lectura</string>
+    <string name="explorer_trash_preview">Ver las páginas</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="one">¿Eliminar %1$d elemento definitivamente?</item>
+        <item quantity="other">¿Eliminar %1$d elementos definitivamente?</item>
+    </plurals>
 </resources>

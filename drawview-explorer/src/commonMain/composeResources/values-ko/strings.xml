@@ -127,4 +127,10 @@
     <plurals name="explorer_trash_empty_description">
         <item quantity="other">항목 %1$d개가 영구 삭제됩니다.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">휴지통으로 이동 실행 취소</string>
+    <string name="explorer_trash_read_only">휴지통 · 읽기 전용</string>
+    <string name="explorer_trash_preview">페이지 보기</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="other">항목 %1$d개를 영구 삭제할까요?</item>
+    </plurals>
 </resources>

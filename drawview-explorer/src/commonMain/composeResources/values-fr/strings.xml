@@ -134,4 +134,11 @@
         <item quantity="one">%1$d élément sera supprimé définitivement.</item>
         <item quantity="other">%1$d éléments seront supprimés définitivement.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">Annuler le placement dans la corbeille</string>
+    <string name="explorer_trash_read_only">Dans la corbeille · lecture seule</string>
+    <string name="explorer_trash_preview">Voir les pages</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="one">Supprimer %1$d élément définitivement ?</item>
+        <item quantity="other">Supprimer %1$d éléments définitivement ?</item>
+    </plurals>
 </resources>

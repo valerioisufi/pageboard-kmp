@@ -68,6 +68,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_act
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_shared
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_cannot_undo
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_delete_forever_many
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_delete_forever_title
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_empty_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_empty_title
@@ -292,6 +293,19 @@ internal fun ExplorerScreen(
                     ) {
                         libraryHeader(layout, viewModel, commands)
                     }
+                    // The pages of a document of the trash, read only
+                    val previewed = viewModel.previewed
+                    if (previewed != null && thumbnails != null) {
+                        TrashPreview(
+                            item = previewed,
+                            thumbnails = thumbnails,
+                            onRestore = {
+                                viewModel.restore(previewed)
+                                viewModel.previewed = null
+                            },
+                            onDismiss = { viewModel.previewed = null }
+                        )
+                    }
                 }
                 if (layout == LibraryLayout.PANES && viewModel.targetItems.isNotEmpty()) {
                     VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -505,17 +519,22 @@ private fun LibraryDialogHost(
                 subtitle = stringResource(Res.string.explorer_move_subtitle, pluralStringResource(Res.plurals.explorer_items_count, dialog.items.size, dialog.items.size), from)
             )
         }
-        is LibraryDialog.DeleteForGood -> ConfirmActionDialog(
-            title = stringResource(Res.string.explorer_trash_delete_forever_title, dialog.item.name),
-            textDescription = stringResource(Res.string.explorer_trash_cannot_undo),
-            textConfirmButton = stringResource(Res.string.explorer_delete_confirm),
-            onDismissRequest = onDismiss,
-            onConfirm = {
-                viewModel.deleteForGood(dialog.item)
-                onDismiss()
-            },
-            note = if (dialog.item.isShared) stringResource(Res.string.explorer_delete_shared, dialog.item.name) else null
-        )
+        is LibraryDialog.DeleteForGood -> {
+            val items = dialog.items
+            val shared = items.firstOrNull { it.isShared }
+            ConfirmActionDialog(
+                title = items.singleOrNull()?.let { stringResource(Res.string.explorer_trash_delete_forever_title, it.name) }
+                    ?: pluralStringResource(Res.plurals.explorer_trash_delete_forever_many, items.size, items.size),
+                textDescription = stringResource(Res.string.explorer_trash_cannot_undo),
+                textConfirmButton = stringResource(Res.string.explorer_delete_confirm),
+                onDismissRequest = onDismiss,
+                onConfirm = {
+                    viewModel.deleteForGood(items)
+                    onDismiss()
+                },
+                note = shared?.let { stringResource(Res.string.explorer_delete_shared, it.name) }
+            )
+        }
         LibraryDialog.EmptyTrash -> {
             val count = viewModel.trash.size
             ConfirmActionDialog(

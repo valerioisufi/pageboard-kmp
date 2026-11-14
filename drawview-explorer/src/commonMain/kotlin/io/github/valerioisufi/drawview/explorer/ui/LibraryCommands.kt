@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SortOption
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_command_undo_trash
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_back
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
@@ -48,8 +49,8 @@ internal sealed interface LibraryDialog {
     class NewItem(val type: FileType) : LibraryDialog
     class Rename(val item: FileItem) : LibraryDialog
     class Move(val items: List<FileItem>) : LibraryDialog
-    /** Deleting [item] of the trash for good. */
-    class DeleteForGood(val item: TrashedItem) : LibraryDialog
+    /** Deleting [items] of the trash for good. */
+    class DeleteForGood(val items: List<TrashedItem>) : LibraryDialog
 
     /** Emptying the trash. */
     data object EmptyTrash : LibraryDialog
@@ -168,11 +169,21 @@ internal class LibraryCommands internal constructor(
 
     // ----- Edit -----
 
+    /** Puts back what was moved to the trash last (see [FileExplorerViewModel.lastTrashed]). */
+    val undoTrash = Command(
+        "undo-trash", label(Res.string.explorer_command_undo_trash), CommandGroup.EDIT,
+        icon = { rememberVectorPainter(DrawViewIcons.RotateCcw) },
+        shortcuts = listOf(Shortcut(Key.Z, primary = true)),
+        isEnabled = { viewModel.lastTrashed != null }
+    ) { viewModel.undoLastTrash() }
+
+    private val inTrash: Boolean get() = viewModel.section == FileExplorerViewModel.Section.TRASH
+
     val selectAll = Command(
         "select-all", label(Res.string.explorer_action_select_all), CommandGroup.EDIT,
         shortcuts = listOf(Shortcut(Key.A, primary = true)),
-        isEnabled = { viewModel.shownFiles.isNotEmpty() }
-    ) { viewModel.selectAll() }
+        isEnabled = { if (inTrash) viewModel.shownTrash.isNotEmpty() else viewModel.shownFiles.isNotEmpty() }
+    ) { if (inTrash) viewModel.selectAllTrash() else viewModel.selectAll() }
 
     val rename = Command(
         "rename", label(Res.string.explorer_action_rename), CommandGroup.EDIT, section = 1,
@@ -190,12 +201,18 @@ internal class LibraryCommands internal constructor(
         "delete", label(Res.string.explorer_action_delete), CommandGroup.EDIT, section = 1,
         icon = { rememberVectorPainter(DrawViewIcons.Trash) },
         shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
-        isEnabled = { selection.isNotEmpty() },
+        isEnabled = { if (inTrash) viewModel.selectingTrash else selection.isNotEmpty() },
         destructive = true
-    ) { viewModel.deleteFiles(selection) }
+    ) {
+        // In the trash, the items selected for good, asked first
+        if (inTrash) viewModel.selectedTrash.takeIf { it.isNotEmpty() }?.let { deleteForGood(it) } else viewModel.deleteFiles(selection)
+    }
 
     /** Asks before deleting [item] of the trash for good. */
-    fun deleteForGood(item: TrashedItem) = showDialog(LibraryDialog.DeleteForGood(item))
+    fun deleteForGood(item: TrashedItem) = deleteForGood(listOf(item))
+
+    /** Asks before deleting [items] of the trash for good. */
+    fun deleteForGood(items: List<TrashedItem>) = showDialog(LibraryDialog.DeleteForGood(items))
 
     /** Asks before emptying the trash. */
     fun emptyTrash() = showDialog(LibraryDialog.EmptyTrash)
@@ -240,7 +257,7 @@ internal class LibraryCommands internal constructor(
 
     /** The commands of the folder shown and of the selection, in the order of the menus. */
     val all: List<Command> = listOfNotNull(newNote, newFolder, openInNewWindow) + itemsActionCommands +
-        listOf(selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
+        listOf(undoTrash, selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
 
     /**
      * The commands of [item] (its context menu, its sheet): open, open in new window, rename, move,

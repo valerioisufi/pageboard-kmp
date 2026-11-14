@@ -89,6 +89,23 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     var trashNotice by mutableStateOf<TrashNotice?>(null)
         private set
 
+    /**
+     * What was moved to the trash last, put back by Undo (⌘Z) also after it was told, until it is
+     * put back or something else is moved (`null` for nothing).
+     */
+    var lastTrashed by mutableStateOf<TrashNotice?>(null)
+        private set
+
+    /** The identifiers of the items of the trash selected, in no order (see [selectedTrash]). */
+    var trashSelection by mutableStateOf(emptySet<String>())
+        private set
+
+    /** The item of the trash a range starts from (Shift with a click), the last one toggled. */
+    private var trashAnchor: String? = null
+
+    /** The document of the trash whose pages are shown (see `TrashPreview`), or `null`. */
+    var previewed by mutableStateOf<TrashedItem?>(null)
+
     var sortOption by mutableStateOf(SortOption.NAME)
         private set
     var sortAscending by mutableStateOf(true)
@@ -330,6 +347,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         this.section = section
         setQuery("")
         clearSelection()
+        clearTrashSelection()
     }
 
     /** Shows [section]; the folders start again from the root. */
@@ -378,7 +396,15 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     init {
         viewModelScope.launch { store.documents.collect { documents = it } }
-        viewModelScope.launch { store.trash.collect { trash = it } }
+        viewModelScope.launch {
+            store.trash.collect { list ->
+                trash = list
+                // What left the trash (restored, deleted for good, purged) leaves the selection and the preview
+                val ids = list.mapTo(HashSet()) { it.id }
+                if (trashSelection.any { it !in ids }) trashSelection = trashSelection.filterTo(HashSet()) { it in ids }
+                if (previewed?.id?.let { it !in ids } == true) previewed = null
+            }
+        }
         viewModelScope.launch {
             store.folders.collect { list ->
                 folders = list
@@ -621,7 +647,70 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         unselect(files)
         viewModelScope.launch {
             val trashed = files.filter { trash(it) }
-            if (trashed.isNotEmpty()) trashNotice = TrashNotice(trashed.map { it.name }, trashed.map { it.id })
+            if (trashed.isNotEmpty()) {
+                val notice = TrashNotice(trashed.map { it.name }, trashed.map { it.id })
+                trashNotice = notice
+                lastTrashed = notice
+            }
+        }
+    }
+
+    /** Puts back what was moved to the trash last (⌘Z, see [lastTrashed]). */
+    fun undoLastTrash() {
+        val notice = lastTrashed ?: return
+        lastTrashed = null
+        if (trashNotice === notice) trashNotice = null
+        undoTrash(notice)
+    }
+
+    /** The items of the trash selected, in the order of the trash. */
+    val selectedTrash: List<TrashedItem> get() = trash.filter { it.id in trashSelection }
+
+    /** Whether items of the trash are being selected. */
+    val selectingTrash: Boolean get() = trashSelection.isNotEmpty()
+
+    /** Selects [item] of the trash, or deselects it. */
+    fun toggleTrash(item: TrashedItem) {
+        trashSelection = if (item.id in trashSelection) trashSelection - item.id else trashSelection + item.id
+        trashAnchor = item.id
+    }
+
+    /** Selects the items of the trash shown from the one toggled last to [item] (Shift with a click). */
+    fun selectTrashRange(item: TrashedItem) {
+        val shown = shownTrash
+        val from = shown.indexOfFirst { it.id == trashAnchor }.takeIf { it >= 0 } ?: shown.indexOf(item)
+        val to = shown.indexOf(item)
+        if (to < 0) return
+        trashSelection = trashSelection + shown.subList(minOf(from, to), maxOf(from, to) + 1).map { it.id }
+    }
+
+    /** Selects every item of the trash shown. */
+    fun selectAllTrash() {
+        trashSelection = shownTrash.mapTo(HashSet()) { it.id }
+    }
+
+    /** Leaves the selection of the trash. */
+    fun clearTrashSelection() {
+        trashSelection = emptySet()
+        trashAnchor = null
+    }
+
+    /** Puts [items] of the trash back where they were, leaving the selection. */
+    fun restore(items: List<TrashedItem>) {
+        trashSelection = trashSelection - items.map { it.id }.toSet()
+        viewModelScope.launch { items.forEach { store.restore(it.id) } }
+    }
+
+    /** Deletes [items] of the trash for good, leaving the selection. */
+    fun deleteForGood(items: List<TrashedItem>) {
+        trashSelection = trashSelection - items.map { it.id }.toSet()
+        viewModelScope.launch {
+            for (item in items) {
+                when (item.kind) {
+                    TrashedItem.Kind.DOCUMENT -> store.deleteDocument(item.id)
+                    TrashedItem.Kind.FOLDER -> store.deleteFolder(item.id)
+                }
+            }
         }
     }
 
@@ -632,23 +721,15 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** Puts back what [notice] moved to the trash. */
     fun undoTrash(notice: TrashNotice) {
+        if (lastTrashed === notice) lastTrashed = null
         viewModelScope.launch { notice.ids.forEach { store.restore(it) } }
     }
 
     /** Puts [item] back where it was (see `DocumentCatalog.restore`). */
-    fun restore(item: TrashedItem) {
-        viewModelScope.launch { store.restore(item.id) }
-    }
+    fun restore(item: TrashedItem) = restore(listOf(item))
 
     /** Deletes [item] of the trash for good. */
-    fun deleteForGood(item: TrashedItem) {
-        viewModelScope.launch {
-            when (item.kind) {
-                TrashedItem.Kind.DOCUMENT -> store.deleteDocument(item.id)
-                TrashedItem.Kind.FOLDER -> store.deleteFolder(item.id)
-            }
-        }
-    }
+    fun deleteForGood(item: TrashedItem) = deleteForGood(listOf(item))
 
     /** Deletes for good everything in the trash. */
     fun emptyTrash() {

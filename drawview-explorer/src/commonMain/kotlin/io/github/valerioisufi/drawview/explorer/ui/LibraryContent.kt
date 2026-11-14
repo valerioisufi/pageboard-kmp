@@ -122,7 +122,7 @@ internal fun LibraryContent(
             }
         }
         if (viewModel.section == Section.TRASH) {
-            trashContent(viewModel, actions.commands, compact, margin = if (compact) margin else 0.dp)
+            trashContent(viewModel, actions.commands, compact, margin = if (compact) margin else 0.dp, previews = actions.thumbnails != null)
             return@LazyVerticalGrid
         }
         if (folders.isNotEmpty()) {

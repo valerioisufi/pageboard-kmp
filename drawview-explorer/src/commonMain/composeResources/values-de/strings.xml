@@ -134,4 +134,11 @@
         <item quantity="one">%1$d Objekt wird endgültig gelöscht.</item>
         <item quantity="other">%1$d Objekte werden endgültig gelöscht.</item>
     </plurals>
+    <string name="explorer_command_undo_trash">In Papierkorb legen widerrufen</string>
+    <string name="explorer_trash_read_only">Im Papierkorb · nur lesen</string>
+    <string name="explorer_trash_preview">Seiten anzeigen</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="one">%1$d Objekt endgültig löschen?</item>
+        <item quantity="other">%1$d Objekte endgültig löschen?</item>
+    </plurals>
 </resources>

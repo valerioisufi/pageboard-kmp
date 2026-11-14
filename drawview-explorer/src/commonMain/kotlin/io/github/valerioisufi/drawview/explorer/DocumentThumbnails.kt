@@ -103,6 +103,26 @@ public class DocumentThumbnails(
         }
     }
 
+    /**
+     * The page at [index] of the document [documentId] drawn [widthPx] wide, as the editor draws
+     * it, or `null` past its last page or when it cannot be read. Not kept: for a preview (see
+     * `TrashPreview`), which keeps the pages it shows.
+     */
+    public suspend fun page(documentId: String, index: Int, widthPx: Int): ImageBitmap? = mutex.withLock {
+        rendering++
+        try {
+            val page = documents.store.loadPage(documentId, index) ?: return@withLock null
+            withContext(Dispatchers.Default) { drawPage(page.content, page.resources, widthPx) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            println("DrawView: cannot draw the page $index of $documentId: ${e.message}")
+            null
+        } finally {
+            rendering--
+        }
+    }
+
     private fun remembered(documentId: String, modifiedAt: Long, widthPx: Int): ImageBitmap? {
         val thumbnail = memory.remove(documentId) ?: return null
         memory[documentId] = thumbnail

@@ -127,4 +127,10 @@
     <plurals name="explorer_trash_empty_description">
         <item quantity="other">%1$d 項目が完全に削除されます。</item>
     </plurals>
+    <string name="explorer_command_undo_trash">ゴミ箱への移動を取り消す</string>
+    <string name="explorer_trash_read_only">ゴミ箱内・読み取り専用</string>
+    <string name="explorer_trash_preview">ページを表示</string>
+    <plurals name="explorer_trash_delete_forever_many">
+        <item quantity="other">%1$d 項目を完全に削除しますか?</item>
+    </plurals>
 </resources>

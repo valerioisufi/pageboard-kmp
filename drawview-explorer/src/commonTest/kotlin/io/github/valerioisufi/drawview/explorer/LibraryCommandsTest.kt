@@ -212,7 +212,7 @@ class LibraryCommandsTest {
 
         commands.deleteForGood(viewModel.trash.single())
         val asked = assertIs<LibraryDialog.DeleteForGood>(shown.dialog)
-        viewModel.deleteForGood(asked.item)
+        viewModel.deleteForGood(asked.items)
         assertTrue(viewModel.trash.isEmpty())
 
         viewModel.showFolder(null)
@@ -236,5 +236,86 @@ class LibraryCommandsTest {
         assertTrue(viewModel.selectionMode)
         viewModel.deleteFiles(listOf(viewModel.item("B")))
         assertFalse(viewModel.selectionMode)
+    }
+
+    @Test
+    fun severalItemsOfTheTrashAreSelectedRestoredAndDeletedForGood() = runTest {
+        val (viewModel, pair) = library()
+        val (commands, shown) = pair
+        for (name in listOf("A", "B", "C", "D")) viewModel.createFile(FileType.FILE, name)
+        for (name in listOf("A", "B", "C", "D")) viewModel.deleteFiles(listOf(viewModel.item(name)))
+        viewModel.showSection(FileExplorerViewModel.Section.TRASH)
+        val byName = viewModel.trash.associateBy { it.name }
+        assertFalse(viewModel.selectingTrash)
+        assertFalse(commands.delete.isEnabled(), "nothing selected in the trash")
+
+        viewModel.toggleTrash(byName.getValue("A"))
+        viewModel.toggleTrash(byName.getValue("C"))
+        assertTrue(viewModel.selectingTrash)
+        assertEquals(setOf("A", "C"), viewModel.selectedTrash.map { it.name }.toSet())
+        viewModel.toggleTrash(byName.getValue("A"))
+        assertEquals(setOf("C"), viewModel.selectedTrash.map { it.name }.toSet())
+        // A range from the last one toggled (A, deselected) to C, in the order shown
+        viewModel.selectTrashRange(byName.getValue("C"))
+        val order = viewModel.shownTrash.map { it.name }
+        val (from, to) = listOf(order.indexOf("A"), order.indexOf("C")).sorted()
+        assertEquals(order.subList(from, to + 1).toSet(), viewModel.selectedTrash.map { it.name }.toSet())
+        commands.selectAll.perform()
+        assertEquals(4, viewModel.trashSelection.size)
+
+        viewModel.restore(viewModel.selectedTrash.filter { it.name in setOf("A", "B") })
+        assertEquals(setOf("C", "D"), viewModel.trash.map { it.name }.toSet())
+        assertEquals(setOf("C", "D"), viewModel.selectedTrash.map { it.name }.toSet(), "what is restored leaves the selection")
+
+        // Delete (Backspace) asks once for all of them
+        commands.delete.perform()
+        val asked = assertIs<LibraryDialog.DeleteForGood>(shown.dialog)
+        assertEquals(setOf("C", "D"), asked.items.map { it.name }.toSet())
+        viewModel.deleteForGood(asked.items)
+        assertTrue(viewModel.trash.isEmpty())
+        assertFalse(viewModel.selectingTrash)
+
+        // Leaving the trash leaves its selection
+        viewModel.showFolder(null)
+        viewModel.deleteFiles(listOf(viewModel.item("A")))
+        viewModel.showSection(FileExplorerViewModel.Section.TRASH)
+        viewModel.toggleTrash(viewModel.trash.single())
+        viewModel.showFolder(null)
+        assertFalse(viewModel.selectingTrash)
+    }
+
+    @Test
+    fun undoPutsBackWhatWasMovedToTheTrashLast() = runTest {
+        val (viewModel, pair) = library()
+        val (commands, _) = pair
+        viewModel.createFile(FileType.FILE, "A")
+        viewModel.createFile(FileType.FILE, "B")
+        assertFalse(commands.undoTrash.isEnabled())
+        viewModel.deleteFiles(listOf(viewModel.item("A")))
+        viewModel.deleteFiles(listOf(viewModel.item("B")))
+        // Told, then gone: ⌘Z still puts it back
+        viewModel.trashNotice?.let { viewModel.trashNoticeShown(it) }
+        assertTrue(commands.undoTrash.isEnabled())
+        commands.undoTrash.perform()
+        assertEquals(listOf("A"), viewModel.trash.map { it.name })
+        assertEquals(listOf("B"), viewModel.currentDirectoryFiles.map { it.name })
+        // Only the last move
+        assertFalse(commands.undoTrash.isEnabled())
+
+        // The Undo of the snackbar ends it too
+        viewModel.deleteFiles(listOf(viewModel.item("B")))
+        viewModel.undoTrash(viewModel.trashNotice!!)
+        assertFalse(commands.undoTrash.isEnabled())
+    }
+
+    @Test
+    fun aDocumentOfTheTrashLeavesThePreviewWhenItLeavesTheTrash() = runTest {
+        val (viewModel, _) = library()
+        viewModel.createFile(FileType.FILE, "A")
+        viewModel.deleteFiles(listOf(viewModel.item("A")))
+        viewModel.showSection(FileExplorerViewModel.Section.TRASH)
+        viewModel.previewed = viewModel.trash.single()
+        viewModel.restore(viewModel.trash.single())
+        assertNull(viewModel.previewed)
     }
 }
