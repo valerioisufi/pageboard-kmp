@@ -18,7 +18,7 @@ final class io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl : io
 }
 
 final class io.github.valerioisufi.drawview.store.room/RoomDocumentStore : io.github.valerioisufi.drawview.store/DocumentStore, io.github.valerioisufi.drawview.store/PreferenceStore { // io.github.valerioisufi.drawview.store.room/RoomDocumentStore|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store.room.db/DrawDatabase, io.github.valerioisufi.drawview.model/StrokeModeller = ...) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.drawview.store.room.db.DrawDatabase;io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store.room.db/DrawDatabase, io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.drawview.store.room.db.DrawDatabase;io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
 
     final val documents // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents|{}documents[0]
         final fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/DocumentSummary>> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents.<get-documents>|<get-documents>(){}[0]
@@ -61,13 +61,6 @@ final class io.github.valerioisufi.drawview.store.room/RoomDocumentStore : io.gi
     final suspend fun trashFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.trashFolder|trashFolder(kotlin.String){}[0]
     final suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.updateLastOpened|updateLastOpened(kotlin.String){}[0]
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.versionVector|versionVector(kotlin.String){}[0]
-}
-
-final object io.github.valerioisufi.drawview.store.room/DrawViewStore { // io.github.valerioisufi.drawview.store.room/DrawViewStore|null[0]
-    final val default // io.github.valerioisufi.drawview.store.room/DrawViewStore.default|{}default[0]
-        final fun <get-default>(): io.github.valerioisufi.drawview.store.room/RoomDocumentStore // io.github.valerioisufi.drawview.store.room/DrawViewStore.default.<get-default>|<get-default>(){}[0]
-    final val documents // io.github.valerioisufi.drawview.store.room/DrawViewStore.documents|{}documents[0]
-        final fun <get-documents>(): io.github.valerioisufi.drawview.store/OpenDocuments // io.github.valerioisufi.drawview.store.room/DrawViewStore.documents.<get-documents>|<get-documents>(){}[0]
 }
 
 final fun io.github.valerioisufi.drawview.store.room.db/createDrawDatabase(androidx.room/RoomDatabase.Builder<io.github.valerioisufi.drawview.store.room.db/DrawDatabase> = ...): io.github.valerioisufi.drawview.store.room.db/DrawDatabase // io.github.valerioisufi.drawview.store.room.db/createDrawDatabase|createDrawDatabase(androidx.room.RoomDatabase.Builder<io.github.valerioisufi.drawview.store.room.db.DrawDatabase>){}[0]

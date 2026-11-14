@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.store.room.repository
 
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
-import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
@@ -73,7 +72,7 @@ import kotlinx.serialization.json.Json
 internal class DrawDocumentRepository(
     val database: DrawDatabase,
     /** Models the strokes loaded from their inputs. */
-    private val strokeModeller: StrokeModeller = InkStrokeModeller
+    private val strokeModeller: StrokeModeller
 ) : DocumentPersistence {
 
     private val documentDao = database.documentDao()

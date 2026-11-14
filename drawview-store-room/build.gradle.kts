@@ -11,8 +11,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-store"))
-            // The strokes loaded modeled as the editor draws them
-            implementation(project(":drawview-ink"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.room.runtime)
@@ -21,6 +19,8 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(project(":drawview-store-testing"))
+            // The strokes loaded modeled as the editor draws them
+            implementation(project(":drawview-ink"))
             implementation(libs.kotlinx.coroutines.test)
         }
         jvmTest.dependencies {

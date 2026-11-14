@@ -23,6 +23,8 @@ kotlin {
         jvmTest.dependencies {
             // The documents in Room, as in the applications (OfflineWorkBenchmark)
             implementation(project(":drawview-store-room"))
+            // The strokes of the store modeled as the applications model them
+            implementation(project(":drawview-ink"))
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
         }

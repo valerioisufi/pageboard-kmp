@@ -54,7 +54,6 @@ import io.github.valerioisufi.drawview.search.MutableIndexingConditions
 import io.github.valerioisufi.drawview.search.ui.ContentSearch
 import io.github.valerioisufi.drawview.search.ui.rememberContentSearch
 import io.github.valerioisufi.drawview.search.ui.settingsAction
-import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.sync.iroh.IrohInternet
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
@@ -113,7 +112,7 @@ fun PencilNotesApp(
         )
         // The documents of PencilNotes, in its data directory: those open are shared by the library,
         // the editor, the collaboration and the export
-        val documents = DrawViewStore.documents
+        val documents = PencilNotesData.documents
         // Lecture recording, followed by Gemini or a local model: it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
         // The documents shared with the devices of the local network, with their lectures, and over
@@ -281,7 +280,7 @@ fun PencilNotesDocumentWindow(
     agents: PencilNotesAgents? = null
 ) {
     PencilNotesTheme {
-        val documents = DrawViewStore.documents
+        val documents = PencilNotesData.documents
         val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
         // (the search, made after the engines it reads the PDFs with, is given to them once made)
         val contentSearch = remember { mutableStateOf<ContentSearch?>(null) }

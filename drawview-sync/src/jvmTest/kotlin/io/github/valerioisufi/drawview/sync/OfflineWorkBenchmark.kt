@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
 import androidx.room.Room
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
@@ -52,7 +53,7 @@ class OfflineWorkBenchmark {
                     Room.databaseBuilder<DrawDatabase>(name = File(folder, "$name.db").absolutePath)
                 } ?: getInMemoryDatabaseBuilder()
             )
-        )
+        , InkStrokeModeller)
         val documents = OpenDocuments(store, Dispatchers.Default.limitedParallelism(1), scope)
         val engine = SyncEngine(documents, StoreSharedDocuments(store), scope, { name }, NoFiles)
         val transport = network.transport(name)

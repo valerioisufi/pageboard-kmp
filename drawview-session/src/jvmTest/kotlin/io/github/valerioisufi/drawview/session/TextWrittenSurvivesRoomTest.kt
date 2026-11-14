@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.room.Room
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -53,7 +54,7 @@ class TextWrittenSurvivesRoomTest {
         file.parentFile.mkdirs()
         // What dies with the process: its connection, the writes of the documents open
         val process = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val store = RoomDocumentStore(database(file))
+        val store = RoomDocumentStore(database(file), InkStrokeModeller)
         val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
         val documents = OpenDocuments(store, main, process)
         val viewModel = DocumentEditorViewModel(documents)
@@ -76,7 +77,7 @@ class TextWrittenSurvivesRoomTest {
         process.cancel()
 
         // Another process, on the same file
-        val again = RoomDocumentStore(database(file))
+        val again = RoomDocumentStore(database(file), InkStrokeModeller)
         val document = assertNotNull(again.loadDocument(documentId))
         assertEquals(listOf(text), document.pages.single().texts.map { it.text })
     }

@@ -22,6 +22,8 @@ kotlin {
         jvmTest.dependencies {
             // The benchmark of the indexer, on the store of the applications (docs/performance.md)
             implementation(project(":drawview-store-room"))
+            // The strokes of the store modeled as the applications model them
+            implementation(project(":drawview-ink"))
             implementation(project(":drawview-store-testing"))
             implementation(libs.androidx.room.runtime)
         }

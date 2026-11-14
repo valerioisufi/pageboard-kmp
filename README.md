@@ -23,14 +23,20 @@ The repository also contains a [sample application](./sample) showing how to bui
 * [`/drawview-export`](./drawview-export) exports the documents (see [docs/export.md](./docs/export.md)): a PDF of the pages, written with PDFium (the pages of the imported PDFs copied with their vectors and text, the marks of their text as annotations, the strokes as vector outlines, the texts as images with their text searchable), or the image of a page (PNG); [`/drawview-export-ui`](./drawview-export-ui) is "Export" on a document of the library and in the editor (`DocumentExportUi`).
 * [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
 
-A minimal application is a theme around `DocumentLibrary`, given the documents of its store:
+A minimal application is a theme around `DocumentLibrary`, given the documents of its store, which
+it opens once per process:
 
 ```kotlin
+// The documents in Room, in the data directory of the application (drawview-store-room), their
+// strokes modeled by Google Ink (drawview-ink)
+object MyNotes {
+    val documents by lazy { OpenDocuments(RoomDocumentStore(createDrawDatabase(), InkStrokeModeller)) }
+}
+
 @Composable
 fun App() {
     DrawViewTheme {
-        // The documents in Room, in the data directory of the application (drawview-store-room)
-        DocumentLibrary(title = { Text("My Notes") }, documents = DrawViewStore.documents, modifier = Modifier.fillMaxSize())
+        DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, modifier = Modifier.fillMaxSize())
     }
 }
 ```

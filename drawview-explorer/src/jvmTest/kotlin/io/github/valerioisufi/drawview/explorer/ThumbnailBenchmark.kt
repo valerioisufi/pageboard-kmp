@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.explorer
 
 import androidx.room.Room
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
@@ -36,7 +37,7 @@ class ThumbnailBenchmark {
         val root = File(checkNotNull(System.getProperty("drawview.dataDir")), "benchmarks/${newElementId()}")
         root.mkdirs()
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(name = File(root, "notes.db").absolutePath))
-        val store = RoomDocumentStore(database)
+        val store = RoomDocumentStore(database, InkStrokeModeller)
         val notebook = SyntheticDocuments.notebook(pages = 50, strokesPerPage = 600, textsPerPage = 2, removedFraction = 0.1f)
         store.insertDocument(notebook)
         val documents = OpenDocuments(store, Dispatchers.Default.limitedParallelism(1))

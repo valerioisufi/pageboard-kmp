@@ -12,7 +12,8 @@ public expect fun getInMemoryDatabaseBuilder(): RoomDatabase.Builder<DrawDatabas
 
 /**
  * Opens the database of [builder] (by default, the file of the data directory of the
- * application) with its migrations: the documents are never dropped.
+ * application) with its migrations: the documents are never dropped. Room must not open the same
+ * file more than once: the application opens it once per process and keeps it.
  */
 public fun createDrawDatabase(
     builder: RoomDatabase.Builder<DrawDatabase> = getDatabaseBuilder()
@@ -24,11 +25,4 @@ public fun createDrawDatabase(
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
-}
-
-/**
- * Process-wide database instance: Room must not open the same file more than once.
- */
-internal object DrawViewDatabase {
-    val instance: DrawDatabase by lazy { createDrawDatabase() }
 }

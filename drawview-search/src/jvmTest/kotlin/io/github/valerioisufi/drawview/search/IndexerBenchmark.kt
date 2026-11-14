@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.search
 
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -27,7 +28,7 @@ class IndexerBenchmark {
     @Test
     fun aPassAfterAStroke() = runBlocking {
         val database = createDrawDatabase(getInMemoryDatabaseBuilder())
-        val store = RoomDocumentStore(database)
+        val store = RoomDocumentStore(database, InkStrokeModeller)
         repeat(LIBRARY_SIZE) {
             store.insertDocument(SyntheticDocuments.notebook(pages = 4, strokesPerPage = 150, textsPerPage = 3, title = "Note $it", seed = it))
         }

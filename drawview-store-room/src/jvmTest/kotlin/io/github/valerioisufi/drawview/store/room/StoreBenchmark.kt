@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.store.room
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -47,7 +48,7 @@ class StoreBenchmark {
             .setDriver(driver)
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
-        store = RoomDocumentStore(database)
+        store = RoomDocumentStore(database, InkStrokeModeller)
     }
 
     @AfterTest

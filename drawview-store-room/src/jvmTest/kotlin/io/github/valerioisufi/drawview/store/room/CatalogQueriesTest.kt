@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.store.room
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -42,7 +43,7 @@ class CatalogQueriesTest {
             .setDriver(driver)
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
-        val store = RoomDocumentStore(database)
+        val store = RoomDocumentStore(database, InkStrokeModeller)
         repeat(3) { store.insertDocument(SyntheticDocuments.notebook(pages = 2, strokesPerPage = 5, title = "Note $it", seed = it)) }
         val notebook = SyntheticDocuments.notebook(pages = 2, strokesPerPage = 5, title = "Written")
         store.insertDocument(notebook)

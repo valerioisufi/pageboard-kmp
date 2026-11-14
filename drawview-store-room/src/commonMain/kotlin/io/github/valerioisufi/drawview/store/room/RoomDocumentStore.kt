@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.store.room
 
-import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
@@ -14,12 +13,10 @@ import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.store.LoadedPage
-import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.store.room.db.DocumentEntity
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
-import io.github.valerioisufi.drawview.store.room.db.DrawViewDatabase
 import io.github.valerioisufi.drawview.store.room.db.FolderEntity
 import io.github.valerioisufi.drawview.store.room.db.SharedDocumentEntity
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
@@ -38,11 +35,13 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 
 /**
- * [DocumentStore] backed by the Room database (Android, desktop and iOS).
+ * [DocumentStore] backed by the Room database (Android, desktop and iOS), its strokes modeled by
+ * [strokeModeller] when they are loaded (the one of the editor, e.g. `InkStrokeModeller` of
+ * `drawview-ink`). One per database and per process: the application creates it once.
  */
 public class RoomDocumentStore(
     internal val database: DrawDatabase,
-    override val strokeModeller: StrokeModeller = InkStrokeModeller
+    override val strokeModeller: StrokeModeller
 ) : DocumentStore, PreferenceStore {
     internal val repository = DrawDocumentRepository(database, strokeModeller)
     internal val fileRepository = FileRepository(database)
@@ -187,19 +186,6 @@ internal fun FolderEntity.toSummary() = FolderSummary(
     createdAt = createdAt,
     modifiedAt = modifiedAt
 )
-
-/**
- * Process-wide document store: the database must not be opened more than once.
- */
-public object DrawViewStore {
-    public val default: RoomDocumentStore by lazy { RoomDocumentStore(DrawViewDatabase.instance) }
-
-    /**
-     * The documents of [default] being changed (see [OpenDocuments]), on the main thread: shared
-     * by the editor and the synchronization with the other devices.
-     */
-    public val documents: OpenDocuments by lazy { OpenDocuments(default) }
-}
 
 /** How long a query of the library keeps running after its last collector left (a screen shown again). */
 private const val STOP_AFTER_MS = 5_000L

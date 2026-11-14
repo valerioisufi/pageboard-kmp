@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.store.room
 
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -38,10 +39,10 @@ import io.github.valerioisufi.drawview.store.room.db.*
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
+import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import io.github.valerioisufi.drawview.store.testing.checkOutline
 import io.github.valerioisufi.drawview.store.testing.checkPageFingerprint
 import io.github.valerioisufi.drawview.store.testing.checkTrash
-import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -54,7 +55,7 @@ class DrawDatabaseTest {
     @BeforeTest
     fun setup() {
         database = createDrawDatabase(getInMemoryDatabaseBuilder())
-        repository = DrawDocumentRepository(database)
+        repository = DrawDocumentRepository(database, InkStrokeModeller)
     }
 
     @AfterTest
@@ -362,7 +363,7 @@ class DrawDatabaseTest {
 
     @Test
     fun thePreferencesAreKeptAsTextByKey() = runTest {
-        val store = RoomDocumentStore(database)
+        val store = RoomDocumentStore(database, InkStrokeModeller)
         assertNull(store.preference("drawview.editor"))
         store.setPreference("drawview.editor", "{\"isStylusOnlyMode\":true}")
         store.setPreference("other", "1")
@@ -390,27 +391,27 @@ class DrawDatabaseTest {
 
     @Test
     fun testFolderOperations() = runTest {
-        checkFolderOperations(RoomDocumentStore(database))
+        checkFolderOperations(RoomDocumentStore(database, InkStrokeModeller))
     }
 
     @Test
     fun theTrashIsKept() = runTest {
-        checkTrash(RoomDocumentStore(database))
+        checkTrash(RoomDocumentStore(database, InkStrokeModeller))
     }
 
     @Test
     fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
-        checkOutline(RoomDocumentStore(database))
+        checkOutline(RoomDocumentStore(database, InkStrokeModeller))
     }
 
     @Test
     fun theFingerprintOfAPageChangesWithIt() = runTest {
-        checkPageFingerprint(RoomDocumentStore(database))
+        checkPageFingerprint(RoomDocumentStore(database, InkStrokeModeller))
     }
 
     @Test
     fun anOperationFailingLeavesNoneOfItsRows() = runTest {
-        val store = RoomDocumentStore(database)
+        val store = RoomDocumentStore(database, InkStrokeModeller)
         val document = store.createDocument("All or none")
         val page = document.pages.single()
         val modifiedAt = store.documents.first().single().modifiedAt
@@ -442,7 +443,7 @@ class DrawDatabaseTest {
 
     @Test
     fun theProofsOfTheOperationsAreKept() = runTest {
-        checkOperationProofs(RoomDocumentStore(database)) { RoomDocumentStore(database) }
+        checkOperationProofs(RoomDocumentStore(database, InkStrokeModeller)) { RoomDocumentStore(database, InkStrokeModeller) }
     }
 
     @Test

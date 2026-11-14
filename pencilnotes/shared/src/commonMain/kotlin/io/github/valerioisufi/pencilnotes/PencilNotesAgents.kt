@@ -17,7 +17,6 @@ import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.newResourcePath
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.ui.ContentSearch
-import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import kotlin.concurrent.Volatile
@@ -55,7 +54,7 @@ class PencilNotesAgents(
     private val editors = SessionAgentEditors(openDocument = { reviews.trySend(it) })
 
     val agents: ExternalAgents = ExternalAgents(
-        documents = DrawViewStore.documents,
+        documents = PencilNotesData.documents,
         engines = AgentEngines(
             editors = editors,
             search = ::search,
@@ -101,7 +100,7 @@ class PencilNotesAgents(
         val hash = Sha256.of(bytes)
         val kept = if (!keep) path else {
             // The same content is kept once, as the editor does
-            DrawViewStore.documents.fileWithContent(hash)?.takeIf { PlatformFiles.exists(it) }
+            PencilNotesData.documents.fileWithContent(hash)?.takeIf { PlatformFiles.exists(it) }
                 ?: newResourcePath("img", extensionOf(path)).takeIf { PlatformFiles.writeBytes(it, bytes) }
                 ?: return@withContext null
         }

@@ -41,7 +41,7 @@ import kotlinx.coroutines.withContext
  *   the library.
  * @param documents the documents of the library (see [OpenDocuments.store]) and those being
  *   changed, shared with the synchronization with the other devices (see `drawview-sync`): one
- *   per store in an application (e.g. `DrawViewStore.documents` of `drawview-store-room`).
+ *   per store in an application (e.g. the one of the store the application opens once).
  * @param actions actions of the application in the library (its bar or its navigation pane): the
  *   About & Licenses dialog by default.
  * @param fullScreenEditor not used any more: the editor gives itself the room of the system bars

@@ -19,7 +19,6 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
-import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
@@ -56,8 +55,8 @@ fun App(
         )
     }
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }
-    // The documents of the sample, in its data directory (see DrawViewStore)
-    val documents = DrawViewStore.documents
+    // The documents of the sample, in its data directory (see SampleData)
+    val documents = SampleData.documents
     DrawViewTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
@@ -93,7 +92,7 @@ fun SampleDocumentWindow(
         )
     }
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }
-    val documents = DrawViewStore.documents
+    val documents = SampleData.documents
     DrawViewTheme {
         val editorViewModel = viewModel(key = "sample-doc-$documentId") {
             DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {

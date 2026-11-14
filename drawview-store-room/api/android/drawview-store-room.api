@@ -1,12 +1,5 @@
-public final class io/github/valerioisufi/drawview/store/room/DrawViewStore {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/room/DrawViewStore;
-	public final fun getDefault ()Lio/github/valerioisufi/drawview/store/room/RoomDocumentStore;
-	public final fun getDocuments ()Lio/github/valerioisufi/drawview/store/OpenDocuments;
-}
-
 public final class io/github/valerioisufi/drawview/store/room/RoomDocumentStore : io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/room/db/DrawDatabase;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/room/db/DrawDatabase;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun closeDocument (Ljava/lang/String;)V
 	public fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

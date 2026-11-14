@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
@@ -13,15 +14,15 @@ import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.store.room.db.DRAW_DATABASE_MIGRATIONS
+import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.Migration18To19
 import io.github.valerioisufi.drawview.store.room.db.Migration19To20
 import io.github.valerioisufi.drawview.store.room.db.Migration20To21
 import io.github.valerioisufi.drawview.store.room.db.Migration21To22
 import io.github.valerioisufi.drawview.store.room.db.Migration22To23
 import io.github.valerioisufi.drawview.store.room.db.Migration23To24
-import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
-import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
+import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.*
@@ -75,7 +76,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
             assertEquals("Lectures", document.title)
             assertEquals(listOf(PAGE), document.pages.map { it.id })
@@ -113,7 +114,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             assertEquals(mapOf("bob" to 1L), store.versionVector(DOCUMENT))
             val operation = store.operationsAfter(DOCUMENT, emptyMap()).single()
             assertEquals(OperationId("bob", 1), operation.id)
@@ -178,7 +179,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val page = assertNotNull(RoomDocumentStore(database).loadDocument(DOCUMENT)).pages.single()
+            val page = assertNotNull(RoomDocumentStore(database, InkStrokeModeller).loadDocument(DOCUMENT)).pages.single()
             // The look it had: each kind in its layer
             assertEquals(listOf("pdf", "markup", "image", "custom", "text", "stroke"), page.snapshotContent().paintOrder.map { it.id })
             for (element in page.elements()) assertEquals(element.placed, element.ordered, element.id)
@@ -240,7 +241,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             val page = assertNotNull(store.loadDocument(DOCUMENT)).pages.single()
             val upright = page.texts.single { it.id == "upright" }
             assertEquals(10f to 20f, upright.x to upright.y, "an upright text where it was")
@@ -292,7 +293,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             val summary = store.documents.first().single()
             assertEquals("Lectures" to FOLDER, summary.name to summary.folderId)
             assertTrue(summary.isShared)
@@ -342,7 +343,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
             val text = document.pages.single().texts.single()
             assertEquals("- limits\n  of a function" to null, text.text to text.background, "kept, without a fill")
@@ -350,7 +351,7 @@ class DrawDatabaseMigrationTest {
 
             // A fill kept and read again
             text.background = 0xFFFFF1B8.toInt()
-            DrawDocumentRepository(database).saveText(document.pages.single(), text)
+            DrawDocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals(0xFFFFF1B8.toInt(), again.background)
         } finally {
@@ -383,7 +384,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            val store = RoomDocumentStore(database)
+            val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
             val text = document.pages.single().texts.single()
             assertEquals(Triple("a long note", null, false), Triple(text.text, text.next, text.continuesLine), "kept, in no chain")
@@ -391,7 +392,7 @@ class DrawDatabaseMigrationTest {
 
             text.next = "following"
             text.continuesLine = true
-            DrawDocumentRepository(database).saveText(document.pages.single(), text)
+            DrawDocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals("following" to true, again.next to again.continuesLine)
         } finally {
@@ -409,7 +410,7 @@ class DrawDatabaseMigrationTest {
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
-            assertFails { RoomDocumentStore(database).loadDocument(DOCUMENT) }
+            assertFails { RoomDocumentStore(database, InkStrokeModeller).loadDocument(DOCUMENT) }
         } finally {
             database.close()
         }
