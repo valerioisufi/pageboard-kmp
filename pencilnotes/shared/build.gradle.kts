@@ -64,6 +64,12 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
+        jvmTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.compose.uiTest)
+            // The main thread of the services, as in the application of the desktop
+            implementation(libs.kotlinx.coroutinesSwing)
+        }
     }
 }
 

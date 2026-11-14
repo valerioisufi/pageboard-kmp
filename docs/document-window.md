@@ -97,12 +97,14 @@ The responsibilities are assigned following the GRASP principles.
 |------|---------|--------|
 | 1 | The libraries: `createCollaboration` + `CollaborationAccess` (`rememberCollaboration` goes), `createContentSearch` + `ContentSearch.close()`; tests | done |
 | 2 | `PencilNotesServices`: one set of services per process, started and stopped by the application; the library window on it | done |
-| 3 | The secondary window with the editor of the application and the dialogs in one window; run on the desktop | to do |
+| 3 | The secondary window with the editor of the application and the dialogs in one window; run on the desktop | done |
 
 One commit per step on `feat/document-window`, each with its ABI dumps updated on purpose and the
-checks of `CLAUDE.md`. Step 3 is checked by running the desktop of PencilNotes on a scratch data
-directory: a document in its own window with the lecture button and the sharing, the library
-closed and opened again while the document stays open.
+checks of `CLAUDE.md`. Step 3 is checked by `DocumentWindowTest` (`pencilnotes/shared`, on the data
+directory of the tests): a document in its own window has the button of the lecture assistant and
+the action Share (the test fails on the window of before). The desktop of PencilNotes starts on a
+scratch data directory; opening a document window and closing the library are left to a test by
+hand.
 
 ## Decisions
 

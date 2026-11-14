@@ -154,7 +154,7 @@ Variations).
 | 2 | A. The `textBox` hook of the extensions (what the suggestions while writing will use) | 1 | done (`docs/text-box-hook.md`) |
 | 3 | B. The store and the sessions built by the applications; `store-room` without `ink` | – | done (`docs/instances.md`) |
 | 4 | B. `LatexEngine`, `LectureRecordings`, `ImageCache` as instances | 3 | done (`docs/engine-instances.md`) |
-| 5 | D. The secondary window of PencilNotes with the assistant, the collaboration, the search | 3 | in progress (`docs/document-window.md`) |
+| 5 | D. The secondary window of PencilNotes with the assistant, the collaboration, the search | 3 | done (`docs/document-window.md`) |
 | 6 | C. `SyncEngine` split (plus the resource downloads on disk, D) | – | to do |
 | 7 | C. `DocumentTools` split | – | to do |
 | 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | to do |

@@ -174,7 +174,9 @@ private fun runApplication(agents: PencilNotesAgents) {
                             commandHost = docCommands,
                             onTitleChange = { docTitle = it },
                             onModifiedChange = { docModified = it },
-                            agents = agents
+                            agents = agents,
+                            // The dialogs of the application in the library, else in the first document window
+                            showsApplicationDialogs = !windowManager.isLibraryOpen && windowManager.openDocumentIds.firstOrNull() == documentId
                         )
                     }
                 }

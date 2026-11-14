@@ -81,7 +81,11 @@ fun PencilNotesApp(
     onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
     agents: PencilNotesAgents? = null
 ) {
-    PencilNotesTheme {
+    // The documents of PencilNotes, in its data directory: those open are shared by the library,
+    // the editors, the collaboration and the export; what works on them is shared by the windows
+    val documents = PencilNotesData.documents
+    val services = PencilNotesServices
+    PencilNotesWindow(commandHost, agents, showsApplicationDialogs = true) {
         val aboutAppInfo = AboutAppInfo(
             name = stringResource(Res.string.app_name),
             version = stringResource(Res.string.about_version),
@@ -90,59 +94,70 @@ fun PencilNotesApp(
             mark = { PencilNotesMark(size = 64.dp) },
             nameFontFamily = cherryBombOneFontFamily()
         )
-        // The documents of PencilNotes, in its data directory: those open are shared by the library,
-        // the editors, the collaboration and the export
-        val documents = PencilNotesData.documents
-        // What works on them, shared by the windows
-        val services = PencilNotesServices
-        val lectureAssistant = services.lectureAssistant
-        val collaboration = services.collaboration
-        val export = services.export
-        val search = services.search
-        val engines = services.engines
-        LectureMicrophone(lectureAssistant)
-        CollaborationAccess(collaboration)
-        AgentPages(agents, engines)
-        SideEffect { agents?.contentSearch = search }
         val editorExtension = remember(agents) { services.editorExtension(agents) }
-        // The dialogs of the application adapt like the library, and its commands reach the window:
-        // one root for all of them
+        CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
+            DocumentLibrary(
+                title = { PencilNotesBrand() },
+                documents = documents,
+                sessions = PencilNotesData.sessions,
+                actions = listOfNotNull(services.collaboration.joinAction(), services.search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
+                editorExtension = editorExtension,
+                itemsActions = listOf(services.export.libraryAction),
+                tags = listOf(services.lectureTag),
+                engines = services.engines,
+                thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), services.engines),
+                search = services.search,
+                libraryOverlay = { openDocument ->
+                    LectureRecordingIndicator(
+                        assistant = services.lectureAssistant,
+                        onOpenDocument = openDocument,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
+                    )
+                    // The exports going on, above the button of a new note on the phones
+                    services.export.StatusHost(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(start = 16.dp, end = 16.dp, bottom = if (currentAdaptiveInfo().window.isCompact) 88.dp else 16.dp)
+                    )
+                },
+                onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
+                clipboard = editorClipboard,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+/**
+ * A window of PencilNotes showing [content]: its theme, its dialogs and commands (one adaptive
+ * root, the commands reaching the window through [commandHost]), and the services of the
+ * application bound to it (the microphone and the local network asked from it, the pages of the
+ * documents given to the external models [agents]). The dialogs of the application (the
+ * invitations, the join requests, the lectures received) are shown by one window only, the one
+ * [showsApplicationDialogs].
+ */
+@Composable
+private fun PencilNotesWindow(
+    commandHost: CommandHost,
+    agents: PencilNotesAgents?,
+    showsApplicationDialogs: Boolean,
+    content: @Composable () -> Unit
+) {
+    val services = PencilNotesServices
+    PencilNotesTheme {
+        LectureMicrophone(services.lectureAssistant)
+        CollaborationAccess(services.collaboration)
+        AgentPages(agents, services.engines)
+        SideEffect { agents?.contentSearch = services.search }
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
             CommandRoot(host = commandHost) {
-                CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
-                    CollaborationDialogs(collaboration)
-                    LectureDialogs(lectureAssistant)
-                    DocumentLibrary(
-                        title = { PencilNotesBrand() },
-                        documents = documents,
-                        sessions = PencilNotesData.sessions,
-                        actions = listOfNotNull(collaboration.joinAction(), search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
-                        editorExtension = editorExtension,
-                        itemsActions = listOf(export.libraryAction),
-                        tags = listOf(services.lectureTag),
-                        engines = engines,
-                        thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
-                        search = search,
-                        libraryOverlay = { openDocument ->
-                            LectureRecordingIndicator(
-                                assistant = lectureAssistant,
-                                onOpenDocument = openDocument,
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(16.dp)
-                            )
-                            // The exports going on, above the button of a new note on the phones
-                            export.StatusHost(
-                                Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(start = 16.dp, end = 16.dp, bottom = if (currentAdaptiveInfo().window.isCompact) 88.dp else 16.dp)
-                            )
-                        },
-                        onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
-                        clipboard = editorClipboard,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                if (showsApplicationDialogs) {
+                    CollaborationDialogs(services.collaboration)
+                    LectureDialogs(services.lectureAssistant)
                 }
+                content()
             }
         }
     }
@@ -191,7 +206,12 @@ private val CherryBombOneLicense = ThirdPartyLicense(
 )
 
 /**
- * A standalone document editor window for PencilNotes (multi-window desktop mode).
+ * A document of PencilNotes in a window of its own (a window of the desktop, a task of Android),
+ * with the editor of the library: the lectures, the sharing, the export, the external models
+ * [agents], and the texts placed next to the pages they are about.
+ *
+ * @param showsApplicationDialogs whether this window shows the dialogs of the application (on
+ *   the desktop, when the library is closed and this is the first document window).
  */
 @Composable
 fun PencilNotesDocumentWindow(
@@ -200,38 +220,29 @@ fun PencilNotesDocumentWindow(
     commandHost: CommandHost = remember { CommandHost() },
     onTitleChange: (String) -> Unit = {},
     onModifiedChange: (Boolean) -> Unit = {},
-    agents: PencilNotesAgents? = null
+    agents: PencilNotesAgents? = null,
+    showsApplicationDialogs: Boolean = false
 ) {
-    PencilNotesTheme {
-        val documents = PencilNotesData.documents
-        val export = PencilNotesServices.export
-        val engines = PencilNotesServices.engines
-        AgentPages(agents, engines)
-        val editorViewModel = viewModel(key = "doc-$documentId") {
-            DocumentEditorViewModel(documents, PencilNotesData.sessions, engines, clipboard = editorClipboard).apply {
-                openDocument(documentId)
-            }
+    val services = PencilNotesServices
+    val editorViewModel = viewModel(key = "doc-$documentId") {
+        DocumentEditorViewModel(PencilNotesData.documents, PencilNotesData.sessions, services.engines, clipboard = editorClipboard).apply {
+            openDocument(documentId)
         }
-        val session = editorViewModel.session
-        // The title of the window, renamed with the document (from its title, the library or
-        // another device)
-        val title = session?.controller?.document?.observe { title }?.value
-        LaunchedEffect(title) {
-            title?.let(onTitleChange)
-        }
-        // Whether the document has changes to undo, for the frame of the window
-        val modified = session?.controller?.historyManager?.canUndo == true
-        LaunchedEffect(modified) { onModifiedChange(modified) }
-        AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
-            CommandRoot(host = commandHost) {
-                if (session != null) {
-                    EditorSessionScreen(
-                        session = session,
-                        onClose = onClose,
-                        extension = agents?.let { export.editorExtension + it.editorExtension } ?: export.editorExtension
-                    )
-                }
-            }
+    }
+    val session = editorViewModel.session
+    // The title of the window, renamed with the document (from its title, the library or
+    // another device)
+    val title = session?.controller?.document?.observe { title }?.value
+    LaunchedEffect(title) {
+        title?.let(onTitleChange)
+    }
+    // Whether the document has changes to undo, for the frame of the window
+    val modified = session?.controller?.historyManager?.canUndo == true
+    LaunchedEffect(modified) { onModifiedChange(modified) }
+    PencilNotesWindow(commandHost, agents, showsApplicationDialogs) {
+        val extension = remember(agents) { services.editorExtension(agents) }
+        if (session != null) {
+            EditorSessionScreen(session = session, onClose = onClose, extension = extension)
         }
     }
 }
