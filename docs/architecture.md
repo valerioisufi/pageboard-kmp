@@ -157,7 +157,7 @@ Variations).
 | 4 | B. `LatexEngine`, `LectureRecordings`, `ImageCache` as instances | 3 | done (`docs/engine-instances.md`) |
 | 5 | D. The secondary window of PencilNotes with the assistant, the collaboration, the search | 3 | done (`docs/document-window.md`) |
 | 6 | C. `SyncEngine` split (plus the resource downloads on disk, D) | – | to do |
-| 7 | C. `DocumentTools` split | – | to do |
+| 7 | C. `DocumentTools` split | – | done (`docs/document-tools.md`) |
 | 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | to do |
 | 9 | C. `LectureAssistant`, `LecturePanel`, `EditorToolbar` split | – | to do |
 | 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` | 4 | done (`docs/vector-formulas.md`) |
