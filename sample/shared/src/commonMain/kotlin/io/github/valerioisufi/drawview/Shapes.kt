@@ -87,12 +87,12 @@ object ShapeRenderer : ElementRenderer<Shape> {
  * The button of the editor adding a shape in the middle of the page shown, each time of the next
  * kind and color.
  */
-fun shapesExtension(): EditorExtension = EditorExtension(
-    toolbarActions = { context ->
+fun shapesExtension(): EditorExtension = EditorExtension {
+    toolbarActions { context ->
         val next = remember(context) { ShapeSequence() }
         EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(context, next.next()) })
     }
-)
+}
 
 private fun addShape(context: EditorContext, shape: Shape) {
     val pageIndex = context.pages.mostVisiblePageIndex() ?: return

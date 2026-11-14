@@ -267,17 +267,17 @@ class AdaptiveScreenshotTest {
     }
 
     /** An extension with three actions in the top bar, as those of PencilNotes. */
-    private fun actionsExtension() = EditorExtension(
-        toolbarActions = {
+    private fun actionsExtension() = EditorExtension {
+        toolbarActions {
             EditorActionButton(DrawViewIcons.Sparkles, "Lecture", onClick = {})
             EditorActionButton(DrawViewIcons.UserPlus, "Share", onClick = {})
             EditorActionButton(DrawViewIcons.Share, "Export", onClick = {})
         }
-    )
+    }
 
     /** An extension with a panel named after each of [titles], open, listing a few notes. */
-    private fun panelsExtension(vararg titles: String) = EditorExtension(
-        panels = {
+    private fun panelsExtension(vararg titles: String) = EditorExtension {
+        panels {
             titles.map { title ->
                 EditorPanel(id = title, title = { title }, isOpen = { true }, onClose = {}) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -288,7 +288,7 @@ class AdaptiveScreenshotTest {
                 }
             }
         }
-    )
+    }
 
     /** Every reference window in the light theme, the phone and the desktop in the dark one too. */
     private fun forEachConfiguration(capture: (ReferenceWindow, dark: Boolean) -> Unit) {

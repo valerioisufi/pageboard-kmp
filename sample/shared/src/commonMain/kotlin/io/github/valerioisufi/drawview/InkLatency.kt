@@ -20,18 +20,18 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
  * measure on, and the report of the last stroke is shown over the canvas and printed. A measure of
  * the editor, not of an extension: the sample reads it from the editor of its session.
  */
-fun inkLatencyExtension(): EditorExtension = EditorExtension(
-    toolbarActions = { context ->
-        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@EditorExtension
+fun inkLatencyExtension(): EditorExtension = EditorExtension {
+    toolbarActions { context ->
+        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@toolbarActions
         EditorActionButton(
             DrawViewIcons.Clock,
             "Measure the latency of the ink",
             onClick = { controller.isInkLatencyMeasured = !controller.isInkLatencyMeasured },
             active = controller.isInkLatencyMeasured
         )
-    },
-    canvasOverlay = { context ->
-        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@EditorExtension
+    }
+    canvasOverlay { context ->
+        val controller = DrawViewSessions.find(context.documentId)?.controller ?: return@canvasOverlay
         val report by controller.inkLatency.collectAsState()
         LaunchedEffect(report) { report?.let { println("DrawView $it") } }
         val shown = report
@@ -49,4 +49,4 @@ fun inkLatencyExtension(): EditorExtension = EditorExtension(
             )
         }
     }
-)
+}

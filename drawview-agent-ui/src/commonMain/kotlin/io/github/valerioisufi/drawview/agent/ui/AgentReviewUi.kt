@@ -209,14 +209,14 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
     }
 
     /** What the application adds to its editors. */
-    public val editorExtension: EditorExtension = EditorExtension(
-        toolbarActions = { context ->
+    public val editorExtension: EditorExtension = EditorExtension {
+        toolbarActions { context ->
             val proposals by agents.proposals.proposals.collectAsState()
             if (proposals.any { it.documentId == context.documentId && it.isWaiting }) {
                 EditorActionButton(DrawViewIcons.Sparkles, stringResource(Res.string.agent_review_show), onClick = { openPanels += context.documentId })
             }
-        },
-        canvasOverlay = { context ->
+        }
+        canvasOverlay { context ->
             val documentId = context.documentId
             val proposals by agents.proposals.proposals.collectAsState()
             val waiting = proposals.count { it.documentId == documentId && it.isWaiting }
@@ -235,10 +235,10 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
             if (accessOf == documentId) {
                 Access(documentId, onDismiss = { accessOf = null })
             }
-        },
-        commands = { context -> listOf(accessCommand(context.documentId)) },
-        panels = { context -> listOf(reviewPanel(context.documentId, context)) }
-    )
+        }
+        commands { context -> listOf(accessCommand(context.documentId)) }
+        panels { context -> listOf(reviewPanel(context.documentId, context)) }
+    }
 
     private fun reviewPanel(documentId: String, context: EditorContext) = EditorPanel(
         id = "external_models",

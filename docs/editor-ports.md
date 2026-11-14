@@ -98,7 +98,7 @@ Variations).
 |-------|---------|--------|
 | 1 | The ports in `drawview-canvas`, implemented by the managers and given by the controller; no caller moved | done |
 | 2 | `EditorContext` of ports; the extensions of the lecture assistant, the collaboration, the agent, the export, the sample moved; `controller` internal | done |
-| 3 | `EditorExtension` as an abstract class with its builder and `CombinedExtension`; the extensions and the consumer check moved | to do |
+| 3 | `EditorExtension` as an abstract class with its builder and `CombinedExtension`; the extensions moved | done |
 | 4 | The constructors of the managers internal | to do |
 
 Each phase is one commit on `feat/editor-ports`, after the checks of `CLAUDE.md`, the screenshots
@@ -116,6 +116,9 @@ Taken alone, revertible:
   "the canvas changed", and how the editor counts it can change behind it.
 * **The ports are interfaces, the extension a class**: the editor implements the first, the others
   the second.
+* **The contributions are open properties of function types** (`toolbarActions`, …), as the
+  parameters were: the editor calls them as before, a subclass overrides the ones it gives, and the
+  builder keeps the others at their default.
 * **No port for the ink latency**: it is the sample measuring the editor.
 * **The ports are answered by small adapters** of the controller (`ControllerPorts.kt`), each
   delegating to the manager that holds the information, rather than by the managers implementing

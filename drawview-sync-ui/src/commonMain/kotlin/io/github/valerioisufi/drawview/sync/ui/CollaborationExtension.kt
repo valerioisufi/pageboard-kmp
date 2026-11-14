@@ -68,27 +68,27 @@ public fun Collaboration.editorExtension(): EditorExtension {
         section = 1,
         icon = { rememberVectorPainter(DrawViewIcons.UserPlus) }
     ) { sharing.documentId = documentId }
-    return EditorExtension(
-        toolbarActions = { context ->
+    return EditorExtension {
+        toolbarActions { context ->
             val command = remember(context) { shareCommand(context.documentId) }
             ShareAction(this@editorExtension, context.documentId, command)
-        },
-        canvasOverlay = { context ->
+        }
+        canvasOverlay { context ->
             CollaboratorsLayer(this@editorExtension, context.documentId, context.document, context.presence)
             WritingElsewhereNotice(context.presence)
             if (sharing.documentId == context.documentId) {
                 ShareDialog(this@editorExtension, context.documentId, context.document.document.title, onDismiss = { sharing.documentId = null })
             }
-        },
-        commands = { context -> listOf(shareCommand(context.documentId)) },
-        readOnlyNote = { context ->
+        }
+        commands { context -> listOf(shareCommand(context.documentId)) }
+        readOnlyNote { context ->
             // The owner decides who edits a shared document
             val memberships by memberships.collectAsState()
             val membership = memberships[context.documentId]
             val owner = membership?.takeIf { it.owner != device }?.let { it.memberOf(it.owner)?.name }
             owner?.let { stringResource(Res.string.sync_read_only_note, it) }
         }
-    )
+    }
 }
 
 /** The document whose sharing dialog the editor shows, `null` when none. */

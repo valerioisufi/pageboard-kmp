@@ -118,12 +118,12 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
      * selected in the page grid: the page on screen can also be exported alone. The sheet is shown
      * over the canvas.
      */
-    public val editorExtension: EditorExtension = EditorExtension(
-        toolbarActions = { context ->
+    public val editorExtension: EditorExtension = EditorExtension {
+        toolbarActions { context ->
             val command = remember(context) { exportCommand(context) }
             EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
-        },
-        canvasOverlay = { context ->
+        }
+        canvasOverlay { context ->
             ExportStatusHost(
                 jobs,
                 Modifier
@@ -133,10 +133,10 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
             editorExport?.takeIf { it.documentId == context.documentId }?.let {
                 ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null })
             }
-        },
-        commands = { context -> listOf(exportCommand(context)) },
-        pageGridActions = { context -> listOf(exportPagesCommand(context)) }
-    )
+        }
+        commands { context -> listOf(exportCommand(context)) }
+        pageGridActions { context -> listOf(exportPagesCommand(context)) }
+    }
 
     /**
      * The exports going on and how they went, with what can be done with their files: placed by
