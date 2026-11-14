@@ -1018,6 +1018,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/SnapManager { // i
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager : io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget { // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager|null[0]
+    final val activeTextId // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.activeTextId|{}activeTextId[0]
+        final fun <get-activeTextId>(): kotlin/String? // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.activeTextId.<get-activeTextId>|<get-activeTextId>(){}[0]
     final val chainGoesOn // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn|{}chainGoesOn[0]
         final fun <get-chainGoesOn>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn.<get-chainGoesOn>|<get-chainGoesOn>(){}[0]
     final val codeLineNumbers // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers|{}codeLineNumbers[0]

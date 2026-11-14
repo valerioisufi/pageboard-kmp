@@ -723,6 +723,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun changeColor (I)V
 	public fun changeFontSize (F)V
 	public final fun finishEditing ()V
+	public final fun getActiveTextId ()Ljava/lang/String;
 	public final fun getActiveTextPageIndex ()I
 	public fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
 	public final fun getAutoWidth ()Z

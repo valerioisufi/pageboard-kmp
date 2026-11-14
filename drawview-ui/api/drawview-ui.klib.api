@@ -485,7 +485,7 @@ final class io.github.valerioisufi.drawview.ui.extension/LibraryItemsAction { //
 }
 
 final class io.github.valerioisufi.drawview.ui.extension/TextBeingWritten { // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten|null[0]
-    constructor <init>(kotlin/String, kotlin/Int, kotlin/Int, kotlin/String) // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.<init>|<init>(kotlin.String;kotlin.Int;kotlin.Int;kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/Int, kotlin/Int, kotlin/String?) // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.<init>|<init>(kotlin.String;kotlin.Int;kotlin.Int;kotlin.String?){}[0]
 
     final val caret // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.caret|{}caret[0]
         final fun <get-caret>(): kotlin/Int // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.caret.<get-caret>|<get-caret>(){}[0]
@@ -494,7 +494,7 @@ final class io.github.valerioisufi.drawview.ui.extension/TextBeingWritten { // i
     final val source // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.source|{}source[0]
         final fun <get-source>(): kotlin/String // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.source.<get-source>|<get-source>(){}[0]
     final val textId // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.textId|{}textId[0]
-        final fun <get-textId>(): kotlin/String // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.textId.<get-textId>|<get-textId>(){}[0]
+        final fun <get-textId>(): kotlin/String? // io.github.valerioisufi.drawview.ui.extension/TextBeingWritten.textId.<get-textId>|<get-textId>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.ui.extension/TextSuggestion { // io.github.valerioisufi.drawview.ui.extension/TextSuggestion|null[0]

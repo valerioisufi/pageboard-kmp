@@ -22,13 +22,13 @@ public fun interface TextSuggester {
  * @property source the text, in the notation of the notes (`**bold**`, `$x^2$`, lists…).
  * @property caret where the caret is, an offset of [source].
  * @property pageIndex the page of the box.
- * @property textId the id of the text box.
+ * @property textId the id of the text box, `null` for a text not in the document yet.
  */
 public class TextBeingWritten(
     public val source: String,
     public val caret: Int,
     public val pageIndex: Int,
-    public val textId: String
+    public val textId: String?
 )
 
 /**

@@ -3,13 +3,12 @@ package io.github.valerioisufi.drawview.ui.editor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 
 /**
  * A suggestion shown after the end of the text being written (`docs/text-box-hook.md`), lighter,
  * not part of the text: added to its presentation, with a mapping in which each of its characters
- * stands for the end of the source, so that the caret and the selection never go in it.
+ * stands for the end of the source, so that the caret and the selection never go in it. The
+ * presentation has spans and paragraphs only (see [RichTextPresenter]): they are kept.
  */
 internal object GhostText {
     /** How much of the color of the text a suggestion has. */
@@ -19,10 +18,14 @@ internal object GhostText {
     fun <T> append(presented: PresentedText<T>, suggestion: String, color: Color): PresentedText<T> {
         if (suggestion.isEmpty()) return presented
         val shown = shownOf(suggestion)
-        val text = buildAnnotatedString {
-            append(presented.text)
-            withStyle(SpanStyle(color = color.copy(alpha = color.alpha * ALPHA))) { append(shown) }
-        }
+        val base = presented.text
+        val end = base.length + shown.length
+        // On the last line of the text: its paragraph (each line is one) goes on through the suggestion
+        val text = AnnotatedString.Builder(base.text + shown).apply {
+            base.spanStyles.forEach { addStyle(it.item, it.start, it.end) }
+            base.paragraphStyles.forEach { addStyle(it.item, it.start, if (it.end == base.length) end else it.end) }
+            addStyle(SpanStyle(color = color.copy(alpha = color.alpha * ALPHA)), base.length, end)
+        }.toAnnotatedString()
         return PresentedText(
             text = text,
             mapping = presented.mapping.withShownAtEnd(shown.length),

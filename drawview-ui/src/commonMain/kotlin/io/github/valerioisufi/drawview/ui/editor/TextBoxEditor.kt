@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -17,6 +18,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,10 +35,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -72,8 +74,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.canvasGesturesOverField
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.text.TableEditing
@@ -84,15 +86,17 @@ import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.extension.LocalTextSuggestions
+import io.github.valerioisufi.drawview.ui.extension.TextBeingWritten
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
-import io.github.valerioisufi.drawview.ui.render.TableLayout
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
 import io.github.valerioisufi.drawview.ui.render.LruCache
+import io.github.valerioisufi.drawview.ui.render.TableLayout
 import io.github.valerioisufi.drawview.ui.render.codeChips
 import io.github.valerioisufi.drawview.ui.render.toTextAlign
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -166,10 +170,25 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     // The code on the paper of its page, as the page draws it
     val paper by controller.document.observe { pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER }
     val value = editor.value
+    // The suggestion of the extensions after the end of the text (docs/text-box-hook.md)
+    val suggestions = LocalTextSuggestions.current
+    val suggestionScope = rememberCoroutineScope()
+    val suggestionSession = remember(suggestions, suggestionScope) {
+        suggestions?.let { s -> SuggestionSession(suggestionScope) { writing -> s.suggester.suggest(s.context, writing) } }
+    }
+    val asksSuggestion = suggestionSession != null && value.selection.collapsed && value.selection.start == value.text.length &&
+        value.text.isNotBlank() && !editor.inTable && !editor.inCodeBlock
+    LaunchedEffect(suggestionSession, value.text, value.selection, asksSuggestion) {
+        suggestionSession?.changed(
+            if (asksSuggestion) TextBeingWritten(value.text, value.selection.start, editor.activeTextPageIndex, editor.activeTextId) else null
+        )
+    }
+    DisposableEffect(suggestionSession) { onDispose { suggestionSession?.drop() } }
+    val suggestion = suggestionSession?.suggestionFor(value.text, value.selection.start)?.takeIf { asksSuggestion }
     // The formula the caret is in: drawn in its place while its source is written, its last image
     // kept while what is typed cannot be rendered
     val writing = remember { FormulaBeingWritten() }
-    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
+    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
         formulaSizes.clear()
         val selection = value.selection
         val atCaret = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.FORMULA && selection.min > it.start && selection.max < it.end }
@@ -213,6 +232,16 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
             paperColor = paper
         ) { latex, sizePx -> room(latex, sizePx) }
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
+    }
+    // The suggestion after the end, lighter, not part of the text
+    val shown = remember(bareShown, suggestion, textColor) { if (suggestion == null) bareShown else GhostText.append(bareShown, suggestion, textColor) }
+    /** Inserts the suggestion shown at the caret (the end), as if typed. */
+    fun acceptSuggestion(): Boolean {
+        val accepted = suggestion ?: return false
+        val current = editor.value
+        suggestionSession?.drop()
+        editor.updateValue(TextFieldValue(current.text + accepted, TextRange(current.text.length + accepted.length)))
+        return true
     }
     // The presented text is what the field shows: a new one (a new size, the formulas ready) is
     // shown at once, even with the same value
@@ -318,6 +347,21 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 .pageScale(widthPx, screenPerLayout)
                 .onFocusChanged { focused = it.hasFocus }
                 .focusRequester(focusRequester)
+                // A tap on the suggestion takes it
+                .pointerInput(suggestion) {
+                    if (suggestion == null) return@pointerInput
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val current = layout ?: return@awaitEachGesture
+                        val text = currentShown
+                        if (current.layoutInput.text.text != text.text.text) return@awaitEachGesture
+                        if (current.getOffsetForPosition(down.position) !in GhostText.rangeIn(text, suggestion)) return@awaitEachGesture
+                        down.consume()
+                        val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
+                        up.consume()
+                        acceptSuggestion()
+                    }
+                }
                 // A finger and a pen select as the page shows the text, the handles where it is
                 .touchSelectionGestures(
                     touch,
@@ -367,6 +411,17 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     }
                 }
                 .onPreviewKeyEvent { event ->
+                    // A suggestion shown: Tab and the right arrow take it, Escape drops it
+                    if (suggestion != null && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
+                        when (event.key) {
+                            Key.Tab, Key.DirectionRight -> if (acceptSuggestion()) return@onPreviewKeyEvent true
+                            Key.Escape -> {
+                                suggestionSession?.drop()
+                                return@onPreviewKeyEvent true
+                            }
+                            else -> {}
+                        }
+                    }
                     if (event.type == KeyEventType.KeyDown && PASTE_PLAIN.matches(event, conventions)) {
                         plainClipboard.getText()?.text?.let { editor.pasteAtCaret(it) }
                         return@onPreviewKeyEvent true

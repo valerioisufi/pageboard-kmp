@@ -59,6 +59,9 @@ public class TextEditorManager internal constructor(private val controller: Draw
     internal var activeTextItem: DrawText? by mutableStateOf(null)
         private set
 
+    /** The id of the text being changed, `null` for a new one. */
+    public val activeTextId: String? get() = activeTextItem?.id
+
     /** The page the box is on: the one under its center, once it has been moved (see [moveTo]). */
     public var activeTextPageIndex: Int by mutableIntStateOf(-1)
         private set

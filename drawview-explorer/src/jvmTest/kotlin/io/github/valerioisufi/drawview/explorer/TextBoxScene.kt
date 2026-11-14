@@ -29,6 +29,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorScreen
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.awt.datatransfer.StringSelection
@@ -66,13 +67,14 @@ private class CopiedHtml(private val html: String) : Transferable {
 
 /**
  * The editor of a document kept in memory, in a window of 1200 × 900 with its own [clipboard] and
- * [engines] (none: the formulas as their source), for the behavior of the text boxes under real
+ * [engines] (none: the formulas as their source) and [extension], for the behavior of the text boxes under real
  * pointers and keys.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun textBoxScene(
     clipboard: TextBoxClipboard = TextBoxClipboard(),
     engines: DrawViewEngines = DrawViewEngines.None,
+    extension: EditorExtension? = null,
     block: DesktopComposeUiTest.(DrawViewController) -> Unit
 ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -88,7 +90,7 @@ internal fun textBoxScene(
             CompositionLocalProvider(LocalClipboard provides clipboard, LocalClipboardManager provides clipboard.manager) {
                 DrawViewTheme(darkTheme = false, dynamicColor = false) {
                     AdaptiveRoot(conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
-                        EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize())
+                        EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize(), extension = extension)
                     }
                 }
             }
