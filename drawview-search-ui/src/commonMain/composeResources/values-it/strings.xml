@@ -1,0 +1,34 @@
+<resources>
+    <string name="search_indexing_status">Indicizzazione degli appunti (%1$d/%2$d)…</string>
+    <string name="search_embedding_status">Calcolo dei vettori semantici (ne mancano %1$d)…</string>
+    <string name="search_index_ready">Indice aggiornato</string>
+    <string name="search_searching">Ricerca…</string>
+    <string name="search_ask_scope">Risponde dagli appunti in cui stai cercando.</string>
+    <string name="search_settings_title">Ricerca e modelli locali</string>
+    <string name="search_settings_action">Modelli di ricerca</string>
+    <string name="search_settings_close">Chiudi</string>
+    <string name="search_settings_privacy">L\'indice di ricerca e le tue ricerche restano su questo dispositivo: non vengono mai sincronizzati né inviati online.</string>
+    <string name="search_settings_semantic_title">Ricerca per significato (EmbeddingGemma 2)</string>
+    <string name="search_settings_semantic_description">Trova i passaggi con lo stesso significato anche se scritti con parole diverse o in un\'altra lingua.</string>
+    <string name="search_settings_answer_title">Chiedi ai tuoi appunti (Gemma 4)</string>
+    <string name="search_settings_answer_description">Risponde alle domande dai passaggi trovati nei tuoi appunti, citando la pagina o il minuto esatto della lezione.</string>
+    <string name="search_model_installed">Installato</string>
+    <string name="search_model_download">Scarica (%1$s)</string>
+    <string name="search_model_cancel">Annulla</string>
+    <string name="search_model_delete">Rimuovi</string>
+    <string name="search_model_use">Attivo</string>
+    <string name="search_model_select">Usa</string>
+    <string name="search_model_downloading">%1$s di %2$s (%3$d%)</string>
+    <string name="search_model_failed">Download non riuscito: %1$s</string>
+    <string name="search_runtime_unavailable">I modelli sul dispositivo non sono supportati su questa piattaforma. La ricerca usa il testo completo.</string>
+    <string name="search_ask_title">Chiedi ai tuoi appunti</string>
+    <string name="search_ask_button">Chiedi sul dispositivo</string>
+    <string name="search_ask_online_button">Chiedi a Gemini</string>
+    <string name="search_ask_online_privacy">Per rispondere a questa domanda, alcuni passaggi dei tuoi appunti verranno inviati a Google Gemini.</string>
+    <string name="search_ask_thinking">Lettura dei passaggi e scrittura della risposta…</string>
+    <string name="search_ask_install_hint">Installa Gemma 4 in Modelli di ricerca per rispondere alle domande su questo dispositivo.</string>
+    <string name="search_ask_no_passages">Nei tuoi appunti non ci sono passaggi che corrispondono a questa domanda.</string>
+    <string name="search_ask_sources_title">Passaggi citati</string>
+    <string name="search_ask_answered_by">Risposta di %1$s</string>
+    <string name="search_ask_error">Impossibile generare una risposta: %1$s</string>
+</resources>

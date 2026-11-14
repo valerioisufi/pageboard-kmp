@@ -162,7 +162,7 @@ Variations).
 | 9 | C. `LectureAssistant`, `LecturePanel`, `EditorToolbar` split | – | panel and toolbar done, the assistant with 11 (`docs/lecture-ui-split.md`) |
 | 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` | 4 | done (`docs/vector-formulas.md`) |
 | 11 | D. The lecture assistant on `ModelBackend` and `drawview-ml` (phase 4 of `docs/local-models.md`) | 9 | to do |
-| 12 | E. Page backgrounds, cross-module duplicates, translations | – | to do |
+| 12 | E. Page backgrounds, cross-module duplicates, translations | – | duplicates and Italian done; backgrounds and other languages later (`docs/small-cleanups.md`) |
 
 Each phase is one branch (`feat/<name>`) from main, its own plan first, one commit per step of that
 plan, merged by fast-forward when the user says so. Phases without a dependency between them can
