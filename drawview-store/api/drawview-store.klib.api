@@ -6,6 +6,26 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:drawview-store>
+final enum class io.github.valerioisufi.drawview.store.space/CatalogItemKind : kotlin/Enum<io.github.valerioisufi.drawview.store.space/CatalogItemKind> { // io.github.valerioisufi.drawview.store.space/CatalogItemKind|null[0]
+    enum entry DOCUMENT // io.github.valerioisufi.drawview.store.space/CatalogItemKind.DOCUMENT|null[0]
+    enum entry FOLDER // io.github.valerioisufi.drawview.store.space/CatalogItemKind.FOLDER|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.store.space/CatalogItemKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.store.space/CatalogItemKind> // io.github.valerioisufi.drawview.store.space/CatalogItemKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.store.space/CatalogItemKind // io.github.valerioisufi.drawview.store.space/CatalogItemKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.store.space/CatalogItemKind> // io.github.valerioisufi.drawview.store.space/CatalogItemKind.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.store.space/CatalogItemKind.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/CatalogItemKind> // io.github.valerioisufi.drawview.store.space/CatalogItemKind.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.store.space/CatalogItemKind.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+abstract fun interface io.github.valerioisufi.drawview.store.space/CatalogObserver { // io.github.valerioisufi.drawview.store.space/CatalogObserver|null[0]
+    abstract fun onChange(io.github.valerioisufi.drawview.store.space/CommittedCatalogChange) // io.github.valerioisufi.drawview.store.space/CatalogObserver.onChange|onChange(io.github.valerioisufi.drawview.store.space.CommittedCatalogChange){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.store/DocumentCatalog { // io.github.valerioisufi.drawview.store/DocumentCatalog|null[0]
     abstract val documents // io.github.valerioisufi.drawview.store/DocumentCatalog.documents|{}documents[0]
         abstract fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/DocumentSummary>> // io.github.valerioisufi.drawview.store/DocumentCatalog.documents.<get-documents>|<get-documents>(){}[0]
@@ -69,6 +89,451 @@ abstract interface io.github.valerioisufi.drawview.store/SharingStore { // io.gi
     abstract suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/SharingStore.isReadOnly|isReadOnly(kotlin.String){}[0]
     abstract suspend fun setSharingSecret(kotlin/String, kotlin/String?, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.store/SharingStore.setSharingSecret|setSharingSecret(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
     abstract suspend fun sharingSecrets(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.store/SharingStore.sharingSecrets|sharingSecrets(){}[0]
+}
+
+sealed interface io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/CatalogChange|null[0]
+    abstract val ids // io.github.valerioisufi.drawview.store.space/CatalogChange.ids|{}ids[0]
+        abstract fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/CatalogChange.ids.<get-ids>|<get-ids>(){}[0]
+
+    abstract fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/CatalogChange.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    open fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogChange.isWellFormed|isWellFormed(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.store.space/CatalogChange.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/CatalogChange> // io.github.valerioisufi.drawview.store.space/CatalogChange.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.store.space/CatalogChange.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/AddDocument : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/AddDocument|null[0]
+    constructor <init>(kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.store.space/AddDocument.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+    final val folder // io.github.valerioisufi.drawview.store.space/AddDocument.folder|{}folder[0]
+        final fun <get-folder>(): kotlin/String? // io.github.valerioisufi.drawview.store.space/AddDocument.folder.<get-folder>|<get-folder>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store.space/AddDocument.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddDocument.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/AddDocument.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/AddDocument.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/AddDocument.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddDocument.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.store.space/AddDocument.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.store.space/AddDocument // io.github.valerioisufi.drawview.store.space/AddDocument.copy|copy(kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/AddDocument.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/AddDocument.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/AddDocument.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddDocument.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/AddDocument> { // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/AddDocument // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/AddDocument) // io.github.valerioisufi.drawview.store.space/AddDocument.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.AddDocument){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/AddDocument.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/AddDocument> // io.github.valerioisufi.drawview.store.space/AddDocument.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/AddFolder : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/AddFolder|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.store.space/AddFolder.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/AddFolder.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddFolder.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/AddFolder.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/AddFolder.ids.<get-ids>|<get-ids>(){}[0]
+    final val name // io.github.valerioisufi.drawview.store.space/AddFolder.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddFolder.name.<get-name>|<get-name>(){}[0]
+    final val parent // io.github.valerioisufi.drawview.store.space/AddFolder.parent|{}parent[0]
+        final fun <get-parent>(): kotlin/String? // io.github.valerioisufi.drawview.store.space/AddFolder.parent.<get-parent>|<get-parent>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/AddFolder.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddFolder.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddFolder.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.store.space/AddFolder.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.store.space/AddFolder // io.github.valerioisufi.drawview.store.space/AddFolder.copy|copy(kotlin.String;kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/AddFolder.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/AddFolder.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/AddFolder.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/AddFolder.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/AddFolder> { // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/AddFolder // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/AddFolder) // io.github.valerioisufi.drawview.store.space/AddFolder.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.AddFolder){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/AddFolder.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/AddFolder> // io.github.valerioisufi.drawview.store.space/AddFolder.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/CatalogEntry { // io.github.valerioisufi.drawview.store.space/CatalogEntry|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.store.space/CatalogItemKind, kotlin/String, kotlin/String?, kotlin/Boolean, kotlin/String) // io.github.valerioisufi.drawview.store.space/CatalogEntry.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String){}[0]
+
+    final val broughtBy // io.github.valerioisufi.drawview.store.space/CatalogEntry.broughtBy|{}broughtBy[0]
+        final fun <get-broughtBy>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.broughtBy.<get-broughtBy>|<get-broughtBy>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store.space/CatalogEntry.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.id.<get-id>|<get-id>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.store.space/CatalogEntry.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.store.space/CatalogItemKind // io.github.valerioisufi.drawview.store.space/CatalogEntry.kind.<get-kind>|<get-kind>(){}[0]
+    final val name // io.github.valerioisufi.drawview.store.space/CatalogEntry.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.name.<get-name>|<get-name>(){}[0]
+    final val parent // io.github.valerioisufi.drawview.store.space/CatalogEntry.parent|{}parent[0]
+        final fun <get-parent>(): kotlin/String? // io.github.valerioisufi.drawview.store.space/CatalogEntry.parent.<get-parent>|<get-parent>(){}[0]
+    final val trashed // io.github.valerioisufi.drawview.store.space/CatalogEntry.trashed|{}trashed[0]
+        final fun <get-trashed>(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogEntry.trashed.<get-trashed>|<get-trashed>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.store.space/CatalogItemKind // io.github.valerioisufi.drawview.store.space/CatalogEntry.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // io.github.valerioisufi.drawview.store.space/CatalogEntry.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogEntry.component5|component5(){}[0]
+    final fun component6(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.store.space/CatalogItemKind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String = ...): io.github.valerioisufi.drawview.store.space/CatalogEntry // io.github.valerioisufi.drawview.store.space/CatalogEntry.copy|copy(kotlin.String;io.github.valerioisufi.drawview.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogEntry.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/CatalogEntry.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogEntry.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store.space/CatalogItem { // io.github.valerioisufi.drawview.store.space/CatalogItem|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model/Stamp = ...) // io.github.valerioisufi.drawview.store.space/CatalogItem.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.drawview.model.Stamp;kotlin.String;io.github.valerioisufi.drawview.model.Stamp;kotlin.String?;io.github.valerioisufi.drawview.model.Stamp;kotlin.Boolean;io.github.valerioisufi.drawview.model.Stamp){}[0]
+
+    final val broughtBy // io.github.valerioisufi.drawview.store.space/CatalogItem.broughtBy|{}broughtBy[0]
+        final fun <get-broughtBy>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.broughtBy.<get-broughtBy>|<get-broughtBy>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store.space/CatalogItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.id.<get-id>|<get-id>(){}[0]
+    final val inSpace // io.github.valerioisufi.drawview.store.space/CatalogItem.inSpace|{}inSpace[0]
+        final fun <get-inSpace>(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogItem.inSpace.<get-inSpace>|<get-inSpace>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.store.space/CatalogItem.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.store.space/CatalogItemKind? // io.github.valerioisufi.drawview.store.space/CatalogItem.kind.<get-kind>|<get-kind>(){}[0]
+    final val name // io.github.valerioisufi.drawview.store.space/CatalogItem.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.name.<get-name>|<get-name>(){}[0]
+    final val named // io.github.valerioisufi.drawview.store.space/CatalogItem.named|{}named[0]
+        final fun <get-named>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.named.<get-named>|<get-named>(){}[0]
+    final val parent // io.github.valerioisufi.drawview.store.space/CatalogItem.parent|{}parent[0]
+        final fun <get-parent>(): kotlin/String? // io.github.valerioisufi.drawview.store.space/CatalogItem.parent.<get-parent>|<get-parent>(){}[0]
+    final val placed // io.github.valerioisufi.drawview.store.space/CatalogItem.placed|{}placed[0]
+        final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.placed.<get-placed>|<get-placed>(){}[0]
+    final val presence // io.github.valerioisufi.drawview.store.space/CatalogItem.presence|{}presence[0]
+        final fun <get-presence>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.presence.<get-presence>|<get-presence>(){}[0]
+    final val trashed // io.github.valerioisufi.drawview.store.space/CatalogItem.trashed|{}trashed[0]
+        final fun <get-trashed>(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogItem.trashed.<get-trashed>|<get-trashed>(){}[0]
+    final val trashedVersion // io.github.valerioisufi.drawview.store.space/CatalogItem.trashedVersion|{}trashedVersion[0]
+        final fun <get-trashedVersion>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.trashedVersion.<get-trashedVersion>|<get-trashedVersion>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.component1|component1(){}[0]
+    final fun component10(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogItem.component10|component10(){}[0]
+    final fun component11(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.component11|component11(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.store.space/CatalogItemKind? // io.github.valerioisufi.drawview.store.space/CatalogItem.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogItem.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.component4|component4(){}[0]
+    final fun component5(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.component5|component5(){}[0]
+    final fun component6(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.component6|component6(){}[0]
+    final fun component7(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.component7|component7(){}[0]
+    final fun component8(): kotlin/String? // io.github.valerioisufi.drawview.store.space/CatalogItem.component8|component8(){}[0]
+    final fun component9(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogItem.component9|component9(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.model/Stamp = ...): io.github.valerioisufi.drawview.store.space/CatalogItem // io.github.valerioisufi.drawview.store.space/CatalogItem.copy|copy(kotlin.String;io.github.valerioisufi.drawview.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.drawview.model.Stamp;kotlin.String;io.github.valerioisufi.drawview.model.Stamp;kotlin.String?;io.github.valerioisufi.drawview.model.Stamp;kotlin.Boolean;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/CatalogItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/CatalogItem> { // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/CatalogItem // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/CatalogItem) // io.github.valerioisufi.drawview.store.space/CatalogItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.CatalogItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/CatalogItem.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.drawview.store.space/CatalogItem.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/CatalogItem> // io.github.valerioisufi.drawview.store.space/CatalogItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/CatalogOperation { // io.github.valerioisufi.drawview.store.space/CatalogOperation|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.change/OperationId, io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.store.space/CatalogChange) // io.github.valerioisufi.drawview.store.space/CatalogOperation.<init>|<init>(io.github.valerioisufi.drawview.model.change.OperationId;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.store.space.CatalogChange){}[0]
+
+    final val change // io.github.valerioisufi.drawview.store.space/CatalogOperation.change|{}change[0]
+        final fun <get-change>(): io.github.valerioisufi.drawview.store.space/CatalogChange // io.github.valerioisufi.drawview.store.space/CatalogOperation.change.<get-change>|<get-change>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store.space/CatalogOperation.id|{}id[0]
+        final fun <get-id>(): io.github.valerioisufi.drawview.model.change/OperationId // io.github.valerioisufi.drawview.store.space/CatalogOperation.id.<get-id>|<get-id>(){}[0]
+    final val stamp // io.github.valerioisufi.drawview.store.space/CatalogOperation.stamp|{}stamp[0]
+        final fun <get-stamp>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogOperation.stamp.<get-stamp>|<get-stamp>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.change/OperationId // io.github.valerioisufi.drawview.store.space/CatalogOperation.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/CatalogOperation.component2|component2(){}[0]
+    final fun component3(): io.github.valerioisufi.drawview.store.space/CatalogChange // io.github.valerioisufi.drawview.store.space/CatalogOperation.component3|component3(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.change/OperationId = ..., io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.store.space/CatalogChange = ...): io.github.valerioisufi.drawview.store.space/CatalogOperation // io.github.valerioisufi.drawview.store.space/CatalogOperation.copy|copy(io.github.valerioisufi.drawview.model.change.OperationId;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.store.space.CatalogChange){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogOperation.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/CatalogOperation.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogOperation.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/CatalogOperation> { // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/CatalogOperation // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/CatalogOperation) // io.github.valerioisufi.drawview.store.space/CatalogOperation.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.CatalogOperation){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/CatalogOperation.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.drawview.store.space/CatalogOperation.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/CatalogOperation> // io.github.valerioisufi.drawview.store.space/CatalogOperation.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/CatalogSession { // io.github.valerioisufi.drawview.store.space/CatalogSession|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.store.space/SpaceCatalog, kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long> = ..., kotlin/Function0<kotlin/Long>? = ...) // io.github.valerioisufi.drawview.store.space/CatalogSession.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.store.space.SpaceCatalog;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>;kotlin.Function0<kotlin.Long>?){}[0]
+
+    final val catalog // io.github.valerioisufi.drawview.store.space/CatalogSession.catalog|{}catalog[0]
+        final fun <get-catalog>(): io.github.valerioisufi.drawview.store.space/SpaceCatalog // io.github.valerioisufi.drawview.store.space/CatalogSession.catalog.<get-catalog>|<get-catalog>(){}[0]
+    final val clock // io.github.valerioisufi.drawview.store.space/CatalogSession.clock|{}clock[0]
+        final fun <get-clock>(): io.github.valerioisufi.drawview.model.change/HybridClock // io.github.valerioisufi.drawview.store.space/CatalogSession.clock.<get-clock>|<get-clock>(){}[0]
+    final val replica // io.github.valerioisufi.drawview.store.space/CatalogSession.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogSession.replica.<get-replica>|<get-replica>(){}[0]
+    final val spaceId // io.github.valerioisufi.drawview.store.space/CatalogSession.spaceId|{}spaceId[0]
+        final fun <get-spaceId>(): kotlin/String // io.github.valerioisufi.drawview.store.space/CatalogSession.spaceId.<get-spaceId>|<get-spaceId>(){}[0]
+    final val versionVector // io.github.valerioisufi.drawview.store.space/CatalogSession.versionVector|{}versionVector[0]
+        final fun <get-versionVector>(): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.drawview.store.space/CatalogSession.versionVector.<get-versionVector>|<get-versionVector>(){}[0]
+
+    final var isReadOnly // io.github.valerioisufi.drawview.store.space/CatalogSession.isReadOnly|{}isReadOnly[0]
+        final fun <get-isReadOnly>(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogSession.isReadOnly.<get-isReadOnly>|<get-isReadOnly>(){}[0]
+        final fun <set-isReadOnly>(kotlin/Boolean) // io.github.valerioisufi.drawview.store.space/CatalogSession.isReadOnly.<set-isReadOnly>|<set-isReadOnly>(kotlin.Boolean){}[0]
+
+    final fun addObserver(io.github.valerioisufi.drawview.store.space/CatalogObserver) // io.github.valerioisufi.drawview.store.space/CatalogSession.addObserver|addObserver(io.github.valerioisufi.drawview.store.space.CatalogObserver){}[0]
+    final fun admits(io.github.valerioisufi.drawview.store.space/CatalogOperation): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogSession.admits|admits(io.github.valerioisufi.drawview.store.space.CatalogOperation){}[0]
+    final fun lastApplied(kotlin/String): kotlin/Long // io.github.valerioisufi.drawview.store.space/CatalogSession.lastApplied|lastApplied(kotlin.String){}[0]
+    final fun receive(io.github.valerioisufi.drawview.store.space/CatalogOperation): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CatalogSession.receive|receive(io.github.valerioisufi.drawview.store.space.CatalogOperation){}[0]
+    final fun removeObserver(io.github.valerioisufi.drawview.store.space/CatalogObserver) // io.github.valerioisufi.drawview.store.space/CatalogSession.removeObserver|removeObserver(io.github.valerioisufi.drawview.store.space.CatalogObserver){}[0]
+    final fun submit(io.github.valerioisufi.drawview.store.space/CatalogChange): io.github.valerioisufi.drawview.store.space/CommittedCatalogChange? // io.github.valerioisufi.drawview.store.space/CatalogSession.submit|submit(io.github.valerioisufi.drawview.store.space.CatalogChange){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store.space/CommittedCatalogChange { // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.store.space/CatalogOperation, io.github.valerioisufi.drawview.store.space/CatalogChange?, kotlin/Boolean) // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.<init>|<init>(io.github.valerioisufi.drawview.store.space.CatalogOperation;io.github.valerioisufi.drawview.store.space.CatalogChange?;kotlin.Boolean){}[0]
+
+    final val inverse // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.inverse|{}inverse[0]
+        final fun <get-inverse>(): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.inverse.<get-inverse>|<get-inverse>(){}[0]
+    final val operation // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.operation|{}operation[0]
+        final fun <get-operation>(): io.github.valerioisufi.drawview.store.space/CatalogOperation // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.operation.<get-operation>|<get-operation>(){}[0]
+    final val received // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.received|{}received[0]
+        final fun <get-received>(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CommittedCatalogChange.received.<get-received>|<get-received>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store.space/CompositeCatalogChange : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.store.space/CatalogChange>) // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.store.space.CatalogChange>){}[0]
+
+    final val changes // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.changes|{}changes[0]
+        final fun <get-changes>(): kotlin.collections/List<io.github.valerioisufi.drawview.store.space/CatalogChange> // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.changes.<get-changes>|<get-changes>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin.collections/List<io.github.valerioisufi.drawview.store.space/CatalogChange> // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.component1|component1(){}[0]
+    final fun copy(kotlin.collections/List<io.github.valerioisufi.drawview.store.space/CatalogChange> = ...): io.github.valerioisufi.drawview.store.space/CompositeCatalogChange // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.copy|copy(kotlin.collections.List<io.github.valerioisufi.drawview.store.space.CatalogChange>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/CompositeCatalogChange> { // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/CompositeCatalogChange // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/CompositeCatalogChange) // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.CompositeCatalogChange){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.Companion|null[0]
+        final const val MAX_CHANGES // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.Companion.MAX_CHANGES|{}MAX_CHANGES[0]
+            final fun <get-MAX_CHANGES>(): kotlin/Int // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.Companion.MAX_CHANGES.<get-MAX_CHANGES>|<get-MAX_CHANGES>(){}[0]
+
+        final val $childSerializers // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/CompositeCatalogChange> // io.github.valerioisufi.drawview.store.space/CompositeCatalogChange.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/MoveItem : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/MoveItem|null[0]
+    constructor <init>(kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.store.space/MoveItem.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/MoveItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/MoveItem.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/MoveItem.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/MoveItem.ids.<get-ids>|<get-ids>(){}[0]
+    final val parent // io.github.valerioisufi.drawview.store.space/MoveItem.parent|{}parent[0]
+        final fun <get-parent>(): kotlin/String? // io.github.valerioisufi.drawview.store.space/MoveItem.parent.<get-parent>|<get-parent>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/MoveItem.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/MoveItem.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.store.space/MoveItem.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.store.space/MoveItem // io.github.valerioisufi.drawview.store.space/MoveItem.copy|copy(kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/MoveItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/MoveItem.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/MoveItem.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/MoveItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/MoveItem> { // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/MoveItem // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/MoveItem) // io.github.valerioisufi.drawview.store.space/MoveItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.MoveItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/MoveItem.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/MoveItem> // io.github.valerioisufi.drawview.store.space/MoveItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/RemoveFromSpace : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/RemoveFromSpace|null[0]
+    constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.<init>|<init>(kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.store.space/RemoveFromSpace // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/RemoveFromSpace> { // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/RemoveFromSpace // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/RemoveFromSpace) // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.RemoveFromSpace){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/RemoveFromSpace> // io.github.valerioisufi.drawview.store.space/RemoveFromSpace.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/RenameFolder : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/RenameFolder|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.store.space/RenameFolder.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/RenameFolder.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/RenameFolder.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/RenameFolder.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/RenameFolder.ids.<get-ids>|<get-ids>(){}[0]
+    final val name // io.github.valerioisufi.drawview.store.space/RenameFolder.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store.space/RenameFolder.name.<get-name>|<get-name>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/RenameFolder.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/RenameFolder.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.store.space/RenameFolder.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.drawview.store.space/RenameFolder // io.github.valerioisufi.drawview.store.space/RenameFolder.copy|copy(kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/RenameFolder.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/RenameFolder.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/RenameFolder.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/RenameFolder.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/RenameFolder> { // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/RenameFolder // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/RenameFolder) // io.github.valerioisufi.drawview.store.space/RenameFolder.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.RenameFolder){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/RenameFolder.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/RenameFolder> // io.github.valerioisufi.drawview.store.space/RenameFolder.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/RestoreItem : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/RestoreItem|null[0]
+    constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.store.space/RestoreItem.<init>|<init>(kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/RestoreItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/RestoreItem.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/RestoreItem.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/RestoreItem.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/RestoreItem.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/RestoreItem.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.store.space/RestoreItem // io.github.valerioisufi.drawview.store.space/RestoreItem.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/RestoreItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/RestoreItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/RestoreItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/RestoreItem> { // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/RestoreItem // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/RestoreItem) // io.github.valerioisufi.drawview.store.space/RestoreItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.RestoreItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/RestoreItem.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/RestoreItem> // io.github.valerioisufi.drawview.store.space/RestoreItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/SpaceCatalog { // io.github.valerioisufi.drawview.store.space/SpaceCatalog|null[0]
+    constructor <init>(kotlin.collections/Collection<io.github.valerioisufi.drawview.store.space/CatalogItem> = ...) // io.github.valerioisufi.drawview.store.space/SpaceCatalog.<init>|<init>(kotlin.collections.Collection<io.github.valerioisufi.drawview.store.space.CatalogItem>){}[0]
+
+    final val items // io.github.valerioisufi.drawview.store.space/SpaceCatalog.items|{}items[0]
+        final fun <get-items>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.store.space/CatalogItem> // io.github.valerioisufi.drawview.store.space/SpaceCatalog.items.<get-items>|<get-items>(){}[0]
+
+    final fun get(kotlin/String): io.github.valerioisufi.drawview.store.space/CatalogItem? // io.github.valerioisufi.drawview.store.space/SpaceCatalog.get|get(kotlin.String){}[0]
+    final fun latestStamp(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.store.space/SpaceCatalog.latestStamp|latestStamp(){}[0]
+    final fun view(): kotlin.collections/List<io.github.valerioisufi.drawview.store.space/CatalogEntry> // io.github.valerioisufi.drawview.store.space/SpaceCatalog.view|view(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/SpaceCatalog.Companion|null[0]
+        final const val MAX_ID_LENGTH // io.github.valerioisufi.drawview.store.space/SpaceCatalog.Companion.MAX_ID_LENGTH|{}MAX_ID_LENGTH[0]
+            final fun <get-MAX_ID_LENGTH>(): kotlin/Int // io.github.valerioisufi.drawview.store.space/SpaceCatalog.Companion.MAX_ID_LENGTH.<get-MAX_ID_LENGTH>|<get-MAX_ID_LENGTH>(){}[0]
+        final const val MAX_NAME_LENGTH // io.github.valerioisufi.drawview.store.space/SpaceCatalog.Companion.MAX_NAME_LENGTH|{}MAX_NAME_LENGTH[0]
+            final fun <get-MAX_NAME_LENGTH>(): kotlin/Int // io.github.valerioisufi.drawview.store.space/SpaceCatalog.Companion.MAX_NAME_LENGTH.<get-MAX_NAME_LENGTH>|<get-MAX_NAME_LENGTH>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.store.space/TrashItem : io.github.valerioisufi.drawview.store.space/CatalogChange { // io.github.valerioisufi.drawview.store.space/TrashItem|null[0]
+    constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.store.space/TrashItem.<init>|<init>(kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store.space/TrashItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store.space/TrashItem.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.drawview.store.space/TrashItem.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.store.space/TrashItem.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.store.space/SpaceCatalog, io.github.valerioisufi.drawview.model/Stamp): io.github.valerioisufi.drawview.store.space/CatalogChange? // io.github.valerioisufi.drawview.store.space/TrashItem.applyTo|applyTo(io.github.valerioisufi.drawview.store.space.SpaceCatalog;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store.space/TrashItem.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.store.space/TrashItem // io.github.valerioisufi.drawview.store.space/TrashItem.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store.space/TrashItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store.space/TrashItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store.space/TrashItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.store.space/TrashItem> { // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.store.space/TrashItem // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.store.space/TrashItem) // io.github.valerioisufi.drawview.store.space/TrashItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.store.space.TrashItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.store.space/TrashItem.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.store.space/TrashItem> // io.github.valerioisufi.drawview.store.space/TrashItem.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.store/DocumentOutline { // io.github.valerioisufi.drawview.store/DocumentOutline|null[0]

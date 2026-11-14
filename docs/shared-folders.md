@@ -188,7 +188,7 @@ a build of before meeting a space closes the connection (a message it does not k
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | proposed |
+| 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | done |
 | 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | proposed |
 | 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | proposed |
 | 4. Synchronization | `SpaceSync`: the catalog, `DocumentHeads`, document connections opened and closed; `LanSync` and `IrohSync` announcing and connecting by space; `ProtocolFormatTest`. Tests: three devices, a library of 200 documents (connections opened only for what changed), a device away and back, random messages; on the JVM and the iOS simulator | proposed |
@@ -198,6 +198,31 @@ a build of before meeting a space closes the connection (a message it does not k
 
 Every phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
 simulator; a commit per phase on `feat/shared-folders`, the status updated with it.
+
+### Phase 1 results
+
+* `drawview-store`, package `store.space`: `SpaceCatalog` (the items with their pieces and stamps,
+  `view()` giving the tree of the space), `CatalogChange` (`AddFolder`, `AddDocument`,
+  `RenameFolder`, `MoveItem`, `TrashItem`, `RestoreItem`, `RemoveFromSpace`,
+  `CompositeCatalogChange`), `CatalogOperation`, `CatalogSession` (`submit`, `admits`, `receive`,
+  the version vector, read only).
+* An item is four pieces, each with its stamp: its presence (in the space, kind, replica that
+  brought it: written whole, so a removal leaves no kind of an addition), its name, its parent,
+  its trash. A piece takes the stamp of a more recent change even when its value stays the same:
+  otherwise a change stamped between the two would win on some devices only.
+* An item named before its addition arrives is kept with what was changed of it, not shown until
+  added. An item is shown when it and the folders above it are in the space up to its root; the
+  cycles of moves are broken by the folder of the cycle moved most recently, at the root.
+* What another device sends is bounded: identifiers of 64 characters at most, names of 512,
+  10 000 changes in a composite, no composite in a composite, no item in itself; stamped by its
+  replica and at most an hour ahead (`HybridClock.admits`).
+* Tests (`SpaceCatalogTest`, 11): the most recent rename, a change before its addition, a cycle,
+  a folder out of the space with what it holds, the trash, the inverses of every change, the
+  operations refused, a read only session, JSON; three devices making random changes (undo among
+  them) and receiving the others' in random orders end up with the same items and the same tree,
+  without cycles (40 seeds of 150 steps in the build, verified on 600 seeds of 400). It found
+  the presence written in part by a removal, fixed.
+* The ABI of `drawview-store` is recorded again: additions only.
 
 ## Decisions
 
