@@ -17,6 +17,7 @@ import io.github.valerioisufi.drawview.canvas.geometry.mapOffset
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
 import io.github.valerioisufi.drawview.canvas.history.HistoryManager
+import io.github.valerioisufi.drawview.canvas.port.EditorPorts
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.HiddenElements
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize
@@ -471,6 +472,12 @@ public class DrawViewController(
         // A text selected here that another device starts writing: left to it
         if (selectionManager.currentSelection?.texts?.any { presence.writerOf(it) != null } == true) selectionManager.clearSelection()
     }
+
+    /**
+     * What this editor offers to the code added to it (the extensions of the UI): the document, the
+     * pages, the edits, the placement, the rendering, the presence (see [EditorPorts]).
+     */
+    public val ports: EditorPorts by lazy { portsOf(this) }
 
     public fun clearSelection() {
         selectionManager.clearSelection()

@@ -139,6 +139,69 @@ abstract interface io.github.valerioisufi.drawview.canvas.controller/TextFormatT
     open fun toggleQuote() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleQuote|toggleQuote(){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.canvas.port/EditorDocument { // io.github.valerioisufi.drawview.canvas.port/EditorDocument|null[0]
+    abstract val document // io.github.valerioisufi.drawview.canvas.port/EditorDocument.document|{}document[0]
+        abstract fun <get-document>(): io.github.valerioisufi.drawview.model/DrawDocument // io.github.valerioisufi.drawview.canvas.port/EditorDocument.document.<get-document>|<get-document>(){}[0]
+    abstract val isReadOnly // io.github.valerioisufi.drawview.canvas.port/EditorDocument.isReadOnly|{}isReadOnly[0]
+        abstract fun <get-isReadOnly>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.port/EditorDocument.isReadOnly.<get-isReadOnly>|<get-isReadOnly>(){}[0]
+
+    abstract fun <#A1: kotlin/Any?> group(kotlin/Function0<#A1>): #A1 // io.github.valerioisufi.drawview.canvas.port/EditorDocument.group|group(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
+    abstract fun addObserver(io.github.valerioisufi.drawview.model.change/ChangeObserver) // io.github.valerioisufi.drawview.canvas.port/EditorDocument.addObserver|addObserver(io.github.valerioisufi.drawview.model.change.ChangeObserver){}[0]
+    abstract fun removeObserver(io.github.valerioisufi.drawview.model.change/ChangeObserver) // io.github.valerioisufi.drawview.canvas.port/EditorDocument.removeObserver|removeObserver(io.github.valerioisufi.drawview.model.change.ChangeObserver){}[0]
+    abstract fun submit(io.github.valerioisufi.drawview.model.change/DocumentChange): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.canvas.port/EditorDocument.submit|submit(io.github.valerioisufi.drawview.model.change.DocumentChange){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.canvas.port/EditorEdits { // io.github.valerioisufi.drawview.canvas.port/EditorEdits|null[0]
+    abstract val isEditingText // io.github.valerioisufi.drawview.canvas.port/EditorEdits.isEditingText|{}isEditingText[0]
+        abstract fun <get-isEditingText>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.port/EditorEdits.isEditingText.<get-isEditingText>|<get-isEditingText>(){}[0]
+
+    abstract var pendingTextImport // io.github.valerioisufi.drawview.canvas.port/EditorEdits.pendingTextImport|{}pendingTextImport[0]
+        abstract fun <get-pendingTextImport>(): io.github.valerioisufi.drawview.canvas.controller/TextImport? // io.github.valerioisufi.drawview.canvas.port/EditorEdits.pendingTextImport.<get-pendingTextImport>|<get-pendingTextImport>(){}[0]
+        abstract fun <set-pendingTextImport>(io.github.valerioisufi.drawview.canvas.controller/TextImport?) // io.github.valerioisufi.drawview.canvas.port/EditorEdits.pendingTextImport.<set-pendingTextImport>|<set-pendingTextImport>(io.github.valerioisufi.drawview.canvas.controller.TextImport?){}[0]
+
+    abstract fun <#A1: kotlin/Any> addCustomElement(io.github.valerioisufi.drawview.model/ElementType<#A1>, #A1, kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Boolean = ...): io.github.valerioisufi.drawview.model/DrawCustomElement? // io.github.valerioisufi.drawview.canvas.port/EditorEdits.addCustomElement|addCustomElement(io.github.valerioisufi.drawview.model.ElementType<0:0>;0:0;kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Boolean){0§<kotlin.Any>}[0]
+    abstract fun clearSelection() // io.github.valerioisufi.drawview.canvas.port/EditorEdits.clearSelection|clearSelection(){}[0]
+    abstract fun finishEditingText() // io.github.valerioisufi.drawview.canvas.port/EditorEdits.finishEditingText|finishEditingText(){}[0]
+    abstract fun selectText(kotlin/Int, io.github.valerioisufi.drawview.model/DrawText) // io.github.valerioisufi.drawview.canvas.port/EditorEdits.selectText|selectText(kotlin.Int;io.github.valerioisufi.drawview.model.DrawText){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.canvas.port/EditorPages { // io.github.valerioisufi.drawview.canvas.port/EditorPages|null[0]
+    abstract val frames // io.github.valerioisufi.drawview.canvas.port/EditorPages.frames|{}frames[0]
+        abstract fun <get-frames>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.port/EditorPages.frames.<get-frames>|<get-frames>(){}[0]
+    abstract val selection // io.github.valerioisufi.drawview.canvas.port/EditorPages.selection|{}selection[0]
+        abstract fun <get-selection>(): io.github.valerioisufi.drawview.canvas.controller/PageSelection // io.github.valerioisufi.drawview.canvas.port/EditorPages.selection.<get-selection>|<get-selection>(){}[0]
+
+    abstract fun firstVisiblePageIndex(): kotlin/Int? // io.github.valerioisufi.drawview.canvas.port/EditorPages.firstVisiblePageIndex|firstVisiblePageIndex(){}[0]
+    abstract fun jumpToPage(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect? = ...) // io.github.valerioisufi.drawview.canvas.port/EditorPages.jumpToPage|jumpToPage(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect?){}[0]
+    abstract fun mostVisiblePageIndex(): kotlin/Int? // io.github.valerioisufi.drawview.canvas.port/EditorPages.mostVisiblePageIndex|mostVisiblePageIndex(){}[0]
+    abstract fun pageMmToScreen(kotlin/Int): io.github.valerioisufi.drawview.model.geometry/Matrix2D? // io.github.valerioisufi.drawview.canvas.port/EditorPages.pageMmToScreen|pageMmToScreen(kotlin.Int){}[0]
+    abstract fun visiblePageIndices(): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.drawview.canvas.port/EditorPages.visiblePageIndices|visiblePageIndices(){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.canvas.port/EditorPlacement { // io.github.valerioisufi.drawview.canvas.port/EditorPlacement|null[0]
+    abstract val canPlaceByTopic // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.canPlaceByTopic|{}canPlaceByTopic[0]
+        abstract fun <get-canPlaceByTopic>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.canPlaceByTopic.<get-canPlaceByTopic>|<get-canPlaceByTopic>(){}[0]
+
+    abstract fun cancel() // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.cancel|cancel(){}[0]
+    abstract fun pagesFor(kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/PlacementSpot>, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model/DrawPage?> = ...): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage?> // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.pagesFor|pagesFor(kotlin.collections.List<io.github.valerioisufi.drawview.canvas.controller.PlacementSpot>;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPage,io.github.valerioisufi.drawview.model.DrawPage?>){}[0]
+    abstract fun pdfTextOf(kotlin/Int): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.pdfTextOf|pdfTextOf(kotlin.Int){}[0]
+    abstract fun placeTexts(kotlin.collections/List<kotlin/Pair<kotlin/Int?, kotlin/String>>, kotlin/Int, kotlin/String, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawText, io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize?>? = ..., kotlin/Function0<kotlin/Unit> = ...): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.placeTexts|placeTexts(kotlin.collections.List<kotlin.Pair<kotlin.Int?,kotlin.String>>;kotlin.Int;kotlin.String;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawText,io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize?>?;kotlin.Function0<kotlin.Unit>){}[0]
+    abstract fun sizeOfPage(io.github.valerioisufi.drawview.model/DrawPage): kotlin/Float // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.sizeOfPage|sizeOfPage(io.github.valerioisufi.drawview.model.DrawPage){}[0]
+    abstract fun spotsFor(kotlin/Int, io.github.valerioisufi.drawview.model.placement/PlacementBlock, io.github.valerioisufi.drawview.model.placement/PlacementPolicy): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/PlacementSpot> // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.spotsFor|spotsFor(kotlin.Int;io.github.valerioisufi.drawview.model.placement.PlacementBlock;io.github.valerioisufi.drawview.model.placement.PlacementPolicy){}[0]
+    abstract fun start(io.github.valerioisufi.drawview.canvas.controller/PlacementRequest) // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.start|start(io.github.valerioisufi.drawview.canvas.controller.PlacementRequest){}[0]
+    abstract suspend fun partsByTopic(kotlin/String, kotlin/Int?): kotlin.collections/List<kotlin/Pair<kotlin/Int?, kotlin/String>> // io.github.valerioisufi.drawview.canvas.port/EditorPlacement.partsByTopic|partsByTopic(kotlin.String;kotlin.Int?){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.canvas.port/EditorRendering { // io.github.valerioisufi.drawview.canvas.port/EditorRendering|null[0]
+    abstract val engines // io.github.valerioisufi.drawview.canvas.port/EditorRendering.engines|{}engines[0]
+        abstract fun <get-engines>(): io.github.valerioisufi.drawview.canvas.render/DrawViewEngines // io.github.valerioisufi.drawview.canvas.port/EditorRendering.engines.<get-engines>|<get-engines>(){}[0]
+
+    abstract fun measureText(io.github.valerioisufi.drawview.model/DrawText): io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize? // io.github.valerioisufi.drawview.canvas.port/EditorRendering.measureText|measureText(io.github.valerioisufi.drawview.model.DrawText){}[0]
+    abstract fun pdfPageText(kotlin/String, kotlin/Int): kotlin/String? // io.github.valerioisufi.drawview.canvas.port/EditorRendering.pdfPageText|pdfPageText(kotlin.String;kotlin.Int){}[0]
+    abstract fun renderPageContent(androidx.compose.ui.graphics/Canvas, io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/PageContentSnapshot, io.github.valerioisufi.drawview.model.geometry/Matrix2D, androidx.compose.ui.geometry/Rect) // io.github.valerioisufi.drawview.canvas.port/EditorRendering.renderPageContent|renderPageContent(androidx.compose.ui.graphics.Canvas;io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.PageContentSnapshot;io.github.valerioisufi.drawview.model.geometry.Matrix2D;androidx.compose.ui.geometry.Rect){}[0]
+    abstract fun renderThumbnail(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/PageContentSnapshot, kotlin/Int): androidx.compose.ui.graphics/ImageBitmap // io.github.valerioisufi.drawview.canvas.port/EditorRendering.renderThumbnail|renderThumbnail(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.PageContentSnapshot;kotlin.Int){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer|null[0]
     abstract val isReady // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.isReady|{}isReady[0]
         abstract fun <get-isReady>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer.isReady.<get-isReady>|<get-isReady>(){}[0]
@@ -431,6 +494,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController
         final fun <get-persistence>(): io.github.valerioisufi.drawview.model.change/DocumentPersistence // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.persistence.<get-persistence>|<get-persistence>(){}[0]
     final val placementManager // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.placementManager|{}placementManager[0]
         final fun <get-placementManager>(): io.github.valerioisufi.drawview.canvas.controller/PlacementManager // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.placementManager.<get-placementManager>|<get-placementManager>(){}[0]
+    final val ports // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.ports|{}ports[0]
+        final fun <get-ports>(): io.github.valerioisufi.drawview.canvas.port/EditorPorts // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.ports.<get-ports>|<get-ports>(){}[0]
     final val preferences // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.preferences|{}preferences[0]
         final fun <get-preferences>(): kotlinx.coroutines.flow/StateFlow<io.github.valerioisufi.drawview.canvas.controller/DrawPreferences> // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.preferences.<get-preferences>|<get-preferences>(){}[0]
     final val presence // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.presence|{}presence[0]
@@ -1247,6 +1312,23 @@ final class io.github.valerioisufi.drawview.canvas.history/HistoryManager : io.g
     final inline fun <#A1: kotlin/Any?> group(kotlin/Function0<#A1>): #A1 // io.github.valerioisufi.drawview.canvas.history/HistoryManager.group|group(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.port/EditorPorts { // io.github.valerioisufi.drawview.canvas.port/EditorPorts|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.canvas.port/EditorDocument, io.github.valerioisufi.drawview.canvas.port/EditorPages, io.github.valerioisufi.drawview.canvas.port/EditorEdits, io.github.valerioisufi.drawview.canvas.port/EditorPlacement, io.github.valerioisufi.drawview.canvas.port/EditorRendering, io.github.valerioisufi.drawview.canvas.controller/CollaboratorPresence) // io.github.valerioisufi.drawview.canvas.port/EditorPorts.<init>|<init>(io.github.valerioisufi.drawview.canvas.port.EditorDocument;io.github.valerioisufi.drawview.canvas.port.EditorPages;io.github.valerioisufi.drawview.canvas.port.EditorEdits;io.github.valerioisufi.drawview.canvas.port.EditorPlacement;io.github.valerioisufi.drawview.canvas.port.EditorRendering;io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence){}[0]
+
+    final val document // io.github.valerioisufi.drawview.canvas.port/EditorPorts.document|{}document[0]
+        final fun <get-document>(): io.github.valerioisufi.drawview.canvas.port/EditorDocument // io.github.valerioisufi.drawview.canvas.port/EditorPorts.document.<get-document>|<get-document>(){}[0]
+    final val edits // io.github.valerioisufi.drawview.canvas.port/EditorPorts.edits|{}edits[0]
+        final fun <get-edits>(): io.github.valerioisufi.drawview.canvas.port/EditorEdits // io.github.valerioisufi.drawview.canvas.port/EditorPorts.edits.<get-edits>|<get-edits>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.canvas.port/EditorPorts.pages|{}pages[0]
+        final fun <get-pages>(): io.github.valerioisufi.drawview.canvas.port/EditorPages // io.github.valerioisufi.drawview.canvas.port/EditorPorts.pages.<get-pages>|<get-pages>(){}[0]
+    final val placement // io.github.valerioisufi.drawview.canvas.port/EditorPorts.placement|{}placement[0]
+        final fun <get-placement>(): io.github.valerioisufi.drawview.canvas.port/EditorPlacement // io.github.valerioisufi.drawview.canvas.port/EditorPorts.placement.<get-placement>|<get-placement>(){}[0]
+    final val presence // io.github.valerioisufi.drawview.canvas.port/EditorPorts.presence|{}presence[0]
+        final fun <get-presence>(): io.github.valerioisufi.drawview.canvas.controller/CollaboratorPresence // io.github.valerioisufi.drawview.canvas.port/EditorPorts.presence.<get-presence>|<get-presence>(){}[0]
+    final val rendering // io.github.valerioisufi.drawview.canvas.port/EditorPorts.rendering|{}rendering[0]
+        final fun <get-rendering>(): io.github.valerioisufi.drawview.canvas.port/EditorRendering // io.github.valerioisufi.drawview.canvas.port/EditorPorts.rendering.<get-rendering>|<get-rendering>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage|null[0]
     constructor <init>(androidx.compose.ui.graphics/ImageBitmap, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage.<init>|<init>(androidx.compose.ui.graphics.ImageBitmap;kotlin.Float){}[0]
 
@@ -1721,6 +1803,7 @@ final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_ToolPreset$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_ToolPreset_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.history/io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop // io.github.valerioisufi.drawview.canvas.history/io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_history_HistoryManager$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop // io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop|#static{}io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop[0]
@@ -1806,6 +1889,7 @@ final fun io.github.valerioisufi.drawview.canvas.platform/encodePng(androidx.com
 final fun io.github.valerioisufi.drawview.canvas.platform/exifOrientation(kotlin/Int): io.github.valerioisufi.drawview.model.geometry/Matrix2D // io.github.valerioisufi.drawview.canvas.platform/exifOrientation|exifOrientation(kotlin.Int){}[0]
 final fun io.github.valerioisufi.drawview.canvas.platform/isJpeg(kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.platform/isJpeg|isJpeg(kotlin.ByteArray){}[0]
 final fun io.github.valerioisufi.drawview.canvas.platform/jpegOrientation(kotlin/ByteArray): kotlin/Int // io.github.valerioisufi.drawview.canvas.platform/jpegOrientation|jpegOrientation(kotlin.ByteArray){}[0]
+final fun io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.port/io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter|io_github_valerioisufi_drawview_canvas_port_EditorPorts$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/fitPdfPage(kotlin/Double, kotlin/Double, androidx.compose.ui.geometry/Rect): androidx.compose.ui.geometry/Rect // io.github.valerioisufi.drawview.canvas.render.tile/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;androidx.compose.ui.geometry.Rect){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(){}[0]

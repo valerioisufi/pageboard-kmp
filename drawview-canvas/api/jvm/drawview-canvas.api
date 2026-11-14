@@ -303,6 +303,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getPendingTextImport ()Lio/github/valerioisufi/drawview/canvas/controller/TextImport;
 	public final fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
 	public final fun getPlacementManager ()Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;
+	public final fun getPorts ()Lio/github/valerioisufi/drawview/canvas/port/EditorPorts;
 	public final fun getPreferences ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getPresence ()Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;
 	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
@@ -1043,6 +1044,83 @@ public final class io/github/valerioisufi/drawview/canvas/platform/ImageOrientat
 	public static final fun exifOrientation (I)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
 	public static final fun isJpeg ([B)Z
 	public static final fun jpegOrientation ([B)I
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorDocument {
+	public abstract fun addObserver (Lio/github/valerioisufi/drawview/model/change/ChangeObserver;)V
+	public abstract fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public abstract fun group (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public abstract fun isReadOnly ()Z
+	public abstract fun removeObserver (Lio/github/valerioisufi/drawview/model/change/ChangeObserver;)V
+	public abstract fun submit (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorEdits {
+	public abstract fun addCustomElement (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;Z)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public abstract fun clearSelection ()V
+	public abstract fun finishEditingText ()V
+	public abstract fun getPendingTextImport ()Lio/github/valerioisufi/drawview/canvas/controller/TextImport;
+	public abstract fun isEditingText ()Z
+	public abstract fun selectText (ILio/github/valerioisufi/drawview/model/DrawText;)V
+	public abstract fun setPendingTextImport (Lio/github/valerioisufi/drawview/canvas/controller/TextImport;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/port/EditorEdits$DefaultImpls {
+	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorPages {
+	public abstract fun firstVisiblePageIndex ()Ljava/lang/Integer;
+	public abstract fun getFrames ()I
+	public abstract fun getSelection ()Lio/github/valerioisufi/drawview/canvas/controller/PageSelection;
+	public abstract fun jumpToPage (ILio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public static synthetic fun jumpToPage$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPages;ILio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/lang/Object;)V
+	public abstract fun mostVisiblePageIndex ()Ljava/lang/Integer;
+	public abstract fun pageMmToScreen (I)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public abstract fun visiblePageIndices ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/port/EditorPages$DefaultImpls {
+	public static synthetic fun jumpToPage$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPages;ILio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/lang/Object;)V
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorPlacement {
+	public abstract fun cancel ()V
+	public abstract fun getCanPlaceByTopic ()Z
+	public abstract fun pagesFor (Ljava/util/List;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
+	public static synthetic fun pagesFor$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
+	public abstract fun partsByTopic (Ljava/lang/String;Ljava/lang/Integer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun pdfTextOf (I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+	public abstract fun placeTexts (Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Z
+	public static synthetic fun placeTexts$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+	public abstract fun sizeOfPage (Lio/github/valerioisufi/drawview/model/DrawPage;)F
+	public abstract fun spotsFor (ILio/github/valerioisufi/drawview/model/placement/PlacementBlock;Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;)Ljava/util/List;
+	public abstract fun start (Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/port/EditorPlacement$DefaultImpls {
+	public static synthetic fun pagesFor$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun placeTexts$default (Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/port/EditorPorts {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/port/EditorDocument;Lio/github/valerioisufi/drawview/canvas/port/EditorPages;Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;Lio/github/valerioisufi/drawview/canvas/port/EditorRendering;Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;)V
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/canvas/port/EditorDocument;
+	public final fun getEdits ()Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;
+	public final fun getPages ()Lio/github/valerioisufi/drawview/canvas/port/EditorPages;
+	public final fun getPlacement ()Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;
+	public final fun getPresence ()Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;
+	public final fun getRendering ()Lio/github/valerioisufi/drawview/canvas/port/EditorRendering;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/port/EditorRendering {
+	public abstract fun getEngines ()Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;
+	public abstract fun measureText (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+	public abstract fun pdfPageText (Ljava/lang/String;I)Ljava/lang/String;
+	public abstract fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
+	public abstract fun renderThumbnail (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines {
