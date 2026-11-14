@@ -10,6 +10,7 @@ import io.github.valerioisufi.drawview.agent.PageEngine
 import io.github.valerioisufi.drawview.agent.PageMark
 import io.github.valerioisufi.drawview.canvas.platform.encodePng
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
+import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
@@ -36,11 +37,13 @@ import kotlinx.coroutines.withContext
  *   are not told, and the texts are left out of a page drawn.
  * @param pdfTiles creates the adapter reading and drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
+ * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
  */
 public class CanvasPageEngine(
     private val textAdapter: TextTileAdapter?,
     private val pdfTiles: () -> PdfTileAdapter? = { null },
-    private val elements: ElementRenderers = ElementRenderers.None
+    private val elements: ElementRenderers = ElementRenderers.None,
+    private val images: ImageCache = ImageCache()
 ) : PageEngine {
     /** The text of the last PDF pages asked for, by file and page: a PDF does not change. Used on the thread of the documents. */
     private val layouts = LinkedHashMap<String, PdfTextLayout?>()
@@ -151,7 +154,7 @@ public class CanvasPageEngine(
             val document = DrawDocument(addInitialPage = false).apply { resources.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
-                TileRenderer(pdfAdapter, textAdapter).apply { elements = this@CanvasPageEngine.elements }
+                TileRenderer(pdfAdapter, textAdapter, images).apply { elements = this@CanvasPageEngine.elements }
                     .renderPageContent(canvas, document, page, toCanvas, Rect(0f, 0f, width.toFloat(), height.toFloat()))
             } finally {
                 pdfAdapter?.close()

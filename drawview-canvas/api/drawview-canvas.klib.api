@@ -1498,7 +1498,7 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TileRenderer { //
 }
 
 final class io.github.valerioisufi.drawview.canvas.render/DrawViewEngines { // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines|null[0]
-    constructor <init>(kotlin/Function0<io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter?> = ..., io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer? = ..., io.github.valerioisufi.drawview.canvas.render/ElementRenderers = ..., io.github.valerioisufi.drawview.model.text.code/CodeHighlighter? = ..., io.github.valerioisufi.drawview.canvas.controller/PageTopics? = ...) // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.<init>|<init>(kotlin.Function0<io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter?>;io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer?;io.github.valerioisufi.drawview.canvas.render.ElementRenderers;io.github.valerioisufi.drawview.model.text.code.CodeHighlighter?;io.github.valerioisufi.drawview.canvas.controller.PageTopics?){}[0]
+    constructor <init>(kotlin/Function0<io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter?> = ..., io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer? = ..., io.github.valerioisufi.drawview.canvas.render/ElementRenderers = ..., io.github.valerioisufi.drawview.model.text.code/CodeHighlighter? = ..., io.github.valerioisufi.drawview.canvas.controller/PageTopics? = ..., io.github.valerioisufi.drawview.canvas.render/ImageCache = ...) // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.<init>|<init>(kotlin.Function0<io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter?>;io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer?;io.github.valerioisufi.drawview.canvas.render.ElementRenderers;io.github.valerioisufi.drawview.model.text.code.CodeHighlighter?;io.github.valerioisufi.drawview.canvas.controller.PageTopics?;io.github.valerioisufi.drawview.canvas.render.ImageCache){}[0]
 
     final val code // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.code|{}code[0]
         final fun <get-code>(): io.github.valerioisufi.drawview.model.text.code/CodeHighlighter? // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.code.<get-code>|<get-code>(){}[0]
@@ -1506,6 +1506,8 @@ final class io.github.valerioisufi.drawview.canvas.render/DrawViewEngines { // i
         final fun <get-elements>(): io.github.valerioisufi.drawview.canvas.render/ElementRenderers // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.elements.<get-elements>|<get-elements>(){}[0]
     final val formulas // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.formulas|{}formulas[0]
         final fun <get-formulas>(): io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer? // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.formulas.<get-formulas>|<get-formulas>(){}[0]
+    final val images // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.images|{}images[0]
+        final fun <get-images>(): io.github.valerioisufi.drawview.canvas.render/ImageCache // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.images.<get-images>|<get-images>(){}[0]
     final val pdfTiles // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.pdfTiles|{}pdfTiles[0]
         final fun <get-pdfTiles>(): kotlin/Function0<io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter?> // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.pdfTiles.<get-pdfTiles>|<get-pdfTiles>(){}[0]
     final val topics // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.topics|{}topics[0]
@@ -1537,11 +1539,6 @@ final class io.github.valerioisufi.drawview.canvas.render/ImageCache { // io.git
 
     final fun load(kotlin/String): androidx.compose.ui.graphics/ImageBitmap? // io.github.valerioisufi.drawview.canvas.render/ImageCache.load|load(kotlin.String){}[0]
     final fun put(kotlin/String, androidx.compose.ui.graphics/ImageBitmap) // io.github.valerioisufi.drawview.canvas.render/ImageCache.put|put(kotlin.String;androidx.compose.ui.graphics.ImageBitmap){}[0]
-
-    final object Companion { // io.github.valerioisufi.drawview.canvas.render/ImageCache.Companion|null[0]
-        final val Shared // io.github.valerioisufi.drawview.canvas.render/ImageCache.Companion.Shared|{}Shared[0]
-            final fun <get-Shared>(): io.github.valerioisufi.drawview.canvas.render/ImageCache // io.github.valerioisufi.drawview.canvas.render/ImageCache.Companion.Shared.<get-Shared>|<get-Shared>(){}[0]
-    }
 }
 
 final class io.github.valerioisufi.drawview.canvas.snap/SnapGuide { // io.github.valerioisufi.drawview.canvas.snap/SnapGuide|null[0]

@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview
 
+import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.session.EditorSessions
@@ -28,4 +29,7 @@ object SampleData {
 
     /** The formulas of the texts, drawn by MicroTeX for the editors, the thumbnails and the export of every window. */
     val latex: LatexEngine = LatexEngine()
+
+    /** The pixels of the images of the notes, decoded once for the renderers of every window. */
+    val images: ImageCache = ImageCache()
 }

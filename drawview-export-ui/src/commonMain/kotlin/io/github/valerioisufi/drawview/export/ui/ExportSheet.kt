@@ -152,7 +152,7 @@ internal fun ExportSheet(
                 options = state.options(),
                 writers = ExportWriters(
                     pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName, elements = engines.elements, formulas = engines.formulas),
-                    image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements)
+                    image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images)
                 ),
                 path = target.path,
                 fileName = state.fileName(fallbackName),

@@ -20,8 +20,8 @@ public final class io/github/valerioisufi/drawview/explorer/DocumentOpener$Defau
 public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getRendering ()I
 	public final fun of (Ljava/lang/String;JILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

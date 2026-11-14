@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TileManager
+import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.canvas.tool.LassoMode
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.BrushConfig
@@ -113,7 +114,7 @@ public class DrawViewController(
 
     public val historyManager: HistoryManager = HistoryManager(session)
 
-    public val tileManager: TileManager = TileManager(onInvalidate = { requestRedraw() })
+    public val tileManager: TileManager = TileManager(tileRenderer = TileRenderer(images = engines.images), onInvalidate = { requestRedraw() })
 
     /** What the editor shows of the document: the layout of the pages, the camera, the conversions. */
     public val viewport: Viewport = Viewport(document, density, tileManager, ::requestRedraw)

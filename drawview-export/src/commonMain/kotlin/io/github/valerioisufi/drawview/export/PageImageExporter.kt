@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.platform.encodePng
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
+import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
@@ -25,12 +26,14 @@ import kotlinx.coroutines.withContext
  * @param textAdapter draws the texts (the one of the editor), or `null` to leave them out.
  * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
+ * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
  */
 public class PageImageExporter(
     private val textAdapter: TextTileAdapter?,
     private val pixelsPerMm: Float = 200f / 25.4f,
     private val pdfTiles: () -> PdfTileAdapter? = { null },
-    private val elements: ElementRenderers = ElementRenderers.None
+    private val elements: ElementRenderers = ElementRenderers.None,
+    private val images: ImageCache = ImageCache()
 ) : DocumentExporter {
     override val extension: String get() = "png"
     override val mimeType: String get() = "image/png"
@@ -47,7 +50,7 @@ public class PageImageExporter(
             val document = DrawDocument(title = content.title, addInitialPage = false).apply { content.resources.values.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
-                TileRenderer(pdfAdapter, textAdapter).apply { this.elements = this@PageImageExporter.elements }.renderPageContent(
+                TileRenderer(pdfAdapter, textAdapter, images).apply { this.elements = this@PageImageExporter.elements }.renderPageContent(
                     Canvas(bitmap), document, shown, Matrix2D().postScale(scale, scale), Rect(0f, 0f, width.toFloat(), height.toFloat())
                 )
             } finally {

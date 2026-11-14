@@ -128,7 +128,8 @@ fun PencilNotesApp(
             DrawViewEngines(
                 pdfTiles = PdfiumEngine::createTileAdapter,
                 formulas = PencilNotesData.latex,
-                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
+                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() },
+                images = PencilNotesData.images
             )
         }
         AgentPages(agents, engines)
@@ -288,7 +289,8 @@ fun PencilNotesDocumentWindow(
             DrawViewEngines(
                 pdfTiles = PdfiumEngine::createTileAdapter,
                 formulas = PencilNotesData.latex,
-                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
+                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() },
+                images = PencilNotesData.images
             )
         }
         AgentPages(agents, engines)
@@ -331,7 +333,7 @@ private fun AgentPages(agents: PencilNotesAgents?, engines: DrawViewEngines) {
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     val pages = remember(fontFamilyResolver, notesFonts, engines) {
-        CanvasPageEngine(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code), engines.pdfTiles, engines.elements)
+        CanvasPageEngine(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code), engines.pdfTiles, engines.elements, engines.images)
     }
     SideEffect { agents.pageEngine = pages }
 }

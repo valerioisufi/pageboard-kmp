@@ -24,19 +24,24 @@ import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
  *   ([BuiltInCodeHighlighter] by default).
  * @param topics finds the pages a text is about (the search in the notes), to place a text next to
  *   them; without it a text goes where the student chooses.
+ * @param images the pixels of the images of the documents, decoded once for every renderer given
+ *   these engines (the editors, the thumbnails, the export): an application whose windows build
+ *   their own engines gives them one cache.
  */
 public class DrawViewEngines(
     public val pdfTiles: () -> PdfTileAdapter? = { null },
     public val formulas: FormulaRenderer? = null,
     public val elements: ElementRenderers = ElementRenderers.None,
     public val code: CodeHighlighter? = BuiltInCodeHighlighter,
-    public val topics: PageTopics? = null
+    public val topics: PageTopics? = null,
+    public val images: ImageCache = ImageCache()
 ) {
     public companion object {
         /**
          * No engine: the PDF pages and the formulas are not drawn; the code has the colors of
-         * [BuiltInCodeHighlighter], which needs none.
+         * [BuiltInCodeHighlighter], which needs none. A new instance at each read, with a cache
+         * of images of its own.
          */
-        public val None: DrawViewEngines = DrawViewEngines()
+        public val None: DrawViewEngines get() = DrawViewEngines()
     }
 }

@@ -39,12 +39,13 @@ import kotlin.math.min
  *
  * @param pdfAdapter Optional adapter for rendering PDF document pages.
  * @param textAdapter Optional adapter for rasterizing text blocks and LaTeX formulas.
- * @param images the pixels of the images of the documents.
+ * @param images the pixels of the images of the documents (`DrawViewEngines.images`; by default
+ *   a cache of this renderer).
  */
 public class TileRenderer(
     public var pdfAdapter: PdfTileAdapter? = null,
     public var textAdapter: TextTileAdapter? = null,
-    public val images: ImageCache = ImageCache.Shared
+    public val images: ImageCache = ImageCache()
 ) {
     /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [io.github.valerioisufi.drawview.canvas.render.HiddenElements]). */
     public var isHidden: (String) -> Boolean = { false }

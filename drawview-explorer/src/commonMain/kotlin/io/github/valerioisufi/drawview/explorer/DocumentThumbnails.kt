@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.canvas.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.canvas.platform.encodePng
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
+import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
@@ -46,6 +47,7 @@ import kotlinx.coroutines.withContext
  * @param capacity the thumbnails kept in memory.
  * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
+ * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
  */
 @Stable
 public class DocumentThumbnails(
@@ -54,7 +56,8 @@ public class DocumentThumbnails(
     private val directory: String? = defaultDirectory(),
     private val capacity: Int = 48,
     private val pdfTiles: () -> PdfTileAdapter? = { null },
-    private val elements: ElementRenderers = ElementRenderers.None
+    private val elements: ElementRenderers = ElementRenderers.None,
+    private val images: ImageCache = ImageCache()
 ) {
     /** A thumbnail drawn of the first page of fingerprint [fingerprint] (`null`: not known), the document changed at [modifiedAt]. */
     private class Thumbnail(val modifiedAt: Long, val widthPx: Int, val fingerprint: String?, val image: ImageBitmap)
@@ -180,7 +183,7 @@ public class DocumentThumbnails(
         resources.forEach(document::addResource)
         val pdfAdapter = pdfTiles()
         return try {
-            TileRenderer(pdfAdapter, textAdapter).apply { elements = this@DocumentThumbnails.elements }.renderThumbnail(document, page, widthPx)
+            TileRenderer(pdfAdapter, textAdapter, images).apply { elements = this@DocumentThumbnails.elements }.renderThumbnail(document, page, widthPx)
         } finally {
             pdfAdapter?.close()
         }
@@ -202,6 +205,6 @@ public fun rememberDocumentThumbnails(
     val notesFonts = rememberNotesFonts()
     return remember(documents, directory, fontFamilyResolver, notesFonts, engines) {
         val textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code)
-        DocumentThumbnails(documents, textAdapter, directory, pdfTiles = engines.pdfTiles, elements = engines.elements)
+        DocumentThumbnails(documents, textAdapter, directory, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images)
     }
 }

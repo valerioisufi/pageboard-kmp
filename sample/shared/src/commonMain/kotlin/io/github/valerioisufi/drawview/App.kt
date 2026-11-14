@@ -50,7 +50,8 @@ fun App(
         DrawViewEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
             formulas = SampleData.latex,
-            elements = ElementRenderers(listOf(ShapeRenderer))
+            elements = ElementRenderers(listOf(ShapeRenderer)),
+            images = SampleData.images
         )
     }
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }
@@ -88,7 +89,8 @@ fun SampleDocumentWindow(
         DrawViewEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
             formulas = SampleData.latex,
-            elements = ElementRenderers(listOf(ShapeRenderer))
+            elements = ElementRenderers(listOf(ShapeRenderer)),
+            images = SampleData.images
         )
     }
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }

@@ -1118,11 +1118,12 @@ public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines$Companion;
 	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCode ()Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;
 	public final fun getElements ()Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;
 	public final fun getFormulas ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;
+	public final fun getImages ()Lio/github/valerioisufi/drawview/canvas/render/ImageCache;
 	public final fun getPdfTiles ()Lkotlin/jvm/functions/Function0;
 	public final fun getTopics ()Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;
 }
@@ -1162,16 +1163,11 @@ public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderer
 
 public final class io/github/valerioisufi/drawview/canvas/render/ImageCache {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/ImageCache$Companion;
 	public fun <init> ()V
 	public fun <init> (J)V
 	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun load (Ljava/lang/String;)Landroidx/compose/ui/graphics/ImageBitmap;
 	public final fun put (Ljava/lang/String;Landroidx/compose/ui/graphics/ImageBitmap;)V
-}
-
-public final class io/github/valerioisufi/drawview/canvas/render/ImageCache$Companion {
-	public final fun getShared ()Lio/github/valerioisufi/drawview/canvas/render/ImageCache;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/ShapeElementRenderer : io/github/valerioisufi/drawview/canvas/render/ElementRenderer {
