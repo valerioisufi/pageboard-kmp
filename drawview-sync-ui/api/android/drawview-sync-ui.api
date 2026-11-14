@@ -1,7 +1,7 @@
 public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getEngine ()Lio/github/valerioisufi/drawview/sync/SyncEngine;
@@ -35,7 +35,9 @@ public final class io/github/valerioisufi/drawview/sync/ui/CollaborationExtensio
 }
 
 public final class io/github/valerioisufi/drawview/sync/ui/CollaborationKt {
-	public static final fun rememberCollaboration (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
+	public static final fun CollaborationAccess (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Landroidx/compose/runtime/Composer;I)V
+	public static final fun createCollaboration (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
+	public static synthetic fun createCollaboration$default (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
 }
 
 public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$CollaborationExtensionKt {

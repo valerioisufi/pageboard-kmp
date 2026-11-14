@@ -53,7 +53,7 @@ class CollaborationInternetTest {
 
     private fun collaboration(internet: InternetSync): Collaboration {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
-        return Collaboration(OpenDocuments(store, Dispatchers.Default.limitedParallelism(1), scope), NoDiscovery, "Shared", scope, internet = internet)
+        return Collaboration(OpenDocuments(store, Dispatchers.Default.limitedParallelism(1), scope), NoDiscovery, { "Shared" }, scope, internet = internet)
     }
 
     @BeforeTest

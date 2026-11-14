@@ -2,10 +2,9 @@ package io.github.valerioisufi.drawview.sync.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.store.DocumentStore
@@ -36,7 +35,6 @@ import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_shared_f
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +46,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
-import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 
 /** How long the devices of the local network are looked for (see [Collaboration.nearbyHosts]). */
 private const val NEARBY_WAIT_MS = 3_000L
@@ -58,7 +56,7 @@ private const val NEARBY_WAIT_MS = 3_000L
  * documents of an application): the documents shared are kept the same on every device as long as
  * the devices are on the same network, or wherever they are over the internet when the
  * application gives [internet] and the user turns it on ([internetSettings]); the documents
- * received go to the folder [sharedFolderName] of the library.
+ * received go to the folder named by [sharedFolderName] in the library.
  *
  * The device sharing a document is its owner: it gives the invitations (with the role of the
  * devices joining with them, and whether it approves them first), changes the roles of the
@@ -75,7 +73,7 @@ private const val NEARBY_WAIT_MS = 3_000L
 public class Collaboration(
     documents: OpenDocuments,
     private val discovery: LanDiscovery,
-    private val sharedFolderName: String,
+    private val sharedFolderName: suspend () -> String,
     private val scope: CoroutineScope,
     attachments: DocumentAttachments? = null,
     identity: DeviceIdentity = DeviceIdentity.ofThisDevice(),
@@ -96,7 +94,7 @@ public class Collaboration(
     /** Whether this device works with the others over the internet, and through which relay (see [setInternet]). */
     public val internetSettings: StateFlow<InternetSettings> = internetSettingsState.asStateFlow()
 
-    /** Asks for the permission to use the local network (set by [rememberCollaboration]). */
+    /** Asks for the permission to use the local network (set by [CollaborationAccess]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
     public val engine: SyncEngine = SyncEngine(
@@ -235,6 +233,10 @@ public class Collaboration(
         internet?.refresh(networkChanged = true)
     }
 
+    /** Whether some documents are shared with other devices already. */
+    internal suspend fun hasSharedDocuments(): Boolean = store.sharingSecrets().isNotEmpty()
+
+    /** Stops working with the other devices (started again by [start]). */
     public suspend fun stop() {
         mutex.withLock {
             lan?.stop()
@@ -282,54 +284,47 @@ public class Collaboration(
 
     /** The folder of the documents received, created the first time. */
     private suspend fun sharedFolder(): String? {
-        suspend fun find() = store.folders.first().firstOrNull { it.parentId == null && it.name == sharedFolderName }?.id
+        val name = sharedFolderName()
+        suspend fun find() = store.folders.first().firstOrNull { it.parentId == null && it.name == name }?.id
         find()?.let { return it }
-        store.createFolder(sharedFolderName, null)
+        store.createFolder(name, null)
         return find()
     }
 }
 
 /**
- * The [Collaboration] of the application (one per process: it listens on the network), started at
- * once when some documents are shared already, over the internet too with [internet] (e.g.
- * `IrohInternet` of `drawview-sync-iroh`) once the user turns it on. Joins the invitations opened
- * from outside (see [InvitationLinks]) through [CollaborationDialogs].
+ * The [Collaboration] of the application, one per process (it listens on the network): the
+ * discovery of the devices of this platform, the documents received in a folder named in the
+ * language of the application, over the internet too with [internet] (e.g. `IrohInternet` of
+ * `drawview-sync-iroh`) once the user turns it on. It works in [scope] until [Collaboration.stop];
+ * each window of the application binds it with [CollaborationAccess].
  */
-@Composable
-public fun rememberCollaboration(
+public fun createCollaboration(
     documents: OpenDocuments,
     attachments: DocumentAttachments? = null,
-    internet: InternetSync? = null
-): Collaboration {
-    val folderName = stringResource(Res.string.sync_shared_folder)
-    val holder = viewModel { CollaborationHolder(documents, folderName, attachments, internet) }
+    internet: InternetSync? = null,
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+): Collaboration = Collaboration(
+    documents, createLanDiscovery(), { getString(Res.string.sync_shared_folder) }, scope, attachments, internet = internet
+)
+
+/**
+ * Binds [collaboration] to this window: the permission of the local network asked from it, the
+ * collaboration started when some documents are shared already, and the connections closed
+ * meanwhile made again at once when the window comes back to the foreground. The invitations
+ * opened from outside are joined through [CollaborationDialogs].
+ */
+@Composable
+public fun CollaborationAccess(collaboration: Collaboration) {
     val requestAccess = rememberLocalNetworkAccess()
-    val collaboration = holder.collaboration
-    collaboration.requestAccess = requestAccess
+    SideEffect { collaboration.requestAccess = requestAccess }
     LaunchedEffect(collaboration) {
-        if (documents.store.sharingSecrets().isNotEmpty()) collaboration.start()
+        if (collaboration.hasSharedDocuments()) collaboration.start()
     }
-    // Back to the foreground: the connections closed meanwhile are made again at once
     val scope = rememberCoroutineScope()
     LifecycleResumeEffect(collaboration) {
         scope.launch { collaboration.refresh() }
         onPauseOrDispose {}
-    }
-    return collaboration
-}
-
-/** Keeps the collaboration across the configuration changes of Android. */
-private class CollaborationHolder(
-    documents: OpenDocuments,
-    folderName: String,
-    attachments: DocumentAttachments?,
-    internet: InternetSync?
-) : ViewModel() {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val collaboration = Collaboration(documents, createLanDiscovery(), folderName, scope, attachments, internet = internet)
-
-    override fun onCleared() {
-        scope.launch { collaboration.stop() }.invokeOnCompletion { scope.cancel() }
     }
 }
 

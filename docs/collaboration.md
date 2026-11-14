@@ -330,8 +330,8 @@ The application is not released yet, so the stored documents are not migrated:
 * Presence: `DrawViewController.activity` (where the pointer is, the inputs of the stroke being
   drawn) is sent at most every 100 ms and at least every 4 s (`Presence`, never logged, relayed,
   ordered by a sequence per device); a device is gone with its connection or after 12 s of silence.
-* `drawview-sync-ui`: `rememberCollaboration()` (one per process, started at once when documents
-  are shared already), `Collaboration.editorExtension()` (the action Share with the number of the
+* `drawview-sync-ui`: `createCollaboration()` (one per process, started at once when documents
+  are shared already, by `CollaborationAccess`; `docs/document-window.md`), `Collaboration.editorExtension()` (the action Share with the number of the
   others on the document; the dialog with the invitation, its copy, who is on the document and
   Stop sharing; the pointers with the names and the strokes being drawn of the others),
   `JoinSharedDocumentButton`, `CollaborationDialogs` and `InvitationLinks` (the `drawview://join`

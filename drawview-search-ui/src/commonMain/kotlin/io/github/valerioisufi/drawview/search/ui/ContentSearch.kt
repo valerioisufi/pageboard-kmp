@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
+import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.LibrarySearch
 import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
@@ -216,6 +217,11 @@ public class ContentSearch(
         scope.launchSearchCollector()
     }
 
+    /** Closes the index, once the scope given to [start] is cancelled. */
+    public fun close() {
+        index.close()
+    }
+
     /** Collects query and index changes in [scope] without starting the indexer loop. */
     internal fun observeQueries(scope: CoroutineScope) {
         activeScope = scope
@@ -360,8 +366,99 @@ public class ContentSearch(
 }
 
 /**
+ * A [ContentSearch] of [store] across [DocumentSearchSource], the pages of its PDFs (read by the
+ * adapters of [pdfTiles], see `DrawViewEngines.pdfTiles`) and any [extraSources] (such as the
+ * lectures), its index at [indexPath]: for an application whose windows share one search, which
+ * [ContentSearch.start]s it in a scope of its own and [ContentSearch.close]s it once that scope is
+ * cancelled. [rememberContentSearch] does both in a composition.
+ */
+public fun createContentSearch(
+    store: DocumentStore,
+    pdfTiles: () -> PdfTileAdapter? = { null },
+    elementTypes: List<ElementType<*>> = emptyList(),
+    extraSources: List<SearchSource> = emptyList(),
+    indexPath: String = SearchIndex.defaultPath(),
+    conditions: IndexingConditions = IndexingConditions.Always,
+    loadedModels: LoadedModels? = null,
+    installedModels: InstalledModels? = null,
+    downloads: ModelDownloads? = null,
+    runtimeAvailable: Boolean = loadedModels != null,
+    embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
+    embedderOptions: EmbedderOptions = EmbedderOptions(),
+    onlineBackend: OnlineAnswerBackend? = null,
+    onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
+): ContentSearch = searchOver(
+    SearchIndex(path = indexPath, embeddingModel = embeddingSpec.id),
+    sourcesOf(store, pdfTiles, elementTypes, extraSources),
+    store, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions,
+    onlineBackend, onOpenLecture, onOpenAnchor
+)
+
+/** The notes of [store], the pages of its PDFs and [extraSources]. */
+private fun sourcesOf(
+    store: DocumentStore,
+    pdfTiles: () -> PdfTileAdapter?,
+    elementTypes: List<ElementType<*>>,
+    extraSources: List<SearchSource>
+): List<SearchSource> = buildList {
+    add(DocumentSearchSource(store, elementTypes))
+    add(PdfSearchSource(store, pdfTiles))
+    addAll(extraSources)
+}
+
+/** The search of [sources] in [index]. */
+private fun searchOver(
+    index: SearchIndex,
+    sources: List<SearchSource>,
+    store: DocumentStore,
+    conditions: IndexingConditions,
+    loadedModels: LoadedModels?,
+    installedModels: InstalledModels?,
+    downloads: ModelDownloads?,
+    runtimeAvailable: Boolean,
+    embeddingSpec: ModelSpec,
+    embedderOptions: EmbedderOptions,
+    onlineBackend: OnlineAnswerBackend?,
+    onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)?,
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)?
+): ContentSearch {
+    val indexer = SearchIndexer(
+        catalog = store,
+        index = index,
+        sources = sources,
+        conditions = conditions,
+        loadedModels = loadedModels,
+        installedModels = installedModels,
+        embeddingSpec = embeddingSpec,
+        embedderOptions = embedderOptions
+    )
+    val engine = SearchEngine(
+        index = index,
+        loadedModels = loadedModels,
+        installedModels = installedModels,
+        embeddingSpec = embeddingSpec,
+        embedderOptions = embedderOptions
+    )
+    return ContentSearch(
+        index = index,
+        indexer = indexer,
+        engine = engine,
+        installedModels = installedModels,
+        downloads = downloads,
+        loadedModels = loadedModels,
+        embeddingSpec = embeddingSpec,
+        runtimeAvailable = runtimeAvailable,
+        onlineBackend = onlineBackend,
+        onOpenLecture = onOpenLecture,
+        onOpenAnchor = onOpenAnchor
+    )
+}
+
+/**
  * Remembers and runs a [ContentSearch] for [store] across [DocumentSearchSource] and any
- * [extraSources] (such as PDF pages and lectures).
+ * [extraSources] (such as PDF pages and lectures), in this composition (see [createContentSearch]
+ * for a search shared by several windows).
  */
 @Composable
 public fun rememberContentSearch(
@@ -388,42 +485,12 @@ public fun rememberContentSearch(
         onDispose { index.close() }
     }
     val sources = remember(store, engines.pdfTiles, elementTypes, extraSources) {
-        buildList {
-            add(DocumentSearchSource(store, elementTypes))
-            add(PdfSearchSource(store, engines.pdfTiles))
-            addAll(extraSources)
-        }
+        sourcesOf(store, engines.pdfTiles, elementTypes, extraSources)
     }
     val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor) {
-        val indexer = SearchIndexer(
-            catalog = store,
-            index = index,
-            sources = sources,
-            conditions = conditions,
-            loadedModels = loadedModels,
-            installedModels = installedModels,
-            embeddingSpec = embeddingSpec,
-            embedderOptions = embedderOptions
-        )
-        val engine = SearchEngine(
-            index = index,
-            loadedModels = loadedModels,
-            installedModels = installedModels,
-            embeddingSpec = embeddingSpec,
-            embedderOptions = embedderOptions
-        )
-        ContentSearch(
-            index = index,
-            indexer = indexer,
-            engine = engine,
-            installedModels = installedModels,
-            downloads = downloads,
-            loadedModels = loadedModels,
-            embeddingSpec = embeddingSpec,
-            runtimeAvailable = runtimeAvailable,
-            onlineBackend = onlineBackend,
-            onOpenLecture = onOpenLecture,
-            onOpenAnchor = onOpenAnchor
+        searchOver(
+            index, sources, store, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec,
+            embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor
         )
     }
     // The indexer and the answers of a search replaced stop with it, before its index is closed

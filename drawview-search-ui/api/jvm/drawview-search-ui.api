@@ -27,6 +27,7 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/
 	public static synthetic fun askOnDevice$default (Lio/github/valerioisufi/drawview/search/ui/ContentSearch;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun askOnline (Ljava/lang/String;)V
 	public static synthetic fun askOnline$default (Lio/github/valerioisufi/drawview/search/ui/ContentSearch;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun close ()V
 	public final fun getAnswerError ()Ljava/lang/String;
 	public final fun getAnswerModelSpec ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
 	public final fun getAnswerer ()Lio/github/valerioisufi/drawview/search/NotesAnswerer;
@@ -56,6 +57,8 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch$Compa
 }
 
 public final class io/github/valerioisufi/drawview/search/ui/ContentSearchKt {
+	public static final fun createContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZLio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
+	public static synthetic fun createContentSearch$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZLio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
 	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZLio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
 }
 

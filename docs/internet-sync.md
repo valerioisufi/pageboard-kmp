@@ -521,7 +521,7 @@ ones of n0 (the nearest one, in Frankfurt).
 * `SyncChannel.route` (`drawview-sync-protocol`) says what the frames go through: the local
   network, the internet directly, or through the relay. `SecureChannel` passes it on, and
   `SyncEngine.routeOf` gives it for a device and a document.
-* `Collaboration` (`rememberCollaboration(internet = ...)`):
+* `Collaboration` (`createCollaboration(internet = ...)`):
   * it runs the internet beside the local network when the user turns it on (`setInternet`),
     started once documents are shared, as the local network is;
   * it joins over both, and refreshes both after the background;

@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +59,8 @@ import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
 import io.github.valerioisufi.drawview.sync.ui.joinAction
-import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
+import io.github.valerioisufi.drawview.sync.ui.CollaborationAccess
+import io.github.valerioisufi.drawview.sync.ui.createCollaboration
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.CommandHost
@@ -76,7 +78,10 @@ import io.github.valerioisufi.pencilnotes.generated.resources.about_version
 import io.github.valerioisufi.pencilnotes.generated.resources.app_name
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import io.github.valerioisufi.pencilnotes.ui.theme.cherryBombOneFontFamily
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -94,6 +99,7 @@ private val editorClipboard = EditorClipboard()
  * @param onOpenDocumentInNewWindow opens the document in an independent desktop window when provided.
  * @param agents the external models, on a platform that lets their clients in.
  */
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun PencilNotesApp(
     commandHost: CommandHost = remember { CommandHost() },
@@ -117,7 +123,13 @@ fun PencilNotesApp(
         LectureMicrophone(lectureAssistant)
         // The documents shared with the devices of the local network, with their lectures, and over
         // the internet (iroh) once the user turns it on in the sharing
-        val collaboration = rememberCollaboration(documents, attachments = lectureAssistant.attachments, internet = IrohInternet)
+        val collaboration = remember(documents, lectureAssistant) {
+            createCollaboration(documents, attachments = lectureAssistant.attachments, internet = IrohInternet)
+        }
+        DisposableEffect(collaboration) {
+            onDispose { GlobalScope.launch { collaboration.stop() } }
+        }
+        CollaborationAccess(collaboration)
         // A tablet uses the models of a computer of the local network (Ollama)
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page
