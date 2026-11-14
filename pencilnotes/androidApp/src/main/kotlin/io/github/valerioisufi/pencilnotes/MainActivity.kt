@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Context used by the database, the document resources and the TeX fonts
         DrawViewAndroid.init(applicationContext)
+        alive++
 
         activeDocumentId = documentIdOf(intent)
         openInvitationOf(intent)
@@ -47,6 +48,13 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        alive--
+        // The last window of the application closed for good: no more work with the other devices
+        if (isFinishing && alive == 0) PencilNotesServices.stopCollaboration()
     }
 
     override fun onProvideKeyboardShortcuts(data: MutableList<KeyboardShortcutGroup>, menu: Menu?, deviceId: Int) {
@@ -92,6 +100,9 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
+        /** The activities of PencilNotes created and not destroyed (a document may have a task of its own). */
+        private var alive = 0
+
         private const val EXTRA_DOCUMENT_ID = "io.github.valerioisufi.drawview.DOCUMENT_ID"
     }
 }

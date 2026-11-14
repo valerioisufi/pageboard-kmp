@@ -13,12 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.observe
-import io.github.valerioisufi.drawview.canvas.controller.PageTopics
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import io.github.valerioisufi.drawview.agent.ui.CanvasPageEngine
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
@@ -37,30 +33,14 @@ import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
-import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
-import io.github.valerioisufi.drawview.lecture.ui.documentTag
-import io.github.valerioisufi.drawview.lecture.ui.editorExtension
-import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
 import io.github.valerioisufi.drawview.lecture.ui.LectureMicrophone
-import io.github.valerioisufi.drawview.lecture.ui.searchSource
-import io.github.valerioisufi.drawview.ml.InstalledModels
-import io.github.valerioisufi.drawview.ml.LoadedModels
-import io.github.valerioisufi.drawview.ml.ModelDownloads
-import io.github.valerioisufi.drawview.ml.litert.LiteRtRuntime
-import io.github.valerioisufi.drawview.pdf.PdfiumEngine
-import io.github.valerioisufi.drawview.search.MutableIndexingConditions
-import io.github.valerioisufi.drawview.search.ui.ContentSearch
-import io.github.valerioisufi.drawview.search.ui.rememberContentSearch
 import io.github.valerioisufi.drawview.search.ui.settingsAction
-import io.github.valerioisufi.drawview.sync.iroh.IrohInternet
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
-import io.github.valerioisufi.drawview.sync.ui.editorExtension
 import io.github.valerioisufi.drawview.sync.ui.joinAction
 import io.github.valerioisufi.drawview.sync.ui.CollaborationAccess
-import io.github.valerioisufi.drawview.sync.ui.createCollaboration
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.CommandHost
@@ -78,10 +58,6 @@ import io.github.valerioisufi.pencilnotes.generated.resources.about_version
 import io.github.valerioisufi.pencilnotes.generated.resources.app_name
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import io.github.valerioisufi.pencilnotes.ui.theme.cherryBombOneFontFamily
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -99,7 +75,6 @@ private val editorClipboard = EditorClipboard()
  * @param onOpenDocumentInNewWindow opens the document in an independent desktop window when provided.
  * @param agents the external models, on a platform that lets their clients in.
  */
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun PencilNotesApp(
     commandHost: CommandHost = remember { CommandHost() },
@@ -116,86 +91,20 @@ fun PencilNotesApp(
             nameFontFamily = cherryBombOneFontFamily()
         )
         // The documents of PencilNotes, in its data directory: those open are shared by the library,
-        // the editor, the collaboration and the export
+        // the editors, the collaboration and the export
         val documents = PencilNotesData.documents
-        // Lecture recording, followed by Gemini or a local model: it goes on in the background
-        val lectureAssistant = PencilNotesData.lectureAssistant
+        // What works on them, shared by the windows
+        val services = PencilNotesServices
+        val lectureAssistant = services.lectureAssistant
+        val collaboration = services.collaboration
+        val export = services.export
+        val search = services.search
+        val engines = services.engines
         LectureMicrophone(lectureAssistant)
-        // The documents shared with the devices of the local network, with their lectures, and over
-        // the internet (iroh) once the user turns it on in the sharing
-        val collaboration = remember(documents, lectureAssistant) {
-            createCollaboration(documents, attachments = lectureAssistant.attachments, internet = IrohInternet)
-        }
-        DisposableEffect(collaboration) {
-            onDispose { GlobalScope.launch { collaboration.stop() } }
-        }
         CollaborationAccess(collaboration)
-        // A tablet uses the models of a computer of the local network (Ollama)
-        LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
-        // The documents exported as PDF or as the image of a page
-        val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
-        // The PDF pages drawn by PDFium, the formulas by MicroTeX
-        // (the search, made after the engines it reads the PDFs with, is given to them once made)
-        val contentSearch = remember { mutableStateOf<ContentSearch?>(null) }
-        val engines = remember {
-            DrawViewEngines(
-                pdfTiles = PdfiumEngine::createTileAdapter,
-                formulas = PencilNotesData.latex,
-                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() },
-                images = PencilNotesData.images
-            )
-        }
         AgentPages(agents, engines)
-        // Search in the contents of the notes, and the local models (EmbeddingGemma 2, Gemma 4)
-        val liteRtRuntime = remember { LiteRtRuntime() }
-        val installedModels = remember { InstalledModels() }
-        val modelDownloads = remember(installedModels) { ModelDownloads(installedModels) }
-        val loadedModels = remember(liteRtRuntime) { LoadedModels(liteRtRuntime) }
-        val indexingConditions = remember { MutableIndexingConditions(initialCanIndex = true) }
-        LaunchedEffect(lectureAssistant, indexingConditions) {
-            snapshotFlow { !lectureAssistant.isBusy }.collect { canIndex ->
-                indexingConditions.setCanIndex(canIndex)
-            }
-        }
-        val lectureSearchSource = remember(lectureAssistant, documents.store) {
-            listOf(lectureAssistant.searchSource(documents.store))
-        }
-        val onlineAnswerBackend = remember(lectureAssistant) {
-            lectureAssistant.onlineAnswerBackend()
-        }
-        val search = rememberContentSearch(
-            store = documents.store,
-            engines = engines,
-            extraSources = lectureSearchSource,
-            conditions = indexingConditions,
-            loadedModels = loadedModels,
-            installedModels = installedModels,
-            downloads = modelDownloads,
-            runtimeAvailable = liteRtRuntime.isAvailable,
-            onlineBackend = onlineAnswerBackend,
-            onOpenLecture = lectureAssistant::openLectureAt
-        )
-        // A text placed next to the pages it is about (the review of a lecture, a text imported)
-        SideEffect {
-            contentSearch.value = search
-            agents?.contentSearch = search
-        }
-        // The documents with a lecture: their badge and a filter of the library
-        val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
-        val editorExtension = remember(lectureAssistant, collaboration, export, agents) {
-            val extension = lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
-            agents?.let { extension + it.editorExtension } ?: extension
-        }
-        // The lectures of the documents deleted for good go with them (not of the ones in the trash)
-        LaunchedEffect(lectureAssistant) {
-            var known: Set<String>? = null
-            combine(documents.store.documents, documents.store.trash) { summaries, trash ->
-                summaries.mapTo(mutableSetOf()) { it.id } + trash.flatMap { it.documentIds }
-            }.collect { ids ->
-                known?.let { lectureAssistant.forgetDocuments(it - ids) }
-                known = ids
-            }
-        }
+        SideEffect { agents?.contentSearch = search }
+        val editorExtension = remember(agents) { services.editorExtension(agents) }
         // The dialogs of the application adapt like the library, and its commands reach the window:
         // one root for all of them
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
@@ -210,7 +119,7 @@ fun PencilNotesApp(
                         actions = listOfNotNull(collaboration.joinAction(), search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
                         editorExtension = editorExtension,
                         itemsActions = listOf(export.libraryAction),
-                        tags = listOf(lectureTag),
+                        tags = listOf(services.lectureTag),
                         engines = engines,
                         thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
                         search = search,
@@ -295,17 +204,8 @@ fun PencilNotesDocumentWindow(
 ) {
     PencilNotesTheme {
         val documents = PencilNotesData.documents
-        val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
-        // (the search, made after the engines it reads the PDFs with, is given to them once made)
-        val contentSearch = remember { mutableStateOf<ContentSearch?>(null) }
-        val engines = remember {
-            DrawViewEngines(
-                pdfTiles = PdfiumEngine::createTileAdapter,
-                formulas = PencilNotesData.latex,
-                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() },
-                images = PencilNotesData.images
-            )
-        }
+        val export = PencilNotesServices.export
+        val engines = PencilNotesServices.engines
         AgentPages(agents, engines)
         val editorViewModel = viewModel(key = "doc-$documentId") {
             DocumentEditorViewModel(documents, PencilNotesData.sessions, engines, clipboard = editorClipboard).apply {

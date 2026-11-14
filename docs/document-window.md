@@ -96,7 +96,7 @@ The responsibilities are assigned following the GRASP principles.
 | Step | Content | Status |
 |------|---------|--------|
 | 1 | The libraries: `createCollaboration` + `CollaborationAccess` (`rememberCollaboration` goes), `createContentSearch` + `ContentSearch.close()`; tests | done |
-| 2 | `PencilNotesServices`: one set of services per process, started and stopped by the application; the library window on it | to do |
+| 2 | `PencilNotesServices`: one set of services per process, started and stopped by the application; the library window on it | done |
 | 3 | The secondary window with the editor of the application and the dialogs in one window; run on the desktop | to do |
 
 One commit per step on `feat/document-window`, each with its ABI dumps updated on purpose and the
