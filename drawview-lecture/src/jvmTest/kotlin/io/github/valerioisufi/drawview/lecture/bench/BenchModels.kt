@@ -1,12 +1,10 @@
 package io.github.valerioisufi.drawview.lecture.bench
 
-import io.github.valerioisufi.drawview.lecture.LectureAnalysis
+import io.github.valerioisufi.drawview.lecture.model.DeviceBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
-import io.github.valerioisufi.drawview.lecture.model.PromptPart
 import io.github.valerioisufi.drawview.ml.Accelerator
 import io.github.valerioisufi.drawview.ml.Embedder
 import io.github.valerioisufi.drawview.ml.EmbedderOptions
-import io.github.valerioisufi.drawview.ml.GenerationPart
 import io.github.valerioisufi.drawview.ml.GenerationRequest
 import io.github.valerioisufi.drawview.ml.GeneratorOptions
 import io.github.valerioisufi.drawview.ml.InstalledModel
@@ -20,52 +18,13 @@ import java.io.File
 import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 
-/** How the JSON schema of an answer reaches a model of the device. */
-internal enum class SchemaMode {
-    /** By the constrained decoding of LiteRT-LM. */
-    ENFORCED,
+/** How the JSON schema of an answer reaches a model of the device (see [DeviceBackend]). */
+internal typealias SchemaMode = io.github.valerioisufi.drawview.lecture.model.SchemaMode
 
-    /** In the instructions only: the answer is taken out of its ```` ```json ```` block. */
-    ASKED
-}
-
-/**
- * [this] prompt as a request of the models of the device, as `DeviceBackend` will send it: the
- * texts between two images joined, the schema enforced or written in the instructions.
- */
-internal fun ModelPrompt.toRequest(mode: SchemaMode, temperature: Float = 0.4f): GenerationRequest {
-    val schemaText = schema.toString()
-    val instructions = when (mode) {
-        SchemaMode.ENFORCED -> system
-        SchemaMode.ASKED -> "$system\n\nAnswer only with a JSON object that follows this JSON Schema (write the object, not the schema), without other text:\n$schemaText"
-    }
-    val content = mutableListOf<GenerationPart>()
-    val text = StringBuilder()
-    fun flush() {
-        if (text.isNotBlank()) content.add(GenerationPart.Text(text.toString().trim()))
-        text.clear()
-    }
-    for (part in parts) {
-        when (part) {
-            is PromptPart.Text -> text.append(part.text).append("\n\n")
-            is PromptPart.Image -> {
-                flush()
-                content.add(GenerationPart.Image(part.jpeg))
-            }
-        }
-    }
-    flush()
-    return GenerationRequest(
-        system = instructions,
-        parts = content,
-        jsonSchema = schemaText.takeIf { mode == SchemaMode.ENFORCED },
-        maxOutputTokens = maxOutputTokens,
-        temperature = temperature
-    )
-}
+/** [this] prompt as a request of the models of the device, as [DeviceBackend] sends it. */
+internal fun ModelPrompt.toRequest(mode: SchemaMode, temperature: Float = 0.4f): GenerationRequest =
+    DeviceBackend.requestOf(this, mode, temperature)
 
 /** An answer of a model of the device, with its time; [error] when it could not answer. */
 internal class Answer(val text: String, val error: String?, val millis: Long, val pieces: Int, val accelerator: Accelerator?)
@@ -130,57 +89,12 @@ internal class Bench(
         loaded.withEmbedder(model, options, keepLoadedMillis = 120_000, block = block)
 }
 
-/**
- * The JSON of an answer: the last object of the text (in a ```` ```json ```` block or not) that
- * holds the keys [schema] requires, so that a schema the model repeated before its answer is
- * passed over. When the answer was written inside the schema repeated (`{"type": "object", ...},
- * "blocks": [...]}`), the text from its first required key, closed as an object. Without any, the
- * first object.
- */
-internal fun jsonOf(answer: String, schema: JsonObject? = null): String {
-    val required = schema?.get("required")?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
-    val objects = jsonObjects(answer)
-    val appended = required.firstOrNull()?.let { key -> answer.lastIndexOf("\"$key\":").takeIf { it >= 0 } }
-        ?.let { start -> jsonObjects("{" + answer.substring(start)).firstOrNull() }
-    val answered = (objects + listOfNotNull(appended)).lastOrNull { holdsKeys(it, required) }
-    return (answered ?: objects.firstOrNull() ?: answer).trim()
-}
+/** The JSON of an answer, as [DeviceBackend] takes it. */
+internal fun jsonOf(answer: String, schema: JsonObject? = null): String = DeviceBackend.jsonOf(answer, schema)
 
-/** Whether [json] is an object holding [keys] (any object, when there are none, but a schema). */
-internal fun holdsKeys(json: String, keys: List<String>): Boolean {
-    val element = parseJsonOrNull(LectureAnalysis.repairLatexEscapes(json)) as? JsonObject ?: return false
-    return element.keys.containsAll(keys) && (keys.isNotEmpty() || "properties" !in element)
-}
+internal fun holdsKeys(json: String, keys: List<String>): Boolean = DeviceBackend.holdsKeys(json, keys)
 
-/** The keys [schema] requires of its object. */
-internal fun requiredKeys(schema: JsonObject): List<String> = schema["required"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
-
-/** The objects of [text] at the top level, by their braces (those inside the strings of JSON skipped). */
-private fun jsonObjects(text: String): List<String> {
-    val objects = mutableListOf<String>()
-    var depth = 0
-    var start = -1
-    var inString = false
-    var i = 0
-    while (i < text.length) {
-        val c = text[i]
-        when {
-            inString && c == '\\' -> i++
-            c == '"' && depth > 0 -> inString = !inString
-            inString -> {}
-            c == '{' -> {
-                if (depth == 0) start = i
-                depth++
-            }
-            c == '}' && depth > 0 -> {
-                depth--
-                if (depth == 0) objects.add(text.substring(start, i + 1))
-            }
-        }
-        i++
-    }
-    return objects
-}
+internal fun requiredKeys(schema: JsonObject): List<String> = DeviceBackend.requiredKeys(schema)
 
 /** Seconds, with one decimal. */
 internal fun seconds(millis: Long): String = "%.1f s".format(millis / 1000.0)

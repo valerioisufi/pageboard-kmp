@@ -34,6 +34,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-model"))
+            // The models of the device: their catalog and the models in memory (DeviceBackend)
+            implementation(project(":drawview-ml"))
             // The state of the assistant, observed by its UI (the runtime only: no UI, no Skia)
             api(libs.compose.runtime)
             implementation(libs.kotlinx.coroutines.core)
@@ -60,7 +62,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
         jvmTest.dependencies {
-            // The bench of the models on the device
+            // The bench of the models on the device (LiteRT-LM)
             implementation(project(":drawview-ml-litert"))
         }
         iosMain.dependencies {

@@ -241,7 +241,7 @@ the student reached from a tablet on the local network. It is no longer the defa
 | 1. The runtime on the desktop | done |
 | 2. Measure on the desktop | done |
 | 3. Android | done in code (the bench on the tablet left to run) |
-| 4. The assistant on the device | not started; the live notes stay on Gemini ([docs/local-notes.md](./local-notes.md)) |
+| 4. The assistant on the device | `DeviceBackend` done ([docs/lecture-backends.md](./lecture-backends.md)); the settings version 2 wait for the user; the live notes stay on Gemini ([docs/local-notes.md](./local-notes.md)) |
 | 5. The settings | not started |
 | 6. The speech on the device | not started |
 | 7. iOS | not started |

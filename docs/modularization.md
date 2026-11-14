@@ -116,7 +116,7 @@ until the release (see the release checklist at the end).
 | `drawview-sync-lan` | LAN transport and discovery | sync | no | — |
 | `drawview-sync-iroh` | internet transport through iroh, direct or relayed (see [internet-sync.md](internet-sync.md)) | sync | no | iroh bridge (Rust) |
 | `drawview-sync-ui` | collaboration extension, dialogs | sync-lan, ui | yes | — |
-| `drawview-lecture` | recording, audio codecs, transcription, AI backends, the lectures of the documents and their sharing, the assistant (`LectureAssistant`, its state) | model | runtime only | audio codecs, whisper.cpp (desktop) |
+| `drawview-lecture` | recording, audio codecs, transcription, AI backends (Gemini, Ollama, the models of the device), the lectures of the documents and their sharing, the assistant (`LectureAssistant`, its state) | model, ml | runtime only | audio codecs, whisper.cpp (desktop) |
 | `drawview-lecture-ui` | lecture panel, settings, extension of the editor and of the library, the notebook of an editor (`ControllerNotebookSource`), the microphone permission, the file pickers | lecture, ui | yes | — |
 | `drawview-lecture-testing` | the test doubles of the assistant (microphone, notebook, secrets) | lecture | runtime only | — |
 | `drawview-ml` | local models port: catalog, downloads, `Embedder`, `Generator`, `LoadedModels` | platform | no | — |

@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.RecordingPlayer
+import io.github.valerioisufi.drawview.lecture.model.DeviceBackend
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelAnswer
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
@@ -666,7 +667,7 @@ public class Lecture internal constructor(
     internal companion object {
         /** The problem shown for a failed request. */
         fun problemOf(e: Throwable): LectureProblem {
-            return GeminiBackend.problemOf(e) ?: OllamaBackend.problemOf(e) ?: LectureProblem.Failed(e.message ?: e::class.simpleName.orEmpty())
+            return GeminiBackend.problemOf(e) ?: OllamaBackend.problemOf(e) ?: DeviceBackend.problemOf(e) ?: LectureProblem.Failed(e.message ?: e::class.simpleName.orEmpty())
         }
 
         const val MAX_ATTEMPTS_WHEN_STOPPED = 2
