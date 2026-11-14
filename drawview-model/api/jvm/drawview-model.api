@@ -3339,6 +3339,7 @@ public final class io/github/valerioisufi/drawview/model/text/ListMarker$Read {
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListNumbering;
+	public final fun boxGlyphOf (Z)Ljava/lang/String;
 	public final fun continuationIndentAt (Ljava/lang/String;I)Lkotlin/ranges/IntRange;
 	public final fun format (ILio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)Ljava/lang/String;
 	public final fun glyphOf (Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;)Ljava/lang/String;
@@ -3357,9 +3358,10 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Bull
 }
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Item {
-	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILio/github/valerioisufi/drawview/model/text/NumberingStyle;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILio/github/valerioisufi/drawview/model/text/NumberingStyle;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBullet ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
+	public final fun getChecked ()Ljava/lang/Boolean;
 	public final fun getDepth ()I
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getList ()I
@@ -3445,14 +3447,15 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Kin
 }
 
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Span {
-	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public final fun component10 ()I
 	public final fun component11 ()Ljava/lang/String;
 	public final fun component12 ()Z
 	public final fun component13 ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public final fun component14 ()Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
+	public final fun component15 ()Ljava/lang/Boolean;
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()I
@@ -3461,10 +3464,11 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 	public final fun component7 ()Z
 	public final fun component8 ()Z
 	public final fun component9 ()Z
-	public final fun copy (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;Ljava/lang/Boolean;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBlock ()Z
+	public final fun getChecked ()Ljava/lang/Boolean;
 	public final fun getContentEnd ()I
 	public final fun getContentStart ()I
 	public final fun getDelimiters ()Ljava/util/List;
@@ -3497,6 +3501,16 @@ public final class io/github/valerioisufi/drawview/model/text/TableShape$Compani
 	public final fun cellsOf (Ljava/lang/String;III)Ljava/util/List;
 	public static synthetic fun cellsOf$default (Lio/github/valerioisufi/drawview/model/text/TableShape$Companion;Ljava/lang/String;IIIILjava/lang/Object;)Ljava/util/List;
 	public final fun of (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)Lio/github/valerioisufi/drawview/model/text/TableShape;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TaskBox {
+	public static final field CHECKED Ljava/lang/String;
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TaskBox;
+	public static final field LENGTH I
+	public static final field UNCHECKED Ljava/lang/String;
+	public final fun at (Ljava/lang/CharSequence;II)Ljava/lang/Boolean;
+	public static synthetic fun at$default (Lio/github/valerioisufi/drawview/model/text/TaskBox;Ljava/lang/CharSequence;IIILjava/lang/Object;)Ljava/lang/Boolean;
+	public final fun write (Z)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/TextBackground {

@@ -187,6 +187,10 @@ public class TextEditorManager internal constructor(private val controller: Draw
 
     override val inBulletList: Boolean get() = isEditing && RichTextEditing.inBulletList(value)
 
+    override val headingLevel: Int get() = if (isEditing) RichTextEditing.headingLevelOf(value) else 0
+
+    override val inChecklist: Boolean get() = isEditing && RichTextEditing.inChecklist(value)
+
     override val inNumberedList: Boolean get() = isEditing && RichTextEditing.inNumberedList(value)
 
     override val inQuote: Boolean get() = isEditing && RichTextEditing.inQuote(value)
@@ -789,6 +793,26 @@ public class TextEditorManager internal constructor(private val controller: Draw
     /** Makes the lines of the selection bullet list items, or plain text again. */
     override fun toggleBulletList() {
         if (!inTable) updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)
+    }
+
+    /** Makes the line of the caret a heading of [level] (1 to 6), or plain text for 0. */
+    override fun setHeading(level: Int) {
+        if (!inTable) updateValue(RichTextEditing.setHeading(value, level), smartNewline = false)
+    }
+
+    /** Makes the lines of the selection items of a checklist, or plain text again. */
+    override fun toggleChecklist() {
+        if (!inTable) updateValue(RichTextEditing.toggleChecklist(value), smartNewline = false)
+    }
+
+    /** Checks the items of a checklist of the selection, or unchecks them when they are all checked. */
+    override fun toggleChecked() {
+        if (!inTable) updateValue(RichTextEditing.toggleChecked(value), smartNewline = false)
+    }
+
+    /** Checks or unchecks the item of a checklist starting at [itemStart] of the text (a tap on its box). */
+    public fun toggleCheckedAt(itemStart: Int) {
+        updateValue(RichTextEditing.toggleCheckedAt(value, itemStart), smartNewline = false)
     }
 
     /** Makes the lines of the selection numbered list items, or plain text again. */

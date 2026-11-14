@@ -98,6 +98,11 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code_block
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_check_item
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_checklist
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading_level
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading_n
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_normal_text
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
@@ -559,6 +564,46 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.inHeading == true }
     ) { textTarget?.toggleHeading() }
 
+    /** Makes the line of the caret a heading of [level], or plain text for 0 (⌥⌘0 to ⌥⌘3). */
+    private fun headingLevel(level: Int) = Command(
+        "format-heading-$level",
+        if (level == 0) label(Res.string.text_editor_action_normal_text) else ({ stringResource(Res.string.text_editor_action_heading_n, level) }),
+        CommandGroup.FORMAT,
+        shortcuts = listOf(Shortcut(LEVEL_KEYS[level], primary = true, alt = true)),
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.headingLevel == level }
+    ) { textTarget?.setHeading(level) }
+
+    /** The heading levels offered (by the picker of the bar and the menu Format): normal text, then 2 and 3 (⌥⌘1 is [heading]). */
+    val normalText = headingLevel(0)
+    val heading2 = headingLevel(2)
+    val heading3 = headingLevel(3)
+
+    /** Whether the picker of the heading levels is open, in the formatting bar. */
+    var headingLevelsOpen: Boolean by mutableStateOf(false)
+
+    /** Opens the picker of the heading levels. */
+    val headingLevels = Command(
+        "format-heading-levels", label(Res.string.text_editor_action_heading_level), CommandGroup.FORMAT,
+        isEnabled = { formatsText && textTarget?.inTable == false }
+    ) { headingLevelsOpen = true }
+
+    /** Makes the lines of the selection items of a checklist, or plain text again (⇧⌘9). */
+    val checklist = Command(
+        "format-checklist", label(Res.string.text_editor_action_checklist), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.ListChecks) },
+        shortcuts = listOf(Shortcut(Key.Nine, primary = true, shift = true)),
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.inChecklist == true }
+    ) { textTarget?.toggleChecklist() }
+
+    /** Checks the items of a checklist of the selection, or unchecks them (⌘↩). */
+    val checkItem = Command(
+        "format-check-item", label(Res.string.text_editor_action_check_item), CommandGroup.FORMAT,
+        shortcuts = listOf(Shortcut(Key.Enter, primary = true)),
+        isEnabled = { formatsText && textTarget?.inChecklist == true }
+    ) { textTarget?.toggleChecked() }
+
     val bulletList = Command(
         "format-bullet-list", label(Res.string.text_editor_action_bullet_list), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.List) },
@@ -638,7 +683,8 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, numbering, quote, formula, table,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, heading2, heading3, normalText, headingLevels,
+        bulletList, numberedList, numbering, checklist, checkItem, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 
@@ -716,6 +762,9 @@ internal class EditorCommands internal constructor(
 }
 
 private fun primary(key: Key) = Shortcut(key, primary = true)
+
+/** The keys of the heading levels 0 (normal text) to 3. */
+private val LEVEL_KEYS = listOf(Key.Zero, Key.One, Key.Two, Key.Three)
 
 private fun label(resource: StringResource): @Composable () -> String = { stringResource(resource) }
 

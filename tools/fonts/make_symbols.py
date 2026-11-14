@@ -16,6 +16,7 @@ import sys
 
 from fontTools.subset import Options, Subsetter
 from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables._g_l_y_f import Glyph, GlyphComponent
 
 RANGES = [(0x2190, 0x21FF), (0x2200, 0x22FF), (0x25A0, 0x25FF), (0x2605, 0x2606), (0x2713, 0x2718)]
 DROPPED = ["GSUB", "GPOS", "GDEF", "MATH", "fpgm", "prep", "cvt ", "gasp", "DSIG", "STAT"]
@@ -59,6 +60,65 @@ def add_glyphs(font, other):
                     table.cmap[point] = renamed(name)
 
 
+BOX = 0x25A1
+CHECK = 0x2713
+BOXES = {0x2610: False, 0x2611: True}
+
+
+def compose_boxes(font):
+    """Adds the boxes of the checklists: the white square, with the check mark inside it when checked."""
+    cmap = font.getBestCmap()
+    glyf = font["glyf"]
+    box, check = cmap[BOX], cmap[CHECK]
+    box_glyph, check_glyph = glyf[box], glyf[check]
+    box_glyph.recalcBounds(glyf)
+    check_glyph.recalcBounds(glyf)
+    scale = 0.7
+    # The check mark in the middle of the square
+    dx = round((box_glyph.xMin + box_glyph.xMax) / 2 - scale * (check_glyph.xMin + check_glyph.xMax) / 2)
+    dy = round((box_glyph.yMin + box_glyph.yMax) / 2 - scale * (check_glyph.yMin + check_glyph.yMax) / 2)
+    for point, checked in BOXES.items():
+        name = "checkbox.checked" if checked else "checkbox"
+        glyph = Glyph()
+        glyph.numberOfContours = -1
+        glyph.components = []
+        square = GlyphComponent()
+        square.glyphName, square.x, square.y, square.flags = box, 0, 0, 0x4  # ROUND_XY_TO_GRID
+        glyph.components.append(square)
+        if checked:
+            mark = GlyphComponent()
+            mark.glyphName, mark.x, mark.y, mark.flags = check, dx, dy, 0x4
+            mark.transform = [[scale, 0], [0, scale]]
+            glyph.components.append(mark)
+        glyf[name] = glyph
+        font["hmtx"][name] = font["hmtx"][box]
+        for table in font["cmap"].tables:
+            if table.isUnicode():
+                table.cmap[point] = name
+    font.setGlyphOrder(glyf.glyphOrder)
+    glyf[box].recalcBounds(glyf)
+
+
+def print_ranges(path, wanted):
+    points = sorted(TTFont(path).getBestCmap())
+    points = [p for p in points if p in wanted]
+    ranges = []
+    for point in points:
+        if ranges and ranges[-1][1] == point - 1:
+            ranges[-1][1] = point
+        else:
+            ranges.append([point, point])
+    print(", ".join(f"0x{a:04X} to 0x{b:04X}" for a, b in ranges))
+
+
+def boxes_only(out_dir):
+    path = os.path.join(out_dir, "notes_symbols.ttf")
+    font = TTFont(path)
+    compose_boxes(font)
+    font.save(path)
+    print_ranges(path, {c for first, last in RANGES for c in range(first, last + 1)} | set(BOXES))
+
+
 def main(math, symbols, out_dir):
     wanted = {c for first, last in RANGES for c in range(first, last + 1)}
     first = subset(math, wanted)
@@ -79,18 +139,13 @@ def main(math, symbols, out_dir):
             record.string = "Notes Symbols"
         elif record.nameID == 6:
             record.string = "NotesSymbols-Regular"
+    compose_boxes(merged)
     merged.save(os.path.join(out_dir, "notes_symbols.ttf"))
-
-    points = sorted(TTFont(os.path.join(out_dir, "notes_symbols.ttf")).getBestCmap())
-    points = [p for p in points if p in wanted]
-    ranges = []
-    for point in points:
-        if ranges and ranges[-1][1] == point - 1:
-            ranges[-1][1] = point
-        else:
-            ranges.append([point, point])
-    print(", ".join(f"0x{a:04X} to 0x{b:04X}" for a, b in ranges))
+    print_ranges(os.path.join(out_dir, "notes_symbols.ttf"), wanted | set(BOXES))
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    if sys.argv[1] == "--boxes":
+        boxes_only(sys.argv[2])
+    else:
+        main(*sys.argv[1:])

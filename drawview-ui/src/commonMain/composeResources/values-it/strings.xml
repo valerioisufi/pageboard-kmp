@@ -110,6 +110,11 @@
     <string name="text_editor_action_line_numbers">Numeri di riga</string>
     <string name="text_editor_action_heading">Titolo</string>
     <string name="text_editor_action_bullet_list">Elenco puntato</string>
+    <string name="text_editor_action_checklist">Elenco di controllo</string>
+    <string name="text_editor_action_check_item">Spunta o togli la spunta</string>
+    <string name="text_editor_action_heading_level">Livello del titolo</string>
+    <string name="text_editor_action_heading_n">Titolo %1$d</string>
+    <string name="text_editor_action_normal_text">Testo normale</string>
     <string name="text_editor_action_numbered_list">Elenco numerato</string>
     <string name="text_editor_action_numbering">Numerazione…</string>
     <string name="numbering_automatic">Per livello</string>

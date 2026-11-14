@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.model.text
 /**
  * The characters the text of the notes takes from the symbols font (`notes_symbols.ttf`, see
  * `tools/fonts/make_symbols.py`), which its text font does not have: arrows, mathematical operators,
- * geometric shapes, stars and check marks. Without it they would come from a font of each system,
+ * geometric shapes, stars, check marks and the boxes of the checklists. Without it they would come from a font of each system,
  * with other shapes and widths, as an emoji for some.
  */
 public object TextSymbols {
@@ -13,6 +13,7 @@ public object TextSymbols {
         '←'..'⋿',
         '■'..'◿',
         '★'..'☆',
+        '☐'..'☑',
         '✓'..'✘'
     )
 

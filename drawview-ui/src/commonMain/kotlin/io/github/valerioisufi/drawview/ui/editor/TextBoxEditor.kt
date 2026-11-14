@@ -362,6 +362,18 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                         acceptSuggestion()
                     }
                 }
+                // A tap on the box of an item of a checklist checks it or unchecks it, the caret where it was
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val current = layout ?: return@awaitEachGesture
+                        val box = current.boxAt(currentShown, down.position) ?: return@awaitEachGesture
+                        down.consume()
+                        val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
+                        up.consume()
+                        if (current.boxAt(currentShown, up.position) === box) editor.toggleCheckedAt(box.itemStart)
+                    }
+                }
                 // A finger and a pen select as the page shows the text, the handles where it is
                 .touchSelectionGestures(
                     touch,
@@ -614,6 +626,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                 // The caret on the character the user touched
                 editor.takeCaretRequest()?.let { local ->
                     val point = Offset(local.x * LAYOUT_SCALE, local.y * LAYOUT_SCALE)
+                    // A tap on the page on the box of an item of a checklist: the item checked or unchecked
+                    result.boxAt(currentShown, point)?.let { box -> editor.toggleCheckedAt(box.itemStart) }
                     val offset = codeOffsetAt(result, currentShown, point)
                         ?: currentShown.mapping.transformedToOriginal(result.getOffsetForPosition(point))
                     change(editor.value.copy(selection = TextRange(offset)), pointed = true)

@@ -111,6 +111,11 @@
     <string name="text_editor_action_line_numbers">Line numbers</string>
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_bullet_list">Bulleted list</string>
+    <string name="text_editor_action_checklist">Checklist</string>
+    <string name="text_editor_action_check_item">Check or uncheck</string>
+    <string name="text_editor_action_heading_level">Heading level</string>
+    <string name="text_editor_action_heading_n">Heading %1$d</string>
+    <string name="text_editor_action_normal_text">Normal text</string>
     <string name="text_editor_action_numbered_list">Numbered list</string>
     <string name="text_editor_action_numbering">Numbering…</string>
     <string name="numbering_automatic">By level</string>

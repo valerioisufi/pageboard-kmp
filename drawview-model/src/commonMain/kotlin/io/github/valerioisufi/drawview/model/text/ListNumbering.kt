@@ -15,7 +15,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
  *   one (CommonMark: `1. 1. 1.` shows `1.`, `2.`, `3.`), as a number, a letter or a Roman numeral
  *   by the numbered items it is nested in (`1.`, `a.`, `i.`, then again), or in the style its list
  *   chose in the marker of its first item (see [ListMarker]). A bulleted item shows a disc, a
- *   circle or a square by its depth.
+ *   circle or a square by its depth, an item of a checklist its box (see [TaskBox]).
  */
 public object ListNumbering {
 
@@ -30,7 +30,9 @@ public object ListNumbering {
      * its [parent] in the items (-1 for none), the [list] of its siblings (an index shared by them)
      * and its [label]; [bullet] or [numbering] says how the label is drawn; [ordinal] is the
      * number of a numbered item (0 for a bulleted one); [run] is shared by the items not parted by
-     * a line of other text; [style] is the one its list chose (`null` for a number by level).
+     * a line of other text; [style] is the one its list chose (`null` for a number by level);
+     * [checked] says whether an item of a checklist is checked (`null` for any other item), its
+     * label then the glyph of its box ([boxGlyphOf]) and [bullet] `null`.
      */
     public class Item(
         public val span: Span,
@@ -42,7 +44,8 @@ public object ListNumbering {
         public val numbering: Numbering?,
         public val ordinal: Int = 0,
         public val run: Int = 0,
-        public val style: NumberingStyle? = null
+        public val style: NumberingStyle? = null,
+        public val checked: Boolean? = null
     )
 
     /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
@@ -91,11 +94,13 @@ public object ListNumbering {
                 val numberedAbove = open.count { result[it].span.ordered }
                 numbering = group.style?.numbering ?: BY_LEVEL[numberedAbove % BY_LEVEL.size]
                 label = format(ordinal, numbering) + (group.style?.delimiter ?: '.')
+            } else if (span.checked != null) {
+                label = boxGlyphOf(span.checked)
             } else {
                 bullet = Bullet.entries[depth % Bullet.entries.size]
                 label = glyphOf(bullet)
             }
-            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run, group.style)
+            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run, group.style, span.checked)
             open += index
             previousEnd = span.end
         }
@@ -133,6 +138,12 @@ public object ListNumbering {
         Bullet.CIRCLE -> "◦"
         Bullet.SQUARE -> "▪"
     }
+
+    /**
+     * The glyph of the box of an item of a checklist, [checked] or not: `☑` or `☐`, in the symbols
+     * font of the notes (see [TextSymbols]).
+     */
+    public fun boxGlyphOf(checked: Boolean): String = if (checked) "☑" else "☐"
 
     /** [number] written in [numbering]: `3`, `c`, `C`, `iii`, `III`; a number below 1 as a number. */
     public fun format(number: Int, numbering: Numbering): String = when {

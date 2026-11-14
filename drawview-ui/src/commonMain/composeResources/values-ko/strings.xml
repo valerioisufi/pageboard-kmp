@@ -110,6 +110,11 @@
     <string name="text_editor_action_line_numbers">줄 번호</string>
     <string name="text_editor_action_heading">제목</string>
     <string name="text_editor_action_bullet_list">글머리 기호</string>
+    <string name="text_editor_action_checklist">체크리스트</string>
+    <string name="text_editor_action_check_item">체크 전환</string>
+    <string name="text_editor_action_heading_level">제목 수준</string>
+    <string name="text_editor_action_heading_n">제목 %1$d</string>
+    <string name="text_editor_action_normal_text">일반 텍스트</string>
     <string name="text_editor_action_numbered_list">번호 매기기</string>
     <string name="text_editor_action_numbering">번호 매기기…</string>
     <string name="numbering_automatic">수준별</string>

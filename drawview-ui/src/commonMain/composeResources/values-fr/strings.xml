@@ -110,6 +110,11 @@
     <string name="text_editor_action_line_numbers">Numéros de ligne</string>
     <string name="text_editor_action_heading">Titre</string>
     <string name="text_editor_action_bullet_list">Liste à puces</string>
+    <string name="text_editor_action_checklist">Liste de tâches</string>
+    <string name="text_editor_action_check_item">Cocher ou décocher</string>
+    <string name="text_editor_action_heading_level">Niveau de titre</string>
+    <string name="text_editor_action_heading_n">Titre %1$d</string>
+    <string name="text_editor_action_normal_text">Texte normal</string>
     <string name="text_editor_action_numbered_list">Liste numérotée</string>
     <string name="text_editor_action_numbering">Numérotation…</string>
     <string name="numbering_automatic">Par niveau</string>

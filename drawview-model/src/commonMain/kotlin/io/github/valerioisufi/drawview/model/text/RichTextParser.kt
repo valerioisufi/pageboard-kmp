@@ -49,6 +49,8 @@ public object RichTextParser {
      *   opening fence (see [LINE_NUMBERS]).
      * @property listItem the list item a block of code belongs to (its fence indented under the
      *   text of the item), or `null`.
+     * @property checked for a bulleted list item, whether it is an item of a checklist checked
+     *   (`- [x] text`) or not (`- [ ] text`), its content after the box; `null` for any other item.
      */
     public data class Span(
         val kind: Kind,
@@ -64,7 +66,8 @@ public object RichTextParser {
         val language: String = "",
         val numbered: Boolean = false,
         val listItem: Span? = null,
-        val style: NumberingStyle? = null
+        val style: NumberingStyle? = null,
+        val checked: Boolean? = null
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -106,7 +109,13 @@ public object RichTextParser {
             var contentStart = lineStart + indent.length + marker.length
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             val level = indentLevel(indent.substring(start - lineStart))
-            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false)
+            // The box of an item of a checklist, and the spaces after it, before its content
+            val checked = TaskBox.at(text, contentStart, end)
+            if (checked != null) {
+                contentStart += TaskBox.LENGTH
+                while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
+            }
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false, checked = checked)
         }
         for (match in NUMBERED_LIST.findAll(unquoted)) {
             val lineStart = match.range.first

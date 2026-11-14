@@ -110,6 +110,11 @@
     <string name="text_editor_action_line_numbers">行番号</string>
     <string name="text_editor_action_heading">見出し</string>
     <string name="text_editor_action_bullet_list">箇条書き</string>
+    <string name="text_editor_action_checklist">チェックリスト</string>
+    <string name="text_editor_action_check_item">チェックの切り替え</string>
+    <string name="text_editor_action_heading_level">見出しのレベル</string>
+    <string name="text_editor_action_heading_n">見出し %1$d</string>
+    <string name="text_editor_action_normal_text">標準テキスト</string>
     <string name="text_editor_action_numbered_list">段落番号</string>
     <string name="text_editor_action_numbering">番号の形式…</string>
     <string name="numbering_automatic">レベルごと</string>

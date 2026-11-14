@@ -8,6 +8,7 @@ import io.github.valerioisufi.drawview.model.text.ListNumbering
 import io.github.valerioisufi.drawview.model.text.ListRenumbering
 import io.github.valerioisufi.drawview.model.text.NumberingStyle
 import io.github.valerioisufi.drawview.model.text.RichTextParser
+import io.github.valerioisufi.drawview.model.text.TaskBox
 import kotlin.math.max
 import kotlin.math.min
 
@@ -173,6 +174,38 @@ public object RichTextEditing {
         }
     }
 
+    /** The level of the heading of the line of the caret (of the start of the selection) of [value], 0 for a line that is not one. */
+    public fun headingLevelOf(value: TextFieldValue): Int {
+        if (inCodeBlock(value)) return 0
+        val text = value.text
+        val lineStart = text.lastIndexOf('\n', min(value.selection.start, value.selection.end) - 1) + 1
+        val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+        val marker = HEADING_MARKER.find(text.substring(lineStart, lineEnd)) ?: return 0
+        return marker.value.count { it == '#' }
+    }
+
+    /**
+     * Makes the line of the caret (of the start of the selection) a heading of [level] (1 to 6), or
+     * plain text for 0: its `#` and the spaces after them written again, the caret following.
+     */
+    public fun setHeading(value: TextFieldValue, level: Int): TextFieldValue {
+        if (inCodeBlock(value) || level !in 0..6) return value
+        val text = value.text
+        val sel = value.selection
+        val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1
+        // No heading in a quote, its marker first on the line
+        if (BlockQuote.markerLength(text, lineStart) > 0) return value
+        val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+        val removed = HEADING_MARKER.find(text.substring(lineStart, lineEnd))?.value?.length ?: 0
+        val inserted = if (level == 0) "" else "#".repeat(level) + " "
+        val shift = inserted.length - removed
+        fun moved(offset: Int) = if (offset < lineStart) offset else max(lineStart, offset + shift)
+        return value.copy(
+            text = text.substring(0, lineStart) + inserted + text.substring(lineStart + removed),
+            selection = TextRange(moved(sel.start), moved(sel.end))
+        )
+    }
+
     /**
      * Makes the line of the caret (of the start of the selection) a heading, or a heading line
      * plain text again: the `#` and the spaces after them at the start of the line.
@@ -198,6 +231,126 @@ public object RichTextEditing {
             text = text.substring(0, lineStart) + inserted + text.substring(lineStart + removed),
             selection = TextRange(moved(sel.start), moved(sel.end))
         )
+    }
+
+    /** The items of a checklist (see [TaskBox]) the lines of the selection of [value] start, out of the blocks of code. */
+    private fun selectedTasks(value: TextFieldValue): List<RichTextParser.Span> {
+        if (inCodeBlock(value)) return emptyList()
+        val (firstLineStart, lastLineEnd) = selectedLines(value.text, value.selection)
+        return RichTextParser.parse(value.text).filter {
+            it.kind == RichTextParser.Kind.LIST_ITEM && it.checked != null && it.end >= firstLineStart && it.start <= lastLineEnd
+        }
+    }
+
+    /** Whether every line of the selection of [value] starts an item of a checklist. */
+    public fun inChecklist(value: TextFieldValue): Boolean {
+        if (inCodeBlock(value)) return false
+        val (firstLineStart, lastLineEnd) = selectedLines(value.text, value.selection)
+        val starts = selectedTasks(value).map { it.start }.toSet()
+        var lineStart = firstLineStart
+        while (true) {
+            // A line of a quote starts its item after its marker
+            if (lineStart !in starts && lineStart + BlockQuote.markerLength(value.text, lineStart) !in starts) return false
+            val next = value.text.indexOf('\n', lineStart)
+            if (next < 0 || next >= lastLineEnd) return true
+            lineStart = next + 1
+        }
+    }
+
+    /**
+     * Makes the lines of the selection items of a checklist, not checked (`- [ ] `), or plain text
+     * again if they are all items of a checklist: a bulleted item takes a box, any other line the
+     * marker of a bulleted item with its box (in place of its number or its `#`).
+     */
+    public fun toggleChecklist(value: TextFieldValue): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val text = value.text
+        val remove = inChecklist(value)
+        val (firstLineStart, lastLineEnd) = selectedLines(text, value.selection)
+        val items = RichTextParser.parse(text).filter { it.kind == RichTextParser.Kind.LIST_ITEM }
+        // Each change: the range replaced and its new text, in the order of the text
+        val edits = ArrayList<Triple<Int, Int, String>>()
+        val box = TaskBox.UNCHECKED + " "
+        var lineStart = firstLineStart
+        while (lineStart <= lastLineEnd) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+            val textStart = lineStart + BlockQuote.markerLength(text, lineStart)
+            val item = items.firstOrNull { it.start == textStart || it.start == lineStart }
+            val continuation = item == null && items.any { it.start < lineStart && lineStart <= it.end }
+            var indentEnd = textStart
+            while (indentEnd < lineEnd && (text[indentEnd] == ' ' || text[indentEnd] == '\t')) indentEnd++
+            when {
+                continuation -> {}
+                remove && item != null -> edits += Triple(indentEnd, item.contentStart, "")
+                // A bulleted item: the box after its marker and its space
+                item != null && !item.ordered && item.checked == null -> edits += Triple(indentEnd + 2, item.contentStart, box)
+                item != null && item.checked == null -> edits += Triple(indentEnd, item.contentStart, BULLET_PREFIX + box)
+                item == null && !remove -> {
+                    val heading = HEADING_MARKER.find(text.substring(indentEnd, lineEnd))?.value?.length ?: 0
+                    edits += Triple(indentEnd, indentEnd + heading, BULLET_PREFIX + box)
+                }
+            }
+            if (lineEnd >= text.length) break
+            lineStart = lineEnd + 1
+        }
+        return applied(value, edits)
+    }
+
+    /**
+     * Checks the items of a checklist the selection of [value] is in, or unchecks them when they
+     * are all checked. [value] as it is out of the checklists.
+     */
+    public fun toggleChecked(value: TextFieldValue): TextFieldValue {
+        val tasks = selectedTasks(value)
+        if (tasks.isEmpty()) return value
+        val check = tasks.any { it.checked == false }
+        return withBoxes(value, tasks.filter { it.checked != check }, check)
+    }
+
+    /**
+     * Checks or unchecks the item of a checklist of [value] starting at [itemStart]; [value] as it
+     * is for any other offset.
+     */
+    public fun toggleCheckedAt(value: TextFieldValue, itemStart: Int): TextFieldValue {
+        val item = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.start == itemStart && it.checked != null }
+            ?: return value
+        return withBoxes(value, listOf(item), item.checked != true)
+    }
+
+    /** [value] with the boxes of the items of a checklist [items] written [checked]: one character each, the selection where it was. */
+    private fun withBoxes(value: TextFieldValue, items: List<RichTextParser.Span>, checked: Boolean): TextFieldValue {
+        val chars = value.text.toCharArray()
+        for (item in items) {
+            var box = item.start
+            while (chars[box] != '[') box++
+            chars[box + 1] = if (checked) 'x' else ' '
+        }
+        return value.copy(text = chars.concatToString())
+    }
+
+    /** [value] with [edits] (ranges of its text and their new text, not overlapping) applied, its selection following them. */
+    private fun applied(value: TextFieldValue, edits: List<Triple<Int, Int, String>>): TextFieldValue {
+        if (edits.isEmpty()) return value
+        val sorted = edits.sortedBy { it.first }
+        val out = StringBuilder()
+        var from = 0
+        for ((start, end, inserted) in sorted) {
+            out.append(value.text, from, start).append(inserted)
+            from = end
+        }
+        out.append(value.text, from, value.text.length)
+        fun moved(offset: Int): Int {
+            var shift = 0
+            for ((start, end, inserted) in sorted) {
+                when {
+                    offset >= end -> shift += inserted.length - (end - start)
+                    offset > start -> return start + shift + inserted.length
+                    else -> return offset + shift
+                }
+            }
+            return offset + shift
+        }
+        return value.copy(text = out.toString(), selection = TextRange(moved(value.selection.start), moved(value.selection.end)))
     }
 
     /**
@@ -442,7 +595,8 @@ public object RichTextEditing {
         if (continued != null) {
             var markerStart = continued.start
             while (text[markerStart] == ' ' || text[markerStart] == '\t') markerStart++
-            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) else text[markerStart] + " "
+            val box = if (continued.checked != null) TaskBox.UNCHECKED + " " else ""
+            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) else text[markerStart] + " " + box
             var after = cursor
             while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
             // At the start of the line: the next item takes the whole line
@@ -455,12 +609,19 @@ public object RichTextEditing {
         val rest = line.substring(indent.length)
         val numbered = ListMarker.at(rest)
 
-        val (markerType, markerLen, numValue, bulletMarker) = when {
+        var (markerType, markerLen, numValue, bulletMarker) = when {
             rest.startsWith("- ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "- ")
             rest.startsWith("* ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "* ")
             rest.startsWith("+ ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "+ ")
             numbered != null -> MarkerInfo(MarkerType.NUMBERED, numbered.length, numbered.number, "")
             else -> MarkerInfo(MarkerType.NONE, 0, 0, "")
+        }
+
+        // The box of an item of a checklist goes with its marker: the next item takes an empty one
+        if (markerType == MarkerType.BULLET && TaskBox.at(rest, markerLen) != null) {
+            markerLen += TaskBox.LENGTH
+            while (markerLen < rest.length && (rest[markerLen] == ' ' || rest[markerLen] == '\t')) markerLen++
+            bulletMarker += TaskBox.UNCHECKED + " "
         }
 
         if (markerType == MarkerType.NONE) {

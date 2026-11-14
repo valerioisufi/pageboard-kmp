@@ -224,8 +224,28 @@ internal class PresentedText<T>(
     val inlineCode: List<MarkdownTextUtil.InlineCode>,
     val hiddenAtCaret: HiddenSource?,
     val tables: List<PresentedTable<T>> = emptyList(),
-    val quotes: List<IntRange> = emptyList()
+    val quotes: List<IntRange> = emptyList(),
+    val boxes: List<PresentedBox> = emptyList()
 )
+
+/**
+ * The box of an item of a checklist in a presented text: the characters of its glyph ([range]),
+ * the start of its item in the source ([itemStart]), whether it is [checked]. A tap on it checks or
+ * unchecks the item.
+ */
+internal class PresentedBox(val range: IntRange, val itemStart: Int, val checked: Boolean)
+
+/** The box of a checklist of [shown] under [point] of [layout] (laid out from it), or `null`. */
+internal fun TextLayoutResult.boxAt(shown: PresentedText<*>, point: androidx.compose.ui.geometry.Offset): PresentedBox? {
+    if (shown.boxes.isEmpty() || layoutInput.text.text != shown.text.text) return null
+    return shown.boxes.firstOrNull { box ->
+        val first = getBoundingBox(box.range.first)
+        val last = getBoundingBox(box.range.last)
+        // A little larger than the glyph: a target for a finger
+        val slack = first.height * 0.25f
+        point.x in (first.left - slack)..(last.right + slack) && point.y in (first.top - slack)..(first.bottom + slack)
+    }
+}
 
 /**
  * The offsets of a source and of the text presenting it, both ways: where each offset of the
@@ -533,6 +553,15 @@ internal object RichTextPresenter {
         val bulletSize = if (bulletScale < 1f) (p.fontSizePx * bulletScale / p.density).sp else androidx.compose.ui.unit.TextUnit.Unspecified
         for ((range, item) in labels) {
             if (item.bullet != null) out.addStyle(SpanStyle(fontFamily = p.monospace, fontSize = bulletSize), range.first, range.last + 1)
+            if (item.checked != null) {
+                // The box in the symbols font, the text of an item done struck through and faded
+                p.symbols?.let { out.addStyle(SpanStyle(fontFamily = it), range.first, range.last + 1) }
+                if (item.checked) {
+                    val from = mapping.originalToTransformed(item.span.contentStart)
+                    val to = mapping.originalToTransformed(item.span.end)
+                    if (to > from) out.addStyle(SpanStyle(color = p.color.copy(alpha = p.color.alpha * DONE_ALPHA), textDecoration = TextDecoration.LineThrough), from, to)
+                }
+            }
         }
         for (room in rooms) {
             for ((k, strut) in p.struts.styles(room.widthPx, room.ascentPx, room.descentPx, p.density).withIndex()) {
@@ -557,7 +586,8 @@ internal object RichTextPresenter {
                 }
             }
         }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, hiddenAtCaret, tables, quotes)
+        val boxes = labels.mapNotNull { (range, item) -> item.checked?.let { PresentedBox(range, item.span.start, it) } }
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, hiddenAtCaret, tables, quotes, boxes)
     }
 
     /**
@@ -645,6 +675,8 @@ internal object RichTextPresenter {
         if (items.isEmpty()) return ListLayout.EMPTY
         fun widthOf(item: ListNumbering.Item): Float = if (item.bullet != null) {
             BULLET_ADVANCE * bulletScale(p) * p.fontSizePx
+        } else if (item.checked != null) {
+            BOX_ADVANCE * p.fontSizePx
         } else {
             p.measurePrefix?.invoke(item.label) ?: (item.label.length * ORDINAL_ADVANCE * p.fontSizePx)
         }
@@ -661,7 +693,7 @@ internal object RichTextPresenter {
             // At most half the line to the text, so that the text keeps room
             val textLeft = min(left + column + gap, (p.lineWidthPx ?: Float.MAX_VALUE) / 2f)
             val labelLeft = (textLeft - gap - widths[index]).coerceAtLeast(0f)
-            laidOut += ListItemLayout(item.span, item.label, item.bullet, labelLeft, widths[index], textLeft)
+            laidOut += ListItemLayout(item.span, item.label, item.bullet, labelLeft, widths[index], textLeft, item.checked)
         }
         val itemAt = HashMap<Int, ListItemLayout>()
         val continuationAt = HashMap<Int, ListItemLayout>()
@@ -717,14 +749,18 @@ internal object RichTextPresenter {
     private fun bulletScale(p: Presentation<*>): Float =
         minOf(1f, p.struts.room.ascent / MONO_ASCENT, p.struts.room.descent / MONO_DESCENT)
 
-    /** A list item laid out: its [label] ([labelWidthPx] wide) from [labelLeftPx], its text from [textLeftPx]. */
+    /**
+     * A list item laid out: its [label] ([labelWidthPx] wide) from [labelLeftPx], its text from
+     * [textLeftPx]; [checked] for an item of a checklist (see [ListNumbering.Item.checked]).
+     */
     private class ListItemLayout(
         val span: Span,
         val label: String,
         val bullet: ListNumbering.Bullet?,
         val labelLeftPx: Float,
         val labelWidthPx: Float,
-        val textLeftPx: Float
+        val textLeftPx: Float,
+        val checked: Boolean? = null
     )
 
     /** The list items of a text by the start of their lines: their first lines, their continuation lines. */
@@ -764,6 +800,12 @@ internal object RichTextPresenter {
 
     /** Share of the line an object taking its line takes: all of it, without wrapping on a rounding. */
     private const val LINE_FILL = 0.999f
+
+    /** The advance of the box of an item of a checklist in the symbols font, per pixel of the size. */
+    private const val BOX_ADVANCE = 0.816f
+
+    /** The opacity of the text of an item of a checklist checked. */
+    private const val DONE_ALPHA = 0.55f
 
     /** The advance of a bullet in the monospace font, per pixel of the size. */
     private const val BULLET_ADVANCE = 0.6f

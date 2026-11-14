@@ -34,7 +34,8 @@ internal object GhostText {
             inlineCode = presented.inlineCode,
             hiddenAtCaret = presented.hiddenAtCaret,
             tables = presented.tables,
-            quotes = presented.quotes
+            quotes = presented.quotes,
+            boxes = presented.boxes
         )
     }
 

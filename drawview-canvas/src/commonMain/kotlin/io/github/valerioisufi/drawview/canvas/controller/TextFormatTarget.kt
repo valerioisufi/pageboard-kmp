@@ -59,6 +59,12 @@ public interface TextFormatTarget {
     /** Whether the lines of the selection are bullet list items. */
     public val inBulletList: Boolean get() = false
 
+    /** The level of the heading of the line of the caret (1 to 6), 0 for a line that is not one. */
+    public val headingLevel: Int get() = 0
+
+    /** Whether the lines of the selection are items of a checklist (`- [ ] `). */
+    public val inChecklist: Boolean get() = false
+
     /** Whether the lines of the selection are numbered list items. */
     public val inNumberedList: Boolean get() = false
 
@@ -88,6 +94,15 @@ public interface TextFormatTarget {
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
     public fun toggleNumberedList() {}
+
+    /** Makes the line of the caret a heading of [level] (1 to 6), or plain text for 0. */
+    public fun setHeading(level: Int) {}
+
+    /** Makes the lines of the selection items of a checklist, or plain text again. */
+    public fun toggleChecklist() {}
+
+    /** Checks the items of a checklist of the selection, or unchecks them when they are all checked. */
+    public fun toggleChecked() {}
 
     /** Makes the lines of the selection lines of a block quote, or takes them out of it. */
     public fun toggleQuote() {}

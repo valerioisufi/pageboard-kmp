@@ -110,6 +110,11 @@
     <string name="text_editor_action_line_numbers">Zeilennummern</string>
     <string name="text_editor_action_heading">Überschrift</string>
     <string name="text_editor_action_bullet_list">Aufzählung</string>
+    <string name="text_editor_action_checklist">Checkliste</string>
+    <string name="text_editor_action_check_item">Abhaken oder nicht</string>
+    <string name="text_editor_action_heading_level">Überschriftenebene</string>
+    <string name="text_editor_action_heading_n">Überschrift %1$d</string>
+    <string name="text_editor_action_normal_text">Normaler Text</string>
     <string name="text_editor_action_numbered_list">Nummerierte Liste</string>
     <string name="text_editor_action_numbering">Nummerierung…</string>
     <string name="numbering_automatic">Nach Ebene</string>

@@ -746,8 +746,10 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
 	public final fun getFormattedPaste ()Ljava/lang/String;
+	public fun getHeadingLevel ()I
 	public fun getInBulletList ()Z
 	public final fun getInChain ()Z
+	public fun getInChecklist ()Z
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
@@ -779,6 +781,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun reportLayoutHeight (F)V
 	public final fun saveWriting ()V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
+	public fun setHeading (I)V
 	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
 	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;)V
@@ -792,6 +795,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun takeCaretRequest-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
+	public fun toggleChecked ()V
+	public final fun toggleCheckedAt (I)V
+	public fun toggleChecklist ()V
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
 	public fun toggleLineNumbers ()V
@@ -814,7 +820,9 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public abstract fun getColor ()I
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
+	public fun getHeadingLevel ()I
 	public fun getInBulletList ()Z
+	public fun getInChecklist ()Z
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
@@ -827,9 +835,12 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public fun insertTable (II)V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public fun outdent ()V
+	public fun setHeading (I)V
 	public fun setNumbering (Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
+	public fun toggleChecked ()V
+	public fun toggleChecklist ()V
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
 	public fun toggleLineNumbers ()V
@@ -843,7 +854,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun getBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getHeadingLevel (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)I
 	public static fun getInBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getInChecklist (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
@@ -856,9 +869,12 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun insertTable (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;II)V
 	public static fun isActive (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun setHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;I)V
 	public static fun setNumbering (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)V
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun toggleChecked (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun toggleChecklist (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
@@ -1565,7 +1581,9 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun headingLevelOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
 	public final fun inBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Z
+	public final fun inChecklist (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun inCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun inHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun inNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Z
@@ -1577,9 +1595,13 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun numberingStartOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
 	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun setHeading (Landroidx/compose/ui/text/input/TextFieldValue;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setNumbering (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/model/text/NumberingStyle;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleChecked (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleCheckedAt (Landroidx/compose/ui/text/input/TextFieldValue;I)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleChecklist (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleLineNumbers (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
