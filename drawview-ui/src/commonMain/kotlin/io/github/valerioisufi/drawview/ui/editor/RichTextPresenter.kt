@@ -251,6 +251,15 @@ internal class SourceMapping(
 
     /** Whether [offset] of the source is inside an object, which the caret moves in by its own rules. */
     fun insideObject(offset: Int): Boolean = inObject[offset.coerceIn(0, inObject.lastIndex)]
+
+    /**
+     * This mapping with [count] characters shown after the end of the text that stand for no
+     * character of the source: each of them for its end (see [GhostText]).
+     */
+    fun withShownAtEnd(count: Int): SourceMapping {
+        val end = sourceLength
+        return SourceMapping(toShown, toSource + IntArray(count) { end }, noCaret, inObject)
+    }
 }
 
 /**

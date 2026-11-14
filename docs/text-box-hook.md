@@ -74,7 +74,7 @@ Variations).
 | Phase | Content | Status |
 |-------|---------|--------|
 | 1 | The hook: `TextSuggester`, `TextBeingWritten`, `TextSuggestion`, `EditorExtension.textSuggestions` with its builder setter and the rule of `+`, `LocalTextSuggestions` provided by `EditorScreen` | done |
-| 2 | `SuggestionSession` (pause, stale answers, drop) and `GhostText` (the transformation and its mapping), tested alone | to do |
+| 2 | `SuggestionSession` (pause, stale answers, drop) and `GhostText` (the transformation and its mapping), tested alone | done |
 | 3 | The text box: the suggestion shown, accepted by Tab, the right arrow at the end and a tap, dropped by Escape and by any change; the keys unchanged without one | to do |
 | 4 | The sample: an extension suggesting the end of a word from the words of the document, and screenshots of a suggestion shown | to do |
 
@@ -86,8 +86,13 @@ scratch data directory at the end.
 
 Taken alone, revertible:
 
-* **A suggestion is text inserted at the caret**, in the notation of the notes (it may hold
-  `**bold**` or a formula: it is shown as the page would show it once accepted).
+* **A suggestion is text inserted at the caret**, in the notation of the notes. It is shown on one
+  line, as plain text without its marks of emphasis; once accepted, the page shows it with its
+  notation.
+* **A suggestion is shown with the caret at the end of the text only** (where one writes, most of
+  the time): what the presenter laid out after the caret (formulas, tables, blocks) never moves,
+  and the mapping only grows at its end (`SourceMapping.withShownAtEnd`). The middle of a text is
+  left for later.
 * **The pause is 400 ms**, the time after which the editor asks; the extension may answer later,
   and its answer is dropped if the text changed meanwhile.
 * **Tab accepts only while a suggestion is shown**: indenting a list item is one Escape (or one
@@ -101,5 +106,5 @@ Taken alone, revertible:
 
 * The suggester of the applications (a local model, `drawview-ml`): the plan of the suggestions
   while writing.
-* Suggestions of several lines, or replacing what is before the caret.
+* Suggestions of several lines, in the middle of a text, or replacing what is before the caret.
 * A suggestion in the handwriting (the canvas, not the text box).
