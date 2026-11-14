@@ -73,10 +73,11 @@ public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingleto
 public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExtensionKt {
 	public static final fun LectureDialogs (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureExitDialog (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
+	public static final fun LectureMicrophone (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureRecordingIndicator (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun createLectureAssistant ()Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
 	public static final fun documentTag (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/DocumentTag;
 	public static final fun editorExtension (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
-	public static final fun rememberLectureAssistant (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
 }
 
 public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource : io/github/valerioisufi/drawview/search/SearchSource {

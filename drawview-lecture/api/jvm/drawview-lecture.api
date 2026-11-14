@@ -345,6 +345,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun exportTranscript (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun exportTranscript$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun finishRecording (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun forgetDocuments (Ljava/util/Set;)V
 	public final fun generate (Lio/github/valerioisufi/drawview/lecture/Lecture;Lio/github/valerioisufi/drawview/lecture/ModelProvider;)Z
 	public final fun getActiveRecorder ()Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
@@ -628,13 +629,6 @@ public final class io/github/valerioisufi/drawview/lecture/LectureRecorder {
 }
 
 public final class io/github/valerioisufi/drawview/lecture/LectureRecorder$Companion {
-}
-
-public final class io/github/valerioisufi/drawview/lecture/LectureRecordings {
-	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureRecordings;
-	public final fun finishAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun isRecording ()Z
 }
 
 public final class io/github/valerioisufi/drawview/lecture/LectureSharingSettings {

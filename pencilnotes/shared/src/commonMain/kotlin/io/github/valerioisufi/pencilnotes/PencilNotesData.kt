@@ -3,16 +3,18 @@ package io.github.valerioisufi.pencilnotes
 import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.lecture.LectureAssistant
+import io.github.valerioisufi.drawview.lecture.ui.createLectureAssistant
 import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 
 /**
- * The notes of PencilNotes in this process (`docs/instances.md`): the database of the platform,
- * opened once (Room must not open its file twice), its store, the documents being changed and the
- * editing sessions,
- * shared by every window and kept across the activities created again.
+ * The notes of PencilNotes in this process (`docs/instances.md`, `docs/engine-instances.md`): the
+ * database of the platform, opened once (Room must not open its file twice), its store, the
+ * documents being changed, the editing sessions, the engines and the lecture assistant, shared by
+ * every window and kept across the activities created again.
  */
 object PencilNotesData {
     /** The store of the notes, their strokes modeled as the editor draws them. */
@@ -32,4 +34,10 @@ object PencilNotesData {
 
     /** The pixels of the images of the notes, decoded once for the renderers of every window. */
     val images: ImageCache = ImageCache()
+
+    /**
+     * The lecture assistant: one lecture recorded at a time, also while its document or window is
+     * closed; the desktop saves its recording before exiting.
+     */
+    val lectureAssistant: LectureAssistant by lazy { createLectureAssistant() }
 }

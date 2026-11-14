@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,12 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.lecture.ArrivalNotification
 import io.github.valerioisufi.drawview.lecture.LectureArrival
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
-import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
@@ -166,18 +164,19 @@ public fun LectureDialogs(assistant: LectureAssistant) {
 }
 
 /**
- * A [LectureAssistant] kept for the lifetime of the application (also when its window or activity
- * is created again: the recording goes on).
+ * A [LectureAssistant] whose notifications of the lectures arriving from the other devices are in
+ * the language of the application. The application creates one for the whole process (also when
+ * its windows or activities are created again: the recording goes on) and gives it to its
+ * windows, each binding the microphone with [LectureMicrophone].
  */
-@Composable
-public fun rememberLectureAssistant(): LectureAssistant {
-    val assistant = viewModel { LectureAssistantHolder() }.assistant
-    assistant.requestMicrophone = rememberMicrophoneAccess()
-    return assistant
-}
+public fun createLectureAssistant(): LectureAssistant =
+    LectureAssistant().apply { describeArrival = ::arrivalNotification }
 
-private class LectureAssistantHolder : ViewModel() {
-    val assistant = LectureAssistant().apply { describeArrival = ::arrivalNotification }
+/** Asks the permission of the microphone for [assistant] from the window or activity shown. */
+@Composable
+public fun LectureMicrophone(assistant: LectureAssistant) {
+    val access = rememberMicrophoneAccess()
+    SideEffect { assistant.requestMicrophone = access }
 }
 
 /** The notification of [arrival] in the document titled [documentTitle], in the language of the application. */
@@ -264,9 +263,9 @@ public fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
 )
 
 /**
- * Asks to stop the recording before the application exits ([LectureRecordings.isRecording]).
+ * Asks to stop the recording before the application exits (while [LectureAssistant.isBusy]).
  *
- * @param onExit stops the recordings ([LectureRecordings.finishAll]) and exits.
+ * @param onExit saves the recording ([LectureAssistant.finishRecording]) and exits.
  */
 @Composable
 public fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {

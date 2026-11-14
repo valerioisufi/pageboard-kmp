@@ -152,7 +152,7 @@ public class LectureAssistant(
     public var microphoneDenied: Boolean by mutableStateOf(false)
         private set
 
-    /** Asks for the permission to use the microphone (set by `rememberLectureAssistant` of `drawview-lecture-ui`). */
+    /** Asks for the permission to use the microphone (set by `LectureMicrophone` of `drawview-lecture-ui`). */
     public var requestMicrophone: suspend () -> Boolean = { true }
 
     /** Whether the platform can record (the desktop, for now). */
@@ -430,7 +430,6 @@ public class LectureAssistant(
         private set
 
     init {
-        LectureRecordings.register(this)
         scope.launch {
             val documents = withContext(Dispatchers.Default) { library.documentsWithLectures() }
             withContext(stateContext) { documentsWithLectures = documentsWithLectures + documents }
@@ -1061,29 +1060,12 @@ public class LectureAssistant(
         }
     }
 
-    /** Ends the recording right away (the application is exiting); see [LectureRecorder.finishNow]. */
-    internal suspend fun finishRecording() {
+    /**
+     * Saves the recording in progress right away, the final review left to be written later (the
+     * application is exiting); see [LectureRecorder.finishNow].
+     */
+    public suspend fun finishRecording() {
         activeRecorder?.finishNow()
-    }
-}
-
-/**
- * The lecture assistants of the process: the application ends their recordings before exiting
- * ([finishAll]), and may ask a confirmation while one is recording ([isRecording]).
- */
-public object LectureRecordings {
-    private val assistants = mutableListOf<LectureAssistant>()
-
-    internal fun register(assistant: LectureAssistant) {
-        assistants.add(assistant)
-    }
-
-    /** A lecture is being recorded, reviewed or imported. */
-    public val isRecording: Boolean get() = assistants.any { it.isBusy }
-
-    /** Saves the recordings in progress (the final reviews are left to be written later). */
-    public suspend fun finishAll() {
-        assistants.forEach { it.finishRecording() }
     }
 }
 

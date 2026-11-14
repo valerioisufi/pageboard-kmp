@@ -42,7 +42,7 @@ import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
-import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
+import io.github.valerioisufi.drawview.lecture.ui.LectureMicrophone
 import io.github.valerioisufi.drawview.lecture.ui.searchSource
 import io.github.valerioisufi.drawview.ml.InstalledModels
 import io.github.valerioisufi.drawview.ml.LoadedModels
@@ -113,7 +113,8 @@ fun PencilNotesApp(
         // the editor, the collaboration and the export
         val documents = PencilNotesData.documents
         // Lecture recording, followed by Gemini or a local model: it goes on in the background
-        val lectureAssistant = rememberLectureAssistant()
+        val lectureAssistant = PencilNotesData.lectureAssistant
+        LectureMicrophone(lectureAssistant)
         // The documents shared with the devices of the local network, with their lectures, and over
         // the internet (iroh) once the user turns it on in the sharing
         val collaboration = rememberCollaboration(documents, attachments = lectureAssistant.attachments, internet = IrohInternet)

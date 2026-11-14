@@ -99,7 +99,7 @@ The responsibilities are assigned following the GRASP principles.
 |------|---------|--------|
 | 1 | `LatexEngine` a class and a `FormulaRenderer`; the applications create one; `PdfExporter` takes the renderer; tests and docs | done |
 | 2 | `ImageCache` in `DrawViewEngines`, given to every renderer; `ImageCache.Shared` and the shared `None` go | done |
-| 3 | The lecture assistant created by PencilNotes, `LectureRecordings` and `rememberLectureAssistant` go | to do |
+| 3 | The lecture assistant created by PencilNotes, `LectureRecordings` and `rememberLectureAssistant` go | done |
 
 One commit per step on `feat/engine-instances`, each with its ABI dumps updated on purpose and the
 checks of `CLAUDE.md`. Step 3 is checked by running the desktop of PencilNotes on a scratch data

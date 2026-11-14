@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.ui.LectureExitDialog
 import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.ui.command.CommandHost
@@ -94,7 +93,7 @@ private fun runApplication(agents: PencilNotesAgents) {
             runBlocking {
                 // The lecture being recorded is saved (its review is left for later), then the
                 // pending changes of the open note
-                LectureRecordings.finishAll()
+                PencilNotesData.lectureAssistant.finishRecording()
                 PencilNotesData.sessions.flushAll()
             }
             exitApplication()
@@ -108,7 +107,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                 onCloseRequest = {
                     if (windowManager.openDocumentIds.isNotEmpty()) {
                         windowManager.closeLibrary()
-                    } else if (LectureRecordings.isRecording) {
+                    } else if (PencilNotesData.lectureAssistant.isBusy) {
                         confirmExit = true
                     } else {
                         exit()
@@ -150,7 +149,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                     onCloseRequest = {
                         windowManager.closeDocument(documentId)
                         if (windowManager.shouldExit) {
-                            if (LectureRecordings.isRecording) confirmExit = true else exit()
+                            if (PencilNotesData.lectureAssistant.isBusy) confirmExit = true else exit()
                         }
                     },
                     state = docWindowState,
@@ -167,7 +166,7 @@ private fun runApplication(agents: PencilNotesAgents) {
                             onClose = {
                                 windowManager.closeDocument(documentId)
                                 if (windowManager.shouldExit) {
-                                    if (LectureRecordings.isRecording) confirmExit = true else exit()
+                                    if (PencilNotesData.lectureAssistant.isBusy) confirmExit = true else exit()
                                 }
                             },
                             commandHost = docCommands,

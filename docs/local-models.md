@@ -129,7 +129,7 @@ which `LocalModels` of `drawview-lecture` turns into the Compose state of the se
 | The settings of the previous version read as they were | `AssistantSettingsStore` (lecture), version 2 | Information Expert |
 | The speech recognized by Gemma 4, 30 seconds at a time, cut at a pause | `GemmaTranscriber : Transcriber` (lecture) | Polymorphism |
 | The models of the settings: on the device, Ollama, whisper | `LocalModels` (lecture) | Controller |
-| The runtime of the application | `LectureAssistant(runtime: ModelRuntime? = null)`, `rememberLectureAssistant` | Creator |
+| The runtime of the application | `LectureAssistant(runtime: ModelRuntime? = null)`, `createLectureAssistant` | Creator |
 
 ### The ports
 

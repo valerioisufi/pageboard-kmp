@@ -82,7 +82,7 @@ Read in the code. What phase 0 then measured is in "The window", under the desig
   open its gate; `waiting` and `running` are states read by the interface.
 * `LectureAssistant.importing` stays (the lecture whose job runs, for the code that reads it), and
   gains `transcribing: List<Lecture>` (running and waiting) and `isTranscribing(lecture)`.
-* `isBusy` keeps its meaning for the exit of the application (`LectureRecordings.isRecording`:
+* `isBusy` keeps its meaning for the exit of the application (`LectureAssistant.isBusy`, asked by the desktop:
   something would be lost). What the buttons ask becomes:
   * `canRecord`: no recording here not yet over (`activeRecorder == null`);
   * an import: always.
