@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
+import io.github.valerioisufi.drawview.model.text.codePointAt
+
 /**
  * A TrueType font (outlines in its `glyf` table): the glyphs of the characters, their advances
  * and outlines, and subsets of it to embed in a PDF (see [subset]).
@@ -563,13 +565,4 @@ public class TrueTypeFont(private val data: ByteArray) {
  */
 public class GlyphContour(public val xs: FloatArray, public val ys: FloatArray, public val onCurve: BooleanArray) {
     public val size: Int get() = xs.size
-}
-
-/** The code point of [text] at [index] (a surrogate pair read as one). */
-internal fun codePointAt(text: String, index: Int): Int {
-    val high = text[index]
-    if (high.isHighSurrogate() && index + 1 < text.length && text[index + 1].isLowSurrogate()) {
-        return 0x10000 + ((high.code - 0xD800) shl 10) + (text[index + 1].code - 0xDC00)
-    }
-    return high.code
 }

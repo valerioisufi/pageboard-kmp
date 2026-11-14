@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,8 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -101,14 +98,15 @@ import io.github.valerioisufi.drawview.export.ui.generated.resources.export_titl
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.components.ChipRow
 import io.github.valerioisufi.drawview.ui.components.DesignFilterChip
+import io.github.valerioisufi.drawview.ui.components.SwitchRow
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSharer
-import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
-import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -438,27 +436,3 @@ private fun FormatCard(icon: ImageVector, name: String, hint: String, selected: 
     }
 }
 
-/** An option: its [text], what it does ([hint]) and its switch. */
-@Composable
-private fun SwitchRow(text: String, hint: String?, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            if (hint != null) Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            thumbContent = if (checked) {
-                { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-            } else null
-        )
-    }
-}

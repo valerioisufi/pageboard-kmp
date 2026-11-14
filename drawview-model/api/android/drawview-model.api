@@ -3309,6 +3309,11 @@ public final class io/github/valerioisufi/drawview/model/text/ChainFlow$Room {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/CodePointsKt {
+	public static final fun codePointAt (Ljava/lang/String;I)I
+	public static final fun codePoints (Ljava/lang/String;)Ljava/util/List;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/ListMarker {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListMarker;
 	public final fun at (Ljava/lang/CharSequence;I)Lio/github/valerioisufi/drawview/model/text/ListMarker$Read;

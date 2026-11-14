@@ -17,7 +17,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -131,6 +130,7 @@ import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
+import io.github.valerioisufi.drawview.ui.components.SwitchRow
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
@@ -646,28 +646,28 @@ internal fun AccessSheet(
                 stringResource(Res.string.agent_access_enable),
                 stringResource(Res.string.agent_access_enable_note),
                 checked = grants.enabled,
-                onChange = onEnabled
+                onCheckedChange = onEnabled
             )
             if (grants.enabled) {
                 SwitchRow(
                     stringResource(Res.string.agent_access_all),
                     stringResource(Res.string.agent_access_all_note),
                     checked = grants.allDocuments,
-                    onChange = onAllDocuments
+                    onCheckedChange = onAllDocuments
                 )
                 if (!grants.allDocuments && documentId != null) {
                     SwitchRow(
                         stringResource(Res.string.agent_access_document),
                         stringResource(Res.string.agent_access_document_note),
                         checked = documentId in grants.documents,
-                        onChange = onDocument
+                        onCheckedChange = onDocument
                     )
                 }
                 SwitchRow(
                     stringResource(Res.string.agent_access_direct),
                     stringResource(Res.string.agent_access_direct_note),
                     checked = grants.applyDirectly,
-                    onChange = onApplyDirectly
+                    onCheckedChange = onApplyDirectly
                 )
                 if (grants.allDocuments && grants.applyDirectly) {
                     Text(
@@ -786,13 +786,3 @@ private fun BatchRow(batch: AgentBatch, outcome: UndoOutcome?, onUndo: () -> Uni
 
 private const val MAX_BATCHES_SHOWN = 20
 
-@Composable
-private fun SwitchRow(title: String, note: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
-}

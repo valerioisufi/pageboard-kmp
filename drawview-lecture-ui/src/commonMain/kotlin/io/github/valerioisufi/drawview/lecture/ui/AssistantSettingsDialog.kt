@@ -17,20 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,6 +66,7 @@ import io.github.valerioisufi.drawview.ui.components.DesignSlider
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
 import io.github.valerioisufi.drawview.ui.components.NavigationItem
 import io.github.valerioisufi.drawview.ui.components.SegmentedChoice
+import io.github.valerioisufi.drawview.ui.components.SwitchRow
 import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
@@ -204,38 +201,16 @@ private fun SettingsCard(title: StringResource? = null, content: @Composable Col
     }
 }
 
-/** A setting turned on and off: its name, what it means, its switch. */
-@Composable
-private fun SwitchRow(label: String, hint: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            hint?.let { Hint(it) }
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            thumbContent = if (checked) {
-                { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-            } else null
-        )
-    }
-}
-
 /** Whether the notes are written here; online or local for every request, and its model; what is sent to Google. */
 @Composable
 private fun RequestsSection(draft: AssistantSettings, localModels: LocalModels, onChange: (AssistantSettings) -> Unit) {
     Text(stringResource(Res.string.lecture_settings_requests_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     SettingsCard {
         SwitchRow(
-            label = stringResource(Res.string.lecture_settings_generate_here),
+            text = stringResource(Res.string.lecture_settings_generate_here),
             hint = stringResource(Res.string.lecture_settings_generate_here_hint),
             checked = draft.generateHere,
-            onChange = { onChange(draft.copy(generateHere = it)) }
+            onCheckedChange = { onChange(draft.copy(generateHere = it)) }
         )
     }
     if (!draft.generateHere) return
@@ -458,10 +433,10 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
         }
         if (task == LectureTask.FINAL_REVIEW) {
             SwitchRow(
-                label = stringResource(Res.string.lecture_settings_review_at_end),
+                text = stringResource(Res.string.lecture_settings_review_at_end),
                 hint = stringResource(Res.string.lecture_settings_review_on_request_hint).takeIf { !settings.reviewAtTheEnd },
                 checked = settings.reviewAtTheEnd,
-                onChange = { onChange(settings.copy(reviewAtTheEnd = it)) }
+                onCheckedChange = { onChange(settings.copy(reviewAtTheEnd = it)) }
             )
         }
     }

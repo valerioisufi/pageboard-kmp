@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.codePointAt
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.TrueTypeFont
 import kotlin.math.PI
@@ -217,26 +218,5 @@ internal class FormulaPaths(private val fonts: (FormulaFont) -> TrueTypeFont?) {
             return size * (1f / 24f + t * (1f / 32f - 1f / 24f))
         }
     }
-}
-
-/** The code point of [text] at [index] (a surrogate pair read as one). */
-internal fun codePointAt(text: String, index: Int): Int {
-    val high = text[index]
-    if (high.isHighSurrogate() && index + 1 < text.length && text[index + 1].isLowSurrogate()) {
-        return 0x10000 + ((high.code - 0xD800) shl 10) + (text[index + 1].code - 0xDC00)
-    }
-    return high.code
-}
-
-/** The code points of [text]. */
-internal fun codePoints(text: String): List<Int> {
-    val points = mutableListOf<Int>()
-    var i = 0
-    while (i < text.length) {
-        val codePoint = codePointAt(text, i)
-        points += codePoint
-        i += if (codePoint > 0xFFFF) 2 else 1
-    }
-    return points
 }
 

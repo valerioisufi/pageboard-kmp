@@ -33,6 +33,7 @@ import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.geometry.VectorDrawing
 import io.github.valerioisufi.drawview.model.pdfPointsToPageMm
+import io.github.valerioisufi.drawview.model.text.codePoints
 import io.github.valerioisufi.drawview.model.triangleOutline
 import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
