@@ -180,6 +180,7 @@
     <string name="command_previous_tool">Strumento precedente</string>
     <string name="command_snapping">Aggancia alle guide</string>
     <string name="command_shapes">Tieni premuto per disegnare figure</string>
+    <string name="command_text_suggestions">Suggerimenti di scrittura</string>
     <string name="tool_settings_shapes_hint">Tieni ferma la penna alla fine di una linea, un cerchio o un riquadro per renderlo una figura precisa.</string>
     <string name="command_bring_to_front">Porta in primo piano</string>
     <string name="command_bring_forward">Porta avanti</string>

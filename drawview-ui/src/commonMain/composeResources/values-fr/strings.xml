@@ -180,6 +180,7 @@
     <string name="command_previous_tool">Outil précédent</string>
     <string name="command_snapping">Aligner sur les repères</string>
     <string name="command_shapes">Maintenir pour dessiner des formes</string>
+    <string name="command_text_suggestions">Suggestions d’écriture</string>
     <string name="tool_settings_shapes_hint">Gardez le stylet immobile à la fin d’une ligne, d’un cercle ou d’un cadre pour en faire une forme nette.</string>
     <string name="command_bring_to_front">Mettre au premier plan</string>
     <string name="command_bring_forward">Avancer</string>

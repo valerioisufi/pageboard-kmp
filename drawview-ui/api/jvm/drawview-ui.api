@@ -641,6 +641,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getCommand_send_to_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_snapping (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_text_suggestions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_zoom_in (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_zoom_out (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommon_action_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -720,10 +721,10 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getMenu_arrange (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_edit (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
+	public static final fun getMenu_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_help (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_tools (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -823,10 +824,10 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getTable_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
+	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_background_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

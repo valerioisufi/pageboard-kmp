@@ -113,9 +113,12 @@ Variations).
 
 * `DrawPreferences.areTextSuggestionsEnabled: Boolean = true`: a new key of the JSON, absent from
   the preferences written before, read as `true` (a test reads the JSON of the current version).
-* `TextBoxEditor` asks only when it is on (through the controller, as the snap). The command
-  "Writing Suggestions", checked, next to "Snap" in the menu of the editor, in English, Italian and
-  the other languages of `drawview-ui`.
+* `DrawViewController.areTextSuggestionsEnabled` holds it (as the stylus only mode) and tells it
+  in its preferences; `TextBoxEditor` asks only when it is on.
+* The command "Writing Suggestions", checked, after "Hold to Draw Shapes" in the menu of the editor
+  and in the View menu of the menu bar, in the seven languages of `drawview-ui`; it is there only
+  when an extension suggests (`LocalTextSuggestions`), so the sample without the search and an
+  application without suggester show nothing new.
 
 ## Phases
 
@@ -124,7 +127,7 @@ Variations).
 | 1 | `WordCounts` in `drawview-search`: the words of a text without the notation (formulas, code, addresses), the form written most often by lower case, `withPrefix`; tests (Italian accents, capitals, apostrophes, formulas); ABI of `drawview-search` | Done |
 | 2 | `SearchIndex.texts` and `NoteVocabulary`: built off the main thread, a document again when the index changed, the library at most every 2 minutes, the 8 documents asked for last kept; tests on an in-memory index; ABI of `drawview-search` | Done |
 | 3 | `NoteWordSuggester` (internal) and `ContentSearch.editorExtension` in `drawview-search-ui`: the prefix, the layers, the thresholds, the vocabulary created by `start`; tests of the prefix and of the completion; ABI of `drawview-search-ui` | Done |
-| 4 | The switch: `DrawPreferences.areTextSuggestionsEnabled`, read from the JSON of today as on (test), the editor not asking when off, the checked command with its strings; ABI of `drawview-canvas` and `drawview-ui` | Proposed |
+| 4 | The switch: `DrawPreferences.areTextSuggestionsEnabled`, read from the JSON of today as on (test), `DrawViewController.areTextSuggestionsEnabled`, the text box not asking when off, the checked command "Writing Suggestions" (only with an extension that suggests) in the menu of the editor and the menu bar, in the seven languages; ABI of `drawview-canvas` and `drawview-ui` | Done |
 | 5 | PencilNotes: `search.editorExtension` in `PencilNotesServices.editorExtension`; the desktop app run on a scratch data directory with a PDF and a text, the suggestions checked by hand | Proposed |
 
 Each phase is one commit on `feat/writing-suggestions`, after the checks of `CLAUDE.md`

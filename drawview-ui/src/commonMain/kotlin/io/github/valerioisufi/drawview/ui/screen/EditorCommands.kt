@@ -36,6 +36,7 @@ import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.editor.rememberClipboardText
+import io.github.valerioisufi.drawview.ui.extension.LocalTextSuggestions
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.generated.resources.command_bring_forward
@@ -51,6 +52,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.command_send_backw
 import io.github.valerioisufi.drawview.ui.generated.resources.command_send_to_back
 import io.github.valerioisufi.drawview.ui.generated.resources.command_shapes
 import io.github.valerioisufi.drawview.ui.generated.resources.command_snapping
+import io.github.valerioisufi.drawview.ui.generated.resources.command_text_suggestions
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
@@ -133,7 +135,8 @@ internal class EditorCommands internal constructor(
     private val controller: DrawViewController,
     private val clipboard: ClipboardManager,
     private val actions: EditorScreenActions,
-    private val formattedText: () -> String? = { null }
+    private val formattedText: () -> String? = { null },
+    hasTextSuggestions: Boolean = false
 ) {
     private val writable = { !controller.isReadOnly }
 
@@ -368,6 +371,13 @@ internal class EditorCommands internal constructor(
         icon = { rememberVectorPainter(DrawViewIcons.Shapes) },
         isChecked = { controller.shapeSnapper.isEnabled }
     ) { controller.shapeSnapper.updateEnabled(!controller.shapeSnapper.isEnabled) }
+
+    /** Whether the text box suggests what may follow the caret: only with an extension that suggests. */
+    val textSuggestions: Command? = if (!hasTextSuggestions) null else Command(
+        "text-suggestions", label(Res.string.command_text_suggestions), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Sparkles) },
+        isChecked = { controller.areTextSuggestionsEnabled }
+    ) { controller.updateTextSuggestionsEnabled(!controller.areTextSuggestionsEnabled) }
 
     // ----- Insert -----
 
@@ -664,10 +674,10 @@ internal class EditorCommands internal constructor(
     val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP, icon = { rememberVectorPainter(DrawViewIcons.Info) }) { actions.showAbout() }
 
     /** Every command, in the order of the menus. */
-    val all: List<Command> = listOf(
+    val all: List<Command> = listOfNotNull(
         close, rename,
         undo, redo, cut, copy, paste, pastePlain, delete,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack,
@@ -728,7 +738,8 @@ internal fun rememberEditorCommands(
     val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
     val showAbout by rememberUpdatedState(onShowAbout)
     val renamable by rememberUpdatedState(canRename)
-    return remember(controller, clipboard, clipboardText) {
+    val hasTextSuggestions = LocalTextSuggestions.current != null
+    return remember(controller, clipboard, clipboardText, hasTextSuggestions) {
         EditorCommands(
             controller = controller,
             clipboard = clipboard,
@@ -741,7 +752,8 @@ internal fun rememberEditorCommands(
                 showAbout = { showAbout() },
                 canRename = { renamable }
             ),
-            formattedText = clipboardText::markdown
+            formattedText = clipboardText::markdown,
+            hasTextSuggestions = hasTextSuggestions
         )
     }
 }

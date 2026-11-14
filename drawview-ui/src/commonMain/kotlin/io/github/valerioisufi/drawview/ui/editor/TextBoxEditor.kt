@@ -171,7 +171,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
     val paper by controller.document.observe { pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER }
     val value = editor.value
     // The suggestion of the extensions after the end of the text (docs/text-box-hook.md)
-    val suggestions = LocalTextSuggestions.current
+    val suggestions = LocalTextSuggestions.current?.takeIf { controller.areTextSuggestionsEnabled }
     val suggestionScope = rememberCoroutineScope()
     val suggestionSession = remember(suggestions, suggestionScope) {
         suggestions?.let { s -> SuggestionSession(suggestionScope) { writing -> s.suggester.suggest(s.context, writing) } }

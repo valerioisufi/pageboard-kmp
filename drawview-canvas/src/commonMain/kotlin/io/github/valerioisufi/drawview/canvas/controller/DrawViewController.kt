@@ -304,6 +304,19 @@ public class DrawViewController(
         }
     }
 
+    /**
+     * Whether the text box asks the extensions what may follow the caret (the suggestions while
+     * writing, `docs/writing-suggestions.md`). On by default.
+     */
+    public var areTextSuggestionsEnabled: Boolean by mutableStateOf(true)
+        private set
+
+    public fun updateTextSuggestionsEnabled(enabled: Boolean) {
+        if (areTextSuggestionsEnabled == enabled) return
+        areTextSuggestionsEnabled = enabled
+        preferencesChanged()
+    }
+
     public fun updateStylusOnlyMode(enabled: Boolean) {
         if (isStylusOnlyMode == enabled) return
         isStylusOnlyMode = enabled
@@ -347,6 +360,7 @@ public class DrawViewController(
     /** Applies the preferences of the user kept (e.g. when the editor opens). */
     public fun applyPreferences(preferences: DrawPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
+        areTextSuggestionsEnabled = preferences.areTextSuggestionsEnabled
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
         shapeSnapper.applyPreferences(preferences)
@@ -367,7 +381,8 @@ public class DrawViewController(
         isSnapEnabled = snapManager.isEnabled,
         presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() },
         isShapeRecognitionEnabled = shapeSnapper.isEnabled,
-        shapeTool = ShapeToolPreferences.of(shapeInserter.style)
+        shapeTool = ShapeToolPreferences.of(shapeInserter.style),
+        areTextSuggestionsEnabled = areTextSuggestionsEnabled
     )
 
     // ==========================================================

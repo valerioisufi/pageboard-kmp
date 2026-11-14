@@ -108,4 +108,26 @@ class EditorPreferencesTest {
         assertEquals(Tool.INK_HIGHLIGHTER, other.selectedTool)
         assertEquals(told, other.preferences.value)
     }
+
+    @Test
+    fun thePreferencesWrittenBeforeTheSuggestionsTurnThemOn() {
+        // As the version before the suggestions while writing writes them (the defaults left out)
+        val written = """{"isStylusOnlyMode":true,"lastSelectedTool":"TEXT","isShapeRecognitionEnabled":false}"""
+        val preferences = DrawPreferences.decode(written)!!
+        assertTrue(preferences.areTextSuggestionsEnabled)
+        assertEquals(Tool.TEXT, preferences.lastSelectedTool)
+        val off = DrawPreferences(areTextSuggestionsEnabled = false)
+        assertEquals(off, DrawPreferences.decode(off.encode()))
+    }
+
+    @Test
+    fun theSuggestionsTurnedOffAreKept() = runTest {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        assertTrue(controller.areTextSuggestionsEnabled)
+        controller.updateTextSuggestionsEnabled(false)
+        assertEquals(false, controller.preferences.value.areTextSuggestionsEnabled)
+        val reopened = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        reopened.applyPreferences(controller.preferences.value)
+        assertEquals(false, reopened.areTextSuggestionsEnabled)
+    }
 }

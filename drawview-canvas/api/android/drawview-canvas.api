@@ -237,8 +237,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawPrefere
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;Z)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
@@ -246,10 +246,12 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawPrefere
 	public final fun component5 ()Ljava/util/Map;
 	public final fun component6 ()Z
 	public final fun component7 ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
-	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public final fun component8 ()Z
+	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;Z)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAreTextSuggestionsEnabled ()Z
 	public final fun getLastSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getPresets ()Ljava/util/Map;
 	public final fun getShapeTool ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeToolPreferences;
@@ -286,6 +288,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun clearSelection ()V
 	public final fun dispose ()V
 	public final fun flushPersistence (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getAreTextSuggestionsEnabled ()Z
 	public final fun getCanRedo ()Z
 	public final fun getCanUndo ()Z
 	public final fun getClipboard ()Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;
@@ -349,6 +352,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun undo ()V
 	public final fun updateStylusOnlyMode (Z)V
 	public final fun updateTextDefaults (Lio/github/valerioisufi/drawview/model/text/TextDefaults;)V
+	public final fun updateTextSuggestionsEnabled (Z)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message : java/lang/Enum {

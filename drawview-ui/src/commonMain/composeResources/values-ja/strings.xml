@@ -180,6 +180,7 @@
     <string name="command_previous_tool">前のツール</string>
     <string name="command_snapping">ガイドにスナップ</string>
     <string name="command_shapes">長押しで図形にする</string>
+    <string name="command_text_suggestions">入力候補</string>
     <string name="tool_settings_shapes_hint">線・円・四角を描き終えたところでペンを止めると、きれいな図形になります。</string>
     <string name="command_bring_to_front">最前面へ移動</string>
     <string name="command_bring_forward">前面へ移動</string>

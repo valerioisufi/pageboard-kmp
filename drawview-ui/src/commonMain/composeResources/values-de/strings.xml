@@ -180,6 +180,7 @@
     <string name="command_previous_tool">Vorheriges Werkzeug</string>
     <string name="command_snapping">An Hilfslinien ausrichten</string>
     <string name="command_shapes">Halten zum Zeichnen von Formen</string>
+    <string name="command_text_suggestions">Schreibvorschläge</string>
     <string name="tool_settings_shapes_hint">Halte den Stift am Ende einer Linie, eines Kreises oder eines Kastens still, um daraus eine saubere Form zu machen.</string>
     <string name="command_bring_to_front">In den Vordergrund</string>
     <string name="command_bring_forward">Eine Ebene nach vorne</string>
