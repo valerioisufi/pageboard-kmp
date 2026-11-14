@@ -121,9 +121,12 @@ object PencilNotesServices {
         }
     }
 
-    /** The extension of every editor of PencilNotes: the lectures, the sharing, the export, and the external models with [agents]. */
+    /**
+     * The extension of every editor of PencilNotes: the suggestions while writing from the words of
+     * the notes, the lectures, the sharing, the export, and the external models with [agents].
+     */
     fun editorExtension(agents: PencilNotesAgents?): EditorExtension {
-        val extension = lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
+        val extension = search.editorExtension + lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
         return agents?.let { extension + it.editorExtension } ?: extension
     }
 

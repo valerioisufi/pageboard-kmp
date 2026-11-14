@@ -128,7 +128,7 @@ Variations).
 | 2 | `SearchIndex.texts` and `NoteVocabulary`: built off the main thread, a document again when the index changed, the library at most every 2 minutes, the 8 documents asked for last kept; tests on an in-memory index; ABI of `drawview-search` | Done |
 | 3 | `NoteWordSuggester` (internal) and `ContentSearch.editorExtension` in `drawview-search-ui`: the prefix, the layers, the thresholds, the vocabulary created by `start`; tests of the prefix and of the completion; ABI of `drawview-search-ui` | Done |
 | 4 | The switch: `DrawPreferences.areTextSuggestionsEnabled`, read from the JSON of today as on (test), `DrawViewController.areTextSuggestionsEnabled`, the text box not asking when off, the checked command "Writing Suggestions" (only with an extension that suggests) in the menu of the editor and the menu bar, in the seven languages; ABI of `drawview-canvas` and `drawview-ui` | Done |
-| 5 | PencilNotes: `search.editorExtension` in `PencilNotesServices.editorExtension`; the desktop app run on a scratch data directory with a PDF and a text, the suggestions checked by hand | Proposed |
+| 5 | PencilNotes: `search.editorExtension` first in `PencilNotesServices.editorExtension`; `WritingSuggestionsTest` (search-ui) from the slides indexed to Tab in the text box, and nothing when turned off; the desktop app started on a scratch data directory. Writing in it by hand, and tuning the thresholds on real notes, left to the user | Done |
 
 Each phase is one commit on `feat/writing-suggestions`, after the checks of `CLAUDE.md`
 (`consumer-checks` from phase 2, the screenshots of `drawview-ui` in phase 4).
