@@ -34,6 +34,8 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                 PickerType.IMAGE -> "image/*"
                 PickerType.PDF -> "application/pdf"
                 PickerType.TEXT -> "text/*"
+                // An archive has an extension of its own, which the systems do not know
+                PickerType.ARCHIVE -> "*/*"
             }
         )
     }

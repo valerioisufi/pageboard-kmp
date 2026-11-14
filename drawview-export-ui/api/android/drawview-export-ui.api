@@ -15,12 +15,21 @@ public final class io/github/valerioisufi/drawview/export/ui/ComposableSingleton
 	public final fun getLambda$373136684$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
 }
 
+public final class io/github/valerioisufi/drawview/export/ui/ComposableSingletons$ImportArchiveDialogKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ui/ComposableSingletons$ImportArchiveDialogKt;
+	public fun <init> ()V
+	public final fun getLambda$-1468305963$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-44824514$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$2068085452$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUi {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/MarkdownAppendix;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun StatusHost (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public final fun getEditorExtension ()Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+	public final fun getImportAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryAction;
 	public final fun getLibraryAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryItemsAction;
 }
 

@@ -1,3 +1,49 @@
+public final class io/github/valerioisufi/drawview/export/ArchiveException : java/lang/Exception {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;Ljava/lang/String;)V
+	public final fun getReason ()Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+}
+
+public final class io/github/valerioisufi/drawview/export/ArchiveException$Reason : java/lang/Enum {
+	public static final field NOT_AN_ARCHIVE Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+	public static final field TOO_NEW Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+	public static fun values ()[Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+}
+
+public final class io/github/valerioisufi/drawview/export/ArchiveExporter {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
+	public final fun write (Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun write$default (Lio/github/valerioisufi/drawview/export/ArchiveExporter;Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/export/ArchiveFormat {
+	public static final field $stable I
+	public static final field EXTENSION Ljava/lang/String;
+	public static final field FORMAT Ljava/lang/String;
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ArchiveFormat;
+	public static final field MIME_TYPE Ljava/lang/String;
+	public static final field VERSION I
+}
+
+public final class io/github/valerioisufi/drawview/export/ArchiveImporter {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
+	public final fun import ([BLjava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun import$default (Lio/github/valerioisufi/drawview/export/ArchiveImporter;[BLjava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/export/ArchiveResult {
+	public static final field $stable I
+	public fun <init> ([BIILjava/util/List;)V
+	public final fun getBytes ()[B
+	public final fun getDocuments ()I
+	public final fun getMissing ()Ljava/util/List;
+	public final fun getPages ()I
+}
+
 public final class io/github/valerioisufi/drawview/export/DocumentContent {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/export/DocumentContent$Companion;
@@ -86,6 +132,7 @@ public final class io/github/valerioisufi/drawview/export/ExportFailure$Companio
 }
 
 public final class io/github/valerioisufi/drawview/export/ExportFormat : java/lang/Enum {
+	public static final field ARCHIVE Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field COMBINED_PDF Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field IMAGES Lio/github/valerioisufi/drawview/export/ExportFormat;
 	public static final field MARKDOWN Lio/github/valerioisufi/drawview/export/ExportFormat;
@@ -262,6 +309,14 @@ public final class io/github/valerioisufi/drawview/export/FolderDocumentItem {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;)V
 	public final fun getRelativePath ()Ljava/lang/String;
 	public final fun getSummary ()Lio/github/valerioisufi/drawview/store/DocumentSummary;
+}
+
+public final class io/github/valerioisufi/drawview/export/ImportResult {
+	public static final field $stable I
+	public fun <init> (IILjava/lang/String;)V
+	public final fun getDocuments ()I
+	public final fun getFolderId ()Ljava/lang/String;
+	public final fun getPages ()I
 }
 
 public abstract interface class io/github/valerioisufi/drawview/export/MarkdownAppendix {

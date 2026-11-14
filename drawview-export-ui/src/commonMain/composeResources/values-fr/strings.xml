@@ -28,6 +28,14 @@
     <string name="export_format_combined_hint">Les notes l’une après l’autre</string>
     <string name="export_format_markdown">Markdown</string>
     <string name="export_format_markdown_hint">Le texte, avec les notes des cours</string>
+    <string name="export_format_archive">Archive</string>
+    <string name="export_format_archive_hint">Tout, pour l’importer à nouveau</string>
+    <string name="import_archive_action">Importer une archive…</string>
+    <string name="import_archive_done_title">Importé</string>
+    <string name="import_archive_done">%1$d notes importées dans « %2$s »</string>
+    <string name="import_archive_not_an_archive">Ce n’est pas une archive de notes, ou elle est endommagée.</string>
+    <string name="import_archive_too_new">Cette archive vient d’une version plus récente : mettez d’abord l’app à jour.</string>
+    <string name="import_archive_failed_title">Import impossible</string>
     <string name="export_pages">Pages</string>
     <string name="export_pages_all">Toutes</string>
     <string name="export_pages_on_screen">Cette page</string>

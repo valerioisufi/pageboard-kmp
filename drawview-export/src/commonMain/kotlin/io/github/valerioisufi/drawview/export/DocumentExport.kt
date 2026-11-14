@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.first
  * the library give the identifier of the document and the pages only.
  */
 public class DocumentExport(private val documents: OpenDocuments) {
+    private val archives = ArchiveExporter(documents)
+
 
     /**
      * Exports the document [documentId] with [exporter] to the file [path]; [progress] gets the
@@ -176,7 +178,19 @@ public class DocumentExport(private val documents: OpenDocuments) {
             ExportFormat.PDF_PER_DOCUMENT -> exportPdfPerDocument(contents, options, writers, path, progress)
             ExportFormat.COMBINED_PDF -> exportCombined(contents, options, writers, path, progress)
             ExportFormat.MARKDOWN -> exportMarkdown(contents, options, writers, path, progress)
+            ExportFormat.ARCHIVE -> exportArchive(contents, path, progress)
         }
+    }
+
+    /** The notes of [contents] with all their content, as an archive of the application (see [ArchiveFormat]). */
+    private suspend fun exportArchive(contents: ExportContents, path: String, progress: (ExportProgress) -> Unit): ExportOutcome {
+        val items = contents.documents
+        if (items.isEmpty()) throw ExportException(ExportFailure.NOTHING_TO_EXPORT)
+        val result = archives.write(items) { index, name -> progress(ExportProgress(index.toFloat() / items.size, index + 1, items.size, name)) }
+        if (result.documents == 0) throw ExportException(ExportFailure.DOCUMENT_MISSING)
+        write(path, result.bytes)
+        progress(ExportProgress(1f, items.size, items.size, null))
+        return ExportOutcome(documents = result.documents, pages = result.pages, skipped = 0, skippedIn = emptyList(), missing = result.missing)
     }
 
     /** The text of the note of [contents] as Markdown (see [MarkdownExporter]). */

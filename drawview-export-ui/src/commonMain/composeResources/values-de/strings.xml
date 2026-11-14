@@ -28,6 +28,14 @@
     <string name="export_format_combined_hint">Die Notizen nacheinander</string>
     <string name="export_format_markdown">Markdown</string>
     <string name="export_format_markdown_hint">Der Text, mit den Notizen der Vorlesungen</string>
+    <string name="export_format_archive">Archiv</string>
+    <string name="export_format_archive_hint">Alles, um es wieder zu importieren</string>
+    <string name="import_archive_action">Archiv importieren…</string>
+    <string name="import_archive_done_title">Importiert</string>
+    <string name="import_archive_done">%1$d Notizen in „%2$s“ importiert</string>
+    <string name="import_archive_not_an_archive">Das ist kein Archiv mit Notizen, oder es ist beschädigt.</string>
+    <string name="import_archive_too_new">Dieses Archiv stammt aus einer neueren Version: Aktualisiere zuerst die App.</string>
+    <string name="import_archive_failed_title">Import nicht möglich</string>
     <string name="export_pages">Seiten</string>
     <string name="export_pages_all">Alle</string>
     <string name="export_pages_on_screen">Diese Seite</string>

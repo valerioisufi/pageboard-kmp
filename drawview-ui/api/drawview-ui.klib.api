@@ -108,6 +108,7 @@ final enum class io.github.valerioisufi.drawview.ui.components/IconButtonStyle :
 }
 
 final enum class io.github.valerioisufi.drawview.ui.platform/PickerType : kotlin/Enum<io.github.valerioisufi.drawview.ui.platform/PickerType> { // io.github.valerioisufi.drawview.ui.platform/PickerType|null[0]
+    enum entry ARCHIVE // io.github.valerioisufi.drawview.ui.platform/PickerType.ARCHIVE|null[0]
     enum entry IMAGE // io.github.valerioisufi.drawview.ui.platform/PickerType.IMAGE|null[0]
     enum entry PDF // io.github.valerioisufi.drawview.ui.platform/PickerType.PDF|null[0]
     enum entry TEXT // io.github.valerioisufi.drawview.ui.platform/PickerType.TEXT|null[0]

@@ -79,7 +79,7 @@ class ExportScopeTest {
         assertNull(contents.name)
         assertEquals(listOf("Loose.pdf", "Calculus.pdf", "Math/Geometry/Topology.pdf"), contents.documents.map { it.relativePath })
         assertEquals(5, contents.pages)
-        assertEquals(listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF), contents.formats)
+        assertEquals(listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF, ExportFormat.ARCHIVE), contents.formats)
 
         val withoutSubfolders = export.resolve(ExportScope.Items(emptyList(), listOf(math)), includeSubfolders = false)
         assertEquals(listOf("Math/Calculus.pdf"), withoutSubfolders.documents.map { it.relativePath })
@@ -91,7 +91,7 @@ class ExportScopeTest {
         val contents = export.resolve(ExportScope.Pages(id))
         assertEquals("Lecture 1: Limits", contents.name)
         assertEquals(4, contents.pages)
-        assertEquals(listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN), contents.formats)
+        assertEquals(listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN, ExportFormat.ARCHIVE), contents.formats)
         assertEquals("Lecture 1_ Limits.pdf", contents.fileName(ExportFormat.PDF, fallbackName = "Notes"))
         assertEquals("Lecture 1_ Limits.zip", contents.fileName(ExportFormat.IMAGES, fallbackName = "Notes"))
         assertEquals("Lecture 1_ Limits.png", contents.fileName(ExportFormat.IMAGES, pages = 1, fallbackName = "Notes"))

@@ -18,8 +18,8 @@ public class PickedFile(public val name: String, public val bytes: ByteArray) {
     }
 }
 
-/** The kinds of files the file pickers choose. */
-public enum class PickerType { IMAGE, PDF, TEXT }
+/** The kinds of files the file pickers choose: [ARCHIVE] is an archive of the application (`.drawview`). */
+public enum class PickerType { IMAGE, PDF, TEXT, ARCHIVE }
 
 /**
  * Remembers a launcher of the file picker of the platform (`GetContent` on Android, the file

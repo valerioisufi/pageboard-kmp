@@ -22,6 +22,7 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
+import platform.UniformTypeIdentifiers.UTTypeData
 import platform.UniformTypeIdentifiers.UTTypePDF
 import platform.UniformTypeIdentifiers.UTTypeText
 import platform.darwin.NSObject
@@ -54,8 +55,13 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                         picker.delegate = delegate
                         presenter.presentViewController(picker, animated = true, completion = null)
                     }
-                    PickerType.PDF, PickerType.TEXT -> {
-                        val types = if (type == PickerType.PDF) listOf(UTTypePDF) else listOf(UTTypeText)
+                    PickerType.PDF, PickerType.TEXT, PickerType.ARCHIVE -> {
+                        val types = when (type) {
+                            PickerType.PDF -> listOf(UTTypePDF)
+                            PickerType.TEXT -> listOf(UTTypeText)
+                            // An archive has an extension of its own, which the system does not know
+                            else -> listOf(UTTypeData)
+                        }
                         val picker = UIDocumentPickerViewController(forOpeningContentTypes = types, asCopy = true)
                         val delegate = DocumentPickerDelegate(deliver)
                         holder.delegate = delegate

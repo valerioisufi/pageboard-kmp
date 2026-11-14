@@ -24,6 +24,7 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                 PickerType.IMAGE -> MediaManager.IMAGE_EXTENSIONS
                 PickerType.PDF -> setOf("pdf")
                 PickerType.TEXT -> PickedFile.TEXT_EXTENSIONS
+                PickerType.ARCHIVE -> setOf("drawview", "zip")
             }
             val dialog = FileDialog(null as Frame?, null, FileDialog.LOAD).apply {
                 setFilenameFilter { _, name -> name.substringAfterLast('.', "").lowercase() in extensions }

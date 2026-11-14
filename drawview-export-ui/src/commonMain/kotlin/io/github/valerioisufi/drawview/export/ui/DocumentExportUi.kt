@@ -14,7 +14,10 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportJobs
 import io.github.valerioisufi.drawview.export.ExportScope
+import io.github.valerioisufi.drawview.export.ArchiveImporter
 import io.github.valerioisufi.drawview.export.MarkdownAppendix
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
+import io.github.valerioisufi.drawview.export.ui.generated.resources.import_archive_action
 import io.github.valerioisufi.drawview.export.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_action
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_all_action
@@ -144,6 +147,18 @@ public class DocumentExportUi(
         commands { context -> listOf(exportCommand(context)) }
         pageGridActions { context -> listOf(exportPagesCommand(context)) }
     }
+
+    private val importer = ArchiveImporter(documents)
+
+    /**
+     * "Import archive…" in the library: the notes of an archive of the application (exported with
+     * the format Archive) added as new notes, in a new folder named after the file.
+     */
+    public val importAction: LibraryAction = LibraryAction(
+        icon = DrawViewIcons.Download,
+        label = { stringResource(Res.string.import_archive_action) },
+        content = { onDone -> ImportArchiveDialog(importer, onDone) }
+    )
 
     /**
      * The exports going on and how they went, with what can be done with their files: placed by

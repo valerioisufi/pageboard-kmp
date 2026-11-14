@@ -11,6 +11,8 @@ final class io.github.valerioisufi.drawview.export.ui/DocumentExportUi { // io.g
 
     final val editorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]
+    final val importAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.importAction|{}importAction[0]
+        final fun <get-importAction>(): io.github.valerioisufi.drawview.ui.extension/LibraryAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.importAction.<get-importAction>|<get-importAction>(){}[0]
     final val libraryAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.libraryAction|{}libraryAction[0]
         final fun <get-libraryAction>(): io.github.valerioisufi.drawview.ui.extension/LibraryItemsAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.libraryAction.<get-libraryAction>|<get-libraryAction>(){}[0]
 

@@ -14,9 +14,9 @@ public sealed interface ExportScope {
     /** The formats offered for this scope, the first being the default. */
     public val formats: List<ExportFormat>
         get() = if (isSingleDocument) {
-            listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN)
+            listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN, ExportFormat.ARCHIVE)
         } else {
-            listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF)
+            listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF, ExportFormat.ARCHIVE)
         }
 
     /** The pages [pageIds] of the document [documentId], all of them when `null`. */
@@ -83,7 +83,10 @@ public enum class ExportFormat {
     COMBINED_PDF,
 
     /** The text of one note as Markdown, with what the application adds (see [MarkdownExporter]). */
-    MARKDOWN;
+    MARKDOWN,
+
+    /** Notes with all their content, to import again (see [ArchiveFormat]). */
+    ARCHIVE;
 
     /** The extension of the file written for [pages] pages, without the dot. */
     public fun extension(pages: Int): String = when (this) {
@@ -91,6 +94,7 @@ public enum class ExportFormat {
         IMAGES -> if (pages == 1) "png" else "zip"
         PDF_PER_DOCUMENT -> "zip"
         MARKDOWN -> "md"
+        ARCHIVE -> ArchiveFormat.EXTENSION
     }
 
     /** The media type of the file written for [pages] pages. */

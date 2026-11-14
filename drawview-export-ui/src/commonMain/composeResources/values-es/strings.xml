@@ -28,6 +28,14 @@
     <string name="export_format_combined_hint">Las notas una tras otra</string>
     <string name="export_format_markdown">Markdown</string>
     <string name="export_format_markdown_hint">El texto, con las notas de las clases</string>
+    <string name="export_format_archive">Archivo</string>
+    <string name="export_format_archive_hint">Todo, para importarlo de nuevo</string>
+    <string name="import_archive_action">Importar archivo…</string>
+    <string name="import_archive_done_title">Importado</string>
+    <string name="import_archive_done">%1$d notas importadas en «%2$s»</string>
+    <string name="import_archive_not_an_archive">No es un archivo de notas o está dañado.</string>
+    <string name="import_archive_too_new">Este archivo es de una versión posterior: actualiza primero la app.</string>
+    <string name="import_archive_failed_title">No se pudo importar</string>
     <string name="export_pages">Páginas</string>
     <string name="export_pages_all">Todas</string>
     <string name="export_pages_on_screen">Esta página</string>

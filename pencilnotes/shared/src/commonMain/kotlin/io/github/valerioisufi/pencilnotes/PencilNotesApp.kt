@@ -100,7 +100,7 @@ fun PencilNotesApp(
                 title = { PencilNotesBrand() },
                 documents = documents,
                 sessions = PencilNotesData.sessions,
-                actions = listOfNotNull(services.collaboration.joinAction(), services.search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
+                actions = listOfNotNull(services.collaboration.joinAction(), services.search.settingsAction(), services.export.importAction, agents?.libraryAction, aboutLibraryAction()),
                 editorExtension = editorExtension,
                 itemsActions = listOf(services.export.libraryAction),
                 tags = listOf(services.lectureTag),

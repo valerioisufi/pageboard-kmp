@@ -58,6 +58,8 @@ import io.github.valerioisufi.drawview.export.ExportScope
 import io.github.valerioisufi.drawview.export.ExportWriters
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_markdown_hint
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_markdown
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_archive
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_archive_hint
 import io.github.valerioisufi.drawview.export.MarkdownExporter
 import io.github.valerioisufi.drawview.export.MarkdownAppendix
 import io.github.valerioisufi.drawview.export.PageImageExporter
@@ -231,25 +233,32 @@ internal fun ExportSheetContent(
         Summary(state, thumbnail)
 
         Label(Res.string.export_format)
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            for (format in state.formats) {
-                val (name, hint) = formatTexts(format, state.exportedPages)
-                FormatCard(
-                    icon = formatIcon(format),
-                    name = stringResource(name),
-                    hint = stringResource(hint),
-                    selected = state.format == format,
-                    onSelect = { state.format = format },
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                )
+        // Four formats on two rows, so that their hints stay readable
+        val rows = state.formats.chunked(if (state.formats.size > 3) 2 else state.formats.size.coerceAtLeast(1))
+        Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (row in rows) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    for (format in row) {
+                        val (name, hint) = formatTexts(format, state.exportedPages)
+                        FormatCard(
+                            icon = formatIcon(format),
+                            name = stringResource(name),
+                            hint = stringResource(hint),
+                            selected = state.format == format,
+                            onSelect = { state.format = format },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
+                }
             }
         }
 
         val pageChoices = state.pageChoices
-        if (state.isSingleDocument && pageChoices.size > 1) {
+        // An archive holds the whole note
+        if (state.isSingleDocument && pageChoices.size > 1 && state.format != ExportFormat.ARCHIVE) {
             Label(Res.string.export_pages)
             ChipRow {
                 for (choice in pageChoices) {
@@ -286,7 +295,7 @@ internal fun ExportSheetContent(
 
         Spacer(modifier = Modifier.height(8.dp))
         // The paper is drawn on the pages, not in a text
-        if (state.format != ExportFormat.MARKDOWN) {
+        if (state.format != ExportFormat.MARKDOWN && state.format != ExportFormat.ARCHIVE) {
             SwitchRow(
                 text = stringResource(Res.string.export_background),
                 hint = stringResource(Res.string.export_background_hint),
@@ -401,6 +410,7 @@ private fun formatTexts(format: ExportFormat, pages: Int): Pair<StringResource, 
     ExportFormat.PDF_PER_DOCUMENT -> Res.string.export_format_per_note to Res.string.export_format_per_note_hint
     ExportFormat.COMBINED_PDF -> Res.string.export_format_combined to Res.string.export_format_combined_hint
     ExportFormat.MARKDOWN -> Res.string.export_format_markdown to Res.string.export_format_markdown_hint
+    ExportFormat.ARCHIVE -> Res.string.export_format_archive to Res.string.export_format_archive_hint
 }
 
 private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
@@ -409,6 +419,7 @@ private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
     ExportFormat.PDF_PER_DOCUMENT -> DrawViewIcons.Layers
     ExportFormat.COMBINED_PDF -> DrawViewIcons.BookOpen
     ExportFormat.MARKDOWN -> DrawViewIcons.Hash
+    ExportFormat.ARCHIVE -> DrawViewIcons.Layers
 }
 
 /** The label of a group of choices. */

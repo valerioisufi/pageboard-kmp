@@ -919,6 +919,7 @@ public final class io/github/valerioisufi/drawview/ui/platform/PickedFile$Compan
 }
 
 public final class io/github/valerioisufi/drawview/ui/platform/PickerType : java/lang/Enum {
+	public static final field ARCHIVE Lio/github/valerioisufi/drawview/ui/platform/PickerType;
 	public static final field IMAGE Lio/github/valerioisufi/drawview/ui/platform/PickerType;
 	public static final field PDF Lio/github/valerioisufi/drawview/ui/platform/PickerType;
 	public static final field TEXT Lio/github/valerioisufi/drawview/ui/platform/PickerType;
