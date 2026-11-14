@@ -122,7 +122,7 @@ observes it as before.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The backends: `ModelBackend` with its limits, cache, errors and release; `ModelBackends.forTask`; the three `when (task.provider)` and the provider checks go; `answerOnline` through `GeminiBackend` (ABI of `drawview-lecture` and `drawview-lecture-ui`) | done |
-| 2 | The state of `LectureAssistant` split: `AssistantLectures`, `AssistantWork`, `AssistantModels` | to do |
+| 2 | The state of `LectureAssistant` split: `AssistantLectures`, `AssistantWork`, `AssistantModels` | done |
 | 3 | `DeviceBackend` over `drawview-ml` (`LoadedModels`, `InstalledModels` of `ModelCatalog`), the request and the JSON of the bench moved into it, the bench on it; not chosen by the settings yet | to do |
 | 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, `LectureAssistant(deviceModels)`, PencilNotes giving the models of its search | waits for the user (a stored format) |
 
@@ -153,6 +153,8 @@ Taken alone, revertible:
   of `ModelRuntime`; "without a second catalog" is about the models that answer the prompts.
 * **`DeviceBackend` before its setting** (phase 3): the bench measures the code the application
   will run, not a copy of it.
+* **`documentsWithLectures` and `importError` become read-only properties in the klib dump**: they
+  were `var` with a private setter, read through a getter now; the JVM ABI does not change.
 * **The names** `AssistantLectures`, `AssistantWork`, `AssistantModels`, `TaskBackend`,
   `ModelLimits`, `ModelUse`, `PromptCache`.
 

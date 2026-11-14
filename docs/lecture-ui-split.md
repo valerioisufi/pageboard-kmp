@@ -28,7 +28,7 @@ The responsibilities are assigned following the GRASP principles.
 | Step | Content | Status |
 |------|---------|--------|
 | 1 | `LecturePanel`, `EditorToolbar` by section; the top-level declarations of `LectureAssistant` | done |
-| 2 | The state of `LectureAssistant` (the lectures, the requests, the models) | in phase 11 |
+| 2 | The state of `LectureAssistant` (the lectures, the requests, the models) | done in phase 11 (`docs/lecture-backends.md`) |
 
 ## Decisions
 
