@@ -220,6 +220,21 @@ final class io.github.valerioisufi.drawview.search/MutableIndexingConditions : i
     final fun setCanIndex(kotlin/Boolean) // io.github.valerioisufi.drawview.search/MutableIndexingConditions.setCanIndex|setCanIndex(kotlin.Boolean){}[0]
 }
 
+final class io.github.valerioisufi.drawview.search/NoteVocabulary { // io.github.valerioisufi.drawview.search/NoteVocabulary|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.search/SearchIndex, kotlinx.coroutines/CoroutineScope, kotlinx.coroutines/CoroutineDispatcher = ..., kotlin.time/Duration = ..., kotlin.time/TimeSource = ...) // io.github.valerioisufi.drawview.search/NoteVocabulary.<init>|<init>(io.github.valerioisufi.drawview.search.SearchIndex;kotlinx.coroutines.CoroutineScope;kotlinx.coroutines.CoroutineDispatcher;kotlin.time.Duration;kotlin.time.TimeSource){}[0]
+
+    final fun document(kotlin/String): io.github.valerioisufi.drawview.search/WordCounts? // io.github.valerioisufi.drawview.search/NoteVocabulary.document|document(kotlin.String){}[0]
+    final fun library(): io.github.valerioisufi.drawview.search/WordCounts? // io.github.valerioisufi.drawview.search/NoteVocabulary.library|library(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.search/NoteVocabulary.Companion|null[0]
+        final const val MAX_DOCUMENTS // io.github.valerioisufi.drawview.search/NoteVocabulary.Companion.MAX_DOCUMENTS|{}MAX_DOCUMENTS[0]
+            final fun <get-MAX_DOCUMENTS>(): kotlin/Int // io.github.valerioisufi.drawview.search/NoteVocabulary.Companion.MAX_DOCUMENTS.<get-MAX_DOCUMENTS>|<get-MAX_DOCUMENTS>(){}[0]
+
+        final val LIBRARY_REFRESH // io.github.valerioisufi.drawview.search/NoteVocabulary.Companion.LIBRARY_REFRESH|{}LIBRARY_REFRESH[0]
+            final fun <get-LIBRARY_REFRESH>(): kotlin.time/Duration // io.github.valerioisufi.drawview.search/NoteVocabulary.Companion.LIBRARY_REFRESH.<get-LIBRARY_REFRESH>|<get-LIBRARY_REFRESH>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.search/NotesAnswer { // io.github.valerioisufi.drawview.search/NotesAnswer|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.search/CitedPassage>, kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit>, kotlin/String) // io.github.valerioisufi.drawview.search/NotesAnswer.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.search.CitedPassage>;kotlin.collections.List<io.github.valerioisufi.drawview.search.SearchHit>;kotlin.String){}[0]
 
@@ -390,6 +405,7 @@ final class io.github.valerioisufi.drawview.search/SearchIndex : kotlin/AutoClos
     final fun replaceChunks(kotlin/String, kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchChunk>) // io.github.valerioisufi.drawview.search/SearchIndex.replaceChunks|replaceChunks(kotlin.String;kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.search.SearchChunk>){}[0]
     final fun searchVectors(kotlin/FloatArray, kotlin/Int = ..., kotlin.collections/Set<kotlin/String>? = ...): kotlin.collections/List<io.github.valerioisufi.drawview.search/ScoredChunk> // io.github.valerioisufi.drawview.search/SearchIndex.searchVectors|searchVectors(kotlin.FloatArray;kotlin.Int;kotlin.collections.Set<kotlin.String>?){}[0]
     final fun searchWords(kotlin/String, kotlin/Int = ..., kotlin.collections/Set<kotlin/String>? = ...): kotlin.collections/List<io.github.valerioisufi.drawview.search/ScoredChunk> // io.github.valerioisufi.drawview.search/SearchIndex.searchWords|searchWords(kotlin.String;kotlin.Int;kotlin.collections.Set<kotlin.String>?){}[0]
+    final fun texts(kotlin/String?, kotlin.collections/Set<io.github.valerioisufi.drawview.search/SearchChunkKind>): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.search/SearchIndex.texts|texts(kotlin.String?;kotlin.collections.Set<io.github.valerioisufi.drawview.search.SearchChunkKind>){}[0]
     final fun unembeddedChunks(kotlin/Int = ...): kotlin.collections/List<io.github.valerioisufi.drawview.search/UnembeddedChunk> // io.github.valerioisufi.drawview.search/SearchIndex.unembeddedChunks|unembeddedChunks(kotlin.Int){}[0]
     final fun unembeddedCount(): kotlin/Int // io.github.valerioisufi.drawview.search/SearchIndex.unembeddedCount|unembeddedCount(){}[0]
 

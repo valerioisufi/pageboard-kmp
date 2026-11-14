@@ -445,6 +445,25 @@ public class SearchIndex(
             .take(limit)
     }
 
+    /**
+     * The texts of the chunks of [kinds], as they were indexed: of [documentId], or of every
+     * document when it is `null` (`docs/writing-suggestions.md`).
+     */
+    public fun texts(documentId: String?, kinds: Set<SearchChunkKind>): List<String> = syncLock(lock) {
+        checkNotClosed()
+        if (kinds.isEmpty()) return emptyList()
+        val placeholders = kinds.joinToString(",") { "?" }
+        val sql = "SELECT text FROM chunks WHERE kind IN ($placeholders)" + if (documentId != null) " AND documentId = ?" else ""
+        readConnection.prepare(sql).use { stmt ->
+            var position = 1
+            for (kind in kinds) stmt.bindText(position++, kind.name)
+            if (documentId != null) stmt.bindText(position, documentId)
+            val texts = mutableListOf<String>()
+            while (stmt.step()) texts += stmt.getText(0)
+            texts
+        }
+    }
+
     override fun close() {
         syncLock(lock) {
             if (closed) return

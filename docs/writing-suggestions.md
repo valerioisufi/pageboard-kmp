@@ -58,7 +58,7 @@ Variations).
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
 | The words of a text with their counts, as written; the words of a prefix | `WordCounts` (search) | Information Expert, Pure Fabrication |
-| The texts of a document, or of all, as the index keeps them | `SearchIndex.texts(documentId)`, `SearchIndex.allTexts()` (search) | Information Expert |
+| The texts of a document, or of all, as the index keeps them | `SearchIndex.texts(documentId, kinds)` (search) | Information Expert |
 | The vocabulary of the library and of each document, built off the main thread, rebuilt when the index changes | `NoteVocabulary` (search) | Pure Fabrication, Low Coupling |
 | The completion of a word for the text being written: the layers weighted, the rules of the caret | `NoteWordSuggester : TextSuggester` (search-ui) | Polymorphism, Protected Variations |
 | The suggester given to the editors | `ContentSearch.editorExtension` (search-ui) | Creator |
@@ -80,13 +80,18 @@ Variations).
 
 ### The vocabulary (`NoteVocabulary`)
 
-* Built from the index (`SearchIndex.texts`), on `Dispatchers.Default`, at the first request and
-  again when the indexer has written (`SearchIndexer.progress` going idle with new documents): the
-  library once (the counts of all the documents together), and each document asked for its own.
-* While it is built the suggester answers from the document open only (requirement 4): the first
-  words of a session are completed without the slides, never late.
-* Memory: one map of words for the library (some tens of thousands of words, a few MB) and the
-  maps of the documents opened in this run.
+* Built from the index (`SearchIndex.texts`, the `chunks` table as written), on
+  `Dispatchers.Default` in a scope of the application, never by the caller: asked for words not
+  built yet, it answers what it has (`null` the first time) and builds them (requirement 4). While
+  they are built the suggester answers from the document open only.
+* **The library**: every chunk but the names of the documents (`TITLE`), built again when the index
+  changed (`SearchIndex.revision`) and at least `LIBRARY_REFRESH` (2 minutes) went by: the
+  indexer writes the document being written as it changes, and the library need not follow it.
+* **A document**: what it has besides its typed texts (`PDF`, `HANDWRITING`, `LECTURE_TRANSCRIPT`,
+  `LECTURE_NOTES`), built again whenever the index changed; its typed texts are read by the
+  suggester from the editor, as they are now.
+* Memory: one map of words for the library (some tens of thousands of words, a few MB) and those of
+  the 8 documents asked for last (`MAX_DOCUMENTS`).
 
 ### The suggestion (`NoteWordSuggester`)
 
@@ -113,7 +118,7 @@ Variations).
 | Phase | Content | Status |
 |-------|---------|--------|
 | 1 | `WordCounts` in `drawview-search`: the words of a text without the notation (formulas, code, addresses), the form written most often by lower case, `withPrefix`; tests (Italian accents, capitals, apostrophes, formulas); ABI of `drawview-search` | Done |
-| 2 | `SearchIndex.texts` / `allTexts` and `NoteVocabulary`: built off the main thread, rebuilt after the indexer writes, the document open meanwhile; tests on an in-memory index; ABI of `drawview-search` | Proposed |
+| 2 | `SearchIndex.texts` and `NoteVocabulary`: built off the main thread, a document again when the index changed, the library at most every 2 minutes, the 8 documents asked for last kept; tests on an in-memory index; ABI of `drawview-search` | Done |
 | 3 | `NoteWordSuggester` and `ContentSearch.editorExtension` in `drawview-search-ui`: the prefix, the layers, the thresholds; tests on documents and on an index; ABI of `drawview-search-ui` | Proposed |
 | 4 | The switch: `DrawPreferences.areTextSuggestionsEnabled`, read from the JSON of today as on (test), the editor not asking when off, the checked command with its strings; ABI of `drawview-canvas` and `drawview-ui` | Proposed |
 | 5 | PencilNotes: `search.editorExtension` in `PencilNotesServices.editorExtension`; the desktop app run on a scratch data directory with a PDF and a text, the suggestions checked by hand | Proposed |
