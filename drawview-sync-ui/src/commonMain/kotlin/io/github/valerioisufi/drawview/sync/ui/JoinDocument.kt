@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -14,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,7 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.sync.JoinRequest
 import io.github.valerioisufi.drawview.sync.JoinStatus
+import io.github.valerioisufi.drawview.sync.SpaceRoot
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.InvitationKind
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -106,11 +111,15 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
     var text by remember(link) { mutableStateOf(link) }
     var invalid by remember { mutableStateOf(false) }
     var joined by remember { mutableStateOf<Invitation?>(null) }
+    // A shared library: into a new folder, or into this library (both become one)
+    var intoLibrary by remember { mutableStateOf(false) }
     val online by collaboration.isOnline.collectAsState()
     val joining by collaboration.joining.collectAsState()
+    val parsed = remember(text) { Invitation.parse(text) }
     val join: () -> Unit = {
         scope.launch {
-            val invitation = collaboration.join(text)
+            val root = if (parsed?.kind == InvitationKind.LIBRARY && intoLibrary) SpaceRoot.Library else SpaceRoot.NewFolder
+            val invitation = collaboration.join(text, root)
             invalid = invitation == null
             joined = invitation
         }
@@ -123,21 +132,24 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
         text = {
             val done = joined
             if (done != null) {
-                JoinProgress(status, done.title, online)
+                JoinProgress(status, done.title, online, done.kind)
             } else {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                        invalid = false
-                    },
-                    label = { Text(stringResource(Res.string.sync_join_hint)) },
-                    isError = invalid,
-                    supportingText = if (invalid) ({ Text(stringResource(Res.string.sync_join_invalid)) }) else null,
-                    maxLines = 4,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = {
+                            text = it
+                            invalid = false
+                        },
+                        label = { Text(stringResource(Res.string.sync_join_hint)) },
+                        isError = invalid,
+                        supportingText = if (invalid) ({ Text(stringResource(Res.string.sync_join_invalid)) }) else null,
+                        maxLines = 4,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (parsed?.kind == InvitationKind.LIBRARY) LibraryRootChoice(parsed.title, intoLibrary) { intoLibrary = it }
+                }
             }
         },
         confirmButton = {
@@ -153,9 +165,29 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
     )
 }
 
-/** How joining the document [title] goes ([status]), with its icon or its spinner. */
+/** Where a shared library joined goes: a new folder named [title], or this library ([intoLibrary]: both become one). */
 @Composable
-internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean) {
+internal fun LibraryRootChoice(title: String, intoLibrary: Boolean, onChange: (Boolean) -> Unit) {
+    Column(modifier = Modifier.selectableGroup()) {
+        Text(stringResource(Res.string.sync_join_library_where), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        listOf(false to stringResource(Res.string.sync_join_library_new_folder, title), true to stringResource(Res.string.sync_join_library_merge)).forEach { (choice, label) ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(selected = intoLibrary == choice, onClick = { onChange(choice) }, role = androidx.compose.ui.semantics.Role.RadioButton)
+                    .padding(vertical = 6.dp)
+            ) {
+                RadioButton(selected = intoLibrary == choice, onClick = null)
+                Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 12.dp))
+            }
+        }
+    }
+}
+
+/** How joining the document or the shared folder [title] goes ([status]), with its icon or its spinner. */
+@Composable
+internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean, kind: InvitationKind = InvitationKind.DOCUMENT) {
     if (!online && status != JoinStatus.ADMITTED && status != JoinStatus.REFUSED) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Notice(DrawViewIcons.WifiOff, stringResource(Res.string.sync_no_network))
@@ -173,9 +205,9 @@ internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean) {
             stringResource(
                 when (status) {
                     JoinStatus.WAITING_APPROVAL -> Res.string.sync_join_waiting_approval
-                    JoinStatus.ADMITTED -> Res.string.sync_join_admitted
+                    JoinStatus.ADMITTED -> if (kind == InvitationKind.DOCUMENT) Res.string.sync_join_admitted else Res.string.sync_join_folder_admitted
                     JoinStatus.REFUSED -> Res.string.sync_join_refused
-                    else -> Res.string.sync_join_waiting
+                    else -> if (kind == InvitationKind.DOCUMENT) Res.string.sync_join_waiting else Res.string.sync_join_folder_waiting
                 },
                 title
             ),

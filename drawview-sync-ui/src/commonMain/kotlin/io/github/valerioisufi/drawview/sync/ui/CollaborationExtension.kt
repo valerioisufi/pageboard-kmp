@@ -77,7 +77,7 @@ public fun Collaboration.editorExtension(): EditorExtension {
             CollaboratorsLayer(this@editorExtension, context.documentId, context.document, context.presence)
             WritingElsewhereNotice(context.presence)
             if (sharing.documentId == context.documentId) {
-                ShareDialog(this@editorExtension, context.documentId, context.document.document.title, onDismiss = { sharing.documentId = null })
+                ShareDialog(this@editorExtension, ShareTarget.Document(context.documentId, context.document.document.title), onDismiss = { sharing.documentId = null })
             }
         }
         commands { context -> listOf(shareCommand(context.documentId)) }
@@ -184,10 +184,16 @@ private const val ROUTES_MS = 1_000L
  * document is asked first. A new role or approval of the invitation gives a new one in its place.
  */
 @Composable
-private fun ShareDialog(collaboration: Collaboration, documentId: String, title: String, onDismiss: () -> Unit) {
+internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
-    val memberships by collaboration.memberships.collectAsState()
-    val membership = memberships[documentId]
+    val title = target.title
+    // A folder has its identifier of shared folder once shared (see Collaboration.shareFolder)
+    var shareId by remember(target) { mutableStateOf((target as? ShareTarget.Document)?.documentId) }
+    val folder = target as? ShareTarget.Folder
+    LaunchedEffect(target) { if (folder != null) shareId = collaboration.spaceOf(folder.folderId) }
+    val documentId = shareId.orEmpty()
+    val memberships by (if (folder != null) collaboration.spaceMemberships else collaboration.memberships).collectAsState()
+    val membership = shareId?.let { memberships[it] }
     val isOwner = membership?.owner == collaboration.device
     val online by collaboration.isOnline.collectAsState()
     val otherVersion by collaboration.otherVersionMet.collectAsState()
@@ -200,7 +206,7 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
     val internet by collaboration.internetSettings.collectAsState()
     var routes by remember { mutableStateOf<Map<String, Route>>(emptyMap()) }
     LaunchedEffect(documentId, version, isOwner) {
-        invitations = if (isOwner) collaboration.invitationsOf(documentId, title) else emptyList()
+        invitations = if (isOwner && documentId.isNotEmpty()) collaboration.invitationsOf(documentId, title) else emptyList()
     }
     // What each connection goes through (a relay, then a direct path...): looked at again and again
     LaunchedEffect(documentId, membership) {
@@ -225,15 +231,21 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
         },
         offline = !online,
         otherVersion = otherVersion,
-        internet = internet.takeIf { collaboration.isInternetAvailable }
+        internet = internet.takeIf { collaboration.isInternetAvailable },
+        kind = target.kind
     )
-    val actions = remember(collaboration, documentId, title) {
+    val actions = remember(collaboration, documentId, target) {
         object : SharingActions {
             override fun invite(role: Role, approval: Boolean) {
                 scope.launch {
                     // The invitation with other options takes the place of the current one
                     invitations.lastOrNull()?.let { (grant, _) -> collaboration.revokeInvitation(documentId, grant) }
-                    collaboration.share(documentId, title, role, approval)
+                    if (folder != null) {
+                        collaboration.shareFolder(folder.folderId, title, role, approval)
+                        shareId = collaboration.spaceOf(folder.folderId)
+                    } else {
+                        collaboration.share(documentId, title, role, approval)
+                    }
                     version++
                 }
             }

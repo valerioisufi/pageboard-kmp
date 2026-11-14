@@ -60,4 +60,17 @@
     <string name="sync_route_direct">Internet, direkt</string>
     <string name="sync_route_relayed">Internet, über das Relay</string>
     <string name="sync_share_explanation_internet">Die Geräte, die die Einladung öffnen, arbeiten gleichzeitig mit dir an diesem Dokument, wo immer sie sind.</string>
+    <string name="sync_share_folder_title">Ordner teilen</string>
+    <string name="sync_share_library_title">Bibliothek teilen</string>
+    <string name="sync_share_folder_explanation">Die Geräte, die die Einladung öffnen, halten diesen Ordner gleich wie deinen: seine Notizen und Ordner, auch die später hinzugefügten.</string>
+    <string name="sync_share_library_explanation">Die Geräte, die die Einladung öffnen, halten deine ganze Bibliothek gleich wie deine: jede Notiz und jeden Ordner, auch die später hinzugefügten.</string>
+    <string name="sync_share_items_action">Teilen…</string>
+    <string name="sync_share_folder_action">Ordner teilen…</string>
+    <string name="sync_share_library_action">Bibliothek teilen…</string>
+    <string name="sync_library_title">Bibliothek</string>
+    <string name="sync_join_library_where">Wohin</string>
+    <string name="sync_join_library_new_folder">In einen neuen Ordner „%1$s“</string>
+    <string name="sync_join_library_merge">In meine Bibliothek: Beide Bibliotheken werden eine</string>
+    <string name="sync_join_folder_waiting">„%1$s“ wird im Netzwerk gesucht.</string>
+    <string name="sync_join_folder_admitted">Du bist dabei: „%1$s“ erscheint in deiner Bibliothek.</string>
 </resources>

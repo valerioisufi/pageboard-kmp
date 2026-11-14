@@ -40,6 +40,7 @@ import io.github.valerioisufi.drawview.search.ui.settingsAction
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.joinAction
+import io.github.valerioisufi.drawview.sync.ui.shareAction
 import io.github.valerioisufi.drawview.sync.ui.CollaborationAccess
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
@@ -102,7 +103,7 @@ fun PencilNotesApp(
                 sessions = PencilNotesData.sessions,
                 actions = listOfNotNull(services.collaboration.joinAction(), services.search.settingsAction(), services.export.importAction, agents?.libraryAction, aboutLibraryAction()),
                 editorExtension = editorExtension,
-                itemsActions = listOf(services.export.libraryAction),
+                itemsActions = listOf(services.export.libraryAction, services.collaboration.shareAction()),
                 tags = listOf(services.lectureTag),
                 engines = services.engines,
                 thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), services.engines),

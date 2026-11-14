@@ -60,4 +60,17 @@
     <string name="sync_route_direct">Internet, diretto</string>
     <string name="sync_route_relayed">Internet, tramite relay</string>
     <string name="sync_share_explanation_internet">I dispositivi che aprono l’invito lavorano su questo documento con te, nello stesso momento, ovunque siano.</string>
+    <string name="sync_share_folder_title">Condividi la cartella</string>
+    <string name="sync_share_library_title">Condividi la libreria</string>
+    <string name="sync_share_folder_explanation">I dispositivi che aprono l’invito tengono questa cartella uguale alla tua: le sue note e cartelle, e quelle aggiunte dopo.</string>
+    <string name="sync_share_library_explanation">I dispositivi che aprono l’invito tengono tutta la tua libreria uguale alla tua: ogni nota e cartella, e quelle aggiunte dopo.</string>
+    <string name="sync_share_items_action">Condividi…</string>
+    <string name="sync_share_folder_action">Condividi cartella…</string>
+    <string name="sync_share_library_action">Condividi libreria…</string>
+    <string name="sync_library_title">Libreria</string>
+    <string name="sync_join_library_where">Dove va</string>
+    <string name="sync_join_library_new_folder">In una nuova cartella «%1$s»</string>
+    <string name="sync_join_library_merge">Nella mia libreria: le due librerie diventano una</string>
+    <string name="sync_join_folder_waiting">Cerco «%1$s» sulla rete.</string>
+    <string name="sync_join_folder_admitted">Sei dentro: «%1$s» arriva nella tua libreria.</string>
 </resources>

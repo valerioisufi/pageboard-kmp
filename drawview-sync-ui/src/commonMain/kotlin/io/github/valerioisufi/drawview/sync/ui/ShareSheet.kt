@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import io.github.valerioisufi.drawview.sync.protocol.InvitationKind
 import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
@@ -96,7 +97,9 @@ internal class SharingState(
     val members: List<SharingPerson>,
     val offline: Boolean,
     val otherVersion: Boolean,
-    val internet: InternetSettings? = null
+    val internet: InternetSettings? = null,
+    /** What is shared: a document, a folder or the library (see `docs/shared-folders.md`). */
+    val kind: InvitationKind = InvitationKind.DOCUMENT
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -156,7 +159,7 @@ internal fun ShareContent(
         val wide = !compact && state.invites && maxWidth >= 720.dp
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = if (compact) 16.dp else 0.dp)) {
             // On a phone what sharing does is said before sharing only
-            ShareHeader(compact, explained = !compact || !state.shared, overInternet = state.internet?.enabled == true, onClose = actions::close)
+            ShareHeader(compact, explained = !compact || !state.shared, overInternet = state.internet?.enabled == true, kind = state.kind, onClose = actions::close)
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
@@ -194,17 +197,29 @@ internal fun ShareContent(
  * wherever they are [overInternet]), the close button of the dialog.
  */
 @Composable
-private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Boolean, onClose: () -> Unit) {
+private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Boolean, kind: InvitationKind, onClose: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                stringResource(Res.string.sync_share_title),
+                stringResource(
+                    when (kind) {
+                        InvitationKind.DOCUMENT -> Res.string.sync_share_title
+                        InvitationKind.FOLDER -> Res.string.sync_share_folder_title
+                        InvitationKind.LIBRARY -> Res.string.sync_share_library_title
+                    }
+                ),
                 style = if (compact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (explained) {
                 Text(
-                    stringResource(if (overInternet) Res.string.sync_share_explanation_internet else Res.string.sync_share_explanation),
+                    stringResource(
+                        when (kind) {
+                            InvitationKind.DOCUMENT -> if (overInternet) Res.string.sync_share_explanation_internet else Res.string.sync_share_explanation
+                            InvitationKind.FOLDER -> Res.string.sync_share_folder_explanation
+                            InvitationKind.LIBRARY -> Res.string.sync_share_library_explanation
+                        }
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

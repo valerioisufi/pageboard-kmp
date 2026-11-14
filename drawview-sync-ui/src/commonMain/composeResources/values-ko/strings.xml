@@ -60,4 +60,17 @@
     <string name="sync_route_direct">인터넷(직접)</string>
     <string name="sync_route_relayed">인터넷(릴레이 경유)</string>
     <string name="sync_share_explanation_internet">초대를 연 기기들이 어디에 있든 동시에 이 문서에서 함께 작업합니다.</string>
+    <string name="sync_share_folder_title">폴더 공유</string>
+    <string name="sync_share_library_title">라이브러리 공유</string>
+    <string name="sync_share_folder_explanation">초대를 연 기기는 이 폴더를 내 폴더와 똑같이 유지합니다: 안의 노트와 폴더, 나중에 추가된 것까지.</string>
+    <string name="sync_share_library_explanation">초대를 연 기기는 내 라이브러리 전체를 똑같이 유지합니다: 모든 노트와 폴더, 나중에 추가된 것까지.</string>
+    <string name="sync_share_items_action">공유…</string>
+    <string name="sync_share_folder_action">폴더 공유…</string>
+    <string name="sync_share_library_action">라이브러리 공유…</string>
+    <string name="sync_library_title">라이브러리</string>
+    <string name="sync_join_library_where">추가할 위치</string>
+    <string name="sync_join_library_new_folder">새 폴더 “%1$s”에</string>
+    <string name="sync_join_library_merge">내 라이브러리에: 두 라이브러리가 하나가 됩니다</string>
+    <string name="sync_join_folder_waiting">네트워크에서 “%1$s”을(를) 찾는 중입니다.</string>
+    <string name="sync_join_folder_admitted">참여했습니다: “%1$s”이(가) 내 라이브러리에 도착합니다.</string>
 </resources>

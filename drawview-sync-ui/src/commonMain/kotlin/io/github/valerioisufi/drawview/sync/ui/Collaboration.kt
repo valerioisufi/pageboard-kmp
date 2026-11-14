@@ -10,6 +10,8 @@ import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
+import io.github.valerioisufi.drawview.store.space.SpaceLibrary
+import io.github.valerioisufi.drawview.store.space.SpaceStore
 import io.github.valerioisufi.drawview.sync.InMemoryAddressBook
 import io.github.valerioisufi.drawview.sync.InternetSync
 import io.github.valerioisufi.drawview.sync.InvitationGrant
@@ -18,6 +20,7 @@ import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.Peer
 import io.github.valerioisufi.drawview.sync.PreferenceAddressBook
 import io.github.valerioisufi.drawview.sync.Presence
+import io.github.valerioisufi.drawview.sync.SpaceRoot
 import io.github.valerioisufi.drawview.sync.StoreSharedDocuments
 import io.github.valerioisufi.drawview.sync.SyncEngine
 import io.github.valerioisufi.drawview.sync.SyncNetwork
@@ -25,6 +28,7 @@ import io.github.valerioisufi.drawview.sync.lan.LanDiscovery
 import io.github.valerioisufi.drawview.sync.lan.LanSync
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.InvitationKind
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.Role
@@ -66,6 +70,10 @@ private const val NEARBY_WAIT_MS = 3_000L
  * The data the extensions keep beside the documents ([attachments], e.g. the lectures) travel
  * with them.
  *
+ * When the store keeps spaces ([SpaceStore], the stores of the libraries do), whole folders and
+ * the library are shared too ([shareFolder], see `docs/shared-folders.md`): what they hold is kept
+ * the same on every device of their members, the notes and folders added later too.
+ *
  * The devices are looked for only once allowed to use the local network ([requestAccess]: the
  * permission of Android 17; asked when a document is shared or joined, or at the start when some
  * are shared already).
@@ -97,12 +105,27 @@ public class Collaboration(
     /** Asks for the permission to use the local network (set by [CollaborationAccess]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
+    /** The shared folders of this device, kept in step with the library, when the store keeps them. */
+    private val library: SpaceLibrary? = (store as? SpaceStore)?.let { spaces ->
+        SpaceLibrary(store, spaces, scope, sharedApart = { _, secret -> io.github.valerioisufi.drawview.sync.SharingState.decode(secret)?.space == null })
+    }
+
     public val engine: SyncEngine = SyncEngine(
         documents, shared, scope, { DeviceProfile.name.value },
         attachments = attachments, identity = identity, receivedFolder = ::sharedFolder,
         // Where the other members can be reached, kept with the preferences of the store
-        addressBook = (store as? PreferenceStore)?.let(::PreferenceAddressBook) ?: InMemoryAddressBook()
+        addressBook = (store as? PreferenceStore)?.let(::PreferenceAddressBook) ?: InMemoryAddressBook(),
+        spaces = library
     )
+
+    /** Whether folders and the library can be shared here (the store keeps spaces). */
+    public val sharesFolders: Boolean get() = library != null
+
+    /** Who works on each shared folder and on its documents, and with what role (as its owner decided). */
+    public val spaceMemberships: StateFlow<Map<String, Membership>> get() = engine.spaceMemberships
+
+    /** The names of the folders, by identifier. */
+    internal val folderNames: Flow<Map<String, String>> = store.folders.map { list -> list.associate { it.id to it.name } }
 
     /** The devices connected, with the document each one works on. */
     public val peers: StateFlow<List<Peer>> get() = engine.peers
@@ -132,6 +155,13 @@ public class Collaboration(
     internal val isOnline: StateFlow<Boolean> = online.asStateFlow()
 
     init {
+        // The shared folders follow the library from the start, their documents their sharing
+        library?.let { library ->
+            scope.launch {
+                library.start()
+                engine.followSpaces()
+            }
+        }
         // Connected to some devices: going on in the background too
         scope.launch {
             engine.peers.map { peers -> peers.map { it.documentId }.distinct().size }.distinctUntilChanged().collect { documents ->
@@ -168,9 +198,25 @@ public class Collaboration(
         return invitation
     }
 
-    /** The invitations of the document [documentId] given by this device, its owner, as links. */
-    public suspend fun invitationsOf(documentId: String, title: String): List<Pair<InvitationGrant, Invitation>> =
-        engine.invitationsOf(documentId).map { it to engine.invitationOf(documentId, title, it) }
+    /**
+     * Shares the folder [folderId] (`null`: the library), titled [title], this device becoming its
+     * owner if it is not shared yet: a new invitation, as [share]; `null` when the folders cannot be
+     * shared here, the folder is in a shared folder or holds one, or this device is not its owner.
+     */
+    public suspend fun shareFolder(folderId: String?, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation? {
+        val spaceId = spaceOf(folderId) ?: engine.shareSpace(folderId) ?: return null
+        return share(spaceId, title, role, approval)
+    }
+
+    /** The shared folder whose root is [folderId] (`null`: the library), `null` when it is not shared. */
+    public suspend fun spaceOf(folderId: String?): String? = library?.spaces()?.firstOrNull { it.rootFolderId == folderId }?.id
+
+    /** The invitations of the document or shared folder [documentId] given by this device, its owner, as links. */
+    public suspend fun invitationsOf(documentId: String, title: String): List<Pair<InvitationGrant, Invitation>> {
+        val kind = library?.spaces()?.firstOrNull { it.id == documentId }
+            ?.let { if (it.rootFolderId == null) InvitationKind.LIBRARY else InvitationKind.FOLDER } ?: InvitationKind.DOCUMENT
+        return engine.invitationsOf(documentId).map { it to engine.invitationOf(documentId, title, it, kind = kind) }
+    }
 
     /** Revokes an invitation: nobody joins with it anymore. */
     public suspend fun revokeInvitation(documentId: String, grant: InvitationGrant) {
@@ -208,9 +254,13 @@ public class Collaboration(
         lan?.announce()
     }
 
-    /** Joins the document of the invitation [link]: the invitation, or `null` when it is not one. */
-    public suspend fun join(link: String): Invitation? {
+    /**
+     * Joins the document or the shared folder of the invitation [link] (a folder going where
+     * [root] says): the invitation, or `null` when it is not one.
+     */
+    public suspend fun join(link: String, root: SpaceRoot = SpaceRoot.NewFolder): Invitation? {
         val invitation = Invitation.parse(link) ?: return null
+        if (invitation.kind != InvitationKind.DOCUMENT) engine.joinSpace(invitation, root)
         if (start()) lan?.join(invitation) else engine.join(invitation)
         // Over the internet too: the owner may be elsewhere
         mutex.withLock { internetNetwork }?.join(invitation)
@@ -234,7 +284,7 @@ public class Collaboration(
     }
 
     /** Whether some documents are shared with other devices already. */
-    internal suspend fun hasSharedDocuments(): Boolean = store.sharingSecrets().isNotEmpty()
+    internal suspend fun hasSharedDocuments(): Boolean = store.sharingSecrets().isNotEmpty() || library?.spaces()?.isNotEmpty() == true
 
     /** Stops working with the other devices (started again by [start]). */
     public suspend fun stop() {

@@ -60,4 +60,17 @@
     <string name="sync_route_direct">Internet, direct</string>
     <string name="sync_route_relayed">Internet, via the relay</string>
     <string name="sync_share_explanation_internet">The devices that open the invitation work on this document with you, at the same time, wherever they are.</string>
+    <string name="sync_share_folder_title">Share the folder</string>
+    <string name="sync_share_library_title">Share the library</string>
+    <string name="sync_share_folder_explanation">The devices that open the invitation keep this folder the same as yours: its notes and folders, and the ones added later.</string>
+    <string name="sync_share_library_explanation">The devices that open the invitation keep your whole library the same as yours: every note and folder, and the ones added later.</string>
+    <string name="sync_share_items_action">Share…</string>
+    <string name="sync_share_folder_action">Share folder…</string>
+    <string name="sync_share_library_action">Share library…</string>
+    <string name="sync_library_title">Library</string>
+    <string name="sync_join_library_where">Where it goes</string>
+    <string name="sync_join_library_new_folder">In a new folder “%1$s”</string>
+    <string name="sync_join_library_merge">Into my library: both libraries become one</string>
+    <string name="sync_join_folder_waiting">Looking for “%1$s” on the network.</string>
+    <string name="sync_join_folder_admitted">You are in: “%1$s” arrives in your library.</string>
 </resources>

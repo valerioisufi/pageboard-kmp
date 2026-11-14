@@ -417,7 +417,10 @@ public class SyncEngine(
 
     /** Joins the document of [invitation]: the owner admits this device when it reaches it (see [connect]). */
     public suspend fun join(invitation: Invitation) {
-        if (invitation.kind != InvitationKind.DOCUMENT) return joinSpace(invitation, SpaceRoot.NewFolder)
+        // A shared folder: where its root goes as chosen already (see joinSpace), in a new folder by default
+        if (invitation.kind != InvitationKind.DOCUMENT) {
+            return joinSpace(invitation, mutex.withLock { spaceRoots[invitation.documentId] } ?: SpaceRoot.NewFolder)
+        }
         sharing.startJoining(invitation)
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
     }

@@ -60,4 +60,17 @@
     <string name="sync_route_direct">インターネット（直接）</string>
     <string name="sync_route_relayed">インターネット（リレー経由）</string>
     <string name="sync_share_explanation_internet">招待を開いたデバイスは、どこにいてもあなたと同時にこのドキュメントで作業できます。</string>
+    <string name="sync_share_folder_title">フォルダを共有</string>
+    <string name="sync_share_library_title">ライブラリを共有</string>
+    <string name="sync_share_folder_explanation">招待を開いたデバイスは、このフォルダをあなたのものと同じに保ちます：中のノートとフォルダ、あとから追加されたものも。</string>
+    <string name="sync_share_library_explanation">招待を開いたデバイスは、あなたのライブラリ全体を同じに保ちます：すべてのノートとフォルダ、あとから追加されたものも。</string>
+    <string name="sync_share_items_action">共有…</string>
+    <string name="sync_share_folder_action">フォルダを共有…</string>
+    <string name="sync_share_library_action">ライブラリを共有…</string>
+    <string name="sync_library_title">ライブラリ</string>
+    <string name="sync_join_library_where">追加先</string>
+    <string name="sync_join_library_new_folder">新しいフォルダ「%1$s」に</string>
+    <string name="sync_join_library_merge">自分のライブラリに：2つのライブラリが1つになります</string>
+    <string name="sync_join_folder_waiting">ネットワーク上で「%1$s」を探しています。</string>
+    <string name="sync_join_folder_admitted">参加しました：「%1$s」はあなたのライブラリに届きます。</string>
 </resources>

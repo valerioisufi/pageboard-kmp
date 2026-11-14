@@ -194,7 +194,7 @@ a build of before meeting a space closes the connection (a message it does not k
 | 4. Synchronization | The connections about a space (the handshake of the documents, the sharing of the space), its catalog (`CatalogOperations`, sealed and signed), the documents of a space synchronized as the others with the keys and membership of the space, from the owner or the device that brought them; `ProtocolFormatTest`. Tests: two devices sharing a folder (both ways, live, the trash, a member removed), the library joined into the library, a reader, a rule removed failing them, random catalog changes to the decoder | done |
 | 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | proposed |
 | 5. Invitations and joining | The invitation of a space (`s=` and its kind in the link), the approval as for a document, joining into a new folder, a folder, or the library itself (`SpaceRoot`) | done (in the engine; the choice in the interface is phase 6) |
-| 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | proposed |
+| 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | done (the badge of a shared folder and the screenshots recorded on the Mac: to do) |
 | 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | left to the user |
 
 Every phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
@@ -366,6 +366,29 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
 * Not run on this host (Windows): the tests of the sync modules on the iOS simulator.
 * Left for phase 4b: every document of a space has its connections, as a document shared on its
   own (fine for a library of tens of documents, not of hundreds).
+
+### Phase 6 results
+
+* `Collaboration` keeps a `SpaceLibrary` when the store keeps spaces (both stores do), started with
+  it, and gives it to the engine: `sharesFolders`, `shareFolder(folderId, title, role, approval)`,
+  `spaceOf(folderId)`, `spaceMemberships`, `join(link, SpaceRoot)`; the invitations of a space are
+  links of a folder or of the library; the collaboration starts at once when a space is kept.
+* `Collaboration.shareAction()` (a `LibraryItemsAction`): "Share…" on a note or a folder of the
+  library, "Share folder…" / "Share library…" on the folder shown (the Home: the library). It opens
+  the sharing dialog of the documents, now for a folder or the library too (`ShareTarget`): its
+  title and what sharing it does, the invitation, the members and their roles, who asks to join,
+  stop sharing or leave, as for a document.
+* The join dialog: an invitation to a library asks where it goes, a new folder named as it or
+  this library (both libraries become one); a folder goes into a new folder. What joining says
+  ("arrives in your library") follows what is joined.
+* A reader's library is put back as the space holds it (`SpaceLibrary`, phase 2).
+* PencilNotes: the action beside "Export…" in the library.
+* Strings in the 7 languages of the applications.
+* Screenshots (`SharingScreenshotTest`): `share-library` (the library before sharing it) and
+  `join-library` (the choice of where it goes), looked at here; their references are to be
+  recorded on the Mac (`recordRoborazziJvm`), this host drawing text otherwise.
+* Left: the badge of a shared folder in the explorer (the documents in it have theirs); it needs
+  the explorer to know the roots of the spaces, which it does not read today.
 
 ## Decisions
 

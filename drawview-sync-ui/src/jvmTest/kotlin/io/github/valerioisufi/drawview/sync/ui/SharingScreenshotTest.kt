@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.sync.JoinStatus
+import io.github.valerioisufi.drawview.sync.protocol.InvitationKind
 import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
@@ -126,6 +127,39 @@ class SharingScreenshotTest {
                 onRename = {},
                 compact = false
             )
+        }
+    }
+
+    /** The library about to be shared (docs/shared-folders.md): what sharing it does, the first invitation. */
+    @Test
+    fun library() = capture("share-library", width = 908, height = 640) {
+        Dialog(ShareDialogWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = false,
+                    isOwner = true,
+                    owner = "",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = emptyList(),
+                    offline = false,
+                    otherVersion = false,
+                    kind = InvitationKind.LIBRARY
+                ),
+                actions = noActions,
+                name = "Valerio’s Mac",
+                deviceName = "Valerio’s Mac",
+                onRename = {},
+                compact = false
+            )
+        }
+    }
+
+    /** Joining a shared library: into a new folder, or into this library. */
+    @Test
+    fun joinLibrary() = capture("join-library", width = 520, height = 420) {
+        Dialog(ShareDialogNarrowWidth) {
+            Box(modifier = Modifier.padding(24.dp)) { LibraryRootChoice("Valerio’s notes", intoLibrary = true) {} }
         }
     }
 
