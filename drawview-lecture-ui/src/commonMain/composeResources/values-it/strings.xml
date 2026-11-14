@@ -243,7 +243,7 @@
         <item quantity="other">%1$d lezioni in questo quaderno</item>
     </plurals>
     <string name="lecture_settings_requests">Richieste</string>
-    <string name="lecture_settings_requests_hint">Ogni richiesta va online (Gemini) o su questo computer (whisper.cpp e Ollama, gratis, niente lascia il computer).</string>
+    <string name="lecture_settings_requests_hint">Ogni richiesta va online (Gemini) o su questo dispositivo (gratis, niente lo lascia): il parlato con whisper.cpp, le note con i modelli del dispositivo o Ollama.</string>
     <string name="lecture_settings_api_key_title">Chiave API</string>
     <string name="lecture_settings_ollama">Ollama</string>
     <string name="lecture_notes_insert_all">Inserisci tutte (%1$d)</string>
@@ -269,4 +269,8 @@
     <string name="lecture_engine_hint">I modelli di questo dispositivo si scaricano una volta e funzionano qui, anche offline. Ollama usa modelli più grandi, anche su un computer della rete.</string>
     <string name="lecture_device_model">Modello del dispositivo</string>
     <string name="lecture_device_ready">Scaricato · richiede circa %1$s di memoria</string>
+    <string name="lecture_hint_live_device">Gratis e privato, su questo dispositivo. Su quattro lezioni Gemma 4 E4B ha ripetuto le slide più spesso di Gemini: online scrive note migliori. Legge la trascrizione.</string>
+    <string name="lecture_hint_review_device">Rilegge la trascrizione e i tuoi appunti su questo dispositivo; alla fine il modello viene liberato. Un modello più grande legge meglio e impiega di più (Gemma 4 12B su un computer).</string>
+    <string name="lecture_device_delete">Elimina</string>
+    <string name="lecture_device_cancel">Annulla il download</string>
 </resources>

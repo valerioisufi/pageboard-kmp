@@ -224,7 +224,7 @@ class LecturePanelScreenshotTest {
                 }
             }
             waitForIdle()
-            onNodeWithText("Gemma 4 E4B", substring = true).assertExists()
+            onNodeWithText("Gemma 4 E4B · 3.7 GB ✓").assertExists()
             captureToImage().captureRoboImage("screenshots/lecture-settings-device.png")
             // The engine of the local requests
             onNodeWithText("On this computer").performClick()

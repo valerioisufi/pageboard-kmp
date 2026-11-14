@@ -243,7 +243,7 @@
         <item quantity="other">%1$d lectures in this notebook</item>
     </plurals>
     <string name="lecture_settings_requests">Requests</string>
-    <string name="lecture_settings_requests_hint">Each request runs online (Gemini) or on this computer (whisper.cpp and Ollama, free, nothing leaves the computer).</string>
+    <string name="lecture_settings_requests_hint">Each request runs online (Gemini) or on this device (free, nothing leaves it): the speech with whisper.cpp, the notes with the models of the device or Ollama.</string>
     <string name="lecture_settings_api_key_title">API key</string>
     <string name="lecture_settings_ollama">Ollama</string>
     <string name="lecture_notes_insert_all">Insert all (%1$d)</string>
@@ -269,4 +269,8 @@
     <string name="lecture_engine_hint">The models of this device are downloaded once and run here, offline. Ollama runs larger models, also on a computer of the network.</string>
     <string name="lecture_device_model">Model of this device</string>
     <string name="lecture_device_ready">Downloaded · it needs about %1$s of memory</string>
+    <string name="lecture_hint_live_device">Free and private, on this device. On four lectures Gemma 4 E4B repeated the slides more often than Gemini: online writes better notes. It reads the transcript.</string>
+    <string name="lecture_hint_review_device">Rereads the transcript and your notes on this device; the model is freed at the end. A larger model reads better and takes longer (Gemma 4 12B on a computer).</string>
+    <string name="lecture_device_delete">Delete</string>
+    <string name="lecture_device_cancel">Cancel the download</string>
 </resources>

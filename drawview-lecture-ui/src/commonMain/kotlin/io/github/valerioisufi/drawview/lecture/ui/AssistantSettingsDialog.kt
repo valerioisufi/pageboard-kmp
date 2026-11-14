@@ -35,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +77,7 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -404,7 +406,7 @@ private fun TaskModelRow(
     val label = @Composable {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(text = stringResource(taskLabel(task)), style = MaterialTheme.typography.titleSmall)
-            taskHint(task, settings)?.let { Hint(stringResource(it)) }
+            taskHint(task, settings, onDevice = deviceModels != null && settings.localEngine == LocalEngine.DEVICE)?.let { Hint(stringResource(it)) }
         }
     }
     val choice = @Composable {
@@ -568,6 +570,7 @@ private fun DeviceModelPicker(selected: String, deviceModels: DeviceModels, onSe
     val failures by deviceModels.downloads.failures.collectAsState()
     val label = { spec: ModelSpec -> spec.name + " · " + formatSize(spec.sizeBytes) + if (spec.id in installed) " ✓" else "" }
     val chosen = deviceModels.spec(selected)
+    val scope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Choice(
             label = stringResource(Res.string.lecture_device_model),
@@ -579,8 +582,17 @@ private fun DeviceModelPicker(selected: String, deviceModels: DeviceModels, onSe
         val downloading = progress[chosen.id]
         val failure = failures[chosen.id]
         when {
-            chosen.id in installed -> Hint(stringResource(Res.string.lecture_device_ready, formatSize(chosen.memoryBytes)))
-            downloading != null -> DownloadProgress(downloading.fraction)
+            chosen.id in installed -> Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.weight(1f)) { Hint(stringResource(Res.string.lecture_device_ready, formatSize(chosen.memoryBytes))) }
+                // Freed from memory first, then its file deleted (downloaded again on request)
+                TextButton(onClick = { scope.launch { deviceModels.loaded.unload(chosen.id); deviceModels.installed.delete(chosen) } }) {
+                    Text(stringResource(Res.string.lecture_device_delete))
+                }
+            }
+            downloading != null -> {
+                DownloadProgress(downloading.fraction)
+                TextButton(onClick = { deviceModels.downloads.cancel(chosen) }) { Text(stringResource(Res.string.lecture_device_cancel)) }
+            }
             else -> {
                 if (failure != null) Hint(stringResource(Res.string.lecture_local_download_failed, failure))
                 TonalButton(onClick = { deviceModels.downloads.download(chosen) }) {
@@ -797,13 +809,13 @@ private fun taskLabel(task: LectureTask): StringResource = when (task) {
 }
 
 /** What the choice of [task] implies. */
-private fun taskHint(task: LectureTask, settings: AssistantSettings): StringResource? {
+private fun taskHint(task: LectureTask, settings: AssistantSettings, onDevice: Boolean): StringResource? {
     val local = settings.task(task).provider == ModelProvider.LOCAL
     return when (task) {
         LectureTask.TRANSCRIPTION -> Res.string.lecture_hint_transcription_local
-        LectureTask.LIVE_NOTES -> if (local) Res.string.lecture_hint_live_local else null
+        LectureTask.LIVE_NOTES -> if (!local) null else if (onDevice) Res.string.lecture_hint_live_device else Res.string.lecture_hint_live_local
         LectureTask.CATCH_UP -> if (local) Res.string.lecture_hint_catch_up_local else null
-        LectureTask.FINAL_REVIEW -> if (local) Res.string.lecture_hint_review_local else null
+        LectureTask.FINAL_REVIEW -> if (!local) null else if (onDevice) Res.string.lecture_hint_review_device else Res.string.lecture_hint_review_local
     }
 }
 

@@ -126,6 +126,7 @@ observes it as before.
 | 3 | `DeviceBackend` over `drawview-ml` (`LoadedModels`, `InstalledModels` of `ModelCatalog`), the request and the JSON of the bench moved into it, the bench on it; not chosen by the settings yet | done |
 | 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, tested on a file of version 1; `ModelBackends` sending the local requests to the engine of the settings; `LectureAssistant(deviceModels)` | done |
 | 5 | The applications give their models: PencilNotes the ones of its search (`DeviceModels`), the sample none; the engine and the models of the device in the settings of the assistant, with their downloads | done |
+| 6 | The hints of the settings for the models of the device (the measure of `docs/local-notes.md` said beside the live notes), a model of the device deleted or its download cancelled from the settings of the assistant | done |
 
 ## Checks
 
@@ -156,6 +157,8 @@ Taken alone, revertible:
   will run, not a copy of it.
 * **`documentsWithLectures` and `importError` become read-only properties in the klib dump**: they
   were `var` with a private setter, read through a getter now; the JVM ABI does not change.
+* **A model of the device is deleted without a confirmation**, as in the settings of the search: it
+  is downloaded again on request, and it is freed from memory first. The search may use it too.
 * **The names** `AssistantLectures`, `AssistantWork`, `AssistantModels`, `TaskBackend`,
   `ModelLimits`, `ModelUse`, `PromptCache`.
 
@@ -188,6 +191,4 @@ Taken alone, revertible:
 
 * The speech on the device (phase 6 of `docs/local-models.md`) and iOS (7): on iOS the runtime
   supports no model yet, so the local requests stay with Ollama there.
-* The hints of the requests in the settings still speak of Ollama and whisper.cpp only.
-* Deleting a model of the device from the settings of the assistant (the search has it).
 * `LocalModels` downloading through `ModelDownloads` (resume, SHA-256) also for whisper.
