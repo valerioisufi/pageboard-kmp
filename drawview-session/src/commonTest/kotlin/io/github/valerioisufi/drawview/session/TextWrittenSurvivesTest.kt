@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -45,7 +46,7 @@ class TextWrittenSurvivesTest {
 
     /** The editor of the document [documentId] of [documents], open. */
     private fun TestScope.editorOf(documents: OpenDocuments, documentId: String): DrawViewController =
-        editorOf(DocumentEditorViewModel(documents), documentId)
+        editorOf(DocumentEditorViewModel(documents, EditorSessions()), documentId)
 
     /** The editor of [viewModel] open on the document [documentId]. */
     private fun TestScope.editorOf(viewModel: DocumentEditorViewModel, documentId: String): DrawViewController {
@@ -93,7 +94,7 @@ class TextWrittenSurvivesTest {
         val process = CoroutineScope(SupervisorJob() + main)
         val store = KeyValueDocumentStore(storage, scope = process)
         val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
-        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process))
+        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process), EditorSessions())
         val controller = editorOf(viewModel, documentId)
 
         controller.write("written, then the window closed")
@@ -112,11 +113,11 @@ class TextWrittenSurvivesTest {
         val process = CoroutineScope(SupervisorJob() + main)
         val store = KeyValueDocumentStore(storage, scope = process)
         val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
-        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process))
+        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, process), EditorSessions())
         val controller = editorOf(viewModel, documentId)
 
         controller.write("written, then the application closed")
-        DrawViewSessions.saveWriting()
+        viewModel.sessions.saveWriting()
         assertTrue(controller.textEditorManager.isEditing, "saved, the box still open")
         advanceTimeBy(500)
         runCurrent()

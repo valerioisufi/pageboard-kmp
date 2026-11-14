@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.session
 import io.github.valerioisufi.drawview.canvas.camera.DocumentPlace
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -21,7 +22,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -29,6 +29,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 
 /**
  * A document opens where it was left on this device (see `docs/last-place.md`): each "process"
@@ -48,7 +49,7 @@ class LastPlaceTest {
     private inner class Process(storage: InMemoryKeyValueStorage) {
         val scope = CoroutineScope(SupervisorJob() + main)
         val store = KeyValueDocumentStore(storage, scope = scope)
-        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, scope))
+        val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, scope), EditorSessions())
 
         /** The editor open on the document [documentId], laid out; [then] as whoever opens it asks. */
         fun TestScope.open(documentId: String, then: (DrawViewController) -> Unit = {}): DrawViewController {

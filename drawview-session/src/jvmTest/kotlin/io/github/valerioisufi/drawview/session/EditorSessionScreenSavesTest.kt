@@ -18,6 +18,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -60,7 +61,7 @@ class EditorSessionScreenSavesTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val documents = OpenDocuments(store, dispatcher = Dispatchers.Unconfined)
         val documentId = runBlocking { store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id }
-        val viewModel = DocumentEditorViewModel(documents)
+        val viewModel = DocumentEditorViewModel(documents, EditorSessions())
         val lifecycle = TestLifecycle()
         var shown by mutableStateOf(true)
         setContent {

@@ -62,6 +62,7 @@ fun App(
             DocumentLibrary(
                 title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
                 documents = documents,
+                sessions = SampleData.sessions,
                 engines = engines,
                 thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
                 editorExtension = shapes,
@@ -95,7 +96,7 @@ fun SampleDocumentWindow(
     val documents = SampleData.documents
     DrawViewTheme {
         val editorViewModel = viewModel(key = "sample-doc-$documentId") {
-            DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
+            DocumentEditorViewModel(documents, SampleData.sessions, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)
             }
         }

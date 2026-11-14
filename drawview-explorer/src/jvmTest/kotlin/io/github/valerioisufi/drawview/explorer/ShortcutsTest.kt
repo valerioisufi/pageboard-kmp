@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -106,6 +107,7 @@ class ShortcutsTest {
                             DocumentLibrary(
                                 title = { Text("DrawView") },
                                 documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
+                                sessions = remember { EditorSessions() },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }

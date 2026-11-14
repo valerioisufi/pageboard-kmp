@@ -69,7 +69,7 @@ Variations).
 | Phase | Content | Status |
 |-------|---------|--------|
 | 1 | The store: `createDrawDatabase()` opened by the applications, `RoomDocumentStore` without a default modeller, `DrawViewStore` and `DrawViewDatabase` removed, `PencilNotesData` and `SampleData` holding database, store and documents; `store-room` without `ink` | done |
-| 2 | The sessions: `EditorSessions` instead of `DrawViewSessions`, given to `DocumentEditorViewModel`, `DocumentLibrary`, `SessionAgentEditors`, the windows and the exits of the desktop apps | to do |
+| 2 | The sessions: `EditorSessions` instead of `DrawViewSessions`, given to `DocumentEditorViewModel`, `DocumentLibrary`, `SessionAgentEditors`, the windows and the exits of the desktop apps | done |
 
 Each phase is one commit on `feat/instances`, after the checks of `CLAUDE.md` (the migrations of
 `drawview-store-room` among them), `consumer-checks`, and both desktop apps run on a scratch data

@@ -4,18 +4,19 @@ import io.github.valerioisufi.drawview.agent.AgentEditors
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PdfTextLayout
-import io.github.valerioisufi.drawview.session.DrawViewSessions
+import io.github.valerioisufi.drawview.session.EditorSessions
 
 /**
- * The editors of the process, as the external models need them (see [AgentEditors]).
+ * The editors of the application, as the external models need them (see [AgentEditors]).
  *
+ * @param sessions the editing sessions of the application.
  * @param openDocument opens a document in an editor, from any thread.
  */
-public class SessionAgentEditors(private val openDocument: (String) -> Unit) : AgentEditors {
-    private fun controllerOf(documentId: String) = DrawViewSessions.find(documentId)?.controller
+public class SessionAgentEditors(private val sessions: EditorSessions, private val openDocument: (String) -> Unit) : AgentEditors {
+    private fun controllerOf(documentId: String) = sessions.find(documentId)?.controller
 
     override fun openForReview(documentId: String) {
-        if (DrawViewSessions.find(documentId) == null) openDocument(documentId)
+        if (sessions.find(documentId) == null) openDocument(documentId)
     }
 
     override fun settle(documentId: String): Boolean {

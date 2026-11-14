@@ -1,11 +1,11 @@
 public final class io/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt;
 	public fun <init> ()V
-	public final fun getLambda$-1417058872$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda$1487161528$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function4;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/DocumentLibraryKt {
-	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
+	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
 
 public abstract interface class io/github/valerioisufi/drawview/explorer/DocumentOpener {

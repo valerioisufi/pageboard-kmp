@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -39,6 +40,7 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -109,6 +111,7 @@ internal fun capture(
                         DocumentLibrary(
                             title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
                             documents = documents,
+                            sessions = remember { EditorSessions() },
                             // The PDF pages and the formulas drawn as in the applications
                             engines = ENGINES,
                             thumbnails = rememberDocumentThumbnails(documents, directory = null, engines = ENGINES).also { thumbnails.value = it },

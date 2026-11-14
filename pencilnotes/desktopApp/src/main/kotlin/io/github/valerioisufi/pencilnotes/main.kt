@@ -11,7 +11,6 @@ import androidx.compose.ui.window.application
 import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.ui.LectureExitDialog
 import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
-import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.DesktopAppIcon
@@ -91,12 +90,12 @@ private fun runApplication(agents: PencilNotesAgents) {
 
         fun exit() {
             // The texts being written, saved in their documents
-            DrawViewSessions.saveWriting()
+            PencilNotesData.sessions.saveWriting()
             runBlocking {
                 // The lecture being recorded is saved (its review is left for later), then the
                 // pending changes of the open note
                 LectureRecordings.finishAll()
-                DrawViewSessions.flushAll()
+                PencilNotesData.sessions.flushAll()
             }
             exitApplication()
         }

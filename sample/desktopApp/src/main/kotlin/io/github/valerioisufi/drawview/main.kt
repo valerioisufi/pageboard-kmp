@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.DesktopAppIcon
@@ -41,8 +40,8 @@ fun main() {
                 onCloseRequest = {
                     windowManager.closeLibrary()
                     if (windowManager.shouldExit) {
-                        DrawViewSessions.saveWriting()
-                        runBlocking { DrawViewSessions.flushAll() }
+                        SampleData.sessions.saveWriting()
+                        runBlocking { SampleData.sessions.flushAll() }
                         exitApplication()
                     }
                 },
@@ -74,8 +73,8 @@ fun main() {
                     onCloseRequest = {
                         windowManager.closeDocument(documentId)
                         if (windowManager.shouldExit) {
-                            DrawViewSessions.saveWriting()
-                            runBlocking { DrawViewSessions.flushAll() }
+                            SampleData.sessions.saveWriting()
+                            runBlocking { SampleData.sessions.flushAll() }
                             exitApplication()
                         }
                     },
@@ -93,8 +92,8 @@ fun main() {
                             onClose = {
                                 windowManager.closeDocument(documentId)
                                 if (windowManager.shouldExit) {
-                                    DrawViewSessions.saveWriting()
-                                    runBlocking { DrawViewSessions.flushAll() }
+                                    SampleData.sessions.saveWriting()
+                                    runBlocking { SampleData.sessions.flushAll() }
                                     exitApplication()
                                 }
                             },

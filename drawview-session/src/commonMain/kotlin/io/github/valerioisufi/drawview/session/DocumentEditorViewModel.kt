@@ -119,6 +119,8 @@ public class EditorSession internal constructor(
  */
 public class DocumentEditorViewModel(
     public val documents: OpenDocuments,
+    /** The editing sessions of the application: one per process, shared by its windows. */
+    public val sessions: EditorSessions,
     /** The engines of the editors (PDF pages, formulas). */
     public val engines: DrawViewEngines = DrawViewEngines.None,
     /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
@@ -152,7 +154,7 @@ public class DocumentEditorViewModel(
         closeSession()
         val newSession = EditorSession(documentId, documents, preferences)
         session = newSession
-        DrawViewSessions.register(newSession)
+        sessions.register(newSession)
         viewModelScope.launch {
             load(newSession)
             if (this@DocumentEditorViewModel.session === newSession) {
@@ -171,7 +173,7 @@ public class DocumentEditorViewModel(
             closeSession()
             val newSession = EditorSession(document.id, documents, preferences)
             session = newSession
-            DrawViewSessions.register(newSession)
+            sessions.register(newSession)
             load(newSession)
             newSession.controller?.let(then)
         }
@@ -192,7 +194,7 @@ public class DocumentEditorViewModel(
         // Closed meanwhile: the editing session ends without it
         session.document = open
         if (this.session !== session) {
-            DrawViewSessions.close(session)
+            sessions.close(session)
             return
         }
         store.updateLastOpened(session.documentId)
@@ -235,7 +237,7 @@ public class DocumentEditorViewModel(
         // The place it was left at, written with its changes
         current.notePlace()
         session = null
-        DrawViewSessions.close(current)
+        sessions.close(current)
     }
 
     override fun onCleared() {
@@ -244,15 +246,19 @@ public class DocumentEditorViewModel(
 }
 
 /**
- * The editing sessions of the process: closing a session writes its pending changes in the
- * background, [flushAll] waits for every write (e.g. before the desktop application exits).
+ * The editing sessions of an application (`docs/instances.md`): one per process, created by the
+ * application and given to its editors and windows. Closing a session writes its pending changes
+ * in the background on [scope], [flushAll] waits for every write (e.g. before the desktop
+ * application exits).
  */
-public object DrawViewSessions {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+public class EditorSessions(
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+) {
     private val lock = SyncLock()
     private val open = mutableSetOf<EditorSession>()
     private val closing = mutableSetOf<Job>()
 
+    /** The session open on the document [documentId], `null` when none is. */
     public fun find(documentId: String): EditorSession? = syncLock(lock) {
         open.firstOrNull { it.documentId == documentId }
     }

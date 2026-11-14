@@ -193,6 +193,7 @@ fun PencilNotesApp(
                     DocumentLibrary(
                         title = { PencilNotesBrand() },
                         documents = documents,
+                        sessions = PencilNotesData.sessions,
                         actions = listOfNotNull(collaboration.joinAction(), search.settingsAction(), agents?.libraryAction, aboutLibraryAction()),
                         editorExtension = editorExtension,
                         itemsActions = listOf(export.libraryAction),
@@ -293,7 +294,7 @@ fun PencilNotesDocumentWindow(
         }
         AgentPages(agents, engines)
         val editorViewModel = viewModel(key = "doc-$documentId") {
-            DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
+            DocumentEditorViewModel(documents, PencilNotesData.sessions, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)
             }
         }

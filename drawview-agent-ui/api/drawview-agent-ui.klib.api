@@ -25,7 +25,7 @@ final class io.github.valerioisufi.drawview.agent.ui/CanvasPageEngine : io.githu
 }
 
 final class io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors : io.github.valerioisufi.drawview.agent/AgentEditors { // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors|null[0]
-    constructor <init>(kotlin/Function1<kotlin/String, kotlin/Unit>) // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.<init>|<init>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.session/EditorSessions, kotlin/Function1<kotlin/String, kotlin/Unit>) // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.<init>|<init>(io.github.valerioisufi.drawview.session.EditorSessions;kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
 
     final fun isInEditor(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.isInEditor|isInEditor(kotlin.String){}[0]
     final fun openForReview(kotlin/String) // io.github.valerioisufi.drawview.agent.ui/SessionAgentEditors.openForReview|openForReview(kotlin.String){}[0]

@@ -31,12 +31,13 @@ it opens once per process:
 // strokes modeled by Google Ink (drawview-ink)
 object MyNotes {
     val documents by lazy { OpenDocuments(RoomDocumentStore(createDrawDatabase(), InkStrokeModeller)) }
+    val sessions = EditorSessions()
 }
 
 @Composable
 fun App() {
     DrawViewTheme {
-        DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, modifier = Modifier.fillMaxSize())
+        DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
 ```

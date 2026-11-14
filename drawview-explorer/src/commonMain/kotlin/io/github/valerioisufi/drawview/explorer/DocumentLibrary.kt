@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.explorer.ui.rememberLibraryGridState
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
@@ -42,6 +43,7 @@ import kotlinx.coroutines.withContext
  * @param documents the documents of the library (see [OpenDocuments.store]) and those being
  *   changed, shared with the synchronization with the other devices (see `drawview-sync`): one
  *   per store in an application (e.g. the one of the store the application opens once).
+ * @param sessions the editing sessions of the application, one per process.
  * @param actions actions of the application in the library (its bar or its navigation pane): the
  *   About & Licenses dialog by default.
  * @param fullScreenEditor not used any more: the editor gives itself the room of the system bars
@@ -70,6 +72,7 @@ public fun DocumentLibrary(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     documents: OpenDocuments,
+    sessions: EditorSessions,
     actions: List<LibraryAction> = listOf(aboutLibraryAction()),
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
@@ -86,7 +89,7 @@ public fun DocumentLibrary(
     // What has been in the trash too long is deleted for good
     val clock = LocalLibraryClock.current
     LaunchedEffect(documents) { TrashKeeper(documents.store, clock).run() }
-    val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines, clipboard = clipboard) }
+    val editorViewModel = viewModel { DocumentEditorViewModel(documents, sessions, engines, clipboard = clipboard) }
 
     // The formula engine may unpack its fonts at the first start: off the main thread. The text
     // of the formulas (\text{}) is in the font of the notes, as their text

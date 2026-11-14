@@ -3,21 +3,17 @@ package io.github.valerioisufi.drawview.agent.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performMouseInput
-import io.github.takahirom.roborazzi.captureRoboImage
-import io.github.valerioisufi.drawview.model.StrokePoint
-import io.github.valerioisufi.drawview.model.StrokeTool
-import io.github.valerioisufi.drawview.model.change.StrokeData
-import io.github.valerioisufi.drawview.model.newElementId
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.agent.AgentEngines
 import io.github.valerioisufi.drawview.agent.ChosenPlace
 import io.github.valerioisufi.drawview.agent.ExternalAgents
@@ -27,10 +23,15 @@ import io.github.valerioisufi.drawview.agent.UndoOutcome
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.change.AddElements
+import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -50,8 +51,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -118,14 +119,16 @@ class AgentReviewEditorTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val documents = OpenDocuments(store, dispatcher = Dispatchers.Unconfined)
         val opened = mutableListOf<String>()
-        val agents = ExternalAgents(documents, AgentEngines(editors = SessionAgentEditors { opened += it }), store)
+        // The sessions of the application: the agents find in them the editor of the document
+        val sessions = EditorSessions()
+        val agents = ExternalAgents(documents, AgentEngines(editors = SessionAgentEditors(sessions) { opened += it }), store)
         val ui = AgentReviewUi(agents)
         val document = runBlocking { store.createDocument("Physics", 210f, 297f, PageBackground.Solid()) }
         runBlocking {
             agents.access.setEnabled(true)
             agents.access.grant(document.id)
         }
-        val viewModel = DocumentEditorViewModel(documents)
+        val viewModel = DocumentEditorViewModel(documents, sessions)
         setContent {
             DrawViewTheme(darkTheme = false, dynamicColor = false) {
                 AdaptiveRoot(modifier = Modifier.fillMaxSize()) {

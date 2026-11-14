@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.DesktopComposeUiTest
@@ -26,9 +26,10 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.explorer.ui.rememberLibraryGridState
-import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -77,6 +78,7 @@ class LibrarySearchNavigationTest {
                             DocumentLibrary(
                                 title = { Text("DrawView") },
                                 documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
+                                sessions = remember { EditorSessions() },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }

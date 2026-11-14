@@ -7,6 +7,7 @@ import androidx.room.Room
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.newElementId
+import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
@@ -57,7 +58,7 @@ class TextWrittenSurvivesRoomTest {
         val store = RoomDocumentStore(database(file), InkStrokeModeller)
         val documentId = store.createDocument("Notes", 210f, 297f, PageBackground.Solid(), null).id
         val documents = OpenDocuments(store, main, process)
-        val viewModel = DocumentEditorViewModel(documents)
+        val viewModel = DocumentEditorViewModel(documents, EditorSessions())
         viewModel.openDocument(documentId)
         advanceUntilIdle()
         // Loaded on the threads of the database

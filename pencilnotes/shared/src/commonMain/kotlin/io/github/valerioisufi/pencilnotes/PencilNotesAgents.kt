@@ -51,7 +51,7 @@ class PencilNotesAgents(
     /** The documents to open for a review of their proposals: the application opens them in an editor. */
     val reviewRequests: Flow<String> = reviews.receiveAsFlow()
 
-    private val editors = SessionAgentEditors(openDocument = { reviews.trySend(it) })
+    private val editors = SessionAgentEditors(PencilNotesData.sessions, openDocument = { reviews.trySend(it) })
 
     val agents: ExternalAgents = ExternalAgents(
         documents = PencilNotesData.documents,
