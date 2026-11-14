@@ -38,28 +38,48 @@ public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingleto
 	public final fun getLambda$2045713760$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 }
 
+public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureHeaderKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureHeaderKt;
+	public fun <init> ()V
+	public final fun getLambda$-1168957596$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1544444407$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1667034753$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1825706834$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureNotesTabKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureNotesTabKt;
+	public fun <init> ()V
+	public final fun getLambda$-209519484$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-234653637$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$945338792$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LecturePanelKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LecturePanelKt;
 	public fun <init> ()V
-	public final fun getLambda$-1671750020$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1954855475$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-234624718$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-272093557$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-405283186$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-623270664$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-771421351$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-785308319$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1088964494$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1429268958$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1550096148$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1646390578$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$194568411$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$2007650196$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$47750164$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$510669302$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$592866511$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$654211886$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$917317033$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureReviewTabKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureReviewTabKt;
+	public fun <init> ()V
+	public final fun getLambda$287545411$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureTranscriptTabsKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LectureTranscriptTabsKt;
+	public fun <init> ()V
+	public final fun getLambda$11198690$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1749883304$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1820639051$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$585165293$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$TextNotesDialogKt {
