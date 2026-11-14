@@ -189,7 +189,7 @@ a build of before meeting a space closes the connection (a message it does not k
 | Phase | Content | Status |
 |---|---|---|
 | 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | done |
-| 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | proposed |
+| 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | done (the copy of the user's database: to do) |
 | 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | proposed |
 | 4. Synchronization | `SpaceSync`: the catalog, `DocumentHeads`, document connections opened and closed; `LanSync` and `IrohSync` announcing and connecting by space; `ProtocolFormatTest`. Tests: three devices, a library of 200 documents (connections opened only for what changed), a device away and back, random messages; on the JVM and the iOS simulator | proposed |
 | 5. Invitations and joining | The invitation of a space, approval, joining into a folder or into the library; the documents arriving where the catalog puts them | proposed |
@@ -224,6 +224,54 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   the presence written in part by a removal, fixed.
 * The ABI of `drawview-store` is recorded again: additions only.
 
+### Phase 2 results
+
+* `SpaceStore` (`drawview-store`): the spaces (`StoredSpace`: root, sharing, read only), the items
+  of their catalogs, their logs and proofs, and the writes of the library made through a space
+  (`putFolder`, `putDocumentFolder`, `putTrashed`: taken as they are, without the checks of the
+  user's changes, so that two folders of the same name may be side by side). Removing a space
+  forgets its catalog and its log, never the library.
+* `RoomDocumentStore`: schema 25, `Migration24To25` creating `spaces`, `catalog_items` (each item as
+  JSON), `catalog_operations` and `catalog_proofs`, removed with their space (foreign keys). No table
+  of before changes.
+* `KeyValueDocumentStore`: the identifiers of the spaces under `drawview.spaces`, each space under
+  `drawview.space.<id>` (`StoredSpaceValue`, format 1). A storage of before has neither, and reads
+  as before; an index written by a build of before keeps them (they are not in it).
+* `SpaceLibrary` compares the library with the tree of each space, rather than wrapping the writes
+  of the library: whatever changes the library (the explorer, an agent, an import, the
+  synchronization) is seen, and a write of one side is no change of the other.
+  * It follows where the items are, the names of the folders and the trash (not the content of the
+    documents), settled for 200 ms, and `reconcile()` takes them in at once.
+  * Under the root of a space: a folder or a document not in the catalog is added, a name, a place
+    or the trash that differs is a change; an item in the catalog moved out of the root, or shared
+    on its own, leaves the space. An item not in the library (deleted for good here, or not
+    received yet) changes nothing.
+  * The changes received are written into the library: the folders from the top down, the
+    documents placed, the trash; an item gone from the space taken out of the root, to the folder
+    holding it (where the user had not moved it meanwhile). In a shared library an item stays
+    where it is (there is no outside), and is added again.
+  * A reader's library is put back as the space holds it.
+  * A space in a space is refused, and a document shared on its own stays out of the spaces.
+  * `localOperations` gives the changes made here to the synchronization (phase 4), `receive`,
+    `admits`, `versionVector`, `view`, `folderOf` and `spaceOf` serve it.
+* Tests:
+  * `checkSpaceStore` (`drawview-store-testing`), run on both stores: kept and read again by a new
+    store, an operation kept once, the version vector, the operations in the order of their stamps,
+    the proofs, the writes of other devices, a space saved again, removed with the library kept.
+  * `checkSharedFolders`, on both stores: two devices, Ada sharing a course, Bob joining into a
+    folder of his; the folders and documents arriving where the catalog puts them, a rename, a
+    folder made, the trash and its restore, a folder moved out kept by both, a document deleted
+    for good on one device kept by the other, the space left with both libraries as they were. It
+    found the place of the documents read among the folders only, fixed.
+  * `aStorageOfBeforeHasNoSpaces` (key-value store).
+  * `DrawDatabaseMigrationTest`: a database of schema 24 with a folder, a document, its page, its
+    operation and its sharing migrated to 25, everything read again, its folder then shared; the
+    migrations from 16 now validated against 25.
+* The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
+  again: additions only, the stores implementing `SpaceStore`.
+* Still to do: the check on a copy of the database of PencilNotes of the user (made by the user,
+  the original untouched).
+
 ## Decisions
 
 ### Taken by the user (2026-11-14)
@@ -254,6 +302,15 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   that moved it.
 * Deleting for good deletes the copy of this device only.
 * The name of the root of a joined space is local.
+* `SpaceLibrary` compares the library with the catalog rather than wrapping the writes of the
+  library: every writer of the library is covered, the explorer and the agents unchanged.
+* At the start, what differs under the root of a space is taken as a change of this device (made
+  while the application was closed, or before it was sent); the changes received are written into
+  the library at once, under the same lock.
+* An item received in a shared library leaving the space stays where it is and is added again:
+  there is nothing outside the library.
+* The catalog items kept as JSON (one column), rather than a column per piece: the format of an
+  item can grow without a migration of the table.
 
 ## Left for later
 

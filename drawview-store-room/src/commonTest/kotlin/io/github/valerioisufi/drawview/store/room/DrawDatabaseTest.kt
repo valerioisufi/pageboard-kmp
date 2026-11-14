@@ -40,6 +40,8 @@ import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentReposit
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
+import io.github.valerioisufi.drawview.store.testing.checkSharedFolders
+import io.github.valerioisufi.drawview.store.testing.checkSpaceStore
 import io.github.valerioisufi.drawview.store.testing.checkOutline
 import io.github.valerioisufi.drawview.store.testing.checkPageFingerprint
 import io.github.valerioisufi.drawview.store.testing.checkTrash
@@ -444,6 +446,21 @@ class DrawDatabaseTest {
     @Test
     fun theProofsOfTheOperationsAreKept() = runTest {
         checkOperationProofs(RoomDocumentStore(database, InkStrokeModeller)) { RoomDocumentStore(database, InkStrokeModeller) }
+    }
+
+    @Test
+    fun theSpacesAreKept() = runTest {
+        checkSpaceStore(RoomDocumentStore(database, InkStrokeModeller)) { RoomDocumentStore(database, InkStrokeModeller) }
+    }
+
+    @Test
+    fun aFolderIsSharedBetweenTwoDevices() = runTest {
+        val other = createDrawDatabase(getInMemoryDatabaseBuilder())
+        try {
+            checkSharedFolders(RoomDocumentStore(database, InkStrokeModeller), RoomDocumentStore(other, InkStrokeModeller), backgroundScope)
+        } finally {
+            other.close()
+        }
     }
 
     @Test

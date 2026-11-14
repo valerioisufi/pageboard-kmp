@@ -20,6 +20,8 @@ import io.github.valerioisufi.drawview.store.testing.checkOutline
 import io.github.valerioisufi.drawview.store.testing.checkPageFingerprint
 import io.github.valerioisufi.drawview.store.testing.checkTrash
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
+import io.github.valerioisufi.drawview.store.testing.checkSharedFolders
+import io.github.valerioisufi.drawview.store.testing.checkSpaceStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -283,6 +285,36 @@ class KeyValueDocumentStoreTest {
     fun theProofsOfTheOperationsAreKept() = runTest {
         val storage = InMemoryKeyValueStorage()
         checkOperationProofs(KeyValueDocumentStore(storage, scope = backgroundScope)) { KeyValueDocumentStore(storage, scope = backgroundScope) }
+    }
+
+    @Test
+    fun theSpacesAreKept() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        checkSpaceStore(KeyValueDocumentStore(storage, scope = backgroundScope)) { KeyValueDocumentStore(storage, scope = backgroundScope) }
+    }
+
+    @Test
+    fun aFolderIsSharedBetweenTwoDevices() = runTest {
+        checkSharedFolders(
+            KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope),
+            KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope),
+            backgroundScope
+        )
+    }
+
+    @Test
+    fun aStorageOfBeforeHasNoSpaces() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        val before = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertTrue(before.createFolder("Course", null))
+        before.createDocument("Notes")
+        before.flush()
+        // A storage written before the spaces: no key of theirs
+        assertNull(storage.get("drawview.spaces"))
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertEquals(emptyList(), store.spaces())
+        assertEquals(1, store.documents.first().size)
+        assertEquals(1, store.folders.first().size)
     }
 
     @Test

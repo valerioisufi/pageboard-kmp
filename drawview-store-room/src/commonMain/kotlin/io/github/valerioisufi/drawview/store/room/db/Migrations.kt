@@ -36,7 +36,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
 internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -319,5 +319,38 @@ internal object Migration23To24 : Migration(23, 24) {
     override fun migrate(connection: SQLiteConnection) {
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `next` TEXT")
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `continuesLine` INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+/**
+ * 25: the shared folders (docs/shared-folders.md): the spaces, the items of their catalogs, their
+ * logs and the proofs of their changes. Nothing of the documents and folders changes: no space is
+ * in a database of before.
+ */
+internal object Migration24To25 : Migration(24, 25) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `spaces` (`id` TEXT NOT NULL, `rootFolderId` TEXT, `sharing` TEXT NOT NULL, " +
+                "`readOnly` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `catalog_items` (`spaceId` TEXT NOT NULL, `itemId` TEXT NOT NULL, `item` TEXT NOT NULL, " +
+                "PRIMARY KEY(`spaceId`, `itemId`), FOREIGN KEY(`spaceId`) REFERENCES `spaces`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `catalog_operations` (`spaceId` TEXT NOT NULL, `replica` TEXT NOT NULL, " +
+                "`sequence` INTEGER NOT NULL, `stamp` TEXT NOT NULL, `change` TEXT NOT NULL, " +
+                "PRIMARY KEY(`spaceId`, `replica`, `sequence`), FOREIGN KEY(`spaceId`) REFERENCES `spaces`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_catalog_operations_spaceId_stamp` ON `catalog_operations` (`spaceId`, `stamp`)"
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `catalog_proofs` (`spaceId` TEXT NOT NULL, `replica` TEXT NOT NULL, " +
+                "`sequence` INTEGER NOT NULL, `proof` BLOB NOT NULL, PRIMARY KEY(`spaceId`, `replica`, `sequence`), " +
+                "FOREIGN KEY(`spaceId`) REFERENCES `spaces`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
     }
 }

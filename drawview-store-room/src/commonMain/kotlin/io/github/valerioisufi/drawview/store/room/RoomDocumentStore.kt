@@ -21,6 +21,8 @@ import io.github.valerioisufi.drawview.store.room.db.FolderEntity
 import io.github.valerioisufi.drawview.store.room.db.SharedDocumentEntity
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
+import io.github.valerioisufi.drawview.store.room.repository.SpaceRepository
+import io.github.valerioisufi.drawview.store.space.SpaceStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -35,14 +37,14 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 
 /**
- * [DocumentStore] backed by the Room database (Android, desktop and iOS), its strokes modeled by
+ * [DocumentStore] and [SpaceStore] backed by the Room database (Android, desktop and iOS), its strokes modeled by
  * [strokeModeller] when they are loaded (the one of the editor, e.g. `InkStrokeModeller` of
  * `drawview-ink`). One per database and per process: the application creates it once.
  */
 public class RoomDocumentStore(
     internal val database: DrawDatabase,
     override val strokeModeller: StrokeModeller
-) : DocumentStore, PreferenceStore {
+) : DocumentStore, PreferenceStore, SpaceStore by SpaceRepository(database) {
     internal val repository = DrawDocumentRepository(database, strokeModeller)
     internal val fileRepository = FileRepository(database)
 

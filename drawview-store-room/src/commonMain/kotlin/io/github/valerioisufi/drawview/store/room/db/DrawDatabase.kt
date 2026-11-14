@@ -23,10 +23,14 @@ import androidx.room.TypeConverters
         OperationProofEntity::class,
         SharedDocumentEntity::class,
         ReplicaEntity::class,
-        PreferenceEntity::class
+        PreferenceEntity::class,
+        SpaceEntity::class,
+        CatalogItemEntity::class,
+        CatalogOperationEntity::class,
+        CatalogProofEntity::class
     ],
     // Every new version comes with its migration (see DRAW_DATABASE_MIGRATIONS)
-    version = 24
+    version = 25
 )
 @TypeConverters(
     PageBackgroundConverter::class,
@@ -35,8 +39,8 @@ import androidx.room.TypeConverters
 )
 @ConstructedBy(DrawDatabaseConstructor::class)
 /**
- * The Room database of the documents, their folders, operations, sharing and the preferences of
- * the applications: opened by [createDrawDatabase], migrated from version 16 on (see
+ * The Room database of the documents, their folders, operations, sharing, the shared folders
+ * and the preferences of the applications: opened by [createDrawDatabase], migrated from version 16 on (see
  * `DRAW_DATABASE_MIGRATIONS`).
  */
 public abstract class DrawDatabase : RoomDatabase() {
@@ -55,6 +59,7 @@ public abstract class DrawDatabase : RoomDatabase() {
     internal abstract fun sharedDocumentDao(): SharedDocumentDao
     internal abstract fun replicaDao(): ReplicaDao
     internal abstract fun preferencesDao(): PreferencesDao
+    internal abstract fun spaceDao(): SpaceDao
 }
 
 // The Room compiler generates the implementation of this interface

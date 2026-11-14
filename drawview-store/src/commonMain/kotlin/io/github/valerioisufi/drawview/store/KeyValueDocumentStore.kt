@@ -21,6 +21,10 @@ import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.drawview.store.space.CatalogItem
+import io.github.valerioisufi.drawview.store.space.CatalogOperation
+import io.github.valerioisufi.drawview.store.space.SpaceStore
+import io.github.valerioisufi.drawview.store.space.StoredSpace
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
@@ -89,7 +93,7 @@ public class KeyValueDocumentStore(
     private val clock: () -> Long = ::currentTimeMillis,
     override val strokeModeller: StrokeModeller = KotlinStrokeModeller,
     private val newFolderId: () -> String = ::newElementId
-) : DocumentStore, DocumentPersistence, PreferenceStore {
+) : DocumentStore, DocumentPersistence, PreferenceStore, SpaceStore {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -99,6 +103,9 @@ public class KeyValueDocumentStore(
 
     /** The operations of the documents and their proofs (under [lock]). */
     private val log = KeyValueOperationLog(storage, json)
+
+    /** The shared folders, their catalogs and logs (under [lock]). */
+    private val spaceValues = KeyValueSpaces(storage, json)
 
     private var index: StoredIndex = readIndex()
     private val openDocuments = mutableMapOf<String, DrawDocument>()
@@ -569,6 +576,85 @@ public class KeyValueDocumentStore(
     override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
         syncLock(lock) { updateSummaryLocked(document.id) { it.copy(modifiedAt = timestamp) } }
         markDocumentModified(document)
+        publishSummaries()
+    }
+
+    // ==========================================================
+    // SpaceStore
+    // ==========================================================
+
+    override suspend fun spaces(): List<StoredSpace> = syncLock(lock) { spaceValues.spaces() }
+
+    override suspend fun saveSpace(space: StoredSpace): Unit = syncLock(lock) {
+        val value = spaceValues.valueOf(space.id) ?: StoredSpaceValue()
+        spaceValues.write(space.id, value.copy(rootFolderId = space.rootFolderId, sharing = space.sharing, readOnly = space.readOnly))
+    }
+
+    override suspend fun removeSpace(spaceId: String): Unit = syncLock(lock) { spaceValues.remove(spaceId) }
+
+    override suspend fun catalogItems(spaceId: String): List<CatalogItem> = syncLock(lock) { spaceValues.valueOf(spaceId)?.items.orEmpty() }
+
+    override suspend fun saveCatalogChange(spaceId: String, items: Collection<CatalogItem>, operation: CatalogOperation): Unit = syncLock(lock) {
+        val value = spaceValues.valueOf(spaceId) ?: return@syncLock
+        if (value.operations.any { it.id == operation.id }) return@syncLock
+        val changed = items.associateBy { it.id }
+        val kept = value.items.map { changed[it.id] ?: it }
+        val added = changed.values.filter { item -> value.items.none { it.id == item.id } }
+        spaceValues.write(spaceId, value.copy(items = kept + added, operations = value.operations + operation))
+    }
+
+    override suspend fun catalogVersionVector(spaceId: String): Map<String, Long> = syncLock(lock) {
+        spaceValues.valueOf(spaceId)?.operations.orEmpty().groupBy { it.id.replica }.mapValues { (_, ops) -> ops.maxOf { it.id.sequence } }
+    }
+
+    override suspend fun catalogOperationsAfter(spaceId: String, known: Map<String, Long>): List<CatalogOperation> = syncLock(lock) {
+        spaceValues.valueOf(spaceId)?.operations.orEmpty().filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
+    }
+
+    override suspend fun catalogProofs(spaceId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = syncLock(lock) {
+        val value = spaceValues.valueOf(spaceId) ?: return@syncLock emptyMap()
+        val wanted = ids.toSet()
+        spaceValues.proofsOf(value).filterKeys { it in wanted }
+    }
+
+    override suspend fun saveCatalogProofs(spaceId: String, proofs: Map<OperationId, ByteArray>): Unit = syncLock(lock) {
+        val value = spaceValues.valueOf(spaceId) ?: return@syncLock
+        spaceValues.write(spaceId, value.copy(proofs = spaceValues.storedProofs(spaceValues.proofsOf(value) + proofs)))
+    }
+
+    override suspend fun putFolder(folderId: String, name: String, parentId: String?) {
+        syncLock(lock) {
+            val now = clock()
+            index = if (index.folders.any { it.id == folderId }) {
+                index.copy(folders = index.folders.map { if (it.id == folderId) it.copy(name = name, parentId = parentId, modifiedAt = now) else it })
+            } else {
+                index.copy(folders = index.folders + StoredFolder(folderId, name, parentId, createdAt = now, modifiedAt = now))
+            }
+            writeIndexLocked()
+        }
+        publishSummaries()
+    }
+
+    override suspend fun putDocumentFolder(documentId: String, folderId: String?): Boolean {
+        syncLock(lock) {
+            if (index.documents.none { it.id == documentId }) return false
+            updateSummaryLocked(documentId) { it.copy(folderId = folderId) }
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun putTrashed(itemId: String, trashed: Boolean) {
+        syncLock(lock) {
+            val trashedAt = if (trashed) clock() else null
+            when {
+                index.documents.any { it.id == itemId } -> updateSummaryLocked(itemId) { if (trashed && it.trashedAt != null) it else it.copy(trashedAt = trashedAt) }
+                index.folders.any { it.id == itemId } -> updateFolderLocked(itemId) { if (trashed && it.trashedAt != null) it else it.copy(trashedAt = trashedAt) }
+                else -> return
+            }
+            writeIndexLocked()
+        }
         publishSummaries()
     }
 

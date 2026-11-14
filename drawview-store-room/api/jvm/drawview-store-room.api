@@ -1,5 +1,9 @@
-public final class io/github/valerioisufi/drawview/store/room/RoomDocumentStore : io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore {
+public final class io/github/valerioisufi/drawview/store/room/RoomDocumentStore : io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore, io/github/valerioisufi/drawview/store/space/SpaceStore {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/room/db/DrawDatabase;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun catalogItems (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun catalogOperationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun catalogProofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun catalogVersionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun closeDocument (Ljava/lang/String;)V
 	public fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -26,13 +30,21 @@ public final class io/github/valerioisufi/drawview/store/room/RoomDocumentStore 
 	public fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun purgeTrash (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun putDocumentFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun putFolder (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun putTrashed (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun removeSpace (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun restore (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCatalogProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveSpace (Lio/github/valerioisufi/drawview/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setPreference (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

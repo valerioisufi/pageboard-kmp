@@ -21,6 +21,8 @@ import io.github.valerioisufi.drawview.store.room.db.Migration20To21
 import io.github.valerioisufi.drawview.store.room.db.Migration21To22
 import io.github.valerioisufi.drawview.store.room.db.Migration22To23
 import io.github.valerioisufi.drawview.store.room.db.Migration23To24
+import io.github.valerioisufi.drawview.store.room.db.Migration24To25
+import io.github.valerioisufi.drawview.store.space.SpaceLibrary
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import java.nio.file.Files
@@ -72,7 +74,7 @@ class DrawDatabaseMigrationTest {
             )
         }
 
-        helper.runMigrationsAndValidate(19, DRAW_DATABASE_MIGRATIONS.toList()).close()
+        helper.runMigrationsAndValidate(25, DRAW_DATABASE_MIGRATIONS.toList()).close()
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
@@ -395,6 +397,55 @@ class DrawDatabaseMigrationTest {
             DrawDocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals("following" to true, again.next to again.continuesLine)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theLibraryOfVersion24IsKeptAndItsFoldersCanBeShared() = runTest {
+        helper.createDatabase(24).use { connection ->
+            connection.execSQL("INSERT INTO folders (id, name, parentId, createdAt, modifiedAt, trashedAt) VALUES ('$FOLDER', 'Physics', NULL, 1, 2, NULL)")
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion, trashedAt) VALUES ('$DOCUMENT', 'Lectures', '$FOLDER', " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO operations (documentId, replica, sequence, stamp, change) VALUES ('$DOCUMENT', 'bob', 1, " +
+                    "'$STAMP', '{\"type\":\"renameDocument\",\"title\":\"Lectures\"}')"
+            )
+            connection.execSQL("INSERT INTO shared_documents (documentId, secret, readOnly) VALUES ('$DOCUMENT', 'secret', 0)")
+        }
+
+        helper.runMigrationsAndValidate(25, listOf(Migration24To25)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database, InkStrokeModeller)
+            val summary = store.documents.first().single()
+            assertEquals("Lectures" to FOLDER, summary.name to summary.folderId)
+            assertEquals(listOf("Physics"), store.folders.first().map { it.name })
+            assertEquals(listOf(PAGE), assertNotNull(store.loadDocument(DOCUMENT)).pages.map { it.id })
+            assertEquals(mapOf("bob" to 1L), store.versionVector(DOCUMENT))
+            assertEquals(mapOf(DOCUMENT to "secret"), store.sharingSecrets())
+            assertEquals(emptyList(), store.spaces(), "no space before")
+
+            // A folder of before shared: a new document in it goes into the space, the one shared on its own does not
+            val library = SpaceLibrary(store, store, backgroundScope)
+            library.start()
+            val space = assertNotNull(library.share(FOLDER))
+            assertEquals(emptyList(), library.view(space.id), "the document shared on its own stays apart")
+            val notes = store.createDocument("Notes", folderId = FOLDER)
+            library.reconcile()
+            assertEquals(listOf(notes.id), library.view(space.id).map { it.id })
+            assertEquals(listOf(space), store.spaces())
+            library.stop()
         } finally {
             database.close()
         }
