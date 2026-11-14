@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
@@ -55,10 +56,20 @@ class SharedFoldersSyncTest {
             connections += engine.connect(transport.connect(invitation.addresses.getValue(MEMORY)), invitation.documentId, invitation.key)
         }
 
-        /** Connects to [address] about everything this device shares (as the controllers of the transports do). */
+        /**
+         * Connects to [address] about what this device connects with now and is not connected
+         * about (as the controllers of the transports do): its shared folders, the documents of
+         * them wanted (see `SyncEngine.reachable`).
+         */
         suspend fun connectTo(address: String) {
-            for ((id, key) in engine.connectionKeys().distinctBy { it.first }) connections += engine.connect(transport.connect(address), id, key)
+            val connected = engine.peers.value.mapTo(HashSet()) { it.documentId }
+            for ((id, key) in engine.connectionKeys().distinctBy { it.first }) {
+                if (id !in connected) connections += engine.connect(transport.connect(address), id, key)
+            }
         }
+
+        /** The documents this device has a connection about now (its shared folders aside). */
+        fun documentsConnected(spaceId: String): Set<String> = engine.peers.value.map { it.documentId }.filterTo(HashSet()) { it != spaceId }
 
         suspend fun snapshot(documentId: String): DocumentSnapshot {
             val open = assertNotNull(documents.open(documentId))
@@ -73,6 +84,22 @@ class SharedFoldersSyncTest {
 
         suspend fun folderOf(id: String): String? =
             store.folders.first().firstOrNull { it.id == id }?.parentId ?: store.documents.first().firstOrNull { it.id == id }?.folderId
+    }
+
+    /** The two devices connect about what they want, again and again, until nothing is left to connect about (as the transports do). */
+    private suspend fun TestScope.exchange(a: Device, b: Device) {
+        // A few connections at a time are taken from devices not known yet: the others again next time
+        repeat(40) {
+            advanceUntilIdle()
+            val missing = listOf(a, b).any { device ->
+                val connected = device.engine.peers.value.mapTo(HashSet()) { it.documentId }
+                device.engine.connectionKeys().any { it.first !in connected }
+            }
+            if (it > 1 && !missing) return
+            a.connectTo(b.name)
+            b.connectTo(a.name)
+        }
+        advanceUntilIdle()
     }
 
     private fun syncTest(block: suspend TestScope.(CoroutineScope) -> Unit) = runTest(timeout = 5.minutes) {
@@ -113,8 +140,7 @@ class SharedFoldersSyncTest {
         val bobRoot = assertNotNull(bob.library.spaces().singleOrNull()).rootFolderId
         assertEquals("Course", bob.store.folders.first().single { it.id == bobRoot }.name)
         assertEquals(bobRoot, bob.folderOf(week))
-        bob.connectTo("ada")
-        advanceUntilIdle()
+        exchange(ada, bob)
         assertEquals(week, bob.folderOf(notes.id), "the document where the folder has it")
         assertEquals(ada.snapshot(notes.id), bob.snapshot(notes.id))
         assertEquals(setOf("ada", "bob"), ada.engine.spaceMemberships.value.getValue(spaceId).members.map { it.name }.toSet())
@@ -125,14 +151,13 @@ class SharedFoldersSyncTest {
         val bobs = bob.store.createDocument("Bob's", folderId = exercises)
         advanceUntilIdle()
         assertEquals(week, ada.folderOf(exercises))
-        ada.connectTo("bob")
-        advanceUntilIdle()
+        exchange(ada, bob)
         assertEquals(exercises, ada.folderOf(bobs.id))
         assertEquals(bob.snapshot(bobs.id), ada.snapshot(bobs.id))
 
         // A change of a document of the folder, live
         ada.rename(notes.id, "Waves")
-        advanceUntilIdle()
+        exchange(ada, bob)
         assertEquals("Waves", bob.snapshot(notes.id).title)
 
         // A folder moved and the notes put in the trash on Ada: so on Bob
@@ -168,10 +193,7 @@ class SharedFoldersSyncTest {
         val invitation = assertNotNull(ada.engine.invite(spaceId, "Library", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
         assertEquals(InvitationKind.LIBRARY, invitation.kind)
         bob.join(invitation, SpaceRoot.Library)
-        advanceUntilIdle()
-        bob.connectTo("ada")
-        ada.connectTo("bob")
-        advanceUntilIdle()
+        exchange(ada, bob)
 
         // Each library has what both had, in the same places
         assertNull(ada.folderOf(adas.id))
@@ -208,6 +230,56 @@ class SharedFoldersSyncTest {
         assertEquals("Week 1", bob.store.folders.first().single { it.id == week }.name)
         assertEquals("Week 1", ada.store.folders.first().single { it.id == week }.name)
         assertEquals(bobRoot, bob.folderOf(week))
+    }
+
+    /**
+     * A library of 200 documents shared: once both devices have them all, they keep a connection
+     * about the library only; a document changed gets a connection of its own until both have it,
+     * and so do the ones changed while a device was away.
+     */
+    @Test
+    fun aLargeLibraryConnectsAboutWhatChangedOnly() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        ada.library.start()
+        bob.library.start()
+        val notes = (1..200).map { ada.store.createDocument("Note $it") }
+        val spaceId = assertNotNull(ada.engine.shareSpace(null))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Library", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        assertEquals(2, ada.engine.announcedTags().size, "the library and its invitation announced, not its documents")
+        bob.join(invitation, SpaceRoot.Library)
+        exchange(ada, bob)
+        for (note in listOf(notes.first(), notes[99], notes.last())) assertEquals(ada.snapshot(note.id), bob.snapshot(note.id))
+        assertEquals(200, bob.store.documents.first().size)
+
+        // Both have everything: a connection about the library only, once the others are idle
+        advanceTimeBy(60_000)
+        advanceUntilIdle()
+        assertEquals(emptySet(), ada.documentsConnected(spaceId))
+        assertEquals(listOf(spaceId), ada.engine.connectionKeys().map { it.first }.distinct())
+
+        // A document changed: connected about it only, until Bob has it
+        ada.rename(notes[42].id, "Changed")
+        advanceUntilIdle()
+        assertEquals(setOf(spaceId, notes[42].id), ada.engine.connectionKeys().map { it.first }.toSet())
+        assertEquals(setOf(spaceId, notes[42].id), bob.engine.connectionKeys().map { it.first }.toSet())
+        exchange(ada, bob)
+        assertEquals("Changed", bob.snapshot(notes[42].id).title)
+        assertEquals(listOf(spaceId), ada.engine.connectionKeys().map { it.first }.distinct())
+
+        // Bob away while Ada changes two: back, connected about those two only
+        bob.engine.stop()
+        advanceUntilIdle()
+        ada.rename(notes[7].id, "Seven")
+        ada.rename(notes[8].id, "Eight")
+        advanceUntilIdle()
+        bob.connectTo("ada")
+        advanceUntilIdle()
+        assertEquals(setOf(spaceId, notes[7].id, notes[8].id), bob.engine.connectionKeys().map { it.first }.toSet())
+        exchange(ada, bob)
+        assertEquals("Seven", bob.snapshot(notes[7].id).title)
+        assertEquals("Eight", bob.snapshot(notes[8].id).title)
     }
 
     private companion object {

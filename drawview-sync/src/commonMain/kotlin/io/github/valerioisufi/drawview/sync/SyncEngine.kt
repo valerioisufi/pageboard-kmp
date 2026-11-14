@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.space.CatalogItemKind
 import io.github.valerioisufi.drawview.store.space.CatalogOperation
 import io.github.valerioisufi.drawview.store.space.SpaceLibrary
 import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
@@ -42,6 +43,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
@@ -50,6 +52,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -145,6 +153,23 @@ public class SyncEngine(
 
     /** Where the root of each space being joined goes, as the user chose (see [joinSpace]). */
     private val spaceRoots = mutableMapOf<String, SpaceRoot>()
+
+    /** The heads of the documents of each space, as each member connected said them (under [mutex]): space, device, heads. */
+    private val remoteHeads = mutableMapOf<String, MutableMap<String, Map<String, String>>>()
+
+    /** The heads of the documents of each space as this device last said them (under [mutex]). */
+    private val ownHeads = mutableMapOf<String, Map<String, String>>()
+
+    /** The documents this device works on lately (its presence, see [updatePresence]), with a number changed at each presence. */
+    private val workedOn = mutableMapOf<String, Long>()
+    private var presenceCount = 0L
+
+    /**
+     * The documents of the shared folders to connect about now (see [reachable]): the ones whose
+     * heads differ from a member's, missing on either side, or worked on here; the others of a space
+     * have no connection of their own (see `docs/shared-folders.md`, phase 4b).
+     */
+    private val wantedDocuments = MutableStateFlow<Set<String>>(emptySet())
     private val identity get() = sharing.identity
     private val mutex = Mutex()
     private val syncs = mutableMapOf<String, DocumentSync>()
@@ -217,6 +242,15 @@ public class SyncEngine(
             // The changes of the folders made here: to the members connected
             scope.launch { spaces?.localOperations?.collect { onLocalCatalogOperation(it.spaceId, it.operation) } }
             scope.launch { followSpaces() }
+            // The documents changed (here or received): their heads told again, once they settle
+            scope.launch {
+                val changes = merge(
+                    documents.store.documents.map { list -> list.map { it.id to it.modifiedAt } }.distinctUntilChanged().map { },
+                    attachments?.changes?.map { } ?: emptyFlow()
+                )
+                @OptIn(FlowPreview::class)
+                changes.debounce(HEADS_SETTLE_MS).collect { tellHeads() }
+            }
         }
         attachments?.let { attachments ->
             // The items beside the documents changed here: to the devices on their document
@@ -258,6 +292,7 @@ public class SyncEngine(
      * only when they change; all of it now and then (for the devices arrived meanwhile).
      */
     public suspend fun updatePresence(presence: Presence) {
+        markWorkedOn(presence.documentId)
         val replica = replica()
         val (message, targets) = mutex.withLock {
             val now = currentTimeMillis()
@@ -406,8 +441,25 @@ public class SyncEngine(
      * first, and the invitations it joins with; [announced]: what it announces, also the invitations
      * it gives (as the owner).
      */
-    internal suspend fun reachable(announced: Boolean): List<TagMatch> =
-        sharing.reachable(announced) + spaceSharing?.spaces?.reachable(announced).orEmpty()
+    internal suspend fun reachable(announced: Boolean): List<TagMatch> {
+        val documents = sharing.reachable(announced)
+        if (spaceSharing == null) return documents
+        // The documents of a space: when wanted only, and never announced (their space is)
+        val inSpaces = sharing.all().filterValues { it.space != null }.keys
+        val wanted = wantedDocuments.value
+        val kept = documents.filter { it.documentId !in inSpaces || (!announced && it.documentId in wanted) }
+        return kept + spaceSharing.spaces.reachable(announced)
+    }
+
+    /**
+     * The tag the devices sharing [documentId] announce it by: the one of its shared folder for a
+     * document of a shared folder (whose documents are not announced each, see [reachable]),
+     * `null` otherwise (its own).
+     */
+    public suspend fun announcedTagOf(documentId: String): String? {
+        val space = sharing.stateOf(documentId)?.space ?: return null
+        return spaceSharing?.spaces?.stateOf(space)?.key?.tag
+    }
 
     /** The tags this device answers to on the network (see [DocumentKey.tag]). */
     public suspend fun announcedTags(): Set<String> = reachable(announced = true).mapTo(mutableSetOf()) { it.key.tag }
@@ -689,6 +741,15 @@ public class SyncEngine(
 
         /** Sends the changes of the catalog in order (the ones missed, then the ones made). */
         val catalogLock = Mutex()
+
+        /** The messages but [Ping]s received (see [scheduleIdleClose]). */
+        var activity = 0L
+
+        /** Closes this connection about a document of a shared folder once idle (see [scheduleIdleClose]). */
+        var idleCheck: Job? = null
+
+        /** The connection is over (see [detach]). */
+        var closed = false
         val tag: String get() = match.key.tag
         var sync: DocumentSync? = null
         var peer: Peer? = null
@@ -805,6 +866,7 @@ public class SyncEngine(
                 known()
                 link.receivedAt = currentTimeMillis()
                 val message = SyncCodec.decode(frame)
+                if (message != null && message != Ping) link.activity++
                 if (message == null) {
                     // Of another version of the application: skipping it would leave the
                     // operations after it waiting for ever
@@ -829,6 +891,10 @@ public class SyncEngine(
     }
 
     private suspend fun detach(link: Link) {
+        link.closed = true
+        link.idleCheck?.cancel()
+        // A member no longer connected about a space: its heads count no more
+        if (link.space && link.authorized) scope.launch { recomputeWanted() }
         // Gone before the owner approved it
         link.request?.let { request ->
             requests.update { it - request }
@@ -913,6 +979,7 @@ public class SyncEngine(
             is Snapshot -> onSnapshot(link, message.snapshot, message.base)
             is Operations -> if (!link.space) onOperations(link, message.operations.map { open(link, it) })
             is CatalogOperations -> onCatalogOperations(link, message.operations)
+            is DocumentHeads -> onDocumentHeads(link, message.heads)
             is ResourceRequest -> onResourceRequest(link, message.asks)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
@@ -1016,6 +1083,8 @@ public class SyncEngine(
             catchUpSpace(link, hello)
             return
         }
+        // A document of a shared folder: closed once idle and no longer wanted
+        if (sharing.stateOf(link.documentId)?.space != null) scheduleIdleClose(link)
         // Without the document: it comes with the snapshot
         val sync = link.sync ?: return
         catchUp(link, sync, hello)
@@ -1170,9 +1239,14 @@ public class SyncEngine(
     }
 
     /** The members of the documents shared now. */
-    private suspend fun memberDevices(): Set<String> = (sharing.all().values + spaceSharing?.spaces?.all()?.values.orEmpty())
-        .mapNotNull { state -> state.members?.takeIf { !it.ended } }
-        .flatMapTo(mutableSetOf()) { membership -> membership.members.map { it.device } }
+    private suspend fun memberDevices(): Set<String> {
+        // The memberships checked once each (see DocumentSharing.memberships), not their signatures again
+        sharing.all()
+        spaceSharing?.spaces?.all()
+        return (sharing.memberships.value.values + spaceSharing?.spaces?.memberships?.value?.values.orEmpty())
+            .filter { !it.ended }
+            .flatMapTo(mutableSetOf()) { membership -> membership.members.map { it.device } }
+    }
 
     /** Keeps the addresses known, of the members only. */
     private suspend fun saveAddresses() {
@@ -1325,6 +1399,118 @@ public class SyncEngine(
             if (hello.hasDocument) link.catalogSent.putAll(hello.versionVector)
             library.operationsAfter(link.documentId, link.catalogSent).chunked(MAX_BATCH).forEach { sendCatalog(link, it) }
             link.catalogCaughtUp = true
+        }
+        // What each document is at here: the other device connects about the ones that differ
+        link.send(DocumentHeads(headsOf(link.documentId)))
+    }
+
+    /**
+     * The heads of the documents of [spaceId] this device has: a hash of the version vector of each
+     * one and of the versions of its items (the lectures...), the same on two devices with the same
+     * document.
+     */
+    private suspend fun headsOf(spaceId: String): Map<String, String> {
+        val library = spaces ?: return emptyMap()
+        val store = documents.store
+        val here = store.documents.first().mapTo(HashSet()) { it.id } + store.trash.first().flatMap { it.documentIds }
+        return library.view(spaceId).filter { it.kind == CatalogItemKind.DOCUMENT && it.id in here }.associate { entry ->
+            val vector = store.versionVector(entry.id).entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
+            val items = attachments?.versions(entry.id).orEmpty().entries.sortedBy { it.key }.joinToString(",") { "${it.key}=${it.value}" }
+            entry.id to Sha256.of("$vector|$items".encodeToByteArray())
+        }
+    }
+
+    /** Tells the members connected about each space the heads of its documents, when they changed. */
+    private suspend fun tellHeads() {
+        val library = spaces ?: return
+        for (space in library.spaces()) {
+            val heads = headsOf(space.id)
+            val changed = mutex.withLock { (ownHeads[space.id] != heads).also { ownHeads[space.id] = heads } }
+            if (changed) linksOf(space.id).filter { it.space && it.authorized && it.catalogCaughtUp }.forEach { it.trySend(DocumentHeads(heads)) }
+        }
+        recomputeWanted()
+    }
+
+    /** The heads of the documents of the space of [link], as its other device has them. */
+    private suspend fun onDocumentHeads(link: Link, heads: Map<String, String>) {
+        if (!link.space) return
+        val device = link.peerHello?.device ?: return
+        if (heads.size > MAX_HEADS) throw SyncException("Too many heads")
+        mutex.withLock { remoteHeads.getOrPut(link.documentId) { mutableMapOf() }[device] = heads }
+        recomputeWanted()
+    }
+
+    /** This device works on [documentId]: wanted for a while (the others see its presence). */
+    private suspend fun markWorkedOn(documentId: String) {
+        if (spaceSharing == null) return
+        val (first, count) = mutex.withLock {
+            val count = ++presenceCount
+            (workedOn.put(documentId, count) == null) to count
+        }
+        if (first) recomputeWanted()
+        // No longer wanted once it is left alone for a while (no presence since this one)
+        scope.launch {
+            delay(WORKED_ON_MS)
+            val left = mutex.withLock { (workedOn[documentId] == count).also { if (it) workedOn.remove(documentId) } }
+            if (left) recomputeWanted()
+        }
+    }
+
+    /**
+     * The documents of the spaces to connect about (see [wantedDocuments]): the ones whose heads
+     * differ from the ones of a member connected about their space (or that one of the two has
+     * not), the ones worked on here lately; the others tell the transports when it changes.
+     */
+    private suspend fun recomputeWanted() {
+        val library = spaces ?: return
+        val wanted = HashSet<String>()
+        for (space in library.spaces()) {
+            val mine = headsOf(space.id)
+            val peers = mutex.withLock {
+                val connected = links.filter { it.space && it.authorized && it.documentId == space.id }.mapNotNullTo(HashSet()) { it.peerHello?.device }
+                remoteHeads[space.id].orEmpty().filterKeys { it in connected }
+            }
+            val inSpace = library.view(space.id).filter { it.kind == CatalogItemKind.DOCUMENT }.map { it.id }
+            for (heads in peers.values) {
+                for (documentId in inSpace) {
+                    val theirs = heads[documentId]
+                    val ours = mine[documentId]
+                    if ((theirs != null || ours != null) && theirs != ours) wanted += documentId
+                }
+            }
+        }
+        mutex.withLock { wanted += workedOn.keys }
+        val inSpaces = sharing.all().filterValues { it.space != null }.keys
+        wanted.retainAll(inSpaces)
+        val before = wantedDocuments.value
+        if (wanted == before) return
+        wantedDocuments.value = wanted
+        // The transports connect about the documents wanted now
+        (wanted - before).forEach { changedFlow.tryEmit(it) }
+        // The connections of the ones no longer wanted close once idle
+        for (documentId in before - wanted) linksOf(documentId).forEach { scheduleIdleClose(it) }
+    }
+
+    /**
+     * Closes the connection [link] about a document of a shared folder once it has been idle (no
+     * message but [Ping]) for [IDLE_CLOSE_MS] and its document is not wanted (see
+     * [wantedDocuments]); its next changes open another one.
+     */
+    private fun scheduleIdleClose(link: Link) {
+        if (link.idleCheck?.isActive == true) return
+        link.idleCheck = scope.launch {
+            while (true) {
+                val seen = link.activity
+                delay(IDLE_CLOSE_MS)
+                if (link.closed) return@launch
+                val state = sharing.stateOf(link.documentId) ?: return@launch
+                if (state.space == null || link.documentId in wantedDocuments.value) return@launch
+                // Nothing but pings came meanwhile: idle
+                if (link.activity == seen) {
+                    link.channel.close()
+                    return@launch
+                }
+            }
         }
     }
 
@@ -1797,6 +1983,18 @@ public class SyncEngine(
 
         /** The changes of a folder waiting for the ones before them on a connection, at most (a device sending only later ones fills nothing). */
         const val MAX_PENDING_CATALOG = 20_000
+
+        /** How long the changes of the documents settle before their heads are told again. */
+        const val HEADS_SETTLE_MS = 2_000L
+
+        /** How long a document worked on here stays wanted after its last presence. */
+        const val WORKED_ON_MS = 30_000L
+
+        /** How long a connection about a document of a shared folder no longer wanted stays open idle. */
+        const val IDLE_CLOSE_MS = 30_000L
+
+        /** The heads of a space taken from another device, at most. */
+        const val MAX_HEADS = 100_000
 
         const val CHUNK_SIZE = 256 * 1024
 

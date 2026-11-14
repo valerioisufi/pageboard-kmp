@@ -71,21 +71,26 @@ internal class DocumentSharing(
 
     suspend fun all(): Map<String, SharingState> = mutex.withLock { states().toMap() }
 
-    /** The membership of [documentId] (signed by its owner). */
-    suspend fun membershipOf(documentId: String): Membership? = stateOf(documentId)?.members
+    /** The membership of [documentId] (signed by its owner), its signature checked once (see [memberships]). */
+    suspend fun membershipOf(documentId: String): Membership? = mutex.withLock {
+        states()
+        membershipsState.value[documentId]
+    }
 
     /** Changes the sharing of [documentId] by [transform] (`null`: not shared anymore); the new one. */
     private suspend fun update(documentId: String, transform: (SharingState?) -> SharingState?): SharingState? = mutex.withLock {
         val states = states()
         val updated = transform(states[documentId])
+        // The membership of this document only checked again (each one is a signature to check)
+        val members = updated?.members
+        membershipsState.value = if (members == null) membershipsState.value - documentId else membershipsState.value + (documentId to members)
         if (updated == null) {
             states.remove(documentId)
             shared.remove(documentId)
         } else {
             states[documentId] = updated
-            shared.save(documentId, updated, readOnly = updated.roleOf(device) == Role.READER)
+            shared.save(documentId, updated, readOnly = members?.memberOf(device)?.role == Role.READER)
         }
-        publish(states)
         updated
     }.also { changedFlow.tryEmit(documentId) }
 
@@ -236,6 +241,10 @@ internal class DocumentSharing(
      * not the folder's to change).
      */
     suspend fun follow(documentId: String, state: SharingState): SharingState? {
+        // The same already (most of the time): nothing written
+        stateOf(documentId)?.let { previous ->
+            if (previous == state.copy(versions = previous.versions)) return previous
+        }
         var followed = false
         update(documentId) { previous ->
             if (previous != null && previous.space == null && previous.members != null) return@update previous
@@ -296,7 +305,7 @@ internal class DocumentSharing(
                 if (key.tag == tag) return TagMatch.Grant(documentId, key, grant)
             }
             val joining = joiningInvitations[documentId] ?: state.joining?.let(Invitation::parse)
-            joining?.takeIf { state.members == null && it.key.tag == tag }?.let { return TagMatch.Joining(documentId, it.key, it) }
+            joining?.takeIf { documentId !in membershipsState.value && it.key.tag == tag }?.let { return TagMatch.Joining(documentId, it.key, it) }
         }
         null
     }
@@ -313,7 +322,7 @@ internal class DocumentSharing(
                 state.keys.sortedByDescending { it.epoch }.mapNotNull { it.documentKey }.forEach { add(TagMatch.Member(documentId, it)) }
                 if (announced) state.invitations.forEach { grant -> DocumentKey.decode(grant.key)?.let { add(TagMatch.Grant(documentId, it, grant)) } }
                 val joining = joiningInvitations[documentId] ?: state.joining?.let(Invitation::parse)
-                if (state.members == null && joining != null) add(TagMatch.Joining(documentId, joining.key, joining))
+                if (joining != null && documentId !in membershipsState.value) add(TagMatch.Joining(documentId, joining.key, joining))
             }
         }
     }

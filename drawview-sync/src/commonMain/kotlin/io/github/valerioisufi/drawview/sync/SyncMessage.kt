@@ -120,6 +120,15 @@ internal class Operations(val operations: List<SealedOperation>) : SyncMessage
 @SerialName("catalogOperations")
 internal class CatalogOperations(val operations: List<SealedOperation>) : SyncMessage
 
+/**
+ * What each document of a shared folder is at on the device sending it ([heads]: by document, a hash
+ * of its version vector and of the versions of its items, see `SyncEngine`): the devices connect
+ * about the documents whose heads differ only.
+ */
+@Serializable
+@SerialName("documentHeads")
+internal class DocumentHeads(val heads: Map<String, String>) : SyncMessage
+
 /** Asks for the file of the resource [id], from its byte [from] (a transfer interrupted goes on). */
 @Serializable
 internal data class ResourceAsk(val id: String, val from: Long = 0)

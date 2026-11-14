@@ -148,6 +148,8 @@ public class LanSync(
      */
     private suspend fun connect(missingOnly: Boolean) {
         val keys = engine.connectionKeys()
+        // A document of a shared folder is found by the tag of its folder (its own is not announced)
+        val announcedBy = keys.map { it.first }.distinct().associateWith { engine.announcedTagOf(it)?.take(TAG_LENGTH) }
         val peers = engine.peers.value
         val (found, invited) = mutex.withLock {
             // Forgotten a while after they are gone (and not connected)
@@ -164,7 +166,8 @@ public class LanSync(
             val tags = service.attributes.filterKeys { it.startsWith("t") }.values.flatMap { it.split(',') }.toSet()
             // The current key of a document first: an older one for a device still on it
             for (documentId in keys.map { it.first }.distinct()) {
-                val key = keys.firstOrNull { it.first == documentId && it.second.tag.take(TAG_LENGTH) in tags }?.second ?: continue
+                val viaSpace = announcedBy[documentId]?.let { it in tags } == true
+                val key = keys.firstOrNull { it.first == documentId && (viaSpace || it.second.tag.take(TAG_LENGTH) in tags) }?.second ?: continue
                 if (peers.any { it.replica == service.name && it.documentId == documentId }) continue
                 open(service.name, service.address, documentId, key)
             }

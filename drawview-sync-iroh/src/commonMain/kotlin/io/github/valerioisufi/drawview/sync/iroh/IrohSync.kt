@@ -68,7 +68,7 @@ public class IrohSync(
             }
             // A member arrived or moved, a document shared or joined: at once
             launch {
-                merge(engine.addresses.drop(1), engine.memberships.drop(1), engine.sharingChanged)
+                merge(engine.addresses.drop(1), engine.memberships.drop(1), engine.spaceMemberships.drop(1), engine.sharingChanged)
                     .debounce(DEBOUNCE_MS)
                     .collect { connect(missingOnly = false) }
             }
@@ -129,7 +129,8 @@ public class IrohSync(
         val keys = engine.connectionKeys()
         val connected = engine.peers.value.mapTo(HashSet()) { it.documentId to it.device }
         val connectedDocuments = engine.peers.value.mapTo(HashSet()) { it.documentId }
-        val memberships = engine.memberships.value
+        // Of the documents and of the shared folders (their connections are made as the documents')
+        val memberships = engine.memberships.value + engine.spaceMemberships.value
         val addresses = engine.addresses.value
         val owners = mutex.withLock { owners.toMap() }
         for (documentId in keys.map { it.first }.distinct()) {

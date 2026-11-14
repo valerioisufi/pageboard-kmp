@@ -192,9 +192,9 @@ a build of before meeting a space closes the connection (a message it does not k
 | 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | done (the copy of the user's database: to do) |
 | 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | done (the engine checks them in phase 4) |
 | 4. Synchronization | The connections about a space (the handshake of the documents, the sharing of the space), its catalog (`CatalogOperations`, sealed and signed), the documents of a space synchronized as the others with the keys and membership of the space, from the owner or the device that brought them; `ProtocolFormatTest`. Tests: two devices sharing a folder (both ways, live, the trash, a member removed), the library joined into the library, a reader, a rule removed failing them, random catalog changes to the decoder | done |
-| 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | proposed |
+| 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | done |
 | 5. Invitations and joining | The invitation of a space (`s=` and its kind in the link), the approval as for a document, joining into a new folder, a folder, or the library itself (`SpaceRoot`) | done (in the engine; the choice in the interface is phase 6) |
-| 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | done (the badge of a shared folder and the screenshots recorded on the Mac: to do) |
+| 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | done (the screenshots recorded on the Mac: to do) |
 | 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | left to the user |
 
 Every phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
@@ -387,8 +387,45 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
 * Screenshots (`SharingScreenshotTest`): `share-library` (the library before sharing it) and
   `join-library` (the choice of where it goes), looked at here; their references are to be
   recorded on the Mac (`recordRoborazziJvm`), this host drawing text otherwise.
-* Left: the badge of a shared folder in the explorer (the documents in it have theirs); it needs
-  the explorer to know the roots of the spaces, which it does not read today.
+* The badge of a shared folder: `FolderSummary.isShared` (the root of a space, told by both
+  stores, from the table of the spaces or the values of the key-value store), a badge with the
+  people in a corner of the tile of the folder. The scene of the screenshots of the explorer shares
+  "Physics": its library screenshots are to be recorded again on the Mac.
+
+### Phase 4b results
+
+* On the connection about a space each device says what each document of it is at
+  (`DocumentHeads`: a SHA-256 of its version vector and of the versions of its items), after the
+  catalog, and again once its documents settle (2 s after they change, here or received).
+* A document of a space is wanted (`SyncEngine.wantedDocuments`) when its heads differ from the
+  ones of a member connected about the space, when one of the two has it and the other not, or
+  while it is worked on here (its presence, for 30 s after the last one). `connectionKeys` gives
+  the documents of a space wanted only; `announcedTags` gives the spaces, never their documents.
+* A connection about a document of a space no longer wanted is closed once nothing but pings came
+  on it for 30 s; the next change opens another one (both devices want it then, as both see the
+  heads differ).
+* `LanSync` connects about a document of a space to the devices announcing its space
+  (`SyncEngine.announcedTagOf`); `IrohSync` connects to the members of the spaces too (it read the
+  memberships of the documents only, so the connections about the spaces were not made over the
+  internet: fixed).
+* What a library of 200 documents showed (the test, measured):
+  * `DocumentSharing` checked the signature of every membership at every change of the sharing of
+    any document (`publish`), and again to list the members (`memberDevices`, saving the
+    addresses at each change of a membership) and the joinings (`reachable`, `match`): with a
+    space, a change of its membership changes the sharing of every document of it, so the checks
+    grew with the square of the documents. Each membership is now checked once, when it changes,
+    and read from the ones checked. 161 s became 7.6 s.
+  * The sharing of a document of a space written again only when it changes (`follow`).
+* `ProtocolFormatTest` recorded again (protocol 1): `documentHeads`.
+* Tests (`SharedFoldersSyncTest.aLargeLibraryConnectsAboutWhatChangedOnly`): 200 documents shared as
+  a library and joined into one; only the library and its invitation announced; once both have
+  everything, no connection about a document is left and the documents of the library are not
+  among the keys to connect with; a document changed: the keys of both devices are the library and
+  that document, then the library only once both have it; Bob away while Ada changes two: back,
+  the keys of Bob are the library and those two. The other tests of the shared folders connect as
+  the transports do (`exchange`: again and again, a few connections from unknown devices being
+  taken at a time).
+* The ABI of `drawview-sync` recorded again: `announcedTagOf` added.
 
 ## Decisions
 
@@ -435,6 +472,11 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   to be tested between devices.
 * The interface (phase 6) before fewer connections (phase 4b): the library of the user holds tens
   of documents, which the connections per document serve.
+* Heads by document over the connection of a space, rather than one connection per document kept
+  open: a library of hundreds of documents costs what changed.
+* A document worked on here wanted for 30 s after its last presence, a connection idle closed
+  after 30 s: what the presence and the pings already use, in the same range.
+* Idleness counted by the messages received, not by the clock: the same on devices and in tests.
 * The catalog items kept as JSON (one column), rather than a column per piece: the format of an
   item can grow without a migration of the table.
 
