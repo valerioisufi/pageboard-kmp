@@ -161,7 +161,7 @@ Variations).
 | 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | done (`docs/store-explorer-split.md`) |
 | 9 | C. `LectureAssistant`, `LecturePanel`, `EditorToolbar` split | – | done; the assistant in 11 (`docs/lecture-ui-split.md`) |
 | 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` | 4 | done (`docs/vector-formulas.md`) |
-| 11 | D. The lecture assistant on `ModelBackend` and `drawview-ml` (phase 4 of `docs/local-models.md`) | 9 | done: one backend per provider, the search through it, the assistant split, `DeviceBackend`; choosing the device models (a new setting) waits for the user (`docs/lecture-backends.md`) |
+| 11 | D. The lecture assistant on `ModelBackend` and `drawview-ml` (phase 4 of `docs/local-models.md`) | 9 | done: one backend per provider, the search through it, the assistant split, `DeviceBackend`, the settings version 2 choosing the models of the device (`docs/lecture-backends.md`) |
 | 12 | E. Page backgrounds, cross-module duplicates, translations | – | duplicates and Italian done; backgrounds and other languages later (`docs/small-cleanups.md`) |
 
 Each phase is one branch (`feat/<name>`) from main, its own plan first, one commit per step of that

@@ -263,4 +263,10 @@
     <string name="lecture_text_notes_cost_gemini">%1$s leggerà il quaderno e il testo: circa %2$d token (%3$d caratteri), a pagamento con Gemini.</string>
     <string name="lecture_text_notes_cost_local">Il modello locale %1$s leggerà il quaderno e il testo, gratis.</string>
     <string name="lecture_text_notes_failed">Non è stato possibile scrivere le note: %1$s</string>
+    <string name="lecture_settings_local_engine">Modelli locali</string>
+    <string name="lecture_engine_device">Questo dispositivo</string>
+    <string name="lecture_engine_ollama">Ollama</string>
+    <string name="lecture_engine_hint">I modelli di questo dispositivo si scaricano una volta e funzionano qui, anche offline. Ollama usa modelli più grandi, anche su un computer della rete.</string>
+    <string name="lecture_device_model">Modello del dispositivo</string>
+    <string name="lecture_device_ready">Scaricato · richiede circa %1$s di memoria</string>
 </resources>

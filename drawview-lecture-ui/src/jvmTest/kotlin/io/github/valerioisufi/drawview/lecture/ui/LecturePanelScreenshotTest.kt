@@ -24,11 +24,14 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
 import io.github.valerioisufi.drawview.lecture.CourseContext
+import io.github.valerioisufi.drawview.lecture.DeviceModels
 import io.github.valerioisufi.drawview.lecture.DeviceUsage
 import io.github.valerioisufi.drawview.lecture.Lecture
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureLibrary
 import io.github.valerioisufi.drawview.lecture.LectureRecord
+import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
@@ -44,7 +47,20 @@ import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
+import io.github.valerioisufi.drawview.ml.Embedder
+import io.github.valerioisufi.drawview.ml.EmbedderOptions
+import io.github.valerioisufi.drawview.ml.Generator
+import io.github.valerioisufi.drawview.ml.GeneratorOptions
+import io.github.valerioisufi.drawview.ml.InstalledModel
+import io.github.valerioisufi.drawview.ml.InstalledModels
+import io.github.valerioisufi.drawview.ml.LoadedModels
+import io.github.valerioisufi.drawview.ml.ModelCatalog
+import io.github.valerioisufi.drawview.ml.ModelDownloads
+import io.github.valerioisufi.drawview.ml.ModelException
+import io.github.valerioisufi.drawview.ml.ModelRuntime
+import io.github.valerioisufi.drawview.ml.ModelSpec
 import java.io.File
+import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.util.Locale
 import kotlin.test.AfterTest
@@ -170,6 +186,61 @@ class LecturePanelScreenshotTest {
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/lecture-settings-lecture.png")
         }
+    }
+
+    /**
+     * The local requests on the models of this device: the engine chosen, the live notes on a model
+     * downloaded, the review on one to download. The model downloaded is a sparse file of its size in
+     * the directory of the test.
+     */
+    @Test
+    fun settingsOnTheDevice() {
+        val installed = InstalledModels(ModelCatalog.Default, File(root, "models").absolutePath)
+        File(installed.pathOf(ModelCatalog.GEMMA_4_E4B)).apply { parentFile.mkdirs() }.let { file ->
+            RandomAccessFile(file, "rw").use { it.setLength(ModelCatalog.GEMMA_4_E4B.sizeBytes) }
+        }
+        installed.refresh()
+        val deviceModels = DeviceModels(installed, LoadedModels(NoRuntime), ModelDownloads(installed))
+        val store = AssistantSettingsStore(File(root, "settings.json").absolutePath, MemorySecrets())
+        val settings = store.settings
+        store.update(
+            settings
+                .withTask(LectureTask.LIVE_NOTES, settings.task(LectureTask.LIVE_NOTES).copy(provider = ModelProvider.LOCAL, device = "gemma-4-e4b"))
+                .withTask(LectureTask.FINAL_REVIEW, settings.task(LectureTask.FINAL_REVIEW).copy(provider = ModelProvider.LOCAL, device = "gemma-4-12b"))
+        )
+        val assistant = LectureAssistant(
+            settingsStore = store,
+            captureFactory = { FakeMicrophone() },
+            audioOutput = null,
+            library = LectureLibrary(File(root, "empty").absolutePath),
+            stateContext = Dispatchers.Unconfined,
+            deviceModels = deviceModels
+        )
+        runDesktopComposeUiTest(width = 1000, height = 1100) {
+            setContent {
+                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                    Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                    AssistantSettingsDialog(store, assistant.localModels, onDismiss = {}, deviceModels = assistant.deviceModels)
+                }
+            }
+            waitForIdle()
+            onNodeWithText("Gemma 4 E4B", substring = true).assertExists()
+            captureToImage().captureRoboImage("screenshots/lecture-settings-device.png")
+            // The engine of the local requests
+            onNodeWithText("On this computer").performClick()
+            waitForIdle()
+            onNodeWithText("This device").assertExists()
+            captureToImage().captureRoboImage("screenshots/lecture-settings-device-engine.png")
+        }
+    }
+
+    /** A runtime that loads nothing: the settings never run a model. */
+    private object NoRuntime : ModelRuntime {
+        override fun supports(spec: ModelSpec): Boolean = false
+
+        override suspend fun generator(model: InstalledModel, options: GeneratorOptions): Generator = throw ModelException("none")
+
+        override suspend fun embedder(model: InstalledModel, options: EmbedderOptions): Embedder = throw ModelException("none")
     }
 
     /**

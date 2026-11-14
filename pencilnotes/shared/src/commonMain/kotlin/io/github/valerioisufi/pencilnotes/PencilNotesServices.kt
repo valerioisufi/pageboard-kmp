@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.ImageCache
 import io.github.valerioisufi.drawview.export.ui.DocumentExportUi
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.lecture.DeviceModels
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.ui.createLectureAssistant
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
@@ -45,8 +46,18 @@ object PencilNotesServices {
     /** Where the services work together, on the main thread, until [stop]. */
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    /** The lecture assistant: one lecture recorded at a time, also while its document or window is closed. */
-    val lectureAssistant: LectureAssistant = createLectureAssistant()
+    // The local models of the search and of the lecture assistant (EmbeddingGemma 2, Gemma 4)
+    private val liteRtRuntime = LiteRtRuntime()
+    private val installedModels = InstalledModels()
+    private val loadedModels = LoadedModels(liteRtRuntime)
+    private val modelDownloads = ModelDownloads(installedModels)
+
+    /**
+     * The lecture assistant: one lecture recorded at a time, also while its document or window is
+     * closed; its local requests on the models of the search when the settings choose them.
+     */
+    val lectureAssistant: LectureAssistant =
+        createLectureAssistant(DeviceModels(installedModels, loadedModels, modelDownloads, isAvailable = liteRtRuntime.isAvailable))
 
     /**
      * The documents shared with the devices of the local network, with their lectures, and over
@@ -57,11 +68,6 @@ object PencilNotesServices {
 
     /** The documents exported as PDF or as the image of a page, and the exports going on. */
     val export: DocumentExportUi = DocumentExportUi(PencilNotesData.documents, appName = "PencilNotes")
-
-    // The local models of the search (EmbeddingGemma 2, Gemma 4)
-    private val liteRtRuntime = LiteRtRuntime()
-    private val installedModels = InstalledModels()
-    private val loadedModels = LoadedModels(liteRtRuntime)
 
     /** The notes are indexed while no lecture is recorded or transcribed. */
     private val indexingConditions = MutableIndexingConditions(initialCanIndex = true)
@@ -74,7 +80,7 @@ object PencilNotesServices {
         conditions = indexingConditions,
         loadedModels = loadedModels,
         installedModels = installedModels,
-        downloads = ModelDownloads(installedModels),
+        downloads = modelDownloads,
         runtimeAvailable = liteRtRuntime.isAvailable,
         onlineBackend = lectureAssistant.onlineAnswerBackend(),
         onOpenLecture = lectureAssistant::openLectureAt

@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +49,10 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
 import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.DeviceModels
+import io.github.valerioisufi.drawview.lecture.LocalEngine
 import io.github.valerioisufi.drawview.lecture.LocalModels
+import io.github.valerioisufi.drawview.ml.ModelSpec
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import io.github.valerioisufi.drawview.lecture.WhisperModel
@@ -93,17 +97,23 @@ private enum class SettingsSection(val title: StringResource, val icon: ImageVec
  * where it is wide, as chips above them on a phone.
  */
 @Composable
-internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels: LocalModels, onDismiss: () -> Unit) {
+internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels: LocalModels, onDismiss: () -> Unit, deviceModels: DeviceModels? = null) {
     val compact = currentAdaptiveInfo().window.isCompact
     // A sheet on a phone, a dialog on a tablet and a desktop
     AdaptiveSheet(onDismissRequest = onDismiss, maxWidth = 940.dp, padded = compact) {
-        AssistantSettingsContent(store, localModels, onDismiss, compact)
+        AssistantSettingsContent(store, localModels, onDismiss, compact, deviceModels)
     }
 }
 
 /** What the settings show, in the sheet of a phone ([compact]) or in the dialog. */
 @Composable
-internal fun ColumnScope.AssistantSettingsContent(store: AssistantSettingsStore, localModels: LocalModels, onDismiss: () -> Unit, compact: Boolean) {
+internal fun ColumnScope.AssistantSettingsContent(
+    store: AssistantSettingsStore,
+    localModels: LocalModels,
+    onDismiss: () -> Unit,
+    compact: Boolean,
+    deviceModels: DeviceModels? = null
+) {
     var draft by remember { mutableStateOf(store.settings) }
     var section by remember { mutableStateOf(SettingsSection.REQUESTS) }
     // Ollama checked where the student says it is (typed, or found on the network)
@@ -114,9 +124,9 @@ internal fun ColumnScope.AssistantSettingsContent(store: AssistantSettingsStore,
     val content: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             when (section) {
-                SettingsSection.REQUESTS -> RequestsSection(draft, localModels) { draft = it }
+                SettingsSection.REQUESTS -> RequestsSection(draft, localModels, deviceModels) { draft = it }
                 SettingsSection.GEMINI -> GeminiSection(draft, store) { draft = it }
-                SettingsSection.LOCAL -> LocalSection(draft, localModels) { draft = it }
+                SettingsSection.LOCAL -> LocalSection(draft, localModels, deviceModels) { draft = it }
                 SettingsSection.LECTURE -> LectureSection(draft) { draft = it }
                 SettingsSection.ADVANCED -> AdvancedSection(draft) { draft = it }
             }
@@ -203,7 +213,7 @@ private fun SettingsCard(title: StringResource? = null, content: @Composable Col
 
 /** Whether the notes are written here; online or local for every request, and its model; what is sent to Google. */
 @Composable
-private fun RequestsSection(draft: AssistantSettings, localModels: LocalModels, onChange: (AssistantSettings) -> Unit) {
+private fun RequestsSection(draft: AssistantSettings, localModels: LocalModels, deviceModels: DeviceModels?, onChange: (AssistantSettings) -> Unit) {
     Text(stringResource(Res.string.lecture_settings_requests_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     SettingsCard {
         SwitchRow(
@@ -215,7 +225,7 @@ private fun RequestsSection(draft: AssistantSettings, localModels: LocalModels, 
     }
     if (!draft.generateHere) return
     for (task in LectureTask.entries) {
-        TaskModelRow(task = task, settings = draft, localModels = localModels, onChange = onChange)
+        TaskModelRow(task = task, settings = draft, localModels = localModels, deviceModels = deviceModels, onChange = onChange)
     }
     PrivacyNote(privacyNote(draft))
 }
@@ -255,9 +265,26 @@ private fun GeminiSection(draft: AssistantSettings, store: AssistantSettingsStor
     }
 }
 
-/** Ollama and its models (on a computer of the network, from a phone), the speech recognition of this computer. */
+/**
+ * The engine of the local requests (the models of this device or Ollama, when the application gives
+ * the first), Ollama and its models (on a computer of the network, from a phone), the speech
+ * recognition of this computer.
+ */
 @Composable
-private fun LocalSection(draft: AssistantSettings, localModels: LocalModels, onChange: (AssistantSettings) -> Unit) {
+private fun LocalSection(draft: AssistantSettings, localModels: LocalModels, deviceModels: DeviceModels?, onChange: (AssistantSettings) -> Unit) {
+    if (deviceModels != null) {
+        SettingsCard(Res.string.lecture_settings_local_engine) {
+            SegmentedChoice(
+                options = LocalEngine.entries,
+                selected = draft.localEngine,
+                label = { stringResource(if (it == LocalEngine.DEVICE) Res.string.lecture_engine_device else Res.string.lecture_engine_ollama) },
+                icon = { if (it == LocalEngine.DEVICE) DrawViewIcons.Monitor else DrawViewIcons.Globe },
+                textStyle = MaterialTheme.typography.labelMedium,
+                onSelect = { onChange(draft.copy(localEngine = it)) }
+            )
+            Hint(stringResource(Res.string.lecture_engine_hint))
+        }
+    }
     SettingsCard(Res.string.lecture_settings_ollama) {
         OllamaStatus(localModels)
         InstalledModels(localModels)
@@ -366,7 +393,13 @@ private fun AdvancedSection(draft: AssistantSettings, onChange: (AssistantSettin
  * transcription, whether the final review is written at the end.
  */
 @Composable
-private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localModels: LocalModels, onChange: (AssistantSettings) -> Unit) {
+private fun TaskModelRow(
+    task: LectureTask,
+    settings: AssistantSettings,
+    localModels: LocalModels,
+    deviceModels: DeviceModels?,
+    onChange: (AssistantSettings) -> Unit
+) {
     val model = settings.task(task)
     val label = @Composable {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -397,6 +430,11 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
+                )
+                deviceModels != null && settings.localEngine == LocalEngine.DEVICE -> DeviceModelPicker(
+                    selected = model.device,
+                    deviceModels = deviceModels,
+                    onSelect = { onChange(settings.withTask(task, model.copy(device = it))) }
                 )
                 else -> OllamaModelPicker(
                     selected = model.local,
@@ -518,6 +556,37 @@ private fun OllamaModelPicker(selected: String, recommended: String, localModels
                 TonalButton(onClick = { localModels.pull(selected) }) {
                     Text(stringResource(Res.string.lecture_local_download, selected))
                 }
+        }
+    }
+}
+
+/** The model of this device of a request, chosen among those of the catalog: downloaded here when it is not. */
+@Composable
+private fun DeviceModelPicker(selected: String, deviceModels: DeviceModels, onSelect: (String) -> Unit) {
+    val installed by deviceModels.installed.installed.collectAsState()
+    val progress by deviceModels.downloads.progress.collectAsState()
+    val failures by deviceModels.downloads.failures.collectAsState()
+    val label = { spec: ModelSpec -> spec.name + " · " + formatSize(spec.sizeBytes) + if (spec.id in installed) " ✓" else "" }
+    val chosen = deviceModels.spec(selected)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Choice(
+            label = stringResource(Res.string.lecture_device_model),
+            value = chosen?.let(label) ?: selected,
+            options = deviceModels.generators.map { label(it) to it.id },
+            onSelect = onSelect
+        )
+        if (chosen == null) return@Column
+        val downloading = progress[chosen.id]
+        val failure = failures[chosen.id]
+        when {
+            chosen.id in installed -> Hint(stringResource(Res.string.lecture_device_ready, formatSize(chosen.memoryBytes)))
+            downloading != null -> DownloadProgress(downloading.fraction)
+            else -> {
+                if (failure != null) Hint(stringResource(Res.string.lecture_local_download_failed, failure))
+                TonalButton(onClick = { deviceModels.downloads.download(chosen) }) {
+                    Text(stringResource(Res.string.lecture_local_download, chosen.name + " · " + formatSize(chosen.sizeBytes)))
+                }
+            }
         }
     }
 }

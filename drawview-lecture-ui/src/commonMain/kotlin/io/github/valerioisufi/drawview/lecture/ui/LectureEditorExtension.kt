@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.lecture.ArrivalNotification
+import io.github.valerioisufi.drawview.lecture.DeviceModels
 import io.github.valerioisufi.drawview.lecture.LectureArrival
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureStatus
@@ -168,9 +169,11 @@ public fun LectureDialogs(assistant: LectureAssistant) {
  * the language of the application. The application creates one for the whole process (also when
  * its windows or activities are created again: the recording goes on) and gives it to its
  * windows, each binding the microphone with [LectureMicrophone].
+ *
+ * @param deviceModels the models of this device of the application (see [LectureAssistant]).
  */
-public fun createLectureAssistant(): LectureAssistant =
-    LectureAssistant().apply { describeArrival = ::arrivalNotification }
+public fun createLectureAssistant(deviceModels: DeviceModels? = null): LectureAssistant =
+    LectureAssistant(deviceModels = deviceModels).apply { describeArrival = ::arrivalNotification }
 
 /** Asks the permission of the microphone for [assistant] from the window or activity shown. */
 @Composable

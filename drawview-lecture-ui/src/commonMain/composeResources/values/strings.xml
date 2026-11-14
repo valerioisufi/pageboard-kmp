@@ -263,4 +263,10 @@
     <string name="lecture_text_notes_cost_gemini">%1$s will read the notebook and the text: about %2$d tokens (%3$d characters), billed by Gemini.</string>
     <string name="lecture_text_notes_cost_local">The local model %1$s will read the notebook and the text, free.</string>
     <string name="lecture_text_notes_failed">The notes could not be written: %1$s</string>
+    <string name="lecture_settings_local_engine">Local models</string>
+    <string name="lecture_engine_device">This device</string>
+    <string name="lecture_engine_ollama">Ollama</string>
+    <string name="lecture_engine_hint">The models of this device are downloaded once and run here, offline. Ollama runs larger models, also on a computer of the network.</string>
+    <string name="lecture_device_model">Model of this device</string>
+    <string name="lecture_device_ready">Downloaded · it needs about %1$s of memory</string>
 </resources>

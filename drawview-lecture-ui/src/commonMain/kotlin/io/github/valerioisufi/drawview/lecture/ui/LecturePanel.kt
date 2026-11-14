@@ -109,7 +109,12 @@ internal fun lecturePanel(
 @Composable
 internal fun LectureSettings(assistant: LectureAssistant, state: LecturePanelState) {
     if (state.settingsShown) {
-        AssistantSettingsDialog(store = assistant.settingsStore, localModels = assistant.localModels, onDismiss = { state.settingsShown = false })
+        AssistantSettingsDialog(
+            store = assistant.settingsStore,
+            localModels = assistant.localModels,
+            onDismiss = { state.settingsShown = false },
+            deviceModels = assistant.deviceModels
+        )
     }
 }
 

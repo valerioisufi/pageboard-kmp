@@ -1,16 +1,16 @@
 public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$AssistantSettingsDialogKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$AssistantSettingsDialogKt;
 	public fun <init> ()V
-	public final fun getLambda$-113132601$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1235076866$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-1904342713$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-322651756$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1915921830$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-356084988$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-404080482$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-522586373$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-612190027$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1064603214$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1107738190$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1317696433$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$15524930$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1752505960$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1851157883$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1980137693$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
@@ -94,7 +94,8 @@ public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExten
 	public static final fun LectureExitDialog (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureMicrophone (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureRecordingIndicator (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public static final fun createLectureAssistant ()Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
+	public static final fun createLectureAssistant (Lio/github/valerioisufi/drawview/lecture/DeviceModels;)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
+	public static synthetic fun createLectureAssistant$default (Lio/github/valerioisufi/drawview/lecture/DeviceModels;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
 	public static final fun documentTag (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/DocumentTag;
 	public static final fun editorExtension (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
 }

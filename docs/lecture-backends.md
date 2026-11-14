@@ -125,7 +125,7 @@ observes it as before.
 | 2 | The state of `LectureAssistant` split: `AssistantLectures`, `AssistantWork`, `AssistantModels` | done |
 | 3 | `DeviceBackend` over `drawview-ml` (`LoadedModels`, `InstalledModels` of `ModelCatalog`), the request and the JSON of the bench moved into it, the bench on it; not chosen by the settings yet | done |
 | 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, tested on a file of version 1; `ModelBackends` sending the local requests to the engine of the settings; `LectureAssistant(deviceModels)` | done |
-| 5 | The applications give their models: PencilNotes the ones of its search (`DeviceModels`), the sample none; the engine and the models of the device in the settings of the assistant, with their downloads | to do |
+| 5 | The applications give their models: PencilNotes the ones of its search (`DeviceModels`), the sample none; the engine and the models of the device in the settings of the assistant, with their downloads | done |
 
 ## Checks
 
@@ -186,6 +186,8 @@ Taken alone, revertible:
 
 ## Left for later
 
-* The settings of the models of the device in `drawview-lecture-ui` (phase 5 of
-  `docs/local-models.md`), the speech on the device (6), iOS (7).
+* The speech on the device (phase 6 of `docs/local-models.md`) and iOS (7): on iOS the runtime
+  supports no model yet, so the local requests stay with Ollama there.
+* The hints of the requests in the settings still speak of Ollama and whisper.cpp only.
+* Deleting a model of the device from the settings of the assistant (the search has it).
 * `LocalModels` downloading through `ModelDownloads` (resume, SHA-256) also for whisper.
