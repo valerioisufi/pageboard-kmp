@@ -340,13 +340,13 @@ internal class PromptBench(
             }
             val trimmed = text.trim()
             val body = if (trimmed.startsWith("```")) trimmed.substringAfter('\n').substringBeforeLast("```") else trimmed
-            holdsKeys(body, requiredKeys(prompt.schema))
+            holdsKeys(body, requiredKeys(prompt.schema!!))
         } catch (_: Exception) {
             false
         }
         val block = jsonOf(answer.text, prompt.schema)
         val json = parseJsonOrNull(LectureAnalysis.repairLatexEscapes(block))
-        val schemaError = if (answer.error != null) answer.error else if (json == null) "not JSON" else schemaError(json, prompt.schema)
+        val schemaError = if (answer.error != null) answer.error else if (json == null) "not JSON" else schemaError(json, prompt.schema!!)
         val parsed = if (kind == Kind.LIVE || kind == Kind.CATCH_UP) {
             try {
                 LectureAnalysis.parseChunk(block)

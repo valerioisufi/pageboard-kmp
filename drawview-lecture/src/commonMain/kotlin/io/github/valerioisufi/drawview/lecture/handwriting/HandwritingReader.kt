@@ -2,17 +2,15 @@ package io.github.valerioisufi.drawview.lecture.handwriting
 
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.lecture.LectureAnalysis
-import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.NotebookSnapshot
 import io.github.valerioisufi.drawview.lecture.NotebookSource
 import io.github.valerioisufi.drawview.lecture.PageContent
-import io.github.valerioisufi.drawview.lecture.TaskModel
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.writeAtomically
-import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
-import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.model.ModelUse
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
+import io.github.valerioisufi.drawview.lecture.model.TaskBackend
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -42,7 +40,6 @@ import kotlin.concurrent.Volatile
  */
 internal class HandwritingReader(
     private val path: String,
-    private val backends: ModelBackends,
     private val onSaved: () -> Unit = {}
 ) {
     private val store = atomic<Map<String, Entry>?>(null)
@@ -85,7 +82,7 @@ internal class HandwritingReader(
         blocks: List<InkBlock>,
         pages: List<PageContent>,
         source: NotebookSource,
-        task: TaskModel,
+        task: TaskBackend,
         max: Int,
         stableOnly: Boolean,
         initialStrokeIds: Set<String> = emptySet()
@@ -96,22 +93,18 @@ internal class HandwritingReader(
         if (stableOnly) previousKeys = blocks.mapTo(mutableSetOf()) { it.key }
         if (candidates.isEmpty()) return@withLock null
         var usage: TokenUsage? = null
-        val batch = if (task.provider == ModelProvider.LOCAL) LOCAL_BATCH else ONLINE_BATCH
-        for (group in candidates.chunked(batch)) {
+        for (group in candidates.chunked(task.limits.handwritingBatch)) {
             val images = group.mapNotNull { block -> source.renderInk(block)?.let { block to it } }
             if (images.isEmpty()) continue
             val prompt = prompt(images, pages)
-            val answer = when (task.provider) {
-                ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
-                ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
-            }
+            val answer = task.generate(prompt, ModelUse.LIVE)
             val read = LectureAnalysis.parseHandwriting(answer.text)
             // A block the model did not answer stays to be read
             val newTexts = images.withIndex().mapNotNull { (i, image) ->
                 read[i + 1]?.let { text -> image.first.key to Entry(image.first.pageId, text.trim()) }
             }
             store.value = texts + newTexts
-            usage = (usage ?: TokenUsage()) + (answer.usage ?: TokenUsage(localRequests = 1))
+            usage = (usage ?: TokenUsage()) + answer.usageOrLocal
         }
         save()
         usage
@@ -133,13 +126,7 @@ internal class HandwritingReader(
     }
 
     companion object {
-        /** Blocks per request: the local models read few images at a time. */
-        const val LOCAL_BATCH = 3
-        const val ONLINE_BATCH = 6
-
-        /** Blocks transcribed after each update during the lecture, and at its end. */
-        const val MAX_PER_UPDATE_LOCAL = 3
-        const val MAX_PER_UPDATE_ONLINE = 6
+        /** Blocks transcribed at the end of the lecture (after each update: [io.github.valerioisufi.drawview.lecture.model.ModelLimits.handwritingPerUpdate]). */
         const val MAX_AT_THE_END = 20
 
         private const val SLIDE_HINT_CHARS = 300

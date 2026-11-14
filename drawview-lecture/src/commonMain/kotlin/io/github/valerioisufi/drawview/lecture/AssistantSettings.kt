@@ -128,10 +128,13 @@ public data class AssistantSettings(
     val reviewProvider: ModelProvider get() = task(LectureTask.FINAL_REVIEW).provider
 
     /** The local models of the requests made during the lecture (kept loaded until its end). */
-    val liveLocalModels: Set<String>
+    val liveLocalModels: Set<String> get() = liveModels[ModelProvider.LOCAL].orEmpty()
+
+    /** The models of the requests made during the lecture, by provider (kept loaded until its end when local). */
+    internal val liveModels: Map<ModelProvider, Set<String>>
         get() = listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { task(it) }
-            .filter { it.provider == ModelProvider.LOCAL }
-            .mapTo(mutableSetOf()) { it.local }
+            .groupBy({ it.provider }, { it.model })
+            .mapValues { (_, models) -> models.toSet() }
 
     /** What the requests of a lecture send to Google (empty: everything stays on this computer). */
     val sentToGoogle: Set<SharedData>

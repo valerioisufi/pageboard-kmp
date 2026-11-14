@@ -7,12 +7,12 @@ import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
 import io.github.valerioisufi.drawview.lecture.audio.isSilent
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.drawview.lecture.local.OllamaException
-import io.github.valerioisufi.drawview.lecture.model.GeminiPromptCache
+import io.github.valerioisufi.drawview.lecture.model.ModelBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
-import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.model.ModelUse
+import io.github.valerioisufi.drawview.lecture.model.PromptCache
+import io.github.valerioisufi.drawview.lecture.model.TaskBackend
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlin.concurrent.Volatile
 import kotlin.math.min
@@ -68,7 +68,7 @@ public class LectureRecorder internal constructor(
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
     private val follows: Boolean = false,
-    private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
+    private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json") {
         lecture.onChanged(null)
     },
     private val onFinished: (LectureRecorder) -> Unit = {}
@@ -114,8 +114,23 @@ public class LectureRecorder internal constructor(
     /** The transcript of the updates not sent to the notes yet ([AssistantSettings.notesSeconds]). */
     private val gathered = mutableListOf<RequestTranscript>()
 
-    /** The cache of Gemini holding [lectureStart], deleted when the recording ends. */
-    private val promptCache by lazy { GeminiPromptCache(backends.gemini.client) }
+    /** The caches of the backends holding [lectureStart] (the backends that keep one), deleted when the recording ends. */
+    private val promptCaches = atomic(mapOf<ModelBackend, PromptCache>())
+
+    /** The cache of the start of the lecture kept by [backend], `null` when it keeps none. */
+    private fun promptCacheOf(backend: ModelBackend): PromptCache? {
+        promptCaches.value[backend]?.let { return it }
+        val created = backend.newPromptCache() ?: return null
+        while (true) {
+            val current = promptCaches.value
+            current[backend]?.let { return it }
+            if (promptCaches.compareAndSet(current, current + (backend to created))) return created
+        }
+    }
+
+    private suspend fun clearPromptCaches() {
+        promptCaches.getAndSet(emptyMap()).values.forEach { it.clear() }
+    }
 
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
@@ -260,7 +275,7 @@ public class LectureRecorder internal constructor(
             if (analyzes) {
                 analysisJob?.join()
                 lecture.setState { isAnalyzing = false }
-                promptCache.clear(settingsStore.apiKey)
+                clearPromptCaches()
                 closeTranscriber()
                 reviewAtTheEnd()
             } else {
@@ -281,7 +296,7 @@ public class LectureRecorder internal constructor(
             audioJob?.join()
             analysisJob?.join()
             lecture.setState { isAnalyzing = false }
-            promptCache.clear(settingsStore.apiKey)
+            clearPromptCaches()
             closeTranscriber()
             reviewAtTheEnd()
             lecture.persist()
@@ -296,7 +311,7 @@ public class LectureRecorder internal constructor(
         stopMicrophone()
         audioJob?.cancelAndJoin()
         transcriber?.close()
-        promptCache.clear(settingsStore.apiKey)
+        clearPromptCaches()
         lecture.setState {
             isAnalyzing = false
             pendingUpdates = 0
@@ -336,7 +351,7 @@ public class LectureRecorder internal constructor(
         if (settings.reviewAtTheEnd) {
             FinalReviewer(lecture, settingsStore, handwriting).write(settings.reviewProvider, notebook)
         } else {
-            backends.unloadLiveModels(settings)
+            backends.releaseLiveModels(settings)
         }
     }
 
@@ -447,9 +462,9 @@ public class LectureRecorder internal constructor(
     private suspend fun askNotes(speech: RequestTranscript) {
         val settings = settingsStore.settings
         var includeOutline = false
-        val task = settings.task(LectureTask.LIVE_NOTES)
+        val task = backends.forTask(settings, LectureTask.LIVE_NOTES)
         val start = startOf(task)
-        val result = request(task, settings) { notebook ->
+        val result = request(task) { notebook ->
             val memory = lecture.memory(speech.endMs, transcriptBeforeMs = speech.newStartMs)
             includeOutline = memory.outline.isBlank() || speech.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
             LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = includeOutline, start = start)
@@ -472,13 +487,13 @@ public class LectureRecorder internal constructor(
      */
     private suspend fun recapLastMinutes() {
         val settings = settingsStore.settings
-        val task = settings.task(LectureTask.CATCH_UP)
+        val task = backends.forTask(settings, LectureTask.CATCH_UP)
         val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
         val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
         if (segments.isEmpty()) return
         val speech = RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
         val start = startOf(task)
-        val result = request(task, settings) { notebook ->
+        val result = request(task) { notebook ->
             LecturePrompts.chunkPrompt(
                 settings, lecture.memory(speech.endMs), notebook, speech,
                 catchUp = true, includeOutline = false, start = start
@@ -495,11 +510,11 @@ public class LectureRecorder internal constructor(
     private class Answer(val analysis: ChunkAnalysis, val notebook: NotebookSnapshot?, val usage: TokenUsage)
 
     /**
-     * What opens the requests of [task]: the notebook as it is at the first request of Gemini with
-     * the notebook open, the same afterwards; none for the local models, which cache nothing.
+     * What opens the requests of [task]: the notebook as it is at the first request with the
+     * notebook open, the same afterwards; none for a backend that caches nothing (the local models).
      */
-    private suspend fun startOf(task: TaskModel): LectureStart? {
-        if (task.provider != ModelProvider.GEMINI) return null
+    private suspend fun startOf(task: TaskBackend): LectureStart? {
+        if (promptCacheOf(task.backend) == null) return null
         lectureStart?.let { return it }
         val source = notebook ?: return null
         val pages = try {
@@ -518,31 +533,25 @@ public class LectureRecorder internal constructor(
      * provider of [task], repeating it after the temporary errors.
      */
     private suspend fun request(
-        task: TaskModel,
-        settings: AssistantSettings,
+        task: TaskBackend,
         build: suspend (NotebookSnapshot?) -> ModelPrompt
     ): Answer? {
         var attempt = 0
         while (true) {
-            val apiKey = settingsStore.apiKey
-            if (task.provider == ModelProvider.GEMINI && apiKey.isEmpty()) {
-                lecture.setState { problem = LectureProblem.MissingApiKey }
+            task.unavailable()?.let { problem ->
+                lecture.setState { this.problem = problem }
                 return null
             }
             try {
-                // The local models read fewer images (a smaller context, a slower answer)
-                val notebook = captureNotebook(imagePages = if (task.provider == ModelProvider.LOCAL) 1 else 2)
+                val notebook = captureNotebook(imagePages = task.limits.imagePages)
                 val prompt = build(notebook)
-                val answer = when (task.provider) {
-                    ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini, promptCache)
-                    ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
-                }
+                val answer = task.generate(prompt, ModelUse.LIVE, promptCacheOf(task.backend))
                 val analysis = LectureAnalysis.parseChunk(answer.text)
                 if (notebook != null) {
                     knownStrokeIds = knownStrokeIds.orEmpty() + notebook.strokeIds
                     lecture.rememberNotebook(notebook)
                 }
-                return Answer(analysis, notebook, answer.usage ?: TokenUsage(localRequests = 1))
+                return Answer(analysis, notebook, answer.usageOrLocal)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -552,9 +561,7 @@ public class LectureRecorder internal constructor(
                     lecture.setState { this.problem = problem }
                     return null
                 }
-                val retryable = when (e) {
-                    is GeminiException -> e.isRetryable
-                    is OllamaException -> e.statusCode >= 500
+                val retryable = task.backend.isRetryable(e) ?: when (e) {
                     // An invalid answer (e.g. a truncated JSON): one more try
                     is IllegalArgumentException -> attempt < 2
                     // Network errors
@@ -606,9 +613,9 @@ public class LectureRecorder internal constructor(
      */
     private suspend fun readHandwriting(snapshot: NotebookSnapshot) {
         val source = notebook ?: return
-        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
-        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
-        val max = if (task.provider == ModelProvider.LOCAL) HandwritingReader.MAX_PER_UPDATE_LOCAL else HandwritingReader.MAX_PER_UPDATE_ONLINE
+        val task = backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES)
+        if (task.unavailable() != null) return
+        val max = task.limits.handwritingPerUpdate
         val order = snapshot.pages.map { it.index }
         val blocks = snapshot.inkBlocks.sortedBy { order.indexOf(it.pageIndex) }
         try {

@@ -61,3 +61,6 @@ internal const val FOLLOW_END_TOLERANCE_MS = 2_000L
 
 /** A notification of the system: its [channel] (the kind of notifications, where the system names them), [title] and [text]. */
 public class ArrivalNotification(public val channel: String, public val title: String, public val text: String)
+
+/** The longest answer online of the search ([LectureAssistant.answerOnline]). */
+internal const val ONLINE_ANSWER_TOKENS = 4096

@@ -12,12 +12,13 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.RecordingPlayer
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
-import io.github.valerioisufi.drawview.lecture.local.OllamaException
+import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelAnswer
-import io.github.valerioisufi.drawview.lecture.model.ModelBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
+import io.github.valerioisufi.drawview.lecture.model.ModelUse
+import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.model.TaskBackend
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlin.coroutines.CoroutineContext
@@ -478,11 +479,10 @@ public class Lecture internal constructor(
             return
         }
         val settings = settingsStore.settings
-        val model = settings.task(LectureTask.FINAL_REVIEW).let { if (provider == ModelProvider.GEMINI) it.gemini else it.local }
-        val apiKey = settingsStore.apiKey
-        if (provider == ModelProvider.GEMINI && apiKey.isEmpty()) {
+        val task = backends.forReview(settings, provider)
+        task.unavailable()?.let { unavailable ->
             setState {
-                problem = LectureProblem.MissingApiKey
+                problem = unavailable
                 reviewStatus = ReviewStatus.FAILED
             }
             return
@@ -498,7 +498,7 @@ public class Lecture internal constructor(
         setState {
             reviewStatus = ReviewStatus.RUNNING
             reviewProvider = provider
-            reviewModel = model
+            reviewModel = task.model
             reviewProgressTokens = 0
         }
         try {
@@ -509,10 +509,10 @@ public class Lecture internal constructor(
                 memory = memory(elapsedMs),
                 transcript = transcriptCopy,
                 pages = seenPages.values.map { it.content },
-                pageImages = seenImages(if (provider == ModelProvider.GEMINI) MAX_REVIEW_IMAGES else MAX_LOCAL_REVIEW_IMAGES),
+                pageImages = seenImages(task.limits.reviewImages),
                 visiblePages = visibleSeenPages()
             )
-            val answer = generateWithRetries(backends.of(provider), prompt, model) { tokens ->
+            val answer = generateWithRetries(task, prompt) { tokens ->
                 // Written from the network thread: a snapshot state can be
                 if (tokens % 8 == 0) reviewProgressTokens = tokens
             }
@@ -520,7 +520,7 @@ public class Lecture internal constructor(
             setState {
                 finalReview = review.notesMarkdown.trim().ifEmpty { null }
                 addNotes(review.missing, 0L, elapsedMs, defaultPage = null, fromFinalReview = true)
-                usage += answer.usage ?: TokenUsage(localRequests = 1)
+                usage += answer.usageOrLocal
                 reviewStatus = ReviewStatus.DONE
                 problem = null
             }
@@ -534,20 +534,17 @@ public class Lecture internal constructor(
         }
     }
 
-    /** Answers [prompt], repeating the request after the temporary errors of Gemini. */
-    private suspend fun generateWithRetries(
-        backend: ModelBackend,
-        prompt: ModelPrompt,
-        model: String,
-        onProgress: (Int) -> Unit
-    ): ModelAnswer {
+    /** Answers [prompt], repeating the request after the temporary errors of its backend. */
+    private suspend fun generateWithRetries(task: TaskBackend, prompt: ModelPrompt, onProgress: (Int) -> Unit): ModelAnswer {
         var attempt = 0
         while (true) {
             try {
-                return backend.generate(prompt, model, onProgress)
-            } catch (e: GeminiException) {
+                return task.generate(prompt, ModelUse.ONCE, onProgress = onProgress)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
                 attempt++
-                if (!e.isRetryable || attempt > MAX_ATTEMPTS_WHEN_STOPPED) throw e
+                if (task.backend.isRetryable(e) != true || attempt > MAX_ATTEMPTS_WHEN_STOPPED) throw e
                 delay((5_000L shl attempt).coerceAtMost(30_000L))
             }
         }
@@ -669,13 +666,7 @@ public class Lecture internal constructor(
     internal companion object {
         /** The problem shown for a failed request. */
         fun problemOf(e: Throwable): LectureProblem {
-            val detail = e.message ?: e::class.simpleName.orEmpty()
-            return when {
-                e is GeminiException && e.isAuthenticationError -> LectureProblem.Authentication(detail)
-                e is GeminiException && e.statusCode == 429 -> LectureProblem.QuotaExhausted(e.quotaModel.orEmpty(), e.isDailyQuota, e.retryAfterMs)
-                e is OllamaException && (e.statusCode == 0 || e.statusCode == 404) -> LectureProblem.LocalModelUnavailable(detail)
-                else -> LectureProblem.Failed(detail)
-            }
+            return GeminiBackend.problemOf(e) ?: OllamaBackend.problemOf(e) ?: LectureProblem.Failed(e.message ?: e::class.simpleName.orEmpty())
         }
 
         const val MAX_ATTEMPTS_WHEN_STOPPED = 2

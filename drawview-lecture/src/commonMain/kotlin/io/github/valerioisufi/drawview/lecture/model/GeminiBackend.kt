@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.lecture.model
 
+import io.github.valerioisufi.drawview.lecture.Lecture
+import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
@@ -24,13 +26,30 @@ import kotlin.io.encoding.Base64
 internal class GeminiBackend(public val client: GeminiClient, private val apiKey: () -> String) : ModelBackend {
     override val provider = ModelProvider.GEMINI
 
+    override val limits = LIMITS
+
     @Volatile
     private var mediaResolution: String? = MEDIA_RESOLUTION
+
+    override fun unavailable(): LectureProblem? = if (apiKey().isEmpty()) LectureProblem.MissingApiKey else null
+
+    override fun newPromptCache(): PromptCache = LectureCache(GeminiPromptCache(client))
+
+    /** The cache of a lecture, deleted with the key of the settings. */
+    private inner class LectureCache(val cache: GeminiPromptCache) : PromptCache {
+        override suspend fun clear() = cache.clear(apiKey())
+    }
 
     /**
      * @throws GeminiException also for a missing key (status 401).
      */
-    override suspend fun generate(prompt: ModelPrompt, model: String, onProgress: (Int) -> Unit): ModelAnswer = generate(prompt, model, cache = null)
+    override suspend fun generate(prompt: ModelPrompt, model: String, use: ModelUse, cache: PromptCache?, onProgress: (Int) -> Unit): ModelAnswer =
+        generate(prompt, model, (cache as? LectureCache)?.cache)
+
+    override fun isRetryable(error: Throwable): Boolean? = (error as? GeminiException)?.isRetryable
+
+    /** Its models are not on this device: nothing to free. */
+    override suspend fun release(models: Set<String>) {}
 
     /**
      * Answers [prompt] with [model], its start read from [cache] when it can be; sent whole when the
@@ -68,6 +87,8 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
          */
         const val MEDIA_RESOLUTION = "MEDIA_RESOLUTION_MEDIUM"
 
+        val LIMITS = ModelLimits(imagePages = 2, reviewImages = Lecture.MAX_REVIEW_IMAGES, handwritingBatch = 6, handwritingPerUpdate = 6)
+
         /** The statuses of a request whose cache expired or was deleted. */
         private val CACHE_GONE_STATUSES = setOf(400, 403, 404)
 
@@ -85,7 +106,7 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
             systemInstruction = if (cachedContent != null) null else GeminiContent(parts = listOf(GeminiPart.text(prompt.system))),
             cachedContent = cachedContent,
             generationConfig = GenerationConfig(
-                responseMimeType = "application/json",
+                responseMimeType = prompt.schema?.let { "application/json" },
                 responseJsonSchema = prompt.schema,
                 maxOutputTokens = prompt.maxOutputTokens,
                 thinkingConfig = ThinkingConfig(prompt.thinkingLevel),
@@ -97,6 +118,17 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
         fun partOf(part: PromptPart): GeminiPart = when (part) {
             is PromptPart.Text -> GeminiPart.text(part.text)
             is PromptPart.Image -> GeminiPart.inline("image/jpeg", Base64.encode(part.jpeg))
+        }
+
+        /** The problem shown for [error], `null` when it is not an error of Gemini. */
+        fun problemOf(error: Throwable): LectureProblem? {
+            if (error !is GeminiException) return null
+            val detail = error.message ?: error::class.simpleName.orEmpty()
+            return when {
+                error.isAuthenticationError -> LectureProblem.Authentication(detail)
+                error.statusCode == 429 -> LectureProblem.QuotaExhausted(error.quotaModel.orEmpty(), error.isDailyQuota, error.retryAfterMs)
+                else -> null
+            }
         }
 
         internal fun GeminiUsage?.toTokenUsage(): TokenUsage = TokenUsage(

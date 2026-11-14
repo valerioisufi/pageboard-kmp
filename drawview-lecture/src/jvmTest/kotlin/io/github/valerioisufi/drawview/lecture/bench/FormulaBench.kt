@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.lecture.bench
 import io.github.valerioisufi.drawview.lecture.LectureAnalysis
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
+import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.ml.GeneratorOptions
 import io.github.valerioisufi.drawview.ml.InstalledModel
 import io.github.valerioisufi.drawview.model.geometry.Rect
@@ -163,7 +164,7 @@ internal class FormulaBench(private val bench: Bench, private val count: Int = 6
         var usable = 0
         val reads = mutableListOf<Read>()
         val millis = mutableListOf<Long>()
-        val batches = inks.chunked(HandwritingReader.LOCAL_BATCH)
+        val batches = inks.chunked(OllamaBackend.LIMITS.handwritingBatch)
         for (batch in batches) {
             val blocks = batch.map { ink -> InkBlock(0, "page", ink.id, setOf(ink.id), Rect(0f, 0f, 1f, 1f)) to images.getValue(ink) }
             val prompt = HandwritingReader.prompt(blocks, emptyList())
@@ -171,7 +172,7 @@ internal class FormulaBench(private val bench: Bench, private val count: Int = 6
             millis.add(answer.millis)
             val json = jsonOf(answer.text, prompt.schema)
             val read = try {
-                LectureAnalysis.parseHandwriting(json).also { if (holdsKeys(json, requiredKeys(prompt.schema))) usable++ }
+                LectureAnalysis.parseHandwriting(json).also { if (holdsKeys(json, requiredKeys(prompt.schema!!))) usable++ }
             } catch (_: Exception) {
                 emptyMap()
             }

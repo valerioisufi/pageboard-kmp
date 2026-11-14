@@ -328,7 +328,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Z)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun acceptGeneration (Lio/github/valerioisufi/drawview/lecture/GenerationOffer;)V
-	public final fun answerWithGemini (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun answerOnline (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun canRetranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
 	public final fun canWriteContext (Ljava/lang/String;)Z
 	public final fun cancelTranscription (Lio/github/valerioisufi/drawview/lecture/Lecture;)V
@@ -352,7 +352,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getArrivals ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getAttachments ()Lio/github/valerioisufi/drawview/model/DocumentAttachments;
 	public final fun getAudioArriving ()Lkotlinx/coroutines/flow/StateFlow;
-	public final fun getCanAnswerWithGemini ()Z
+	public final fun getCanAnswerOnline ()Z
 	public final fun getCanGenerate ()Z
 	public final fun getCanImportAndExport ()Z
 	public final fun getCanRecord ()Z

@@ -17,15 +17,13 @@ import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiContent
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiPart
-import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
-import io.github.valerioisufi.drawview.lecture.gemini.GenerationConfig
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
+import io.github.valerioisufi.drawview.lecture.model.ModelUse
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.model.TaskBackend
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
 import io.github.valerioisufi.drawview.lecture.platform.showNotification
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
@@ -519,8 +517,8 @@ public class LectureAssistant(
 
     /** The course context written by the model of the live suggestions, from the whole notebook. */
     private suspend fun composeContext(documentId: String, notebook: NotebookSource): String? {
-        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
-        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return null
+        val task = backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES)
+        if (task.unavailable() != null) return null
         val pages = notebook.allPages()
         if (pages.isEmpty()) return null
         // With the handwriting already transcribed
@@ -528,10 +526,7 @@ public class LectureAssistant(
         val blocks = notebook.inkBlocks(pages.filter { it.hasInk }.map { it.index })
         val filled = pages.map { page -> reader.fill(page, blocks.filter { it.pageIndex == page.index }) }
         val prompt = LecturePrompts.courseContextPrompt(settingsStore.settings, notebook.documentTitle, filled)
-        val answer = when (task.provider) {
-            ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
-            ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
-        }
+        val answer = task.generate(prompt, ModelUse.LIVE)
         return LectureAnalysis.parseCourseContext(answer.text)
     }
 
@@ -541,7 +536,7 @@ public class LectureAssistant(
      */
     public suspend fun estimateTextNotes(documentId: String, text: String): TextNotesEstimate? {
         val prompt = textNotesPrompt(documentId, text) ?: return null
-        val task = settingsStore.settings.task(LectureTask.FINAL_REVIEW)
+        val task = backends.forTask(settingsStore.settings, LectureTask.FINAL_REVIEW)
         val chars = prompt.system.length + prompt.parts.sumOf { (it as? PromptPart.Text)?.text?.length ?: 0 }
         return TextNotesEstimate(
             provider = task.provider,
@@ -549,7 +544,7 @@ public class LectureAssistant(
             chars = chars,
             tokens = chars / TextNotes.CHARS_PER_TOKEN,
             tooLong = text.length > TextNotes.MAX_TEXT_CHARS,
-            missingApiKey = task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey
+            missingApiKey = task.unavailable() == LectureProblem.MissingApiKey
         )
     }
 
@@ -563,11 +558,11 @@ public class LectureAssistant(
      */
     public suspend fun textNotes(documentId: String, text: String): TextNotes {
         check(text.length <= TextNotes.MAX_TEXT_CHARS) { "The text is too long" }
-        val task = settingsStore.settings.task(LectureTask.FINAL_REVIEW)
-        check(task.provider != ModelProvider.GEMINI || settingsStore.hasApiKey) { "Gemini has no key" }
+        val task = backends.forTask(settingsStore.settings, LectureTask.FINAL_REVIEW)
+        check(task.unavailable() == null) { "Gemini has no key" }
         val notebook = editorNotebooks[documentId] ?: error("The editor of the document is not shown")
         val prompt = textNotesPrompt(documentId, text) ?: error("The editor of the document is not shown")
-        val answer = backends.of(task.provider).generate(prompt, task.model)
+        val answer = task.generate(prompt)
         return TextNotes.of(LectureAnalysis.parseTextNotes(answer.text), notebook.pageIds(), text)
     }
 
@@ -743,7 +738,7 @@ public class LectureAssistant(
 
     private fun handwritingOf(documentId: String): HandwritingReader = syncLock(handwritingLock) {
         handwritingReaders.getOrPut(documentId) {
-            HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends) { library.changed(documentId, null) }
+            HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json") { library.changed(documentId, null) }
         }
     }
 
@@ -918,24 +913,31 @@ public class LectureAssistant(
         return true
     }
 
-    /** Whether a Gemini API key is configured, so that Gemini can answer a question on request. */
-    public val canAnswerWithGemini: Boolean get() = settingsStore.hasApiKey
+    /** The backend of the answers online (the search): Gemini, with the model of the live notes. */
+    private val onlineAnswers: TaskBackend
+        get() = TaskBackend(backends.gemini, settingsStore.settings.task(LectureTask.LIVE_NOTES).gemini)
+
+    /** Whether a question can be answered online now (a key of Gemini is configured). */
+    public val canAnswerOnline: Boolean get() = onlineAnswers.unavailable() == null
 
     /**
-     * Answers [prompt] with [systemInstruction] through the Gemini model chosen for live notes,
-     * returning the answer text paired with the model name.
+     * Answers [prompt] with [systemInstruction] online (Gemini, the model of the live notes), in
+     * plain text: the answer paired with the name of the model.
+     *
+     * @throws IllegalStateException when it cannot answer online ([canAnswerOnline]); the errors
+     *   of the model as they come.
      */
-    public suspend fun answerWithGemini(systemInstruction: String, prompt: String): Pair<String, String> {
-        val apiKey = settingsStore.apiKey
-        if (apiKey.isEmpty()) throw IllegalStateException("Gemini API key not set")
-        val model = settingsStore.settings.task(LectureTask.LIVE_NOTES).gemini
-        val request = GenerateContentRequest(
-            contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart.text(prompt)))),
-            systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(systemInstruction))),
-            generationConfig = GenerationConfig(maxOutputTokens = 4096)
+    public suspend fun answerOnline(systemInstruction: String, prompt: String): Pair<String, String> {
+        val task = onlineAnswers
+        check(task.unavailable() == null) { "Gemini API key not set" }
+        val request = ModelPrompt(
+            system = systemInstruction,
+            parts = listOf(PromptPart.Text(prompt)),
+            schema = null,
+            maxOutputTokens = ONLINE_ANSWER_TOKENS,
+            thinkingLevel = settingsStore.settings.thinkingLevel
         )
-        val response = client.generateContent(apiKey, model, request)
-        return response.text() to model
+        return task.generate(request).text to task.model
     }
 
     /** Runs [block] holding the generation of [lecture] (refreshed meanwhile, released at the end). */

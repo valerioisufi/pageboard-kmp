@@ -232,6 +232,6 @@ public fun LectureAssistant.searchSource(store: DocumentStore? = null): SearchSo
  * student has configured an API key in this [LectureAssistant].
  */
 public fun LectureAssistant.onlineAnswerBackend(): OnlineAnswerBackend = OnlineAnswerBackend(
-    isAvailable = { canAnswerWithGemini },
-    generate = { systemInstruction, prompt -> answerWithGemini(systemInstruction, prompt) }
+    isAvailable = { canAnswerOnline },
+    generate = { systemInstruction, prompt -> answerOnline(systemInstruction, prompt) }
 )

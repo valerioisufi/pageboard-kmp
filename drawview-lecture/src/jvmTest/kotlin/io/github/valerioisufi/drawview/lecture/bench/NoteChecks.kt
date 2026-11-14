@@ -176,7 +176,7 @@ internal class ModelCheck(
 internal fun withSaid(prompt: ModelPrompt): ModelPrompt = ModelPrompt(
     system = prompt.system + "\n\n" + SAID_INSTRUCTION,
     parts = prompt.parts,
-    schema = schemaWithSaid(prompt.schema),
+    schema = schemaWithSaid(prompt.schema!!),
     maxOutputTokens = prompt.maxOutputTokens,
     thinkingLevel = prompt.thinkingLevel,
     cachedParts = prompt.cachedParts

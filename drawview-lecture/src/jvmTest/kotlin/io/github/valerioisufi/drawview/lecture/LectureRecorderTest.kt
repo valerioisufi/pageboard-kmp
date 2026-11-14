@@ -639,7 +639,7 @@ class LectureRecorderTest {
         assertTrue(lecture.canGenerateReview)
 
         // Asked: the handwriting first, then the review
-        val reviewer = FinalReviewer(lecture, settingsStore, HandwritingReader(File(directory, "handwriting.json").absolutePath, lecture.backends))
+        val reviewer = FinalReviewer(lecture, settingsStore, HandwritingReader(File(directory, "handwriting.json").absolutePath))
         assertTrue(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })
         // A second request while it runs is refused
         assertFalse(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })

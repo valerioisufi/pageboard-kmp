@@ -214,7 +214,7 @@ class LecturePromptsTest {
         // Times from the start of the request, as atSeconds
         assertTrue(texts.contains("[0:00] Il teorema ponte\n[0:04] vale per ogni successione"), texts)
         assertFalse(prompt.system.contains("- transcript:"))
-        assertFalse(prompt.schema.getValue("properties").jsonObject.containsKey("transcript"))
+        assertFalse(prompt.schema!!.getValue("properties").jsonObject.containsKey("transcript"))
     }
 
     @Test

@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.lecture.model
 
+import io.github.valerioisufi.drawview.lecture.Lecture
+import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.local.OllamaChatRequest
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
@@ -19,6 +21,13 @@ import kotlin.io.encoding.Base64
  */
 internal class OllamaBackend(public val client: OllamaClient, private val url: () -> String) : ModelBackend {
     override val provider = ModelProvider.LOCAL
+
+    override val limits = LIMITS
+
+    /** Whether the server answers is known at the request only. */
+    override fun unavailable(): LectureProblem? = null
+
+    override fun newPromptCache(): PromptCache? = null
 
     /**
      * @param keepLoadedSeconds seconds the model stays in memory after the answer (0: unloaded).
@@ -53,9 +62,16 @@ internal class OllamaBackend(public val client: OllamaClient, private val url: (
         return ModelAnswer(result.content, usage = null)
     }
 
-    /** Answers and unloads the model right away (a request done once, e.g. the final review). */
-    override suspend fun generate(prompt: ModelPrompt, model: String, onProgress: (Int) -> Unit): ModelAnswer =
-        generate(prompt, model, keepLoadedSeconds = 0, onProgress)
+    /** Answers, the model kept loaded during the lecture ([ModelUse.LIVE]) or unloaded right away. */
+    override suspend fun generate(prompt: ModelPrompt, model: String, use: ModelUse, cache: PromptCache?, onProgress: (Int) -> Unit): ModelAnswer =
+        generate(prompt, model, keepLoadedSeconds = if (use == ModelUse.LIVE) LIVE_KEEP_LOADED_SECONDS else 0, onProgress)
+
+    /** The errors of the server are temporary, not a model missing or a request refused. */
+    override fun isRetryable(error: Throwable): Boolean? = (error as? OllamaException)?.let { it.statusCode >= 500 }
+
+    override suspend fun release(models: Set<String>) {
+        models.forEach { unload(it) }
+    }
 
     /** Frees the memory taken by [model] (e.g. at the end of the lecture). */
     suspend fun unload(model: String) {
@@ -67,6 +83,17 @@ internal class OllamaBackend(public val client: OllamaClient, private val url: (
     }
 
     companion object {
+        /** The local models read fewer images and blocks a request (a smaller context, a slower answer). */
+        val LIMITS = ModelLimits(imagePages = 1, reviewImages = Lecture.MAX_LOCAL_REVIEW_IMAGES, handwritingBatch = 3, handwritingPerUpdate = 3)
+
+        /** The problem shown for [error], `null` when it is not Ollama missing a model or not running. */
+        fun problemOf(error: Throwable): LectureProblem? =
+            if (error is OllamaException && (error.statusCode == 0 || error.statusCode == 404)) {
+                LectureProblem.LocalModelUnavailable(error.message ?: error::class.simpleName.orEmpty())
+            } else {
+                null
+            }
+
         /** About 3 characters per token, an image ~600 tokens, plus the answer; at least 8k. */
         fun contextSize(system: String, text: String, images: Int, answerTokens: Int): Int {
             val estimate = (system.length + text.length) / 3 + images * 600 + answerTokens

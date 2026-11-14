@@ -121,7 +121,7 @@ observes it as before.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | The backends: `ModelBackend` with its limits, cache, errors and release; `ModelBackends.forTask`; the three `when (task.provider)` and the provider checks go; `answerOnline` through `GeminiBackend` (ABI of `drawview-lecture` and `drawview-lecture-ui`) | to do |
+| 1 | The backends: `ModelBackend` with its limits, cache, errors and release; `ModelBackends.forTask`; the three `when (task.provider)` and the provider checks go; `answerOnline` through `GeminiBackend` (ABI of `drawview-lecture` and `drawview-lecture-ui`) | done |
 | 2 | The state of `LectureAssistant` split: `AssistantLectures`, `AssistantWork`, `AssistantModels` | to do |
 | 3 | `DeviceBackend` over `drawview-ml` (`LoadedModels`, `InstalledModels` of `ModelCatalog`), the request and the JSON of the bench moved into it, the bench on it; not chosen by the settings yet | to do |
 | 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, `LectureAssistant(deviceModels)`, PencilNotes giving the models of its search | waits for the user (a stored format) |
@@ -143,6 +143,10 @@ Taken alone, revertible:
   search asks for an answer online, and which backend gives it is the assistant's business. The
   model stays the Gemini model of the live notes, the answer text without a schema, at most 4,096
   tokens, as today.
+* **The answers of the search take the thinking level of the settings** (`low` by default), as the
+  other requests of Gemini, where `answerWithGemini` left the default of the model.
+* **The review repeats the temporary errors of any backend** (`isRetryable`), so a review on Ollama
+  is repeated after an error of its server as the live requests are; before, only Gemini's were.
 * **The search keeps only the online backend**: the answers on the device are
   `drawview-search`'s own (`LoadedModels` of the application).
 * **The whisper models stay in `LocalModels`**: they are a speech engine (whisper.cpp), not a model

@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -38,15 +37,15 @@ internal class FinalReviewer(
         lecture.runFinalReview(provider) {
             if (notebook != null) readRemainingHandwriting(notebook)
             // The models of the lecture make room for the one of the review
-            lecture.backends.unloadLiveModels(settingsStore.settings)
+            lecture.backends.releaseLiveModels(settingsStore.settings)
         }
     }
 
     /** The handwriting of the pages seen not transcribed yet, with the model of the live suggestions. */
     private suspend fun readRemainingHandwriting(source: NotebookSource) {
         val reader = handwriting ?: return
-        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
-        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
+        val task = lecture.backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES)
+        if (task.unavailable() != null) return
         try {
             val (pages, lastIds) = lecture.setStateResult { seenPageContents() to lastPageIds }
             val pageIds = source.pageIds().ifEmpty { lastIds }
@@ -68,9 +67,4 @@ internal class FinalReviewer(
             println("DrawView: cannot read the handwriting: ${e.message}")
         }
     }
-}
-
-/** Frees the local models of the requests made during the lecture ([AssistantSettings.liveLocalModels]). */
-internal suspend fun ModelBackends.unloadLiveModels(settings: AssistantSettings) {
-    settings.liveLocalModels.forEach { local.unload(it) }
 }

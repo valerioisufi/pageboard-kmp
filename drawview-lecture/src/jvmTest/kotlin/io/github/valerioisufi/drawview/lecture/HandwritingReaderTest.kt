@@ -100,15 +100,16 @@ class HandwritingReaderTest {
             )
         }
         val backends = ModelBackends(GeminiBackend(GeminiClient(HttpClient(engine))) { "key" }, OllamaBackend(OllamaClient(HttpClient(engine))) { "" })
+        val task = backends.forTask(AssistantSettings(), LectureTask.LIVE_NOTES)
         val path = File(directory, "handwriting.json").absolutePath
-        val reader = HandwritingReader(path, backends)
+        val reader = HandwritingReader(path)
         val source = InkSource()
         val page = PageContent(0, pageId = "7", slide = SlideText(1, 0, "Limiti di funzioni"), hasInk = true)
         val old = block("old", setOf("s1"), top = 10f)
         val new = block("new", setOf("s2"), top = 40f)
 
         // First capture: only the block written before the lecture
-        val usage = reader.read(listOf(new, old), listOf(page), source, TaskModel(), max = 6, stableOnly = true, initialStrokeIds = setOf("s1"))
+        val usage = reader.read(listOf(new, old), listOf(page), source, task, max = 6, stableOnly = true, initialStrokeIds = setOf("s1"))
         assertEquals(listOf("old"), source.rendered)
         assertEquals(1, usage?.requests)
         assertTrue(requests.single().contains("written over a slide that reads: \\\"Limiti di funzioni\\\""), requests.single())
@@ -117,14 +118,14 @@ class HandwritingReaderTest {
         assertFalse(partly.inkTranscribed)
 
         // Unchanged since the previous capture: read now; the first one is not read again
-        reader.read(listOf(new, old), listOf(page), source, TaskModel(), max = 6, stableOnly = true)
+        reader.read(listOf(new, old), listOf(page), source, task, max = 6, stableOnly = true)
         assertEquals(listOf("old", "new"), source.rendered)
         assertTrue(reader.fill(page, listOf(new, old)).inkTranscribed)
 
         // Kept for the next lectures of the notebook
-        val again = HandwritingReader(path, backends)
+        val again = HandwritingReader(path)
         assertTrue(again.isRead(old) && again.isRead(new))
-        assertNull(again.read(listOf(new, old), listOf(page), source, TaskModel(), max = 6, stableOnly = false))
+        assertNull(again.read(listOf(new, old), listOf(page), source, task, max = 6, stableOnly = false))
         assertEquals(2, requests.size)
     }
 }
