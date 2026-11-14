@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.canvas.platform.exifOrientation
 import io.github.valerioisufi.drawview.canvas.platform.isJpeg
 import io.github.valerioisufi.drawview.canvas.platform.jpegOrientation
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBox
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
@@ -66,6 +67,8 @@ import kotlinx.coroutines.withContext
  *   the document.
  * @param elements draws the elements of the types of the application, written as images at
  *   300 dpi (placeholders for the types it does not know).
+ * @param formulas the formula renderer of the editors (`DrawViewEngines.formulas`): the formulas
+ *   are written as vectors when it is a [LatexEngine], else as images of them.
  * @param createWriter the PDF written.
  */
 public class PdfExporter(
@@ -73,8 +76,12 @@ public class PdfExporter(
     private val fontFiles: (suspend (TextFace) -> ByteArray?)? = null,
     private val creator: String? = null,
     private val elements: ElementRenderers = ElementRenderers.None,
+    formulas: FormulaRenderer? = null,
     private val createWriter: () -> PdfWriter = PdfiumEngine::create
 ) : DocumentExporter {
+    // The vectors of the formulas are MicroTeX's (phase 10 of docs/architecture.md gives them to FormulaRenderer)
+    private val latex = formulas as? LatexEngine
+
     override val extension: String get() = "pdf"
     override val mimeType: String get() = "application/pdf"
 
@@ -238,7 +245,7 @@ public class PdfExporter(
                 if (word.underline) underline(word, faces[word.face], toBlock)
             }
             for (formula in layout.formulas) {
-                val drawing = LatexEngine.drawing(formula.latex, FORMULA_PX, formula.color)
+                val drawing = latex?.drawing(formula.latex, FORMULA_PX, formula.color)
                 if (drawing == null || drawing.width <= 0) {
                     raster.draw(Rect(formula.left, formula.top, formula.left + formula.width, formula.top + formula.height))
                     continue

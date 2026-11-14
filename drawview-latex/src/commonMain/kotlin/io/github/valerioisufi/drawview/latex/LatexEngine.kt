@@ -1,8 +1,6 @@
 package io.github.valerioisufi.drawview.latex
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaImage
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
@@ -32,16 +30,20 @@ internal expect object LatexPlatformEngine {
 internal expect fun texResourcesDirectory(): String
 
 /**
- * High-level engine for parsing, sanitizing, and rendering LaTeX mathematical formulas
- * using the native MicroTeX C++ engine (JNI on Android and on the desktop, cinterop on iOS).
+ * The formula renderer of MicroTeX (JNI on Android and on the desktop, cinterop on iOS): it parses,
+ * sanitizes and renders the LaTeX formulas of the texts, for the editors, the thumbnails and the
+ * export. The application creates one and gives it to `DrawViewEngines` (`formulas`).
+ *
+ * MicroTeX is one native engine per process, loaded and initialized once: the instances share it,
+ * and the fonts of the text of the formulas are those of the last [prepare].
  */
-public object LatexEngine {
+public class LatexEngine : FormulaRenderer {
 
     private val initMutex = Mutex()
     private val _isReady = MutableStateFlow(false)
 
     /** Emits `true` once the engine is ready to render formulas. */
-    public val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
+    override val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     /**
      * Unpacks the TeX resources (once per version) and initializes the native engine.
@@ -65,84 +67,24 @@ public object LatexEngine {
         ready
     }
 
-    /**
-     * Initializes the native engine with an already unpacked resources directory.
-     */
-    public fun init(resourcesDirectory: String): Boolean {
-        val ready = LatexPlatformEngine.isNativeReady() || LatexPlatformEngine.init(resourcesDirectory)
-        _isReady.value = ready
-        return ready
+    /** Sets the fonts of the text of the formulas ([textFonts], when given), then [initialize]s the engine. */
+    override suspend fun prepare(textFonts: Map<TextFace, ByteArray>) {
+        if (textFonts.isNotEmpty()) {
+            TexTextFonts.set(textFonts.mapNotNull { (face, bytes) -> texStyle(face)?.let { it to bytes } }.toMap())
+        }
+        initialize()
     }
 
-    /**
-     * Sanitizes raw LaTeX input by stripping delimiter markers ($$, $, \[, \]),
-     * balancing unclosed braces during real-time typing, and prepending empty
-     * bases to lone exponents/subscripts.
-     */
-    internal fun sanitizeLatexString(raw: String): String {
-        var s = raw.trim()
-        if (s.startsWith("$$") && s.endsWith("$$") && s.length >= 4) {
-            s = s.substring(2, s.length - 2).trim()
-        } else if (s.startsWith("$") && s.endsWith("$") && s.length >= 2) {
-            s = s.substring(1, s.length - 1).trim()
-        } else if (s.startsWith("\\[") && s.endsWith("\\]") && s.length >= 4) {
-            s = s.substring(2, s.length - 2).trim()
-        } else if (s.startsWith("\\(") && s.endsWith("\\)") && s.length >= 4) {
-            s = s.substring(2, s.length - 2).trim()
-        }
+    override fun sanitize(latex: String): String = sanitizeLatexString(latex)
 
-        if (s.isBlank()) return ""
-
-        if (s.startsWith("^") || s.startsWith("_")) {
-            s = "{}$s"
-        }
-
-        if (s.endsWith("\\") && !s.endsWith("\\\\")) {
-            s = s.dropLast(1)
-        }
-
-        var openBraces = 0
-        var isEscaped = false
-        for (ch in s) {
-            if (isEscaped) {
-                isEscaped = false
-                continue
-            }
-            if (ch == '\\') {
-                isEscaped = true
-            } else if (ch == '{') {
-                openBraces++
-            } else if (ch == '}') {
-                if (openBraces > 0) openBraces--
-            }
-        }
-        if (openBraces > 0) {
-            s += "}".repeat(openBraces)
-        }
-
-        return s
-    }
+    override fun render(latex: String, fontSizePx: Float, colorArgb: Int): FormulaImage? =
+        renderFormula(latex, fontSizePx, colorArgb)?.let { FormulaImage(it.bitmap, it.baselineRatio) }
 
     /**
-     * Renders a sanitized LaTeX formula to a LatexResult containing ImageBitmap and baseline ratio.
-     * Returns `null` when the formula is invalid or the engine is not initialized yet.
+     * Renders the formula [latex] (sanitized here) at [fontSizePx] in [colorArgb], with [paddingPx]
+     * around it; `null` when it is invalid or the engine is not initialized yet.
      */
-    public fun renderFormula(
-        latex: String,
-        fontSizePx: Float,
-        color: Color,
-        paddingPx: Float = 0f
-    ): LatexResult? = renderFormula(latex, fontSizePx, color.toArgb(), paddingPx)
-
-    /**
-     * Renders a sanitized LaTeX formula using an ARGB integer color.
-     */
-    public fun renderFormula(
-        latex: String,
-        fontSizePx: Float,
-        colorArgb: Int,
-        paddingPx: Float = 0f
-    ): LatexResult? {
+    internal fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float = 0f): LatexResult? {
         val clean = sanitizeLatexString(latex)
         if (clean.isBlank() || !LatexPlatformEngine.isNativeReady()) return null
         return try {
@@ -167,39 +109,9 @@ public object LatexEngine {
         }
     }
 
-    /**
-     * The fonts of the text of the formulas (`\text{}`), TrueType files by style (0 regular,
-     * [TexFont.BOLD], [TexFont.ITALIC], both): the same on every platform, instead of the fonts of
-     * the system. Set before the first formula.
-     */
-    public fun setTextFonts(byStyle: Map<Int, ByteArray>): Unit = TexTextFonts.set(byStyle)
-
-    /**
-     * Generates an error warning badge ImageBitmap for invalid LaTeX syntax.
-     */
-    internal fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap {
-        return LatexPlatformEngine.generateErrorBitmap(latex, fontSizePx)
-    }
-
-    /**
-     * The engine as the formula renderer of the editors, the thumbnails and the export (give it
-     * to `DrawViewEngines`).
-     */
-    public val formulaRenderer: FormulaRenderer = object : FormulaRenderer {
-        override val isReady: StateFlow<Boolean> get() = this@LatexEngine.isReady
-
-        override suspend fun prepare(textFonts: Map<TextFace, ByteArray>) {
-            if (textFonts.isNotEmpty()) {
-                setTextFonts(textFonts.mapNotNull { (face, bytes) -> texStyle(face)?.let { it to bytes } }.toMap())
-            }
-            initialize()
-        }
-
-        override fun sanitize(latex: String): String = sanitizeLatexString(latex)
-
-        override fun render(latex: String, fontSizePx: Float, colorArgb: Int): FormulaImage? =
-            renderFormula(latex, fontSizePx, colorArgb, paddingPx = 0f)?.let { FormulaImage(it.bitmap, it.baselineRatio) }
-    }
+    /** An error badge for the invalid formula [latex]. */
+    internal fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap =
+        LatexPlatformEngine.generateErrorBitmap(latex, fontSizePx)
 
     /** The style of the text fonts of MicroTeX for [face] (`null` for the code and the symbols). */
     private fun texStyle(face: TextFace): Int? = when (face) {
@@ -209,4 +121,53 @@ public object LatexEngine {
         TextFace.BOLD_ITALIC -> TexFont.BOLD or TexFont.ITALIC
         TextFace.MONO, TextFace.MONO_BOLD, TextFace.SYMBOLS -> null
     }
+}
+
+/**
+ * Sanitizes raw LaTeX input by stripping delimiter markers ($$, $, \[, \]),
+ * balancing unclosed braces during real-time typing, and prepending empty
+ * bases to lone exponents/subscripts.
+ */
+internal fun sanitizeLatexString(raw: String): String {
+    var s = raw.trim()
+    if (s.startsWith("$$") && s.endsWith("$$") && s.length >= 4) {
+        s = s.substring(2, s.length - 2).trim()
+    } else if (s.startsWith("$") && s.endsWith("$") && s.length >= 2) {
+        s = s.substring(1, s.length - 1).trim()
+    } else if (s.startsWith("\\[") && s.endsWith("\\]") && s.length >= 4) {
+        s = s.substring(2, s.length - 2).trim()
+    } else if (s.startsWith("\\(") && s.endsWith("\\)") && s.length >= 4) {
+        s = s.substring(2, s.length - 2).trim()
+    }
+
+    if (s.isBlank()) return ""
+
+    if (s.startsWith("^") || s.startsWith("_")) {
+        s = "{}$s"
+    }
+
+    if (s.endsWith("\\") && !s.endsWith("\\\\")) {
+        s = s.dropLast(1)
+    }
+
+    var openBraces = 0
+    var isEscaped = false
+    for (ch in s) {
+        if (isEscaped) {
+            isEscaped = false
+            continue
+        }
+        if (ch == '\\') {
+            isEscaped = true
+        } else if (ch == '{') {
+            openBraces++
+        } else if (ch == '}') {
+            if (openBraces > 0) openBraces--
+        }
+    }
+    if (openBraces > 0) {
+        s += "}".repeat(openBraces)
+    }
+
+    return s
 }

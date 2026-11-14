@@ -15,7 +15,6 @@ import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
@@ -50,7 +49,7 @@ fun App(
     val engines = remember {
         DrawViewEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
-            formulas = LatexEngine.formulaRenderer,
+            formulas = SampleData.latex,
             elements = ElementRenderers(listOf(ShapeRenderer))
         )
     }
@@ -88,7 +87,7 @@ fun SampleDocumentWindow(
     val engines = remember {
         DrawViewEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
-            formulas = LatexEngine.formulaRenderer,
+            formulas = SampleData.latex,
             elements = ElementRenderers(listOf(ShapeRenderer))
         )
     }

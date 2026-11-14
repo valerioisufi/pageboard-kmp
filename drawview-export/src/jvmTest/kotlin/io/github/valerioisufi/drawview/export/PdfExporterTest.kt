@@ -15,7 +15,6 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
-import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -83,7 +82,7 @@ class PdfExporterTest {
         val document = notebook()
         val pdf = tempFile("notebook", ".pdf")
         val progress = mutableListOf<Float>()
-        val result = PdfExporter(textAdapter, fontFiles, creator = "PencilNotes").export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
+        val result = PdfExporter(textAdapter, fontFiles, creator = "PencilNotes", formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
         assertEquals(2, result.pages)
         assertEquals(0, result.skipped)
         assertEquals(listOf(0.5f, 1f), progress)
@@ -120,7 +119,7 @@ class PdfExporterTest {
     @Test
     fun thePatternOfTheBackgroundCanBeLeftOut() = runBlocking {
         val pdf = tempFile("plain", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(notebook()), ExportOptions(backgroundPattern = false), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(notebook()), ExportOptions(backgroundPattern = false), pdf.path)
         val page = render(pdf, 0)
         assertEquals(WHITE, page.at(page.mm(5f, 150f)))
     }
@@ -155,7 +154,7 @@ class PdfExporterTest {
             x = 15f; y = 90f; width = 120f; height = 30f; fontSize = 24f
         })
         val pdf = tempFile("text", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
 
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text and vectors")
@@ -181,7 +180,7 @@ class PdfExporterTest {
             x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
         })
         val pdf = tempFile("code", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
 
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text and vectors")
@@ -205,7 +204,7 @@ class PdfExporterTest {
         val document = DrawDocument(title = "Simboli")
         document.pages[0].add(DrawText().apply { text = "uno → due ↔ tre ≤ quattro ✔ **grassetto →**"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
         val pdf = tempFile("symbols", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text")
         PdfiumEngine.open(pdf.path).use { exported ->
@@ -219,7 +218,7 @@ class PdfExporterTest {
         val document = DrawDocument(title = "Citazioni")
         document.pages[0].add(DrawText().apply { text = "> quoted **words**\n> * in a list"; x = 15f; y = 20f; width = 170f; height = 30f; fontSize = 24f })
         val pdf = tempFile("quote", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         PdfiumEngine.open(pdf.path).use { exported ->
             val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
             assertTrue("quoted words" in read && "in a list" in read && ">" !in read, read)
@@ -243,7 +242,7 @@ class PdfExporterTest {
         val document = DrawDocument(title = "Emoji")
         document.pages[0].add(DrawText().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
         val pdf = tempFile("emoji", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue(Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "the word with the emoji is a picture")
         PdfiumEngine.open(pdf.path).use { exported ->
@@ -265,7 +264,7 @@ class PdfExporterTest {
         document.pages[1].add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
 
         val exported = tempFile("slides", ".pdf")
-        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+        val result = PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), exported.path)
         assertEquals(0, result.skipped)
         // The picture of the slides written twice: once for the pages imported, once for the page
         // showing the first one again (a copy of it)
@@ -301,7 +300,7 @@ class PdfExporterTest {
             )
         )
         val exported = tempFile("marks", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), exported.path)
         val drawn = render(exported, 0)
         // Through the lowercase letters (58 % of the line), not through its middle
         assertColor(0xFFFF0000.toInt(), drawn.at(drawn.pt(200f, 117.4f)), tolerance = 8)
@@ -327,7 +326,7 @@ class PdfExporterTest {
         val image = resource(document, "jpg", DrawResource.ResourceType.IMAGE, jpeg)
         document.pages[0].add(DrawImage().apply { resourceId = image; x = 20f; y = 20f; width = 20f; height = 40f })
         val exported = tempFile("photo", ".pdf")
-        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), exported.path)
 
         val bytes = exported.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertEquals(1, Regex("/Subtype\\s*/Image").findAll(bytes).count())
@@ -346,7 +345,7 @@ class PdfExporterTest {
         val document = notebook()
         document.resources.first { it.type == DrawResource.ResourceType.IMAGE }.path = "/missing.png"
         val writer = RecordingWriter()
-        val result = PdfExporter(textAdapter, fontFiles) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
+        val result = PdfExporter(textAdapter, fontFiles, formulas = LATEX) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
         assertEquals(1, result.skipped)
         // The fonts of the faces used (not loaded: the words are images of them), the PDF page
         // covering the second page; the images, the words, the strokes; the marks of the PDF page
@@ -374,7 +373,7 @@ class PdfExporterTest {
             x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
         })
         val pdf = tempFile("shapes", ".pdf")
-        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        val result = PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         assertEquals(0, result.skipped)
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue("/Image" !in bytes, "no image in the PDF")
@@ -396,7 +395,7 @@ class PdfExporterTest {
         val pdf = tempFile("second", ".pdf")
         val result = export.export(
             document.id,
-            PdfExporter(textAdapter, fontFiles),
+            PdfExporter(textAdapter, fontFiles, formulas = LATEX),
             ExportOptions(pageIds = setOf(document.pages[1].id)),
             pdf.path
         )
@@ -602,17 +601,14 @@ class PdfExporterTest {
             symbols = FontFamily(PlatformFont("notes-symbols", NOTES_FILES.getValue(TextFace.SYMBOLS)))
         )
 
+        /** The formulas of the texts, written as vectors. */
+        val LATEX = LatexEngine()
+
         init {
             runBlocking {
-                LatexEngine.setTextFonts(
-                    mapOf(
-                        0 to NOTES_FILES.getValue(TextFace.REGULAR),
-                        TexFont.BOLD to NOTES_FILES.getValue(TextFace.BOLD),
-                        TexFont.ITALIC to NOTES_FILES.getValue(TextFace.ITALIC),
-                        TexFont.BOLD or TexFont.ITALIC to NOTES_FILES.getValue(TextFace.BOLD_ITALIC)
-                    )
+                LATEX.prepare(
+                    listOf(TextFace.REGULAR, TextFace.BOLD, TextFace.ITALIC, TextFace.BOLD_ITALIC).associateWith(NOTES_FILES::getValue)
                 )
-                LatexEngine.initialize()
             }
         }
 

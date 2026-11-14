@@ -37,7 +37,6 @@ import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
@@ -128,7 +127,7 @@ fun PencilNotesApp(
         val engines = remember {
             DrawViewEngines(
                 pdfTiles = PdfiumEngine::createTileAdapter,
-                formulas = LatexEngine.formulaRenderer,
+                formulas = PencilNotesData.latex,
                 topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
             )
         }
@@ -288,7 +287,7 @@ fun PencilNotesDocumentWindow(
         val engines = remember {
             DrawViewEngines(
                 pdfTiles = PdfiumEngine::createTileAdapter,
-                formulas = LatexEngine.formulaRenderer,
+                formulas = PencilNotesData.latex,
                 topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
             )
         }

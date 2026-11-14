@@ -135,6 +135,19 @@ sealed interface io.github.valerioisufi.drawview.latex/TexOp { // io.github.vale
     }
 }
 
+final class io.github.valerioisufi.drawview.latex/LatexEngine : io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer { // io.github.valerioisufi.drawview.latex/LatexEngine|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.latex/LatexEngine.<init>|<init>(){}[0]
+
+    final val isReady // io.github.valerioisufi.drawview.latex/LatexEngine.isReady|{}isReady[0]
+        final fun <get-isReady>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.latex/LatexEngine.isReady.<get-isReady>|<get-isReady>(){}[0]
+
+    final fun drawing(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.latex/TexDrawing? // io.github.valerioisufi.drawview.latex/LatexEngine.drawing|drawing(kotlin.String;kotlin.Float;kotlin.Int){}[0]
+    final fun render(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage? // io.github.valerioisufi.drawview.latex/LatexEngine.render|render(kotlin.String;kotlin.Float;kotlin.Int){}[0]
+    final fun sanitize(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.latex/LatexEngine.sanitize|sanitize(kotlin.String){}[0]
+    final suspend fun initialize(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.initialize|initialize(){}[0]
+    final suspend fun prepare(kotlin.collections/Map<io.github.valerioisufi.drawview.canvas.render.tile/TextFace, kotlin/ByteArray>) // io.github.valerioisufi.drawview.latex/LatexEngine.prepare|prepare(kotlin.collections.Map<io.github.valerioisufi.drawview.canvas.render.tile.TextFace,kotlin.ByteArray>){}[0]
+}
+
 final class io.github.valerioisufi.drawview.latex/LatexResult { // io.github.valerioisufi.drawview.latex/LatexResult|null[0]
     constructor <init>(androidx.compose.ui.graphics/ImageBitmap, kotlin/Float, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.latex/LatexResult.<init>|<init>(androidx.compose.ui.graphics.ImageBitmap;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
 
@@ -284,20 +297,6 @@ final class io.nano.tex/Rect { // io.nano.tex/Rect|null[0]
         final fun <set-y>(kotlin/Float) // io.nano.tex/Rect.y.<set-y>|<set-y>(kotlin.Float){}[0]
 
     final fun toString(): kotlin/String // io.nano.tex/Rect.toString|toString(){}[0]
-}
-
-final object io.github.valerioisufi.drawview.latex/LatexEngine { // io.github.valerioisufi.drawview.latex/LatexEngine|null[0]
-    final val formulaRenderer // io.github.valerioisufi.drawview.latex/LatexEngine.formulaRenderer|{}formulaRenderer[0]
-        final fun <get-formulaRenderer>(): io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer // io.github.valerioisufi.drawview.latex/LatexEngine.formulaRenderer.<get-formulaRenderer>|<get-formulaRenderer>(){}[0]
-    final val isReady // io.github.valerioisufi.drawview.latex/LatexEngine.isReady|{}isReady[0]
-        final fun <get-isReady>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.latex/LatexEngine.isReady.<get-isReady>|<get-isReady>(){}[0]
-
-    final fun drawing(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.latex/TexDrawing? // io.github.valerioisufi.drawview.latex/LatexEngine.drawing|drawing(kotlin.String;kotlin.Float;kotlin.Int){}[0]
-    final fun init(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.init|init(kotlin.String){}[0]
-    final fun renderFormula(kotlin/String, kotlin/Float, androidx.compose.ui.graphics/Color, kotlin/Float = ...): io.github.valerioisufi.drawview.latex/LatexResult? // io.github.valerioisufi.drawview.latex/LatexEngine.renderFormula|renderFormula(kotlin.String;kotlin.Float;androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
-    final fun renderFormula(kotlin/String, kotlin/Float, kotlin/Int, kotlin/Float = ...): io.github.valerioisufi.drawview.latex/LatexResult? // io.github.valerioisufi.drawview.latex/LatexEngine.renderFormula|renderFormula(kotlin.String;kotlin.Float;kotlin.Int;kotlin.Float){}[0]
-    final fun setTextFonts(kotlin.collections/Map<kotlin/Int, kotlin/ByteArray>) // io.github.valerioisufi.drawview.latex/LatexEngine.setTextFonts|setTextFonts(kotlin.collections.Map<kotlin.Int,kotlin.ByteArray>){}[0]
-    final suspend fun initialize(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.initialize|initialize(){}[0]
 }
 
 final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop[0]

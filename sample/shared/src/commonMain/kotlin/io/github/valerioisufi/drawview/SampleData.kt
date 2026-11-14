@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview
 
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
+import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.session.EditorSessions
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
@@ -24,4 +25,7 @@ object SampleData {
 
     /** The editing sessions of every window: the desktop saves them before exiting. */
     val sessions: EditorSessions = EditorSessions()
+
+    /** The formulas of the texts, drawn by MicroTeX for the editors, the thumbnails and the export of every window. */
+    val latex: LatexEngine = LatexEngine()
 }

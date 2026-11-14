@@ -152,8 +152,9 @@ class TextBoxSourceStripTest {
 
     private companion object {
         val FORMULAS: DrawViewEngines by lazy {
-            runBlocking { LatexEngine.initialize() }
-            DrawViewEngines(formulas = LatexEngine.formulaRenderer)
+            val latex = LatexEngine()
+            runBlocking { latex.initialize() }
+            DrawViewEngines(formulas = latex)
         }
     }
 }

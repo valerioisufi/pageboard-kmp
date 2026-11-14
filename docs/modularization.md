@@ -235,10 +235,11 @@ applications never declare them.
 
 ### Engines as instances
 
-* A native engine is global to its process (one MicroTeX, one PDFium): `PdfiumEngine` and
-  `LatexEngine` stay the facades of their engine, but no other library reaches them. They give the
-  implementations of the ports of the canvas (`PdfiumEngine.createTileAdapter`,
-  `LatexEngine.formulaRenderer`); the application builds a `DrawViewEngines` with them and gives
+* A native engine is global to its process (one MicroTeX, one PDFium): `PdfiumEngine` stays the
+  facade of its engine, `LatexEngine` is an instance the application creates over the one native
+  engine (`docs/engine-instances.md`); no other library reaches them. They give the
+  implementations of the ports of the canvas (`PdfiumEngine.createTileAdapter`, a `LatexEngine`
+  is a `FormulaRenderer`); the application builds a `DrawViewEngines` with them and gives
   it to the editor and the library; `drawview-ui`, `drawview-explorer` and `drawview-lecture` no
   longer depend on `drawview-pdf` and `drawview-latex`. Only `drawview-export` uses them directly
   (it writes PDFs and the formulas as vectors).

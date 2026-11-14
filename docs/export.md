@@ -162,7 +162,7 @@ editor give in common code: no drawing of a platform is captured.
 * MicroTeX gives a formula as operations (`TexDrawing`), the same on every platform; `TexPaths`
   replays them as the graphics of the platforms do (scales and translations on the coordinates,
   rotations on the canvas, synthesized bold and italic) with the outlines of the glyphs of the
-  TeX fonts. The `\text{}` of the formulas is in Noto Sans (`LatexEngine.setTextFonts`).
+  TeX fonts. The `\text{}` of the formulas is in Noto Sans (`LatexEngine.prepare`).
 * Tests: the text of a PDF read again in every script of the font (Greek), the PDF of a text
   with formulas drawn by PDFium overlapping the editor's drawing (more than 75 % of the ink), no
   image in it; an emoji word as an image.

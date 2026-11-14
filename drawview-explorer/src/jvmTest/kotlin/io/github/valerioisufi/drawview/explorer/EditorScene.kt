@@ -172,7 +172,7 @@ internal fun DesktopComposeUiTest.openNote(viewModels: ViewModelStoreOwner) {
 }
 
 /** The engines of the applications: PDFium and MicroTeX. */
-private val ENGINES = DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer)
+private val ENGINES = DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine())
 
 /** The thumbnails of the library of a test. */
 private class ThumbnailsHolder {

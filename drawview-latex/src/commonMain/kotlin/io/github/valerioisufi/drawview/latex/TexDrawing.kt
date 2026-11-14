@@ -12,7 +12,7 @@ public class TexDrawing(public val width: Int, public val height: Int, public va
 
 /**
  * A font of a formula, [size] pixels: a TrueType [file] of the TeX resources, or the font of the
- * text of the formulas (`\text{}`, see [LatexEngine.setTextFonts]) when [file] is `null`. [style]
+ * text of the formulas (`\text{}`, see [LatexEngine.prepare]) when [file] is `null`. [style]
  * is bold (1) and italic (2); [fakeBold] and [fakeItalic] are synthesized over a font that is not.
  */
 public class TexFont(public val file: String?, public val style: Int, public val size: Float, public val fakeBold: Boolean, public val fakeItalic: Boolean) {
@@ -63,7 +63,7 @@ public sealed interface TexOp {
     }
 }
 
-/** The TrueType files of the text of the formulas, by style (see [LatexEngine.setTextFonts]). */
+/** The TrueType files of the text of the formulas, by style (see [LatexEngine.prepare]). */
 internal object TexTextFonts {
     private val lock = SyncLock()
     private val fonts = mutableMapOf<Int, ByteArray>()

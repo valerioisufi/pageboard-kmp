@@ -150,10 +150,10 @@ Variations).
 
 | Phase | Content | Depends on | Status |
 |-------|---------|------------|--------|
-| 1 | A. The editor ports: `EditorExtension` open class + builder, `EditorContext` of ports, managers internal; the six extensions moved | – | to do |
-| 2 | A. The `textBox` hook of the extensions (what the suggestions while writing will use) | 1 | to do |
-| 3 | B. The store and the sessions built by the applications; `store-room` without `ink` | – | to do |
-| 4 | B. `LatexEngine`, `LectureRecordings`, `ImageCache` as instances | 3 | to do |
+| 1 | A. The editor ports: `EditorExtension` open class + builder, `EditorContext` of ports, managers internal; the six extensions moved | – | done (`docs/editor-ports.md`) |
+| 2 | A. The `textBox` hook of the extensions (what the suggestions while writing will use) | 1 | done (`docs/text-box-hook.md`) |
+| 3 | B. The store and the sessions built by the applications; `store-room` without `ink` | – | done (`docs/instances.md`) |
+| 4 | B. `LatexEngine`, `LectureRecordings`, `ImageCache` as instances | 3 | in progress (`docs/engine-instances.md`) |
 | 5 | D. The secondary window of PencilNotes with the assistant, the collaboration, the search | 3 | to do |
 | 6 | C. `SyncEngine` split (plus the resource downloads on disk, D) | – | to do |
 | 7 | C. `DocumentTools` split | – | to do |

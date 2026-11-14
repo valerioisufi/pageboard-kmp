@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
  * What draws what the canvas does not draw by itself: the pages of the PDFs, the formulas of the
  * texts, the colors of their code and the elements of the types added by the application; and what
  * finds the pages a text is about. The application gives them (e.g. `PdfiumEngine::createTileAdapter`
- * of `drawview-pdf`, `LatexEngine.formulaRenderer` of `drawview-latex`, the renderers of its element
+ * of `drawview-pdf`, a `LatexEngine` of `drawview-latex`, the renderers of its element
  * types, the search in the notes), so that
  * the modules drawing documents do not depend on an engine; without them a PDF page is drawn
  * blank, a formula as its source, code in one color and an element of an application as a

@@ -1,16 +1,12 @@
-public final class io/github/valerioisufi/drawview/latex/LatexEngine {
+public final class io/github/valerioisufi/drawview/latex/LatexEngine : io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/latex/LatexEngine;
+	public fun <init> ()V
 	public final fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/latex/TexDrawing;
-	public final fun getFormulaRenderer ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;
-	public final fun init (Ljava/lang/String;)Z
 	public final fun initialize (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
-	public final fun renderFormula (Ljava/lang/String;FIF)Lio/github/valerioisufi/drawview/latex/LatexResult;
-	public static synthetic fun renderFormula$default (Lio/github/valerioisufi/drawview/latex/LatexEngine;Ljava/lang/String;FIFILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
-	public final fun renderFormula-9LQNqLg (Ljava/lang/String;FJF)Lio/github/valerioisufi/drawview/latex/LatexResult;
-	public static synthetic fun renderFormula-9LQNqLg$default (Lio/github/valerioisufi/drawview/latex/LatexEngine;Ljava/lang/String;FJFILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
-	public final fun setTextFonts (Ljava/util/Map;)V
+	public fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun prepare (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun render (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaImage;
+	public fun sanitize (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/latex/LatexResult {

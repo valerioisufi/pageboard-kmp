@@ -138,8 +138,9 @@ class TextBoxFidelityTest {
         const val TOLERANCE_MM = 0.5f / PX_PER_MM
 
         val FORMULAS: DrawViewEngines by lazy {
-            runBlocking { LatexEngine.initialize() }
-            DrawViewEngines(formulas = LatexEngine.formulaRenderer)
+            val latex = LatexEngine()
+            runBlocking { latex.initialize() }
+            DrawViewEngines(formulas = latex)
         }
     }
 }
