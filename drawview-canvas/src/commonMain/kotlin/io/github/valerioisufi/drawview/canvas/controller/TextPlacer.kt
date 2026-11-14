@@ -21,7 +21,7 @@ import kotlin.math.min
  * (see [PlacementManager]) and undone at once; the sections of a text next to the pages they are
  * about when the application gives the [PageTopics] (see `docs/text-import.md`).
  */
-public class TextPlacer(private val controller: DrawViewController) {
+public class TextPlacer internal constructor(private val controller: DrawViewController) {
 
     private val textFlow = TextFlow(controller.placementManager.planner)
 

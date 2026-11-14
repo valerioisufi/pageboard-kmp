@@ -67,7 +67,7 @@ public data class DrawPreferences(
  *
  * All the state is backed by Compose snapshot state, so the UI observes every change.
  */
-public class ToolManager(
+public class ToolManager internal constructor(
     private val onPresetsChanged: (Tool, List<ToolPreset>) -> Unit = { _, _ -> },
     private val onToolSelected: (Tool) -> Unit = {}
 ) {

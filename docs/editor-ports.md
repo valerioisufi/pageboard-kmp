@@ -99,7 +99,7 @@ Variations).
 | 1 | The ports in `drawview-canvas`, implemented by the managers and given by the controller; no caller moved | done |
 | 2 | `EditorContext` of ports; the extensions of the lecture assistant, the collaboration, the agent, the export, the sample moved; `controller` internal | done |
 | 3 | `EditorExtension` as an abstract class with its builder and `CombinedExtension`; the extensions moved | done |
-| 4 | The constructors of the managers internal | to do |
+| 4 | The constructors of the managers internal | done |
 
 Each phase is one commit on `feat/editor-ports`, after the checks of `CLAUDE.md`, the screenshots
 (`verifyRoborazziJvm` of explorer, ui, sync-ui, lecture-ui, export-ui, agent-ui) and

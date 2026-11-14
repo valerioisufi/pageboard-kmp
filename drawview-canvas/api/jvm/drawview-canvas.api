@@ -423,7 +423,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/InkLatencyR
 public final class io/github/valerioisufi/drawview/canvas/controller/MediaManager {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/MediaManager$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun importFile-b0fnrdo ([BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;)Z
 	public static synthetic fun importFile-b0fnrdo$default (Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;[BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)Z
 	public final fun importImage-b0fnrdo ([BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
@@ -438,7 +437,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/MediaManage
 
 public final class io/github/valerioisufi/drawview/canvas/controller/PageManager {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun addNewPageAfter (ILio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public static synthetic fun addNewPageAfter$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;ILio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public final fun addNewPageAtBottom (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
@@ -500,7 +498,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PlacementIt
 
 public final class io/github/valerioisufi/drawview/canvas/controller/PlacementManager {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun cancel ()V
 	public final fun confirm ()Z
 	public final fun getCanConfirm ()Z
@@ -567,7 +564,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SelectionGr
 
 public final class io/github/valerioisufi/drawview/canvas/controller/SelectionManager {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun applyTransformation ()V
 	public final fun arrange (Lio/github/valerioisufi/drawview/model/change/StackMove;)V
 	public final fun beginTransformation ()V
@@ -628,7 +624,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/ShapeInsert
 
 public final class io/github/valerioisufi/drawview/canvas/controller/ShapeSnapper {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun isEnabled ()Z
 	public final fun updateEnabled (Z)V
 }
@@ -714,7 +709,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/ShapeToolSt
 
 public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun getGuides ()Ljava/util/List;
 	public final fun isEnabled ()Z
 	public final fun updateEnabled (Z)V
@@ -722,7 +716,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorManager : io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public fun applyTableAction (Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)V
 	public final fun backspaceIntoPreviousBox ()Z
 	public fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
@@ -886,7 +879,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextImportP
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun clearSelection ()V
 	public final fun deleteSelectedMarkup ()V
 	public final fun getHasSelection ()Z
@@ -939,7 +931,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupM
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextPlacer {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun getCanPlaceByTopic ()Z
 	public final fun partsByTopic (Ljava/lang/String;Ljava/lang/Integer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun sizeOfPage (Lio/github/valerioisufi/drawview/model/DrawPage;)F
@@ -952,9 +943,6 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextPlacer 
 public final class io/github/valerioisufi/drawview/canvas/controller/ToolManager {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ToolManager$Companion;
-	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun activePreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
 	public static synthetic fun activePreset$default (Lio/github/valerioisufi/drawview/canvas/controller/ToolManager;Lio/github/valerioisufi/drawview/canvas/tool/Tool;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
 	public final fun addPreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;)I
@@ -1017,8 +1005,6 @@ public final class io/github/valerioisufi/drawview/canvas/geometry/ComposeGeomet
 
 public final class io/github/valerioisufi/drawview/canvas/history/HistoryManager : io/github/valerioisufi/drawview/model/change/ChangeObserver {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentSession;I)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentSession;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun beginGroup ()V
 	public final fun clear ()V
 	public final fun dispose ()V
@@ -1382,9 +1368,6 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/TileKey {
 
 public final class io/github/valerioisufi/drawview/canvas/render/tile/TileManager {
 	public static final field $stable I
-	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;Lio/github/valerioisufi/drawview/canvas/render/tile/TileCache;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;Lio/github/valerioisufi/drawview/canvas/render/tile/TileCache;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getScope ()Lkotlinx/coroutines/CoroutineScope;
 	public final fun getTileRenderer ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;
 	public final fun isRasterizing ()Z

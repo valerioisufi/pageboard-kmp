@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asSharedFlow
  * Page management: insertion, deletion, copy and paste, reordering (drag & drop on the canvas
  * or in the page grid), templates and navigation.
  */
-public class PageManager(private val controller: DrawViewController) {
+public class PageManager internal constructor(private val controller: DrawViewController) {
 
     /** The pages selected in the page grid. */
     public val selection: PageSelection = PageSelection(controller.document)

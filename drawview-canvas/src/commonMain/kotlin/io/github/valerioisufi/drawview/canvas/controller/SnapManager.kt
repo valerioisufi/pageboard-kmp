@@ -24,7 +24,7 @@ import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
  * paper), how near is near (a few dp on the screen, whatever the zoom), and the guides shown
  * meanwhile. On by default ([isEnabled]); a gesture made with ⌥ / Alt held is free.
  */
-public class SnapManager(private val controller: DrawViewController) {
+public class SnapManager internal constructor(private val controller: DrawViewController) {
 
     /** Whether the boxes snap (a preference of the user). */
     public var isEnabled: Boolean by mutableStateOf(true)

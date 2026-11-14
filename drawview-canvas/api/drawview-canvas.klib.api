@@ -673,8 +673,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/InkLatencyReport {
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/MediaManager { // io.github.valerioisufi.drawview.canvas.controller/MediaManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/MediaManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final fun importFile(kotlin/ByteArray, kotlin/String, androidx.compose.ui.geometry/Offset? = ...): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/MediaManager.importFile|importFile(kotlin.ByteArray;kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun importImage(kotlin/ByteArray, kotlin/String = ..., androidx.compose.ui.geometry/Offset? = ...) // io.github.valerioisufi.drawview.canvas.controller/MediaManager.importImage|importImage(kotlin.ByteArray;kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun importPdf(kotlin/ByteArray) // io.github.valerioisufi.drawview.canvas.controller/MediaManager.importPdf|importPdf(kotlin.ByteArray){}[0]
@@ -688,8 +686,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/MediaManager { // 
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // io.github.valerioisufi.drawview.canvas.controller/PageManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/PageManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val deleted // io.github.valerioisufi.drawview.canvas.controller/PageManager.deleted|{}deleted[0]
         final fun <get-deleted>(): kotlinx.coroutines.flow/SharedFlow<kotlin.collections/List<kotlin/String>> // io.github.valerioisufi.drawview.canvas.controller/PageManager.deleted.<get-deleted>|<get-deleted>(){}[0]
     final val selection // io.github.valerioisufi.drawview.canvas.controller/PageManager.selection|{}selection[0]
@@ -753,8 +749,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/PlacementItem { //
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/PlacementManager { // io.github.valerioisufi.drawview.canvas.controller/PlacementManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val canConfirm // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.canConfirm|{}canConfirm[0]
         final fun <get-canConfirm>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.canConfirm.<get-canConfirm>|<get-canConfirm>(){}[0]
     final val isActive // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.isActive|{}isActive[0]
@@ -842,8 +836,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/SelectionGroup { /
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/SelectionManager { // io.github.valerioisufi.drawview.canvas.controller/SelectionManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val selectedPlainText // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectedPlainText|{}selectedPlainText[0]
         final fun <get-selectedPlainText>(): kotlin/String? // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectedPlainText.<get-selectedPlainText>|<get-selectedPlainText>(){}[0]
     final val selectedTexts // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectedTexts|{}selectedTexts[0]
@@ -924,8 +916,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/ShapeInserter { //
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/ShapeSnapper { // io.github.valerioisufi.drawview.canvas.controller/ShapeSnapper|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/ShapeSnapper.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final var isEnabled // io.github.valerioisufi.drawview.canvas.controller/ShapeSnapper.isEnabled|{}isEnabled[0]
         final fun <get-isEnabled>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/ShapeSnapper.isEnabled.<get-isEnabled>|<get-isEnabled>(){}[0]
 
@@ -1019,8 +1009,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/ShapeToolStyle { /
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/SnapManager { // io.github.valerioisufi.drawview.canvas.controller/SnapManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/SnapManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final var guides // io.github.valerioisufi.drawview.canvas.controller/SnapManager.guides|{}guides[0]
         final fun <get-guides>(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.snap/SnapGuide> // io.github.valerioisufi.drawview.canvas.controller/SnapManager.guides.<get-guides>|<get-guides>(){}[0]
     final var isEnabled // io.github.valerioisufi.drawview.canvas.controller/SnapManager.isEnabled|{}isEnabled[0]
@@ -1030,8 +1018,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/SnapManager { // i
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager : io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget { // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val chainGoesOn // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn|{}chainGoesOn[0]
         final fun <get-chainGoesOn>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn.<get-chainGoesOn>|<get-chainGoesOn>(){}[0]
     final val codeLineNumbers // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers|{}codeLineNumbers[0]
@@ -1150,8 +1136,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextImport { // io
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager { // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val hasSelection // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager.hasSelection|{}hasSelection[0]
         final fun <get-hasSelection>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager.hasSelection.<get-hasSelection>|<get-hasSelection>(){}[0]
     final val selectedText // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager.selectedText|{}selectedText[0]
@@ -1229,8 +1213,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager 
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/TextPlacer { // io.github.valerioisufi.drawview.canvas.controller/TextPlacer|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
-
     final val canPlaceByTopic // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.canPlaceByTopic|{}canPlaceByTopic[0]
         final fun <get-canPlaceByTopic>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.canPlaceByTopic.<get-canPlaceByTopic>|<get-canPlaceByTopic>(){}[0]
 
@@ -1241,8 +1223,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextPlacer { // io
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/ToolManager { // io.github.valerioisufi.drawview.canvas.controller/ToolManager|null[0]
-    constructor <init>(kotlin/Function2<io.github.valerioisufi.drawview.canvas.tool/Tool, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/ToolPreset>, kotlin/Unit> = ..., kotlin/Function1<io.github.valerioisufi.drawview.canvas.tool/Tool, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.canvas.controller/ToolManager.<init>|<init>(kotlin.Function2<io.github.valerioisufi.drawview.canvas.tool.Tool,kotlin.collections.List<io.github.valerioisufi.drawview.canvas.controller.ToolPreset>,kotlin.Unit>;kotlin.Function1<io.github.valerioisufi.drawview.canvas.tool.Tool,kotlin.Unit>){}[0]
-
     final var previousTool // io.github.valerioisufi.drawview.canvas.controller/ToolManager.previousTool|{}previousTool[0]
         final fun <get-previousTool>(): io.github.valerioisufi.drawview.canvas.tool/Tool // io.github.valerioisufi.drawview.canvas.controller/ToolManager.previousTool.<get-previousTool>|<get-previousTool>(){}[0]
     final var selectedTool // io.github.valerioisufi.drawview.canvas.controller/ToolManager.selectedTool|{}selectedTool[0]
@@ -1298,8 +1278,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/ToolPreset { // io
 }
 
 final class io.github.valerioisufi.drawview.canvas.history/HistoryManager : io.github.valerioisufi.drawview.model.change/ChangeObserver { // io.github.valerioisufi.drawview.canvas.history/HistoryManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.model.change/DocumentSession, kotlin/Int = ...) // io.github.valerioisufi.drawview.canvas.history/HistoryManager.<init>|<init>(io.github.valerioisufi.drawview.model.change.DocumentSession;kotlin.Int){}[0]
-
     final val canRedo // io.github.valerioisufi.drawview.canvas.history/HistoryManager.canRedo|{}canRedo[0]
         final fun <get-canRedo>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.history/HistoryManager.canRedo.<get-canRedo>|<get-canRedo>(){}[0]
     final val canUndo // io.github.valerioisufi.drawview.canvas.history/HistoryManager.canUndo|{}canUndo[0]
@@ -1479,8 +1457,6 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TileKey { // io.g
 }
 
 final class io.github.valerioisufi.drawview.canvas.render.tile/TileManager { // io.github.valerioisufi.drawview.canvas.render.tile/TileManager|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.canvas.render.tile/TileRenderer = ..., io.github.valerioisufi.drawview.canvas.render.tile/TileCache = ..., kotlin/Function0<kotlin/Unit> = ...) // io.github.valerioisufi.drawview.canvas.render.tile/TileManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer;io.github.valerioisufi.drawview.canvas.render.tile.TileCache;kotlin.Function0<kotlin.Unit>){}[0]
-
     final val isRasterizing // io.github.valerioisufi.drawview.canvas.render.tile/TileManager.isRasterizing|{}isRasterizing[0]
         final fun <get-isRasterizing>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/TileManager.isRasterizing.<get-isRasterizing>|<get-isRasterizing>(){}[0]
     final val scope // io.github.valerioisufi.drawview.canvas.render.tile/TileManager.scope|{}scope[0]

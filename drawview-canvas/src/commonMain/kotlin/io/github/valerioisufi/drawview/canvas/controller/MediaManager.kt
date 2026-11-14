@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * Imports images and PDF documents into the document resources and pages. A file already
  * imported (in any document) is kept once: its content is found by its hash.
  */
-public class MediaManager(private val controller: DrawViewController) {
+public class MediaManager internal constructor(private val controller: DrawViewController) {
 
     /** The file of [bytes] (of hash [hash]): the one already kept, or a new one. */
     private suspend fun storedFile(bytes: ByteArray, hash: String, prefix: String, extension: String): String? {

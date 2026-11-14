@@ -112,7 +112,7 @@ internal class SettlingElements(val pageIndex: Int, val elements: List<DrawEleme
 /**
  * Lasso selection, clipboard and transformation of the selected elements.
  */
-public class SelectionManager(private val controller: DrawViewController) {
+public class SelectionManager internal constructor(private val controller: DrawViewController) {
 
     private var selectionState by mutableStateOf<SelectionGroup?>(null)
 

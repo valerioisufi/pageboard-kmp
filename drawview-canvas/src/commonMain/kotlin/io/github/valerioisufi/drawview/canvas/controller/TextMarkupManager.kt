@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
  * - A long press on a mark, or a tap with the tool, selects it: its text can be copied, its
  *   style changed ([restyleSelectedMarkup]) and the mark deleted ([deleteSelectedMarkup]).
  */
-public class TextMarkupManager(private val controller: DrawViewController) {
+public class TextMarkupManager internal constructor(private val controller: DrawViewController) {
 
     /**
      * The characters of the text of [pdf] (shown on [page]) from [anchor] to [focus], both

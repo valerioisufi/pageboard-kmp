@@ -16,7 +16,7 @@ import io.github.valerioisufi.drawview.model.shape.strokeInputs
  * the same brush, drawn through the points of the shape. On by default ([isEnabled]), a
  * preference of the user.
  */
-public class ShapeSnapper(private val controller: DrawViewController) {
+public class ShapeSnapper internal constructor(private val controller: DrawViewController) {
 
     /** Whether a stroke held still at its end becomes its shape (a preference of the user). */
     public var isEnabled: Boolean by mutableStateOf(true)

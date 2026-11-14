@@ -23,7 +23,7 @@ import io.github.valerioisufi.drawview.model.change.DocumentSession
  *
  * Backed by Compose snapshot state so that [canUndo] and [canRedo] are observable.
  */
-public class HistoryManager(
+public class HistoryManager internal constructor(
     private val session: DocumentSession,
     private val maxHistorySize: Int = 50
 ) : ChangeObserver {

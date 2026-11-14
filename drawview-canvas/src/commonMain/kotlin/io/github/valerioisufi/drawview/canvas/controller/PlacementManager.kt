@@ -76,7 +76,7 @@ public class PlacementRequest(
  * that any page can be reached. A single text without places proposed is drawn under the pointer
  * (mouse or stylus hover).
  */
-public class PlacementManager(private val controller: DrawViewController) {
+public class PlacementManager internal constructor(private val controller: DrawViewController) {
 
     public var request: PlacementRequest? by mutableStateOf(null)
         private set

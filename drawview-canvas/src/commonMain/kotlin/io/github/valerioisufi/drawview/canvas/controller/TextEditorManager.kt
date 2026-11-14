@@ -53,7 +53,7 @@ import kotlin.math.abs
  * while the canvas is panned and zoomed. The editor of the interface shows [value] and reports
  * what the user types ([updateValue]) and the height it lays the text out ([reportLayoutHeight]).
  */
-public class TextEditorManager(private val controller: DrawViewController) : TextFormatTarget {
+public class TextEditorManager internal constructor(private val controller: DrawViewController) : TextFormatTarget {
 
     /** The text being changed, `null` for a new one. */
     internal var activeTextItem: DrawText? by mutableStateOf(null)

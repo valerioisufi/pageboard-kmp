@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
  *
  * @param onInvalidate Callback triggered when a new tile is rasterized to request a canvas redraw.
  */
-public class TileManager(
+public class TileManager internal constructor(
     public val tileRenderer: TileRenderer = TileRenderer(),
     internal val tileCache: TileCache = TileCache(),
     onInvalidate: () -> Unit = {}
