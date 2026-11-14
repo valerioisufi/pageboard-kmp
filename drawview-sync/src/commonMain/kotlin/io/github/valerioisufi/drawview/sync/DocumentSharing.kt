@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
+import io.github.valerioisufi.drawview.sync.protocol.MembershipKind
 import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
 import kotlin.random.Random
@@ -38,7 +39,12 @@ internal sealed interface TagMatch {
  * owner (admitting a device, its role, removing it, ending the sharing) are written and signed
  * here with [identity]; the memberships received are accepted only when signed by the owner.
  */
-internal class DocumentSharing(private val shared: SharedDocuments, val identity: DeviceIdentity) {
+internal class DocumentSharing(
+    private val shared: SharedDocuments,
+    val identity: DeviceIdentity,
+    /** What the memberships kept here are of: documents, or shared folders (see [SpaceSharing]). */
+    private val kind: MembershipKind = MembershipKind.DOCUMENT
+) {
     private val mutex = Mutex()
     private var cache: MutableMap<String, SharingState>? = null
     private val joiningInvitations = mutableMapOf<String, Invitation>()
@@ -95,7 +101,7 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
     suspend fun share(documentId: String, replica: String, name: String): SharingState = update(documentId) { state ->
         if (state?.members != null) return@update state
         val key = DocumentKey.generate()
-        val membership = Membership(documentId, owner = device, members = listOf(Member(device, replica, name, Role.OWNER)), keyHash = key.hash)
+        val membership = Membership(documentId, owner = device, members = listOf(Member(device, replica, name, Role.OWNER)), keyHash = key.hash, kind = kind)
         SharingState(
             keys = listOf(EpochKey(1, key.encode())),
             owner = device,
@@ -160,7 +166,8 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
     private suspend fun ownerChange(documentId: String, newKey: String? = null, transform: (Membership) -> Membership?): SharingState? {
         var changed = false
         val state = update(documentId) { state ->
-            val membership = state?.members?.takeIf { state.owner == device } ?: return@update state
+            // The membership of a document of a shared folder is the folder's: changed there only
+            val membership = state?.members?.takeIf { state.owner == device && state.space == null } ?: return@update state
             val changedMembership = transform(membership)?.copy(version = membership.version + 1) ?: return@update state
             val keys = if (changedMembership.epoch > state.epoch && newKey != null) state.keys + EpochKey(changedMembership.epoch, newKey) else state.keys
             // The key of its epoch named (a membership of before gets it at its first change)
@@ -181,7 +188,7 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
         var adopted: Membership? = null
         update(documentId) { state ->
             val membership = signed.open(state?.owner ?: return@update state) ?: return@update state
-            if (membership.documentId != documentId || membership.version <= (state.members?.version ?: 0)) return@update state
+            if (!isOf(membership, documentId, state) || membership.version <= (state.members?.version ?: 0)) return@update state
             adopted = membership
             state.copy(membership = signed)
         }
@@ -196,7 +203,8 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
         var adopted = false
         update(documentId) { state ->
             val decoded = DocumentKey.decode(key)
-            if (state == null || decoded == null || state.keys.any { it.epoch == epoch }) return@update state
+            // The keys of a document of a shared folder come from the folder
+            if (state == null || state.space != null || decoded == null || state.keys.any { it.epoch == epoch }) return@update state
             val members = state.members
             if (epoch > (members?.epoch ?: 0)) return@update state
             if (members != null && members.keyHash.isNotEmpty() && (epoch != members.epoch || decoded.hash != members.keyHash)) return@update state
@@ -214,11 +222,33 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
 
     /** The owner [owner] admitted this device to [documentId]: its key and the membership. */
     suspend fun admitted(documentId: String, owner: String, epoch: Int, key: String, signed: SignedMembership): Membership? {
-        val membership = signed.open(owner)?.takeIf { it.documentId == documentId && it.memberOf(device) != null } ?: return null
+        val membership = signed.open(owner)?.takeIf { it.documentId == documentId && it.kind == kind && it.memberOf(device) != null } ?: return null
         if (DocumentKey.decode(key) == null) return null
         mutex.withLock { joiningInvitations.remove(documentId) }
         update(documentId) { SharingState(keys = listOf(EpochKey(epoch, key)), owner = owner, membership = signed) }
         return membership
+    }
+
+    /**
+     * Keeps [state] for [documentId], a document of the shared folder [SharingState.space] (its keys,
+     * owner and membership the folder's), with what this device knows of its members' operations
+     * ([SharingState.versions]) kept; `null` when the document is shared on its own (its sharing is
+     * not the folder's to change).
+     */
+    suspend fun follow(documentId: String, state: SharingState): SharingState? {
+        var followed = false
+        update(documentId) { previous ->
+            if (previous != null && previous.space == null && previous.members != null) return@update previous
+            followed = true
+            state.copy(versions = previous?.versions.orEmpty())
+        }
+        return if (followed) stateOf(documentId) else null
+    }
+
+    /** Whether [membership] is the one of [documentId]: its own, or the one of its shared folder. */
+    private fun isOf(membership: Membership, documentId: String, state: SharingState): Boolean = when (val space = state.space) {
+        null -> membership.documentId == documentId && membership.kind == kind
+        else -> membership.documentId == space && membership.kind == MembershipKind.SPACE
     }
 
     /** Saves the sharing of [documentId] again (e.g. the document received: kept with it). */

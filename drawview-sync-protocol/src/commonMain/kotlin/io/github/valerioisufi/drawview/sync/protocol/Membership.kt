@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.sync.protocol
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -13,6 +15,10 @@ public enum class Role {
     /** Reads the document: its changes are refused by every device. */
     READER
 }
+
+/** What a [Membership] is of: a document shared on its own, or a shared folder (a space, see `docs/shared-folders.md`). */
+@Serializable
+public enum class MembershipKind { DOCUMENT, SPACE }
 
 /**
  * A device working on a shared document: its identity ([DeviceIdentity.publicKey]), the replica
@@ -42,6 +48,9 @@ public data class Member(
  * cannot follow the document anymore, see `SharingState.keys` of `drawview-sync`), [keyHash] its
  * hash ([DocumentKey.hash]: the members take that key only; empty in the memberships of before).
  * [ended]: the owner stopped sharing it, every device keeps its copy only.
+ *
+ * [kind]: of a document ([documentId]) or of a shared folder ([documentId] the identifier of the
+ * space): the membership of a space is the one of every document in it.
  */
 @Serializable
 public data class Membership(
@@ -52,7 +61,11 @@ public data class Membership(
     val members: List<Member> = emptyList(),
     val removed: List<Member> = emptyList(),
     val ended: Boolean = false,
-    val keyHash: String = ""
+    val keyHash: String = "",
+    // Not written for a document: its memberships stay as they were, byte for byte
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val kind: MembershipKind = MembershipKind.DOCUMENT
 ) {
     public fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
 

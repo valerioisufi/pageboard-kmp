@@ -28,7 +28,9 @@ import kotlinx.coroutines.sync.withLock
  *
  * Both directions compare the library with the tree of the catalog ([SpaceCatalog.view]), so that
  * a write of one is no change of the other. The documents shared on their own (a secret of their
- * own in [DocumentStore.sharingSecrets], owned by this device or by others) stay out of the spaces.
+ * own in [DocumentStore.sharingSecrets], owned by this device or by others) stay out of the spaces:
+ * [sharedApart] tells them from the documents shared through a space, which have a secret too (by
+ * default every secret is of a document shared on its own).
  *
  * Nothing of the library is deleted: an item leaving a shared folder on another device goes, here,
  * to the folder holding the root of the space; an item deleted for good here (not in the library)
@@ -39,7 +41,8 @@ public class SpaceLibrary(
     private val spaces: SpaceStore,
     private val scope: CoroutineScope,
     private val wallClock: (() -> Long)? = null,
-    private val settleMs: Long = 200L
+    private val settleMs: Long = 200L,
+    private val sharedApart: suspend (documentId: String, secret: String) -> Boolean = { _, _ -> true }
 ) {
     private val mutex = Mutex()
     private val sessions = mutableMapOf<String, Space>()
@@ -268,7 +271,7 @@ public class SpaceLibrary(
         val local = libraryItems()
         val parents = local.filterValues { it.kind == CatalogItemKind.FOLDER }.mapValues { it.value.parent }
         if (root != null && root !in local) return // The root is gone (deleted, or in a folder in the trash): nothing to compare
-        val ownSharing = store.sharingSecrets().keys
+        val ownSharing = store.sharingSecrets().filter { (id, secret) -> sharedApart(id, secret) }.keys
         val catalog = space.session.catalog
         val view = catalog.view().associateBy { it.id }
         val changes = mutableListOf<CatalogChange>()

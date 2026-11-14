@@ -5,6 +5,8 @@ import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -39,7 +41,16 @@ public data class SharingState(
     val joining: String? = null,
     val versions: Map<String, Map<String, Long>> = emptyMap(),
     /** This device was removed, or the owner stopped sharing the document. */
-    val closed: Boolean = false
+    val closed: Boolean = false,
+    /**
+     * The shared folder the document is shared through (see `docs/shared-folders.md`), `null` for a
+     * document shared on its own: its keys are derived from the ones of the folder, its owner and
+     * membership are the folder's, and they change with the folder only (see `SpaceSharing`).
+     */
+    // Not written for a document shared on its own: its state stays as it was
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val space: String? = null
 ) {
     /** The current key. */
     val key: DocumentKey? get() = keys.maxByOrNull { it.epoch }?.documentKey

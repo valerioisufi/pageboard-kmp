@@ -32,6 +32,17 @@ public class DocumentKey private constructor(private val bytes: ByteArray) {
         key.signatureGenerator().generateSignatureBlocking(TAG_LABEL).toHex().take(32)
     }
 
+    /**
+     * The key of the document [documentId] of the shared folder this is the key of (see
+     * `docs/shared-folders.md`): an HMAC-SHA256 of the identifier, so that each document of the
+     * folder has a key and a tag of its own, and whoever has the key of the folder has them all.
+     */
+    public fun forDocument(documentId: String): DocumentKey {
+        val key = CryptographyProvider.Default.get(HMAC).keyDecoder(SHA256).decodeFromByteArrayBlocking(HMAC.Key.Format.RAW, bytes)
+        val label = "drawview-sync/space-document|${documentId.length}:$documentId".encodeToByteArray()
+        return DocumentKey(key.signatureGenerator().generateSignatureBlocking(label))
+    }
+
     override fun equals(other: Any?): Boolean = other is DocumentKey && bytes.contentEquals(other.bytes)
 
     override fun hashCode(): Int = bytes.contentHashCode()

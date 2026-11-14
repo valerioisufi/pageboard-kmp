@@ -190,7 +190,7 @@ a build of before meeting a space closes the connection (a message it does not k
 |---|---|---|
 | 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | done |
 | 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | done (the copy of the user's database: to do) |
-| 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | proposed |
+| 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | done (the engine checks them in phase 4) |
 | 4. Synchronization | `SpaceSync`: the catalog, `DocumentHeads`, document connections opened and closed; `LanSync` and `IrohSync` announcing and connecting by space; `ProtocolFormatTest`. Tests: three devices, a library of 200 documents (connections opened only for what changed), a device away and back, random messages; on the JVM and the iOS simulator | proposed |
 | 5. Invitations and joining | The invitation of a space, approval, joining into a folder or into the library; the documents arriving where the catalog puts them | proposed |
 | 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | proposed |
@@ -272,6 +272,52 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
 * Still to do: the check on a copy of the database of PencilNotes of the user (made by the user,
   the original untouched).
 
+### Phase 3 results
+
+* `drawview-sync-protocol`:
+  * `DocumentKey.forDocument(documentId)`: the key of a document of a space, an HMAC-SHA256 of
+    its identifier with the key of the space (a tag of its own with it);
+  * `MembershipKind` (`DOCUMENT`, `SPACE`) and `Membership.kind`, not written for a document: its
+    memberships stay as they were, byte for byte (the signed bytes of the memberships of before are
+    the same);
+  * `OperationProof.signCatalog` / `isCatalogBy`: the changes of a catalog signed under a label of
+    their own (`drawview-sync/catalog`), so that neither a change of a catalog nor an operation of a
+    document passes for the other.
+* `drawview-sync`:
+  * `SharingState.space`: the space a document is shared through (not written for a document
+    shared on its own);
+  * `SpaceSharing`: the sharing of the spaces (a `DocumentSharing` of kind `SPACE` over
+    `SpaceStates`, the sharing kept with each `StoredSpace`); `follow(space)` gives every document
+    of the space its sharing from the space (the keys of every epoch derived, the owner, the
+    membership), and takes it from the documents that left; `admitsChange` (a change of the
+    catalog signed by the device of its replica, as its role allows); `mayGive` (a document from
+    the owner or from the device that brought it); `forget`;
+  * `DocumentSharing`: the membership of a document of a space is the space's (`adopt` takes the
+    space's only, `admit`, `setRole`, `remove`, `end` refused, `adoptKey` refused: the keys come
+    from the space); `follow(document, state)` keeps what is known of the members' operations and
+    never replaces the sharing of a document shared on its own.
+* The documents of a space keep a sharing of their own in the store (derived, the same on every
+    member), rather than having the engine derive it at each connection: the engine works on them
+    as on the documents shared on their own (tags, keys, membership, read only, compaction), and
+    phase 4 adds the space only where it differs.
+* `SpaceLibrary(sharedApart)`: tells the documents shared on their own from the ones of a space
+  (both have a secret now); the collaboration gives it from `SharingState.space`.
+* `ProtocolFormatTest` recorded again (protocol 1): `Membership.kind`, `MembershipKind`.
+* Tests (`SpaceSharingTest`): the derived keys (the same on every device, of each document and
+  of each space); a membership of a document written as before; the catalog proofs apart from the
+  operations; two devices: a folder shared, its document following the space and the one shared on
+  its own not, Bob admitted on every document, joining with the key of the space and getting the
+  same derived key, a change of Bob taken and the same signed by another device, as an operation of
+  a document or by no member refused, a document brought by Bob given by Bob or Ada only, Bob made
+  reader (his later changes refused, the documents read only), the sharing of a document of the
+  space refused to change on its own, Bob removed (a new key for every document), a document moved
+  out shared no more and kept, the space left.
+* The ABI of `drawview-store`, `drawview-sync` and `drawview-sync-protocol` is recorded again:
+  the constructors of `Membership`, `SharingState` and `SpaceLibrary` take a new parameter (a
+  change meant; the libraries are not released with the spaces yet), the rest additions.
+* Not run on this host (Windows): the tests of the sync modules on the iOS simulator, to run on
+  the Mac with the next phase.
+
 ## Decisions
 
 ### Taken by the user (2026-11-14)
@@ -309,6 +355,8 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   the library at once, under the same lock.
 * An item received in a shared library leaving the space stays where it is and is added again:
   there is nothing outside the library.
+* The documents of a space keep a sharing of their own, derived from the space's, rather than the
+  engine deriving it: the engine stays as it is where a space changes nothing.
 * The catalog items kept as JSON (one column), rather than a column per piece: the format of an
   item can grow without a migration of the table.
 

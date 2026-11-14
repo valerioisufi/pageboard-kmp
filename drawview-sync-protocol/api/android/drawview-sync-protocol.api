@@ -47,6 +47,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/DocumentKey {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey$Companion;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun forDocument (Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;
 	public final fun getHash ()Ljava/lang/String;
 	public final fun getTag ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -148,8 +149,8 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Member$Companio
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/Membership {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
@@ -158,8 +159,9 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Membership {
 	public final fun component6 ()Ljava/util/List;
 	public final fun component7 ()Z
 	public final fun component8 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Membership;Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
+	public final fun component9 ()Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Membership;Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
 	public final fun deviceOf (Ljava/lang/String;)Ljava/lang/String;
 	public final fun encode ()[B
 	public fun equals (Ljava/lang/Object;)Z
@@ -167,6 +169,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Membership {
 	public final fun getEnded ()Z
 	public final fun getEpoch ()I
 	public final fun getKeyHash ()Ljava/lang/String;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
 	public final fun getMembers ()Ljava/util/List;
 	public final fun getOwner ()Ljava/lang/String;
 	public final fun getRemoved ()Ljava/util/List;
@@ -188,6 +191,19 @@ public final synthetic class io/github/valerioisufi/drawview/sync/protocol/Membe
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/sync/protocol/Membership;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/MembershipKind : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind$Companion;
+	public static final field DOCUMENT Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
+	public static final field SPACE Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/sync/protocol/MembershipKind;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/MembershipKind$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/OpenFrame {
@@ -233,6 +249,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/OperationProof 
 	public final fun getContent ()[B
 	public final fun getSignature ()[B
 	public final fun isBy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Z
+	public final fun isCatalogBy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Z
 }
 
 public final synthetic class io/github/valerioisufi/drawview/sync/protocol/OperationProof$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
@@ -250,6 +267,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/OperationProof$
 	public final fun decode ([B)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 	public final fun sign (Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Ljava/lang/String;Ljava/lang/String;J[B)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
+	public final fun signCatalog (Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Ljava/lang/String;Ljava/lang/String;J[B)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/OperationSeal {
