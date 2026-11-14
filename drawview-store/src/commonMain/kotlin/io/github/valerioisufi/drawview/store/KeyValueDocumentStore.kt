@@ -16,8 +16,6 @@ import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
-import io.github.valerioisufi.drawview.model.change.PageSnapshot
-import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.SyncLock
@@ -34,8 +32,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -100,6 +96,9 @@ public class KeyValueDocumentStore(
         encodeDefaults = false
     }
     private val lock = SyncLock()
+
+    /** The operations of the documents and their proofs (under [lock]). */
+    private val log = KeyValueOperationLog(storage, json)
 
     private var index: StoredIndex = readIndex()
     private val openDocuments = mutableMapOf<String, DrawDocument>()
@@ -463,10 +462,10 @@ public class KeyValueDocumentStore(
 
     override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
         syncLock(lock) {
-            val operations = operationsLocked(document.id)
+            val operations = log.operationsOf(document.id)
             if (operations.none { it.id == operation.id }) {
                 operations.add(operation)
-                storage.set(operationsKey(document.id), json.encodeToString(ListSerializer(Operation.serializer()), operations))
+                log.writeOperations(document.id)
             }
         }
     }
@@ -508,10 +507,10 @@ public class KeyValueDocumentStore(
     override suspend fun compactedOperations(documentId: String): Map<String, Long> = syncLock(lock) { index.operationBases[documentId].orEmpty() }
 
     override suspend fun compactOperations(documentId: String, upTo: Map<String, Long>): Map<String, Stamp> = syncLock(lock) {
-        val operations = operationsLocked(documentId)
+        val operations = log.operationsOf(documentId)
         val stamps = index.operationBaseStamps[documentId].orEmpty().toMutableMap()
         val bases = index.operationBases[documentId].orEmpty().toMutableMap()
-        val proofs = proofsLocked(documentId)
+        val proofs = log.proofsOf(documentId)
         for ((replica, sequence) in upTo) {
             if (sequence <= (bases[replica] ?: 0L)) continue
             val last = operations.firstOrNull { it.id.replica == replica && it.id.sequence == sequence } ?: continue
@@ -520,8 +519,8 @@ public class KeyValueDocumentStore(
             bases[replica] = sequence
             stamps[replica] = last.stamp
         }
-        storage.set(operationsKey(documentId), json.encodeToString(ListSerializer(Operation.serializer()), operations))
-        writeProofsLocked(documentId)
+        log.writeOperations(documentId)
+        log.writeProofs(documentId)
         index = index.copy(operationBases = index.operationBases + (documentId to bases), operationBaseStamps = index.operationBaseStamps + (documentId to stamps))
         writeIndexLocked()
         stamps
@@ -529,17 +528,17 @@ public class KeyValueDocumentStore(
 
     override suspend fun versionVector(documentId: String): Map<String, Long> = syncLock(lock) {
         val vector = index.operationBases[documentId].orEmpty().toMutableMap()
-        operationsLocked(documentId).forEach { vector[it.id.replica] = maxOf(vector[it.id.replica] ?: 0L, it.id.sequence) }
+        log.operationsOf(documentId).forEach { vector[it.id.replica] = maxOf(vector[it.id.replica] ?: 0L, it.id.sequence) }
         vector
     }
 
 
     override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> = syncLock(lock) {
-        operationsLocked(documentId).filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
+        log.operationsOf(documentId).filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
     }
 
     override suspend fun proofs(documentId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = syncLock(lock) {
-        val proofs = proofsLocked(documentId)
+        val proofs = log.proofsOf(documentId)
         ids.mapNotNull { id -> proofs[id]?.let { id to it } }.toMap()
     }
 
@@ -548,47 +547,9 @@ public class KeyValueDocumentStore(
         syncLock(lock) {
             // Not for a document deleted meanwhile
             if (index.documents.none { it.id == documentId }) return@syncLock
-            proofsLocked(documentId).putAll(proofs)
-            writeProofsLocked(documentId)
+            log.proofsOf(documentId).putAll(proofs)
+            log.writeProofs(documentId)
         }
-    }
-
-    private val operations = mutableMapOf<String, MutableList<Operation>>()
-
-    /** The proofs of the operations of the documents read so far (see [OperationLog.saveProofs]). */
-    private val proofs = mutableMapOf<String, MutableMap<OperationId, ByteArray>>()
-
-    private fun proofsLocked(documentId: String): MutableMap<OperationId, ByteArray> = proofs.getOrPut(documentId) {
-        storage.get(proofsKey(documentId))
-            ?.let { decodeOrNull<StoredProofs>(it) }
-            ?.proofs.orEmpty()
-            .mapNotNull { stored -> decodeProof(stored.proof)?.let { OperationId(stored.replica, stored.sequence) to it } }
-            .toMap(mutableMapOf())
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private fun writeProofsLocked(documentId: String) {
-        val proofs = proofsLocked(documentId)
-        if (proofs.isEmpty()) {
-            storage.remove(proofsKey(documentId))
-            return
-        }
-        val stored = StoredProofs(proofs = proofs.map { (id, proof) -> StoredProof(id.replica, id.sequence, Base64.encode(proof)) })
-        storage.set(proofsKey(documentId), json.encodeToString(StoredProofs.serializer(), stored))
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private fun decodeProof(text: String): ByteArray? = try {
-        Base64.decode(text)
-    } catch (_: IllegalArgumentException) {
-        null
-    }
-
-    private fun operationsLocked(documentId: String): MutableList<Operation> = operations.getOrPut(documentId) {
-        storage.get(operationsKey(documentId))
-            ?.let { decodeOrNull<List<Operation>>(it) }
-            .orEmpty()
-            .toMutableList()
     }
 
     override suspend fun updateDocumentDefaults(document: DrawDocument) {
@@ -699,10 +660,7 @@ public class KeyValueDocumentStore(
             }
         }
         storage.remove(documentKey(documentId))
-        storage.remove(operationsKey(documentId))
-        operations.remove(documentId)
-        storage.remove(proofsKey(documentId))
-        proofs.remove(documentId)
+        log.forget(documentId)
         openDocuments.remove(documentId)
         dirtyDocuments.remove(documentId)
         index = index.copy(
@@ -774,108 +732,6 @@ public class KeyValueDocumentStore(
         private const val PREFERENCE_PREFIX = PREFIX + "preference."
 
         private fun documentKey(id: String) = PREFIX + "document." + id
-        private fun operationsKey(id: String) = PREFIX + "operations." + id
-        private fun proofsKey(id: String) = PREFIX + "proofs." + id
         private fun resourceKey(path: String) = PREFIX + "file." + path
     }
 }
-
-// ==========================================================
-// Stored model
-// ==========================================================
-
-@Serializable
-internal data class StoredIndex(
-    /** This device in the changes of the documents (see `DocumentSession.replica`). */
-    val replicaId: String = "",
-    val documents: List<StoredSummary> = emptyList(),
-    val folders: List<StoredFolder> = emptyList(),
-    /** The secrets of the documents shared, by document (see [DocumentStore.sharingSecrets]). */
-    val sharingSecrets: Map<String, String> = emptyMap(),
-    /** The documents shared to be read only here. */
-    val readOnly: Set<String> = emptySet(),
-    /** The operations no longer in the logs, by document (see [DocumentStore.compactOperations]), and their stamps. */
-    val operationBases: Map<String, Map<String, Long>> = emptyMap(),
-    val operationBaseStamps: Map<String, Map<String, Stamp>> = emptyMap()
-) {
-    /** What is in the trash and what is not (see [DocumentCatalog.trash]). */
-    fun trash(): LibraryTrash = LibraryTrash(
-        documents = documents.map { LibraryTrash.Entry(it.id, it.name, it.folderId, it.trashedAt, isShared = it.id in sharingSecrets) },
-        folders = folders.map { LibraryTrash.Entry(it.id, it.name, it.parentId, it.trashedAt) }
-    )
-}
-
-@Serializable
-internal data class StoredFolder(
-    val id: String,
-    val name: String,
-    val parentId: String? = null,
-    val createdAt: Long,
-    val modifiedAt: Long,
-    /** When it went to the trash itself (`null`: it did not; see [DocumentCatalog.trash]). */
-    val trashedAt: Long? = null
-) {
-    fun toSummary() = FolderSummary(id = id, name = name, parentId = parentId, createdAt = createdAt, modifiedAt = modifiedAt)
-}
-
-@Serializable
-internal data class StoredSummary(
-    val id: String,
-    val name: String,
-    val folderId: String? = null,
-    val createdAt: Long,
-    val modifiedAt: Long,
-    val lastOpenedAt: Long,
-    val defaultWidth: Float = 210f,
-    val defaultHeight: Float = 297f,
-    val defaultBackground: PageBackground = PageBackground.Solid(),
-    val pageCount: Int = 1,
-    val hasPdf: Boolean = false,
-    /** When it went to the trash itself (`null`: it did not; see [DocumentCatalog.trash]). */
-    val trashedAt: Long? = null
-) {
-    fun toSummary(isShared: Boolean) = DocumentSummary(
-        id = id,
-        name = name,
-        folderId = folderId,
-        createdAt = createdAt,
-        modifiedAt = modifiedAt,
-        lastOpenedAt = lastOpenedAt,
-        defaultWidthMm = defaultWidth,
-        defaultHeightMm = defaultHeight,
-        defaultBackground = defaultBackground,
-        isShared = isShared,
-        pageCount = pageCount,
-        hasPdf = hasPdf
-    )
-}
-
-@Serializable
-internal data class StoredDocument(
-    val pages: List<PageSnapshot> = emptyList(),
-    val resources: List<StoredResource> = emptyList(),
-    val defaultsVersion: Stamp = Stamp.ZERO,
-    val removedPages: List<PageSnapshot> = emptyList(),
-    val titleVersion: Stamp = Stamp.ZERO
-)
-
-@Serializable
-internal data class StoredResource(val id: String, val type: String, val uri: String, val hash: String = "")
-
-/** The proofs of the operations of a document (see [OperationLog.saveProofs]), format [version]. */
-@Serializable
-internal data class StoredProofs(val version: Int = 1, val proofs: List<StoredProof> = emptyList())
-
-/** The proof of the operation [replica] / [sequence], in Base64. */
-@Serializable
-internal data class StoredProof(val replica: String, val sequence: Long, val proof: String)
-
-
-private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
-    pages = pages.map { it.snapshot() },
-    resources = resources.map { StoredResource(it.id, it.type.name, it.path, it.hash) },
-    defaultsVersion = defaultsVersion,
-    removedPages = removedPages.values.map { it.snapshot() },
-    titleVersion = titleVersion
-)
-

@@ -361,23 +361,17 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** The identifier of the folder of the root holding the current one, `null` in the root. */
     val currentRootFolderId: String? get() = directoryIdSequence.firstOrNull()
 
-    /** The items selected, by their [FileItem.key]: what they are is read from the library. */
-    private val selectedKeys = mutableStateListOf<String>()
+    /** The items selected, and the one whose details are shown (see [LibrarySelection]). */
+    private val selection = LibrarySelection { shownFiles }
 
     /** The selected items among those shown, as they are now (renamed, moved, gone). */
-    val selectedItems: List<FileItem> by derivedStateOf {
-        val shown = shownFiles.associateBy { it.key }
-        selectedKeys.mapNotNull { shown[it] }
-    }
+    val selectedItems: List<FileItem> get() = selection.selectedItems
 
     /** Whether items are being selected (long press, or with the keys of the pointer). */
-    val selectionMode: Boolean get() = selectedItems.isNotEmpty()
-
-    /** The item whose details are shown beside a wide library, by its [FileItem.key]. */
-    private var detailsKey by mutableStateOf<String?>(null)
+    val selectionMode: Boolean get() = selection.selectionMode
 
     /** The item whose details are shown beside a wide library: it does not start a selection. */
-    val detailsItem: FileItem? by derivedStateOf { detailsKey?.let { key -> shownFiles.firstOrNull { it.key == key } } }
+    val detailsItem: FileItem? get() = selection.detailsItem
 
     /** What the commands act on: the selected items, or the item whose details are shown. */
     val targetItems: List<FileItem> get() = selectedItems.ifEmpty { listOfNotNull(detailsItem) }
@@ -605,63 +599,22 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     // Selection
 
     /** Whether [file] is marked: selected, or with its details shown. */
-    fun isSelected(file: FileItem): Boolean = file.key in selectedKeys || file.key == detailsKey
+    fun isSelected(file: FileItem): Boolean = selection.isSelected(file)
 
-    /** The item the selection extends from ([extendSelection]): the last one selected. */
-    private var selectionAnchor: String? = null
-
-    /** A selection starting while the details of an item are shown starts from that item. */
-    private fun selectDetailsItem() {
-        val key = detailsKey ?: return
-        if (key !in selectedKeys) selectedKeys.add(key)
-        detailsKey = null
-    }
-
-    fun toggleSelection(file: FileItem) {
-        selectDetailsItem()
-        if (!selectedKeys.remove(file.key)) {
-            selectedKeys.add(file.key)
-            selectionAnchor = file.key
-        }
-    }
+    fun toggleSelection(file: FileItem) = selection.toggle(file)
 
     /** Shows the details of [file] beside a wide library, in place of a selection. */
-    fun showDetails(file: FileItem) {
-        selectedKeys.clear()
-        detailsKey = file.key
-        selectionAnchor = file.key
-    }
+    fun showDetails(file: FileItem) = selection.showDetails(file)
 
-    /**
-     * Extends the selection from the item last selected to [file] (Shift with a click), in the
-     * order of the folder; without one, selects [file].
-     */
-    fun extendSelection(file: FileItem) {
-        selectDetailsItem()
-        val items = shownFiles
-        val from = selectionAnchor?.let { anchor -> items.indexOfFirst { it.key == anchor } }?.takeIf { it >= 0 }
-        val to = items.indexOfFirst { it.key == file.key }
-        if (from == null || to < 0) {
-            if (file.key !in selectedKeys) toggleSelection(file)
-            return
-        }
-        for (item in items.subList(minOf(from, to), maxOf(from, to) + 1)) {
-            if (item.key !in selectedKeys) selectedKeys.add(item.key)
-        }
-    }
+    /** Extends the selection from the item last selected to [file] (Shift with a click). */
+    fun extendSelection(file: FileItem) = selection.extend(file)
 
     /** Leaves the selection and the details of an item. */
-    fun clearSelection() {
-        selectedKeys.clear()
-        detailsKey = null
-        selectionAnchor = null
-    }
+    fun clearSelection() = selection.clear()
 
-    fun selectAll() {
-        detailsKey = null
-        selectedKeys.clear()
-        selectedKeys.addAll(shownFiles.map { it.key })
-    }
+    fun selectAll() = selection.selectAll()
+
+    private fun unselect(files: List<FileItem>) = selection.unselect(files)
 
     /** Moves [files] (the selected ones, or one of a menu) to the trash, leaving the selection; told by [trashNotice]. */
     fun deleteFiles(files: List<FileItem>) {
@@ -710,83 +663,9 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         }
     }
 
-    private fun unselect(files: List<FileItem>) {
-        val keys = files.mapTo(mutableSetOf()) { it.key }
-        selectedKeys.removeAll { it in keys }
-        if (detailsKey in keys) detailsKey = null
-    }
-
     private companion object {
 
         /** The notes of the section of the recent ones. */
         const val RECENT_SECTION_LIMIT = 30
     }
 }
-
-/**
- * Whether the [name] of an item holds every word of [query], in any order, whatever their case and
- * their accents ("universita" finds "Università").
- */
-internal fun nameMatches(name: String, query: String): Boolean {
-    val folded = foldAccents(name)
-    return foldAccents(query).split(' ', '\t').filter { it.isNotEmpty() }.all { it in folded }
-}
-
-/** [text] in lower case, its Latin letters without their accents. */
-private fun foldAccents(text: String): String = buildString(text.length) {
-    for (char in text) {
-        val lower = char.lowercaseChar()
-        append(
-            when (lower) {
-                'à', 'á', 'â', 'ã', 'ä', 'å', 'ā', 'ă', 'ą' -> 'a'
-                'ç', 'ć', 'č' -> 'c'
-                'ď', 'đ' -> 'd'
-                'è', 'é', 'ê', 'ë', 'ē', 'ĕ', 'ė', 'ę', 'ě' -> 'e'
-                'ì', 'í', 'î', 'ï', 'ī', 'ĭ', 'į' -> 'i'
-                'ł' -> 'l'
-                'ñ', 'ń', 'ň' -> 'n'
-                'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ō', 'ŏ', 'ő' -> 'o'
-                'ř', 'ŕ' -> 'r'
-                'ś', 'š', 'ş' -> 's'
-                'ť', 'ţ' -> 't'
-                'ù', 'ú', 'û', 'ü', 'ū', 'ŭ', 'ů', 'ű', 'ų' -> 'u'
-                'ý', 'ÿ' -> 'y'
-                'ź', 'ż', 'ž' -> 'z'
-                else -> lower
-            }
-        )
-    }
-}
-
-/**
- * Sorts the items of a folder by [option], keeping the folders before the documents when
- * [foldersOnTop] (the relative order of equal items is preserved).
- */
-internal fun sortFiles(
-    items: List<FileExplorerViewModel.FileItem>,
-    option: FileExplorerViewModel.SortOption,
-    ascending: Boolean,
-    foldersOnTop: Boolean
-): List<FileExplorerViewModel.FileItem> {
-    val comparator: Comparator<FileExplorerViewModel.FileItem> = when (option) {
-        FileExplorerViewModel.SortOption.NAME -> compareBy { it.name.lowercase() }
-        FileExplorerViewModel.SortOption.DATE_CREATED -> compareBy { it.createdAt }
-        FileExplorerViewModel.SortOption.DATE_MODIFIED -> compareBy { it.modifiedAt }
-        FileExplorerViewModel.SortOption.LAST_OPENED -> compareBy { it.lastOpenedAt ?: 0L }
-    }
-    val sorted = items.sortedWith(if (ascending) comparator else comparator.reversed())
-    return if (foldersOnTop) sorted.sortedBy { it.type != FileExplorerViewModel.FileType.FOLDER } else sorted
-}
-
-private fun DocumentSummary.toFileItem() = FileExplorerViewModel.FileItem(
-    type = FileExplorerViewModel.FileType.FILE,
-    id = id,
-    name = name,
-    createdAt = createdAt,
-    modifiedAt = modifiedAt,
-    lastOpenedAt = lastOpenedAt,
-    isShared = isShared,
-    folderId = folderId,
-    pageCount = pageCount,
-    hasPdf = hasPdf
-)

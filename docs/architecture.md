@@ -158,7 +158,7 @@ Variations).
 | 5 | D. The secondary window of PencilNotes with the assistant, the collaboration, the search | 3 | done (`docs/document-window.md`) |
 | 6 | C. `SyncEngine` split (plus the resource downloads on disk, D) | – | downloads done, split later (`docs/sync-engine-split.md`) |
 | 7 | C. `DocumentTools` split | – | done (`docs/document-tools.md`) |
-| 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | to do |
+| 8 | C. `KeyValueDocumentStore`, `FileExplorerViewModel` split | 3 | done (`docs/store-explorer-split.md`) |
 | 9 | C. `LectureAssistant`, `LecturePanel`, `EditorToolbar` split | – | to do |
 | 10 | D. Vector formulas through `FormulaRenderer`; `export` without `latex` | 4 | done (`docs/vector-formulas.md`) |
 | 11 | D. The lecture assistant on `ModelBackend` and `drawview-ml` (phase 4 of `docs/local-models.md`) | 9 | to do |
