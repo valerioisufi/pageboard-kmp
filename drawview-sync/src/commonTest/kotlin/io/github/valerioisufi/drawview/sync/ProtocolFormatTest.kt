@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.store.space.CatalogOperation
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
 import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
@@ -25,12 +26,13 @@ class ProtocolFormatTest {
     @Test
     fun theMessagesHaveTheFormatRecordedForTheVersionOfTheProtocol() {
         // The operations travel sealed, the membership in the bytes its owner signed: their content
-        // (the changes, the members) is part of the format too
+        // (the changes, the members) is part of the format too; so are the changes of the shared folders
         val format = describe(
             OpenFrame.serializer().descriptor,
             SyncMessage.serializer().descriptor,
             Operation.serializer().descriptor,
-            serializer<Membership>().descriptor
+            serializer<Membership>().descriptor,
+            CatalogOperation.serializer().descriptor
         )
         assertEquals(
             PROTOCOL_FORMATS[PROTOCOL_VERSION],

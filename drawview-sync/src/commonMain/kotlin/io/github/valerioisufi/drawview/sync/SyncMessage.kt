@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.store.space.CatalogOperation
 import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.Membership
@@ -109,6 +110,15 @@ internal data class Snapshot(val snapshot: DocumentSnapshot, val base: Map<Strin
 @Serializable
 @SerialName("operations")
 internal class Operations(val operations: List<SealedOperation>) : SyncMessage
+
+/**
+ * Changes of the catalog of a shared folder (see `docs/shared-folders.md`), on a connection about
+ * the folder, in the order of their stamps, sealed with the key of the folder and signed by their
+ * authors as the operations of the documents ([SealedOperation], see `OperationProof.signCatalog`).
+ */
+@Serializable
+@SerialName("catalogOperations")
+internal class CatalogOperations(val operations: List<SealedOperation>) : SyncMessage
 
 /** Asks for the file of the resource [id], from its byte [from] (a transfer interrupted goes on). */
 @Serializable
@@ -229,6 +239,23 @@ internal object SyncCodec {
             cbor.decodeFromByteArray(Operation.serializer(), bytes)
         } catch (e: Exception) {
             throw SyncException("An operation not understood", e)
+        }
+    }
+
+    /** The content of a [SealedOperation] of the catalog of a shared folder. */
+    fun encodeCatalogOperation(operation: CatalogOperation): ByteArray = cbor.encodeToByteArray(CatalogOperation.serializer(), operation)
+
+    /**
+     * The change of a catalog of [bytes].
+     *
+     * @throws SyncException for anything that is not one, nested too deep or not decoded.
+     */
+    fun decodeCatalogOperation(bytes: ByteArray): CatalogOperation {
+        if (!cborNestsWithin(bytes, MAX_NESTING)) throw SyncException("A change of a folder not understood, or nested too deep")
+        return try {
+            cbor.decodeFromByteArray(CatalogOperation.serializer(), bytes)
+        } catch (e: Exception) {
+            throw SyncException("A change of a folder not understood", e)
         }
     }
 

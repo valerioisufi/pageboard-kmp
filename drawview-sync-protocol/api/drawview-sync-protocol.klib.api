@@ -6,6 +6,18 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:drawview-sync-protocol>
+final enum class io.github.valerioisufi.drawview.sync.protocol/InvitationKind : kotlin/Enum<io.github.valerioisufi.drawview.sync.protocol/InvitationKind> { // io.github.valerioisufi.drawview.sync.protocol/InvitationKind|null[0]
+    enum entry DOCUMENT // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.DOCUMENT|null[0]
+    enum entry FOLDER // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.FOLDER|null[0]
+    enum entry LIBRARY // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.LIBRARY|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.sync.protocol/InvitationKind> // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/InvitationKind // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.sync.protocol/InvitationKind> // io.github.valerioisufi.drawview.sync.protocol/InvitationKind.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.sync.protocol/MembershipKind : kotlin/Enum<io.github.valerioisufi.drawview.sync.protocol/MembershipKind> { // io.github.valerioisufi.drawview.sync.protocol/MembershipKind|null[0]
     enum entry DOCUMENT // io.github.valerioisufi.drawview.sync.protocol/MembershipKind.DOCUMENT|null[0]
     enum entry SPACE // io.github.valerioisufi.drawview.sync.protocol/MembershipKind.SPACE|null[0]
@@ -166,7 +178,7 @@ final class io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport : io
 }
 
 final class io.github.valerioisufi.drawview.sync.protocol/Invitation { // io.github.valerioisufi.drawview.sync.protocol/Invitation|null[0]
-    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DocumentKey, kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/String> = ...) // io.github.valerioisufi.drawview.sync.protocol/Invitation.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DocumentKey, kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/String> = ..., io.github.valerioisufi.drawview.sync.protocol/InvitationKind = ...) // io.github.valerioisufi.drawview.sync.protocol/Invitation.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.String>;io.github.valerioisufi.drawview.sync.protocol.InvitationKind){}[0]
 
     final val addresses // io.github.valerioisufi.drawview.sync.protocol/Invitation.addresses|{}addresses[0]
         final fun <get-addresses>(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.sync.protocol/Invitation.addresses.<get-addresses>|<get-addresses>(){}[0]
@@ -174,6 +186,8 @@ final class io.github.valerioisufi.drawview.sync.protocol/Invitation { // io.git
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.documentId.<get-documentId>|<get-documentId>(){}[0]
     final val key // io.github.valerioisufi.drawview.sync.protocol/Invitation.key|{}key[0]
         final fun <get-key>(): io.github.valerioisufi.drawview.sync.protocol/DocumentKey // io.github.valerioisufi.drawview.sync.protocol/Invitation.key.<get-key>|<get-key>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.sync.protocol/Invitation.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.sync.protocol/InvitationKind // io.github.valerioisufi.drawview.sync.protocol/Invitation.kind.<get-kind>|<get-kind>(){}[0]
     final val owner // io.github.valerioisufi.drawview.sync.protocol/Invitation.owner|{}owner[0]
         final fun <get-owner>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.owner.<get-owner>|<get-owner>(){}[0]
     final val title // io.github.valerioisufi.drawview.sync.protocol/Invitation.title|{}title[0]
@@ -184,7 +198,8 @@ final class io.github.valerioisufi.drawview.sync.protocol/Invitation { // io.git
     final fun component3(): io.github.valerioisufi.drawview.sync.protocol/DocumentKey // io.github.valerioisufi.drawview.sync.protocol/Invitation.component3|component3(){}[0]
     final fun component4(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.component4|component4(){}[0]
     final fun component5(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.sync.protocol/Invitation.component5|component5(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.sync.protocol/DocumentKey = ..., kotlin/String = ..., kotlin.collections/Map<kotlin/String, kotlin/String> = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation // io.github.valerioisufi.drawview.sync.protocol/Invitation.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    final fun component6(): io.github.valerioisufi.drawview.sync.protocol/InvitationKind // io.github.valerioisufi.drawview.sync.protocol/Invitation.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.sync.protocol/DocumentKey = ..., kotlin/String = ..., kotlin.collections/Map<kotlin/String, kotlin/String> = ..., io.github.valerioisufi.drawview.sync.protocol/InvitationKind = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation // io.github.valerioisufi.drawview.sync.protocol/Invitation.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.String>;io.github.valerioisufi.drawview.sync.protocol.InvitationKind){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Invitation.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Invitation.hashCode|hashCode(){}[0]
     final fun toLink(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.toLink|toLink(){}[0]

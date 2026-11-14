@@ -1,22 +1,32 @@
 package io.github.valerioisufi.drawview.sync.protocol
 
+/** What an [Invitation] is to: a document, or a shared folder (a folder of the library, or the library itself, see `docs/shared-folders.md`). */
+public enum class InvitationKind { DOCUMENT, FOLDER, LIBRARY }
+
 /**
  * What a device needs to join a shared document: its identifier, its title, the secret of the
  * invitation ([key]: not the key of the document, which the owner gives to the devices it
  * admits), the owner ([owner]: a fingerprint of its identity, see [DeviceIdentity.fingerprint],
  * so that the device joining knows it talks to it) and where it can be reached ([addresses]: by
  * transport, in the terms of each [SyncTransport]; none: to be found on the network).
+ *
+ * [kind]: of a shared folder, [documentId] is the identifier of the space and [title] its name.
  */
 public data class Invitation(
     val documentId: String,
     val title: String,
     val key: DocumentKey,
     val owner: String,
-    val addresses: Map<String, String> = emptyMap()
+    val addresses: Map<String, String> = emptyMap(),
+    val kind: InvitationKind = InvitationKind.DOCUMENT
 ) {
     /** The invitation as a link (for a QR code or a message), read back by [parse]. */
     public fun toLink(): String = buildString {
-        append(SCHEME).append("?d=").append(encode(documentId))
+        when (kind) {
+            InvitationKind.DOCUMENT -> append(SCHEME).append("?d=").append(encode(documentId))
+            InvitationKind.FOLDER -> append(SCHEME).append("?s=").append(encode(documentId)).append("&n=folder")
+            InvitationKind.LIBRARY -> append(SCHEME).append("?s=").append(encode(documentId)).append("&n=library")
+        }
         append("&k=").append(key.encode())
         append("&o=").append(encode(owner))
         append("&t=").append(encode(title))
@@ -48,12 +58,19 @@ public data class Invitation(
                     else -> null
                 }
             }.toMap()
+            val space = fields["s"]?.takeIf { it.isNotEmpty() }
+            val kind = when {
+                space == null -> InvitationKind.DOCUMENT
+                fields["n"] == "library" -> InvitationKind.LIBRARY
+                else -> InvitationKind.FOLDER
+            }
             return Invitation(
-                documentId = fields["d"]?.takeIf { it.isNotEmpty() } ?: return null,
+                documentId = space ?: fields["d"]?.takeIf { it.isNotEmpty() } ?: return null,
                 title = fields["t"].orEmpty(),
                 key = fields["k"]?.let { DocumentKey.decode(it) } ?: return null,
                 owner = fields["o"]?.takeIf { it.isNotEmpty() } ?: return null,
-                addresses = addresses
+                addresses = addresses,
+                kind = kind
             )
         }
 

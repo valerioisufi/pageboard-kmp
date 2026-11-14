@@ -276,6 +276,34 @@ public final class io/github/valerioisufi/drawview/sync/SharingState$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public abstract interface class io/github/valerioisufi/drawview/sync/SpaceRoot {
+}
+
+public final class io/github/valerioisufi/drawview/sync/SpaceRoot$Folder : io/github/valerioisufi/drawview/sync/SpaceRoot {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/SpaceRoot$Folder;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/SpaceRoot$Folder;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/SpaceRoot$Folder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFolderId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/sync/SpaceRoot$Library : io/github/valerioisufi/drawview/sync/SpaceRoot {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/SpaceRoot$Library;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/sync/SpaceRoot$NewFolder : io/github/valerioisufi/drawview/sync/SpaceRoot {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/SpaceRoot$NewFolder;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/sync/StoreSharedDocuments : io/github/valerioisufi/drawview/sync/SharedDocuments {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/store/OpenDocuments;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -286,13 +314,14 @@ public final class io/github/valerioisufi/drawview/sync/StoreSharedDocuments : i
 }
 
 public final class io/github/valerioisufi/drawview/sync/SyncEngine {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun accept (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;)Lkotlinx/coroutines/Job;
 	public final fun announcedTags (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
 	public final fun connect (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;)Lkotlinx/coroutines/Job;
 	public final fun connectionKeys (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun followSpaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getAddresses ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getJoinRequests ()Lkotlinx/coroutines/flow/StateFlow;
@@ -303,17 +332,20 @@ public final class io/github/valerioisufi/drawview/sync/SyncEngine {
 	public final fun getPeers ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getPresences ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getSharingChanged ()Lkotlinx/coroutines/flow/SharedFlow;
-	public final fun invitationOf (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
-	public static synthetic fun invitationOf$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public final fun getSpaceMemberships ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun invitationOf (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;Lio/github/valerioisufi/drawview/sync/protocol/InvitationKind;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public static synthetic fun invitationOf$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;Lio/github/valerioisufi/drawview/sync/protocol/InvitationKind;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
 	public final fun invitationsOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun invite (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun invite$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun joinSpace (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lio/github/valerioisufi/drawview/sync/SpaceRoot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun publishAddress (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun routeOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun shareSpace (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun unshare (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun updatePresence (Lio/github/valerioisufi/drawview/sync/Presence;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

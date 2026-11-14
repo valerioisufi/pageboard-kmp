@@ -746,11 +746,17 @@ public final class io/github/valerioisufi/drawview/store/space/SpaceLibrary {
 	public final fun admits (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun folderOf-YNEx5aM (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getLocalOperations ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun has (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun join (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun join$default (Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun lastApplied (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun leave (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun newRootFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun receive (Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun reconcile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun share (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun spaceOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

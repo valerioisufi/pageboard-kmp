@@ -191,8 +191,9 @@ a build of before meeting a space closes the connection (a message it does not k
 | 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | done |
 | 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | done (the copy of the user's database: to do) |
 | 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | done (the engine checks them in phase 4) |
-| 4. Synchronization | `SpaceSync`: the catalog, `DocumentHeads`, document connections opened and closed; `LanSync` and `IrohSync` announcing and connecting by space; `ProtocolFormatTest`. Tests: three devices, a library of 200 documents (connections opened only for what changed), a device away and back, random messages; on the JVM and the iOS simulator | proposed |
-| 5. Invitations and joining | The invitation of a space, approval, joining into a folder or into the library; the documents arriving where the catalog puts them | proposed |
+| 4. Synchronization | The connections about a space (the handshake of the documents, the sharing of the space), its catalog (`CatalogOperations`, sealed and signed), the documents of a space synchronized as the others with the keys and membership of the space, from the owner or the device that brought them; `ProtocolFormatTest`. Tests: two devices sharing a folder (both ways, live, the trash, a member removed), the library joined into the library, a reader, a rule removed failing them, random catalog changes to the decoder | done |
+| 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | proposed |
+| 5. Invitations and joining | The invitation of a space (`s=` and its kind in the link), the approval as for a document, joining into a new folder, a folder, or the library itself (`SpaceRoot`) | done (in the engine; the choice in the interface is phase 6) |
 | 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | proposed |
 | 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | left to the user |
 
@@ -318,6 +319,54 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
 * Not run on this host (Windows): the tests of the sync modules on the iOS simulator, to run on
   the Mac with the next phase.
 
+### Phase 4 and 5 results
+
+* `SyncEngine(spaces = SpaceLibrary)`: with it, folders and the library are shared too.
+  * A connection about a space is a `Link` decided by the sharing of the space (`Link.access`): the
+    same `OpenFrame`, `Challenge`, `Hello` (the version vector of the catalog), membership, key
+    updates, invitations, approval and admission as for a document, so that nothing of the trust
+    rules is written twice.
+  * Then the changes of the catalog the other misses, in the order of their stamps, then the ones
+    made as they are made (`SpaceLibrary.localOperations`), relayed to the other members connected
+    (never back): `CatalogOperations`, each sealed with the key of the space and signed by its
+    author (`OperationProof.signCatalog`); the proofs of the others' changes kept and given on as
+    they came.
+  * A change received is applied once those before it of its replica are, and once its replica is
+    a member (it waits for the membership otherwise); it is checked first, signed by the device of
+    its replica as its role allows and admitted by the catalog (stamps, bounds): one that is not
+    closes the connection, before anything of its batch is kept or applied. At most 20 000 wait.
+  * The documents of a space are synchronized by the connections of the documents, with the keys
+    and the membership the space gives them (`SpaceSharing.follow`, after each change of the
+    catalog, of the membership or of the keys; their connections are told the membership, the ones
+    of devices no longer members closed). A document missing on a device comes from its owner or
+    from the device that brought it into the space (`mayGive`, both sides), and is stored where the
+    catalog puts it.
+  * A member removed from a space, or the sharing ended: the space and its documents are shared no
+    more on that device, which keeps its copies.
+  * `shareSpace(rootFolderId)`, `joinSpace(invitation, SpaceRoot)` (`NewFolder`, `Folder`,
+    `Library`), `followSpaces()`, `spaceMemberships`; `invite`, `setRole`, `removeMember`,
+    `unshare`, `invitationsOf`, `revokeInvitation` work on a space as on a document;
+    `sharingChanged` tells the spaces too.
+* `Invitation.kind` (`InvitationKind`: `DOCUMENT`, `FOLDER`, `LIBRARY`): a link `drawview://join?s=`
+  with `n=folder` or `n=library`; the links of documents as before.
+* `ProtocolFormatTest` recorded again (protocol 1): `catalogOperations` and the changes of the
+  catalog (their content is in the format, as the operations of the documents).
+* Tests (`SharedFoldersSyncTest`, through the engines on the in-memory network):
+  * a folder shared: Bob joining into a new folder, the folders then the document from Ada where
+    the folder has it, a folder and a document of Bob reaching Ada (the document from Bob), a
+    document renamed live, a folder moved and a document put in the trash, Bob removed (a new key
+    for every document, his copies kept);
+  * the library shared and joined into the library: both libraries in both places;
+  * a reader renaming a folder: put back, nothing reaching the owner.
+  * Without the rule "a document from the device that brought it", two of the three fail.
+  * `whatADeviceSendsNeverMakesTheDecodingFail`: the changes of catalogs too, changed at random.
+* The ABI of `drawview-store`, `drawview-sync` and `drawview-sync-protocol` recorded again: the
+  constructors of `Invitation` and `SyncEngine` and `invitationOf` take a new parameter (meant), the
+  rest additions.
+* Not run on this host (Windows): the tests of the sync modules on the iOS simulator.
+* Left for phase 4b: every document of a space has its connections, as a document shared on its
+  own (fine for a library of tens of documents, not of hundreds).
+
 ## Decisions
 
 ### Taken by the user (2026-11-14)
@@ -357,6 +406,12 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   there is nothing outside the library.
 * The documents of a space keep a sharing of their own, derived from the space's, rather than the
   engine deriving it: the engine stays as it is where a space changes nothing.
+* A connection about a space reuses the handshake of the documents, decided by the sharing of the
+  space, rather than a protocol of its own: the trust rules are written once.
+* The invitation and the joining of a space in phase 4, before the interface: the engine needs them
+  to be tested between devices.
+* The interface (phase 6) before fewer connections (phase 4b): the library of the user holds tens
+  of documents, which the connections per document serve.
 * The catalog items kept as JSON (one column), rather than a column per piece: the format of an
   item can grow without a migration of the table.
 

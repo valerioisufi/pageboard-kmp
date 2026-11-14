@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.store.space
 
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.TrashedItem
@@ -150,6 +151,32 @@ public class SpaceLibrary(
 
     /** The version vector of the changes of [spaceId] applied here. */
     public suspend fun versionVector(spaceId: String): Map<String, Long> = mutex.withLock { sessions[spaceId]?.session?.versionVector.orEmpty() }
+
+    /** Whether this device keeps the space [spaceId] (shared, or joined). */
+    public suspend fun has(spaceId: String): Boolean = mutex.withLock { spaceId in sessions }
+
+    /** The changes of [spaceId] after [known] (a version vector), in the order of their stamps: to give to another member. */
+    public suspend fun operationsAfter(spaceId: String, known: Map<String, Long>): List<CatalogOperation> =
+        spaces.catalogOperationsAfter(spaceId, known)
+
+    /** The proofs kept of the changes [ids] of [spaceId] (see [SpaceStore.catalogProofs]). */
+    public suspend fun proofs(spaceId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = spaces.catalogProofs(spaceId, ids)
+
+    /** Keeps the proofs of changes of [spaceId] made by other devices, to give them on. */
+    public suspend fun saveProofs(spaceId: String, proofs: Map<OperationId, ByteArray>): Unit = spaces.saveCatalogProofs(spaceId, proofs)
+
+    /** The last change of [replica] applied to [spaceId] (0: none). */
+    public suspend fun lastApplied(spaceId: String, replica: String): Long = mutex.withLock { sessions[spaceId]?.session?.lastApplied(replica) ?: 0L }
+
+    /**
+     * A folder named [name] at the root of the library, for the root of a space joined (another one
+     * of the same name may be there: the user renames it as it likes).
+     */
+    public suspend fun newRootFolder(name: String): String {
+        val id = newElementId()
+        spaces.putFolder(id, name, null)
+        return id
+    }
 
     /** What the space [spaceId] holds, as the library shows it. */
     public suspend fun view(spaceId: String): List<CatalogEntry> = mutex.withLock { sessions[spaceId]?.session?.catalog?.view().orEmpty() }

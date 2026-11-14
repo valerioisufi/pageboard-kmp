@@ -47,6 +47,15 @@ import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.space.AddDocument
+import io.github.valerioisufi.drawview.store.space.AddFolder
+import io.github.valerioisufi.drawview.store.space.CatalogOperation
+import io.github.valerioisufi.drawview.store.space.CompositeCatalogChange
+import io.github.valerioisufi.drawview.store.space.MoveItem
+import io.github.valerioisufi.drawview.store.space.RemoveFromSpace
+import io.github.valerioisufi.drawview.store.space.RenameFolder
+import io.github.valerioisufi.drawview.store.space.RestoreItem
+import io.github.valerioisufi.drawview.store.space.TrashItem
 import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
@@ -1470,15 +1479,24 @@ class SyncEngineTest {
             AttachmentRequest(listOf(AttachmentAsk("lecture", "v1"))),
             AttachmentPart("lecture", "v1", 0, 10, random.nextBytes(10)),
             DeviceAddresses(listOf(DeviceAddress.sign(identity, "iroh", "id https://relay.example.com/", 1))),
+            CatalogOperations(catalogOperations().map { OperationSeal(key).seal(it.id.replica, it.id.sequence, OperationProof.signCatalog(identity, "space", it.id.replica, it.id.sequence, SyncCodec.encodeCatalogOperation(it))) }),
             Ping
         )
     }
+
+    /** Changes of a shared folder of every kind, as a device makes them. */
+    private fun catalogOperations(): List<CatalogOperation> = listOf(
+        AddFolder("f", "Week 1", null), AddDocument("d", "f"), RenameFolder("f", "Week one"), MoveItem("d", null),
+        TrashItem("f"), RestoreItem("f"), RemoveFromSpace("d"),
+        CompositeCatalogChange(listOf(AddFolder("g", "Week 2", "f"), AddDocument("e", "g")))
+    ).mapIndexed { i, change -> CatalogOperation(OperationId("ada", i + 1L), Stamp(1_000L + i, 0, "ada"), change) }
 
     @Test
     fun whatADeviceSendsNeverMakesTheDecodingFail() {
         val random = Random(7)
         val frames = messages(random).map(SyncCodec::encode)
         val operations = operations(40, random).map(SyncCodec::encodeOperation)
+        val catalog = catalogOperations().map(SyncCodec::encodeCatalogOperation)
         repeat(3_000) {
             // Anything: a message or null, an operation or a SyncException, never another failure
             SyncCodec.decode(mutated(frames.random(random), random))
@@ -1488,10 +1506,15 @@ class SyncEngineTest {
             }
             OpenFrame.decode(mutated(OpenFrame(PROTOCOL_VERSION, "tag").encode(), random))
             OperationProof.decode(mutated(OperationProof(random.nextBytes(20), random.nextBytes(64)).encode(), random))
+            try {
+                SyncCodec.decodeCatalogOperation(mutated(catalog.random(random), random))
+            } catch (_: SyncException) {
+            }
         }
         // What the devices send is read as it was
         for (frame in frames) assertContentEquals(frame, SyncCodec.encode(assertNotNull(SyncCodec.decode(frame))))
         for (operation in operations) assertContentEquals(operation, SyncCodec.encodeOperation(SyncCodec.decodeOperation(operation)))
+        for (operation in catalog) assertContentEquals(operation, SyncCodec.encodeCatalogOperation(SyncCodec.decodeCatalogOperation(operation)))
     }
 
     @Test

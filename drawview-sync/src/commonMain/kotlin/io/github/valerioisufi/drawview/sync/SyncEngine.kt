@@ -16,10 +16,13 @@ import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.space.CatalogOperation
+import io.github.valerioisufi.drawview.store.space.SpaceLibrary
 import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.InvitationKind
 import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
@@ -44,6 +47,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -65,6 +69,20 @@ public data class Peer(val documentId: String, val replica: String, val name: St
  */
 public class JoinRequest internal constructor(public val documentId: String, public val device: String, public val name: String, public val role: Role) {
     internal val decision = CompletableDeferred<Boolean>()
+}
+
+/**
+ * Where the root of a shared folder joined goes in the library (see `docs/shared-folders.md`): a
+ * new folder at the root named as the folder shared ([NewFolder]), a folder of the library
+ * ([Folder]), or the library itself, whose documents and folders then go into the shared folder
+ * too ([Library]).
+ */
+public sealed interface SpaceRoot {
+    public data object NewFolder : SpaceRoot
+
+    public data object Library : SpaceRoot
+
+    public data class Folder(val folderId: String) : SpaceRoot
 }
 
 /** Where this device is in joining a document with an invitation. */
@@ -101,6 +119,11 @@ public enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, RE
  *
  * The members of the documents give each other where they can be reached ([addresses], see
  * [publishAddress]), kept in [addressBook]: the controllers of the transports connect to them.
+ *
+ * With [spaces], whole folders and the library are shared too (see `docs/shared-folders.md`): a
+ * connection about a shared folder carries the changes of its catalog (signed, as the operations),
+ * and its documents are synchronized as the documents shared on their own, with the keys and the
+ * membership of the folder.
  */
 public class SyncEngine(
     private val documents: OpenDocuments,
@@ -112,9 +135,16 @@ public class SyncEngine(
     private val attachments: DocumentAttachments? = null,
     identity: DeviceIdentity = DeviceIdentity.generate(),
     private val receivedFolder: suspend () -> String? = { null },
-    private val addressBook: AddressBook = InMemoryAddressBook()
+    private val addressBook: AddressBook = InMemoryAddressBook(),
+    private val spaces: SpaceLibrary? = null
 ) {
     private val sharing = DocumentSharing(shared, identity)
+
+    /** The sharing of the shared folders and of their documents (see `docs/shared-folders.md`), when the application keeps spaces. */
+    private val spaceSharing = spaces?.let { SpaceSharing(it, identity, sharing) }
+
+    /** Where the root of each space being joined goes, as the user chose (see [joinSpace]). */
+    private val spaceRoots = mutableMapOf<String, SpaceRoot>()
     private val identity get() = sharing.identity
     private val mutex = Mutex()
     private val syncs = mutableMapOf<String, DocumentSync>()
@@ -130,8 +160,13 @@ public class SyncEngine(
     /** The memberships of the shared documents (who works on each one, as the owner decided). */
     public val memberships: StateFlow<Map<String, Membership>> get() = sharing.memberships
 
-    /** Documents whose keys or invitations changed: what to announce on the network (see [reachable]). */
-    public val sharingChanged: SharedFlow<String> get() = sharing.changed
+    /** The memberships of the shared folders (who works on each one and on its documents, as the owner decided). */
+    public val spaceMemberships: StateFlow<Map<String, Membership>> = spaceSharing?.spaces?.memberships ?: MutableStateFlow(emptyMap())
+
+    private val changedFlow = MutableSharedFlow<String>(extraBufferCapacity = 64)
+
+    /** Documents and shared folders whose keys or invitations changed: what to announce on the network (see [reachable]). */
+    public val sharingChanged: SharedFlow<String> = changedFlow
 
     private val requests = MutableStateFlow<List<JoinRequest>>(emptyList())
 
@@ -176,6 +211,13 @@ public class SyncEngine(
 
     init {
         scope.launch { loadAddresses() }
+        scope.launch { sharing.changed.collect { changedFlow.emit(it) } }
+        spaceSharing?.let { spaceSharing ->
+            scope.launch { spaceSharing.spaces.changed.collect { changedFlow.emit(it) } }
+            // The changes of the folders made here: to the members connected
+            scope.launch { spaces?.localOperations?.collect { onLocalCatalogOperation(it.spaceId, it.operation) } }
+            scope.launch { followSpaces() }
+        }
         attachments?.let { attachments ->
             // The items beside the documents changed here: to the devices on their document
             scope.launch { attachments.changes.collect(::onAttachmentChanged) }
@@ -264,28 +306,36 @@ public class SyncEngine(
         approval: Boolean = false,
         addresses: Map<String, String> = ownAddressesByTransport()
     ): Invitation? {
-        val state = sharing.stateOf(documentId)
+        val access = accessOf(documentId)
+        val state = access.stateOf(documentId)
         if (state?.members == null) sharing.share(documentId, replica(), deviceName())
-        val grant = sharing.invite(documentId, role, approval) ?: return null
-        return Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses)
+        val grant = access.invite(documentId, role, approval) ?: return null
+        return Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses, kindOf(documentId))
     }
 
     /** The invitations of the document [documentId] (this device is its owner). */
-    public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharing.stateOf(documentId)?.invitations.orEmpty()
+    public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = accessOf(documentId).stateOf(documentId)?.invitations.orEmpty()
+
+    /** What an invitation to [id] is to: a document, a folder or the library (see `docs/shared-folders.md`). */
+    private suspend fun kindOf(id: String): InvitationKind {
+        val space = spaces?.spaces()?.firstOrNull { it.id == id } ?: return InvitationKind.DOCUMENT
+        return if (space.rootFolderId == null) InvitationKind.LIBRARY else InvitationKind.FOLDER
+    }
 
     /** The invitation [grant] as a link to give, reaching this device at [addresses] (by transport). */
     public fun invitationOf(
         documentId: String,
         title: String,
         grant: InvitationGrant,
-        addresses: Map<String, String> = ownAddressesByTransport()
-    ): Invitation = Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses)
+        addresses: Map<String, String> = ownAddressesByTransport(),
+        kind: InvitationKind = InvitationKind.DOCUMENT
+    ): Invitation = Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses, kind)
 
     private fun ownAddressesByTransport(): Map<String, String> = own.value.mapValues { it.value.address }
 
     /** Revokes the invitation [grantId] of [documentId]: nobody joins with it anymore (the devices joined stay). */
     public suspend fun revokeInvitation(documentId: String, grantId: String) {
-        sharing.revoke(documentId, grantId)
+        accessOf(documentId).revoke(documentId, grantId)
         linksOf(documentId).filter { (it.match as? TagMatch.Grant)?.grant?.id == grantId && !it.authorized }.forEach { it.channel.close() }
     }
 
@@ -297,9 +347,10 @@ public class SyncEngine(
 
     /** Gives the member [target] of [documentId] the role [role] (this device is the owner). */
     public suspend fun setRole(documentId: String, target: String, role: Role) {
-        val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
-        val state = sharing.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
-        onMembershipChanged(documentId, state, from = null)
+        val access = accessOf(documentId)
+        val member = access.membershipOf(documentId)?.memberOf(target) ?: return
+        val state = access.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
+        onMembershipChanged(documentId, state, from = null, access = access)
     }
 
     /**
@@ -307,9 +358,10 @@ public class SyncEngine(
      * new key, given to the other members; the device removed cannot follow it anymore.
      */
     public suspend fun removeMember(documentId: String, target: String) {
-        val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
-        val state = sharing.remove(documentId, target, lastSequenceOf(documentId, member.replica)) ?: return
-        onMembershipChanged(documentId, state, from = null)
+        val access = accessOf(documentId)
+        val member = access.membershipOf(documentId)?.memberOf(target) ?: return
+        val state = access.remove(documentId, target, lastSequenceOf(documentId, member.replica)) ?: return
+        onMembershipChanged(documentId, state, from = null, access = access)
     }
 
     /**
@@ -317,13 +369,20 @@ public class SyncEngine(
      * keeps its copy), another device leaves it (the owner removes it). Its connections are closed.
      */
     public suspend fun unshare(documentId: String) {
-        val state = sharing.stateOf(documentId)
+        val access = accessOf(documentId)
+        val state = access.stateOf(documentId)
         if (state?.owner == device && state.members != null) {
-            sharing.end(documentId)?.let { onMembershipChanged(documentId, it, from = null) }
+            access.end(documentId)?.let { onMembershipChanged(documentId, it, from = null, access = access) }
         } else {
             linksOf(documentId).filter { it.authorized }.forEach { it.trySend(Leave) }
         }
-        sharing.forget(documentId)
+        if (access === sharing) {
+            sharing.forget(documentId)
+        } else {
+            val inSpace = sharing.all().filterValues { it.space == documentId }.keys
+            spaceSharing?.forget(documentId)
+            inSpace.forEach { id -> linksOf(id).forEach { closeSoon(it) } }
+        }
         joinStates.update { it - documentId }
         // The addresses of the devices no longer members of any document go
         scope.launch { saveAddresses() }
@@ -333,6 +392,7 @@ public class SyncEngine(
 
     /** The last operation of [replica] on [documentId] this device has. */
     private suspend fun lastSequenceOf(documentId: String, replica: String): Long {
+        spaces?.takeIf { it.has(documentId) }?.let { return it.lastApplied(documentId, replica) }
         val open = documents.open(documentId) ?: return 0L
         return try {
             open.edit { it.lastApplied(replica) }
@@ -346,7 +406,8 @@ public class SyncEngine(
      * first, and the invitations it joins with; [announced]: what it announces, also the invitations
      * it gives (as the owner).
      */
-    internal suspend fun reachable(announced: Boolean): List<TagMatch> = sharing.reachable(announced)
+    internal suspend fun reachable(announced: Boolean): List<TagMatch> =
+        sharing.reachable(announced) + spaceSharing?.spaces?.reachable(announced).orEmpty()
 
     /** The tags this device answers to on the network (see [DocumentKey.tag]). */
     public suspend fun announcedTags(): Set<String> = reachable(announced = true).mapTo(mutableSetOf()) { it.key.tag }
@@ -356,8 +417,43 @@ public class SyncEngine(
 
     /** Joins the document of [invitation]: the owner admits this device when it reaches it (see [connect]). */
     public suspend fun join(invitation: Invitation) {
+        if (invitation.kind != InvitationKind.DOCUMENT) return joinSpace(invitation, SpaceRoot.NewFolder)
         sharing.startJoining(invitation)
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
+    }
+
+    /**
+     * Joins the shared folder of [invitation] (see `docs/shared-folders.md`), its root going where
+     * [root] says once the owner admits this device; nothing when the application keeps no spaces.
+     */
+    public suspend fun joinSpace(invitation: Invitation, root: SpaceRoot) {
+        val spaceSharing = spaceSharing ?: return
+        mutex.withLock { spaceRoots[invitation.documentId] = root }
+        spaceSharing.spaces.startJoining(invitation)
+        joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
+    }
+
+    /**
+     * Shares [rootFolderId] (a folder, `null`: the library) as a shared folder, this device its
+     * owner (see `docs/shared-folders.md`): its identifier, to invite with ([invite]), or `null` when
+     * the application keeps no spaces or the folder is in a space or holds one.
+     */
+    public suspend fun shareSpace(rootFolderId: String?): String? {
+        val library = spaces ?: return null
+        val spaceSharing = spaceSharing ?: return null
+        val space = library.share(rootFolderId) ?: return null
+        spaceSharing.share(space.id, replica(), deviceName())
+        return space.id
+    }
+
+    /**
+     * Gives every document of the spaces kept its sharing from its space (see [SpaceSharing.follow]):
+     * once the [SpaceLibrary] is started, the documents still to come among them.
+     */
+    public suspend fun followSpaces() {
+        val library = spaces ?: return
+        val spaceSharing = spaceSharing ?: return
+        for (space in library.spaces()) spaceSharing.follow(space.id)
     }
 
     /**
@@ -385,11 +481,11 @@ public class SyncEngine(
                 otherVersion.value = true
                 return@launch
             }
-            val match = sharing.match(open.tag) ?: return@launch
+            val (match, access) = matchOf(open.tag) ?: return@launch
             // A device joins through the owner only
             if (match is TagMatch.Joining) return@launch
             val secure = SecureChannel.of(channel, match.key)
-            run(Link(secure, match, opened = false), acquire(match.documentId), known)
+            run(Link(secure, match, opened = false, access), if (access === sharing) acquire(match.documentId) else null, known)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } catch (e: CancellationException) {
@@ -408,10 +504,10 @@ public class SyncEngine(
      */
     public fun connect(channel: SyncChannel, documentId: String, key: DocumentKey): Job = scope.launch {
         try {
-            val match = sharing.match(key.tag)?.takeIf { it.documentId == documentId } ?: return@launch
+            val (match, access) = matchOf(key.tag)?.takeIf { it.first.documentId == documentId } ?: return@launch
             channel.send(OpenFrame(PROTOCOL_VERSION, key.tag).encode())
             val secure = SecureChannel.of(channel, key)
-            run(Link(secure, match, opened = true), acquire(documentId))
+            run(Link(secure, match, opened = true, access), if (access === sharing) acquire(documentId) else null)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } catch (e: CancellationException) {
@@ -430,6 +526,17 @@ public class SyncEngine(
     public suspend fun routeOf(documentId: String, device: String): Route? = mutex.withLock {
         links.firstOrNull { it.documentId == documentId && it.authorized && it.peer?.device == device }?.channel?.route
     }
+
+    /** What the connection of [tag] is about, and the sharing it is decided by: a document's, or a shared folder's. */
+    private suspend fun matchOf(tag: String): Pair<TagMatch, DocumentSharing>? {
+        sharing.match(tag)?.let { return it to sharing }
+        val spaces = spaceSharing?.spaces ?: return null
+        return spaces.match(tag)?.let { it to spaces }
+    }
+
+    /** The sharing [id] is decided by: of a shared folder when it is one, of a document otherwise. */
+    private suspend fun accessOf(id: String): DocumentSharing =
+        spaceSharing?.spaces?.takeIf { it.stateOf(id) != null } ?: sharing
 
     /** Closes every connection. */
     public suspend fun stop() {
@@ -510,7 +617,12 @@ public class SyncEngine(
     /** The document of [snapshot], received: stored (unless it arrived meanwhile), then synchronized. */
     private suspend fun adopt(snapshot: DocumentSnapshot, base: Map<String, Long>): DocumentSync = mutex.withLock {
         syncs[snapshot.id]?.let { return it.also { it.users++ } }
-        val open = documents.open(snapshot.id) ?: documents.insert(snapshot.toDocument(documents.strokeModeller), receivedFolder(), base)
+        val open = documents.open(snapshot.id) ?: run {
+            // A document of a shared folder goes where the folder has it
+            val placed = spaces?.folderOf(snapshot.id)
+            val folder = if (placed != null) placed.getOrNull() else receivedFolder()
+            documents.insert(snapshot.toDocument(documents.strokeModeller), folder, base)
+        }
         start(open)
     }
 
@@ -557,8 +669,23 @@ public class SyncEngine(
     // ==========================================================
 
     /** A connection about the document of [match] (a key of it, or an invitation), [opened] by this device or by the other one. */
-    private inner class Link(val channel: SyncChannel, val match: TagMatch, val opened: Boolean) {
+    private inner class Link(val channel: SyncChannel, val match: TagMatch, val opened: Boolean, val access: DocumentSharing = sharing) {
         val documentId: String get() = match.documentId
+
+        /** A connection about a shared folder ([documentId] its space): its catalog travels, not a document. */
+        val space: Boolean get() = access !== sharing
+
+        /** The changes of the catalog received and not applied yet (waiting for the ones before, or for the membership). */
+        val catalogPending = mutableListOf<Pair<CatalogOperation, OperationProof>>()
+
+        /** The last change of every replica of the catalog the other device has (sent, or it had them). */
+        val catalogSent = mutableMapOf<String, Long>()
+
+        /** The changes of the catalog made here are sent as they are made (the missed ones were sent). */
+        var catalogCaughtUp = false
+
+        /** Sends the changes of the catalog in order (the ones missed, then the ones made). */
+        val catalogLock = Mutex()
         val tag: String get() = match.key.tag
         var sync: DocumentSync? = null
         var peer: Peer? = null
@@ -781,7 +908,8 @@ public class SyncEngine(
             Leave -> onLeave(link)
             is KnownVersions -> onKnownVersions(link, message.versions)
             is Snapshot -> onSnapshot(link, message.snapshot, message.base)
-            is Operations -> onOperations(link, message.operations.map { open(link, it) })
+            is Operations -> if (!link.space) onOperations(link, message.operations.map { open(link, it) })
+            is CatalogOperations -> onCatalogOperations(link, message.operations)
             is ResourceRequest -> onResourceRequest(link, message.asks)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
@@ -801,8 +929,12 @@ public class SyncEngine(
     /** Says who this device is, signing the challenge [peerNonce] of the other one. */
     private suspend fun sendHello(link: Link, peerNonce: ByteArray) {
         val replica = replica()
-        val state = sharing.stateOf(link.documentId)
-        val vector = link.sync?.open?.edit { it.versionVector }
+        val state = link.access.stateOf(link.documentId)
+        val vector = if (link.space) {
+            spaces?.takeIf { it.has(link.documentId) }?.versionVector(link.documentId)
+        } else {
+            link.sync?.open?.edit { it.versionVector }
+        }
         val proof = identity.sign(helloProof(peerNonce, link.tag, replica, device))
         link.send(
             Hello(
@@ -832,9 +964,9 @@ public class SyncEngine(
             // The owner of the invitation, admitting this device or not
             is TagMatch.Joining -> if (DeviceIdentity.fingerprint(hello.device) != match.invitation.owner) link.channel.close() else waitingApproval(link)
             is TagMatch.Member -> {
-                val membership = sharing.membershipOf(link.documentId)
+                val membership = link.access.membershipOf(link.documentId)
                 val mine = membership?.version ?: 0
-                sharing.stateOf(link.documentId)?.membership?.takeIf { mine > hello.membershipVersion }?.let { link.send(MembershipMessage(it)) }
+                link.access.stateOf(link.documentId)?.membership?.takeIf { mine > hello.membershipVersion }?.let { link.send(MembershipMessage(it)) }
                 if (hello.membershipVersion > mine) link.waitingMembership = true else authorize(link)
             }
         }
@@ -844,7 +976,7 @@ public class SyncEngine(
     private suspend fun authorize(link: Link) {
         val hello = link.peerHello ?: return
         if (link.authorized) return
-        val state = sharing.stateOf(link.documentId)
+        val state = link.access.stateOf(link.documentId)
         val membership = state?.members
         if (state == null || membership == null || membership.ended || membership.memberOf(hello.device) == null) {
             link.channel.close()
@@ -853,7 +985,7 @@ public class SyncEngine(
         link.authorized = true
         // Still on an older key: the current one
         if (hello.epoch < state.epoch) state.key?.let { link.send(KeyUpdate(state.epoch, it.encode())) }
-        if (hello.hasDocument) sharing.recordVersions(link.documentId, mapOf(hello.device to hello.versionVector))
+        if (hello.hasDocument && !link.space) sharing.recordVersions(link.documentId, mapOf(hello.device to hello.versionVector))
         workWith(link, hello)
     }
 
@@ -877,6 +1009,10 @@ public class SyncEngine(
         exchangeAddresses(link, hello)
         // The next presence whole, for the device arrived
         mutex.withLock { sentPresences[link.documentId]?.wholeAt = 0 }
+        if (link.space) {
+            catchUpSpace(link, hello)
+            return
+        }
         // Without the document: it comes with the snapshot
         val sync = link.sync ?: return
         catchUp(link, sync, hello)
@@ -901,11 +1037,15 @@ public class SyncEngine(
     private suspend fun onMembership(link: Link, signed: SignedMembership) {
         // Not before a device joining is admitted
         if (!link.authorized && !link.waitingMembership) return
-        sharing.adopt(link.documentId, signed)?.let { sharing.stateOf(link.documentId)?.let { state -> onMembershipChanged(link.documentId, state, from = link) } }
+        link.access.adopt(link.documentId, signed)?.let {
+            link.access.stateOf(link.documentId)?.let { state -> onMembershipChanged(link.documentId, state, from = link, access = link.access) }
+        }
         if (link.waitingMembership) {
             link.waitingMembership = false
             authorize(link)
         }
+        // The changes of the catalog of the devices admitted meanwhile
+        if (link.space) applyCatalog(link)
         // The operations of the devices admitted meanwhile
         val deferred = link.deferred.toList()
         link.deferred.clear()
@@ -914,7 +1054,7 @@ public class SyncEngine(
 
     /** The other device has an older membership than this one: the more recent one. */
     private suspend fun onMembershipQuery(link: Link, version: Long) {
-        val state = sharing.stateOf(link.documentId) ?: return
+        val state = link.access.stateOf(link.documentId) ?: return
         if ((state.members?.version ?: 0) > version) state.membership?.let { link.send(MembershipMessage(it)) }
     }
 
@@ -923,7 +1063,7 @@ public class SyncEngine(
      * members disconnected, the new key to the members; this device follows it (it may read only,
      * be removed, see the sharing end).
      */
-    private suspend fun onMembershipChanged(documentId: String, state: SharingState, from: Link?) {
+    private suspend fun onMembershipChanged(documentId: String, state: SharingState, from: Link?, access: DocumentSharing = sharing) {
         val membership = state.members ?: return
         val signed = state.membership ?: return
         val targets = linksOf(documentId).filter { it.authorized && it !== from }
@@ -937,12 +1077,39 @@ public class SyncEngine(
         scope.launch { saveAddresses() }
         if (membership.ended || membership.memberOf(device) == null) {
             // This device was removed, or the sharing ended: it keeps its copy
-            sharing.forget(documentId)
+            if (access === sharing) {
+                sharing.forget(documentId)
+            } else {
+                // A shared folder: its documents too, each device keeping its copies
+                val inSpace = sharing.all().filterValues { it.space == documentId }.keys
+                spaceSharing?.forget(documentId)
+                inSpace.forEach { id -> linksOf(id).forEach { closeSoon(it) } }
+            }
             linksOf(documentId).forEach { closeSoon(it) }
             return
         }
         // The new key to the members still on the older one (this device the owner, or relaying it)
         state.key?.let { key -> targets.forEach { it.send(KeyUpdate(state.epoch, key.encode())) } }
+        // A shared folder: its documents follow it, their connections told
+        if (access !== sharing) followSpace(documentId)
+    }
+
+    /**
+     * The documents of the space [spaceId] take its sharing again (its membership or its keys
+     * changed, or what it holds): their connections are told the membership, and the devices no
+     * longer members disconnected.
+     */
+    private suspend fun followSpace(spaceId: String) {
+        val spaceSharing = spaceSharing ?: return
+        val before = sharing.all().filterValues { it.space == spaceId }
+        spaceSharing.follow(spaceId)
+        val after = sharing.all().filterValues { it.space == spaceId }
+        for ((documentId, state) in after) {
+            if (before[documentId]?.membership?.bytes?.contentEquals(state.membership?.bytes) == true) continue
+            onMembershipChanged(documentId, state, from = null)
+        }
+        // Out of the space: shared through it no more
+        for (documentId in before.keys - after.keys) linksOf(documentId).forEach { closeSoon(it) }
     }
 
     /** Closes [link] once its last messages are sent. */
@@ -954,7 +1121,9 @@ public class SyncEngine(
     }
 
     private suspend fun onKeyUpdate(link: Link, update: KeyUpdate) {
-        if (!sharing.adoptKey(link.documentId, update.epoch, update.key)) return
+        if (!link.access.adoptKey(link.documentId, update.epoch, update.key)) return
+        // A new key of a shared folder: of its documents too
+        if (link.space) followSpace(link.documentId)
         // To the members connected to this device only
         linksOf(link.documentId).filter { it !== link && it.authorized }.forEach { it.send(update) }
     }
@@ -962,7 +1131,7 @@ public class SyncEngine(
     /** A member leaves: the owner removes it. */
     private suspend fun onLeave(link: Link) {
         val hello = link.peerHello ?: return
-        if (sharing.stateOf(link.documentId)?.owner == device) removeMember(link.documentId, hello.device)
+        if (link.access.stateOf(link.documentId)?.owner == device) removeMember(link.documentId, hello.device)
     }
 
     // ==========================================================
@@ -998,7 +1167,7 @@ public class SyncEngine(
     }
 
     /** The members of the documents shared now. */
-    private suspend fun memberDevices(): Set<String> = sharing.all().values
+    private suspend fun memberDevices(): Set<String> = (sharing.all().values + spaceSharing?.spaces?.all()?.values.orEmpty())
         .mapNotNull { state -> state.members?.takeIf { !it.ended } }
         .flatMapTo(mutableSetOf()) { membership -> membership.members.map { it.device } }
 
@@ -1017,7 +1186,7 @@ public class SyncEngine(
      * and to it the ones of the other members this device knows.
      */
     private suspend fun exchangeAddresses(link: Link, hello: Hello) {
-        val membership = sharing.membershipOf(link.documentId) ?: return
+        val membership = link.access.membershipOf(link.documentId) ?: return
         onAddresses(link, hello.addresses.filter { it.device == hello.device }, membership)
         addressesLoaded.await()
         val others = known.of(membership.members.map { it.device }.filter { it != hello.device && it != device })
@@ -1025,7 +1194,7 @@ public class SyncEngine(
     }
 
     private suspend fun onDeviceAddresses(link: Link, addresses: List<DeviceAddress>) {
-        val membership = sharing.membershipOf(link.documentId) ?: return
+        val membership = link.access.membershipOf(link.documentId) ?: return
         onAddresses(link, addresses, membership)
     }
 
@@ -1040,7 +1209,7 @@ public class SyncEngine(
         if (taken.isEmpty()) return
         scope.launch { saveAddresses() }
         for (link in mutex.withLock { links.filter { it !== from && it.authorized } }) {
-            val members = sharing.membershipOf(link.documentId) ?: continue
+            val members = link.access.membershipOf(link.documentId) ?: continue
             val relayed = taken.filter { it.device != link.peerHello?.device && members.memberOf(it.device) != null }
             if (relayed.isNotEmpty()) link.trySend(DeviceAddresses(relayed))
         }
@@ -1052,14 +1221,14 @@ public class SyncEngine(
 
     /** A device joins with the invitation [grant] of this device, the owner: admitted, once approved if needed. */
     private suspend fun onJoinRequest(link: Link, grant: InvitationGrant, hello: Hello) {
-        val state = sharing.stateOf(link.documentId) ?: return link.channel.close()
+        val state = link.access.stateOf(link.documentId) ?: return link.channel.close()
         if (state.members?.memberOf(hello.device) != null) {
             admit(link, state, hello)
             return
         }
         if (!grant.approval) {
-            sharing.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
-                onMembershipChanged(link.documentId, it, from = link)
+            link.access.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
+                onMembershipChanged(link.documentId, it, from = link, access = link.access)
                 admit(link, it, hello)
             }
             return
@@ -1076,8 +1245,8 @@ public class SyncEngine(
                 closeSoon(link)
                 return@launch
             }
-            sharing.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
-                onMembershipChanged(link.documentId, it, from = link)
+            link.access.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
+                onMembershipChanged(link.documentId, it, from = link, access = link.access)
                 admit(link, it, hello)
             }
         }
@@ -1086,7 +1255,7 @@ public class SyncEngine(
     /** Gives the device of [link] the key and the membership of the document, then works with it. */
     private suspend fun admit(link: Link, admitted: SharingState, hello: Hello) {
         // The most recent membership (another device may be admitted at the same time)
-        val state = sharing.stateOf(link.documentId) ?: admitted
+        val state = link.access.stateOf(link.documentId) ?: admitted
         val key = state.key ?: return
         val signed = state.membership ?: return
         link.send(Admission(state.epoch, key.encode(), signed))
@@ -1098,7 +1267,9 @@ public class SyncEngine(
     private suspend fun onAdmission(link: Link, admission: Admission) {
         if (link.match !is TagMatch.Joining || link.authorized) return
         val owner = link.peerHello?.device ?: return
-        sharing.admitted(link.documentId, owner, admission.epoch, admission.key, admission.membership) ?: return link.channel.close()
+        val membership = link.access.admitted(link.documentId, owner, admission.epoch, admission.key, admission.membership) ?: return link.channel.close()
+        // A shared folder: kept in the library where the user chose
+        if (link.space) joinLibrary(link.documentId, (link.match as TagMatch.Joining).invitation, membership.memberOf(device)?.role == Role.READER)
         joinStates.update { it + (link.documentId to JoinStatus.ADMITTED) }
         link.authorized = true
         workWith(link, link.peerHello ?: return)
@@ -1106,7 +1277,7 @@ public class SyncEngine(
 
     private suspend fun onRefused(link: Link) {
         if (link.match !is TagMatch.Joining) return
-        sharing.forget(link.documentId)
+        link.access.forget(link.documentId)
         joinStates.update { it + (link.documentId to JoinStatus.REFUSED) }
         link.channel.close()
     }
@@ -1118,14 +1289,149 @@ public class SyncEngine(
         }
     }
 
+    /**
+     * Whether [giver] may give the document [documentId] to a device without it: its owner, or, in
+     * a shared folder, the device that brought it into the folder (see [SpaceSharing.mayGive]).
+     */
+    private suspend fun mayGive(documentId: String, giver: String): Boolean {
+        val state = sharing.stateOf(documentId) ?: return false
+        val space = state.space ?: return giver == state.owner
+        return spaceSharing?.mayGive(space, documentId, giver) ?: false
+    }
+
+    /** The shared folder [spaceId] admitted this device: kept in the library where the user chose to put it. */
+    private suspend fun joinLibrary(spaceId: String, invitation: Invitation, readOnly: Boolean) {
+        val library = spaces ?: return
+        val root = mutex.withLock { spaceRoots.remove(spaceId) } ?: SpaceRoot.NewFolder
+        val rootFolder = when (root) {
+            SpaceRoot.Library -> null
+            is SpaceRoot.Folder -> root.folderId
+            SpaceRoot.NewFolder -> library.newRootFolder(invitation.title)
+        }
+        library.join(spaceId, rootFolder, readOnly)
+        // The sharing waiting for the space, kept with it now that it is in the library
+        spaceSharing?.spaces?.saveAgain(spaceId)
+    }
+
+    /** Sends the other device of [link], about a shared folder, the changes of its catalog it misses; then the ones made as they are made. */
+    private suspend fun catchUpSpace(link: Link, hello: Hello) {
+        val library = spaces ?: return
+        // Joining: the catalog comes from the other device
+        if (!library.has(link.documentId)) return
+        link.catalogLock.withLock {
+            if (hello.hasDocument) link.catalogSent.putAll(hello.versionVector)
+            library.operationsAfter(link.documentId, link.catalogSent).chunked(MAX_BATCH).forEach { sendCatalog(link, it) }
+            link.catalogCaughtUp = true
+        }
+    }
+
+    /** A change of the catalog of [spaceId] made here: to the members connected about the folder. */
+    private suspend fun onLocalCatalogOperation(spaceId: String, operation: CatalogOperation) {
+        // A document added or taken out: shared through the space or not
+        followSpace(spaceId)
+        for (link in linksOf(spaceId).filter { it.space && it.authorized }) {
+            link.catalogLock.withLock { if (link.catalogCaughtUp) sendCatalog(link, listOf(operation)) }
+        }
+    }
+
+    /**
+     * [operations] of the catalog of the space of [link] sealed for it with the proofs of their
+     * authors (this device signs its own, the ones of the others go as they came), the ones the
+     * other device has not got only.
+     */
+    private suspend fun sendCatalog(link: Link, operations: List<CatalogOperation>) {
+        val library = spaces ?: return
+        val spaceId = link.documentId
+        val missing = operations.filter { operation ->
+            val id = operation.id
+            (id.sequence > (link.catalogSent[id.replica] ?: 0L)).also { if (it) link.catalogSent[id.replica] = id.sequence }
+        }
+        if (missing.isEmpty()) return
+        val mine = replica()
+        val proofs = library.proofs(spaceId, missing.filter { it.id.replica != mine }.map { it.id })
+        val sealed = missing.mapNotNull { operation ->
+            val id = operation.id
+            val proof = if (id.replica == mine) {
+                OperationProof.signCatalog(identity, spaceId, id.replica, id.sequence, SyncCodec.encodeCatalogOperation(operation))
+            } else {
+                proofs[id]?.let(OperationProof::decode)
+            }
+            proof?.let { link.seal.seal(id.replica, id.sequence, it) }
+        }
+        if (sealed.isNotEmpty()) link.send(CatalogOperations(sealed))
+    }
+
+    /** Changes of the catalog of the space of [link], opened with its key: the same as their identities in clear. */
+    private suspend fun onCatalogOperations(link: Link, sealed: List<SealedOperation>) {
+        if (!link.space || spaces?.has(link.documentId) != true) return
+        for (item in sealed) {
+            val proof = link.seal.open(item)
+            val operation = SyncCodec.decodeCatalogOperation(proof.content)
+            if (operation.id.replica != item.replica || operation.id.sequence != item.sequence) {
+                throw SyncException("A change of a folder sealed under another identity")
+            }
+            link.catalogPending += operation to proof
+        }
+        if (link.catalogPending.size > MAX_PENDING_CATALOG) throw SyncException("Too many changes of a folder waiting")
+        applyCatalog(link)
+    }
+
+    /**
+     * Applies the changes of the catalog of [link] that follow the ones applied (of the members
+     * known: the others wait for the membership), checked first: signed by the device of their
+     * replica as its role allows, and admitted by the catalog (stamps, bounds). One that is not
+     * closes the connection, before anything of the batch is applied.
+     */
+    private suspend fun applyCatalog(link: Link) {
+        val library = spaces ?: return
+        val spaceSharing = spaceSharing ?: return
+        val spaceId = link.documentId
+        val membership = link.access.membershipOf(spaceId) ?: return
+        val next = mutableMapOf<String, Long>()
+        val batch = mutableListOf<Pair<CatalogOperation, OperationProof>>()
+        var progress = true
+        while (progress) {
+            progress = false
+            val iterator = link.catalogPending.iterator()
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                val id = item.first.id
+                if (!membership.knows(id.replica)) continue
+                val last = next.getOrPut(id.replica) { library.lastApplied(spaceId, id.replica) }
+                when {
+                    id.sequence <= last -> iterator.remove()
+                    id.sequence == last + 1 -> {
+                        if (!spaceSharing.admitsChange(spaceId, item.first, item.second) || !library.admits(spaceId, item.first)) {
+                            throw SyncException("A change of a folder not admitted")
+                        }
+                        batch += item
+                        next[id.replica] = id.sequence
+                        iterator.remove()
+                        progress = true
+                    }
+                }
+            }
+        }
+        if (batch.isEmpty()) return
+        library.saveProofs(spaceId, batch.associate { it.first.id to it.second.encode() })
+        val operations = batch.map { it.first }
+        library.receive(spaceId, operations)
+        followSpace(spaceId)
+        // To the other members connected about the folder (never back)
+        for (other in linksOf(spaceId).filter { it !== link && it.space && it.authorized }) {
+            other.catalogLock.withLock { if (other.catalogCaughtUp) sendCatalog(other, operations) }
+        }
+    }
+
     // ==========================================================
     // Operations
     // ==========================================================
 
     private suspend fun onSnapshot(link: Link, snapshot: DocumentSnapshot, base: Map<String, Long>) {
         if (link.sync != null || snapshot.id != link.documentId) return
-        // From its owner only: a member could give anything
-        if (link.peerHello?.device == null || link.peerHello?.device != sharing.stateOf(link.documentId)?.owner) return
+        // From its owner only (a member could give anything), or, in a shared folder, from the device that brought it
+        val giver = link.peerHello?.device ?: return
+        if (!mayGive(link.documentId, giver)) return
         val sync = adopt(snapshot, base)
         link.sync = sync
         // Kept with the document now that it is here
@@ -1139,7 +1445,7 @@ public class SyncEngine(
      */
     private suspend fun catchUp(link: Link, sync: DocumentSync, hello: Hello) {
         // A device without the document gets it from its owner (see onSnapshot)
-        if (!hello.hasDocument && sharing.stateOf(link.documentId)?.owner != device) return
+        if (!hello.hasDocument && !mayGive(link.documentId, device)) return
         // From now on the operations applied here wait for the link
         sync.open.edit { sync.links.add(link) }
         val known = if (hello.hasDocument) {
@@ -1485,6 +1791,9 @@ public class SyncEngine(
     private companion object {
         /** The most operations in a message. */
         const val MAX_BATCH = 200
+
+        /** The changes of a folder waiting for the ones before them on a connection, at most (a device sending only later ones fills nothing). */
+        const val MAX_PENDING_CATALOG = 20_000
 
         const val CHUNK_SIZE = 256 * 1024
 

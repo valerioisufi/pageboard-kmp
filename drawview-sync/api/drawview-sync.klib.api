@@ -58,6 +58,33 @@ abstract interface io.github.valerioisufi.drawview.sync/SyncNetwork { // io.gith
     abstract suspend fun stop() // io.github.valerioisufi.drawview.sync/SyncNetwork.stop|stop(){}[0]
 }
 
+sealed interface io.github.valerioisufi.drawview.sync/SpaceRoot { // io.github.valerioisufi.drawview.sync/SpaceRoot|null[0]
+    final class Folder : io.github.valerioisufi.drawview.sync/SpaceRoot { // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.<init>|<init>(kotlin.String){}[0]
+
+        final val folderId // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.folderId|{}folderId[0]
+            final fun <get-folderId>(): kotlin/String // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.folderId.<get-folderId>|<get-folderId>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.sync/SpaceRoot.Folder // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync/SpaceRoot.Folder.toString|toString(){}[0]
+    }
+
+    final object Library : io.github.valerioisufi.drawview.sync/SpaceRoot { // io.github.valerioisufi.drawview.sync/SpaceRoot.Library|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync/SpaceRoot.Library.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync/SpaceRoot.Library.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync/SpaceRoot.Library.toString|toString(){}[0]
+    }
+
+    final object NewFolder : io.github.valerioisufi.drawview.sync/SpaceRoot { // io.github.valerioisufi.drawview.sync/SpaceRoot.NewFolder|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync/SpaceRoot.NewFolder.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync/SpaceRoot.NewFolder.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync/SpaceRoot.NewFolder.toString|toString(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.sync/EpochKey { // io.github.valerioisufi.drawview.sync/EpochKey|null[0]
     constructor <init>(kotlin/Int, kotlin/String) // io.github.valerioisufi.drawview.sync/EpochKey.<init>|<init>(kotlin.Int;kotlin.String){}[0]
 
@@ -341,7 +368,7 @@ final class io.github.valerioisufi.drawview.sync/StoreSharedDocuments : io.githu
 }
 
 final class io.github.valerioisufi.drawview.sync/SyncEngine { // io.github.valerioisufi.drawview.sync/SyncEngine|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.sync/SharedDocuments, kotlinx.coroutines/CoroutineScope, kotlin/Function0<kotlin/String>, io.github.valerioisufi.drawview.sync/ResourceFiles = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.model/DocumentAttachments? = ..., io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity = ..., kotlin.coroutines/SuspendFunction0<kotlin/String?> = ..., io.github.valerioisufi.drawview.sync/AddressBook = ...) // io.github.valerioisufi.drawview.sync/SyncEngine.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.sync.SharedDocuments;kotlinx.coroutines.CoroutineScope;kotlin.Function0<kotlin.String>;io.github.valerioisufi.drawview.sync.ResourceFiles;kotlin.Long;io.github.valerioisufi.drawview.model.DocumentAttachments?;io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity;kotlin.coroutines.SuspendFunction0<kotlin.String?>;io.github.valerioisufi.drawview.sync.AddressBook){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.sync/SharedDocuments, kotlinx.coroutines/CoroutineScope, kotlin/Function0<kotlin/String>, io.github.valerioisufi.drawview.sync/ResourceFiles = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.model/DocumentAttachments? = ..., io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity = ..., kotlin.coroutines/SuspendFunction0<kotlin/String?> = ..., io.github.valerioisufi.drawview.sync/AddressBook = ..., io.github.valerioisufi.drawview.store.space/SpaceLibrary? = ...) // io.github.valerioisufi.drawview.sync/SyncEngine.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.sync.SharedDocuments;kotlinx.coroutines.CoroutineScope;kotlin.Function0<kotlin.String>;io.github.valerioisufi.drawview.sync.ResourceFiles;kotlin.Long;io.github.valerioisufi.drawview.model.DocumentAttachments?;io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity;kotlin.coroutines.SuspendFunction0<kotlin.String?>;io.github.valerioisufi.drawview.sync.AddressBook;io.github.valerioisufi.drawview.store.space.SpaceLibrary?){}[0]
 
     final val addresses // io.github.valerioisufi.drawview.sync/SyncEngine.addresses|{}addresses[0]
         final fun <get-addresses>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DeviceAddress>>> // io.github.valerioisufi.drawview.sync/SyncEngine.addresses.<get-addresses>|<get-addresses>(){}[0]
@@ -363,21 +390,26 @@ final class io.github.valerioisufi.drawview.sync/SyncEngine { // io.github.valer
         final fun <get-presences>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.drawview.sync/Presence>> // io.github.valerioisufi.drawview.sync/SyncEngine.presences.<get-presences>|<get-presences>(){}[0]
     final val sharingChanged // io.github.valerioisufi.drawview.sync/SyncEngine.sharingChanged|{}sharingChanged[0]
         final fun <get-sharingChanged>(): kotlinx.coroutines.flow/SharedFlow<kotlin/String> // io.github.valerioisufi.drawview.sync/SyncEngine.sharingChanged.<get-sharingChanged>|<get-sharingChanged>(){}[0]
+    final val spaceMemberships // io.github.valerioisufi.drawview.sync/SyncEngine.spaceMemberships|{}spaceMemberships[0]
+        final fun <get-spaceMemberships>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Membership>> // io.github.valerioisufi.drawview.sync/SyncEngine.spaceMemberships.<get-spaceMemberships>|<get-spaceMemberships>(){}[0]
 
     final fun accept(io.github.valerioisufi.drawview.sync.protocol/SyncChannel): kotlinx.coroutines/Job // io.github.valerioisufi.drawview.sync/SyncEngine.accept|accept(io.github.valerioisufi.drawview.sync.protocol.SyncChannel){}[0]
     final fun answer(io.github.valerioisufi.drawview.sync/JoinRequest, kotlin/Boolean) // io.github.valerioisufi.drawview.sync/SyncEngine.answer|answer(io.github.valerioisufi.drawview.sync.JoinRequest;kotlin.Boolean){}[0]
     final fun connect(io.github.valerioisufi.drawview.sync.protocol/SyncChannel, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DocumentKey): kotlinx.coroutines/Job // io.github.valerioisufi.drawview.sync/SyncEngine.connect|connect(io.github.valerioisufi.drawview.sync.protocol.SyncChannel;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey){}[0]
-    final fun invitationOf(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync/InvitationGrant, kotlin.collections/Map<kotlin/String, kotlin/String> = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation // io.github.valerioisufi.drawview.sync/SyncEngine.invitationOf|invitationOf(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.InvitationGrant;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    final fun invitationOf(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync/InvitationGrant, kotlin.collections/Map<kotlin/String, kotlin/String> = ..., io.github.valerioisufi.drawview.sync.protocol/InvitationKind = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation // io.github.valerioisufi.drawview.sync/SyncEngine.invitationOf|invitationOf(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.InvitationGrant;kotlin.collections.Map<kotlin.String,kotlin.String>;io.github.valerioisufi.drawview.sync.protocol.InvitationKind){}[0]
     final suspend fun announcedTags(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.sync/SyncEngine.announcedTags|announcedTags(){}[0]
     final suspend fun connectionKeys(): kotlin.collections/List<kotlin/Pair<kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DocumentKey>> // io.github.valerioisufi.drawview.sync/SyncEngine.connectionKeys|connectionKeys(){}[0]
+    final suspend fun followSpaces() // io.github.valerioisufi.drawview.sync/SyncEngine.followSpaces|followSpaces(){}[0]
     final suspend fun invitationsOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.sync/InvitationGrant> // io.github.valerioisufi.drawview.sync/SyncEngine.invitationsOf|invitationsOf(kotlin.String){}[0]
     final suspend fun invite(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role = ..., kotlin/Boolean = ..., kotlin.collections/Map<kotlin/String, kotlin/String> = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation? // io.github.valerioisufi.drawview.sync/SyncEngine.invite|invite(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role;kotlin.Boolean;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
     final suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync/SyncEngine.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
+    final suspend fun joinSpace(io.github.valerioisufi.drawview.sync.protocol/Invitation, io.github.valerioisufi.drawview.sync/SpaceRoot) // io.github.valerioisufi.drawview.sync/SyncEngine.joinSpace|joinSpace(io.github.valerioisufi.drawview.sync.protocol.Invitation;io.github.valerioisufi.drawview.sync.SpaceRoot){}[0]
     final suspend fun publishAddress(kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.sync/SyncEngine.publishAddress|publishAddress(kotlin.String;kotlin.String?){}[0]
     final suspend fun removeMember(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.removeMember|removeMember(kotlin.String;kotlin.String){}[0]
     final suspend fun revokeInvitation(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.revokeInvitation|revokeInvitation(kotlin.String;kotlin.String){}[0]
     final suspend fun routeOf(kotlin/String, kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Route? // io.github.valerioisufi.drawview.sync/SyncEngine.routeOf|routeOf(kotlin.String;kotlin.String){}[0]
     final suspend fun setRole(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role) // io.github.valerioisufi.drawview.sync/SyncEngine.setRole|setRole(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role){}[0]
+    final suspend fun shareSpace(kotlin/String?): kotlin/String? // io.github.valerioisufi.drawview.sync/SyncEngine.shareSpace|shareSpace(kotlin.String?){}[0]
     final suspend fun stop() // io.github.valerioisufi.drawview.sync/SyncEngine.stop|stop(){}[0]
     final suspend fun unshare(kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.unshare|unshare(kotlin.String){}[0]
     final suspend fun updatePresence(io.github.valerioisufi.drawview.sync/Presence) // io.github.valerioisufi.drawview.sync/SyncEngine.updatePresence|updatePresence(io.github.valerioisufi.drawview.sync.Presence){}[0]
