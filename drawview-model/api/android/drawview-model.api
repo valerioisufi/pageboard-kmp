@@ -3251,6 +3251,8 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeKind$Compani
 
 public final class io/github/valerioisufi/drawview/model/shape/ShapeKt {
 	public static final field SHAPE_INPUT_SPACING_MM F
+	public static final fun followed (Lio/github/valerioisufi/drawview/model/shape/Shape;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/shape/Shape;
+	public static final fun getPivot (Lio/github/valerioisufi/drawview/model/shape/Shape;)Lio/github/valerioisufi/drawview/model/geometry/Point;
 	public static final fun strokeInputs (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;F)Ljava/util/List;
 	public static synthetic fun strokeInputs$default (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
 }

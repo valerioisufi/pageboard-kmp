@@ -187,6 +187,65 @@ class ShapeToolTest {
     }
 
     @Test
+    fun aLineJoinedToABoxFollowsItWhenItMoves() = withCanvas { scene, controller ->
+        val manager = controller.customElementManager
+        val rectangle = ShapeElement(ShapeKind.RECTANGLE, BLACK, 0.5f)
+        val box = manager.add(ShapeElementType, rectangle, 0, Rect(100f, 100f, 140f, 130f), select = false)!!
+        // From (60, 115) to the middle of the left side of the box, where the snap puts it
+        val anchor = ShapeGeometry.anchors(rectangle, 40f, 30f).single { it.y == 15f && it.x < 20f }.let { Point(100f + it.x, 100f + it.y) }
+        val lineValue = ShapeElement(ShapeKind.LINE, BLACK, 0.5f)
+        val lineBox = ShapeGeometry.lineBox(Point(60f, 115f), anchor, lineValue)
+        manager.add(ShapeElementType, lineValue, 0, Rect(lineBox.x, lineBox.y, lineBox.x + lineBox.width, lineBox.y + lineBox.height), select = false)
+        // A line apart from the box stays where it is
+        val apartBox = ShapeGeometry.lineBox(Point(10f, 10f), Point(50f, 10f), lineValue)
+        manager.add(ShapeElementType, lineValue, 0, Rect(apartBox.x, apartBox.y, apartBox.x + apartBox.width, apartBox.y + apartBox.height), select = false)
+
+        // The box dragged by its inside with the tool of the shapes, 10 mm right and 20 mm down
+        controller.selectTool(Tool.SHAPES)
+        controller.selectionManager.selectCustomElements(0, listOf(box))
+        scene.drag(controller.screen(120f, 115f), controller.screen(130f, 135f))
+        near(110f, shapes(controller).single { ShapeElementType.decode(it)?.kind == ShapeKind.RECTANGLE }.x, 1f)
+
+        fun ends() = shapes(controller).filter { ShapeElementType.decode(it)?.kind == ShapeKind.LINE }
+            .map { ShapeGeometry.lineEnds(ShapeBox(it.x, it.y, it.width, it.height, it.rotation)) }
+            .sortedBy { it.first.y }
+        val (apart, joined) = ends()
+        val moved = shapes(controller).single { ShapeElementType.decode(it)?.kind == ShapeKind.RECTANGLE }
+        near(60f, joined.first.x); near(115f, joined.first.y)
+        near(anchor.x + (moved.x - 100f), joined.second.x, 0.05f); near(anchor.y + (moved.y - 100f), joined.second.y, 0.05f)
+        near(10f, apart.first.x); near(50f, apart.second.x); near(10f, apart.second.y)
+
+        // The box and its line in one step
+        controller.undo()
+        val back = ends()[1]
+        near(anchor.x, back.second.x, 0.05f); near(anchor.y, back.second.y, 0.05f)
+        near(100f, shapes(controller).single { ShapeElementType.decode(it)?.kind == ShapeKind.RECTANGLE }.x)
+    }
+
+    @Test
+    fun aLineJoinedToABoxFollowsItWhenItIsResized() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.SHAPES)
+        scene.drag(controller.screen(40f, 40f), controller.screen(100f, 70f))
+        val box = shapes(controller).single()
+        // A line from the middle of the right side of the box (the anchor, inside the outline)
+        val lineValue = ShapeElement(ShapeKind.LINE, BLACK, 0.5f)
+        val value = ShapeElementType.decode(box)!!
+        val right = ShapeGeometry.anchors(value, box.width, box.height).maxBy { it.x - kotlin.math.abs(it.y - box.height / 2f) }
+            .let { Point(box.x + it.x, box.y + it.y) }
+        val lineBox = ShapeGeometry.lineBox(right, Point(right.x + 40f, right.y), lineValue)
+        controller.customElementManager.add(ShapeElementType, lineValue, 0, Rect(lineBox.x, lineBox.y, lineBox.x + lineBox.width, lineBox.y + lineBox.height), select = false)
+        controller.selectionManager.selectCustomElements(0, listOf(box))
+        // Its right side dragged 10 mm to the right
+        scene.drag(controller.screen(right.x, right.y), controller.screen(right.x + 10f, right.y))
+        val wider = shapes(controller).single { ShapeElementType.decode(it)?.kind == ShapeKind.RECTANGLE }
+        val line = shapes(controller).single { ShapeElementType.decode(it)?.kind == ShapeKind.LINE }
+        val (start, end) = ShapeGeometry.lineEnds(ShapeBox(line.x, line.y, line.width, line.height, line.rotation))
+        val wideAnchor = ShapeGeometry.anchors(value, wider.width, wider.height).maxBy { it.x - kotlin.math.abs(it.y - wider.height / 2f) }
+        near(wider.x + wideAnchor.x, start.x, 0.05f); near(wider.y + wideAnchor.y, start.y, 0.05f)
+        near(right.x + 40f, end.x, 0.05f)
+    }
+
+    @Test
     fun theStyleOfTheShapesSelectedChangesAtOnce() = withCanvas { scene, controller ->
         val pageIndex = 0
         val a = controller.customElementManager.add(ShapeElementType, ShapeElement(ShapeKind.RECTANGLE, BLACK, 0.5f), pageIndex, Rect(40f, 40f, 80f, 60f), select = false)!!

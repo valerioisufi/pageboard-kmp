@@ -84,6 +84,30 @@ class ShapeGesturesTest {
         assertTrue(ys.max() - ys.min() > 1f, "the wave drawn")
     }
 
+    @Test
+    fun aLineThatSnappedFollowsThePenStillDown() = withCanvas { scene, controller ->
+        var time = scene.draw(wavyLine(), holdMs = 600L)
+        // From where it was held (560, 400) up and further: the line turns and grows from its start
+        val end = Offset(560f, 200f)
+        for (i in 1..20) {
+            time += 16L
+            scene.send(PointerEventType.Move, wavyLine().last() + (end - wavyLine().last()) * (i / 20f), time)
+        }
+        scene.release(end, time)
+        val points = strokes(controller).single().baseMesh.points
+        val first = points.minBy { it.x }
+        val last = points.minBy { it.y }
+        assertTrue(first.y - last.y > 20f, "the line turned up, from (${first.x}, ${first.y}) to (${last.x}, ${last.y})")
+        // Still a straight line: every point on the segment from its start to its end
+        val dx = last.x - first.x
+        val dy = last.y - first.y
+        val length = kotlin.math.sqrt(dx * dx + dy * dy)
+        val off = points.maxOf { kotlin.math.abs((it.x - first.x) * dy - (it.y - first.y) * dx) / length }
+        assertTrue(off < 0.5f, "a straight line, ${off} mm off it")
+        controller.undo()
+        assertEquals(0, strokes(controller).size, "undone in one step")
+    }
+
     /** A line across the page drawn by a hand that wavers a little. */
     private fun wavyLine(): List<Offset> = (0..60).map { i -> Offset(200f + i * 6f, 400f + 2f * sin(i / 6f)) }
 

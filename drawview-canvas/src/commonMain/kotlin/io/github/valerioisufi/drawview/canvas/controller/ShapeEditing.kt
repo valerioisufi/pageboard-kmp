@@ -275,6 +275,7 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
         val draft = handleDraft
         val element = element
         val pageIndex = pageIndex
+        val original = original
         reset()
         val selections = controller.selectionManager
         if (draft == null || element == null) {
@@ -284,7 +285,11 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
         val page = controller.document.pages.getOrNull(pageIndex)
         val box = draft.box
         if (page != null && box.width >= ShapeInserter.MIN_SIZE_MM) {
-            controller.session.submit(PlaceElements(page.id, listOf(BoxPlacement(element.id, box.x, box.y, box.width, box.height, box.rotation))))
+            // The lines joined to the shape follow its anchors, in the same step of undo
+            val before = original ?: ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
+            val values = controller.engines.elements::valueOf
+            val joined = ShapeConnectors.follow(page, element, { values(it) as? ShapeElement }, before, box)
+            controller.session.submit(PlaceElements(page.id, listOf(BoxPlacement(element.id, box.x, box.y, box.width, box.height, box.rotation)) + joined))
         }
         selections.applyTransformation()
         selections.selectCustomElement(pageIndex, element)

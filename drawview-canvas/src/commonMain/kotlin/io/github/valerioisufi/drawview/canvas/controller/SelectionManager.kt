@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.model.change.ChangeEffects
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.CopiedElements
 import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
 import io.github.valerioisufi.drawview.model.change.Placement
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.ReorderElements
@@ -578,6 +579,11 @@ public class SelectionManager internal constructor(private val controller: DrawV
             (original[text.id] as? TextPlacement)?.let {
                 text.x = it.x; text.y = it.y; text.width = it.width; text.autoWidth = it.autoWidth
             }
+        }
+        // The lines joined to the shapes moved follow them (on the same page)
+        if (newPage === oldPage && selection.customs.isNotEmpty()) {
+            val values = controller.engines.elements::valueOf
+            placements += ShapeConnectors.follow(oldPage, selection.customs, { values(it) as? ShapeElement }, finalTransform)
         }
         val move = PlaceElements(oldPage.id, placements, newPage.id)
         // On another page: on top of its elements, in their order

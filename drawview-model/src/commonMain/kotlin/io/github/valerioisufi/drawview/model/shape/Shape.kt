@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.model.shape
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.geometry.Point
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.max
@@ -141,3 +142,41 @@ internal fun Point.rotated(angle: Float): Point {
     val s = sin(angle)
     return Point(x * c - y * s, x * s + y * c)
 }
+
+/**
+ * Where a shape turns and grows from while the pen still held after it snapped moves it (see
+ * [followed]): the start of an open shape (a line, an arrow, a broken line), the middle of a closed
+ * one.
+ */
+public val Shape.pivot: Point
+    get() = when (this) {
+        is Line -> start
+        is Arrow -> tail
+        is Polyline -> vertices.first()
+        is Polygon -> Point(vertices.sumOf { it.x.toDouble() }.toFloat() / vertices.size, vertices.sumOf { it.y.toDouble() }.toFloat() / vertices.size)
+        is Ellipse -> center
+    }
+
+/**
+ * This shape turned and scaled around [pivot] as the pen goes from [from] to [to]: the turn and
+ * the scale that take [from] to [to] seen from [pivot]. An arrow keeps the length of its head; a
+ * pen too near the pivot leaves the shape as it is.
+ */
+public fun Shape.followed(pivot: Point, from: Point, to: Point): Shape {
+    val before = from - pivot
+    val after = to - pivot
+    if (before.distance < MIN_FOLLOW_MM || after.distance < MIN_FOLLOW_MM) return this
+    val scale = after.distance / before.distance
+    val angle = atan2(after.y, after.x) - atan2(before.y, before.x)
+    fun map(point: Point): Point = (point - pivot).rotated(angle) * scale + pivot
+    return when (this) {
+        is Line -> Line(map(start), map(end))
+        is Arrow -> Arrow(map(tail), map(tip), headLength)
+        is Polyline -> Polyline(vertices.map(::map))
+        is Polygon -> Polygon(vertices.map(::map))
+        is Ellipse -> Ellipse(map(center), radiusX * scale, radiusY * scale, rotation + angle)
+    }
+}
+
+/** The pen nearer than this to the pivot of a shape does not turn it nor scale it, in millimeters. */
+private const val MIN_FOLLOW_MM = 1f

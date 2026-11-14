@@ -587,6 +587,7 @@ internal class CanvasGestureHandler(
             inkBrush = brush
             mode = if (tool == Tool.LAZO) Mode.LASSO else Mode.INK
             strokeSnapped = false
+            controller.shapeSnapper.release()
             holdTried = false
             holdPosition = position
             holdTime = change.uptimeMillis
@@ -684,6 +685,13 @@ internal class CanvasGestureHandler(
                     predictInk(change.pressure)
                     inkBrush?.let { ink.strokeChanged(engine, it.color, inkPageIndex) }
                     if (mode == Mode.INK) followHold(position, change.uptimeMillis)
+                } else if (mode == Mode.INK) {
+                    // The shape that snapped follows the pen still down
+                    val pen = controller.viewport.screenToPageMm(inkPageIndex, position)
+                    if (pen != null && controller.shapeSnapper.adjust(engine, Point(pen.x, pen.y))) {
+                        inkBrush?.let { ink.strokeChanged(engine, it.color, inkPageIndex, replaced = true) }
+                        reportActivity(position, inking = true)
+                    }
                 }
             }
 
