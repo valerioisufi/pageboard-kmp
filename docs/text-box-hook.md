@@ -76,7 +76,7 @@ Variations).
 | 1 | The hook: `TextSuggester`, `TextBeingWritten`, `TextSuggestion`, `EditorExtension.textSuggestions` with its builder setter and the rule of `+`, `LocalTextSuggestions` provided by `EditorScreen` | done |
 | 2 | `SuggestionSession` (pause, stale answers, drop) and `GhostText` (the transformation and its mapping), tested alone | done |
 | 3 | The text box: the suggestion shown, accepted by Tab, the right arrow at the end and a tap, dropped by Escape and by any change; the keys unchanged without one | done |
-| 4 | The sample: an extension suggesting the end of a word from the words of the document, and screenshots of a suggestion shown | to do |
+| 4 | The sample: an extension suggesting the end of a word from the words of the document (the screenshot of a suggestion shown came with phase 3, `text-suggestion` of `drawview-explorer`) | done |
 
 Each phase is one commit on `feat/text-box-hook`, after the checks of `CLAUDE.md`, the screenshots
 of `drawview-ui` and `drawview-explorer`, `consumer-checks`, and the desktop sample run by hand on a
