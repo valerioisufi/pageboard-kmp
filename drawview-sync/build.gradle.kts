@@ -11,6 +11,8 @@ kotlin {
             api(project(":drawview-store"))
             api(project(":drawview-sync-protocol"))
             implementation(libs.kotlinx.coroutines.core)
+            // The files of the resources received, written as they come
+            implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.cbor)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.cryptography.core)

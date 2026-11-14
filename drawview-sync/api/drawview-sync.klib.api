@@ -31,10 +31,17 @@ abstract interface io.github.valerioisufi.drawview.sync/InternetSync { // io.git
     abstract fun network(io.github.valerioisufi.drawview.sync/SyncEngine, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/String): io.github.valerioisufi.drawview.sync/SyncNetwork // io.github.valerioisufi.drawview.sync/InternetSync.network|network(io.github.valerioisufi.drawview.sync.SyncEngine;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.String){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.sync/ResourceDownload { // io.github.valerioisufi.drawview.sync/ResourceDownload|null[0]
+    abstract fun append(kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.drawview.sync/ResourceDownload.append|append(kotlin.ByteArray){}[0]
+    abstract fun discard() // io.github.valerioisufi.drawview.sync/ResourceDownload.discard|discard(){}[0]
+    abstract fun finish(): kotlin/String? // io.github.valerioisufi.drawview.sync/ResourceDownload.finish|finish(){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.sync/ResourceFiles { // io.github.valerioisufi.drawview.sync/ResourceFiles|null[0]
     abstract fun read(kotlin/String): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync/ResourceFiles.read|read(kotlin.String){}[0]
     abstract fun write(kotlin/ByteArray, kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.sync/ResourceFiles.write|write(kotlin.ByteArray;kotlin.String){}[0]
     open fun exists(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.sync/ResourceFiles.exists|exists(kotlin.String){}[0]
+    open fun receive(kotlin/String): io.github.valerioisufi.drawview.sync/ResourceDownload? // io.github.valerioisufi.drawview.sync/ResourceFiles.receive|receive(kotlin.String){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.sync/SharedDocuments { // io.github.valerioisufi.drawview.sync/SharedDocuments|null[0]

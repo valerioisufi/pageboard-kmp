@@ -157,9 +157,8 @@ public class SyncEngine(
      */
     private val strangers = Semaphore(MAX_STRANGERS)
 
-    /** The downloads of the files of the resources, by document and resource (they go on over another connection). */
-    private val downloads = mutableMapOf<Pair<String, String>, Download>()
-    private val downloadsMutex = Mutex()
+    /** The files of the resources being received (they go on over another connection). */
+    private val downloads = ResourceDownloads(files, MAX_RESOURCE_SIZE)
 
     private val known = KnownAddresses()
     private val own = MutableStateFlow<Map<String, DeviceAddress>>(emptyMap())
@@ -637,22 +636,6 @@ public class SyncEngine(
 
     /** An operation received with the proof of its author (checked once the membership names it). */
     private class Received(val operation: Operation, val proof: OperationProof)
-
-    /**
-     * A download of the file of a resource of [total] bytes: the [received] ones in [bytes], which
-     * grow as they come (it goes on over another connection).
-     */
-    private class Download(val total: Long) {
-        var bytes = ByteArray(0)
-        var received = 0
-
-        /** Adds [part], the next bytes. */
-        fun add(part: ByteArray) {
-            if (received + part.size > bytes.size) bytes = bytes.copyOf(minOf(total, maxOf(received + part.size.toLong(), bytes.size * 2L)).toInt())
-            part.copyInto(bytes, received)
-            received += part.size
-        }
-    }
 
     /** An item beside the document being received: [received] of its [size] bytes, at [version]. */
     private class Receiving(val receiver: AttachmentReceiver, val version: String, val size: Long) {
@@ -1328,8 +1311,7 @@ public class SyncEngine(
                 continue
             }
             if (!link.requested.add(id)) continue
-            val from = downloadsMutex.withLock { downloads[link.documentId to id]?.received ?: 0 }
-            asks.add(ResourceAsk(id, from.toLong()))
+            asks.add(ResourceAsk(id, downloads.receivedOf(link.documentId, id)))
         }
         if (asks.isNotEmpty()) link.send(ResourceRequest(asks))
     }
@@ -1355,28 +1337,11 @@ public class SyncEngine(
 
     private suspend fun onResourceChunk(link: Link, chunk: ResourceChunk) {
         val sync = link.sync ?: return
-        if (chunk.id !in link.requested || chunk.total !in 0..MAX_RESOURCE_SIZE) return
-        val key = link.documentId to chunk.id
-        val complete = downloadsMutex.withLock {
-            var download = downloads[key]
-            if (download == null || download.total != chunk.total || chunk.offset == 0L && download.received != 0) {
-                // The memory as the bytes come, not as many as announced
-                download = Download(chunk.total).also { downloads[key] = it }
-            }
-            // The next bytes only
-            if (chunk.offset != download.received.toLong() || chunk.offset + chunk.bytes.size > download.total) return
-            download.add(chunk.bytes)
-            if (download.received < download.total) return
-            downloads.remove(key)
-            download.bytes
-        }
+        if (chunk.id !in link.requested) return
+        val whole = downloads.add(link.documentId, chunk) { sync.open.edit { it.document.findResource(chunk.id)?.hash } } ?: return
         link.requested.remove(chunk.id)
-        // The file the operation adding the resource names (signed by its author): another one is
-        // not kept, and asked for again at the next connection
-        val hash = sync.open.edit { it.document.findResource(chunk.id)?.hash }
-        if (!hash.isNullOrEmpty() && Sha256.of(complete) != hash) return
-        val path = files.write(complete, chunk.extension) ?: return
-        sync.open.resourceReceived(chunk.id, path)
+        // Another file than the one its operation names is not kept, and asked for again at the next connection
+        sync.open.resourceReceived(chunk.id, whole.path ?: return)
     }
 
     // ==========================================================

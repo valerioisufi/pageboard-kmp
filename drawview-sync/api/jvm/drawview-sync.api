@@ -198,14 +198,22 @@ public final class io/github/valerioisufi/drawview/sync/Presence$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public abstract interface class io/github/valerioisufi/drawview/sync/ResourceDownload {
+	public abstract fun append ([B)Z
+	public abstract fun discard ()V
+	public abstract fun finish ()Ljava/lang/String;
+}
+
 public abstract interface class io/github/valerioisufi/drawview/sync/ResourceFiles {
 	public fun exists (Ljava/lang/String;)Z
 	public abstract fun read (Ljava/lang/String;)[B
+	public fun receive (Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/ResourceDownload;
 	public abstract fun write ([BLjava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/sync/ResourceFiles$DefaultImpls {
 	public static fun exists (Lio/github/valerioisufi/drawview/sync/ResourceFiles;Ljava/lang/String;)Z
+	public static fun receive (Lio/github/valerioisufi/drawview/sync/ResourceFiles;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/ResourceDownload;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/sync/SharedDocuments {
