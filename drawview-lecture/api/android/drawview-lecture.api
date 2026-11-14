@@ -8,14 +8,17 @@ public final class io/github/valerioisufi/drawview/lecture/ArrivalNotification {
 
 public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public static final field $stable I
+	public static final field CURRENT_VERSION I
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/AssistantSettings$Companion;
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)V
-	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;I)V
+	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component11 ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
 	public final fun component12 ()Z
+	public final fun component13 ()Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public final fun component14 ()I
 	public final fun component2 ()Z
 	public final fun component3 ()I
 	public final fun component4 ()I
@@ -24,13 +27,14 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun component7 ()Ljava/util/Map;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun copy (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;I)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApiKey ()Ljava/lang/String;
 	public final fun getChunkSeconds ()I
 	public final fun getGenerateHere ()Z
 	public final fun getLiveLocalModels ()Ljava/util/Set;
+	public final fun getLocalEngine ()Lio/github/valerioisufi/drawview/lecture/LocalEngine;
 	public final fun getLocalUrl ()Ljava/lang/String;
 	public final fun getNotesLanguage ()Ljava/lang/String;
 	public final fun getNotesSeconds ()I
@@ -41,8 +45,10 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun getSpokenLanguage ()Ljava/lang/String;
 	public final fun getTasks ()Ljava/util/Map;
 	public final fun getThinkingLevel ()Ljava/lang/String;
+	public final fun getVersion ()I
 	public final fun getWhisperModel ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun modelOf (Lio/github/valerioisufi/drawview/lecture/TaskModel;)Ljava/lang/String;
 	public final fun task (Lio/github/valerioisufi/drawview/lecture/LectureTask;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
 	public fun toString ()Ljava/lang/String;
 	public final fun withTask (Lio/github/valerioisufi/drawview/lecture/LectureTask;Lio/github/valerioisufi/drawview/lecture/TaskModel;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
@@ -126,6 +132,18 @@ public final synthetic class io/github/valerioisufi/drawview/lecture/CourseConte
 
 public final class io/github/valerioisufi/drawview/lecture/CourseContext$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/DeviceModels {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Z)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDownloads ()Lio/github/valerioisufi/drawview/ml/ModelDownloads;
+	public final fun getGenerators ()Ljava/util/List;
+	public final fun getInstalled ()Lio/github/valerioisufi/drawview/ml/InstalledModels;
+	public final fun getLoaded ()Lio/github/valerioisufi/drawview/ml/LoadedModels;
+	public final fun isAvailable ()Z
+	public final fun spec (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/ModelSpec;
 }
 
 public final class io/github/valerioisufi/drawview/lecture/DeviceUsage {
@@ -325,8 +343,8 @@ public final class io/github/valerioisufi/drawview/lecture/LectureArrival$Kind :
 public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;Z)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/drawview/lecture/DeviceModels;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/drawview/lecture/DeviceModels;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun acceptGeneration (Lio/github/valerioisufi/drawview/lecture/GenerationOffer;)V
 	public final fun answerOnline (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun canRetranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
@@ -358,6 +376,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getCanRecord ()Z
 	public final fun getCanTranscribeHere ()Z
 	public final fun getDescribeArrival ()Lkotlin/jvm/functions/Function3;
+	public final fun getDeviceModels ()Lio/github/valerioisufi/drawview/lecture/DeviceModels;
 	public final fun getDocumentsWithLectures ()Ljava/util/Set;
 	public final fun getExportExtension ()Ljava/lang/String;
 	public final fun getExportResult ()Lio/github/valerioisufi/drawview/lecture/ExportResult;
@@ -707,6 +726,19 @@ public final class io/github/valerioisufi/drawview/lecture/LectureTask : java/la
 }
 
 public final class io/github/valerioisufi/drawview/lecture/LectureTask$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/LocalEngine : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LocalEngine$Companion;
+	public static final field DEVICE Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public static final field OLLAMA Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/LocalEngine$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1111,14 +1143,16 @@ public final class io/github/valerioisufi/drawview/lecture/TaskModel {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TaskModel$Companion;
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/TaskModel;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/TaskModel;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDevice ()Ljava/lang/String;
 	public final fun getGemini ()Ljava/lang/String;
 	public final fun getLocal ()Ljava/lang/String;
 	public final fun getModel ()Ljava/lang/String;

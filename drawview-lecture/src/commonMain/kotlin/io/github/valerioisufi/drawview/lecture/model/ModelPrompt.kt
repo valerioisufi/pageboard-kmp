@@ -3,6 +3,8 @@ package io.github.valerioisufi.drawview.lecture.model
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.LocalEngine
+import io.github.valerioisufi.drawview.lecture.TaskModel
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import kotlinx.serialization.json.JsonObject
@@ -129,26 +131,43 @@ internal class TaskBackend(val backend: ModelBackend, val model: String) {
         backend.generate(prompt, model, use, cache, onProgress)
 }
 
-/** The providers of the assistant: the one of a task is chosen by the settings ([forTask]). */
-internal class ModelBackends(internal val gemini: GeminiBackend, internal val local: OllamaBackend) {
-    private val all: List<ModelBackend> = listOf(gemini, local)
-
-    fun of(provider: ModelProvider): ModelBackend = all.first { it.provider == provider }
+/**
+ * The providers of the assistant: the one of a task is chosen by the settings ([forTask]). The local
+ * requests go to the models of the device ([device]) when the settings choose them
+ * ([AssistantSettings.localEngine]) and the application gives them, to Ollama otherwise.
+ */
+internal class ModelBackends(
+    internal val gemini: GeminiBackend,
+    internal val local: OllamaBackend,
+    internal val device: DeviceBackend? = null
+) {
+    /** The backend of [provider] in [settings]. */
+    fun of(provider: ModelProvider, settings: AssistantSettings): ModelBackend = when (provider) {
+        ModelProvider.GEMINI -> gemini
+        ModelProvider.LOCAL -> device?.takeIf { settings.localEngine == LocalEngine.DEVICE } ?: local
+    }
 
     /** The backend and the model of [task] in [settings]. */
-    fun forTask(settings: AssistantSettings, task: LectureTask): TaskBackend {
-        val chosen = settings.task(task)
-        return TaskBackend(of(chosen.provider), chosen.model)
-    }
+    fun forTask(settings: AssistantSettings, task: LectureTask): TaskBackend = taskBackend(settings.task(task), settings)
 
     /** The backend of the review by [provider] (the one claimed by the lecture), with its model in [settings]. */
-    fun forReview(settings: AssistantSettings, provider: ModelProvider): TaskBackend {
-        val chosen = settings.task(LectureTask.FINAL_REVIEW).copy(provider = provider)
-        return TaskBackend(of(provider), chosen.model)
+    fun forReview(settings: AssistantSettings, provider: ModelProvider): TaskBackend =
+        taskBackend(settings.task(LectureTask.FINAL_REVIEW).copy(provider = provider), settings)
+
+    private fun taskBackend(chosen: TaskModel, settings: AssistantSettings): TaskBackend {
+        val backend = of(chosen.provider, settings)
+        val model = when {
+            backend === gemini -> chosen.gemini
+            backend === device -> chosen.device
+            else -> chosen.local
+        }
+        return TaskBackend(backend, model)
     }
 
-    /** Frees the models kept in memory for the requests made during a lecture ([AssistantSettings.liveModels]). */
+    /** Frees the models kept in memory for the requests made during a lecture (the live notes and the catch-up). */
     suspend fun releaseLiveModels(settings: AssistantSettings) {
-        for ((provider, models) in settings.liveModels) of(provider).release(models)
+        listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { forTask(settings, it) }
+            .groupBy({ it.backend }, { it.model })
+            .forEach { (backend, models) -> backend.release(models.toSet()) }
     }
 }

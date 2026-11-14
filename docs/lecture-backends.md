@@ -124,7 +124,8 @@ observes it as before.
 | 1 | The backends: `ModelBackend` with its limits, cache, errors and release; `ModelBackends.forTask`; the three `when (task.provider)` and the provider checks go; `answerOnline` through `GeminiBackend` (ABI of `drawview-lecture` and `drawview-lecture-ui`) | done |
 | 2 | The state of `LectureAssistant` split: `AssistantLectures`, `AssistantWork`, `AssistantModels` | done |
 | 3 | `DeviceBackend` over `drawview-ml` (`LoadedModels`, `InstalledModels` of `ModelCatalog`), the request and the JSON of the bench moved into it, the bench on it; not chosen by the settings yet | done |
-| 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, `LectureAssistant(deviceModels)`, PencilNotes giving the models of its search | waits for the user (a stored format) |
+| 4 | The models of the device chosen: the settings version 2 (`localEngine`, `TaskModel.device`) with their migration, tested on a file of version 1; `ModelBackends` sending the local requests to the engine of the settings; `LectureAssistant(deviceModels)` | done |
+| 5 | The applications give their models: PencilNotes the ones of its search (`DeviceModels`), the sample none; the engine and the models of the device in the settings of the assistant, with their downloads | to do |
 
 ## Checks
 
@@ -158,12 +159,30 @@ Taken alone, revertible:
 * **The names** `AssistantLectures`, `AssistantWork`, `AssistantModels`, `TaskBackend`,
   `ModelLimits`, `ModelUse`, `PromptCache`.
 
-## Left to the user
+## Taken by the user
 
-* **Phase 4, a change of `assistant-settings.json`**: the settings take a version, the engine of
-  the local requests (`DEVICE` or `OLLAMA`) and a model of the catalog for each task; a file
-  without a version reads as today, with Ollama (a tested migration, from a fixture of the current
-  file). The rule of the project asks the user before any stored format changes.
+* **Phase 4, a change of `assistant-settings.json`** (2026-11-14): the settings take `version` (2),
+  `localEngine` (`DEVICE` or `OLLAMA`) and `TaskModel.device`, an id of the catalog of
+  `drawview-ml`. A file without a version is version 1: it reads as it was written, its local
+  requests with Ollama, and it becomes version 2 when the settings are saved. A new installation
+  starts with `DEVICE`. Tested on `assistant-settings-v1.json`, the file the previous version writes
+  (`AssistantSettingsMigrationTest`). The previous version reads a file of version 2 too: it ignores
+  the keys it does not know.
+
+### The design of phases 4 and 5
+
+| Responsibility | Class | GRASP |
+|---|---|---|
+| Which engine answers the local requests, and the model of each engine | `AssistantSettings.localEngine`, `TaskModel.device`, `AssistantSettings.modelOf` | Information Expert |
+| The settings of version 1 read as they were | `AssistantSettingsStore.read` | Information Expert, Protected Variations |
+| The local backend of a request: the device when chosen and given, Ollama otherwise | `ModelBackends.of(provider, settings)` | Polymorphism |
+| The models of the device of the application, shared with the search | `DeviceModels` (`InstalledModels`, `LoadedModels`, `ModelDownloads`) given to `LectureAssistant` | Creator, Low Coupling |
+| The engine and the models of the device in the settings | `AssistantSettingsDialog` | Controller |
+
+* The defaults of the device follow the profile (`isComputer`): E4B for the live notes and the
+  catch-up and 12B for the review on a computer, E2B and E4B elsewhere.
+* An engine `DEVICE` without the models of the device (the sample, iOS for now) sends the local
+  requests to Ollama, as today: the setting is kept.
 
 ## Left for later
 

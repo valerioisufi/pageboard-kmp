@@ -50,6 +50,8 @@ import kotlinx.coroutines.withContext
  * @param canGenerate whether the models may follow the lectures here (the live notes, the review,
  *   the course context), as [AssistantSettings.generateHere] chooses: elsewhere the lectures are
  *   recorded only.
+ * @param deviceModels the models of this device, given by the application: the local requests go
+ *   to them when the settings choose them ([AssistantSettings.localEngine]), to Ollama otherwise.
  */
 public class LectureAssistant(
     public val settingsStore: AssistantSettingsStore = AssistantSettingsStore(),
@@ -60,7 +62,8 @@ public class LectureAssistant(
     public val library: LectureLibrary = LectureLibrary(),
     private val stateContext: CoroutineContext = Dispatchers.Main,
     private val whisper: (AssistantSettings) -> Transcriber = { WhisperTranscriber.of(it) },
-    canGenerate: Boolean = true
+    canGenerate: Boolean = true,
+    deviceModels: DeviceModels? = null
 ) {
     private val generationAllowed = canGenerate
 
@@ -73,7 +76,10 @@ public class LectureAssistant(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /** The models: the backends, the speech recognition, the handwriting. */
-    private val models = AssistantModels(settingsStore, client, localClient, whisper, library, stateContext)
+    private val models = AssistantModels(settingsStore, client, localClient, whisper, library, stateContext, deviceModels)
+
+    /** The models of this device, for the settings, when the application gives them and they run here. */
+    public val deviceModels: DeviceModels? = deviceModels?.takeIf { it.isAvailable }
 
     /** The lectures of the documents as shown. */
     private val lectures: AssistantLectures = AssistantLectures(

@@ -3,12 +3,24 @@ package io.github.valerioisufi.drawview.lecture.model
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.LocalEngine
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TaskModel
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.local.OllamaException
+import io.github.valerioisufi.drawview.ml.Embedder
+import io.github.valerioisufi.drawview.ml.EmbedderOptions
+import io.github.valerioisufi.drawview.ml.Generator
+import io.github.valerioisufi.drawview.ml.GeneratorOptions
+import io.github.valerioisufi.drawview.ml.InstalledModel
+import io.github.valerioisufi.drawview.ml.InstalledModels
+import io.github.valerioisufi.drawview.ml.LoadedModels
+import io.github.valerioisufi.drawview.ml.ModelCatalog
+import io.github.valerioisufi.drawview.ml.ModelException
+import io.github.valerioisufi.drawview.ml.ModelRuntime
+import io.github.valerioisufi.drawview.ml.ModelSpec
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -54,7 +66,9 @@ class ModelBackendsTest {
         assertEquals("gemini-y", review.model)
         // The review claimed by another provider takes the model of that provider
         assertEquals("gemma4:12b", backends.forReview(settings, ModelProvider.LOCAL).model)
-        assertEquals(mapOf(ModelProvider.LOCAL to setOf("gemma4:e4b")), settings.withTask(LectureTask.CATCH_UP, TaskModel(ModelProvider.LOCAL)).liveModels)
+        val bothLocal = settings.withTask(LectureTask.CATCH_UP, TaskModel(ModelProvider.LOCAL))
+        assertEquals(mapOf(ModelProvider.LOCAL to setOf("gemma4:e4b")), bothLocal.copy(localEngine = LocalEngine.OLLAMA).liveModels)
+        assertEquals(mapOf(ModelProvider.LOCAL to setOf("gemma-4-e4b")), bothLocal.liveModels)
     }
 
     @Test
@@ -75,6 +89,30 @@ class ModelBackendsTest {
         assertEquals(true, backends.local.isRetryable(OllamaException(500, "error")))
         assertEquals(false, backends.local.isRetryable(OllamaException(404, "missing")))
         assertNull(backends.local.isRetryable(IllegalArgumentException()))
+    }
+
+    @Test
+    fun theLocalRequestsGoToTheEngineOfTheSettingsWhenItIsHere() {
+        val device = DeviceBackend(InstalledModels(ModelCatalog.Default, "/nowhere"), LoadedModels(NoRuntime))
+        val withDevice = ModelBackends(backends.gemini, backends.local, device)
+        val settings = AssistantSettings(localEngine = LocalEngine.DEVICE)
+            .withTask(LectureTask.LIVE_NOTES, TaskModel(ModelProvider.LOCAL, local = "gemma4:e4b", device = "gemma-4-e2b"))
+        val live = withDevice.forTask(settings, LectureTask.LIVE_NOTES)
+        assertSame(device, live.backend)
+        assertEquals("gemma-4-e2b", live.model)
+        // Ollama chosen, or no models of the device given by the application
+        assertSame(backends.local, withDevice.forTask(settings.copy(localEngine = LocalEngine.OLLAMA), LectureTask.LIVE_NOTES).backend)
+        val withoutDevice = backends.forTask(settings, LectureTask.LIVE_NOTES)
+        assertSame(backends.local, withoutDevice.backend)
+        assertEquals("gemma4:e4b", withoutDevice.model)
+    }
+
+    private object NoRuntime : ModelRuntime {
+        override fun supports(spec: ModelSpec): Boolean = false
+
+        override suspend fun generator(model: InstalledModel, options: GeneratorOptions): Generator = throw ModelException("none")
+
+        override suspend fun embedder(model: InstalledModel, options: EmbedderOptions): Embedder = throw ModelException("none")
     }
 
     @Test

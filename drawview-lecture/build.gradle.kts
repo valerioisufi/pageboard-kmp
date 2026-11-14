@@ -34,8 +34,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-model"))
-            // The models of the device: their catalog and the models in memory (DeviceBackend)
-            implementation(project(":drawview-ml"))
+            // The models of the device: their catalog, downloads and the models in memory (DeviceModels)
+            api(project(":drawview-ml"))
             // The state of the assistant, observed by its UI (the runtime only: no UI, no Skia)
             api(libs.compose.runtime)
             implementation(libs.kotlinx.coroutines.core)

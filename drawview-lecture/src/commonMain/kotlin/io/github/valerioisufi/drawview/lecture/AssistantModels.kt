@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.lecture
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
+import io.github.valerioisufi.drawview.lecture.model.DeviceBackend
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
@@ -27,11 +28,13 @@ internal class AssistantModels(
     localClient: OllamaClient,
     whisper: (AssistantSettings) -> Transcriber,
     private val library: LectureLibrary,
-    stateContext: CoroutineContext
+    stateContext: CoroutineContext,
+    deviceModels: DeviceModels? = null
 ) {
     val backends = ModelBackends(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
-        local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
+        local = OllamaBackend(localClient) { settingsStore.settings.localUrl },
+        device = deviceModels?.takeIf { it.isAvailable }?.let { DeviceBackend(it.installed, it.loaded) }
     )
 
     /** The speech recognition of this computer. */
