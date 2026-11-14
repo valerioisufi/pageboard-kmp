@@ -281,4 +281,10 @@
     <string name="shape_style">Shape Style</string>
     <string name="command_insert_shape">Shape</string>
     <string name="shape_kind">Shape</string>
+    <string name="command_find">Find in Document</string>
+    <string name="find_placeholder">Find in this note</string>
+    <string name="find_count">%1$d of %2$d</string>
+    <string name="find_none">No results</string>
+    <string name="find_previous">Previous</string>
+    <string name="find_next">Next</string>
 </resources>

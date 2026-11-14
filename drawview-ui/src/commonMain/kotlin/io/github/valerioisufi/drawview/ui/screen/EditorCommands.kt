@@ -103,6 +103,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading_level
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading_n
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_normal_text
+import io.github.valerioisufi.drawview.ui.generated.resources.command_find
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
@@ -167,6 +168,16 @@ internal class EditorCommands internal constructor(
         shortcuts = listOf(primary(Key.Z)),
         isEnabled = { controller.canUndo }
     ) { controller.undo() }
+
+    /** Opens the search in the document (see `DocumentFind`), or puts the focus back in it. */
+    val find = Command(
+        "find", label(Res.string.command_find), CommandGroup.EDIT, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Search) },
+        shortcuts = listOf(primary(Key.F))
+    ) {
+        if (controller.find.isOpen) controller.find.close()
+        controller.find.open()
+    }
 
     val redo = Command(
         "redo", label(Res.string.common_action_redo), CommandGroup.EDIT,
@@ -727,7 +738,7 @@ internal class EditorCommands internal constructor(
     /** Every command, in the order of the menus. */
     val all: List<Command> = listOfNotNull(
         close, rename,
-        undo, redo, cut, copy, paste, pastePlain, delete,
+        undo, redo, cut, copy, paste, pastePlain, delete, find,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,

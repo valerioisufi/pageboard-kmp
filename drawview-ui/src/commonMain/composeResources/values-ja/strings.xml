@@ -275,4 +275,10 @@
     <string name="shape_style">図形のスタイル</string>
     <string name="command_insert_shape">図形</string>
     <string name="shape_kind">図形</string>
+    <string name="command_find">ドキュメント内を検索</string>
+    <string name="find_placeholder">このノート内を検索</string>
+    <string name="find_count">%2$d 件中 %1$d 件目</string>
+    <string name="find_none">結果なし</string>
+    <string name="find_previous">前へ</string>
+    <string name="find_next">次へ</string>
 </resources>

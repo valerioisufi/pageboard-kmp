@@ -73,6 +73,7 @@ import io.github.valerioisufi.drawview.ui.components.PageGridOverlay
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
 import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
+import io.github.valerioisufi.drawview.ui.editor.FindBar
 import io.github.valerioisufi.drawview.ui.editor.SelectionActionBar
 import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.editor.PlacementBar
@@ -368,6 +369,11 @@ private fun DrawScreenContent(
                             PlacementBar(
                                 controller = controller,
                                 modifier = Modifier.align(Alignment.TopCenter)
+                            )
+
+                            FindBar(
+                                controller = controller,
+                                modifier = Modifier.align(Alignment.TopEnd)
                             )
 
                             CanvasContextMenu(

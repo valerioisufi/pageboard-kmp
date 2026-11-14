@@ -553,6 +553,59 @@ final class io.github.valerioisufi.drawview.canvas.controller/CustomElementManag
     final fun <#A1: kotlin/Any> update(io.github.valerioisufi.drawview.model/DrawCustomElement, io.github.valerioisufi.drawview.model/ElementType<#A1>, #A1): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/CustomElementManager.update|update(io.github.valerioisufi.drawview.model.DrawCustomElement;io.github.valerioisufi.drawview.model.ElementType<0:0>;0:0){0§<kotlin.Any>}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.controller/DocumentFind { // io.github.valerioisufi.drawview.canvas.controller/DocumentFind|null[0]
+    final var current // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.current|{}current[0]
+        final fun <get-current>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.current.<get-current>|<get-current>(){}[0]
+    final var isOpen // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.isOpen|{}isOpen[0]
+        final fun <get-isOpen>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.isOpen.<get-isOpen>|<get-isOpen>(){}[0]
+    final var isSearching // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.isSearching|{}isSearching[0]
+        final fun <get-isSearching>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.isSearching.<get-isSearching>|<get-isSearching>(){}[0]
+    final var matches // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.matches|{}matches[0]
+        final fun <get-matches>(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match> // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.matches.<get-matches>|<get-matches>(){}[0]
+    final var query // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.query|{}query[0]
+        final fun <get-query>(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.query.<get-query>|<get-query>(){}[0]
+
+    final fun close() // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.close|close(){}[0]
+    final fun next() // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.next|next(){}[0]
+    final fun open() // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.open|open(){}[0]
+    final fun previous() // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.previous|previous(){}[0]
+    final fun refresh(kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.refresh|refresh(kotlin.Boolean){}[0]
+    final fun search(kotlin/String) // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.search|search(kotlin.String){}[0]
+    final fun show(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.show|show(kotlin.Int){}[0]
+
+    final enum class Source : kotlin/Enum<io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source> { // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source|null[0]
+        enum entry PDF // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.PDF|null[0]
+        enum entry TEXT // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.TEXT|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source> // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source> // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source.values|values#static(){}[0]
+    }
+
+    final class Match { // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match|null[0]
+        constructor <init>(kotlin/String, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source, kotlin/Int, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>) // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.<init>|<init>(kotlin.String;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.canvas.controller.DocumentFind.Source;kotlin.Int;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>){}[0]
+
+        final val bounds // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.bounds|{}bounds[0]
+            final fun <get-bounds>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.bounds.<get-bounds>|<get-bounds>(){}[0]
+        final val elementId // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.elementId|{}elementId[0]
+            final fun <get-elementId>(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.elementId.<get-elementId>|<get-elementId>(){}[0]
+        final val end // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.end|{}end[0]
+            final fun <get-end>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.end.<get-end>|<get-end>(){}[0]
+        final val pageId // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.pageId|{}pageId[0]
+            final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.pageId.<get-pageId>|<get-pageId>(){}[0]
+        final val pageIndex // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.pageIndex|{}pageIndex[0]
+            final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+        final val rects // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.rects|{}rects[0]
+            final fun <get-rects>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.rects.<get-rects>|<get-rects>(){}[0]
+        final val source // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.source|{}source[0]
+            final fun <get-source>(): io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Source // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.source.<get-source>|<get-source>(){}[0]
+        final val start // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.start|{}start[0]
+            final fun <get-start>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/DocumentFind.Match.start.<get-start>|<get-start>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.canvas.controller/DrawPreferences { // io.github.valerioisufi.drawview.canvas.controller/DrawPreferences|null[0]
     constructor <init>(kotlin/Boolean = ..., io.github.valerioisufi.drawview.canvas.tool/Tool = ..., io.github.valerioisufi.drawview.model.text/TextDefaults = ..., kotlin/Boolean = ..., kotlin.collections/Map<io.github.valerioisufi.drawview.canvas.tool/Tool, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/ToolPreset>> = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.canvas.controller/ShapeToolPreferences = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/DrawPreferences.<init>|<init>(kotlin.Boolean;io.github.valerioisufi.drawview.canvas.tool.Tool;io.github.valerioisufi.drawview.model.text.TextDefaults;kotlin.Boolean;kotlin.collections.Map<io.github.valerioisufi.drawview.canvas.tool.Tool,kotlin.collections.List<io.github.valerioisufi.drawview.canvas.controller.ToolPreset>>;kotlin.Boolean;io.github.valerioisufi.drawview.canvas.controller.ShapeToolPreferences;kotlin.Boolean){}[0]
 
@@ -621,6 +674,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController
         final fun <get-document>(): io.github.valerioisufi.drawview.model/DrawDocument // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.document.<get-document>|<get-document>(){}[0]
     final val engines // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.engines|{}engines[0]
         final fun <get-engines>(): io.github.valerioisufi.drawview.canvas.render/DrawViewEngines // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.engines.<get-engines>|<get-engines>(){}[0]
+    final val find // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.find|{}find[0]
+        final fun <get-find>(): io.github.valerioisufi.drawview.canvas.controller/DocumentFind // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.find.<get-find>|<get-find>(){}[0]
     final val historyManager // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.historyManager|{}historyManager[0]
         final fun <get-historyManager>(): io.github.valerioisufi.drawview.canvas.history/HistoryManager // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.historyManager.<get-historyManager>|<get-historyManager>(){}[0]
     final val inkLatency // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.inkLatency|{}inkLatency[0]

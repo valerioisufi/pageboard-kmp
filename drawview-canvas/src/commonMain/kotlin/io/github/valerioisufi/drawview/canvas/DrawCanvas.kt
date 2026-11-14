@@ -228,6 +228,9 @@ private fun DrawScope.drawContent(
     // 4b. Text of the PDFs: passage being marked, selected text, selected mark
     TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
 
+    // 4c. The places found by the search in the document
+    FindOverlay.draw(this, controller)
+
     // 5. What the others are doing (texts written, elements moved, strokes drawn)
     collaboratorsOverlay.drawWork(this, controller, labels)
     collaboratorsOverlay.drawInk(this, controller, viewport)

@@ -280,4 +280,10 @@
     <string name="shape_style">Estilo de la forma</string>
     <string name="command_insert_shape">Forma</string>
     <string name="shape_kind">Forma</string>
+    <string name="command_find">Buscar en el documento</string>
+    <string name="find_placeholder">Buscar en esta nota</string>
+    <string name="find_count">%1$d de %2$d</string>
+    <string name="find_none">Sin resultados</string>
+    <string name="find_previous">Anterior</string>
+    <string name="find_next">Siguiente</string>
 </resources>

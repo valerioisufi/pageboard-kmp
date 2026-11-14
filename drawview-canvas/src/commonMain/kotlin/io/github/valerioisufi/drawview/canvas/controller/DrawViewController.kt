@@ -142,6 +142,9 @@ public class DrawViewController(
     public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
     public val snapManager: SnapManager = SnapManager(this)
 
+    /** Finding a text in the document (see [DocumentFind]). */
+    public val find: DocumentFind = DocumentFind(this)
+
     /** Turns the strokes held still at their end into their shapes. */
     public val shapeSnapper: ShapeSnapper = ShapeSnapper(this)
 
