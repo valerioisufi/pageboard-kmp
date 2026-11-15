@@ -16,7 +16,7 @@ class DocumentWindowTest {
     fun aDocumentInItsOwnWindowHasTheLecturesAndTheSharing() = runDesktopComposeUiTest(width = 1400, height = 900) {
         // The notes of the tests only (drawview.test.data), never the ones of the user
         val dataDirectory = System.getProperty("drawview.dataDir").orEmpty()
-        check("/build/test-data/" in dataDirectory) { "Not the data directory of the tests: $dataDirectory" }
+        check("/build/test-data/" in dataDirectory.replace(java.io.File.separatorChar, '/')) { "Not the data directory of the tests: $dataDirectory" }
         Locale.setDefault(Locale.US)
         val document = runBlocking { PencilNotesData.store.createDocument("Lecture 1") }
         setContent {

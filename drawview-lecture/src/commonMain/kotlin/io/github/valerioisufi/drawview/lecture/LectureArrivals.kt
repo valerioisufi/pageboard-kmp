@@ -19,7 +19,7 @@ public class ExportResult(public val fileName: String, public val failure: Strin
  */
 internal fun exportTranscript(segments: List<TranscriptSegment>, target: String): String {
     require(segments.isNotEmpty()) { "the transcript is empty" }
-    val base = target.substringBeforeLast('.').takeIf { target.substringAfterLast('/').contains('.') } ?: target
+    val base = target.substringBeforeLast('.').takeIf { Path(target).name.contains('.') } ?: target
     val txt = Path("$base.txt")
     val content = segments.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" } + "\n"
     SystemFileSystem.sink(txt).buffered().use { it.write(content.encodeToByteArray()) }

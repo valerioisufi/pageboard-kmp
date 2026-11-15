@@ -130,7 +130,7 @@ class LocalModelsTest {
         // Nothing else left next to the models
         assertEquals(setOf("ggml-base.bin", "ggml-base-encoder.mlmodelc"), File(directory, "whisper").list()!!.toSet())
         // Loaded once, for Core ML to compile the encoder, and freed
-        assertEquals(listOf(File(directory, "whisper/ggml-base.bin").absolutePath), whisper.loaded)
+        assertEquals(listOf(File(directory, "whisper/ggml-base.bin").absolutePath), whisper.loaded.map { File(it).absolutePath })
         assertEquals(1, whisper.freed)
     }
 

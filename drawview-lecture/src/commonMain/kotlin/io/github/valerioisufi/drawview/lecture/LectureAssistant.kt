@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 
 /**
  * The lecture assistant of an application.
@@ -260,7 +261,7 @@ public class LectureAssistant(
         scope.launch {
             val summaries = library.list(documentId)
             val summary = summaries.firstOrNull {
-                it.directory.trimEnd('/').substringAfterLast('/') == lectureId
+                Path(it.directory).name == lectureId
             } ?: summaries.firstOrNull() ?: return@launch
             val lecture = lectures.lectureIn(documentId, summary.directory) ?: return@launch
             withContext(stateContext) {
@@ -588,11 +589,11 @@ public class LectureAssistant(
                 val segments = withContext(stateContext) { lecture.transcript.toList() }
                 val saved = withContext(Dispatchers.IO) { exportTranscript(segments, path) }
                 deliver(saved)
-                ExportResult(saved.substringAfterLast('/'), failure = null)
+                ExportResult(Path(saved).name, failure = null)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                ExportResult(path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+                ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
             }
             withContext(stateContext) { exportResult = result }
         }

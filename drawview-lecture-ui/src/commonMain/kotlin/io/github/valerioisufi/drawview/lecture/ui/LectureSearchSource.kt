@@ -41,7 +41,7 @@ public class LectureSearchSource(
         if (summaries.isEmpty() && handwritingBytes == null) return null
 
         val lecturesVersion = summaries.joinToString(";") { summary ->
-            val lectureId = summary.directory.substringAfterLast('/')
+            val lectureId = PlatformFiles.name(summary.directory)
             val record = library.load(summary.directory)
             val stamps = record?.stamps?.entries
                 ?.sortedBy { it.key.name }
@@ -61,7 +61,7 @@ public class LectureSearchSource(
         val result = mutableListOf<SearchChunk>()
         val summaries = library.list(document.id).sortedBy { it.startedAt }
         for (summary in summaries) {
-            val lectureId = summary.directory.substringAfterLast('/')
+            val lectureId = PlatformFiles.name(summary.directory)
             val record = library.load(summary.directory) ?: continue
 
             for ((windowStartMs, windowText) in windowTranscript(record.transcript)) {
