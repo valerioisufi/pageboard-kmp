@@ -96,7 +96,7 @@ PDF, so that a missing rule fails before the application does.
 |---|---|---|
 | 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
-| 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | To do |
+| 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | Done |
 | 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | To do |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
 
@@ -170,9 +170,31 @@ The upload to the Play Console (internal testing, then production) is the user's
   The second one keeps the most for the user and needs a test of the sync; the first is the
   simplest. Whatever is chosen, the 25 MB of Auto Backup leave out a library with PDFs or lectures,
   so the archive stays the backup to suggest.
+
+  **Decided** (with the user, 2026-11-15): nothing of the notes in the backups of the system. The
+  25 MB of the cloud backup would keep the database without its PDFs, images and lectures (a
+  restore that looks complete and is not), and the tablets without Google services have no such
+  backup at all. The preferences are in the same database (the store is the `PreferenceStore`), so
+  "the preferences only" leaves nothing: the third option, `allowBackup="false"`, with
+  `data_extraction_rules.xml` excluding every domain from the device transfer too (Android 12 and
+  later transfer an application despite `allowBackup="false"`). The backup is the archive and the
+  sync; a restored device never holds the shared documents of another identity.
 * **The sync over the internet stays off by default**, and is labeled beta in its settings.
 
+### Phase 3 results
+
+* `allowBackup="false"` and `res/xml/data_extraction_rules.xml` (every domain excluded from the
+  cloud backup and from the device transfer) in the manifest of PencilNotes for Android, read back
+  from the debug and the release APK (`aapt dump xmltree`).
+* On the emulator, with the local transport of the backups, `bmgr backupnow
+  com.studiomath.pencilnotes` answers "Backup is not allowed" (the transport of Google given back
+  afterwards).
+
 ## Left for later
+
+* An automatic archive: the notes exported every so often into a folder the user chooses (Drive,
+  Files, a USB key), on Android, iOS and the desktop, in a plan of its own: the backup a user
+  expects, in place of the backups of the system.
 
 * The import of `draw_database` (and of the XML of 1.0), if a user of 2.1 ever asks.
 * The donation link: kept out of the application on Play (the Payments policy has been applied to
