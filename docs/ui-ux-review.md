@@ -60,7 +60,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 |---|---|---|
 | Showing that a row scrolls: a fade on the side with more | `fadingHorizontalScroll` (a `Modifier` of `drawview-ui`, `ScrollFade.kt`, from the `ScrollState`), used by `FloatingTools`, `ToolGroupRow`, `ActionBar`, `TextFormatBar`, `ChipRow`, the rows of the popovers | Pure Fabrication, High Cohesion (one way for every scrolled row) |
 | Knowing which tool is chosen and where it is in the row | `ToolButton` (ui): a `BringIntoViewRequester`, asked once the button is selected | Information Expert |
-| The color of a card in each theme | `DrawViewTheme` (ui): the dark `surfaceContainerLow` one step above the surface (N12), the steps above it moved along (N14, N17, N22 stay apart) | Information Expert, Protected Variations (the cards keep naming `surfaceContainerLow`) |
+| The color of a card in each theme | `DrawViewTheme` (ui): the dark containers four tones above the surface (N10) and apart from each other: `surfaceContainerLow` N14, `surfaceContainer` N16, `surfaceContainerHigh` N20, `surfaceContainerHighest` N24 | Information Expert, Protected Variations (the cards keep naming `surfaceContainerLow`) |
 | The words of the labels | the `strings.xml` of each module, in English | Information Expert |
 | The mode of the editor in the menu | `EditorCommands.drawingMode` (ui): "Drawing mode", the check on when the tools write | Information Expert |
 | The subtitle of the title | `documentSubtitle` (ui): "Analysis · 3 pages" on every size; the page looked at stays in the pill | Information Expert, High Cohesion |
@@ -74,7 +74,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | Phase | What | Status |
 |---|---|---|
 | 1 | The scrolled rows: `fadingHorizontalScroll` (`ScrollFade.kt`), the chosen tool in view (`ToolButton`); on the floating tools, the tool group, the action and format bars, the chip rows, the rows of the popovers | done |
-| 2 | The dark cards: the dark containers one step up; the screenshots of the library and of the editor in dark | pending |
+| 2 | The dark cards: the dark containers N14, N16, N20, N24 (`Color.kt`); the library and the editor in dark looked at | done |
 | 3 | The words: sentence case in the English strings of every module; "Drawing mode"; the titles of the popovers; the request to join; "N selected" | pending |
 | 4 | The small ones: the subtitle on a phone, leaving the Trash, the "more" icon of the pages | pending |
 | 5 | Check: the screenshots re-recorded (explorer, ui, sync-ui, lecture-ui, export-ui, search-ui, agent-ui) and looked at; the desktop app on a scratch data directory; Android on the tablet | pending |

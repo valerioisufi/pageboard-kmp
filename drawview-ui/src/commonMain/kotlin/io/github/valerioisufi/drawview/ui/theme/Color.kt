@@ -78,10 +78,12 @@ internal val md_theme_light_surfaceContainerHighest = Color(0xFFE3E3DC) // N90
 internal val md_theme_dark_surfaceDim = Color(0xFF121410) // N6
 internal val md_theme_dark_surfaceBright = Color(0xFF383A35) // N24
 internal val md_theme_dark_surfaceContainerLowest = Color(0xFF0D0F0B) // N4
-internal val md_theme_dark_surfaceContainerLow = Color(0xFF1A1C18) // N10, as the surface
-internal val md_theme_dark_surfaceContainer = Color(0xFF1E201C) // N12
-internal val md_theme_dark_surfaceContainerHigh = Color(0xFF292B26) // N17
-internal val md_theme_dark_surfaceContainerHighest = Color(0xFF343531) // N22
+// The dark containers start four tones above the surface (N10), as the light ones start three tones
+// under it: a card on surfaceContainerLow is told apart from the background in both themes
+internal val md_theme_dark_surfaceContainerLow = Color(0xFF222420) // N14
+internal val md_theme_dark_surfaceContainer = Color(0xFF272925) // N16
+internal val md_theme_dark_surfaceContainerHigh = Color(0xFF2F312C) // N20
+internal val md_theme_dark_surfaceContainerHighest = Color(0xFF383A35) // N24
 
 // Fixed: the same in the light and dark themes (tones 90, 80, 10, 30 of each palette)
 internal val md_theme_primaryFixed = md_theme_light_primaryContainer
