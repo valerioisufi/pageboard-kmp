@@ -1,9 +1,3 @@
-public final class io/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt;
-	public fun <init> ()V
-	public final fun getLambda$1487161528$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function4;
-}
-
 public final class io/github/valerioisufi/drawview/explorer/DocumentLibraryKt {
 	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
@@ -232,63 +226,6 @@ public final class io/github/valerioisufi/drawview/explorer/generated/resources/
 	public static final fun getExplorer_untitled_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_view_grid (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_view_list (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$DialogsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$DialogsKt;
-	public fun <init> ()V
-	public final fun getLambda$-1112503032$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1249732418$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1288993165$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1780284730$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-24913533$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-39938507$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1530737982$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$2135628761$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$ExplorerScreenKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$ExplorerScreenKt;
-	public fun <init> ()V
-	public final fun getLambda$536041376$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$543990714$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryContentKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryContentKt;
-	public fun <init> ()V
-	public final fun getLambda$-16331200$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1359878694$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$2096172348$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryHeaderKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryHeaderKt;
-	public fun <init> ()V
-	public final fun getLambda$103512542$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1413399351$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryPanesKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$LibraryPanesKt;
-	public fun <init> ()V
-	public final fun getLambda$-1479022038$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-244784024$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$TrashContentKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$TrashContentKt;
-	public fun <init> ()V
-	public final fun getLambda$1337893947$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1857899674$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1893206336$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$TrashPreviewKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ui/ComposableSingletons$TrashPreviewKt;
-	public fun <init> ()V
-	public final fun getLambda$-1034992622$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1472572631$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/ui/ExplorerScreenKt {

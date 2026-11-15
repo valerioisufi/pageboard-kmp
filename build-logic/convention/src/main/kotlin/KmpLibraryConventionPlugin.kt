@@ -70,7 +70,11 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
             // The public API is recorded (api/), and every change of it is seen
             @OptIn(ExperimentalAbiValidation::class)
-            abiValidation {}
+            abiValidation {
+                // The lambdas Compose keeps in singletons are named by a hash of the compiler: not
+                // an API, and different from a host to another
+                filters { exclude { byNames.add("**ComposableSingletons**") } }
+            }
         }
     }
 }

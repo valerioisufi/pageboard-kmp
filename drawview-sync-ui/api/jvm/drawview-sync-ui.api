@@ -46,49 +46,6 @@ public final class io/github/valerioisufi/drawview/sync/ui/CollaborationKt {
 	public static synthetic fun createCollaboration$default (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$CollaborationExtensionKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/ui/ComposableSingletons$CollaborationExtensionKt;
-	public fun <init> ()V
-	public final fun getLambda$-1899999284$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-245337392$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$JoinDocumentKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/ui/ComposableSingletons$JoinDocumentKt;
-	public fun <init> ()V
-	public final fun getLambda$-1166144790$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-157828922$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-175778688$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-314098925$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-644947351$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-992169666$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1293591946$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$154850557$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1957965454$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$2101381532$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$350096747$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$ShareSheetKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/ui/ComposableSingletons$ShareSheetKt;
-	public fun <init> ()V
-	public final fun getLambda$-1482221443$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1834838271$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-2024359921$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-2066358145$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-2084203884$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-569617384$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-958395001$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$106856320$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1289508837$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1890538776$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1906931988$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$217067108$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$454555473$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$685164633$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$76524353$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
-}
-
 public final class io/github/valerioisufi/drawview/sync/ui/InternetSettings {
 	public static final field $stable I
 	public fun <init> ()V

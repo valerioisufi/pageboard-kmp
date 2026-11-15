@@ -15,19 +15,6 @@ public final class io/github/valerioisufi/drawview/agent/ui/CanvasPageEngine : i
 	public fun textHeight (Ljava/lang/String;FF)Ljava/lang/Float;
 }
 
-public final class io/github/valerioisufi/drawview/agent/ui/ComposableSingletons$AgentReviewUiKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ui/ComposableSingletons$AgentReviewUiKt;
-	public fun <init> ()V
-	public final fun getLambda$-129213703$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1978337131$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-397576664$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-679377349$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-937945089$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1052605501$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1891938780$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$77033879$DrawView_KMP_drawview_agent_ui ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class io/github/valerioisufi/drawview/agent/ui/SessionAgentEditors : io/github/valerioisufi/drawview/agent/AgentEditors {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/session/EditorSessions;Lkotlin/jvm/functions/Function1;)V

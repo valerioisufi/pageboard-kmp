@@ -1,28 +1,3 @@
-public final class io/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportSheetKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportSheetKt;
-	public fun <init> ()V
-	public final fun getLambda$-2017560298$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-526471483$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-649164708$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1450200856$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$2017630407$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$362946927$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportStatusHostKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportStatusHostKt;
-	public fun <init> ()V
-	public final fun getLambda$373136684$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/export/ui/ComposableSingletons$ImportArchiveDialogKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ui/ComposableSingletons$ImportArchiveDialogKt;
-	public fun <init> ()V
-	public final fun getLambda$-1468305963$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-44824514$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$2068085452$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUi {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/MarkdownAppendix;)V

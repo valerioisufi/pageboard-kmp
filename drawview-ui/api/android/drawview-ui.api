@@ -258,70 +258,6 @@ public final class io/github/valerioisufi/drawview/ui/components/BadgeTone : jav
 	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$AboutLicensesDialogKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$AboutLicensesDialogKt;
-	public fun <init> ()V
-	public final fun getLambda$-1777682932$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$DesignComponentsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$DesignComponentsKt;
-	public fun <init> ()V
-	public final fun getLambda$371341507$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$DocumentInfoSelectorKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$DocumentInfoSelectorKt;
-	public fun <init> ()V
-	public final fun getLambda$-668621941$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt;
-	public fun <init> ()V
-	public final fun getLambda$1045898949$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1680744731$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$774743524$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt;
-	public fun <init> ()V
-	public final fun getLambda$-48091013$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageTemplateConfiguratorKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageTemplateConfiguratorKt;
-	public fun <init> ()V
-	public final fun getLambda$-1160406895$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1354675051$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1034112872$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1089794097$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$619032968$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$832252636$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$TextColorComponentsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$TextColorComponentsKt;
-	public fun <init> ()V
-	public final fun getLambda$-1328235436$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-596040799$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolButtonKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolButtonKt;
-	public fun <init> ()V
-	public final fun getLambda$1534178684$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$636342549$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolSettingsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolSettingsKt;
-	public fun <init> ()V
-	public final fun getLambda$-165125072$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-2061225654$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class io/github/valerioisufi/drawview/ui/components/DesignComponentsKt {
 	public static final fun ChipRow (Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/PaddingValues;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun DesignFilterChip (Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
@@ -373,15 +309,6 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 	public static final fun DesignSlider (FLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;ILkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/editor/ComposableSingletons$TextImportSheetKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/ComposableSingletons$TextImportSheetKt;
-	public fun <init> ()V
-	public final fun getLambda$-1617730119$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-1664027840$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-2075243380$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1709298547$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
@@ -408,19 +335,6 @@ public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$Re
 
 public final class io/github/valerioisufi/drawview/ui/editor/TextImportSheetKt {
 	public static final field TEXT_TO_NOTES_COMMAND_ID Ljava/lang/String;
-}
-
-public final class io/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorExtensionKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorExtensionKt;
-	public fun <init> ()V
-	public final fun getLambda$1178759211$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
-	public final fun getLambda$1640758738$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
-}
-
-public final class io/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorPanelKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorPanelKt;
-	public fun <init> ()V
-	public final fun getLambda$990553456$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/ui/extension/DocumentTag {
@@ -990,35 +904,6 @@ public final class io/github/valerioisufi/drawview/ui/render/LocalDrawViewEngine
 	public static final fun getLocalDrawViewEngines ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
-public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt;
-	public fun <init> ()V
-	public final fun getLambda$-1276533048$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-430213811$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-79465578$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1098177783$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1209508106$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1232389634$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1704196940$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1730342734$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$426552433$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
-public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
-	public fun <init> ()V
-	public final fun getLambda$-1927006673$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-749618033$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1028665624$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$909128550$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-}
-
-public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolsKt;
-	public fun <init> ()V
-	public final fun getLambda$-2041618776$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-}
-
 public final class io/github/valerioisufi/drawview/ui/screen/DocumentNames {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/DocumentNames;
@@ -1208,12 +1093,6 @@ public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
 	public static final fun formatDecimal (FI)Ljava/lang/String;
 	public static synthetic fun formatDecimal$default (FIILjava/lang/Object;)Ljava/lang/String;
 	public static final fun formatShortDateTime (JLjava/util/List;)Ljava/lang/String;
-}
-
-public final class io/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt;
-	public fun <init> ()V
-	public final fun getLambda$-671818452$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
 }
 
 public final class io/github/valerioisufi/drawview/ui/window/WindowDecorInsetsKt {
