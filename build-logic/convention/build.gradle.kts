@@ -28,6 +28,10 @@ gradlePlugin {
             id = "drawview.android.rust"
             implementationClass = "AndroidRustConventionPlugin"
         }
+        register("androidSigning") {
+            id = "drawview.android.signing"
+            implementationClass = "AndroidSigningConventionPlugin"
+        }
         register("jvmNatives") {
             id = "drawview.jvm.natives"
             implementationClass = "JvmNativesConventionPlugin"

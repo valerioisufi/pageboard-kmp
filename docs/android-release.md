@@ -94,13 +94,36 @@ PDF, so that a missing rule fails before the application does.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | To do |
+| 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | To do |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | To do |
 | 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | To do |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
 
 The upload to the Play Console (internal testing, then production) is the user's.
+
+### Phase 1 results
+
+* `AndroidSigningConventionPlugin` (`drawview.android.signing`) and `ReleaseSigning` in
+  `build-logic`; PencilNotes for Android applies it. The application `<name>-android` takes its key
+  from `<name>.signing.*` in `local.properties`, else `<NAME>_SIGNING_*` in the environment.
+* The release APK is `com.studiomath.pencilnotes` (versionCode 4, versionName 3.0), the debug APK
+  `io.github.valerioisufi.pencilnotes` (checked with `aapt dump badging`).
+* Signed with a throwaway key given in the environment, the release carries its certificate
+  (`apksigner verify`); without a key it is `pencilnotes-android-release-unsigned.apk` and the build
+  says so. The variables of the environment are inputs of the configuration cache: changing them
+  configures again.
+* `:pencilnotes-android:assembleDebug`, `:sample-android:assembleDebug` and
+  `:pencilnotes-android:testDebugUnitTest` pass. No library changed, so the JVM tests and the ABI
+  were not run again.
+* For the user: four lines in `local.properties`, the passwords never in the repository:
+
+  ```properties
+  pencilnotes.signing.storeFile=D:/path/to/keyStore.jks
+  pencilnotes.signing.storePassword=...
+  pencilnotes.signing.keyAlias=pencilnotes
+  pencilnotes.signing.keyPassword=...
+  ```
 
 ## Decisions
 

@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     // The tests on a data directory of their own (build/test-data), never the one of the user
     id("drawview.test.data")
+    // The release signed with the upload key of Google Play, when this machine has it
+    id("drawview.android.signing")
 }
 
 kotlin {
@@ -27,7 +29,9 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "io.github.valerioisufi.pencilnotes"
+        // The application on Google Play since its first version (the original Android app); the
+        // debug build keeps the id below
+        applicationId = "com.studiomath.pencilnotes"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         // The original Android app ended at versionCode 3 / versionName 2.1
@@ -54,5 +58,12 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+// The debug build stays the application the tablets already have, with their notes
+androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        variant.applicationId.set("io.github.valerioisufi.pencilnotes")
     }
 }
