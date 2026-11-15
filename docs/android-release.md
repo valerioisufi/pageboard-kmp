@@ -97,7 +97,7 @@ PDF, so that a missing rule fails before the application does.
 | 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | Done |
-| 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | Done (the address: with the user) |
+| 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | Done |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
 
 The upload to the Play Console (internal testing, then production) is the user's.
@@ -205,8 +205,9 @@ The upload to the Play Console (internal testing, then production) is the user's
 * Found: `SyncService` lasts as long as devices are connected, while the policy of Google describes
   data sync as a transfer that ends. Written as a risk in `docs/play-console.md`, with the change to
   make if the review refuses it.
-* Left with the user: the public address of the policy (the repository is private until
-  `docs/open-source.md`).
+* The policy is published at <https://valerioisufi.github.io/pencilnotes/privacy/> (the repository
+  `valerioisufi/valerioisufi.github.io`, public, GitHub Pages; a copy of `docs/privacy.md` to keep
+  the same; `DrawView-KMP` stays private until `docs/open-source.md`).
 
 ## Left for later
 

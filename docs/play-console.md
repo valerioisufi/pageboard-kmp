@@ -19,7 +19,7 @@ sending it.
 
 | Form | Answer | Why |
 |---|---|---|
-| Privacy policy | the public address of `docs/privacy.md` | the microphone and the network require one |
+| Privacy policy | <https://valerioisufi.github.io/pencilnotes/privacy/> (a copy of `docs/privacy.md`) | the microphone and the network require one |
 | App access | All functionality available without special access | no account, no login |
 | Ads | No ads | none |
 | Content rating | Reference: Utility, productivity, communication or other; no violence, sexuality, language, drugs, gambling; users can share content with each other: **yes** (shared documents, between devices invited by their owner) | the sync of shared documents |
