@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,6 +58,7 @@ import io.github.valerioisufi.drawview.ui.components.LabelBadge
 import io.github.valerioisufi.drawview.ui.components.OutlineButton
 import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
+import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
@@ -105,10 +105,16 @@ internal fun SearchSettingsContent(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = stringResource(Res.string.search_settings_title),
-            style = MaterialTheme.typography.titleLarge
-        )
+        // The close button in sight above the content, as in the other dialogs: at the end of a long
+        // list of models it was below the edge of the dialog
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(Res.string.search_settings_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.search_settings_close), onDismiss)
+        }
 
         PrivacyBanner(text = stringResource(Res.string.search_settings_privacy))
 
@@ -173,15 +179,6 @@ internal fun SearchSettingsContent(
                         onDelete = { installedModels.delete(spec) }
                     )
                 }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.search_settings_close))
             }
         }
     }
