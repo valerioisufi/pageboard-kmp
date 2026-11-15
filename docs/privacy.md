@@ -52,7 +52,7 @@ PencilNotes is not directed to children under 13.
 
 The developer holds no data of yours, so there is nothing to access or delete on their side; you
 delete your data by deleting your notes or the application. For any question:
-`<contact address>`.
+<pencilnotes@proton.me>.
 
 Changes to this policy are published at this address, with the date above.
 
@@ -116,6 +116,6 @@ PencilNotes non è rivolta a bambini sotto i 13 anni.
 
 Lo sviluppatore non conserva alcun tuo dato, quindi non c'è nulla da consultare o cancellare da parte
 sua; cancelli i tuoi dati cancellando le note o l'applicazione. Per qualsiasi domanda:
-`<indirizzo di contatto>`.
+<pencilnotes@proton.me>.
 
 Le modifiche a questa informativa sono pubblicate a questo indirizzo, con la data qui sopra.

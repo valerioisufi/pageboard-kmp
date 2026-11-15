@@ -197,7 +197,7 @@ The upload to the Play Console (internal testing, then production) is the user's
   the sync (mDNS and direct connections on the local network; over the internet, off by default,
   direct or through the relays of n0 or the user's, end-to-end encrypted; the iroh endpoint is the
   `Minimal` preset, with no discovery service). No analytics, no crash reporting, no server of the
-  developer. The contact address is left to the user (`<contact address>`).
+  developer. The contact address is pencilnotes@proton.me (the user's, 2026-11-15).
 * `docs/play-console.md`: the listing, the forms of App content, Data safety (the requests to
   Gemini declared as collected and optional; the sync exempt as end-to-end encrypted), the two
   foreground services with their videos, the other declarations and the steps of the upload. The
