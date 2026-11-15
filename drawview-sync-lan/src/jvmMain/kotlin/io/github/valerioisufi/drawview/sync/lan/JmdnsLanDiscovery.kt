@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync.lan
 
+import java.net.DatagramSocket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -15,8 +16,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 /**
- * [LanDiscovery] of the desktop (JmDNS), on the network of [address] (`null`: the first network
- * interface of the local network).
+ * [LanDiscovery] of the desktop (JmDNS), on the network of [address] (`null`: the interface of the
+ * local network of the default route, see [chooseLocalAddress]).
  */
 public class JmdnsLanDiscovery(private val address: InetAddress? = null) : LanDiscovery {
     private val jmdns: JmDNS by lazy { JmDNS.create(address ?: localAddress()) }
@@ -63,11 +64,52 @@ public class JmdnsLanDiscovery(private val address: InetAddress? = null) : LanDi
     private companion object {
         const val TYPE = "${LanDiscovery.SERVICE_TYPE}.local."
 
-        /** The IPv4 address of the first interface of the local network (up, with multicast). */
-        fun localAddress(): InetAddress = NetworkInterface.getNetworkInterfaces().toList()
-            .filter { it.isUp && !it.isLoopback && !it.isVirtual && it.supportsMulticast() }
-            .flatMap { it.inetAddresses.toList() }
-            .firstOrNull { it is Inet4Address && it.isSiteLocalAddress }
-            ?: InetAddress.getLocalHost()
+        /**
+         * The IPv4 address of this machine on the local network: of the interface of the default
+         * route, else of the first interface that is not of a virtual machine (see
+         * [chooseLocalAddress]).
+         */
+        fun localAddress(): InetAddress {
+            val candidates = NetworkInterface.getNetworkInterfaces().toList()
+                .filter { it.isUp && !it.isLoopback && !it.isVirtual && it.supportsMulticast() }
+                .flatMap { nic ->
+                    nic.inetAddresses.toList()
+                        .filter { it is Inet4Address && it.isSiteLocalAddress }
+                        .map { LocalInterface(nic.name, nic.displayName.orEmpty(), it) }
+                }
+            return chooseLocalAddress(candidates, defaultRouteAddress()) ?: InetAddress.getLocalHost()
+        }
+
+        /**
+         * The local address of the default route, or `null` without one. Connecting a UDP socket
+         * sends nothing: it only picks the route (to an address of TEST-NET-1, RFC 5737).
+         */
+        fun defaultRouteAddress(): InetAddress? = runCatching {
+            DatagramSocket().use { socket ->
+                socket.connect(InetAddress.getByAddress(byteArrayOf(192.toByte(), 0, 2, 1)), 9)
+                socket.localAddress.takeUnless { it.isAnyLocalAddress }
+            }
+        }.getOrNull()
     }
 }
+
+/** An address of a network interface: its [name], its [displayName] and the [address]. */
+internal data class LocalInterface(val name: String, val displayName: String, val address: InetAddress)
+
+/**
+ * The address to announce on among [candidates]: the one of the default route ([route]), else the
+ * first of an interface that is not of a virtual machine or container (Hyper-V and WSL, VMware,
+ * VirtualBox, Docker), else the first. `null` without candidates.
+ *
+ * The adapters of virtual machines have private addresses and multicast too, and on Windows they
+ * often come before the Wi-Fi: announcing there, the devices on the Wi-Fi never meet.
+ */
+internal fun chooseLocalAddress(candidates: List<LocalInterface>, route: InetAddress?): InetAddress? =
+    candidates.firstOrNull { it.address == route }?.address
+        ?: candidates.firstOrNull { !it.isOfVirtualMachine() }?.address
+        ?: candidates.firstOrNull()?.address
+
+private val VIRTUAL_ADAPTERS = listOf("virtual", "hyper-v", "vethernet", "vmware", "vmnet", "vbox", "wsl", "docker", "virbr", "veth")
+
+private fun LocalInterface.isOfVirtualMachine(): Boolean =
+    VIRTUAL_ADAPTERS.any { name.contains(it, ignoreCase = true) || displayName.contains(it, ignoreCase = true) }
