@@ -134,6 +134,7 @@ Fabrication, Protected Variations).
 | 1 | `drawview-platform`: `PlatformFiles.name` / `parent`, `dataDirectory()` on them, `DesktopDataLayout`; the whisper model of the settings in its new directory; tests of the layout (moved, merged, nothing lost) and of the settings; ABI of `drawview-platform` | Done |
 | 2 | `drawview-lecture`: the ids and the directories of the lectures, `lecture.json` and `sharing.json` read as fixed, the handwriting beside the lectures, the exported audio; `drawview-sync`, `drawview-lecture-ui`; tests on the paths of the platform, the tests failing on Windows because of the separators passing | Done |
 | 3 | `RecordedLecture.id` and `LectureReader.lectures` as in phase 2, one commit on top of `feat/lecture-eval` (on `fix/lecture-eval-windows-ids`: `feat/lecture-eval` is checked out in the main checkout), to be picked there; `:lecture-eval:test` passing on Windows | Done (`fix/lecture-eval-windows-ids`) |
+| 4 | Rebased on `main` of 2026-11-15, where `eae9d704` (2026-11-13) had made `dataDirectory()` the parent of the resources on Windows without moving anything: from then on a Windows build looked for the lectures, the models and the name of the device beside the resources, and found none of those kept inside them (nothing deleted). The layout moves them now; `models`, `litert-cache` and `search` (2026-10-27, after phase 1) were put in the resources on Windows too, and are moved with the others | Done |
 
 ### Phase 1 results
 
@@ -197,6 +198,12 @@ is not written by reading it.
   six tests seen on 2026-10-18). `LectureReaderTest` passes.
 
 ## Decisions taken by me (revertible)
+
+* Phase 4: the resolution of the rebase keeps `PlatformFiles.parent` for `dataDirectory()` (the
+  `parentDirectory` of `eae9d704` and its test removed, `PlatformFilesPathTest` covers it). A
+  Windows device that ran a build of `main` between 2026-11-13 and this phase may have new files
+  beside the resources (a new `lectures/device-id`, a new search index): the merge keeps those,
+  and leaves the older ones inside the resources, never deleted.
 
 * The name, `feat/windows-paths`, and the members `PlatformFiles.name` / `parent` (instead of
   top-level functions, or `kotlinx-io` as a dependency of `drawview-platform`).

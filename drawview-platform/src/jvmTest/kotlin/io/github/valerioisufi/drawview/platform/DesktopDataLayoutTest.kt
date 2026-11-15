@@ -25,6 +25,9 @@ class DesktopDataLayoutTest {
         write("resources/whisper/ggml-base.bin", "model")
         write("resources/thumbnails/doc-5.png", "thumbnail")
         write("resources/device-name.txt", "PC")
+        write("resources/models/embedding/model.tflite", "local model")
+        write("resources/litert-cache/model.bin", "cache")
+        write("resources/search/index.db", "index")
         write("resources/image_0a1b.png", "resource")
         // Every file, out of the resources unless it is one
         val expected = files().mapKeys { (path, _) ->
@@ -38,6 +41,8 @@ class DesktopDataLayoutTest {
         assertEquals("d1", read("lectures/device-id"))
         assertEquals("audio", read("lectures/doc-5/2026-10-01_10-00-00-a1b2c3/audio.opus"))
         assertEquals("PC", read("device-name.txt"))
+        assertEquals("local model", read("models/embedding/model.tflite"))
+        assertEquals("index", read("search/index.db"))
         // The resources stay
         assertEquals("resource", read("resources/image_0a1b.png"))
         assertFalse(File(data, "resources/lectures").exists())

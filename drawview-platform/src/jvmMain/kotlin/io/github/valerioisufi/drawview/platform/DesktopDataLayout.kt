@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * Until `dataDirectory()` took the parent of the resources directory on the separators of the
  * platform, on Windows it was the resources directory itself, so what belongs beside the resources
- * was saved inside them: the lectures, the speech models, the thumbnails and the name of the
- * device ([MOVED]). They are moved beside the resources, where `dataDirectory()` finds them now.
+ * was saved inside them: the lectures, the speech models, the thumbnails, the name of the device,
+ * the local models and the index of the search ([MOVED]). They are moved beside the resources, where `dataDirectory()` finds them now.
  * On macOS and Linux there is never anything to move.
  *
  * Nothing is overwritten or deleted. An entry that is beside the resources already (a build
@@ -24,8 +24,12 @@ internal object DesktopDataLayout {
     /** The resources directory of the documents, in the data directory. */
     const val RESOURCES: String = "resources"
 
-    /** What `dataDirectory()` put in the resources directory on Windows: a list closed with the fix. */
-    val MOVED: List<String> = listOf("lectures", "whisper", "thumbnails", "device-name.txt")
+    /**
+     * What `dataDirectory()` put in the resources directory on Windows: a list closed with the fix.
+     * The local models, the cache of LiteRT and the index of the search came after the first
+     * entries, and were put there too.
+     */
+    val MOVED: List<String> = listOf("lectures", "whisper", "thumbnails", "device-name.txt", "models", "litert-cache", "search")
 
     /** The data directories brought up to date by this process. */
     private val upToDate: MutableSet<String> = ConcurrentHashMap.newKeySet()
