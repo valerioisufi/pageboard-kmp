@@ -53,6 +53,21 @@ class ResourceDownloadsTest {
     }
 
     @Test
+    fun anExtensionThatIsNotAFewLettersAndDigitsIsNotPartOfThePath() = runTest {
+        val files = MemoryFiles()
+        val downloads = ResourceDownloads(files, maxSize = 100)
+        val hostile = listOf("x/../../../escaped", "x\\..\\..\\escaped", "..", "", "png\u0000", "toolongextension", "pdf.exe")
+        hostile.forEachIndexed { i, extension ->
+            val chunk = ResourceChunk("r$i", extension, 0, bytes.size.toLong(), bytes)
+            val whole = assertNotNull(downloads.add("d", chunk) { Sha256.of(bytes) })
+            assertTrue(assertNotNull(whole.path).endsWith(".bin"), "$extension: ${whole.path}")
+        }
+        assertEquals("png", receivedExtension("png"))
+        assertEquals("JPEG", receivedExtension("JPEG"))
+        assertEquals("mp4", receivedExtension("mp4"))
+    }
+
+    @Test
     fun aFileLargerThanAllowedIsNotReceived() = runTest {
         val downloads = ResourceDownloads(MemoryFiles(), maxSize = 5)
         assertNull(downloads.add("d", part(0, 4)) { null })

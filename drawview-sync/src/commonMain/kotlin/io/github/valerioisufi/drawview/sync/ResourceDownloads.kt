@@ -41,8 +41,10 @@ internal class ResourceDownloads(private val files: ResourceFiles, private val m
             if (download == null || download.total != chunk.total || chunk.offset == 0L && download.received != 0L) {
                 // The bytes as they come, not as many as announced
                 download?.file?.discard()
-                val file = files.receive(chunk.extension) ?: return null
-                download = Download(chunk.total, chunk.extension, file).also { downloads[key] = it }
+                // Named by the other device: never a part of the path of the file
+                val extension = receivedExtension(chunk.extension)
+                val file = files.receive(extension) ?: return null
+                download = Download(chunk.total, extension, file).also { downloads[key] = it }
             }
             // The next bytes only
             if (chunk.offset != download.received || chunk.offset + chunk.bytes.size > download.total) return null
@@ -67,3 +69,14 @@ internal class ResourceDownloads(private val files: ResourceFiles, private val m
         return Whole(complete.file.finish())
     }
 }
+
+/** The longest extension of a file received that is kept. */
+private const val MAX_EXTENSION_LENGTH = 8
+
+/**
+ * The extension of a file received, [extension] as the other device names it: kept when it is a
+ * few letters and digits, `bin` otherwise. A separator or a `..` in it would lead the file out of
+ * the folder of the resources (on Windows even past a folder that is not there).
+ */
+internal fun receivedExtension(extension: String): String =
+    extension.takeIf { it.length in 1..MAX_EXTENSION_LENGTH && it.all { c -> c in 'a'..'z' || c in 'A'..'Z' || c in '0'..'9' } } ?: "bin"

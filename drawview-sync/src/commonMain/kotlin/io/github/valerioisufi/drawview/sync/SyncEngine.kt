@@ -1835,7 +1835,8 @@ public class SyncEngine(
                 link.send(ResourceMissing(ask.id))
                 continue
             }
-            val extension = path.substringAfterLast('/').substringAfterLast('.', "")
+            // The name of the file, whatever the separators of the paths of this device
+            val extension = path.substringAfterLast('/').substringAfterLast('\\').substringAfterLast('.', "")
             var offset = ask.from.coerceIn(0, bytes.size.toLong()).toInt()
             do {
                 val end = min(offset + CHUNK_SIZE, bytes.size)
