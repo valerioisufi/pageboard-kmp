@@ -207,6 +207,29 @@ class SharedFoldersSyncTest {
     }
 
     @Test
+    fun theLibraryAdmittedOverTwoConnectionsMakesNoFolder() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        ada.library.start()
+        bob.library.start()
+        val adas = ada.store.createDocument("Ada's")
+        val spaceId = assertNotNull(ada.engine.shareSpace(null))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Library", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+
+        // Two connections at once (the devices reaching each other on the local network): two admissions
+        bob.engine.joinSpace(invitation, SpaceRoot.Library)
+        repeat(2) { bob.engine.connect(bob.transport.connect("ada"), invitation.documentId, invitation.key) }
+        advanceUntilIdle()
+
+        // Into the library as chosen, once: no folder named after the library
+        assertNull(bob.library.spaces().single().rootFolderId)
+        assertEquals(emptyList(), bob.store.folders.first().map { it.name })
+        assertEquals(emptyList(), ada.store.folders.first().map { it.name })
+        assertNull(bob.folderOf(adas.id))
+    }
+
+    @Test
     fun aReaderChangesNothingOfTheFolder() = syncTest { work ->
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)

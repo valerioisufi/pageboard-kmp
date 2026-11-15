@@ -154,6 +154,9 @@ public class SyncEngine(
     /** Where the root of each space being joined goes, as the user chose (see [joinSpace]). */
     private val spaceRoots = mutableMapOf<String, SpaceRoot>()
 
+    /** One shared folder kept in the library at a time: admitted over two connections, it is kept once. */
+    private val spaceJoins = Mutex()
+
     /** The heads of the documents of each space, as each member connected said them (under [mutex]): space, device, heads. */
     private val remoteHeads = mutableMapOf<String, MutableMap<String, Map<String, String>>>()
 
@@ -1377,8 +1380,10 @@ public class SyncEngine(
     }
 
     /** The shared folder [spaceId] admitted this device: kept in the library where the user chose to put it. */
-    private suspend fun joinLibrary(spaceId: String, invitation: Invitation, readOnly: Boolean) {
-        val library = spaces ?: return
+    private suspend fun joinLibrary(spaceId: String, invitation: Invitation, readOnly: Boolean) = spaceJoins.withLock {
+        val library = spaces ?: return@withLock
+        // Admitted again over another connection (both devices reaching each other): kept already
+        if (library.has(spaceId)) return@withLock
         val root = mutex.withLock { spaceRoots.remove(spaceId) } ?: SpaceRoot.NewFolder
         val rootFolder = when (root) {
             SpaceRoot.Library -> null
