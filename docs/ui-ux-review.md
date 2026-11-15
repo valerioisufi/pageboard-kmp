@@ -45,6 +45,10 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 11. **The search settings close out of sight.** Found while checking: "Close" was the last line of
     a dialog that scrolls (`SearchSettingsDialog`), below its edge as soon as the models fill it,
     where the other dialogs close with the × of their title.
+12. **The actions of the application are icons without names.** Reported by the user: at the
+    bottom of the navigation pane (`LibraryNavigationPane`) the actions that are not prominent
+    were a row of icons, and two were the same sparkles (the search models, the external models):
+    on a tablet, without a tooltip, nothing told them apart.
 
 ## Requirements
 
@@ -72,6 +76,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | The count of the selection | `explorer_selected_count` (explorer): "1 selected", in the title style of a bar | Information Expert |
 | The "more" of an item | `DrawViewIcons.MoreHorizontal` everywhere: the page grid (ui), the members of the sharing (sync-ui), the lecture (lecture-ui), as the library | High Cohesion |
 | Closing the search settings | `SearchSettingsContent` (search-ui): the × beside the title, as the other dialogs | High Cohesion |
+| Naming the actions of the application in the pane | `PaneAction` (explorer, `LibraryPanes.kt`): the icon and the name, 40 dp high; the search models with the icon of the search (`settingsAction`, search-ui) | Information Expert, Low Coupling (each module keeps choosing its icon) |
 | The request to join | `sync_request_short` (sync-ui): "Lab PC wants to join · Can only read", the role after a separator as in the other lines of the dialog | Information Expert |
 
 ## Phases
@@ -83,6 +88,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | 3 | The words: sentence case in the English strings of every module and in the Italian, Spanish and French ones; "Drawing mode"; the titles of the popovers ("Text", "Lasso", "Size"), translated; the request to join; "1 selected" in the title style | done |
 | 4 | The small ones: the subtitle "N pages" on every size, leaving the Trash with an arrow back, one "more" icon; `DrawViewIcons.ArrowLeft` public (the ABI dumps of JVM and Android checked; the klib dump by hand, as `updateKotlinAbi` empties it on Windows) | done |
 | 4b | The search settings closed by the × of their title | done |
+| 4c | The actions of the pane with their names; the search models with their own icon; the screenshot `library-actions-desktop-light` | done |
 | 5 | Check: `jvmTest` (only the failures known on the Windows host), Android, iOS simulator and both debug APKs compiled; the screenshots of explorer, ui, sync-ui and search-ui rendered and looked at. Left to the Mac: re-recording the references (they are recorded on macOS; this host renders text differently), and the desktop and tablet apps driven by hand | partly done |
 
 ## Decisions

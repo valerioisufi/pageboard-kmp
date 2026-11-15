@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.explorer
 
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -226,6 +227,22 @@ class AdaptiveScreenshotTest {
             }
             waitForIdle()
         }
+    }
+
+    /**
+     * The pane with the actions of an application, as PencilNotes gives them: the prominent one as
+     * a wide button, the others each with its name (two may share an icon).
+     */
+    @Test
+    fun libraryActions() {
+        val actions = listOf(
+            LibraryAction(DrawViewIcons.Link, { "Join a shared document" }, prominent = true) { },
+            LibraryAction(DrawViewIcons.Search, { "Search models" }) { },
+            LibraryAction(DrawViewIcons.Download, { "Import archive…" }) { },
+            LibraryAction(DrawViewIcons.Sparkles, { "External models" }) { },
+            LibraryAction(DrawViewIcons.Info, { "About" }) { },
+        )
+        capture("library-actions", ReferenceWindow.DESKTOP, dark = false, libraryActions = actions)
     }
 
     @Test

@@ -1,5 +1,10 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +43,6 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sec
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_recent
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_shared
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_trash
-import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.NavigationItem
 import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
@@ -185,12 +189,32 @@ internal fun LibraryNavigationPane(
                 Text(action.label(), maxLines = 1)
             }
         }
+        // The others named, not only drawn: two actions may share an icon, and a finger has no tooltip
         if (others.isNotEmpty()) {
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                for (action in others) DesignIconButton(action.icon, action.label(), onClick = { onAction(action) })
+            Column(modifier = Modifier.padding(top = 8.dp)) {
+                for (action in others) PaneAction(action, onClick = { onAction(action) })
             }
         }
         // Room for what the application draws over the bottom of the library (a recording)
         Spacer(modifier = Modifier.height(64.dp))
+    }
+}
+
+/** An action of the application at the bottom of the pane: its icon and its name, 40 dp high. */
+@Composable
+private fun PaneAction(action: LibraryAction, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .clip(CircleShape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(action.icon, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+        Text(action.label(), style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }

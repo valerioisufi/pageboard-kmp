@@ -67,7 +67,7 @@ import org.jetbrains.compose.resources.stringResource
  * [LibraryAction] opening [SearchSettingsDialog] in the document library.
  */
 public fun ContentSearch.settingsAction(): LibraryAction = LibraryAction(
-    icon = DrawViewIcons.Sparkles,
+    icon = DrawViewIcons.Search,
     label = { stringResource(Res.string.search_settings_action) },
     content = { onDismiss -> SearchSettingsDialog(search = this, onDismiss = onDismiss) }
 )

@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.explorer
 
+import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.store.space.StoredSpace
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -78,6 +80,8 @@ internal fun capture(
     extension: EditorExtension? = null,
     clipboard: String? = null,
     macWindow: Boolean = false,
+    /** The actions of the application in the library; `null`, the library's own (About). */
+    libraryActions: List<LibraryAction>? = null,
     /** Run once the pages and the thumbnails are drawn, right before the capture. */
     beforeCapture: DesktopComposeUiTest.() -> Unit = {},
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
@@ -119,6 +123,7 @@ internal fun capture(
                             engines = ENGINES,
                             thumbnails = rememberDocumentThumbnails(documents, directory = null, engines = ENGINES).also { thumbnails.value = it },
                             editorExtension = extension,
+                            actions = libraryActions ?: listOf(aboutLibraryAction()),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
