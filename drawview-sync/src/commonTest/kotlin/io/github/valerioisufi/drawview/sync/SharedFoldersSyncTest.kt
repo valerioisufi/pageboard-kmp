@@ -230,6 +230,29 @@ class SharedFoldersSyncTest {
     }
 
     @Test
+    fun aFolderInvitationOpenedAgainIsJoinedAlready() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        ada.library.start()
+        bob.library.start()
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        val root = bob.library.spaces().single().rootFolderId
+
+        // Bob opens the invitation again: in at once, the folder where it is, no other one
+        bob.engine.joinSpace(invitation, SpaceRoot.NewFolder)
+        assertEquals(JoinStatus.ADMITTED, bob.engine.joining.value[spaceId])
+        advanceUntilIdle()
+        assertEquals(root, bob.library.spaces().single().rootFolderId)
+        assertEquals(listOf("Course"), bob.store.folders.first().map { it.name })
+    }
+
+    @Test
     fun aReaderChangesNothingOfTheFolder() = syncTest { work ->
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)

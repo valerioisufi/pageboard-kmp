@@ -447,6 +447,23 @@ class SyncEngineTest {
     }
 
     @Test
+    fun anInvitationOpenedAgainIsJoinedAlready() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.shared.stateOf(document.id)?.key
+
+        // Bob opens the invitation again: in at once, nothing waits for the owner
+        bob.engine.join(invitation)
+        assertEquals(JoinStatus.ADMITTED, bob.engine.joining.value[document.id])
+        assertEquals(key, bob.shared.stateOf(document.id)?.key)
+    }
+
+    @Test
     fun aDeviceJoinsADocumentAndBothKeepItTheSame() = syncTest { work ->
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)

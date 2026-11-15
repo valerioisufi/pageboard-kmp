@@ -476,6 +476,11 @@ public class SyncEngine(
         if (invitation.kind != InvitationKind.DOCUMENT) {
             return joinSpace(invitation, mutex.withLock { spaceRoots[invitation.documentId] } ?: SpaceRoot.NewFolder)
         }
+        // Joined already (the invitation opened again): nothing to wait for
+        if (memberships.value[invitation.documentId]?.memberOf(device) != null) {
+            joinStates.update { it + (invitation.documentId to JoinStatus.ADMITTED) }
+            return
+        }
         sharing.startJoining(invitation)
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
     }
@@ -486,6 +491,11 @@ public class SyncEngine(
      */
     public suspend fun joinSpace(invitation: Invitation, root: SpaceRoot) {
         val spaceSharing = spaceSharing ?: return
+        // Joined already (the invitation opened again): nothing to wait for, the root stays where it is
+        if (spaceMemberships.value[invitation.documentId]?.memberOf(device) != null) {
+            joinStates.update { it + (invitation.documentId to JoinStatus.ADMITTED) }
+            return
+        }
         mutex.withLock { spaceRoots[invitation.documentId] = root }
         spaceSharing.spaces.startJoining(invitation)
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
