@@ -195,7 +195,7 @@ a build of before meeting a space closes the connection (a message it does not k
 | 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | done |
 | 5. Invitations and joining | The invitation of a space (`s=` and its kind in the link), the approval as for a document, joining into a new folder, a folder, or the library itself (`SpaceRoot`) | done (in the engine; the choice in the interface is phase 6) |
 | 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | done (the screenshots recorded on the Mac: to do) |
-| 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | left to the user |
+| 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | in progress (the computer and a phone on the local network: done, 2026-11-15; the tablet, the iPad, the internet: left to the user) |
 
 Every phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
 simulator; a commit per phase on `feat/shared-folders`, the status updated with it.
@@ -426,6 +426,37 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
   the transports do (`exchange`: again and again, a few connections from unknown devices being
   taken at a time).
 * The ABI of `drawview-sync` recorded again: `announcedTagOf` added.
+
+### Phase 7 results (first run)
+
+The desktop application of the computer (Windows, on a scratch directory) and the phone of the user
+(Android 10), on the same Wi-Fi, 2026-11-15, on `fix/lan-interface`:
+
+* A folder shared by the desktop and joined by the phone: its documents come with their content;
+  strokes reach the other device both ways, live with the note open on both (the presence of the
+  other shown); a note created in the folder by the phone, a folder created in it by the desktop,
+  a note put in the trash by the desktop and restored by the phone reach the other device.
+* The library shared by the desktop and joined by the phone into its library: one library on both,
+  the same catalog on both (read on copies of the two databases); a note created at the root by
+  the phone, a folder put in the trash by the desktop reach the other device. The notes of the
+  folder shared before, the same documents on both, went to one folder of it (the one of the
+  desktop); the other root of the folder stays, empty.
+* What did not work, fixed (a commit each):
+  * The desktop announced itself on the first private address with multicast: on Windows a
+    Hyper-V adapter (`vEthernet`) before the Wi-Fi, so the two devices never met.
+    `JmdnsLanDiscovery` takes the address of the default route, else one of an interface that is
+    not of a virtual machine.
+  * `NsdLanDiscovery` touched `NsdManager.ServiceInfoCallback` (Android 14) when a service was lost,
+    on every version: before Android 14 the application failed.
+  * The two devices reaching each other open two connections, and the owner admits the device
+    joining over both: the second admission put the library in a new folder "Library" (empty, on
+    both devices). A space is kept in the library once.
+  * An invitation opened again by a member waited for the owner forever; it is in at once.
+  * The join dialog said "Join a shared document" for a folder or a library; sharing a folder in a
+    shared folder, or the library holding one, did nothing on Share: told in the dialog.
+* Left to the user, besides the tablet and the iPad: the firewall of the computer (an inbound rule
+  for the Java of the application on private networks, or the devices do not meet), the
+  synchronization over the internet between real networks.
 
 ## Decisions
 
