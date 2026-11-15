@@ -672,6 +672,8 @@ final object io.github.valerioisufi.drawview.ui.screen/DocumentNames { // io.git
 }
 
 final object io.github.valerioisufi.drawview.ui.theme/DrawViewIcons { // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons|null[0]
+    final val ArrowLeft // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ArrowLeft|{}ArrowLeft[0]
+        final fun <get-ArrowLeft>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ArrowLeft.<get-ArrowLeft>|<get-ArrowLeft>(){}[0]
     final val ArrowUp // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ArrowUp|{}ArrowUp[0]
         final fun <get-ArrowUp>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ArrowUp.<get-ArrowUp>|<get-ArrowUp>(){}[0]
     final val ArrowUpDown // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ArrowUpDown|{}ArrowUpDown[0]

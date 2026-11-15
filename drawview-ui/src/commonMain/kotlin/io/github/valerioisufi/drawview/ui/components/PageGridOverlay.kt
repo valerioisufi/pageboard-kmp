@@ -428,7 +428,7 @@ internal fun PageGridOverlay(
                         if (!controller.isReadOnly) {
                             Box {
                                 DesignIconButton(
-                                    icon = DrawViewIcons.MoreVertical,
+                                    icon = DrawViewIcons.MoreHorizontal,
                                     label = stringResource(Res.string.page_grid_content_desc_options),
                                     onClick = { menuExpanded = true },
                                     iconSize = 20.dp
@@ -807,7 +807,7 @@ private fun PageSelectionBar(
         if (compact) {
             var expanded by remember { mutableStateOf(false) }
             Box {
-                DesignIconButton(DrawViewIcons.MoreVertical, stringResource(Res.string.common_action_more_options), { expanded = true }, tint = colors.onSurface)
+                DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.common_action_more_options), { expanded = true }, tint = colors.onSurface)
                 DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     MenuItem(
                         text = stringResource(Res.string.page_grid_action_select_all),

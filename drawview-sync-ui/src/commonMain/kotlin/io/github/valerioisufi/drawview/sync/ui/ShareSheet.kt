@@ -560,7 +560,7 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
 private fun MemberMenu(member: SharingPerson, actions: SharingActions) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        DesignIconButton(DrawViewIcons.MoreVertical, member.name, onClick = { expanded = true }, selected = expanded)
+        DesignIconButton(DrawViewIcons.MoreHorizontal, member.name, onClick = { expanded = true }, selected = expanded)
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             val other = if (member.role == Role.READER) Role.EDITOR else Role.READER
             MenuItem(

@@ -219,7 +219,7 @@ internal fun EditorTopBar(
             BarButton(commands.pageGrid, DrawViewIcons.LayoutGrid, selected = controller.isPageGridVisible)
         }
 
-        val subtitle = documentSubtitle(controller, location, pageOnly = compact)
+        val subtitle = documentSubtitle(controller, location)
         val toolsInBar = arrangement == ToolbarArrangement.ONE_BAR && controller.isDrawingMode
         // A document read only: why there are no tools, where they would be
         val readOnlyInBar = !compact && controller.isReadOnly && !isLoading
@@ -301,20 +301,13 @@ private fun ExtensionsButton(toolbarActions: @Composable RowScope.() -> Unit, on
     }
 }
 
-/** "Analysis · 12 pages" beside the tools, "Page 3 of 12" on a phone (the page looked at). */
+/**
+ * "Analysis · 12 pages": where the document is and how long it is, on every size; the page looked
+ * at is said by the indicator over the canvas.
+ */
 @Composable
-private fun documentSubtitle(controller: DrawViewController, location: String?, pageOnly: Boolean): String {
+private fun documentSubtitle(controller: DrawViewController, location: String?): String {
     val total by controller.document.observe { pages.size }
-    if (pageOnly) {
-        val page by remember(controller) {
-            androidx.compose.runtime.derivedStateOf {
-                controller.viewport.camera.moveCount
-                controller.version
-                (controller.viewport.mostVisiblePageIndex() ?: 0) + 1
-            }
-        }
-        return stringResource(Res.string.editor_page_indicator, page, total)
-    }
     return listOfNotNull(location, pluralStringResource(Res.plurals.editor_pages_count, total, total)).joinToString(" · ")
 }
 

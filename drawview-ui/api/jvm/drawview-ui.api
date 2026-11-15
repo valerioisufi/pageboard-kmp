@@ -1065,6 +1065,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewElevation : 
 public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/DrawViewIcons;
+	public final fun getArrowLeft ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUp ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUpDown ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getBold ()Landroidx/compose/ui/graphics/vector/ImageVector;

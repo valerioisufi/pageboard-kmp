@@ -19,7 +19,7 @@ public object DrawViewIcons {
     internal val AlignLeft: ImageVector by lazy { icon("AlignLeft", "M15 12H3", "M17 18H3", "M21 6H3") }
     internal val AlignRight: ImageVector by lazy { icon("AlignRight", "M21 12H9", "M21 18H7", "M21 6H3") }
     internal val ArrowDownToLine: ImageVector by lazy { icon("ArrowDownToLine", "M12 17V3", "m6 11 6 6 6-6", "M19 21H5") }
-    internal val ArrowLeft: ImageVector by lazy { icon("ArrowLeft", "M12 19L5 12L12 5", "M19 12H5") }
+    public val ArrowLeft: ImageVector by lazy { icon("ArrowLeft", "M12 19L5 12L12 5", "M19 12H5") }
     public val ArrowUp: ImageVector by lazy { icon("ArrowUp", "M5 12L12 5L19 12", "M12 19V5") }
     public val ArrowUpDown: ImageVector by lazy { icon("ArrowUpDown", "M21 16L17 20L13 16", "M17 20V4", "M3 8L7 4L11 8", "M7 4V20") }
     internal val ArrowUpToLine: ImageVector by lazy { icon("ArrowUpToLine", "M5 3h14", "m18 13-6-6-6 6", "M12 7v14") }

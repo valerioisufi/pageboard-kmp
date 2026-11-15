@@ -64,9 +64,9 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | The words of the labels | the `strings.xml` of each module, in English | Information Expert |
 | The mode of the editor in the menu | `EditorCommands.drawingMode` (ui): "Drawing mode", the check on when the tools write | Information Expert |
 | The subtitle of the title | `documentSubtitle` (ui): "Analysis · 3 pages" on every size; the page looked at stays in the pill | Information Expert, High Cohesion |
-| Leaving the Trash | `LibraryHeader` (explorer): `ArrowLeft` for the Trash, `ArrowUp` for the folder above | Information Expert |
+| Leaving the Trash | `LibraryHeader` (explorer): `ArrowLeft` for the Trash (made public in `DrawViewIcons`, recorded in `api/`), `ArrowUp` for the folder above | Information Expert |
 | The count of the selection | `explorer_selected_count` (explorer): "1 selected", in the title style of a bar | Information Expert |
-| The "more" of an item | the page grid (ui) uses the icon of the library (`DrawViewIcons.More`) | High Cohesion |
+| The "more" of an item | `DrawViewIcons.MoreHorizontal` everywhere: the page grid (ui), the members of the sharing (sync-ui), the lecture (lecture-ui), as the library | High Cohesion |
 | The request to join | `sync_request_short` (sync-ui): "Lab PC wants to join · Can only read", the role after a separator as in the other lines of the dialog | Information Expert |
 
 ## Phases
@@ -76,7 +76,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | 1 | The scrolled rows: `fadingHorizontalScroll` (`ScrollFade.kt`), the chosen tool in view (`ToolButton`); on the floating tools, the tool group, the action and format bars, the chip rows, the rows of the popovers | done |
 | 2 | The dark cards: the dark containers N14, N16, N20, N24 (`Color.kt`); the library and the editor in dark looked at | done |
 | 3 | The words: sentence case in the English strings of every module and in the Italian, Spanish and French ones; "Drawing mode"; the titles of the popovers ("Text", "Lasso", "Size"), translated; the request to join; "1 selected" in the title style | done |
-| 4 | The small ones: the subtitle on a phone, leaving the Trash, the "more" icon of the pages | pending |
+| 4 | The small ones: the subtitle "N pages" on every size, leaving the Trash with an arrow back, one "more" icon; `DrawViewIcons.ArrowLeft` public (the ABI dumps of JVM and Android checked; the klib dump by hand, as `updateKotlinAbi` empties it on Windows) | done |
 | 5 | Check: the screenshots re-recorded (explorer, ui, sync-ui, lecture-ui, export-ui, search-ui, agent-ui) and looked at; the desktop app on a scratch data directory; Android on the tablet | pending |
 
 ## Decisions

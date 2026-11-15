@@ -197,7 +197,7 @@ internal fun LibraryTitle(
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (viewModel.section == Section.TRASH) {
             DesignIconButton(
-                icon = DrawViewIcons.ArrowUp,
+                icon = DrawViewIcons.ArrowLeft,
                 label = stringResource(Res.string.explorer_action_back),
                 onClick = { viewModel.showFolder(null) },
                 style = IconButtonStyle.Tonal

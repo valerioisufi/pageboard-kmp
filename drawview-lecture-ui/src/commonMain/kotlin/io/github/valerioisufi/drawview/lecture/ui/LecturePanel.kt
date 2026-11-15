@@ -297,7 +297,7 @@ private fun LectureRow(summary: LectureSummary, onClick: () -> Unit, onDelete: (
         }
         if (onDelete != null) {
             Box {
-                DesignIconButton(DrawViewIcons.MoreVertical, stringResource(Res.string.lecture_delete), onClick = { menu = true }, selected = menu)
+                DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.lecture_delete), onClick = { menu = true }, selected = menu)
                 DesignMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     MenuItem(
                         text = stringResource(Res.string.lecture_delete),
