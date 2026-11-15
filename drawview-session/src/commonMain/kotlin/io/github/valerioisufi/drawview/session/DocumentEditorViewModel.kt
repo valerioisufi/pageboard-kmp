@@ -17,6 +17,7 @@ import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import kotlin.concurrent.Volatile
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -183,6 +184,8 @@ public class DocumentEditorViewModel(
     private suspend fun load(session: EditorSession) {
         val open = try {
             documents.open(session.documentId)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             println("DrawView: cannot load the document ${session.documentId}: ${e.message}")
             null
@@ -274,6 +277,8 @@ public class EditorSessions(
                 session.controller?.dispose()
                 session.document?.let { session.documents.close(it) }
                 session.document = null
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
                 println("DrawView: cannot save the document ${session.documentId}: ${e.message}")
             } finally {
@@ -302,6 +307,8 @@ public class EditorSessions(
         for (session in sessions) {
             try {
                 session.flush()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
                 println("DrawView: cannot save the document ${session.documentId}: ${e.message}")
             }

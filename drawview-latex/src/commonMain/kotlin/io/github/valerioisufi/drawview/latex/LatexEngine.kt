@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaImage
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,6 +62,9 @@ public class LatexEngine : FormulaRenderer {
         val ready = try {
             val directory = texResourcesDirectory()
             TexResources.ensureUnpacked(directory) && LatexPlatformEngine.init(directory)
+        } catch (e: CancellationException) {
+            // Not a failure of the engine: initialized by the next call
+            throw e
         } catch (e: Throwable) {
             println("LatexEngine: initialization failed: ${e.message}")
             false
