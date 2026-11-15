@@ -276,7 +276,9 @@ internal class DrawDocumentRepository(
     private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
         val rects = try {
             json.decodeFromString<List<Float>>(entity.rects)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            // Not shown, but kept in the database as it is
+            println("DrawView: the text markup ${entity.id} cannot be read: ${e.message}")
             return null
         }
         return TextMarkupData(
