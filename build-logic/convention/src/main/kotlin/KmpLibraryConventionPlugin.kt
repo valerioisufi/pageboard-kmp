@@ -20,8 +20,10 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
  *
  * The Android namespace follows the name of the module (`drawview-sync-ui` →
  * `io.github.valerioisufi.drawview.sync.ui`). The explicit API mode is strict: every public
- * declaration says so, with its type. The tests run on a data directory of their own
- * ([TestDataConventionPlugin]), the benchmarks apart ([BenchmarksConventionPlugin]).
+ * declaration says so, with its type. A module whose native code reaches its classes by name keeps
+ * them in its `consumer-rules.pro`, published with its Android library. The tests run on a data
+ * directory of their own ([TestDataConventionPlugin]), the benchmarks apart
+ * ([BenchmarksConventionPlugin]).
  */
 class KmpLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -43,6 +45,13 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 minSdk = libs.version("android-minSdk").toInt()
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_11)
+                }
+                // The keep rules of what the native code of the module reaches by name, given to
+                // the applications that shrink their code with R8
+                val consumerRules = file("consumer-rules.pro")
+                if (consumerRules.isFile) {
+                    optimization.consumerKeepRules.publish = true
+                    optimization.consumerKeepRules.file(consumerRules)
                 }
             }
 

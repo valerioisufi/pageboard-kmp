@@ -95,7 +95,7 @@ PDF, so that a missing rule fails before the application does.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
-| 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | To do |
+| 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | To do |
 | 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | To do |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
@@ -124,6 +124,30 @@ The upload to the Play Console (internal testing, then production) is the user's
   pencilnotes.signing.keyAlias=pencilnotes
   pencilnotes.signing.keyPassword=...
   ```
+
+### Phase 2 results
+
+* `KmpLibraryConventionPlugin` publishes the `consumer-rules.pro` of a module when it has one
+  (`optimization.consumerKeepRules`); the AARs of the five libraries carry it as `proguard.txt`.
+* The rules keep the classes with native methods and those methods (`InkNative`, `PdfiumNative`,
+  `AudioNative`, `IrohJni`, `io.nano.tex`), and the classes MicroTeX reaches by name. Since MicroTeX
+  registers its native methods with `RegisterNatives`, `LaTeX` and `TeXRender` keep **all** of them:
+  with names only, R8 removed `LaTeX.nFree()` (never called from Kotlin) and the release aborted at
+  start (`NoSuchMethodError`), found on the emulator.
+* PencilNotes for Android: R8 and resource shrinking on the release, `proguard-rules.pro` with the
+  lines of the stack traces kept (`SourceFile`, `LineNumberTable`); the mapping file is
+  `build/outputs/mapping/release/mapping.txt`, to upload with the bundle. kotlinx.serialization, Room,
+  Ktor and LiteRT-LM needed no rule of ours: R8 reported no missing class.
+* Run on a new emulator made for it (`PencilNotes_Release_Test`, Pixel Tablet, API 36.1, x86_64; the
+  other emulators hold builds of the original app signed with another key): the release starts,
+  draws strokes (Ink), exports the note as PDF and shares it (PDFium), and draws a formula in a text
+  (MicroTeX), with no error in the log. The sample was not run: the release of PencilNotes uses
+  every library with native code, which tests the rules better. Recording a lecture (the microphone
+  is a permission to ask the user) and the sync over the internet are left to the list of phase 5.
+* The APK with the four ABIs is 114 MB; its dex 7.5 MB. Phase 5 measures the bundle per ABI.
+* `compileAndroidMain`, `:pencilnotes-android:assembleDebug` and `:sample-android:assembleDebug`
+  pass. `checkKotlinAbi` fails on this Windows host for the Compose and Room modules only, whose iOS
+  klib dumps come out empty here (as on main); no Kotlin source changed, so the ABI is the same.
 
 ## Decisions
 
