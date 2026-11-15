@@ -83,7 +83,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | 3 | The words: sentence case in the English strings of every module and in the Italian, Spanish and French ones; "Drawing mode"; the titles of the popovers ("Text", "Lasso", "Size"), translated; the request to join; "1 selected" in the title style | done |
 | 4 | The small ones: the subtitle "N pages" on every size, leaving the Trash with an arrow back, one "more" icon; `DrawViewIcons.ArrowLeft` public (the ABI dumps of JVM and Android checked; the klib dump by hand, as `updateKotlinAbi` empties it on Windows) | done |
 | 4b | The search settings closed by the × of their title | done |
-| 5 | Check: the screenshots re-recorded (explorer, ui, sync-ui, lecture-ui, export-ui, search-ui, agent-ui) and looked at; the desktop app on a scratch data directory; Android on the tablet | pending |
+| 5 | Check: `jvmTest` (only the failures known on the Windows host), Android, iOS simulator and both debug APKs compiled; the screenshots of explorer, ui, sync-ui and search-ui rendered and looked at. Left to the Mac: re-recording the references (they are recorded on macOS; this host renders text differently), and the desktop and tablet apps driven by hand | partly done |
 
 ## Decisions
 
