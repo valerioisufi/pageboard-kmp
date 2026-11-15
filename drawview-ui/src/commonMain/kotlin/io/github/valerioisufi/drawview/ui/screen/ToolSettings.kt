@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +34,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.canvas.tool.LassoMode
@@ -110,7 +110,7 @@ internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool,
             // Up to three presets share the width with "+", more are scrolled
             val fits = presets.size <= 3
             Row(
-                modifier = if (fits) Modifier.fillMaxWidth() else Modifier.horizontalScroll(rememberScrollState()),
+                modifier = if (fits) Modifier.fillMaxWidth() else Modifier.fadingHorizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 presets.forEachIndexed { i, preset ->
@@ -278,7 +278,7 @@ internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
             }
         }
         SettingHint(stringResource(Res.string.tool_settings_markup_hint))
-        Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.fadingHorizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             presets.forEachIndexed { i, preset ->
                 TextMarkupPresetButton(kind = preset.markup, color = Color(preset.color), isSelected = i == index, onClick = { controller.selectTool(tool, i) })
             }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -20,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,7 +67,8 @@ internal val LocalToolSizes = staticCompositionLocalOf { ToolSizes.Thumb }
  * A button of the tools of the editor: 44 dp ([LocalToolSizes]), rounded 16 dp, the primary container when [selected],
  * the dot of its [ink] (the color the tool draws with). It supports a long click and the popover
  * of its settings ([dropDownMenu], shown while [expanded]); it takes the minimum interactive size
- * of the input around it (48 dp for a finger, see `AdaptiveRoot`).
+ * of the input around it (48 dp for a finger, see `AdaptiveRoot`). Once [selected], it is brought
+ * into view in a row that scrolls (the tools floating on a phone).
  *
  * @param command the command the button shows: its label and shortcut in a tooltip where a
  *   pointer hovers. The click is [onClick] (a tool opens its settings when chosen again).
@@ -86,10 +91,13 @@ internal fun ToolButton(
     Box {
         val colors = MaterialTheme.colorScheme
         val sizes = LocalToolSizes.current
+        val inView = remember { BringIntoViewRequester() }
+        LaunchedEffect(selected) { if (selected) inView.bringIntoView() }
         val button = @Composable {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier
+                    .bringIntoViewRequester(inView)
                     .minimumInteractiveComponentSize()
                     .size(sizes.button)
                     .clip(ToolShape)

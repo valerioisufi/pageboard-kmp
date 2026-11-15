@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
+import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
@@ -355,7 +355,7 @@ private fun ToolGroupRow(modifier: Modifier, content: @Composable RowScope.() ->
         modifier = modifier
             .clip(RoundedCornerShape(22.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .horizontalScroll(rememberScrollState())
+            .fadingHorizontalScroll(rememberScrollState())
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -440,7 +440,7 @@ internal fun FloatingTools(controller: DrawViewController, commands: EditorComma
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(ToolbarLayout.FloatingHeight)
-            .horizontalScroll(rememberScrollState())
+            .fadingHorizontalScroll(rememberScrollState())
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)

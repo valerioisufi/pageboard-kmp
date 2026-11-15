@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.ui.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_save
@@ -65,7 +65,7 @@ internal fun TextFormatBar(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Row(modifier = Modifier.height(52.dp).padding(start = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(
-                    modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()),
+                    modifier = Modifier.weight(1f).fadingHorizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     content = controls
@@ -80,7 +80,7 @@ internal fun TextFormatBar(
         // The button closing the editor always in sight: the controls scroll when the bar is too narrow
         ActionBar(modifier = modifier, scrolls = false) {
             Row(
-                modifier = Modifier.weight(1f, fill = false).horizontalScroll(rememberScrollState()),
+                modifier = Modifier.weight(1f, fill = false).fadingHorizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 content = controls

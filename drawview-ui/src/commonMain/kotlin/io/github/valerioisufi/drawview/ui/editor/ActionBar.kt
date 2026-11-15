@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.ui.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
@@ -43,7 +43,7 @@ internal fun ActionBar(modifier: Modifier = Modifier, height: Int = 48, scrolls:
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(height.dp)
-            .then(if (scrolls) Modifier.horizontalScroll(rememberScrollState()) else Modifier)
+            .then(if (scrolls) Modifier.fadingHorizontalScroll(rememberScrollState()) else Modifier)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
