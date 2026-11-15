@@ -17,7 +17,7 @@
     <string name="common_button_cancel">Abbrechen</string>
     <string name="common_action_back">Zurück</string>
     <string name="draw_toolbar_action_grid_view">Rasteransicht</string>
-    <string name="draw_toolbar_action_draw">Zeichnen</string>
+    <string name="draw_toolbar_action_draw">Zeichenmodus</string>
     <string name="common_action_more_options">Weitere Optionen</string>
     <string name="editor_action_extensions">Aktionen</string>
     <string name="common_action_undo">Rückgängig</string>
@@ -28,9 +28,9 @@
     <string name="text_markup_highlight">Hervorheben</string>
     <string name="text_markup_underline">Unterstreichen</string>
     <string name="text_markup_strikeout">Durchstreichen</string>
-    <string name="draw_toolbar_label_eraser_size">Radiergummi-Größe</string>
+    <string name="draw_toolbar_label_eraser_size">Größe</string>
     <string name="draw_toolbar_action_eraser">Radiergummi</string>
-    <string name="draw_toolbar_title_lasso_mode">Lasso-Modus</string>
+    <string name="draw_toolbar_title_lasso_mode">Lasso</string>
     <string name="draw_toolbar_option_select_all">Alles auswählen</string>
     <string name="draw_toolbar_option_images_only">Nur Bilder</string>
     <string name="draw_toolbar_action_lasso">Lasso-Auswahl</string>
@@ -91,7 +91,7 @@
     <string name="dialog_override_bg_confirm">Alle überschreiben</string>
     <string name="dialog_override_bg_dismiss">Nur Standard</string>
     <string name="stylus_mode_activated">Stiftmodus aktiviert</string>
-    <string name="draw_toolbar_title_text_settings">Textwerkzeug-Einstellungen</string>
+    <string name="draw_toolbar_title_text_settings">Text</string>
     <string name="draw_toolbar_label_font_size">Schriftgröße</string>
     <string name="draw_toolbar_label_text_color">Textfarbe</string>
     <string name="text_background">Hintergrund</string>

@@ -40,7 +40,7 @@
     <string name="sync_leave_confirm">Tieni la tua copia; il proprietario ti rimuove dal documento.</string>
     <string name="sync_request_title">Un dispositivo vuole entrare</string>
     <string name="sync_request_message">%1$s vuole lavorare su «%2$s» (%3$s).</string>
-    <string name="sync_request_short">%1$s vuole entrare (%2$s)</string>
+    <string name="sync_request_short">%1$s vuole entrare · %2$s</string>
     <string name="sync_approve">Fai entrare</string>
     <string name="sync_refuse">Rifiuta</string>
     <string name="sync_join_waiting_approval">In attesa che il proprietario ti faccia entrare in «%1$s».</string>

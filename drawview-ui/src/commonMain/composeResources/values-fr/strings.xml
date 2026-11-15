@@ -17,7 +17,7 @@
     <string name="common_button_cancel">Annuler</string>
     <string name="common_action_back">Retour</string>
     <string name="draw_toolbar_action_grid_view">Vue en grille</string>
-    <string name="draw_toolbar_action_draw">Dessiner</string>
+    <string name="draw_toolbar_action_draw">Mode dessin</string>
     <string name="common_action_more_options">Plus d\'options</string>
     <string name="editor_action_extensions">Actions</string>
     <string name="common_action_undo">Annuler</string>
@@ -28,14 +28,14 @@
     <string name="text_markup_highlight">Surligner</string>
     <string name="text_markup_underline">Souligner</string>
     <string name="text_markup_strikeout">Barrer</string>
-    <string name="draw_toolbar_label_eraser_size">Taille de la gomme</string>
+    <string name="draw_toolbar_label_eraser_size">Taille</string>
     <string name="draw_toolbar_action_eraser">Gomme</string>
-    <string name="draw_toolbar_title_lasso_mode">Mode Lasso</string>
+    <string name="draw_toolbar_title_lasso_mode">Lasso</string>
     <string name="draw_toolbar_option_select_all">Tout sélectionner</string>
     <string name="draw_toolbar_option_images_only">Images uniquement</string>
-    <string name="draw_toolbar_action_lasso">Sélection Lasso</string>
+    <string name="draw_toolbar_action_lasso">Sélection lasso</string>
     <string name="draw_toolbar_action_text">Champ de texte</string>
-    <string name="draw_toolbar_action_pan">Outil Panoramique</string>
+    <string name="draw_toolbar_action_pan">Outil panoramique</string>
     <string name="draw_toolbar_action_import_pdf">Importer un PDF</string>
     <string name="draw_toolbar_action_import_image">Importer une image</string>
     <string name="common_action_cut">Couper</string>
@@ -91,7 +91,7 @@
     <string name="dialog_override_bg_confirm">Tout remplacer</string>
     <string name="dialog_override_bg_dismiss">Seulement par défaut</string>
     <string name="stylus_mode_activated">Mode stylet activé</string>
-    <string name="draw_toolbar_title_text_settings">Paramètres du texte</string>
+    <string name="draw_toolbar_title_text_settings">Texte</string>
     <string name="draw_toolbar_label_font_size">Taille de police</string>
     <string name="draw_toolbar_label_text_color">Couleur du texte</string>
     <string name="text_background">Arrière-plan</string>
@@ -163,7 +163,7 @@
         <item>nov.</item>
         <item>déc.</item>
     </string-array>
-    <string name="about_dialog_title">À propos et Licences</string>
+    <string name="about_dialog_title">À propos et licences</string>
     <string name="about_dialog_version">Version 1.0.0</string>
     <string name="about_dialog_app_description">Application multiplateforme de dessin et de prise de notes propulsée par Kotlin Multiplatform et Compose Multiplatform.</string>
     <string name="about_dialog_libraries_header">Bibliothèques open source et licences</string>

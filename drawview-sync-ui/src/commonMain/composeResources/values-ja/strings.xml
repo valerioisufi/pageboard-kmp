@@ -40,7 +40,7 @@
     <string name="sync_leave_confirm">自分のコピーは残り、オーナーがあなたをドキュメントから削除します。</string>
     <string name="sync_request_title">参加リクエスト</string>
     <string name="sync_request_message">%1$s が「%2$s」で作業しようとしています（%3$s）。</string>
-    <string name="sync_request_short">%1$s が参加を希望（%2$s）</string>
+    <string name="sync_request_short">%1$s が参加を希望 · %2$s</string>
     <string name="sync_approve">承認</string>
     <string name="sync_refuse">拒否</string>
     <string name="sync_join_waiting_approval">オーナーが「%1$s」への参加を承認するのを待っています。</string>

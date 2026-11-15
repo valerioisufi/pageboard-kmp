@@ -306,7 +306,7 @@ class TextScreenshotTest {
     /**
      * The long press on a text selected over another one (the click of the secondary button on
      * it): cut, copy, delete and the commands arranging it in the stack of its page, the shortcuts
-     * written; "Send Backward" and "Send to Back" on, nothing over it.
+     * written; "Send backward" and "Send to back" on, nothing over it.
      */
     @Test
     fun selectionMenu() = capture("selection-menu", ReferenceWindow.DESKTOP, dark = false) { viewModels ->

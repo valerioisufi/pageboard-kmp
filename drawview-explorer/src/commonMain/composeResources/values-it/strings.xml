@@ -4,7 +4,7 @@
     <string name="explorer_fab_item_folder">Cartella</string>
     <string name="explorer_fab_state_expanded">Espanso</string>
     <string name="explorer_fab_state_collapsed">Chiuso</string>
-    <string name="explorer_fab_toggle_menu">Apri/Chiudi menu</string>
+    <string name="explorer_fab_toggle_menu">Apri/chiudi menu</string>
     <string name="explorer_dialog_new_note">Nuova nota</string>
     <string name="explorer_dialog_new_folder">Crea cartella</string>
     <string name="explorer_input_name">Scegli un nome</string>
@@ -17,7 +17,7 @@
     <string name="explorer_action_delete">Elimina</string>
     <string name="explorer_action_select_all">Seleziona tutto</string>
     <string name="explorer_action_clear_selection">Annulla selezione</string>
-    <string name="explorer_selected_count">%1$d Selezionati</string>
+    <string name="explorer_selected_count">%1$d selezionati</string>
     <string name="explorer_label_last_modified">Ultima modifica: %1$s</string>
     <string name="explorer_sort_name">Nome</string>
     <string name="explorer_sort_date_created">Data di creazione</string>

@@ -4,7 +4,7 @@
     <string name="search_index_ready">Index up to date</string>
     <string name="search_searching">Searching…</string>
     <string name="search_ask_scope">It answers from the notes where you are searching.</string>
-    <string name="search_settings_title">Search &amp; Local Models</string>
+    <string name="search_settings_title">Search &amp; local models</string>
     <string name="search_settings_action">Search models</string>
     <string name="search_settings_close">Close</string>
     <string name="search_settings_privacy">The search index and your queries stay on this device and are never synchronized or sent online.</string>

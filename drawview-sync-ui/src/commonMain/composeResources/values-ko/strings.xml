@@ -40,7 +40,7 @@
     <string name="sync_leave_confirm">사본은 유지되며, 소유자가 문서에서 나를 제거합니다.</string>
     <string name="sync_request_title">참여 요청</string>
     <string name="sync_request_message">%1$s 님이 “%2$s”에서 작업하려고 합니다(%3$s).</string>
-    <string name="sync_request_short">%1$s 님이 참여를 원합니다(%2$s)</string>
+    <string name="sync_request_short">%1$s 님이 참여를 원합니다 · %2$s</string>
     <string name="sync_approve">승인</string>
     <string name="sync_refuse">거절</string>
     <string name="sync_join_waiting_approval">소유자가 “%1$s”에 참여를 승인하기를 기다리는 중입니다.</string>

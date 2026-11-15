@@ -67,7 +67,7 @@ class AdaptiveScreenshotTest {
         capture("document-background", window, dark = false) { viewModels ->
             openNote(viewModels)
             onNodeWithContentDescription("More options").performClick()
-            onNodeWithText("Document Background").performClick()
+            onNodeWithText("Document background").performClick()
         }
     }
 
@@ -81,7 +81,7 @@ class AdaptiveScreenshotTest {
     @Test
     fun editorTooltip() = capture("editor-tooltip", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
         openNote(viewModels)
-        onNodeWithContentDescription("Grid View").performMouseInput { moveTo(center) }
+        onNodeWithContentDescription("Grid view").performMouseInput { moveTo(center) }
         mainClock.advanceTimeBy(1_000)
     }
 
@@ -262,7 +262,7 @@ class AdaptiveScreenshotTest {
         mac("document-background") { viewModels ->
             openNote(viewModels)
             onNodeWithContentDescription("More options").performClick()
-            onNodeWithText("Document Background").performClick()
+            onNodeWithText("Document background").performClick()
         }
     }
 

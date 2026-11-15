@@ -17,7 +17,7 @@
     <string name="explorer_action_delete">Delete</string>
     <string name="explorer_action_select_all">Select all</string>
     <string name="explorer_action_clear_selection">Clear selection</string>
-    <string name="explorer_selected_count">%1$d Selected</string>
+    <string name="explorer_selected_count">%1$d selected</string>
     <string name="explorer_label_last_modified">Last modified: %1$s</string>
     <string name="explorer_sort_name">Name</string>
     <string name="explorer_sort_date_created">Date created</string>
@@ -134,7 +134,7 @@
         <item quantity="one">%1$d item will be deleted for good.</item>
         <item quantity="other">%1$d items will be deleted for good.</item>
     </plurals>
-    <string name="explorer_command_undo_trash">Undo Move to Trash</string>
+    <string name="explorer_command_undo_trash">Undo move to Trash</string>
     <string name="explorer_trash_read_only">In the Trash · read only</string>
     <string name="explorer_trash_preview">Show the pages</string>
     <plurals name="explorer_trash_delete_forever_many">

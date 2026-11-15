@@ -421,7 +421,7 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             stringResource(Res.string.explorer_selected_count, viewModel.selectedItems.size),
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             modifier = if (withActions) Modifier.weight(1f) else Modifier

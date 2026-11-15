@@ -17,7 +17,7 @@
     <string name="common_button_cancel">キャンセル</string>
     <string name="common_action_back">戻る</string>
     <string name="draw_toolbar_action_grid_view">グリッド表示</string>
-    <string name="draw_toolbar_action_draw">描画</string>
+    <string name="draw_toolbar_action_draw">描画モード</string>
     <string name="common_action_more_options">その他のオプション</string>
     <string name="editor_action_extensions">アクション</string>
     <string name="common_action_undo">元に戻す</string>
@@ -28,9 +28,9 @@
     <string name="text_markup_highlight">ハイライト</string>
     <string name="text_markup_underline">下線</string>
     <string name="text_markup_strikeout">取り消し線</string>
-    <string name="draw_toolbar_label_eraser_size">消しゴムのサイズ</string>
+    <string name="draw_toolbar_label_eraser_size">サイズ</string>
     <string name="draw_toolbar_action_eraser">消しゴム</string>
-    <string name="draw_toolbar_title_lasso_mode">なげなわモード</string>
+    <string name="draw_toolbar_title_lasso_mode">なげなわ</string>
     <string name="draw_toolbar_option_select_all">すべて選択</string>
     <string name="draw_toolbar_option_images_only">画像のみ</string>
     <string name="draw_toolbar_action_lasso">なげなわ選択</string>
@@ -91,7 +91,7 @@
     <string name="dialog_override_bg_confirm">すべて上書き</string>
     <string name="dialog_override_bg_dismiss">デフォルトのみ</string>
     <string name="stylus_mode_activated">ペンモードが有効になりました</string>
-    <string name="draw_toolbar_title_text_settings">テキスト設定</string>
+    <string name="draw_toolbar_title_text_settings">テキスト</string>
     <string name="draw_toolbar_label_font_size">フォントサイズ</string>
     <string name="draw_toolbar_label_text_color">文字色</string>
     <string name="text_background">背景</string>

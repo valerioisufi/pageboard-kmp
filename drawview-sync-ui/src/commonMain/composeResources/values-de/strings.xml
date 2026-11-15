@@ -40,7 +40,7 @@
     <string name="sync_leave_confirm">Du behältst deine Kopie; der Eigentümer entfernt dich aus dem Dokument.</string>
     <string name="sync_request_title">Ein Gerät möchte beitreten</string>
     <string name="sync_request_message">%1$s möchte an „%2$s“ arbeiten (%3$s).</string>
-    <string name="sync_request_short">%1$s möchte beitreten (%2$s)</string>
+    <string name="sync_request_short">%1$s möchte beitreten · %2$s</string>
     <string name="sync_approve">Zulassen</string>
     <string name="sync_refuse">Ablehnen</string>
     <string name="sync_join_waiting_approval">Warte, bis der Eigentümer dich zu „%1$s“ zulässt.</string>

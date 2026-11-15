@@ -17,7 +17,7 @@
     <string name="explorer_action_delete">Eliminar</string>
     <string name="explorer_action_select_all">Seleccionar todo</string>
     <string name="explorer_action_clear_selection">Borrar selección</string>
-    <string name="explorer_selected_count">%1$d Seleccionados</string>
+    <string name="explorer_selected_count">%1$d seleccionados</string>
     <string name="explorer_label_last_modified">Última modificación: %1$s</string>
     <string name="explorer_sort_name">Nombre</string>
     <string name="explorer_sort_date_created">Fecha de creación</string>

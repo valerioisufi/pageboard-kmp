@@ -40,7 +40,7 @@
     <string name="sync_leave_confirm">You keep your copy; the owner removes you from the document.</string>
     <string name="sync_request_title">A device wants to join</string>
     <string name="sync_request_message">%1$s wants to work on “%2$s” (%3$s).</string>
-    <string name="sync_request_short">%1$s wants to join (%2$s)</string>
+    <string name="sync_request_short">%1$s wants to join · %2$s</string>
     <string name="sync_approve">Let in</string>
     <string name="sync_refuse">Refuse</string>
     <string name="sync_join_waiting_approval">Waiting for the owner to let you in “%1$s”.</string>

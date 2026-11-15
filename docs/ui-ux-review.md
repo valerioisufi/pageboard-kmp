@@ -65,9 +65,9 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 | The mode of the editor in the menu | `EditorCommands.drawingMode` (ui): "Drawing mode", the check on when the tools write | Information Expert |
 | The subtitle of the title | `documentSubtitle` (ui): "Analysis · 3 pages" on every size; the page looked at stays in the pill | Information Expert, High Cohesion |
 | Leaving the Trash | `LibraryHeader` (explorer): `ArrowLeft` for the Trash, `ArrowUp` for the folder above | Information Expert |
-| The count of the selection | the bar of the selection (explorer, page grid): "1 selected" (`pluralStringResource`) | Information Expert |
+| The count of the selection | `explorer_selected_count` (explorer): "1 selected", in the title style of a bar | Information Expert |
 | The "more" of an item | the page grid (ui) uses the icon of the library (`DrawViewIcons.More`) | High Cohesion |
-| The request to join | the string of `JoinRequest` (sync-ui): "Lab PC wants to join to read" / "to edit" | Information Expert |
+| The request to join | `sync_request_short` (sync-ui): "Lab PC wants to join · Can only read", the role after a separator as in the other lines of the dialog | Information Expert |
 
 ## Phases
 
@@ -75,7 +75,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 |---|---|---|
 | 1 | The scrolled rows: `fadingHorizontalScroll` (`ScrollFade.kt`), the chosen tool in view (`ToolButton`); on the floating tools, the tool group, the action and format bars, the chip rows, the rows of the popovers | done |
 | 2 | The dark cards: the dark containers N14, N16, N20, N24 (`Color.kt`); the library and the editor in dark looked at | done |
-| 3 | The words: sentence case in the English strings of every module; "Drawing mode"; the titles of the popovers; the request to join; "N selected" | pending |
+| 3 | The words: sentence case in the English strings of every module and in the Italian, Spanish and French ones; "Drawing mode"; the titles of the popovers ("Text", "Lasso", "Size"), translated; the request to join; "1 selected" in the title style | done |
 | 4 | The small ones: the subtitle on a phone, leaving the Trash, the "more" icon of the pages | pending |
 | 5 | Check: the screenshots re-recorded (explorer, ui, sync-ui, lecture-ui, export-ui, search-ui, agent-ui) and looked at; the desktop app on a scratch data directory; Android on the tablet | pending |
 
@@ -85,7 +85,12 @@ All revertible.
 
 * **Sentence case, not title case.** The library, the sheets and the dialogs already write it, and
   Material 3 asks for it. The menu bar of macOS writes title case by habit; the commands share
-  their labels with the menus of the other platforms, so they follow the rest.
+  their labels with the menus of the other platforms, so they follow the rest. The names keep
+  their capital: the sections (Trash, Home, the Cestino of the Italian), the Files app of iOS
+  ("Save to Files"), Internet in French. German writes its nouns with a capital, Japanese and
+  Korean have no case: they are left as they are.
+* **The selection said in words** ("1 selected") rather than a plural resource: the string was
+  already there and translated; only the style of the number changed.
 * **The dark containers move, not the cards.** Giving the cards another role would fix them alone;
   the token fixes every surface drawn on `surfaceContainerLow` in dark (the panels, the wells).
 * **"Drawing mode" checked**, not "Reading mode" checked: the check keeps meaning what it means

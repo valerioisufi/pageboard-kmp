@@ -157,7 +157,7 @@ class ComponentScreenshotTest {
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
                 Popover { ShapeSettings(ShapeToolTarget(box), "Shapes", withHint = true) }
                 Popover { ShapeSettings(ShapeToolTarget(arrow), "Shapes", withHint = false) }
-                Popover { ShapeSettings(ShapeToolTarget(dashed), "Shape Style", withHint = false) }
+                Popover { ShapeSettings(ShapeToolTarget(dashed), "Shape style", withHint = false) }
             }
         }
     }
@@ -282,7 +282,7 @@ class ComponentScreenshotTest {
             MenuItem("Date created", onClick = {}, alignWithIcons = true)
             MenuDivider()
             MenuItem("Rename", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Pencil), shortcut = "⌘R")
-            MenuItem("Snap to Guides", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Magnet), checked = true)
+            MenuItem("Snap to guides", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Magnet), checked = true)
             MenuItem("Delete", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Trash), shortcut = "⌫", destructive = true)
         }
     }
