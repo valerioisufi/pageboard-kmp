@@ -73,4 +73,8 @@
     <string name="sync_join_library_merge">En mi biblioteca: las dos bibliotecas se vuelven una</string>
     <string name="sync_join_folder_waiting">Buscando «%1$s» en la red.</string>
     <string name="sync_join_folder_admitted">Ya estás dentro: «%1$s» llega a tu biblioteca.</string>
+    <string name="sync_join_folder">Unirse a una carpeta compartida</string>
+    <string name="sync_join_library">Unirse a una biblioteca compartida</string>
+    <string name="sync_share_folder_refused">Esta carpeta no se puede compartir: está en una carpeta compartida, o contiene una. Deja primero de compartir esa.</string>
+    <string name="sync_share_library_refused">La biblioteca no se puede compartir mientras una de sus carpetas esté compartida. Deja primero de compartir esa carpeta.</string>
 </resources>

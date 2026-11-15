@@ -73,4 +73,8 @@
     <string name="sync_join_library_merge">自分のライブラリに：2つのライブラリが1つになります</string>
     <string name="sync_join_folder_waiting">ネットワーク上で「%1$s」を探しています。</string>
     <string name="sync_join_folder_admitted">参加しました：「%1$s」はあなたのライブラリに届きます。</string>
+    <string name="sync_join_folder">共有フォルダに参加</string>
+    <string name="sync_join_library">共有ライブラリに参加</string>
+    <string name="sync_share_folder_refused">このフォルダは共有できません：共有フォルダの中にあるか、共有フォルダを含んでいます。先にそちらの共有を終了してください。</string>
+    <string name="sync_share_library_refused">ライブラリ内のフォルダが共有されている間は、ライブラリを共有できません。先にそのフォルダの共有を終了してください。</string>
 </resources>

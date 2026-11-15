@@ -73,4 +73,8 @@
     <string name="sync_join_library_merge">Nella mia libreria: le due librerie diventano una</string>
     <string name="sync_join_folder_waiting">Cerco «%1$s» sulla rete.</string>
     <string name="sync_join_folder_admitted">Sei dentro: «%1$s» arriva nella tua libreria.</string>
+    <string name="sync_join_folder">Partecipa a una cartella condivisa</string>
+    <string name="sync_join_library">Partecipa a una libreria condivisa</string>
+    <string name="sync_share_folder_refused">Questa cartella non si può condividere: è in una cartella condivisa, o ne contiene una. Prima smetti di condividere quella.</string>
+    <string name="sync_share_library_refused">La libreria non si può condividere finché una sua cartella è condivisa. Prima smetti di condividere quella cartella.</string>
 </resources>

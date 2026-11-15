@@ -128,7 +128,18 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.sync_join)) },
+        title = {
+            val kind = joined?.kind ?: parsed?.kind
+            Text(
+                stringResource(
+                    when (kind) {
+                        InvitationKind.FOLDER -> Res.string.sync_join_folder
+                        InvitationKind.LIBRARY -> Res.string.sync_join_library
+                        else -> Res.string.sync_join
+                    }
+                )
+            )
+        },
         text = {
             val done = joined
             if (done != null) {

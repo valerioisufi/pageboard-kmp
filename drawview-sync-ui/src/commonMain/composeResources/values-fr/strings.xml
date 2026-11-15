@@ -73,4 +73,8 @@
     <string name="sync_join_library_merge">Dans ma bibliothèque : les deux bibliothèques n’en font qu’une</string>
     <string name="sync_join_folder_waiting">Recherche de « %1$s » sur le réseau.</string>
     <string name="sync_join_folder_admitted">Vous y êtes : « %1$s » arrive dans votre bibliothèque.</string>
+    <string name="sync_join_folder">Rejoindre un dossier partagé</string>
+    <string name="sync_join_library">Rejoindre une bibliothèque partagée</string>
+    <string name="sync_share_folder_refused">Ce dossier ne peut pas être partagé : il est dans un dossier partagé, ou en contient un. Arrêtez d’abord de partager celui-ci.</string>
+    <string name="sync_share_library_refused">La bibliothèque ne peut pas être partagée tant qu’un de ses dossiers est partagé. Arrêtez d’abord de partager ce dossier.</string>
 </resources>

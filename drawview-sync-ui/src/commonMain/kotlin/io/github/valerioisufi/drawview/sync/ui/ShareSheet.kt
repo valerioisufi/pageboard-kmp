@@ -99,7 +99,9 @@ internal class SharingState(
     val otherVersion: Boolean,
     val internet: InternetSettings? = null,
     /** What is shared: a document, a folder or the library (see `docs/shared-folders.md`). */
-    val kind: InvitationKind = InvitationKind.DOCUMENT
+    val kind: InvitationKind = InvitationKind.DOCUMENT,
+    /** Whether sharing the folder or the library was refused: it is in a shared folder, or holds one. */
+    val refused: Boolean = false
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -232,6 +234,13 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Bool
 /** Why the devices may not work together, and who invites when it is not this device. */
 @Composable
 private fun Notices(state: SharingState) {
+    if (state.refused) {
+        Notice(
+            DrawViewIcons.TriangleAlert,
+            stringResource(if (state.kind == InvitationKind.LIBRARY) Res.string.sync_share_library_refused else Res.string.sync_share_folder_refused),
+            error = true
+        )
+    }
     if (state.shared && !state.isOwner) {
         Notice(DrawViewIcons.Info, stringResource(Res.string.sync_invite_owner_only, state.owner))
     }

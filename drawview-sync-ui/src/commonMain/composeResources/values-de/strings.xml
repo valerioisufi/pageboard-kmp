@@ -73,4 +73,8 @@
     <string name="sync_join_library_merge">In meine Bibliothek: Beide Bibliotheken werden eine</string>
     <string name="sync_join_folder_waiting">„%1$s“ wird im Netzwerk gesucht.</string>
     <string name="sync_join_folder_admitted">Du bist dabei: „%1$s“ erscheint in deiner Bibliothek.</string>
+    <string name="sync_join_folder">Einem geteilten Ordner beitreten</string>
+    <string name="sync_join_library">Einer geteilten Bibliothek beitreten</string>
+    <string name="sync_share_folder_refused">Dieser Ordner kann nicht geteilt werden: Er liegt in einem geteilten Ordner oder enthält einen. Beende zuerst dessen Freigabe.</string>
+    <string name="sync_share_library_refused">Die Bibliothek kann nicht geteilt werden, solange ein Ordner darin geteilt ist. Beende zuerst die Freigabe dieses Ordners.</string>
 </resources>

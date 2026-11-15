@@ -203,6 +203,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     var invitations by remember { mutableStateOf<List<Pair<InvitationGrant, Invitation>>>(emptyList()) }
     var version by remember { mutableStateOf(0) }
     var confirmStop by remember { mutableStateOf(false) }
+    // Sharing the folder refused (it is in a shared folder or holds one): told in the dialog
+    var refused by remember(target) { mutableStateOf(false) }
     val internet by collaboration.internetSettings.collectAsState()
     var routes by remember { mutableStateOf<Map<String, Route>>(emptyMap()) }
     LaunchedEffect(documentId, version, isOwner) {
@@ -232,7 +234,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         offline = !online,
         otherVersion = otherVersion,
         internet = internet.takeIf { collaboration.isInternetAvailable },
-        kind = target.kind
+        kind = target.kind,
+        refused = refused
     )
     val actions = remember(collaboration, documentId, target) {
         object : SharingActions {
@@ -241,7 +244,7 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
                     // The invitation with other options takes the place of the current one
                     invitations.lastOrNull()?.let { (grant, _) -> collaboration.revokeInvitation(documentId, grant) }
                     if (folder != null) {
-                        collaboration.shareFolder(folder.folderId, title, role, approval)
+                        refused = collaboration.shareFolder(folder.folderId, title, role, approval) == null
                         shareId = collaboration.spaceOf(folder.folderId)
                     } else {
                         collaboration.share(documentId, title, role, approval)
