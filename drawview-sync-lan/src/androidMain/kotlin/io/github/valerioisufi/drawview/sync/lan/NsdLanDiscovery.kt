@@ -99,7 +99,8 @@ public class NsdLanDiscovery(context: Context) : LanDiscovery {
 
         fun forget(name: String) {
             present.remove(name)
-            followed.remove(name)?.let { runCatching { nsd.unregisterServiceInfoCallback(it) } }
+            // Before Android 14 the class of the callbacks does not exist: touching it fails the application
+            if (Build.VERSION.SDK_INT >= 34) followed.remove(name)?.let { runCatching { nsd.unregisterServiceInfoCallback(it) } }
             if (found.remove(name) != null) publish()
         }
 
