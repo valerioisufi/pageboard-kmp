@@ -10,8 +10,10 @@ import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PurgedContent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -74,6 +76,10 @@ public object NoOpDocumentPersistence : DocumentPersistence
 /**
  * Serializes the persistence operations of an editing session: operations are executed in
  * submission order, so that e.g. a page is always inserted before its elements.
+ *
+ * An operation that fails (a database busy, a file held by another process) is tried again after
+ * a pause, before the ones after it: the writes of the stores replace what they write, so a write
+ * done twice is done once. Only after the last try is its change left out of the store.
  */
 public class PersistenceQueue(
     scope: CoroutineScope,
@@ -83,13 +89,22 @@ public class PersistenceQueue(
 
     init {
         scope.launch {
-            for (operation in channel) {
-                try {
-                    persistence.operation()
-                } catch (e: Throwable) {
-                    if (e is kotlinx.coroutines.CancellationException) throw e
-                    println("DrawView: persistence operation failed: ${e.message}")
-                }
+            for (operation in channel) execute(operation)
+        }
+    }
+
+    /** Executes [operation], again after each of [RETRY_PAUSES_MS] while it fails. */
+    private suspend fun execute(operation: suspend DocumentPersistence.() -> Unit) {
+        for (attempt in 0..RETRY_PAUSES_MS.size) {
+            if (attempt > 0) delay(RETRY_PAUSES_MS[attempt - 1])
+            try {
+                persistence.operation()
+                return
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                val last = attempt == RETRY_PAUSES_MS.size
+                println("DrawView: persistence operation failed${if (last) ", its change is not stored" else ", tried again"}: ${e.message}")
             }
         }
     }
@@ -107,3 +122,6 @@ public class PersistenceQueue(
         done.await()
     }
 }
+
+/** The pauses before an operation of a [PersistenceQueue] that failed is tried again. */
+private val RETRY_PAUSES_MS: LongArray = longArrayOf(50, 200, 1_000)
