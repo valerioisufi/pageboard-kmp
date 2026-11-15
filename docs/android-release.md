@@ -97,7 +97,7 @@ PDF, so that a missing rule fails before the application does.
 | 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | Done |
-| 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | To do |
+| 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | Done (the address: with the user) |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
 
 The upload to the Play Console (internal testing, then production) is the user's.
@@ -189,6 +189,24 @@ The upload to the Play Console (internal testing, then production) is the user's
 * On the emulator, with the local transport of the backups, `bmgr backupnow
   com.studiomath.pencilnotes` answers "Backup is not allowed" (the transport of Google given back
   afterwards).
+
+### Phase 4 results
+
+* `docs/privacy.md`, in English and Italian, from what the code sends: Gemini with the user's key
+  (`generativelanguage.googleapis.com`), Ollama on the local network, the models from Hugging Face,
+  the sync (mDNS and direct connections on the local network; over the internet, off by default,
+  direct or through the relays of n0 or the user's, end-to-end encrypted; the iroh endpoint is the
+  `Minimal` preset, with no discovery service). No analytics, no crash reporting, no server of the
+  developer. The contact address is left to the user (`<contact address>`).
+* `docs/play-console.md`: the listing, the forms of App content, Data safety (the requests to
+  Gemini declared as collected and optional; the sync exempt as end-to-end encrypted), the two
+  foreground services with their videos, the other declarations and the steps of the upload. The
+  merged manifest of the release has no `AD_ID`.
+* Found: `SyncService` lasts as long as devices are connected, while the policy of Google describes
+  data sync as a transfer that ends. Written as a risk in `docs/play-console.md`, with the change to
+  make if the review refuses it.
+* Left with the user: the public address of the policy (the repository is private until
+  `docs/open-source.md`).
 
 ## Left for later
 
