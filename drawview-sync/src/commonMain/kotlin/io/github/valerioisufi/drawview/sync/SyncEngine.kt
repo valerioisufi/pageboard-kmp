@@ -68,6 +68,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi
 
 /** A device working on the document [documentId] with this one ([device]: its identity, see [DeviceIdentity]). */
 public data class Peer(val documentId: String, val replica: String, val name: String, val device: String = "")
@@ -134,6 +135,7 @@ public enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, RE
  * and its documents are synchronized as the documents shared on their own, with the keys and the
  * membership of the folder.
  */
+@ExperimentalSyncApi
 public class SyncEngine(
     private val documents: OpenDocuments,
     shared: SharedDocuments,

@@ -32,3 +32,10 @@ kotlin {
         }
     }
 }
+
+// The sync of DrawView is experimental for its users; the modules of the repository use it freely
+kotlin {
+    sourceSets.all {
+        languageSettings.optIn("io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi")
+    }
+}

@@ -84,3 +84,10 @@ tasks.named<Test>("jvmTest") {
 tasks.named<LicensesTask>("drawviewLicenses") {
     licenses.from(rootProject.file("native/iroh-bridge/THIRD_PARTY_NOTICES.md"))
 }
+
+// The sync of DrawView is experimental for its users; the modules of the repository use it freely
+kotlin {
+    sourceSets.all {
+        languageSettings.optIn("io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi")
+    }
+}

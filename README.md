@@ -66,7 +66,7 @@ fun App() {
 | Storage | `drawview-store`, `-store-room`, `-store-testing` |
 | Library | `drawview-explorer` |
 | Engines | `drawview-pdf` (PDFium), `-latex` (MicroTeX) |
-| Sync | `drawview-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`, `-sync-ui` |
+| Sync (experimental, `@ExperimentalSyncApi`) | `drawview-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`, `-sync-ui` |
 | Search and local models | `drawview-search`, `-search-ui`, `-ml`, `-ml-litert` |
 | Lecture assistant | `drawview-lecture`, `-lecture-ui`, `-lecture-testing` |
 | Export | `drawview-export`, `-export-ui` |

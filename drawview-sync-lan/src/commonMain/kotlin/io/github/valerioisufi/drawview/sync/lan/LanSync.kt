@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi
 
 /**
  * Keeps the shared documents of this device the same as on the devices of the local network
@@ -35,6 +36,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * announcements get lost on some networks): one starting again on the same address (see
  * [LanTransport.DEFAULT_PORT]) is connected again even when it is not found again.
  */
+@ExperimentalSyncApi
 public class LanSync(
     private val engine: SyncEngine,
     private val discovery: LanDiscovery,

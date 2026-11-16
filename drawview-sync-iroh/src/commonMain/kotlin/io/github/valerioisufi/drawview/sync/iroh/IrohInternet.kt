@@ -4,12 +4,14 @@ import io.github.valerioisufi.drawview.sync.InternetSync
 import io.github.valerioisufi.drawview.sync.SyncEngine
 import io.github.valerioisufi.drawview.sync.SyncNetwork
 import kotlinx.coroutines.CoroutineScope
+import io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi
 
 /**
  * The synchronization over the internet with iroh, for an application to give the modules
  * showing it ([InternetSync]): an [IrohSync] with the key of the connections of this device
  * ([IrohSecret.ofThisDevice]).
  */
+@ExperimentalSyncApi
 public object IrohInternet : InternetSync {
     override val isAvailable: Boolean get() = IrohTransport.isAvailable
 

@@ -61,6 +61,9 @@ public final class io/github/valerioisufi/drawview/sync/protocol/DocumentKey$Com
 	public final fun of ([B)Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;
 }
 
+public abstract interface annotation class io/github/valerioisufi/drawview/sync/protocol/ExperimentalSyncApi : java/lang/annotation/Annotation {
+}
+
 public final class io/github/valerioisufi/drawview/sync/protocol/InMemoryChannel : io/github/valerioisufi/drawview/sync/protocol/SyncChannel {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/InMemoryChannel$Companion;
 	public fun close ()V

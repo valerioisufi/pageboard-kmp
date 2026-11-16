@@ -51,6 +51,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
+import io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi
 
 /** How long the devices of the local network are looked for (see [Collaboration.nearbyHosts]). */
 private const val NEARBY_WAIT_MS = 3_000L
@@ -78,6 +79,7 @@ private const val NEARBY_WAIT_MS = 3_000L
  * permission of Android 17; asked when a document is shared or joined, or at the start when some
  * are shared already).
  */
+@ExperimentalSyncApi
 public class Collaboration(
     documents: OpenDocuments,
     private val discovery: LanDiscovery,

@@ -70,7 +70,7 @@ minor version may break.
 | 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the user) | Done here (the branches on GitHub left to the user) |
 | 2 | CLAUDE.md without the devices and the infrastructure of the user; `docs/plans/` with the links updated | Done |
 | 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | Done |
-| 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | To do |
+| 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | Done |
 | 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning (the user's) | To do |
 | 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the user's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
 
@@ -118,6 +118,20 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
   most (the sync as untrusted input, the files opened, the notes, the secrets);
   `CONTRIBUTING.md` (the rules of CLAUDE.md for people); the issue templates (bug, idea, and the
   link to report a vulnerability); `CHANGELOG.md`.
+
+### Phase 4 results
+
+* `release.yml` runs on the tags `drawview-v*` only, and fails when the tag is not
+  `drawview-v<VERSION_NAME>`; it may create the release of GitHub (`contents: write`). A tag
+  `pencilnotes-v*` releases nothing yet.
+* `@ExperimentalSyncApi` (`drawview-sync-protocol`, a warning) marks the entry points of the sync:
+  `SyncEngine`, `LanSync`, `IrohSync`, `IrohInternet`, `Collaboration`. What they take and give is
+  reached through them, so the rest of the sync API is not marked (alone, revertible). The sync
+  modules and PencilNotes opt in in their builds. ABI recorded on purpose (the annotation class).
+* The documentation of Dokka goes to GitHub Pages from the release (`documentation`, after
+  `publish`): the documentation of the version released, not of `main`. The source of the Pages of
+  the repository is to be set to GitHub Actions (phase 5).
+* Not run: the release itself, which needs the secrets and the public repository (phase 6).
 
 ## Decisions
 

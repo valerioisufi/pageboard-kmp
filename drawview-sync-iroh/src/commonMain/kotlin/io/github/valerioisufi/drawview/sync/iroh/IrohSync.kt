@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi
 
 /**
  * Keeps the shared documents of this device the same as on the other members over the internet
@@ -31,6 +32,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * a change of network). A member connected through another transport (the local network) is not
  * connected to again: the first round waits [firstDelayMs], so that the local network goes first.
  */
+@ExperimentalSyncApi
 public class IrohSync(
     private val engine: SyncEngine,
     private val transport: IrohTransport,

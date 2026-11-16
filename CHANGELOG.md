@@ -9,3 +9,6 @@ here. PencilNotes has its own release notes in the stores.
 ## 0.1.0
 
 The first release on Maven Central.
+
+* The sync (`drawview-sync*`) is experimental: an application that starts it opts in to
+  `@ExperimentalSyncApi` (`SyncEngine`, `LanSync`, `IrohSync`, `IrohInternet`, `Collaboration`).
