@@ -30,7 +30,9 @@
     <string name="export_format_archive_hint">すべてを再インポート用に</string>
     <string name="import_archive_action">アーカイブを読み込む…</string>
     <string name="import_archive_done_title">読み込み完了</string>
-    <string name="import_archive_done">%1$d 件のノートを「%2$s」に読み込みました</string>
+    <plurals name="import_archive_done">
+        <item quantity="other">%1$d 件のノートを「%2$s」に読み込みました</item>
+    </plurals>
     <string name="import_archive_not_an_archive">ノートのアーカイブではないか、壊れています。</string>
     <string name="import_archive_too_new">新しいバージョンで作られたアーカイブです。先にアプリを更新してください。</string>
     <string name="import_archive_failed_title">読み込めませんでした</string>

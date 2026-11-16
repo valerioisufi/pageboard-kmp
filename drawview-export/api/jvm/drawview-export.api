@@ -26,6 +26,7 @@ public final class io/github/valerioisufi/drawview/export/ArchiveFormat {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ArchiveFormat;
 	public static final field MIME_TYPE Ljava/lang/String;
 	public static final field VERSION I
+	public final fun folderNameOf (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/export/ArchiveImporter {

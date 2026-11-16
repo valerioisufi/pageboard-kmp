@@ -36,6 +36,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /** Where the import of an archive is. */
@@ -57,7 +58,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
     val scope = rememberCoroutineScope()
     val pick = rememberFilePicker(PickerType.ARCHIVE) { file ->
         state = ImportState.Importing
-        val folder = file.name.substringBeforeLast('.').ifBlank { ArchiveFormat.EXTENSION }
+        val folder = ArchiveFormat.folderNameOf(file.name)
         scope.launch {
             state = try {
                 val result = withContext(Dispatchers.Default) { importer.import(file.bytes, folder) }
@@ -91,7 +92,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
                 when (current) {
                     ImportState.Choosing -> Text(stringResource(Res.string.export_format_archive_hint))
                     ImportState.Importing -> LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    is ImportState.Done -> Text(stringResource(Res.string.import_archive_done, current.documents, current.folder))
+                    is ImportState.Done -> Text(pluralStringResource(Res.plurals.import_archive_done, current.documents, current.documents, current.folder))
                     is ImportState.Failed -> Text(
                         stringResource(if (current.reason == ArchiveException.Reason.TOO_NEW) Res.string.import_archive_too_new else Res.string.import_archive_not_an_archive)
                     )

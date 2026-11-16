@@ -395,6 +395,7 @@ final object io.github.valerioisufi.drawview.export/ArchiveFormat { // io.github
         final fun <get-MIME_TYPE>(): kotlin/String // io.github.valerioisufi.drawview.export/ArchiveFormat.MIME_TYPE.<get-MIME_TYPE>|<get-MIME_TYPE>(){}[0]
     final const val VERSION // io.github.valerioisufi.drawview.export/ArchiveFormat.VERSION|{}VERSION[0]
         final fun <get-VERSION>(): kotlin/Int // io.github.valerioisufi.drawview.export/ArchiveFormat.VERSION.<get-VERSION>|<get-VERSION>(){}[0]
+    final fun folderNameOf(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.export/ArchiveFormat.folderNameOf|folderNameOf(kotlin.String){}[0]
 }
 
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ArchiveException$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ArchiveException$stableprop|#static{}io_github_valerioisufi_drawview_export_ArchiveException$stableprop[0]

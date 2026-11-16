@@ -102,6 +102,7 @@ public enum class ExportFormat {
         "pdf" -> "application/pdf"
         "png" -> "image/png"
         "md" -> "text/markdown"
+        ArchiveFormat.EXTENSION -> ArchiveFormat.MIME_TYPE
         else -> "application/zip"
     }
 }

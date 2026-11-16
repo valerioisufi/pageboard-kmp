@@ -32,7 +32,10 @@
     <string name="export_format_archive_hint">Everything, to import again</string>
     <string name="import_archive_action">Import archive…</string>
     <string name="import_archive_done_title">Imported</string>
-    <string name="import_archive_done">%1$d notes imported into “%2$s”</string>
+    <plurals name="import_archive_done">
+        <item quantity="one">%1$d note imported into “%2$s”</item>
+        <item quantity="other">%1$d notes imported into “%2$s”</item>
+    </plurals>
     <string name="import_archive_not_an_archive">This is not an archive of notes, or it is damaged.</string>
     <string name="import_archive_too_new">This archive was made by a later version: update the app first.</string>
     <string name="import_archive_failed_title">Could not import</string>

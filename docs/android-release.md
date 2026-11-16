@@ -247,7 +247,17 @@ The upload to the Play Console (internal testing, then production) is the user's
 * Seen, not fixed (small, for a plan of their own):
   * The archive is saved as `slides.drawview.zip` (the picker of Android adds the extension of the
     type `application/zip`), so the import names its folder "slides.drawview"; and the dialog says
-    "1 notes imported".
+    "1 notes imported". Fixed afterwards: an archive is saved as `application/octet-stream`
+    (checked on API 29: `slides.drawview`), `ArchiveFormat.folderNameOf` leaves out `.drawview` and
+    a `.zip` added, and the message is a plural in the seven languages (ABI recorded on purpose:
+    `folderNameOf`).
+* **Found, to fix before the release (data loss):** importing the archive of a note that is still
+  in the library takes the pages of the original. `ArchiveImporter` gives the note a new id but
+  keeps the ids of its pages, elements and resources, and the tables of `drawview-store-room` are
+  keyed by those ids alone: the pages (with their elements) are written again under the copy, the
+  original is left with none, and the editor adds a blank page to it. Seen on the emulator
+  (API 29) and read in its database (`adb root`). On `main` since the archive (2026-11-14), not
+  caused by this branch; `ArchiveTest` imports into another store, where ids never collide.
   * The least score of a search by meaning (0.68) was measured at 512 dimensions, while the
     application asks EmbeddingGemma 2 for all its 768 (`EmbedderOptions.dimensions = 0`): a
     paraphrase scored 0.677 and was left out.
