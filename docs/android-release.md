@@ -261,12 +261,15 @@ The upload to the Play Console (internal testing, then production) is the user's
   `fix/archive-identifiers` (`docs/archive.md`, phase 2: `ArchiveIdentifiers`), brought here: on
   the emulator (API 29) the archive of "slides (2)" imported into its library, the original keeps
   its 2 pages, its 2 PDF pages and its stroke (read in the database), the copy has its own.
+* Seen besides:
+  * A model was removed at once, with no confirmation (2.6 GB to download again). Fixed: the
+    removal asks first, with the size to download again (checked on API 29).
+  * After a download that failed with the disk full, the model showed as not installed while its
+    space was still taken: its part (`<file>.part`) stays on purpose, so that the next download
+    resumes where it stopped (`ModelDownloads`). Left as it is (see Left for later).
   * The least score of a search by meaning (0.68) was measured at 512 dimensions, while the
     application asks EmbeddingGemma 2 for all its 768 (`EmbedderOptions.dimensions = 0`): a
-    paraphrase scored 0.677 and was left out.
-  * A model removed is removed at once, with no confirmation (2.6 GB to download again). After a
-    download that failed with the disk full, the model showed as not installed while its space was
-    still taken: to check whether a failed download leaves its part on the disk.
+    paraphrase scored 0.677 and was left out (see Left for later).
 
 ## Left for later
 
@@ -281,3 +284,9 @@ The upload to the Play Console (internal testing, then production) is the user's
   restore makes a new identity too.
 * F-Droid: it builds from the sources, and PDFium comes prebuilt today.
 * A CI job that builds and signs the bundle from a tag, with the key in the secrets.
+* The least score of a search by meaning measured again at 768 dimensions (the benchmarks of
+  `drawview-search`), or the application asking for 512: today a close paraphrase can fall under it.
+* The room a model needs, checked before its download starts, and the part of a failed download
+  shown with its size and a way to remove it.
+* The foreground service of the sync (`dataSync`), if the review of Google refuses it: see the risk
+  in `docs/play-console.md`.
