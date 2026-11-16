@@ -257,7 +257,10 @@ The upload to the Play Console (internal testing, then production) is the user's
   keyed by those ids alone: the pages (with their elements) are written again under the copy, the
   original is left with none, and the editor adds a blank page to it. Seen on the emulator
   (API 29) and read in its database (`adb root`). On `main` since the archive (2026-11-14), not
-  caused by this branch; `ArchiveTest` imports into another store, where ids never collide.
+  caused by this branch; `ArchiveTest` imports into another store, where ids never collide. Fixed on
+  `fix/archive-identifiers` (`docs/archive.md`, phase 2: `ArchiveIdentifiers`), brought here: on
+  the emulator (API 29) the archive of "slides (2)" imported into its library, the original keeps
+  its 2 pages, its 2 PDF pages and its stroke (read in the database), the copy has its own.
   * The least score of a search by meaning (0.68) was measured at 512 dimensions, while the
     application asks EmbeddingGemma 2 for all its 768 (`EmbedderOptions.dimensions = 0`): a
     paraphrase scored 0.677 and was left out.
