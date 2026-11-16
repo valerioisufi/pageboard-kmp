@@ -40,6 +40,7 @@ internal fun TextColorPickerDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(modifier = Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
                     ColorWheel(
+                        modifier = Modifier.size(280.dp),
                         color = workingColor,
                         onColorChanged = { workingColor = it },
                         showAlphaSlider = false
