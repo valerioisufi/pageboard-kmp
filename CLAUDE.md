@@ -4,12 +4,13 @@ Kotlin Multiplatform libraries for drawing and note-taking (Android, desktop JVM
 as `io.github.valerioisufi:drawview-*`, plus two applications built on them: PencilNotes and the
 sample. Start from:
 
-- `README.md`: the modules, how to build, run and test.
+- `docs/reference.md`: the modules, the features, how to build, run and test (`README.md` is the
+  short version for visitors).
 - `docs/plans/modularization.md`: the module table, the dependency graph and the rules the libraries
   follow (the "Rules" and "Design" sections).
-- The plan of the area you work on: `docs/plans/collaboration.md` (sync), `docs/plans/internet-sync.md`
-  (sync over the internet), `docs/plans/lecture-assistant.md`, `docs/plans/export.md`, `docs/plans/text-editing.md`,
-  `docs/plans/adaptive-ui.md`, `docs/plans/ui-design.md`.
+- The plan of the area you work on, in `docs/plans/`: `collaboration.md` (sync),
+  `internet-sync.md` (sync over the internet), `lecture-assistant.md`, `export.md`,
+  `text-editing.md`, `adaptive-ui.md`, `ui-design.md`.
 
 ## How work is done
 

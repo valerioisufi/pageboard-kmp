@@ -1,0 +1,29 @@
+name: Bug report
+description: Something does not work in PencilNotes or in a library.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      placeholder: "1. Open a note\n2. ..."
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The application or the module and its version, the device and its system.
+      placeholder: PencilNotes 3.0 on Android 14, Samsung Galaxy Tab S9
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove anything private from them first, the content of your notes included.

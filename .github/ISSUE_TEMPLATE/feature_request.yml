@@ -1,0 +1,15 @@
+name: Idea
+description: Something PencilNotes or the libraries could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you need
+      description: The problem it solves, in your own work.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it could work

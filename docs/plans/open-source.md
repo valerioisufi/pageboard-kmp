@@ -69,7 +69,7 @@ minor version may break.
 |---|---|---|
 | 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the user) | Done here (the branches on GitHub left to the user) |
 | 2 | CLAUDE.md without the devices and the infrastructure of the user; `docs/plans/` with the links updated | Done |
-| 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | To do |
+| 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | Done |
 | 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | To do |
 | 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning (the user's) | To do |
 | 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the user's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
@@ -102,6 +102,22 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
   protocol, the relay on Oracle Cloud) is in `CLAUDE.local.md`, not versioned (`.gitignore`).
 * The plans keep what they recorded (the tablet a check ran on, the kind of machine of the relay):
   no address, key or account in them (alone, revertible).
+
+### Phase 3 results
+
+* `README.md` is short: what the project is, two screenshots, PencilNotes with its links (Google
+  Play, the privacy policy), the libraries with a Gradle snippet, the minimal application and a
+  table of the modules, how to build, how to contribute, the license and the credits.
+* What the README said before is `docs/reference.md`, whole, its links following it.
+* The screenshots are copies of the Roborazzi images (`docs/images/`), so that a change of a test
+  does not change the README: the library on the desktop and the lecture assistant (alone,
+  revertible: real screenshots of the application with notes in it would show more).
+* `pencilnotes/TRADEMARK.md`: the name, the wordmark and the icon are not under the MIT License; a
+  copy published by someone else has a name, an icon and an id of its own.
+* `SECURITY.md` (the private reporting of GitHub, or the address of the application), what matters
+  most (the sync as untrusted input, the files opened, the notes, the secrets);
+  `CONTRIBUTING.md` (the rules of CLAUDE.md for people); the issue templates (bug, idea, and the
+  link to report a vulnerability); `CHANGELOG.md`.
 
 ## Decisions
 
