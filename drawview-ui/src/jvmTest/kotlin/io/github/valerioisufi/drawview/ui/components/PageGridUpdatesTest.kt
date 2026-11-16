@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 
 /**
  * The page grid shows the pages as they are after every change, made here or by another device
- * (see `docs/page-grid-updates.md`): the model is not Compose state.
+ * (see `docs/plans/page-grid-updates.md`): the model is not Compose state.
  */
 @OptIn(ExperimentalTestApi::class)
 class PageGridUpdatesTest {

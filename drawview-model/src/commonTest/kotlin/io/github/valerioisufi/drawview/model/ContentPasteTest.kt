@@ -21,7 +21,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * Copy and paste between documents (see `docs/cross-document-paste.md`): what is copied is
+ * Copy and paste between documents (see `docs/plans/cross-document-paste.md`): what is copied is
  * detached from its document; pasted, it gets new identifiers, the resources of the target, its
  * place and its stack; another device of the target receives it as it was made.
  */

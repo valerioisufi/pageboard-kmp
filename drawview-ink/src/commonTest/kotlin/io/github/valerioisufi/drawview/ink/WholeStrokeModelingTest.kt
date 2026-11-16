@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
  * stroke of the same inputs added one by one, as the editor adds them. Without behaviors over time
  * or distance (the marker, the highlighter) Ink gives the same vertices but for a rounding; with
  * them (the pressure pen, the dashed line) it simplifies the outline in another way, and the
- * shapes differ at the edges (see `docs/performance.md`, phase 6).
+ * shapes differ at the edges (see `docs/plans/performance.md`, phase 6).
  */
 class WholeStrokeModelingTest {
 

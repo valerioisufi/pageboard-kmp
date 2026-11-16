@@ -57,7 +57,7 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * Screenshots of the search results (with snippets, places and icons) and of the search models
- * settings dialog (`docs/search.md`).
+ * settings dialog (`docs/plans/search.md`).
  *
  * `./gradlew :drawview-search-ui:recordRoborazziJvm` records them in `screenshots/`.
  */

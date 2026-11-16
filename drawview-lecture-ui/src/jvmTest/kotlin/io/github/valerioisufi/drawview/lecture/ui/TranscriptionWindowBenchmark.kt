@@ -34,7 +34,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 
 /**
- * The window while whisper.cpp transcribes (docs/transcription-queue.md, phase 0): a real window of
+ * The window while whisper.cpp transcribes (docs/plans/transcription-queue.md, phase 0): a real window of
  * the editor on a page of notes, panned at every frame, and the time between its frames: alone, and
  * while a recording is transcribed in each of the ways whisper.cpp may use the machine.
  *

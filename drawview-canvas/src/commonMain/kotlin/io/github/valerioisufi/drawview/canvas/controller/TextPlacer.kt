@@ -19,7 +19,7 @@ import kotlin.math.min
  * the free space of their pages, then onto new pages after them (see [TextFlow]), at the size of the
  * characters of the page they start from (see [TextSizePolicy]), shown before they are confirmed
  * (see [PlacementManager]) and undone at once; the sections of a text next to the pages they are
- * about when the application gives the [PageTopics] (see `docs/text-import.md`).
+ * about when the application gives the [PageTopics] (see `docs/plans/text-import.md`).
  */
 public class TextPlacer internal constructor(private val controller: DrawViewController) {
 

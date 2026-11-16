@@ -17,7 +17,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 
-/** The search while it is typed (docs/library-search.md): when it runs, and what it leaves on screen. */
+/** The search while it is typed (docs/plans/library-search.md): when it runs, and what it leaves on screen. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ContentSearchTypingTest {
 

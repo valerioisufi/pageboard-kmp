@@ -21,7 +21,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * The ink drawn from the outline of its strokes, antialiased (see `docs/ink-antialiasing.md`).
+ * The ink drawn from the outline of its strokes, antialiased (see `docs/plans/ink-antialiasing.md`).
  */
 class StrokeAntialiasingTest {
 

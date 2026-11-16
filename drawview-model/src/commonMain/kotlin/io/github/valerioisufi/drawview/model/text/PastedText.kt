@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.model.text
 
 /**
  * A text pasted from elsewhere made fit for a text of the notebook, the same on every device, without
- * being rewritten (see `docs/text-box-fixes.md`):
+ * being rewritten (see `docs/plans/text-box-fixes.md`):
  * - its line endings and its non-breaking spaces always normalized;
  * - unless it already looks like Markdown: at least two bullets ("•", "–", "1)", …) made a list, the
  *   lines wrapped under an item joined to it;

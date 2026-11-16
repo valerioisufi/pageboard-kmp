@@ -32,7 +32,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
-/** Shared folders between devices, through their engines (see `docs/shared-folders.md`). */
+/** Shared folders between devices, through their engines (see `docs/plans/shared-folders.md`). */
 class SharedFoldersSyncTest {
 
     /** A device keeping spaces: its store, its library of spaces, its engine, reachable at [name]. */

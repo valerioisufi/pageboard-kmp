@@ -43,7 +43,7 @@ public data class SharingState(
     /** This device was removed, or the owner stopped sharing the document. */
     val closed: Boolean = false,
     /**
-     * The shared folder the document is shared through (see `docs/shared-folders.md`), `null` for a
+     * The shared folder the document is shared through (see `docs/plans/shared-folders.md`), `null` for a
      * document shared on its own: its keys are derived from the ones of the folder, its owner and
      * membership are the folder's, and they change with the folder only (see `SpaceSharing`).
      */

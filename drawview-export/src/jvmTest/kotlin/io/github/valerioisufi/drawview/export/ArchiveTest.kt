@@ -21,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
-/** The archive of the application: notes written whole, and brought back as new notes (see `docs/archive.md`). */
+/** The archive of the application: notes written whole, and brought back as new notes (see `docs/plans/archive.md`). */
 class ArchiveTest {
 
     private fun library(): Pair<KeyValueDocumentStore, OpenDocuments> {

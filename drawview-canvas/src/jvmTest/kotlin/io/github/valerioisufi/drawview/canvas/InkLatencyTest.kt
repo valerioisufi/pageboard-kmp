@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
-/** The latency of the ink measured by the editor (see `docs/ink-latency.md`). */
+/** The latency of the ink measured by the editor (see `docs/plans/ink-latency.md`). */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 class InkLatencyTest {
 

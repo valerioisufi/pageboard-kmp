@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 import kotlin.time.measureTime
 
 /**
- * The cost of the changes on a large document (see `docs/performance.md`): the operations of
+ * The cost of the changes on a large document (see `docs/plans/performance.md`): the operations of
  * another device received, the strokes drawn here submitted.
  */
 class ApplyBenchmark {

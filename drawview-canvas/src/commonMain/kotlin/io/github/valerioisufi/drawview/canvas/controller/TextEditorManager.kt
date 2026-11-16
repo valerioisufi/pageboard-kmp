@@ -351,7 +351,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
 
     /**
      * As [pasteText], for [markdown] written in the notation already (what another application
-     * copied with its formatting, see `docs/html-paste.md`): it is taken as it is.
+     * copied with its formatting, see `docs/plans/html-paste.md`): it is taken as it is.
      */
     public fun pasteMarkdown(markdown: String, atScreen: Offset? = null) {
         paste(markdown, atScreen, isMarkdown = true, cleaned = markdown)
@@ -422,7 +422,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
     /**
      * Saves the text being written as it is now, the editor staying open on it, as [finishEditing]
      * would save it alone (its chain is not flowed): so that a process killed while it is written
-     * does not lose it (see `docs/text-autosave.md`). A blank text, or one saved as it is, is not
+     * does not lose it (see `docs/plans/text-autosave.md`). A blank text, or one saved as it is, is not
      * saved; the saves of a writing are undone with it, in one step.
      */
     public fun saveWriting() {
@@ -628,7 +628,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
     }
 
     /**
-     * The text in the notation the field was given to paste (see `docs/html-paste.md`): when it comes
+     * The text in the notation the field was given to paste (see `docs/plans/html-paste.md`): when it comes
      * back it is taken as it is, not cleaned as a text from elsewhere.
      */
     public var formattedPaste: String? = null
@@ -683,7 +683,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      * text ends with a block of code, or past its top edge when it starts with one, within [reachMm]
      * of that edge and within the width of the box: a line is added after the block (before it), the
      * caret on it. The caret cannot stand outside the code on the line of a block, and a finger has
-     * no arrows to add the line (see docs/text-fidelity.md). Returns whether it did; the tap ends
+     * no arrows to add the line (see docs/plans/text-fidelity.md). Returns whether it did; the tap ends
      * the writing otherwise.
      */
     internal fun lineBesideBlockAt(x: Float, y: Float, reachMm: Float): Boolean {

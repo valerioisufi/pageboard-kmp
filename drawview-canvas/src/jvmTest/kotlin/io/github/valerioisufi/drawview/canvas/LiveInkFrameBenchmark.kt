@@ -24,7 +24,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * M6 (see `docs/ink-latency.md`): a frame of the canvas while a stroke is drawn over a page of 400
+ * M6 (see `docs/plans/ink-latency.md`): a frame of the canvas while a stroke is drawn over a page of 400
  * strokes, as Compose draws it on the desktop (recorded and rasterized on the CPU).
  */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)

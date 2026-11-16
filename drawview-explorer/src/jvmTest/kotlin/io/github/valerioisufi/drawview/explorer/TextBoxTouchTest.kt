@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 
 /**
  * A finger on the text being written, the field drawn scaled by the zoom and turned with its text
- * (docs/text-fidelity.md): the caret goes on the character tapped, a long press selects its word,
+ * (docs/plans/text-fidelity.md): the caret goes on the character tapped, a long press selects its word,
  * the handles are drawn where the text is and move the selection.
  */
 @OptIn(ExperimentalTestApi::class)

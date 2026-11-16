@@ -34,7 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * The work of the stroke in progress (see `docs/ink-latency.md`): an input modeled, the shape taken
+ * The work of the stroke in progress (see `docs/plans/ink-latency.md`): an input modeled, the shape taken
  * out of the engine and drawn as the stroke grows (M1), the pen up committing a stroke over a screen
  * of tiles (M2), and the prediction of an event (M7).
  */

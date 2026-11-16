@@ -21,7 +21,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 /**
- * The text being written moved to another page (see `docs/text-editor-pages.md`): the box goes to
+ * The text being written moved to another page (see `docs/plans/text-editor-pages.md`): the box goes to
  * the page under its center, and the text is saved there.
  */
 class TextEditorPagesTest {

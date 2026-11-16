@@ -8,7 +8,7 @@ import kotlin.math.min
 internal class PredictedPoint(val position: Offset, val timeMs: Long)
 
 /**
- * Where the pointer drawing a stroke will be (see `docs/ink-latency.md`): told the real samples of
+ * Where the pointer drawing a stroke will be (see `docs/plans/ink-latency.md`): told the real samples of
  * the stroke, it predicts the next ones, a little ahead of the last. The prediction is only drawn:
  * never an input of the stroke.
  */

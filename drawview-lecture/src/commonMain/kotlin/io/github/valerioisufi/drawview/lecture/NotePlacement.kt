@@ -9,7 +9,7 @@ import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
 import kotlin.math.min
 
 /**
- * Where and how wide a note of the lecture goes on its page, by its kind (see `docs/auto-placement.md`):
+ * Where and how wide a note of the lecture goes on its page, by its kind (see `docs/plans/auto-placement.md`):
  * a definition, a formula or a reference in the margin beside what it is about, narrow; an
  * explanation, an example or a theorem below it, as wide as it; an announcement at the bottom of
  * the page, across it.

@@ -32,8 +32,8 @@ import kotlin.test.Test
 
 /**
  * Screenshots of the sharing as the dialogs draw it (the dialogs themselves open in windows the
- * screenshots do not take): the owner, a member, before sharing, joining (docs/ui-design.md), over
- * the internet (docs/internet-sync.md).
+ * screenshots do not take): the owner, a member, before sharing, joining (docs/plans/ui-design.md), over
+ * the internet (docs/plans/internet-sync.md).
  *
  * `./gradlew :drawview-sync-ui:recordRoborazziJvm` records them in `screenshots/`.
  */
@@ -130,7 +130,7 @@ class SharingScreenshotTest {
         }
     }
 
-    /** The library about to be shared (docs/shared-folders.md): what sharing it does, the first invitation. */
+    /** The library about to be shared (docs/plans/shared-folders.md): what sharing it does, the first invitation. */
     @Test
     fun library() = capture("share-library", width = 908, height = 640) {
         Dialog(ShareDialogWidth) {

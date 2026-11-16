@@ -13,7 +13,7 @@ import io.github.valerioisufi.drawview.model.Stamp
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A shared folder (a space, see `docs/shared-folders.md`): its root in the library
+ * A shared folder (a space, see `docs/plans/shared-folders.md`): its root in the library
  * ([rootFolderId], `null` for the library itself; no foreign key: the folder may go to the trash
  * or be deleted while the space stays), its sharing (a secret, as `shared_documents`) and whether
  * it may only be read here.

@@ -118,7 +118,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The export of what [state] holds (see `docs/export-ux.md`): its contents read from [export],
+ * The export of what [state] holds (see `docs/plans/export-ux.md`): its contents read from [export],
  * the choices of the user, then where the file goes (saved, or shared on the phones). Once the
  * place is chosen the export is given to [jobs] and the sheet closes ([onDismiss]): its progress
  * and its outcome are shown by `ExportStatusHost`.

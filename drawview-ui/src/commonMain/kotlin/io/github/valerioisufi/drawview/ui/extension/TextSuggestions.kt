@@ -4,7 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
  * What an extension suggests to write after the caret of the text box being written
- * (`docs/text-box-hook.md`): asked by the editor when the user stops typing for a moment, its
+ * (`docs/plans/text-box-hook.md`): asked by the editor when the user stops typing for a moment, its
  * answer shown after the caret until it is accepted (Tab) or dropped.
  */
 public fun interface TextSuggester {

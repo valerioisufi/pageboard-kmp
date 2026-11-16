@@ -250,7 +250,7 @@ fun PencilNotesDocumentWindow(
 
 /**
  * Gives the external models the pages of the documents in no editor, laid out and drawn with the
- * fonts of this window, as an editor would (see `docs/agent-ergonomics.md`).
+ * fonts of this window, as an editor would (see `docs/plans/agent-ergonomics.md`).
  */
 @Composable
 private fun AgentPages(agents: PencilNotesAgents?, engines: DrawViewEngines) {

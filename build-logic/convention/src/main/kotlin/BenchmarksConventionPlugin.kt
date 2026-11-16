@@ -4,7 +4,7 @@ import org.gradle.api.tasks.testing.Test
 
 /**
  * The benchmarks of a module: the test classes whose name ends with `Benchmark` (see
- * `docs/performance.md`). They are left out of the tests, and run alone with
+ * `docs/plans/performance.md`). They are left out of the tests, and run alone with
  * `-Pdrawview.benchmarks=true`, every time (their results are what they print).
  */
 class BenchmarksConventionPlugin : Plugin<Project> {

@@ -46,7 +46,7 @@ public data class DrawPreferences(
     val isShapeRecognitionEnabled: Boolean = true,
     /** What the shapes tool draws (see `ShapeInserter`). */
     val shapeTool: ShapeToolPreferences = ShapeToolPreferences(),
-    /** Whether the text box asks the extensions what may follow the caret (`docs/writing-suggestions.md`). */
+    /** Whether the text box asks the extensions what may follow the caret (`docs/plans/writing-suggestions.md`). */
     val areTextSuggestionsEnabled: Boolean = true
 ) {
     /** These preferences as text (JSON), read again by [decode]. */

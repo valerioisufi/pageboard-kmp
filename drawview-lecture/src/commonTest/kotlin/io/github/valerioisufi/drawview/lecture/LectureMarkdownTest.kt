@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** The lectures of a note written as Markdown (see `docs/markdown-export.md`). */
+/** The lectures of a note written as Markdown (see `docs/plans/markdown-export.md`). */
 class LectureMarkdownTest {
 
     private fun note(id: String, kind: NoteKind, title: String, content: String, atMs: Long, status: SuggestionStatus = SuggestionStatus.NEW) =

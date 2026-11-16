@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * What works on the notes of PencilNotes in this process (`docs/document-window.md`), created once
+ * What works on the notes of PencilNotes in this process (`docs/plans/document-window.md`), created once
  * on first use and shared by every window: the engines drawing the documents, the lecture
  * assistant, the collaboration with the other devices, the search in the notes with the local
  * models, the export. The windows bind them with `PencilNotesWindow`; the application [stop]s them

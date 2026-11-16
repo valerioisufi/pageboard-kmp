@@ -20,7 +20,7 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * Keeps the library and the shared folders of this device in step (GRASP Indirection, Controller
- * of "organize the library"; see `docs/shared-folders.md`):
+ * of "organize the library"; see `docs/plans/shared-folders.md`):
  *
  * * what the library holds under the root of a space, as anything changes it (the explorer, an
  *   agent, an import), becomes changes of the space ([localOperations], to send);

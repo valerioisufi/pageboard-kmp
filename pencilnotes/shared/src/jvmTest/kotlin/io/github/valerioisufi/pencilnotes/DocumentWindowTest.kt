@@ -8,7 +8,7 @@ import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 
-/** A document in a window of its own has the editor of the library (`docs/document-window.md`). */
+/** A document in a window of its own has the editor of the library (`docs/plans/document-window.md`). */
 @OptIn(ExperimentalTestApi::class)
 class DocumentWindowTest {
 

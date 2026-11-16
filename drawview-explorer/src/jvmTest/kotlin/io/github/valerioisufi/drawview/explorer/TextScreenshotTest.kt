@@ -30,7 +30,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Screenshots of the texts (docs/text-editing.md): a text being written, the texts as the page
+ * Screenshots of the texts (docs/plans/text-editing.md): a text being written, the texts as the page
  * draws them, a text selected.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -95,7 +95,7 @@ class TextScreenshotTest {
     }
 
     /**
-     * Code drawn by the page (docs/code-blocks.md): in the line on its background, a block in the
+     * Code drawn by the page (docs/plans/code-blocks.md): in the line on its background, a block in the
      * colors of its language with a long line wrapped under its indentation, a tab and an empty
      * line, a block without a language at the start of a centered text, a block with the numbers
      * of its lines.

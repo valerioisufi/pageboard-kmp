@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 /**
- * The cost of the thumbnail of a note changed (see `docs/performance.md`, M3): drawn again after a
+ * The cost of the thumbnail of a note changed (see `docs/plans/performance.md`, M3): drawn again after a
  * stroke on its last page, which does not change it, and after a stroke on its first page, which
  * does. A note of 50 pages of 600 strokes in the Room store, on a database file of the data
  * directory of the tests.

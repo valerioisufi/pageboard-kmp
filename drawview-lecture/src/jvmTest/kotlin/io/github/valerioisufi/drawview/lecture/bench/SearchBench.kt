@@ -18,7 +18,7 @@ private class EvalSnapshot(val documents: List<EvalDocument> = emptyList())
 private class EvalDocument(val id: String, val title: String = "")
 
 /**
- * Phase 0 of docs/search.md: the pages of the notebooks of the workspace of lecture-eval (the text
+ * Phase 0 of docs/plans/search.md: the pages of the notebooks of the workspace of lecture-eval (the text
  * of their slides and the notes typed on them, a chunk a page), searched by [QUERIES], each with
  * the page it should find:
  *
@@ -30,7 +30,7 @@ private class EvalDocument(val id: String, val title: String = "")
  * The page found in the first five, within one page (a slide continued on the next one), and the
  * reciprocal rank; the time to compute the vectors of every page.
  *
- * Phase 6 of docs/library-search.md: what a least score of the vectors would keep, of the pages of
+ * Phase 6 of docs/plans/library-search.md: what a least score of the vectors would keep, of the pages of
  * [QUERIES] and of the pages found for [NO_ANSWER], searches the notebooks say nothing about.
  */
 internal class SearchBench(private val bench: Bench, private val workspace: File) {
@@ -42,7 +42,7 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
     private class Ranking(val name: String, val ranks: List<List<Int>>)
 
     suspend fun run(report: StringBuilder) {
-        report.appendLine("## Search (phase 0 of docs/search.md)").appendLine()
+        report.appendLine("## Search (phase 0 of docs/plans/search.md)").appendLine()
         val pages = pages()
         if (pages.isEmpty()) {
             report.appendLine("No page in $workspace.").appendLine()
@@ -131,7 +131,7 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
         val targetScores = targets.mapIndexed { i, target -> answeredScores[i][target] }
         val paraphrased = QUERIES.indices.filter { QUERIES[it].paraphrase }
 
-        report.appendLine().appendLine("### A least score of the vectors (phase 6 of docs/library-search.md)").appendLine()
+        report.appendLine().appendLine("### A least score of the vectors (phase 6 of docs/plans/library-search.md)").appendLine()
         report.appendLine("${NO_ANSWER.size} searches with no answer in the notebooks. The scores, $THRESHOLD_DIMENSIONS dimensions:").appendLine()
         report.appendLine("* the page wanted: ${spread(targetScores)};")
         report.appendLine("* the best page of a search with an answer: ${spread(answeredScores.map { it.max() })};")

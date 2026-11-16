@@ -34,7 +34,7 @@ public class DocumentKey private constructor(private val bytes: ByteArray) {
 
     /**
      * The key of the document [documentId] of the shared folder this is the key of (see
-     * `docs/shared-folders.md`): an HMAC-SHA256 of the identifier, so that each document of the
+     * `docs/plans/shared-folders.md`): an HMAC-SHA256 of the identifier, so that each document of the
      * folder has a key and a tag of its own, and whoever has the key of the folder has them all.
      */
     public fun forDocument(documentId: String): DocumentKey {

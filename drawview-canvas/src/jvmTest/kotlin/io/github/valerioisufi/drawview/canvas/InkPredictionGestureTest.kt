@@ -23,7 +23,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * The stroke in progress drawn a frame ahead of the pen (see `docs/ink-latency.md`): the prediction
+ * The stroke in progress drawn a frame ahead of the pen (see `docs/plans/ink-latency.md`): the prediction
  * is shown while the pen moves, and only the inputs of the pen are committed and sent.
  */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)

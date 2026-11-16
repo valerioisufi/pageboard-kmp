@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** The pages deleted of a document, put back from its trash (see `docs/trash.md`). */
+/** The pages deleted of a document, put back from its trash (see `docs/plans/trash.md`). */
 class PageTrashTest {
 
     /** A document of [pages] pages, a text on each one naming it ("1", "2"...). */

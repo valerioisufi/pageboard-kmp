@@ -39,7 +39,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
-/** Where the text of a model goes, and what the model and the user are told (docs/agent-placement.md). */
+/** Where the text of a model goes, and what the model and the user are told (docs/plans/agent-placement.md). */
 class ProposalPlannerTest {
 
     private class Setup(val agents: ExternalAgents, val connection: String, val documentId: String, val open: OpenDocument, val engines: AgentEngines)

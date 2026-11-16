@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** A text box larger than the window, at the zoom of a page read closely (docs/text-box-fixes.md). */
+/** A text box larger than the window, at the zoom of a page read closely (docs/plans/text-box-fixes.md). */
 @OptIn(ExperimentalTestApi::class)
 class TextBoxLargeTest {
 

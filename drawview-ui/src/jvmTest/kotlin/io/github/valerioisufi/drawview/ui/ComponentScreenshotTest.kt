@@ -73,7 +73,7 @@ import kotlinx.coroutines.Dispatchers
 
 /**
  * Screenshots of the components that open over the screens (the popovers of the tools, the
- * menus), which the screenshots of the screens do not draw (docs/ui-design.md).
+ * menus), which the screenshots of the screens do not draw (docs/plans/ui-design.md).
  *
  * `./gradlew :drawview-ui:recordRoborazziJvm` records them in `screenshots/`.
  */

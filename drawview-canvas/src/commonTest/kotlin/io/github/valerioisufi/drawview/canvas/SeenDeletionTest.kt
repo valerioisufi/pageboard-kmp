@@ -10,7 +10,7 @@ import kotlin.test.assertNull
 
 /**
  * A deletion in the text being written takes what is seen: the delimiters, not shown, stay with the
- * part of the format left (docs/text-fidelity.md).
+ * part of the format left (docs/plans/text-fidelity.md).
  */
 class SeenDeletionTest {
 

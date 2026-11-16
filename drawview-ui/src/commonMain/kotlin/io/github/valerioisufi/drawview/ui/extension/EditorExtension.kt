@@ -12,7 +12,7 @@ import io.github.valerioisufi.drawview.ui.command.Command
  * Written as a subclass overriding the contributions it makes, or with the builder
  * `EditorExtension { toolbarActions { context -> … } }`. A contribution added to this class in a
  * later version is an open member with a default: the extensions compiled before keep working
- * (`docs/editor-ports.md`). Several extensions are combined with `+` (e.g. an assistant and the
+ * (`docs/plans/editor-ports.md`). Several extensions are combined with `+` (e.g. an assistant and the
  * collaboration).
  */
 public abstract class EditorExtension {

@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-/** A shape that snapped following the pen still down (see `docs/shape-adjust.md`). */
+/** A shape that snapped following the pen still down (see `docs/plans/shape-adjust.md`). */
 class ShapeFollowTest {
 
     private fun assertNear(expected: Point, actual: Point) {

@@ -30,7 +30,7 @@ internal actual fun rememberLiveInkLayer(controller: DrawViewController): LiveIn
     remember(controller) { FrontBufferedLiveInkLayer(controller) }
 
 /**
- * The stroke in progress drawn in a front buffer over the canvas (see `docs/ink-latency.md`): at
+ * The stroke in progress drawn in a front buffer over the canvas (see `docs/plans/ink-latency.md`): at
  * each input, outside the frames of Compose and of the compositor queue, into a single buffer that
  * stays on screen. Only what changed is drawn again: the region Ink updated is cleared and the
  * stroke filled again clipped to it.

@@ -112,7 +112,7 @@ public data class RestoreItem(val id: String) : CatalogChange {
 
 /**
  * Takes the item [id] out of the space, with what it holds: every device keeps its copy, no longer
- * shared (see `docs/shared-folders.md`).
+ * shared (see `docs/plans/shared-folders.md`).
  */
 @Serializable
 @SerialName("removeFromSpace")

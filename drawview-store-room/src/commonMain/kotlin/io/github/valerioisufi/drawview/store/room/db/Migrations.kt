@@ -161,7 +161,7 @@ internal object Migration19To20 : Migration(19, 20) {
 }
 
 /**
- * 21: the box of a text is laid out, not stored (docs/text-heights.md). The height of the texts is
+ * 21: the box of a text is laid out, not stored (docs/plans/text-heights.md). The height of the texts is
  * dropped, and a turned text, which turned around the middle of its box, gets the corner it turns
  * around now, computed with the height it had: it stays where it is. The texts and the placements
  * of texts in the log of the operations are rewritten the same way (a placement of a text becomes
@@ -301,7 +301,7 @@ internal object Migration21To22 : Migration(21, 22) {
 }
 
 /**
- * 23: the fill of a text box (`DrawText.background`, docs/text-boxes.md); no text has one. The
+ * 23: the fill of a text box (`DrawText.background`, docs/plans/text-boxes.md); no text has one. The
  * texts in the log of the operations need nothing: a text without the field has no fill.
  */
 internal object Migration22To23 : Migration(22, 23) {
@@ -312,7 +312,7 @@ internal object Migration22To23 : Migration(22, 23) {
 
 /**
  * 24: the chains of text boxes across the pages (`DrawText.next`, `continuesLine`,
- * docs/text-boxes.md); no text is in one. The texts in the log of the operations need nothing: a
+ * docs/plans/text-boxes.md); no text is in one. The texts in the log of the operations need nothing: a
  * text without the fields goes on into none.
  */
 internal object Migration23To24 : Migration(23, 24) {
@@ -323,7 +323,7 @@ internal object Migration23To24 : Migration(23, 24) {
 }
 
 /**
- * 25: the shared folders (docs/shared-folders.md): the spaces, the items of their catalogs, their
+ * 25: the shared folders (docs/plans/shared-folders.md): the spaces, the items of their catalogs, their
  * logs and the proofs of their changes. Nothing of the documents and folders changes: no space is
  * in a database of before.
  */

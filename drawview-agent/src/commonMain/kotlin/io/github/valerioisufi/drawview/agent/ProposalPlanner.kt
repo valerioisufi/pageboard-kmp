@@ -626,7 +626,7 @@ internal class TextMeasure(private val documentId: String, private val editors: 
 
     /**
      * The box of [text]: its editor laid it out and it keeps that height; in no editor its height is
-     * not stored (see `docs/text-heights.md`), so it is laid out again or estimated.
+     * not stored (see `docs/plans/text-heights.md`), so it is laid out again or estimated.
      */
     fun boundsOf(text: DrawText): Rect =
         if (inEditor) text.getRotatedBounds() else text.getRotatedBounds(height(text.text, text.width, text.fontSize))

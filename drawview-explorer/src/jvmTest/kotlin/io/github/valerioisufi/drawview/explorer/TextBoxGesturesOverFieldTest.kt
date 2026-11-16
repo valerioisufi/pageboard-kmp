@@ -11,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** What moves the canvas over the field of the text being written, and what stays with the field (docs/text-box-fixes.md). */
+/** What moves the canvas over the field of the text being written, and what stays with the field (docs/plans/text-box-fixes.md). */
 @OptIn(ExperimentalTestApi::class)
 class TextBoxGesturesOverFieldTest {
 

@@ -81,7 +81,7 @@ public class JoinRequest internal constructor(public val documentId: String, pub
 }
 
 /**
- * Where the root of a shared folder joined goes in the library (see `docs/shared-folders.md`): a
+ * Where the root of a shared folder joined goes in the library (see `docs/plans/shared-folders.md`): a
  * new folder at the root named as the folder shared ([NewFolder]), a folder of the library
  * ([Folder]), or the library itself, whose documents and folders then go into the shared folder
  * too ([Library]).
@@ -129,7 +129,7 @@ public enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, RE
  * The members of the documents give each other where they can be reached ([addresses], see
  * [publishAddress]), kept in [addressBook]: the controllers of the transports connect to them.
  *
- * With [spaces], whole folders and the library are shared too (see `docs/shared-folders.md`): a
+ * With [spaces], whole folders and the library are shared too (see `docs/plans/shared-folders.md`): a
  * connection about a shared folder carries the changes of its catalog (signed, as the operations),
  * and its documents are synchronized as the documents shared on their own, with the keys and the
  * membership of the folder.
@@ -149,7 +149,7 @@ public class SyncEngine(
 ) {
     private val sharing = DocumentSharing(shared, identity)
 
-    /** The sharing of the shared folders and of their documents (see `docs/shared-folders.md`), when the application keeps spaces. */
+    /** The sharing of the shared folders and of their documents (see `docs/plans/shared-folders.md`), when the application keeps spaces. */
     private val spaceSharing = spaces?.let { SpaceSharing(it, identity, sharing) }
 
     /** Where the root of each space being joined goes, as the user chose (see [joinSpace]). */
@@ -171,7 +171,7 @@ public class SyncEngine(
     /**
      * The documents of the shared folders to connect about now (see [reachable]): the ones whose
      * heads differ from a member's, missing on either side, or worked on here; the others of a space
-     * have no connection of their own (see `docs/shared-folders.md`, phase 4b).
+     * have no connection of their own (see `docs/plans/shared-folders.md`, phase 4b).
      */
     private val wantedDocuments = MutableStateFlow<Set<String>>(emptySet())
     private val identity get() = sharing.identity
@@ -355,7 +355,7 @@ public class SyncEngine(
     /** The invitations of the document [documentId] (this device is its owner). */
     public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = accessOf(documentId).stateOf(documentId)?.invitations.orEmpty()
 
-    /** What an invitation to [id] is to: a document, a folder or the library (see `docs/shared-folders.md`). */
+    /** What an invitation to [id] is to: a document, a folder or the library (see `docs/plans/shared-folders.md`). */
     private suspend fun kindOf(id: String): InvitationKind {
         val space = spaces?.spaces()?.firstOrNull { it.id == id } ?: return InvitationKind.DOCUMENT
         return if (space.rootFolderId == null) InvitationKind.LIBRARY else InvitationKind.FOLDER
@@ -487,7 +487,7 @@ public class SyncEngine(
     }
 
     /**
-     * Joins the shared folder of [invitation] (see `docs/shared-folders.md`), its root going where
+     * Joins the shared folder of [invitation] (see `docs/plans/shared-folders.md`), its root going where
      * [root] says once the owner admits this device; nothing when the application keeps no spaces.
      */
     public suspend fun joinSpace(invitation: Invitation, root: SpaceRoot) {
@@ -504,7 +504,7 @@ public class SyncEngine(
 
     /**
      * Shares [rootFolderId] (a folder, `null`: the library) as a shared folder, this device its
-     * owner (see `docs/shared-folders.md`): its identifier, to invite with ([invite]), or `null` when
+     * owner (see `docs/plans/shared-folders.md`): its identifier, to invite with ([invite]), or `null` when
      * the application keeps no spaces or the folder is in a space or holds one.
      */
     public suspend fun shareSpace(rootFolderId: String?): String? {

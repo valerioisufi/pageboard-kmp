@@ -18,7 +18,7 @@ import kotlin.test.assertFalse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
-/** Selecting pages in the grid with touch and acting on all of them (see `docs/page-selection.md`). */
+/** Selecting pages in the grid with touch and acting on all of them (see `docs/plans/page-selection.md`). */
 @OptIn(ExperimentalTestApi::class)
 class PageGridSelectionTest {
 

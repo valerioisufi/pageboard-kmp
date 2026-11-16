@@ -13,7 +13,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** The free space of a page and the places the planner finds in it (see `docs/auto-placement.md`). */
+/** The free space of a page and the places the planner finds in it (see `docs/plans/auto-placement.md`). */
 class PlacementPlannerTest {
 
     private val planner = PlacementPlanner()

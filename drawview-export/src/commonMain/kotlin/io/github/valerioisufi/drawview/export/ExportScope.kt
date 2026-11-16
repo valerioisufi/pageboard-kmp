@@ -4,7 +4,7 @@ import io.github.valerioisufi.drawview.store.FolderSummary
 import kotlinx.coroutines.CancellationException
 
 /**
- * What is exported (see `docs/export-ux.md`): pages of a note, notes and folders chosen together,
+ * What is exported (see `docs/plans/export-ux.md`): pages of a note, notes and folders chosen together,
  * a folder or the Home.
  */
 public sealed interface ExportScope {

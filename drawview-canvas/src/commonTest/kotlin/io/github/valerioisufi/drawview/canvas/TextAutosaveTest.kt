@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** The text being written saved in the document with the editor open (see `docs/text-autosave.md`). */
+/** The text being written saved in the document with the editor open (see `docs/plans/text-autosave.md`). */
 class TextAutosaveTest {
 
     /** Every line of the source 10 mm high (a line never wraps). */

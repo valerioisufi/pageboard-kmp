@@ -83,7 +83,7 @@ internal class DrawnMark(val mark: PlannedMark, val emphasis: Emphasis, val labe
 /**
  * The marks of the proposals waiting on a document, as they are drawn: every item as its plan says,
  * faint when the user left it out, strong when it is the one chosen in the list. What goes on a page
- * the plan adds is not drawn: the page is not there yet (docs/agent-preview.md, decision 3).
+ * the plan adds is not drawn: the page is not there yet (docs/plans/agent-preview.md, decision 3).
  *
  * @param labels the words of an item on a page it changes as a whole (removed, moved, copied, its format).
  */

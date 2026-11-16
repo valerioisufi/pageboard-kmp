@@ -6,7 +6,7 @@
     the backup would keep the database without them, and a restored device would hold the shared
     documents of an identity whose key stayed in the Android Keystore of the old one. The backup of
     the notes is the archive (Export, Archive) and the sync with the other devices
-    (docs/android-release.md).
+    (docs/plans/android-release.md).
 -->
 <data-extraction-rules>
     <cloud-backup>

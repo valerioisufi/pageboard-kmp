@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * What a model proposes to do to the library: its documents and folders, by meaning. Nothing is
- * deleted for good: what is removed goes to the trash of the library (see `docs/trash.md`).
+ * deleted for good: what is removed goes to the trash of the library (see `docs/plans/trash.md`).
  */
 @Serializable
 public sealed interface LibraryItem {

@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     // A command of the terminal: a client of the application, before anything of the interface starts
     if (args.firstOrNull() in AgentCli.COMMANDS) exitProcess(AgentCli(dataDirectory).run(args.toList()))
 
-    // One process on the database of a directory (see docs/agent-tools.md), to the end of main
+    // One process on the database of a directory (see docs/plans/agent-tools.md), to the end of main
     val directoryLock = DataDirectoryLock.acquire(dataDirectory)
     if (directoryLock == null) {
         JOptionPane.showMessageDialog(

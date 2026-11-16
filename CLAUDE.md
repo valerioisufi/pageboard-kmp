@@ -5,11 +5,11 @@ as `io.github.valerioisufi:drawview-*`, plus two applications built on them: Pen
 sample. Start from:
 
 - `README.md`: the modules, how to build, run and test.
-- `docs/modularization.md`: the module table, the dependency graph and the rules the libraries
+- `docs/plans/modularization.md`: the module table, the dependency graph and the rules the libraries
   follow (the "Rules" and "Design" sections).
-- The plan of the area you work on: `docs/collaboration.md` (sync), `docs/internet-sync.md`
-  (sync over the internet), `docs/lecture-assistant.md`, `docs/export.md`, `docs/text-editing.md`,
-  `docs/adaptive-ui.md`, `docs/ui-design.md`.
+- The plan of the area you work on: `docs/plans/collaboration.md` (sync), `docs/plans/internet-sync.md`
+  (sync over the internet), `docs/plans/lecture-assistant.md`, `docs/plans/export.md`, `docs/plans/text-editing.md`,
+  `docs/plans/adaptive-ui.md`, `docs/plans/ui-design.md`.
 
 ## How work is done
 
@@ -28,12 +28,12 @@ sample. Start from:
 - **Commits** are `type(scope): description`, in lowercase, of type `feat`, `fix`, `refactor`,
   `build` or `docs`. Never add `Co-Authored-By` or "Generated with Claude Code", and never add
   attribution to PRs or issues.
-- **Language:** talk with the user in Italian. Code, comments, docs and commits are in English.
+- **Language:** code, comments, docs and commits are in English.
   Match the comment style around you: KDoc that says what a thing is, in full sentences.
 
 ## Non-negotiable
 
-- **The user keeps real notes in PencilNotes. Never lose them.**
+- **People keep real notes in PencilNotes. Never lose them.**
   - Every change to the Room schema (`drawview-store-room/schemas`, `Migrations.kt`) needs a
     migration tested with `MigrationTestHelper`.
   - Every change to a stored format (documents, preferences, lecture records, attachments)
@@ -42,12 +42,10 @@ sample. Start from:
 - **Never touch `~/.pencilnotes` or `~/.drawview` while verifying.** Run the desktop apps on a
   scratch directory:
   `JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
-- **The sync protocol is live between the user's devices** (`PROTOCOL_VERSION` in
-  `OpenFrame.kt`: 1). Its format changed on `feat/internet-sync` and `feat/untrusted-members`
-  under the same version, the applications being on two devices of the user, updated together.
+- **The sync protocol is live between devices** (`PROTOCOL_VERSION` in `OpenFrame.kt`: 1).
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version
-    with the user.
+    with the maintainer.
   - Devices on different formats cannot sync.
 - **What another device sends is untrusted input**: anyone may reach a device over the internet
   or on the same Wi-Fi.
@@ -55,7 +53,7 @@ sample. Start from:
     and never allocate a length announced before its bytes come.
   - A frame, message or operation not understood fails the connection (a `SyncException`), never
     the application; its CBOR nesting is checked before it is decoded (`cborNestsWithin`).
-  - Members are not trusted either (`docs/untrusted-members.md`): an operation is taken only signed
+  - Members are not trusted either (`docs/plans/untrusted-members.md`): an operation is taken only signed
     by the device of its replica, a key only as the owner named it, a document from its owner
     only, what a member has from that member only.
 - **No web targets.** No JS or Wasm, ever: the targets are Android, JVM, `iosArm64` and
@@ -65,7 +63,7 @@ sample. Start from:
 
 ## The rules of the libraries
 
-These are in brief; the full version is in `docs/modularization.md`.
+These are in brief; the full version is in `docs/plans/modularization.md`.
 
 - A module builds and runs with what it declares. An optional engine (PDF, formulas, native ink)
   is given by the application, and when it is missing the feature degrades, never the build.
@@ -73,8 +71,8 @@ These are in brief; the full version is in `docs/modularization.md`.
   - `drawview-platform`, `-model`, `-html`, `-ink`, `-store`, `-store-room`;
   - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`;
   - `-ml`, `-ml-litert`, `-search` (the local models and the search in the notes, see
-    docs/local-models.md and docs/search.md);
-  - `-agent` (what an external model reads and proposes, see docs/agent-tools.md).
+    docs/plans/local-models.md and docs/plans/search.md);
+  - `-agent` (what an external model reads and proposes, see docs/plans/agent-tools.md).
 
   `drawview-lecture` keeps the Compose runtime only.
 - A native library ships with the module that uses it, and only with it: `drawview-native-*` on
@@ -118,7 +116,7 @@ These are in brief; the full version is in `docs/modularization.md`.
 
 `.worktreeinclude` copies `local.properties` (the Android SDK) and the `Local.xcconfig` files of
 the iOS apps (the Apple team) into a new worktree. The native libraries of the desktop, of iOS and
-of cargo come from the build cache when their sources are the same (`docs/build-speed.md`); the
+of cargo come from the build cache when their sources are the same (`docs/plans/build-speed.md`); the
 CMake of Android runs in each checkout, which takes a while. In `local.properties`,
 `android.debug.abis=arm64-v8a` leaves it one ABI, and `rust.targetDir` shares the directory of cargo.
 
@@ -127,10 +125,9 @@ CMake of Android runs in each checkout, which takes a while. In `local.propertie
 Each one gets its own plan.
 
 - **Sync over the internet with iroh** (in progress, `feat/internet-sync`): the plan is
-  `docs/internet-sync.md`. It replaces the idea of libp2p, whose relay limits every circuit to
+  `docs/plans/internet-sync.md`. It replaces the idea of libp2p, whose relay limits every circuit to
   128 KiB and 2 minutes by default.
-  - Left to the user: the relay on Oracle Cloud (`tools/relay/README.md`) and the tests on real
-    networks (phase 7).
+  - Left: a relay of its own (`tools/relay/README.md`) and the tests on real networks (phase 7).
   - Offline devices: the relay of iroh does not store anything, so they still need the
     store-and-forward relay (`SealedOperation` was made for it), in a plan of its own.
   - Publishing the applications to other users needs more: the access to the relay (a token in

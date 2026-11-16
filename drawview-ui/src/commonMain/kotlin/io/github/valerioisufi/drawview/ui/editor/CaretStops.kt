@@ -15,7 +15,7 @@ import kotlin.math.sign
  *   the same place on the screen goes on in its direction: every press moves the caret.
  * * A place given by a pointer (a mouse, a finger, a pen, a handle) is where the pointer is: it is
  *   never moved on, only settled among the offsets shown there. Moved on, a drag starting at the
- *   edge of a format would leave out the character it starts on (see docs/pointer-selection.md).
+ *   edge of a format would leave out the character it starts on (see docs/plans/pointer-selection.md).
  * * Among the offsets shown at the same place, the caret takes the one inside the format on its
  *   left (typing goes on in the format of the character on the left, as in the word processors),
  *   never one in a marker that is not shown; a selection takes the offsets inside it, so that it

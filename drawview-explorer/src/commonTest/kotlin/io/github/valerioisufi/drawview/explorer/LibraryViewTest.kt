@@ -24,7 +24,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
-/** What the library shows (docs/ui-design.md): the sections, the search, the filters, the counts, the notes made. */
+/** What the library shows (docs/plans/ui-design.md): the sections, the search, the filters, the counts, the notes made. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewTest {
 

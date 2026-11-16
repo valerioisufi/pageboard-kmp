@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** The items of a checklist: their box read, their content after it, their label (see `docs/checklists.md`). */
+/** The items of a checklist: their box read, their content after it, their label (see `docs/plans/checklists.md`). */
 class ChecklistParsingTest {
 
     private fun items(text: String) = RichTextParser.parse(text).filter { it.kind == Kind.LIST_ITEM }

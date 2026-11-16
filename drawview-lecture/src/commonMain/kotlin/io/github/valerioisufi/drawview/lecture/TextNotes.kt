@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.lecture
 import kotlin.random.Random
 
 /**
- * What turning a text into notes would cost (see `docs/text-import.md`), shown before the request
+ * What turning a text into notes would cost (see `docs/plans/text-import.md`), shown before the request
  * is sent.
  *
  * @param provider who answers it (Gemini is billed, a local model is free).

@@ -23,7 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 
 /**
- * What every [SpaceStore] keeps (see `docs/shared-folders.md`): the spaces, their catalogs, logs
+ * What every [SpaceStore] keeps (see `docs/plans/shared-folders.md`): the spaces, their catalogs, logs
  * and proofs, read again when the store is opened again ([reopened]: the same storage, a new
  * store), forgotten with their space while the library keeps its items; and the writes of the
  * library made by other devices, taken as they are. Run on an empty store.

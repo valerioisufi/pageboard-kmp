@@ -26,7 +26,7 @@ import kotlinx.serialization.json.putJsonObject
 /**
  * The commands of PencilNotes in a terminal: each one a client of the application running on the same
  * data directory, never opening its database. `mcp` is the same for a client of the Model Context
- * Protocol, forwarding its messages for as long as the client goes on. See `docs/agent-tools.md`.
+ * Protocol, forwarding its messages for as long as the client goes on. See `docs/plans/agent-tools.md`.
  */
 internal class AgentCli(
     private val dataDirectory: File,

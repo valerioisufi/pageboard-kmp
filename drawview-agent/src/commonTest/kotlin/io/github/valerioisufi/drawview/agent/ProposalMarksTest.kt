@@ -28,7 +28,7 @@ import kotlinx.serialization.json.put
 
 /**
  * What every item of a proposal does on the pages, as the review draws it there
- * (docs/agent-preview.md): where, and of which kind.
+ * (docs/plans/agent-preview.md): where, and of which kind.
  */
 class ProposalMarksTest {
 

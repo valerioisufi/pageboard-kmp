@@ -28,7 +28,7 @@ import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
 
 /**
- * The cost of a tile of a PDF page (see `docs/performance.md`, phase 8): the tile drawn by the
+ * The cost of a tile of a PDF page (see `docs/plans/performance.md`, phase 8): the tile drawn by the
  * adapter of the tiles, which loads the page for every tile; the same with the pixel at its
  * center only (the page loaded and what is under the pixel prepared, little drawn); the copies of
  * its pixels on the desktop. The tiles measured are those whose center is on the content of the

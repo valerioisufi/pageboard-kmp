@@ -31,7 +31,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
-/** The proposals and the activity kept across two runs of an application (see `docs/agent-ergonomics.md`). */
+/** The proposals and the activity kept across two runs of an application (see `docs/plans/agent-ergonomics.md`). */
 class AgentJournalTest {
 
     /** A journal in memory: what is kept, and what was put aside. */

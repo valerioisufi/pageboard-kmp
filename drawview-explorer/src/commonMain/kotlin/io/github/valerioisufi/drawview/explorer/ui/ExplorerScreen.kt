@@ -101,7 +101,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The document library: the sections and the folders, the search and the filters, the notes as
  * cards or rows, the details of the selection, the button making notes and folders; laid out by
- * the width it has (see [LibraryLayout]) as in the design (docs/ui-design.md).
+ * the width it has (see [LibraryLayout]) as in the design (docs/plans/ui-design.md).
  *
  * @param title the brand of the application (its mark and its name), at the top of the library.
  * @param actions actions of the application in the library (e.g. joining a shared document, its
@@ -347,7 +347,7 @@ internal fun ExplorerScreen(
 /**
  * The list of the library, with its position: kept while a note is open in the editor, back at the
  * top when what it shows changes. The position is requested, not forced with a measure of its own,
- * so that it does not run into the thumbnails being drawn (docs/library-search.md).
+ * so that it does not run into the thumbnails being drawn (docs/plans/library-search.md).
  */
 @Composable
 internal fun rememberLibraryGridState(viewModel: FileExplorerViewModel): LazyGridState {

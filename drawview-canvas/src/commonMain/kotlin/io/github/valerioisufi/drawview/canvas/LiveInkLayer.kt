@@ -12,7 +12,7 @@ import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.StrokeMesh
 
 /**
- * Draws the stroke in progress apart from the committed content (see `docs/ink-latency.md`): the
+ * Draws the stroke in progress apart from the committed content (see `docs/plans/ink-latency.md`): the
  * gesture handler tells it when the stroke changes, and the layer takes the shape of the stroke from
  * the engine when it draws it.
  */

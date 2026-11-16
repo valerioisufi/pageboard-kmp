@@ -13,7 +13,7 @@ public class PickedFile(public val name: String, public val bytes: ByteArray) {
     public fun text(): String = bytes.decodeToString().removePrefix("\uFEFF")
 
     public companion object {
-        /** The extensions of the text files that are imported as text (see `docs/text-import.md`). */
+        /** The extensions of the text files that are imported as text (see `docs/plans/text-import.md`). */
         public val TEXT_EXTENSIONS: Set<String> = setOf("md", "markdown", "txt", "text")
     }
 }

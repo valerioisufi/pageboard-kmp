@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 
 /**
  * The height a text is measured at holds every line it draws, at the scales of the tiles: the
- * tiles choose the texts by their box (see docs/text-heights.md).
+ * tiles choose the texts by their box (see docs/plans/text-heights.md).
  */
 class TextHeightTest {
 

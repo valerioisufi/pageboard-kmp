@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 /**
  * The handles and the toolbar of a selection made by a finger stay while only the composition of the
  * keyboard changes: a keyboard of Android composes the word of the caret again when the caret is put
- * in it (docs/text-fidelity.md).
+ * in it (docs/plans/text-fidelity.md).
  */
 class TouchSelectionTest {
 

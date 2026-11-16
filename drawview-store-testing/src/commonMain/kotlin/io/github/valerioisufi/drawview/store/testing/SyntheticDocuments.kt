@@ -15,7 +15,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Documents made up for the benchmarks (see `docs/performance.md`): pages written by hand, a word
+ * Documents made up for the benchmarks (see `docs/plans/performance.md`): pages written by hand, a word
  * a stroke along the lines of the page, with a few texts and some strokes erased. The same
  * arguments make the same document, but for the identifiers of its pages and elements.
  */

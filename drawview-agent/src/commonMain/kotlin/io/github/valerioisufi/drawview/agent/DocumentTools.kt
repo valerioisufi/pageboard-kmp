@@ -25,11 +25,11 @@ public class AgentTool internal constructor(
  * What a model can read of the documents and propose for them, whoever asks (Information Expert):
  * the command line, a client of the Model Context Protocol, later the panel of the application.
  * It is the registry of the tools, each one made by its group: [ReadingTools], [ProposalTools],
- * [LibraryTools] (`docs/document-tools.md`).
+ * [LibraryTools] (`docs/plans/document-tools.md`).
  *
  * Every tool checks the access by itself; nothing here can reach the trash, the sharing, the keys or
  * the network. The content of a document is marked as data in what is answered: it may hold
- * instructions addressed to the model (see "Threats" in `docs/agent-tools.md`).
+ * instructions addressed to the model (see "Threats" in `docs/plans/agent-tools.md`).
  *
  * @param submit gives a proposal to the application, which may apply it at once unless its client asked
  *   for a review (see [ExternalAgents]).

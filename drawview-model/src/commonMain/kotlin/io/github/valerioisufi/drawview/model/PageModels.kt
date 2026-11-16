@@ -904,7 +904,7 @@ public class DrawDocument(
      * forgotten (every device has it, and nothing made without seeing it is still on its way, see
      * `SyncEngine`): nothing can show them again. A page goes only once removed before
      * [pagesRemovedBefore] (milliseconds): until then it can be put back from the trash (see
-     * `docs/trash.md`).
+     * `docs/plans/trash.md`).
      */
     public fun purgeHidden(pagesRemovedBefore: Long = Long.MAX_VALUE, stable: (Stamp) -> Boolean): PurgedContent {
         val pages = removedPages.values.filter { page -> page.removed?.let { it.time < pagesRemovedBefore && stable(it) } == true }
@@ -1025,7 +1025,7 @@ public class DrawDocument(
 
     /**
      * The pages removed since [time] (milliseconds), the most recent removal first: the ones the
-     * trash of the document shows (see `docs/trash.md`).
+     * trash of the document shows (see `docs/plans/trash.md`).
      */
     public fun removedPagesSince(time: Long): List<DrawPage> =
         removedPages.values.filter { page -> page.removed.let { it != null && it.time >= time } }.sortedByDescending { it.removed }
@@ -1071,7 +1071,7 @@ private fun nextPageRenderKey(): Long = pageRenderKeys.incrementAndGet()
 /**
  * A new identifier of a document, a page, an element or a resource: a random UUID, unique on
  * every device, so that the content created by several devices can be merged (see
- * `docs/collaboration.md`).
+ * `docs/plans/collaboration.md`).
  */
 @OptIn(ExperimentalUuidApi::class)
 public fun newElementId(): String = Uuid.random().toString()

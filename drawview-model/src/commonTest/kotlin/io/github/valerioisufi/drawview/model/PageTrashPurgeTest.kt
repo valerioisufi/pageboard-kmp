@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/** A page removed stays in the trash of its document until it is old enough (see `docs/trash.md`). */
+/** A page removed stays in the trash of its document until it is old enough (see `docs/plans/trash.md`). */
 class PageTrashPurgeTest {
 
     @Test

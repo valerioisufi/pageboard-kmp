@@ -36,7 +36,7 @@ public class ArchiveException(public val reason: Reason, message: String) : Exce
 }
 
 /**
- * The archive of the application (see `docs/archive.md`): notes with all their content, to keep
+ * The archive of the application (see `docs/plans/archive.md`): notes with all their content, to keep
  * them apart or to bring them to another library. A ZIP, its entries stored:
  *
  * * `manifest.json`: `{"format": "drawview-archive", "version": 1, "documents": [...]}`, each

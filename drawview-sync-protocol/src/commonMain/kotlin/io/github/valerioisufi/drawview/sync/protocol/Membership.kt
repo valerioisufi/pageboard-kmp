@@ -16,7 +16,7 @@ public enum class Role {
     READER
 }
 
-/** What a [Membership] is of: a document shared on its own, or a shared folder (a space, see `docs/shared-folders.md`). */
+/** What a [Membership] is of: a document shared on its own, or a shared folder (a space, see `docs/plans/shared-folders.md`). */
 @Serializable
 public enum class MembershipKind { DOCUMENT, SPACE }
 

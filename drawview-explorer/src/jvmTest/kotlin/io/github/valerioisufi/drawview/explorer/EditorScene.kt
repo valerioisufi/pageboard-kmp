@@ -92,7 +92,7 @@ internal fun capture(
     val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = storeScope, clock = { FIXED_TIME }, newFolderId = { "folder-${++folders}" })
     store.createFolder("Analysis", parentId = null)
     store.createFolder("Physics", parentId = null)
-    // Physics shared with other devices (docs/shared-folders.md): its badge
+    // Physics shared with other devices (docs/plans/shared-folders.md): its badge
     store.saveSpace(StoredSpace("space", rootFolderId = "folder-2"))
     store.createDocument(NOTE, background = PageBackground.Ruled())
     store.createDocument("Exercises", background = PageBackground.Grid())
@@ -149,7 +149,7 @@ private val MAC_DECOR_INSETS = PaddingValues(start = 78.dp, top = 52.dp)
 
 /**
  * The traffic lights of a window of macOS in the title bar of a toolbar: 14 points wide, 6 apart,
- * from 19 points of the edge, centered 26 points from the top (see `docs/window-integration.md`).
+ * from 19 points of the edge, centered 26 points from the top (see `docs/plans/window-integration.md`).
  */
 @Composable
 private fun TrafficLights() {

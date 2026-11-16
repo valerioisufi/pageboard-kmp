@@ -640,7 +640,7 @@ private fun TranscriptionSetup(settings: AssistantSettings, localModels: LocalMo
 }
 
 /**
- * The encoder of [model] for the Neural Engine of a Mac (docs/transcription-queue.md): downloaded, being
+ * The encoder of [model] for the Neural Engine of a Mac (docs/plans/transcription-queue.md): downloaded, being
  * downloaded or prepared, or to download.
  */
 @Composable

@@ -20,7 +20,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
         }
         jvmTest.dependencies {
-            // The benchmark of the indexer, on the store of the applications (docs/performance.md)
+            // The benchmark of the indexer, on the store of the applications (docs/plans/performance.md)
             implementation(project(":drawview-store-room"))
             // The strokes of the store modeled as the applications model them
             implementation(project(":drawview-ink"))

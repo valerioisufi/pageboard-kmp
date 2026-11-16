@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * The prediction of the pen (see `docs/ink-latency.md`): a frame ahead, the tip predicted is nearer
+ * The prediction of the pen (see `docs/plans/ink-latency.md`): a frame ahead, the tip predicted is nearer
  * to where the pen really is than the last sample, and a pen that stops is not drawn beyond.
  */
 class InkPredictorTest {

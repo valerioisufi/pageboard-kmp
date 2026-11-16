@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * The suggestion of a text box (`docs/text-box-hook.md`): asked [pauseMs] after the last change of
+ * The suggestion of a text box (`docs/plans/text-box-hook.md`): asked [pauseMs] after the last change of
  * the text, kept only for the text and the caret it was asked for, dropped by any change.
  *
  * @param ask the suggester of the editor; what it throws is no suggestion.

@@ -14,7 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * What the hand-off of a stroke to the tiles asks of them (see `docs/ink-latency.md`): a cell with
+ * What the hand-off of a stroke to the tiles asks of them (see `docs/plans/ink-latency.md`): a cell with
  * no tile yet is told apart, because the buffer over it must stay until the tile comes.
  */
 class TileHandOffTest {

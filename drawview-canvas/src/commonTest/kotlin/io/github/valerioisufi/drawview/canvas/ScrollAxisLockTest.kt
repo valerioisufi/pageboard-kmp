@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** The axis of a scroll gesture (`docs/camera-bounds.md`, phases 2 and 3), at 1 pixel per dp. */
+/** The axis of a scroll gesture (`docs/plans/camera-bounds.md`, phases 2 and 3), at 1 pixel per dp. */
 class ScrollAxisLockTest {
 
     private fun lock() = ScrollAxisLock { 1f }.apply { begin() }

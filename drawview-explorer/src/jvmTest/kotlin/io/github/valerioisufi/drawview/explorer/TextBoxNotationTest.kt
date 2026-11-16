@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * The notation the page hides stays hidden while the text is written (docs/text-fidelity.md): the
+ * The notation the page hides stays hidden while the text is written (docs/plans/text-fidelity.md): the
  * arrows cross it with one press per character seen, nothing moves, and Backspace takes what is seen.
  */
 @OptIn(ExperimentalTestApi::class)

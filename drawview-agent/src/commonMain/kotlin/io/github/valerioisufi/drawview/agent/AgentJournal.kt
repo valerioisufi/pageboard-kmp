@@ -19,7 +19,7 @@ import kotlinx.serialization.json.put
 /**
  * Where an application keeps the proposals of the clients and what the models changed, so that they
  * outlive it (Protected Variations): one text, written by [ExternalAgents] and given back as it was.
- * Without one they are in memory only. See `docs/agent-ergonomics.md`.
+ * Without one they are in memory only. See `docs/plans/agent-ergonomics.md`.
  *
  * What is kept is a stored format of its own, with a version: a text this version does not understand
  * is never written over, it is put aside ([setAside]).

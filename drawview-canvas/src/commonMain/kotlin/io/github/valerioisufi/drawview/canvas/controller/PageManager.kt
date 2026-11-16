@@ -169,7 +169,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
 
     /**
      * The pages removed in the last [TrashRetention] at [now] (milliseconds), here or on another
-     * device, the most recent removal first: the trash of the document (see `docs/trash.md`).
+     * device, the most recent removal first: the trash of the document (see `docs/plans/trash.md`).
      */
     public fun deletedPagesAt(now: Long): List<DrawPage> = document.removedPagesSince(TrashRetention.expiredBefore(now))
 

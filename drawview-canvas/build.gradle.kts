@@ -38,7 +38,7 @@ kotlin {
             api(libs.atomicfu)
         }
         androidMain.dependencies {
-            // The stroke in progress in a front buffer (docs/ink-latency.md)
+            // The stroke in progress in a front buffer (docs/plans/ink-latency.md)
             implementation(libs.androidx.graphics.core)
         }
         commonTest.dependencies {
@@ -47,7 +47,7 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
-            // The documents of the benchmarks (docs/performance.md)
+            // The documents of the benchmarks (docs/plans/performance.md)
             implementation(project(":drawview-store-testing"))
         }
     }

@@ -36,7 +36,7 @@ import kotlinx.coroutines.sync.withLock
 public class EditorSession internal constructor(
     public val documentId: String,
     internal val documents: OpenDocuments,
-    /** Where the place the document is looked at is kept (see `docs/last-place.md`), if anywhere. */
+    /** Where the place the document is looked at is kept (see `docs/plans/last-place.md`), if anywhere. */
     private val preferences: PreferenceStore? = null
 ) {
     internal val store: DocumentStore get() = documents.store
@@ -202,7 +202,7 @@ public class DocumentEditorViewModel(
         }
         store.updateLastOpened(session.documentId)
         val kept = preferences?.preference(EDITOR_PREFERENCES)?.let(DrawPreferences::decode)
-        // Where the document was left on this device (see docs/last-place.md)
+        // Where the document was left on this device (see docs/plans/last-place.md)
         val placeText = preferences?.preference(placeKey(session.documentId))
         val place = placeText?.let(DocumentPlace::decode)
         if (this.session !== session) return
@@ -249,7 +249,7 @@ public class DocumentEditorViewModel(
 }
 
 /**
- * The editing sessions of an application (`docs/instances.md`): one per process, created by the
+ * The editing sessions of an application (`docs/plans/instances.md`): one per process, created by the
  * application and given to its editors and windows. Closing a session writes its pending changes
  * in the background on [scope], [flushAll] waits for every write (e.g. before the desktop
  * application exits).

@@ -226,7 +226,7 @@ public class ContentSearch(
     /**
      * The extension of the editors that suggests the end of the word being written from the words
      * of the notes: of the document, of its slides, handwriting and lectures, of the library
-     * (`docs/writing-suggestions.md`). Before [start], from the document only.
+     * (`docs/plans/writing-suggestions.md`). Before [start], from the document only.
      */
     public val editorExtension: EditorExtension = EditorExtension {
         textSuggestions(NoteWordSuggester(vocabulary = { vocabulary }))

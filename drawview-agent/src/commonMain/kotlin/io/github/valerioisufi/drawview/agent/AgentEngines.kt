@@ -109,7 +109,7 @@ public interface AgentImages {
 
 /**
  * What the tools need from the application, each optional: without one the tool that needs it is not
- * offered, or says that it cannot tell (rule 1 of the libraries, see `docs/modularization.md`).
+ * offered, or says that it cannot tell (rule 1 of the libraries, see `docs/plans/modularization.md`).
  *
  * @param editors the editors, for the review and for the placement of a text as it is drawn.
  * @param search searches [documentIds] only.

@@ -38,7 +38,7 @@ import kotlinx.coroutines.withTimeout
 
 /**
  * The transcriptions of whole recordings wait their turn instead of being refused
- * (docs/transcription-queue.md): an import is converted at once and transcribed after the ones asked
+ * (docs/plans/transcription-queue.md): an import is converted at once and transcribed after the ones asked
  * before it, in their order, and what waits can be taken out.
  */
 @OptIn(DelicateCoroutinesApi::class)

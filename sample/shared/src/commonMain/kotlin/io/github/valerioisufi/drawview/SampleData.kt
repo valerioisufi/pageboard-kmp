@@ -9,7 +9,7 @@ import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 
 /**
- * The notes of the sample in this process (`docs/instances.md`, `docs/engine-instances.md`): the
+ * The notes of the sample in this process (`docs/plans/instances.md`, `docs/plans/engine-instances.md`): the
  * database of the platform, opened once (Room must not open its file twice), its store, the
  * documents being changed, the editing sessions and the engines, shared by every window and kept across the activities created again.
  */

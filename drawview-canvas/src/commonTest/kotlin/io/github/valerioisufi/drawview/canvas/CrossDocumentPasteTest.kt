@@ -27,7 +27,7 @@ import kotlinx.coroutines.test.runTest
 
 /**
  * Copy and paste between the editors of two documents sharing the clipboard of their application
- * (see `docs/cross-document-paste.md`).
+ * (see `docs/plans/cross-document-paste.md`).
  */
 class CrossDocumentPasteTest {
 

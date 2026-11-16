@@ -33,7 +33,7 @@ public class OperationProof(public val content: ByteArray, public val signature:
         public fun sign(identity: DeviceIdentity, documentId: String, replica: String, sequence: Long, content: ByteArray): OperationProof =
             OperationProof(content, identity.sign(signed(documentId, replica, sequence, content)))
 
-        /** The proof of the change [replica] / [sequence] of the shared folder [spaceId] (see `docs/shared-folders.md`), of [content], by [identity]. */
+        /** The proof of the change [replica] / [sequence] of the shared folder [spaceId] (see `docs/plans/shared-folders.md`), of [content], by [identity]. */
         public fun signCatalog(identity: DeviceIdentity, spaceId: String, replica: String, sequence: Long, content: ByteArray): OperationProof =
             OperationProof(content, identity.sign(signed(CATALOG_LABEL, spaceId, replica, sequence, content)))
 

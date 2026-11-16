@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-/** The writing a note of the lecture is about, found from the time it was written (see `docs/auto-placement.md`). */
+/** The writing a note of the lecture is about, found from the time it was written (see `docs/plans/auto-placement.md`). */
 class LectureAnchorsTest {
 
     private val start = 1_000_000_000L

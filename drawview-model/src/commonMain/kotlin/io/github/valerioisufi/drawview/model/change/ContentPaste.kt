@@ -16,7 +16,7 @@ import io.github.valerioisufi.drawview.platform.PlatformFiles
 /*
  * The changes pasting what was copied (see CopiedContent) into a document: new identifiers, the
  * resources of the document of the same content or new resources on the same files, the
- * positions, the orders (see `docs/cross-document-paste.md`).
+ * positions, the orders (see `docs/plans/cross-document-paste.md`).
  */
 
 /** Whether the file [path] is on this device (an empty path: a file not received yet). */

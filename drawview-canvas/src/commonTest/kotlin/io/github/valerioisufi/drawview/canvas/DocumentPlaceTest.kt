@@ -14,7 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** The place a document is looked at, kept as text and shown again (docs/last-place.md). */
+/** The place a document is looked at, kept as text and shown again (docs/plans/last-place.md). */
 @OptIn(ExperimentalCoroutinesApi::class)
 class DocumentPlaceTest {
 

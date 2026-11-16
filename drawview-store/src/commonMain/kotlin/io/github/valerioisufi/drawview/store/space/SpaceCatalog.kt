@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 public enum class CatalogItemKind { FOLDER, DOCUMENT }
 
 /**
- * An item of a shared folder (a space, see `docs/shared-folders.md`) with every piece of it and
+ * An item of a shared folder (a space, see `docs/plans/shared-folders.md`) with every piece of it and
  * the stamp of its last change (last-writer-wins, as the pieces of a document):
  *
  * * its presence in the space ([inSpace], [kind], [broughtBy]: the replica that added it, the one

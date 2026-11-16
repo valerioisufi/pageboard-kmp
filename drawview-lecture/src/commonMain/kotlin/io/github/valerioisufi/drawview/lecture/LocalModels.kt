@@ -40,7 +40,7 @@ import kotlinx.io.files.SystemFileSystem
 /**
  * A speech recognition model of whisper.cpp offered by the settings (from huggingface.co/ggerganov/whisper.cpp),
  * and its encoder compiled for Core ML, which whisper.cpp runs on the Neural Engine of a Mac when it lies next to
- * the model (docs/transcription-queue.md, "The encoder on the Neural Engine").
+ * the model (docs/plans/transcription-queue.md, "The encoder on the Neural Engine").
  *
  * @property encoderSizeBytes the size of the zip of the encoder.
  */

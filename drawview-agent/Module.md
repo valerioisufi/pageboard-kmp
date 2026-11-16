@@ -7,4 +7,4 @@ client, as JSON-RPC and the Model Context Protocol (`AgentEndpoint`). `ExternalA
 for an application.
 
 Headless: no Compose and no socket. The way in (a local socket, a command line) belongs to the
-application, the review to `drawview-agent-ui`. See `docs/agent-tools.md` and `docs/agent-placement.md`.
+application, the review to `drawview-agent-ui`. See `docs/plans/agent-tools.md` and `docs/plans/agent-placement.md`.

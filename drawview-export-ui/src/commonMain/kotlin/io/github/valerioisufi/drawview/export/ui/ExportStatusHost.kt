@@ -58,7 +58,7 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The exports of [jobs] outside the sheet that asked them (see `docs/export-ux.md`): the one
+ * The exports of [jobs] outside the sheet that asked them (see `docs/plans/export-ux.md`): the one
  * running with its progress and Stop, those waiting, then each outcome with what can be done with
  * the file (show it, open it) or Retry. A clean outcome goes away by itself, the others when they
  * are closed.

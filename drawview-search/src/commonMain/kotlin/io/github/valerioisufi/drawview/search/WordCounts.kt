@@ -12,7 +12,7 @@ public class WordCount(public val word: String, public val count: Int) {
 }
 
 /**
- * The words of some texts with how many times each was written (`docs/writing-suggestions.md`):
+ * The words of some texts with how many times each was written (`docs/plans/writing-suggestions.md`):
  * the vocabulary from which the end of a word being written is suggested.
  *
  * A word is a run of letters and digits with at least one letter and [MIN_LENGTH] characters

@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 /**
- * The document renamed from its title in the bar of the editor (see `docs/title-bar.md`): the
+ * The document renamed from its title in the bar of the editor (see `docs/plans/title-bar.md`): the
  * name written is taken by Enter or by closing the popover, checked as in the library.
  */
 @OptIn(ExperimentalTestApi::class)

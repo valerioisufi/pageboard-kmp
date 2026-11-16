@@ -19,7 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** Duplicating pages and adding a page before another (see `docs/page-actions.md`). */
+/** Duplicating pages and adding a page before another (see `docs/plans/page-actions.md`). */
 class PageActionsTest {
 
     /** A document of [pages] pages, a text on each one naming it ("1", "2"...). */

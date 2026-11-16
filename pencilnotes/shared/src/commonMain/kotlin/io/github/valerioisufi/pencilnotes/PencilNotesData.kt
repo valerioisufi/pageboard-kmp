@@ -7,7 +7,7 @@ import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 
 /**
- * The notes of PencilNotes in this process (`docs/instances.md`): the database of the platform,
+ * The notes of PencilNotes in this process (`docs/plans/instances.md`): the database of the platform,
  * opened once (Room must not open its file twice), its store, the documents being changed and the
  * editing sessions, shared by every window and kept across the activities created again (what
  * works on them is in [PencilNotesServices]).

@@ -7,7 +7,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 
 /**
  * The caret of the text being written and the blocks of code, which stay blocks while their code is
- * written (see docs/text-fidelity.md): the caret is drawn in the code of a block, its fences are not
+ * written (see docs/plans/text-fidelity.md): the caret is drawn in the code of a block, its fences are not
  * shown, the line of its opening fence is written in the strip.
  *
  * * ← and → go through the code by characters and step over the fences: from the line before a

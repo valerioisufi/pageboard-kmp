@@ -309,7 +309,7 @@ public class DrawViewController(
 
     /**
      * Whether the text box asks the extensions what may follow the caret (the suggestions while
-     * writing, `docs/writing-suggestions.md`). On by default.
+     * writing, `docs/plans/writing-suggestions.md`). On by default.
      */
     public var areTextSuggestionsEnabled: Boolean by mutableStateOf(true)
         private set

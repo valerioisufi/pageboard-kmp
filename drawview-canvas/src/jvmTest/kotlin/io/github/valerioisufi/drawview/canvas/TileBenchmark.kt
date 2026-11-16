@@ -24,7 +24,7 @@ import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 /**
- * The cost of the tiles (see `docs/performance.md`): how long the pages on screen take to show
+ * The cost of the tiles (see `docs/plans/performance.md`): how long the pages on screen take to show
  * after a jump and after a fling, and how long a dense tile takes to rasterize.
  */
 class TileBenchmark {
@@ -55,7 +55,7 @@ class TileBenchmark {
         fling.cleanup()
     }
 
-    /** The screen after a zoom out across 4 levels in 300 ms, from a viewport zoomed by 16 (`docs/tile-zoom-out.md`). */
+    /** The screen after a zoom out across 4 levels in 300 ms, from a viewport zoomed by 16 (`docs/plans/tile-zoom-out.md`). */
     @Test
     fun fillingTheScreenAfterAZoomOut() {
         val document = SyntheticDocuments.notebook(pages = 8, strokesPerPage = 1_500, modeller = InkStrokeModeller)

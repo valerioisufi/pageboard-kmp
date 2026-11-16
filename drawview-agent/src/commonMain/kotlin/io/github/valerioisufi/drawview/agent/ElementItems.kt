@@ -33,7 +33,7 @@ import io.github.valerioisufi.drawview.model.change.ReorderElements as ReorderCh
 
 /**
  * The items of a proposal on the elements of a page (Information Expert): what they refer to, whether
- * it is still as it was read, and the changes they become. See `docs/agent-full-access.md`.
+ * it is still as it was read, and the changes they become. See `docs/plans/agent-full-access.md`.
  */
 internal object ElementItems {
     /** The tools a model draws with: not the eraser or the lasso, which are not strokes on the page. */

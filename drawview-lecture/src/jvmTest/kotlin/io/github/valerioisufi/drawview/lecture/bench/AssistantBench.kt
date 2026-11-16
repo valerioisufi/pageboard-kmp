@@ -6,8 +6,8 @@ import kotlin.test.Test
 import kotlinx.coroutines.runBlocking
 
 /**
- * The bench of the assistant on the models of the device (phase 2 of docs/local-models.md, phase 0
- * of docs/search.md), run only when asked (see the build of the module). With the models of
+ * The bench of the assistant on the models of the device (phase 2 of docs/plans/local-models.md, phase 0
+ * of docs/plans/search.md), run only when asked (see the build of the module). With the models of
  * `<bench>/models` and the material of `<bench>/material`, it writes a report a part,
  * `<bench>/assistant-<part>.md`, and the answers in `<bench>/answers`:
  *

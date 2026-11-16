@@ -98,7 +98,7 @@ internal class SharingState(
     val offline: Boolean,
     val otherVersion: Boolean,
     val internet: InternetSettings? = null,
-    /** What is shared: a document, a folder or the library (see `docs/shared-folders.md`). */
+    /** What is shared: a document, a folder or the library (see `docs/plans/shared-folders.md`). */
     val kind: InvitationKind = InvitationKind.DOCUMENT,
     /** Whether sharing the folder or the library was refused: it is in a shared folder, or holds one. */
     val refused: Boolean = false

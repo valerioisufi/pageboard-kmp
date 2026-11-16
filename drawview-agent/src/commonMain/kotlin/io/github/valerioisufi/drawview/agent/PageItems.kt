@@ -13,7 +13,7 @@ import io.github.valerioisufi.drawview.model.change.SetPageFormat as FormatChang
 
 /**
  * The items of a proposal on the pages and on the document (Information Expert): whether what they
- * refer to is still as it was read, and the changes they become. See `docs/agent-full-access.md`.
+ * refer to is still as it was read, and the changes they become. See `docs/plans/agent-full-access.md`.
  */
 internal object PageItems {
     const val MIN_PAGE_SIDE_MM: Float = 20f

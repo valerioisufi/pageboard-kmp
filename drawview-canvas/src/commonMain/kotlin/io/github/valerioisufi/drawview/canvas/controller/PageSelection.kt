@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.model.DrawDocument
 
 /**
- * The pages selected in the page grid (see `docs/page-selection.md`), kept by their identifiers:
+ * The pages selected in the page grid (see `docs/plans/page-selection.md`), kept by their identifiers:
  * the selection follows the pages when they move, and a page removed (here or by another device)
  * leaves it. It is not stored and not sent to the others.
  */

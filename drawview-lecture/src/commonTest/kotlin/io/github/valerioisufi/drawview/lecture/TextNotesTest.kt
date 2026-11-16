@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** A text written elsewhere turned into notes by a model (see `docs/text-import.md`), with a fake answer. */
+/** A text written elsewhere turned into notes by a model (see `docs/plans/text-import.md`), with a fake answer. */
 class TextNotesTest {
 
     private val text = "La derivata misura la pendenza della retta tangente. Il teorema di Lagrange richiede continuità e derivabilità."

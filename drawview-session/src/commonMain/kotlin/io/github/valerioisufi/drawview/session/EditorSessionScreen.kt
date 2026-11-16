@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.combine
  * [EditorScreen], with the folder of the document under its title, renamed there (the devices it is
  * shared with rename it too). [onClose] is called by the back button of the editor and by the
  * system back. The text being written is saved when the screen stops (the application in the
- * background) and when the editor goes (see `docs/text-autosave.md`).
+ * background) and when the editor goes (see `docs/plans/text-autosave.md`).
  *
  * @param extension content contributed to the editor by the application (top bar actions, panels,
  *   commands, overlays).

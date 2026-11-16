@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Where the caret of the text being written stands, the delimiters not shown (docs/text-fidelity.md):
+ * Where the caret of the text being written stands, the delimiters not shown (docs/plans/text-fidelity.md):
  * every move moves it on the screen, typing goes on in the format on its left, never in a marker.
  */
 class CaretStopsTest {

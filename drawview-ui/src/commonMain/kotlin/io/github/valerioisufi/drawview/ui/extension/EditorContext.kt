@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.canvas.port.EditorRendering
 
 /**
  * What the editor of the document shown gives to its extensions ([EditorExtension]): its ports
- * (`docs/editor-ports.md`). The same instance as long as the document is shown, so that an
+ * (`docs/plans/editor-ports.md`). The same instance as long as the document is shown, so that an
  * extension can remember what it makes of it. Built by the host of the editor from its
  * controller.
  */

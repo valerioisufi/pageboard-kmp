@@ -78,7 +78,7 @@ internal class NoteJudgement(val verdict: String, val millis: Long)
 /**
  * Drops a note the model cannot back with the lecturer, or finds on a slide, with a short request per
  * note: the pages [pagesOf] gives for it and the transcript of its request. The model does not give a
- * verdict, which it answers `ADDS` to almost always (docs/local-notes.md, phase 4): it copies the
+ * verdict, which it answers `ADDS` to almost always (docs/plans/local-notes.md, phase 4): it copies the
  * sentence of the lecturer and the sentence of a slide that say the same as the note, and a copy is
  * believed only if its words are really there. [ask] answers a prompt with its text, or `null` when it
  * failed, and a note whose judgement cannot be read is kept: a check drops a note for a reason only.
@@ -229,7 +229,7 @@ internal fun saidOf(text: String): List<String> = try {
  * when the content has no words.
  *
  * [slideShare] and [noteShare] come from the verdicts of the grader that did not change on the dev
- * lectures (docs/local-notes.md, phase 3).
+ * lectures (docs/plans/local-notes.md, phase 3).
  */
 internal class RepeatCheck(
     slides: List<String>,

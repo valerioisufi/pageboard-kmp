@@ -4,7 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 
 /**
  * HTML turned into the Markdown of the texts of a notebook (see `RichTextParser`): what a browser, a
- * word processor or a chat assistant copies. See `docs/html-paste.md`.
+ * word processor or a chat assistant copies. See `docs/plans/html-paste.md`.
  *
  * The HTML comes from another application, so it is untrusted: nothing it names is fetched, and its
  * size and depth are bounded.

@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
- * The cost of the search in the notes (see `docs/performance.md`): indexing a library, then a
+ * The cost of the search in the notes (see `docs/plans/performance.md`): indexing a library, then a
  * pass after a stroke written in one of its notes.
  */
 class IndexerBenchmark {

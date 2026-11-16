@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * The parity of the editor and the page (docs/text-parity.md): a text laid out by the field of the
+ * The parity of the editor and the page (docs/plans/text-parity.md): a text laid out by the field of the
  * editor (as `TextBoxEditor` presents it), nothing revealed by the caret, has the lines of the text
  * the canvas lays out (`ComposeTextTileAdapter.layout`, what the tiles and the export draw): the
  * same tops, baselines, bottoms and starts of its lines, the same places of its formulas, of its

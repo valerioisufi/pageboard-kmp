@@ -276,7 +276,7 @@ class RichTextPresenterTest {
 
     @Test
     fun theCaretRevealsNoDelimiter() {
-        // The layout of a text does not depend on the caret (docs/text-fidelity.md)
+        // The layout of a text does not depend on the caret (docs/plans/text-fidelity.md)
         for (text in listOf("a **b** c", "a *b* c", "a ~~b~~ c", "a `b` c", "a \\* c", "## Title\nnext")) {
             val still = present(text)
             for (caret in 0..text.length) assertEquals(still.shown, present(text, reveal = TextRange(caret)).shown, "\"$text\" with the caret at $caret")

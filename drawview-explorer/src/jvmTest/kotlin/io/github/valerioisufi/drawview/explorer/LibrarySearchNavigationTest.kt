@@ -48,7 +48,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 
-/** Moving through the library during a search, on the interface (docs/library-search.md). */
+/** Moving through the library during a search, on the interface (docs/plans/library-search.md). */
 @OptIn(ExperimentalTestApi::class)
 class LibrarySearchNavigationTest {
 

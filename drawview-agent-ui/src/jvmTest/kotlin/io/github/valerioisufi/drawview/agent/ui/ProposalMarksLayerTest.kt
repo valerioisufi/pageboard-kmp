@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Which marks of the proposals are drawn, and how strongly (docs/agent-preview.md): those of the
+ * Which marks of the proposals are drawn, and how strongly (docs/plans/agent-preview.md): those of the
  * proposals waiting, faint for an item left out, strong for the one chosen in the list.
  */
 class ProposalMarksLayerTest {

@@ -8,7 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
-/** A note written as Markdown (see `docs/markdown-export.md`). */
+/** A note written as Markdown (see `docs/plans/markdown-export.md`). */
 class MarkdownExporterTest {
 
     private fun text(source: String, x: Float, y: Float) = DrawText().apply { text = source; this.x = x; this.y = y; width = 80f; height = 10f; fontSize = 12f }

@@ -18,7 +18,7 @@ internal expect fun htmlIn(clipboard: Clipboard): String?
 
 /**
  * What the clipboard holds in the notation of the texts, for the canvas and for a text being written
- * (see `docs/html-paste.md`).
+ * (see `docs/plans/html-paste.md`).
  *
  * @param readHtml reads the HTML of the clipboard.
  */

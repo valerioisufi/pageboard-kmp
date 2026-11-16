@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** The sizes of the characters of a page and the size a note takes there (see `docs/placement-text-size.md`). */
+/** The sizes of the characters of a page and the size a note takes there (see `docs/plans/placement-text-size.md`). */
 class PageTextSizesTest {
 
     private fun text(content: String, size: Float) = DrawText().apply { text = content; fontSize = size; width = 100f; height = 10f }

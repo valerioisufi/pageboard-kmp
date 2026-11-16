@@ -8,7 +8,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 /**
  * What a deletion takes from the text being written: what is seen. The delimiters of the emphasis,
  * of the code in the line, of the escapes, of the formulas and of the links are not shown (see
- * docs/text-fidelity.md), so a key or a selection taking one would break a format the user cannot
+ * docs/plans/text-fidelity.md), so a key or a selection taking one would break a format the user cannot
  * see.
  *
  * * Backspace or Delete next to delimiters takes the character seen beyond them.

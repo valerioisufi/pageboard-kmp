@@ -28,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 
 /**
  * The editor follows the document and the camera without composing again what does not change
- * (see `docs/performance.md`, phase 5): over 100 strokes it composes nothing again, and what it
+ * (see `docs/plans/performance.md`, phase 5): over 100 strokes it composes nothing again, and what it
  * shows of the document still follows the changes that matter; the field of the text being
  * written follows a pan without composing again, and a zoom composes it at its new scale.
  */

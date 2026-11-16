@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.store.space
 import io.github.valerioisufi.drawview.model.change.OperationId
 
 /**
- * A shared folder (a space, see `docs/shared-folders.md`) as this device keeps it: its root in
+ * A shared folder (a space, see `docs/plans/shared-folders.md`) as this device keeps it: its root in
  * the library ([rootFolderId]: a folder, `null` for the library itself), its sharing ([sharing]:
  * opaque text, the `SharingState` of `drawview-sync`, a secret) and whether it may only be read
  * here ([readOnly]).

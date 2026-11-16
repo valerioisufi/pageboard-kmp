@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** The end of the word being written from the words of the notes (`docs/writing-suggestions.md`). */
+/** The end of the word being written from the words of the notes (`docs/plans/writing-suggestions.md`). */
 class NoteWordSuggesterTest {
 
     private fun words(vararg texts: String) = WordCounts().apply { texts.forEach(::add) }

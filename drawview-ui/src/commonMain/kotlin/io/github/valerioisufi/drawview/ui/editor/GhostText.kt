@@ -5,7 +5,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 
 /**
- * A suggestion shown after the end of the text being written (`docs/text-box-hook.md`), lighter,
+ * A suggestion shown after the end of the text being written (`docs/plans/text-box-hook.md`), lighter,
  * not part of the text: added to its presentation, with a mapping in which each of its characters
  * stands for the end of the source, so that the caret and the selection never go in it. The
  * presentation has spans and paragraphs only (see [RichTextPresenter]): they are kept.

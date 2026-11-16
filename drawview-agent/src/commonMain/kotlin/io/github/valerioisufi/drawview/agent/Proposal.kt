@@ -26,7 +26,7 @@ public sealed interface ProposalItem {
     /**
      * Adds [markdown] in the free space of the page [page] (`null`: the last one), going on onto new
      * pages after it when it does not fit; [newPage]: straight on a new page after it. The place is
-     * computed by the application, on the page as it is when accepted (see `docs/agent-placement.md`).
+     * computed by the application, on the page as it is when accepted (see `docs/plans/agent-placement.md`).
      *
      * @param near the text box it is about, on whose page it goes: it is placed next to that box.
      * @param nearArea the area of [page] it is about, for what has no box (handwriting, a figure).

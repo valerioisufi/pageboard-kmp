@@ -70,7 +70,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 /**
- * Screenshots of the panel of the lecture assistant beside the canvas (docs/ui-design.md): a
+ * Screenshots of the panel of the lecture assistant beside the canvas (docs/plans/ui-design.md): a
  * finished lecture in its four tabs, before recording, the notices and the recording card.
  *
  * `./gradlew :drawview-lecture:recordRoborazziJvm` records them in `screenshots/`.
@@ -245,7 +245,7 @@ class LecturePanelScreenshotTest {
 
     /**
      * The speech model on a Mac with Apple Silicon: its encoder for the Neural Engine to download, then
-     * downloaded (docs/transcription-queue.md). Elsewhere there is no such row, and nothing to see.
+     * downloaded (docs/plans/transcription-queue.md). Elsewhere there is no such row, and nothing to see.
      *
      * The files of the model are made in the data directory of the tests only (`drawview.dataDir`), never
      * over one already there, and only those made here are deleted.

@@ -14,7 +14,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * The stroke in progress predicted beyond its last input (see `docs/ink-latency.md`): the prediction
+ * The stroke in progress predicted beyond its last input (see `docs/plans/ink-latency.md`): the prediction
  * is drawn, replaced by the next inputs, and never kept.
  */
 class PredictionTest {

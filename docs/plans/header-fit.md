@@ -1,0 +1,269 @@
+# Bars that fit their window
+
+The bars at the top of the library and of the editor are crowded where the window is narrow: the
+name of PencilNotes is cut, the title of a document gets a few letters. The editor hides the status
+bar also where a notch or an island keeps its room taken anyway, and on Android 10 the status bar
+comes back for good after a menu is opened. On an Android tablet the group of the tools looks too
+big. This document starts from the code as it is (main at 83c1c07c, 2026-10-31): the causes, then
+the design and the plan.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+## Starting point
+
+### The bar of the library
+
+1. **`LibraryAppBar`** (`drawview-explorer`, `LibraryHeader.kt`) is a `Row` 56 dp high: the brand
+   in a `Box` with `weight(1f)`, then the search (in the grid layout, 260 dp + 8 dp), the Trash and
+   the actions of the application as `DesignIconButton`s. The brand is what is left after the rest.
+2. **The buttons are 48 dp with a finger** (`InputCapabilities.minimumInteractiveSize`, given by
+   `AdaptiveRoot` as `LocalMinimumInteractiveComponentSize`), 40 dp with a mouse.
+3. **PencilNotes gives three actions** (join a shared note, the settings of the search, about) and
+   the Trash makes four buttons. Its brand (`PencilNotesBrand`) is the mark (40 dp), 12 dp, and the
+   wordmark in Cherry Bomb One at 28 sp, about 165 dp: about 217 dp in all.
+4. **So the wordmark is cut**:
+
+   | Layout | Width | Room for the brand | Cut until |
+   |---|---|---|---|
+   | List (under 600 dp) | 360 dp phone | 360 − 24 padding − 16 spacing − 4 × 48 = 128 dp | about 450 dp |
+   | Grid (600–1000 dp) | 600 dp | 600 − 48 − 268 search − 20 − 4 × 48 = 72 dp | about 750 dp |
+   | Panes (1000 dp and more) | — | the brand is in the pane of the navigation, 264 dp | never |
+
+   The actions never leave the bar, whatever its width; the search never narrows.
+
+### The top bar of the editor
+
+5. **`EditorTopBar`** (`drawview-ui`, `EditorToolbar.kt`): back, the page grid, the title
+   (`DocumentInfoSelector`), the tools when they fit in one bar, the actions of the extensions,
+   "more". `ToolbarLayout` (pure, unit tested) decides where the tools go and whether the page grid
+   keeps its button (`pageGridFits`), counting `TitleMinWidth` (160 dp) for the title.
+6. **The actions of the extensions are never moved.** They are composables
+   (`EditorExtension.toolbarActions`), measured after they are drawn (`onExtensionsWidth`). In
+   PencilNotes they are three (the lecture, the export, the sharing): on a 360 dp phone the bar
+   holds back, the three actions and "more", 5 × 48 = 240 dp plus the margins, and the title keeps
+   about 100 dp, not its 160. The page grid is the only button that gives way.
+
+### The system bars
+
+7. **Two effects hide them, both on while a document is open in PencilNotes:**
+   - `HideSystemBarsEffect` (`drawview-ui`, `FilePicker.*.kt`), called by `DrawScreen` always,
+     the sample too;
+   - `SystemBarsHidden(hidden)` (`drawview-explorer`, `platform/SystemBars.*.kt`), called by
+     `DocumentLibrary` when `fullScreenEditor` (PencilNotes passes `true`).
+
+   On iOS both replace `prefersStatusBarHidden` and `prefersHomeIndicatorAutoHidden` of the same
+   view controller, each with its own global flag: the one installed first answers, the other
+   flag is ignored.
+8. **They hide the status bar on any device.** On Android `enableEdgeToEdge` lets the content go
+   into the cutout, and the editor pads its top by `WindowInsets.safeDrawing`, which holds the
+   cutout: with a notch or a punch hole at the top, the band of the status bar stays empty, and
+   the clock and the battery are gone for nothing. On an iPhone with a notch or the Dynamic Island
+   the safe area keeps its height without the status bar: the same.
+9. **On Android 10 the status bar comes back after a menu.** Under Android 11
+   `WindowInsetsControllerCompat.hide` sets the old flags of `systemUiVisibility` on the view of
+   the window. A menu (`DropdownMenu`, the "more" of the editor) is a window of its own, focused,
+   without those flags: the system shows the bars and clears the flags of the window below. When
+   the menu closes, nothing hides them again: the effect ran once, when the editor opened.
+
+### The tools on a tablet
+
+10. **A tool is the same size on every device with a finger**: `ToolButton` 44 dp (rounded 16 dp,
+    its icon 24 dp) inside the 48 dp of the input, `BarButton` (undo, redo, imports) a 40 dp
+    `IconButton` with a 22 dp icon inside 48 dp. The group (`ToolGroup`) adds 8 dp each side and
+    4 dp above and below: about 56 dp high, 12 buttons and 2 dividers ≈ 620 dp wide.
+11. **On a tablet with a low density bucket** (many Android tablets report 600–800 dp on their
+    short side for 8–10 inches) a dp is larger than on a phone, and these sizes, made for a thumb,
+    look big. To check on the tablet of the user (`adb shell wm size`, `wm density`) before
+    deciding.
+
+## Requirements
+
+1. The name of the application is whole wherever the library shows it, down to the narrowest
+   phone (320 dp); what does not fit beside it goes into a menu, never off the bar.
+2. The search of the grid layout narrows before an action leaves the bar.
+3. The title of a document keeps `TitleMinWidth` in the top bar of the editor: the actions of the
+   extensions give way before it, still reachable in one tap more.
+4. The status bar is hidden only where hiding it gives its room to the editor: not with a cutout
+   at the top edge (Android), not with a notch or an island (iOS). The navigation bar and the home
+   indicator stay as now.
+5. The bars hidden stay hidden after a menu, a popover or a dialog closes, on Android 10 too.
+6. One effect hides the system bars, in one module, with one state on iOS.
+7. The group of the tools on a tablet has the size of a toolbar for a pen, not for a thumb, the
+   targets staying at least 44 dp (the minimum of Apple, and above the 40 dp of a mouse).
+8. No change to a stored format or to the protocol. Public API changes only where a phase says so,
+   recorded in `api/`.
+
+## Design
+
+### The bar of the library
+
+| Responsibility | Assigned to | Pattern |
+|---|---|---|
+| Which actions stay in the bar and how wide the search is, from the width of the bar, of the brand, of a button, the number of actions and the bounds of the search | `LibraryBarLayout.fit` → `LibraryBarFit(searchWidth, actionsInBar, overflow)` (pure, unit tested) | Pure Fabrication |
+| Measuring the brand at its own width (its max intrinsic width) and placing the pieces as decided | `LibraryAppBar`, a `Layout` instead of the `Row` | Information Expert (the bar knows its children) |
+| The actions left out, in a "more" button with a `CommandMenu`-like menu of their icons and labels | `LibraryAppBar` (`LibraryAction` already has icon and label) | High Cohesion |
+
+The order of giving way: the search narrows from 260 to 200 dp, then the actions leave from the
+last one (about, then the settings of the search, then joining), then the Trash, into one "more"
+button. If the brand still does not fit (a window under ~300 dp) it is ellipsized, as today.
+`LibraryAppBar` keeps its signature: no change to the public API.
+
+### The top bar of the editor
+
+| Responsibility | Assigned to | Pattern |
+|---|---|---|
+| Whether the actions of the extensions fit beside a title of `TitleMinWidth` | `ToolbarLayout.extensionsFit(width, button, extensionsWidth, buttons, decorWidth)` (pure, unit tested) | Pure Fabrication |
+| Showing them in the bar, or behind one button ("Extensions", its icon a puzzle or a grid of dots) that opens them in a small popover row | `EditorTopBar` | Information Expert |
+| Measuring them | where they are shown, in the bar or in the popover (`onExtensionsWidth`): the width last measured decides, so that they are composed once, never twice | Information Expert |
+
+The extensions keep their API (`toolbarActions` stays a composable): the same composables are shown
+in the popover, so the lecture keeps its time of recording and its state. `EditorExtension` is not
+touched (see "Completion and suggestions while writing" in `CLAUDE.md`: its shape is decided
+separately). The page grid gives way first, as today, then the extensions.
+
+### The system bars
+
+| Responsibility | Assigned to | Pattern |
+|---|---|---|
+| Whether hiding the status bar gives room: Android, no cutout on the top edge of the window (`WindowInsetsCompat.Type.displayCutout()` top = 0, read again when the insets change, so a rotation that moves the cutout to the side hides it); iOS, not an iPhone with a notch or an island (an iPad, or a top of the safe area of 24 pt at most) | `ImmersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`, expect/actual) | Information Expert, Protected Variations |
+| Hiding the navigation bar (Android) and the home indicator (iOS) as now | the same | High Cohesion |
+| Hiding them again when the window gets the focus back (Android: `ViewTreeObserver.OnWindowFocusChangeListener`), so a menu, a popover or a dialog never leaves them shown | the Android actual | Information Expert |
+| The one effect of the editor, asked by `DrawScreen` (always, as today) | `DrawScreen` | Controller |
+| `SystemBarsHidden` of `drawview-explorer` removed; `DocumentLibrary(fullScreenEditor)` kept in its signature but not used: the editor hid the bars whatever it said | `DocumentLibrary` | Low Coupling |
+
+The iOS actual keeps one flag and installs its overrides once. The status bar shown in the editor
+on a device with a notch takes the colors of the bar of the editor (light or dark icons as the
+theme), as in the library.
+
+### The tools on a tablet
+
+| Responsibility | Assigned to | Pattern |
+|---|---|---|
+| The size of the tools: for a thumb (the floating tools of a phone, the bars without touch: 44 dp drawn, 24 dp icons, as today), for a pen (the bars where there is touch, a tablet: 40 dp drawn, 20 dp icons, 44 dp targets) | `ToolSizes` (`Thumb`, `Pen`), given by `ToolGroup` through `LocalToolSizes` and `LocalMinimumInteractiveComponentSize` | Pure Fabrication, Information Expert |
+| Using it | `ToolButton`, `BarButton`; `ToolbarLayout.arrange` and `titleMaxWidth` count the tools at their target (`toolButton`) | Information Expert |
+
+The numbers are to be confirmed on the tablet of the user, with a screenshot of the bar before and
+after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
+
+## Plan
+
+| Phase | Content | Status |
+|---|---|---|
+| 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
+| 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | done |
+| 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions on a phone and a tablet in split screen | done |
+| 4. Tools on a tablet | `ToolSizes`; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | done, to confirm on the tablet of the user |
+
+### Phase 1 results
+
+* One effect, `immersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`), called by
+  `DrawScreen`; `HideSystemBarsEffect` and `SystemBarsHidden` of `drawview-explorer` removed.
+  `DocumentLibrary(fullScreenEditor)` stays in its signature, not used any more (the editor was
+  already hiding the bars whatever it said); PencilNotes no longer passes it.
+* Pixel 9 emulator (Android 17, a punch hole on the top edge): in portrait the status bar stays in
+  the editor, the navigation bar is hidden; in landscape both are hidden; the "more" menu opened and
+  closed leaves them so; back in the library both are shown.
+* Android 10 (the old flags, the focus listener) is checked on the tablet of the user: no API 29
+  emulator here.
+* iOS, checked after the phase on the simulators (iPhone 17, iPad Air 11-inch, iOS 27), with two
+  fixes:
+  - **The status bar of an iPad is 32 pt high** on iPadOS 27 (24 pt before): the top of the safe
+    area took it for an island. No iPad has a notch or an island, so only an iPhone is asked
+    (`UIUserInterfaceIdiomPhone` and a top over 24 pt; an iPhone without them has 20 pt).
+  - **UIKit asks the status bar of the root view controller**, a `UIHostingController` of SwiftUI
+    in the applications, not the one of Compose: the status bar was never hidden on iOS, before
+    this plan too. The override of `prefersStatusBarHidden` is now installed on the view
+    controllers holding the one of Compose too, and the root is asked to update. The home
+    indicator stays with the one of Compose: the applications hide it with
+    `persistentSystemOverlays`, which an override on the root would undo.
+  - The iPhone keeps its status bar beside the Dynamic Island in the editor; the iPad hides it in
+    the editor and shows it again in the library.
+* **Android 10, the menus.** On the tablet of the user (Huawei MatePad 10.4, Android 10, density
+  320 for 224 ppi) and on an emulator of Android 10 at the same size and density, with main
+  (83c1c07c): a menu shows the status bar, the bars of the editor go down by its height, and it
+  stays after the menu. So it is Android 10, not the tablet. Three causes, three fixes:
+  - The bars follow the window that has the focus, and a menu is a window of its own: menus and
+    popovers do not take the focus under Android 11 where the editor hides the bars
+    (`popupTakesFocus`). One with a text field takes it anyway (`DesignMenu(takesText = true)`,
+    the size of the text). What a popup without the focus misses is given beside it
+    (`UnfocusedPopupGuard`): the system back closes it, and a touch outside of it closes it in a
+    transparent window under it, without reaching the page.
+  - The windows that take the focus (the dialogs, the sheets) get the flags of the editor
+    (`PopupSystemBarsEffect`): the status bar shows for a moment while they open, then hides.
+  - The editor kept clear of the status bar while another window had the focus: it now keeps
+    clear of the cutout, the keyboard and the bars it does not hide only (`editorInsets`).
+  - Checked on the tablet and on the emulator: the menu, the popover of the pen, the back, a touch
+    outside, the configurator of the page; the status bar never shows, the bars do not move, the
+    focus stays on the editor. The ABI of `drawview-ui` changes by the name of a lambda the Compose
+    compiler generates (`ComposableSingletons`), not by an API.
+* On a simulator that had an old database (version 9) PencilNotes stops at the start: Room has
+  migrations from 16 only (the first version with documents to keep, see `Migrations.kt`). Not a
+  change of this plan; the checks ran on new simulators, the old one left as it was.
+
+### Phase 2 results
+
+* `LibraryBarLayout.fit` (`LibraryBarLayoutTest`) and `LibraryAppBar` as a `SubcomposeLayout`: the
+  brand is measured at its own width (its max intrinsic width), then the bar is composed with what
+  fits; the buttons left out are in a "more" menu (`MoreHorizontal`, as the menu of the folder).
+  `search` takes the modifier with its width.
+* `LibraryBarScreenshotTest`: a brand as wide as the one of PencilNotes and three actions. At
+  320 dp only "more"; at 360 dp the Trash and "more"; at 412 dp the Trash, the first action and
+  "more"; in the grid at 600 dp the search 200 dp wide, the Trash and "more"; at 700 dp the search
+  narrower and every button; at 840 dp everything. The brand is whole in all of them.
+* The Pixel 9 emulator (412 dp): PencilNotes whole, the Trash, joining a shared note and "more".
+* The other screenshots of the library are unchanged (`verifyRoborazziJvm`).
+
+### Phase 3 results
+
+* `ToolbarLayout.extensionsFit` (`ToolbarLayoutTest`): on a phone (411 dp) back, "more" and three
+  actions leave the title less than `TitleMinWidth`, two actions fit; a tablet in split screen
+  keeps three with the page grid.
+* `DrawScreen` decides with the width of the actions last measured: in the bar, or behind one
+  button ("Actions", `Zap`) whose popover holds them; once one is tapped the popover closes (the
+  dialogs and the panels they open are kept by their extensions, in the overlay of the canvas).
+  Where they are behind the button the page grid may come back to the bar.
+* The actions are not measured in a `SubcomposeLayout`, as first designed: they would be composed
+  twice (two lectures recording, two states).
+* A new string, `editor_action_extensions`, in the seven languages; the ABI of `drawview-ui`
+  updated for its generated accessor.
+* `AdaptiveScreenshotTest.editorExtensions` and `editorExtensionsMenu` recorded; the other
+  screenshots of `drawview-ui`, `-explorer`, `-sync-ui`, `-lecture-ui` and `-export-ui` unchanged.
+
+### Phase 4 results
+
+* The Huawei MatePad 10.4 of the user: 2000 × 1200 pixels, 224 ppi, Android 10, read later with
+  `adb`: its density is 320, so it is 600 × 1000 dp and a dp is 1.43 times its nominal size. All
+  of the interface is that much larger on it, not only the tools; the group of the tools is
+  11.8 mm high there. Checked on it: one bar in landscape, two in portrait.
+* The group of the tools in the bars of a tablet: 52 dp high instead of 56, 40 dp buttons with
+  20 dp icons instead of 44 dp with 24 dp, targets of 44 dp instead of 48; the buttons of the top
+  bar (back, the page grid, the actions, "more") keep 48 dp.
+* The phone (floating tools) and the desktop (a mouse) are unchanged: their screenshots are the
+  same. Those of the tablets recorded again: the editor, its panels, its menus and the text.
+
+## Decisions
+
+Revertible, taken alone:
+
+* **The actions of the library go into a menu, not the wordmark into the mark.** The brand is a
+  composable of the application, the library cannot ask it for a short form without a new API.
+  A brand with a short form (only the mark) is left for later.
+* **The extensions of the editor stay composables**, shown elsewhere when they do not fit, not
+  turned into commands: their shape is a decision of its own (see `CLAUDE.md`).
+* **The tools of a tablet for a pen: 40 dp drawn, 20 dp icons, 44 dp targets.** Smaller ones
+  (36 dp, as some apps for the iPad) are a change of two numbers in `ToolSizes.Pen`.
+* **The navigation bar stays hidden** where the status bar is kept: it gives room on every device
+  with buttons, and comes back with a swipe.
+* **Android 10 is checked on the tablet of the user**, not on an emulator (a system image of about
+  1 GB to download).
+
+## Left for later
+
+* The dialogs and the sheets over the editor on Android 10 show the status bar for a moment
+  while they open (they take the focus, for their text fields).
+
+* A short form of the brand of the application (the mark alone) for the narrowest windows.
+* The extensions as commands, with a place in the menus and in the menu bar.
+* Hiding the bars while writing (focus mode), already in "Later" of `docs/plans/adaptive-ui.md`.

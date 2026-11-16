@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.lecture.transcription
 /**
  * The zip of an encoder of whisper.cpp compiled for Core ML (`ggml-<model>-encoder.mlmodelc`), as the
  * authors of whisper.cpp publish it: checked and extracted next to the model, where whisper.cpp runs it
- * on the Neural Engine (docs/transcription-queue.md, "The encoder on the Neural Engine").
+ * on the Neural Engine (docs/plans/transcription-queue.md, "The encoder on the Neural Engine").
  */
 internal interface EncoderArchive {
     /** The SHA-256 of the file at [path], in lowercase hexadecimal. */

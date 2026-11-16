@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
  * The boxes of the texts of the document of [controller] as this device lays them out (their
  * [DrawText.height], the [DrawText.naturalWidth] a box following its text takes): the box of a
  * text is what its lines take, never what a version of the application measured when it wrote
- * it (docs/text-heights.md).
+ * it (docs/plans/text-heights.md).
  *
  * Every text is laid out when the text adapter is set, off the main thread, and again when a
  * change reaches it, made here or on another device (the adapter keeps the sizes it laid out, so

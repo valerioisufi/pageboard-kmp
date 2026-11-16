@@ -113,7 +113,7 @@ internal val DarkColorScheme = darkColorScheme(
 )
 
 /**
- * Material 3 theme of DrawView, as the design draws it (docs/ui-design.md): the palette of the
+ * Material 3 theme of DrawView, as the design draws it (docs/plans/ui-design.md): the palette of the
  * design (or the dynamic colors of the system on Android 12+, or the schemes of an application),
  * Plus Jakarta Sans, the shapes of the design, the colors of the canvas and the expressive motion
  * scheme.

@@ -87,7 +87,7 @@ internal class ZipEntryTimes(val modifiedAt: Long, val createdAt: Long = modifie
  *
  * Each entry is written with UTF-8 filename flags and valid PKWARE local headers, central directory
  * headers, and end-of-central-directory record. An entry given its [ZipEntryTimes] is dated three
- * ways, so that every tool keeps the dates (see `docs/export-metadata.md`): the DOS date and time
+ * ways, so that every tool keeps the dates (see `docs/plans/export-metadata.md`): the DOS date and time
  * in [timeZone], the extended timestamp (`0x5455`, UTC seconds) and the NTFS times (`0x000A`, with
  * the creation); an entry without them is dated 1980-01-01 00:00 with no extra field.
  */

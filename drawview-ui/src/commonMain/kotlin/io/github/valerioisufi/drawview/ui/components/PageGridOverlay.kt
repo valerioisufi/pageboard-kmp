@@ -103,7 +103,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Full-screen grid of the pages of the document: thumbnails, jump to a page, page actions
  * (add after, copy, paste after, delete, background) and reordering by drag & drop after a long
- * press. Several pages are selected (see `docs/page-selection.md`) with Select and a tap, or with
+ * press. Several pages are selected (see `docs/plans/page-selection.md`) with Select and a tap, or with
  * ⌘/Ctrl+click and Shift+click; the bar of the selection and the menu of a page selected act on
  * all of them.
  *
@@ -217,7 +217,7 @@ internal fun PageGridOverlay(
         var draggedBlock by remember { mutableStateOf<List<String>?>(null) }
         // The deleted pages shown after the others
         var deletedExpanded by remember { mutableStateOf(false) }
-        // The pages and the deleted ones as they are now (see `docs/page-grid-updates.md`): the
+        // The pages and the deleted ones as they are now (see `docs/plans/page-grid-updates.md`): the
         // model is not Compose state, so the content of the grid is built from what this
         // composition read, another lambda after every change, counted again by the grid
         val pages = document.pages
@@ -517,7 +517,7 @@ internal fun PageGridOverlay(
 
 /**
  * The pages removed in the last 30 days at [now] ([deleted]), after the others (see
- * `docs/trash.md`): a row telling how many, which shows them when [expanded], each faded with the
+ * `docs/plans/trash.md`): a row telling how many, which shows them when [expanded], each faded with the
  * days it has left and Restore.
  */
 private fun LazyGridScope.deletedPages(controller: DrawViewController, deleted: List<DrawPage>, now: Long, expanded: Boolean, onToggle: () -> Unit) {

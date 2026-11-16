@@ -8,7 +8,7 @@ import kotlin.time.TestTimeSource
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** The words of the notes from the search index (`docs/writing-suggestions.md`). */
+/** The words of the notes from the search index (`docs/plans/writing-suggestions.md`). */
 class NoteVocabularyTest {
 
     private fun SearchIndex.put(documentId: String, vararg chunks: Pair<SearchChunkKind, String>) {

@@ -8,7 +8,7 @@ private val WORD = Regex("""[\p{L}\p{N}]+""")
 
 /**
  * Suggests the end of the word being written from the words of the texts of the document, the
- * most frequent first (see `docs/text-box-hook.md`): what an extension of the text box does, without
+ * most frequent first (see `docs/plans/text-box-hook.md`): what an extension of the text box does, without
  * a model.
  */
 fun wordSuggestionsExtension(): EditorExtension = EditorExtension {

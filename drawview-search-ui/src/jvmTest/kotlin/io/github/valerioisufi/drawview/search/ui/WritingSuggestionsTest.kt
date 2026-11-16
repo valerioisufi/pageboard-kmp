@@ -39,7 +39,7 @@ import kotlin.test.assertEquals
 
 /**
  * The words of the slides of a document, indexed by the search, suggested while writing in its
- * editor (`docs/writing-suggestions.md`): the whole way, from the index to the text box.
+ * editor (`docs/plans/writing-suggestions.md`): the whole way, from the index to the text box.
  */
 @OptIn(ExperimentalTestApi::class)
 class WritingSuggestionsTest {

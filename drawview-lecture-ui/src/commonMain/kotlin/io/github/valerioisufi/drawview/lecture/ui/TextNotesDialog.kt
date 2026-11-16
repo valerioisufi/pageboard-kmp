@@ -36,7 +36,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-/** A text being turned into notes by the assistant (see `docs/text-import.md`), until it is placed or dropped. */
+/** A text being turned into notes by the assistant (see `docs/plans/text-import.md`), until it is placed or dropped. */
 internal class TextNotesState {
     /** The text imported, taken from the sheet of the import; `null`: nothing going on. */
     var import: TextImport? by mutableStateOf(null)

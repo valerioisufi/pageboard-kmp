@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
 /**
- * Finding a text in the document open (see `docs/find-in-document.md`): the words of its texts as
+ * Finding a text in the document open (see `docs/plans/find-in-document.md`): the words of its texts as
  * they are shown (the notation of Markdown hidden, as the adapter of the texts lays them out) and
  * the text of its PDF pages, without telling capitals and accents apart. The places found are
  * drawn on the pages (see `FindOverlay`), the current one shown on screen.

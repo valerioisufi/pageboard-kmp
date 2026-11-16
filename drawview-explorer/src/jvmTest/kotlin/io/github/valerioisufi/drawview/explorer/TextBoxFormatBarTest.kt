@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 
 /**
  * The formatting bar on a selection of the text being written, its buttons pressed with a mouse
- * (docs/text-fidelity.md): a button taking the focus made the field drop its selection, and the
+ * (docs/plans/text-fidelity.md): a button taking the focus made the field drop its selection, and the
  * delimiters went at its end.
  */
 @OptIn(ExperimentalTestApi::class)

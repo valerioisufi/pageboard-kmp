@@ -9,7 +9,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Writing checklists and choosing the level of a heading (see `docs/checklists.md`). */
+/** Writing checklists and choosing the level of a heading (see `docs/plans/checklists.md`). */
 class ChecklistEditingTest {
 
     private fun value(text: String, caret: Int = text.length) = TextFieldValue(text, TextRange(caret))

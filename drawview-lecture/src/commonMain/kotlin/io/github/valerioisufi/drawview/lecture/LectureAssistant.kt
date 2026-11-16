@@ -115,7 +115,7 @@ public class LectureAssistant(
      * The lectures being imported or transcribed here (an import, a lecture received without a
      * transcript, a lecture transcribed again), in their order: the one transcribed now, those
      * waiting their turn (`ImportStep.WAITING`), then those still converted. One is transcribed at
-     * a time (see `docs/transcription-queue.md`).
+     * a time (see `docs/plans/transcription-queue.md`).
      */
     public val transcribing: List<Lecture> get() = work.transcribing
 

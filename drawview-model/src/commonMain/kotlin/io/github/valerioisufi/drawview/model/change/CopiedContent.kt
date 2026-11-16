@@ -9,7 +9,7 @@ import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /*
  * What is copied in a document, detached from it, to be pasted in any document (see
- * `docs/cross-document-paste.md`): the values the changes carry, never the model objects of the
+ * `docs/plans/cross-document-paste.md`): the values the changes carry, never the model objects of the
  * source, which may be changed, closed or deleted meanwhile.
  */
 
@@ -83,7 +83,7 @@ private fun meshesOf(elements: List<DrawElement>): Map<String, StrokeMesh> =
 
 /**
  * Copies [pages] of this document with all their content, each with the background it shows
- * (made its own when it follows the document, see `docs/cross-document-paste.md`).
+ * (made its own when it follows the document, see `docs/plans/cross-document-paste.md`).
  */
 public fun DrawDocument.copyPages(pages: List<DrawPage>): CopiedPages {
     val values = pages.map { page ->

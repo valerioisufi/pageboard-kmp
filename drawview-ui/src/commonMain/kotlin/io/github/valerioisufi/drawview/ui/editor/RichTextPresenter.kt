@@ -182,7 +182,7 @@ internal class PresentedFormula<T>(
 
 /**
  * What the caret is in whose source the page hides, to show in a strip by it (see
- * docs/text-fidelity.md): the LaTeX of a formula, the address of a link. [source] is the part of the
+ * docs/plans/text-fidelity.md): the LaTeX of a formula, the address of a link. [source] is the part of the
  * source shown (end exclusive), [anchor] where its formula or its link starts in the text shown;
  * [caretIn] whether the caret is in that source (in the text of a link it is not).
  */
@@ -378,7 +378,7 @@ internal object RichTextPresenter {
                     }
                 }
                 else -> {
-                    // Hidden with the caret too: the lines do not move with it (docs/text-fidelity.md)
+                    // Hidden with the caret too: the lines do not move with it (docs/plans/text-fidelity.md)
                     for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
                     // The caret stands after the marker of a heading, never in it, and never
                     // between an escape and the character it escapes

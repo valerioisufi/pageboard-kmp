@@ -11,7 +11,7 @@ import kotlin.math.min
 
 /**
  * What an item of a proposal does on a page, for the review to draw it there before the user decides
- * (see `docs/agent-preview.md`). The marks are for the interface: they are not sent to a client.
+ * (see `docs/plans/agent-preview.md`). The marks are for the interface: they are not sent to a client.
  *
  * @param pageId the page it is on; a page the plan adds has an id of the plan only ([isOnNewPage]).
  * @param box the place on the page, in millimeters: of what is added, removed or changed, where what

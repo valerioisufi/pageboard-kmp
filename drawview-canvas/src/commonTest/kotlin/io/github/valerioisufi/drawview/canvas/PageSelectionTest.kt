@@ -23,7 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
-/** Selecting several pages and the actions on all of them (see `docs/page-selection.md`). */
+/** Selecting several pages and the actions on all of them (see `docs/plans/page-selection.md`). */
 class PageSelectionTest {
 
     /** A document of [pages] pages, a text on each one naming it ("1", "2"...). */

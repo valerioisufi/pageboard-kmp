@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- * The costs of the Room store (see `docs/performance.md`): the statements a stroke makes run while
+ * The costs of the Room store (see `docs/plans/performance.md`): the statements a stroke makes run while
  * the library follows the documents, and the opening of a large notebook. On a database file of
  * the data directory of the tests, as an application keeps it.
  */

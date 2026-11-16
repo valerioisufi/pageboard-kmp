@@ -11,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Writing past the bottom of a page, with real keys: the writing is not interrupted (docs/text-box-fixes.md). */
+/** Writing past the bottom of a page, with real keys: the writing is not interrupted (docs/plans/text-box-fixes.md). */
 @OptIn(ExperimentalTestApi::class)
 class TextBoxFlowTest {
 

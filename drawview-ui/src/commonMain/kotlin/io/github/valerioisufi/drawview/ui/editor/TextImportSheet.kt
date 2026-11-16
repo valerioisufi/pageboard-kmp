@@ -45,7 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The identifier of the command an extension gives to turn the pending text import into notes
  * with a model ([DrawViewController.pendingTextImport]): the sheet of the import offers it when the
- * extension gives it (see `docs/text-import.md`).
+ * extension gives it (see `docs/plans/text-import.md`).
  */
 public const val TEXT_TO_NOTES_COMMAND_ID: String = "text-import.as-notes"
 

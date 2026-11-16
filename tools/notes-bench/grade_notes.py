@@ -1,4 +1,4 @@
-"""Grades the note sets of NotesBench against the thresholds of docs/local-notes.md.
+"""Grades the note sets of NotesBench against the thresholds of docs/plans/local-notes.md.
 
 Every note is judged once per pass and every set of notes scored once per pass: what was paid stays in
 <bench>/grades/<lecture>.json. All the dollars are counted in <bench>/dollars.txt, with those of the

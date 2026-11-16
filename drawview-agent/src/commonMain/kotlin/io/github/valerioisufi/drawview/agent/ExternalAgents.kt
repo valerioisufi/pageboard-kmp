@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * The external models of an application (Controller): the access, the proposals and the tools, on
  * the documents the application is working on. One per application, given to its way in and to its
- * review. See `docs/agent-tools.md`.
+ * review. See `docs/plans/agent-tools.md`.
  *
  * @param documents the one the editor and the synchronization use: the only writer of the store.
  * @param journal where the proposals and the activity are kept, to outlive the application; `null`:

@@ -29,7 +29,7 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * The queries of the library while a note is written: run once for all their collectors, as many
- * as PencilNotes has (see `docs/performance.md`, phase 1).
+ * as PencilNotes has (see `docs/plans/performance.md`, phase 1).
  */
 class CatalogQueriesTest {
 

@@ -5,7 +5,7 @@ import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.PageContentSnapshot
 
 /**
- * A format the documents are exported in (see `docs/export.md`): [PdfExporter],
+ * A format the documents are exported in (see `docs/plans/export.md`): [PdfExporter],
  * [PageImageExporter].
  */
 public interface DocumentExporter {

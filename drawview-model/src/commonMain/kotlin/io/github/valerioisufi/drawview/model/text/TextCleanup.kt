@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.model.text
 
 /**
  * A plain text written elsewhere (copied from a PDF, a web page, a chat) turned into the Markdown of
- * the notebook, by rules, the same on every device (see `docs/text-import.md`):
+ * the notebook, by rules, the same on every device (see `docs/plans/text-import.md`):
  * - the lines of a paragraph broken by the width of the source joined, a word cut by a hyphen at
  *   the end of a line joined again;
  * - the bullets ("•", "◦", "–", "*", "·", …) as "-", the numbered items ("1)") as "1.", the lines

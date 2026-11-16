@@ -14,7 +14,7 @@ import io.github.valerioisufi.drawview.ui.extension.TextSuggestion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** The suggestion of an extension after the end of the text being written (docs/text-box-hook.md). */
+/** The suggestion of an extension after the end of the text being written (docs/plans/text-box-hook.md). */
 @OptIn(ExperimentalTestApi::class)
 class TextSuggestionTest {
 

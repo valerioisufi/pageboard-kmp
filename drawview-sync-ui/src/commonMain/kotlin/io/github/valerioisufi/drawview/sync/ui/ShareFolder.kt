@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.ui.extension.LibrarySelection
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 
-/** What the sharing dialog shares: a document, or a folder of the library (`null`: the library itself, see `docs/shared-folders.md`). */
+/** What the sharing dialog shares: a document, or a folder of the library (`null`: the library itself, see `docs/plans/shared-folders.md`). */
 internal sealed interface ShareTarget {
     val title: String
     val kind: InvitationKind

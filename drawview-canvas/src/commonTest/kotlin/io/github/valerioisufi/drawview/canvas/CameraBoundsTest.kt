@@ -11,7 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * The bounds of the camera (`docs/camera-bounds.md`): pages narrower than the canvas stay
+ * The bounds of the camera (`docs/plans/camera-bounds.md`): pages narrower than the canvas stay
  * centered, wider pages stop at their edges, and the bounds change continuously with the zoom.
  */
 class CameraBoundsTest {

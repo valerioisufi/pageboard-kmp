@@ -84,7 +84,7 @@ internal object LecturePrompts {
     private const val MARKDOWN_RULE =
         "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, `code` in the line, blocks of code between fences with their language (a line \"```python\", the code with its indentation, a line \"```\"), LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
 
-    /** Where a note goes on its page: next to the words it is about (see `docs/auto-placement.md`). */
+    /** Where a note goes on its page: next to the words it is about (see `docs/plans/auto-placement.md`). */
     private const val ANCHOR_RULE =
         "The anchor of a note is a few exact words (at most 8), copied from the slide or from the notes of the student on its page, that the note explains or completes, so that it can be placed next to them; omit it when the note is about nothing on the page."
 
@@ -307,7 +307,7 @@ internal object LecturePrompts {
     )
 
     /**
-     * A text written elsewhere turned into notes for the notebook (see `docs/text-import.md`): the
+     * A text written elsewhere turned into notes for the notebook (see `docs/plans/text-import.md`): the
      * notebook described page by page as for the review, then the text; the answer is the notes of
      * a kind with their page and their anchor, as the notes of a lecture.
      */

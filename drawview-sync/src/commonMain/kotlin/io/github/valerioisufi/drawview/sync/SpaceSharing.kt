@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.store.space.StoredSpace
 
 /**
  * The sharing of the shared folders of this device (GRASP Information Expert of who may do what on
- * them, see `docs/shared-folders.md`):
+ * them, see `docs/plans/shared-folders.md`):
  *
  * * each space has a key with its epochs, an owner, a membership signed by the owner
  *   ([MembershipKind.SPACE]) and invitations, kept with the space ([StoredSpace.sharing]) and

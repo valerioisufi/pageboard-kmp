@@ -15,7 +15,7 @@ import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 
 /**
- * Measures the latency of the ink (see `docs/ink-latency.md`): a button of the toolbar switches the
+ * Measures the latency of the ink (see `docs/plans/ink-latency.md`): a button of the toolbar switches the
  * measure on, and the report of the last stroke is shown over the canvas and printed. A measure of
  * the editor, not of an extension: the sample reads it from the editor of its session.
  */

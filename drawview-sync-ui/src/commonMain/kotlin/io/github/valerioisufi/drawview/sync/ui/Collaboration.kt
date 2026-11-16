@@ -71,7 +71,7 @@ private const val NEARBY_WAIT_MS = 3_000L
  * with them.
  *
  * When the store keeps spaces ([SpaceStore], the stores of the libraries do), whole folders and
- * the library are shared too ([shareFolder], see `docs/shared-folders.md`): what they hold is kept
+ * the library are shared too ([shareFolder], see `docs/plans/shared-folders.md`): what they hold is kept
  * the same on every device of their members, the notes and folders added later too.
  *
  * The devices are looked for only once allowed to use the local network ([requestAccess]: the

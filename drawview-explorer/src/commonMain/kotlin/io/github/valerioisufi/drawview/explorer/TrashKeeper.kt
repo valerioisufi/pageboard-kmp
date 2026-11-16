@@ -11,7 +11,7 @@ internal val LocalLibraryClock = staticCompositionLocalOf<() -> Long> { ::curren
 
 /**
  * Deletes for good what has been in the trash of [catalog] longer than [TrashRetention] (see
- * `docs/trash.md`): when the library starts, then once a day while it runs.
+ * `docs/plans/trash.md`): when the library starts, then once a day while it runs.
  *
  * @param clock the time now, in milliseconds.
  */

@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.search
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** The words of the notes counted for the suggestions while writing (`docs/writing-suggestions.md`). */
+/** The words of the notes counted for the suggestions while writing (`docs/plans/writing-suggestions.md`). */
 class WordCountsTest {
 
     @Test

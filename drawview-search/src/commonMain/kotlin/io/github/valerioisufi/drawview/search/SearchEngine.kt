@@ -163,7 +163,7 @@ public class SearchEngine(
     }
 
     /**
-     * Merges [vectorResults] and [wordResults] following the findings of phase 0 (`docs/search.md`):
+     * Merges [vectorResults] and [wordResults] following the findings of phase 0 (`docs/plans/search.md`):
      * vectors drive the ranking so paraphrases are preserved, while chunks that match most or all
      * of the query's content words receive a calibrated lexical boost so exact technical terms and
      * algorithm names are never missed.
@@ -325,7 +325,7 @@ public class SearchEngine(
 
         /**
          * The least cosine similarity of a chunk found by its meaning alone, measured for
-         * EmbeddingGemma 2 at 512 dimensions in phase 6 of `docs/library-search.md`.
+         * EmbeddingGemma 2 at 512 dimensions in phase 6 of `docs/plans/library-search.md`.
          */
         private const val LEAST_VECTOR_SCORE = 0.68
 

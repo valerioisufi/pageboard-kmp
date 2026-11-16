@@ -23,7 +23,7 @@ import kotlin.test.fail
 import kotlinx.coroutines.runBlocking
 
 /**
- * The text being written laid out as the page lays it out (docs/text-fidelity.md): the lines of the
+ * The text being written laid out as the page lays it out (docs/plans/text-fidelity.md): the lines of the
  * field of the editor, at every zoom, are those the page draws, also after a zoom or a new size
  * while the text is written; the caret is as wide on the screen at every zoom.
  */

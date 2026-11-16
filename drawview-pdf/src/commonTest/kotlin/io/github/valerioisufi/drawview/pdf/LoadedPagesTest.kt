@@ -15,7 +15,7 @@ private val PAGE_COLORS = listOf(0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFF00,
 private const val WHITE = 0xFFFFFFFF.toInt()
 
 /**
- * The pages read kept loaded by the bridge (see `docs/performance.md`, phase 8), each drawn as it
+ * The pages read kept loaded by the bridge (see `docs/plans/performance.md`, phase 8), each drawn as it
  * is: pages drawn again in another order, more of them than are kept, a document closed and opened
  * again, a document whose pages change (one deleted, one added before the others) while one of its
  * pages is kept. Shared by the platform tests, which only differ in where [pdfPath] is.

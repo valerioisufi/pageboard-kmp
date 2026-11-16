@@ -42,7 +42,7 @@ import kotlin.test.Test
 /**
  * Screenshots of the export sheet as it draws its content (the sheet itself opens in a window
  * the screenshots do not take): a note from the editor, a page range, a folder, an empty folder;
- * the cards of the exports going on and done (docs/export-ux.md).
+ * the cards of the exports going on and done (docs/plans/export-ux.md).
  *
  * `./gradlew :drawview-export-ui:recordRoborazziJvm` records them in `screenshots/`.
  */

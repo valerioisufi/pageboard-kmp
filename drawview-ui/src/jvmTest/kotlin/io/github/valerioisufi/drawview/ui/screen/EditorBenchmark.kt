@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlin.test.Test
 
 /**
- * What the editor composes again while it is used (see `docs/performance.md`, phase 5): at every
+ * What the editor composes again while it is used (see `docs/plans/performance.md`, phase 5): at every
  * stroke drawn, and at every frame of a pan while a text is written.
  */
 @OptIn(ExperimentalTestApi::class)

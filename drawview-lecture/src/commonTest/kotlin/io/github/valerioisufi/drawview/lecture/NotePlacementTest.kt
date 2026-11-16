@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 
-/** The place and the width of a note by its kind (see `docs/auto-placement.md`). */
+/** The place and the width of a note by its kind (see `docs/plans/auto-placement.md`). */
 class NotePlacementTest {
 
     private val anchor = Rect(20f, 50f, 150f, 60f)

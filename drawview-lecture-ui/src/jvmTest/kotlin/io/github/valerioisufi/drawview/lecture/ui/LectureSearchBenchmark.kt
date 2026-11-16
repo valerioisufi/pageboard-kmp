@@ -15,7 +15,7 @@ import kotlin.time.measureTime
 import kotlinx.coroutines.test.runTest
 
 /**
- * The cost of the lectures in a pass of the search (see `docs/performance.md`): the version of
+ * The cost of the lectures in a pass of the search (see `docs/plans/performance.md`): the version of
  * the lectures of every document, which the indexer asks at every pass.
  */
 class LectureSearchBenchmark {

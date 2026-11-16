@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.sync.protocol
 
-/** What an [Invitation] is to: a document, or a shared folder (a folder of the library, or the library itself, see `docs/shared-folders.md`). */
+/** What an [Invitation] is to: a document, or a shared folder (a folder of the library, or the library itself, see `docs/plans/shared-folders.md`). */
 public enum class InvitationKind { DOCUMENT, FOLDER, LIBRARY }
 
 /**

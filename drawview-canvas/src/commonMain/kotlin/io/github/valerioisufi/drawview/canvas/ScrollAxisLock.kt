@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
 
 /**
- * The axis of one scroll gesture of a wheel or of a trackpad (`docs/camera-bounds.md`): a scroll
+ * The axis of one scroll gesture of a wheel or of a trackpad (`docs/plans/camera-bounds.md`): a scroll
  * goes on the axis of its first move, as `NSScrollView` scrolls on its predominant axis, so that
  * the small sideways parts of a vertical scroll do not add up. A scroll that goes on across its
  * axis breaks free of it until it ends.

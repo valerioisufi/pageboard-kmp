@@ -21,7 +21,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 /**
- * The tiles on screen as sharp as the screen allows (see `docs/tile-sharpness.md`).
+ * The tiles on screen as sharp as the screen allows (see `docs/plans/tile-sharpness.md`).
  */
 class TileSharpnessTest {
 

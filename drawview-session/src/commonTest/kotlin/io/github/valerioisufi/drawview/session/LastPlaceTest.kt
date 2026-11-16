@@ -32,7 +32,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withContext
 
 /**
- * A document opens where it was left on this device (see `docs/last-place.md`): each "process"
+ * A document opens where it was left on this device (see `docs/plans/last-place.md`): each "process"
  * reads what the one before left in the storage.
  */
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -23,8 +23,8 @@ import kotlinx.coroutines.test.runTest
 
 /**
  * The notes placed next to what they are about, in the free space of their page
- * (docs/auto-placement.md); the review inserted as new pages, on the format of the document, which
- * its text is laid out on, whatever the page it follows (docs/new-page-format.md).
+ * (docs/plans/auto-placement.md); the review inserted as new pages, on the format of the document, which
+ * its text is laid out on, whatever the page it follows (docs/plans/new-page-format.md).
  */
 class NoteInserterTest {
 

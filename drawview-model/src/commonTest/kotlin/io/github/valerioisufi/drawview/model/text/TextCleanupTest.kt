@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.model.text
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** A plain text written elsewhere turned into the Markdown of the notebook (see `docs/text-import.md`). */
+/** A plain text written elsewhere turned into the Markdown of the notebook (see `docs/plans/text-import.md`). */
 class TextCleanupTest {
 
     @Test

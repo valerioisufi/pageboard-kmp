@@ -38,7 +38,7 @@ import kotlinx.coroutines.SupervisorJob
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The export of the documents in an application (see `docs/export-ux.md`): "Export…" on the
+ * The export of the documents in an application (see `docs/plans/export-ux.md`): "Export…" on the
  * items of the library and on the folder shown ([libraryAction]), and in the editor
  * ([editorExtension]), opening the export sheet; the exports then go on in the
  * background, shown in the editor and, where the application places it, by [StatusHost].

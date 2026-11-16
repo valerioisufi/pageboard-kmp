@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 
 /**
  * A pointer selects the characters it passes over, those at the ends of a format too
- * (docs/pointer-selection.md): the first and the last character of a bold or an italic text, alone,
+ * (docs/plans/pointer-selection.md): the first and the last character of a bold or an italic text, alone,
  * by a mouse, and by the handles of a selection made by a finger.
  */
 @OptIn(ExperimentalTestApi::class)

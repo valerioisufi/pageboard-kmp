@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * A formula stays drawn in its place while its source is written, in a strip by it; so does a link,
- * its address in the strip (docs/text-fidelity.md). Nothing of the text moves.
+ * its address in the strip (docs/plans/text-fidelity.md). Nothing of the text moves.
  */
 @OptIn(ExperimentalTestApi::class)
 class TextBoxSourceStripTest {

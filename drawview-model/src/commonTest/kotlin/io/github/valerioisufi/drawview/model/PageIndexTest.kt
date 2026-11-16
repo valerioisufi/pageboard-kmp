@@ -16,7 +16,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 /**
- * The elements of a page found by their identifier (see `docs/performance.md`, phase 4): a page
+ * The elements of a page found by their identifier (see `docs/plans/performance.md`, phase 4): a page
  * loaded at once is the page built element by element, and its elements are found wherever the
  * changes put them.
  */

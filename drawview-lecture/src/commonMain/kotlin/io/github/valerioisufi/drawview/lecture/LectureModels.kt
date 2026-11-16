@@ -104,7 +104,7 @@ public enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 
 /**
  * The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). [WAITING]: its
- * transcription waits for the ones asked before it (see `docs/transcription-queue.md`).
+ * transcription waits for the ones asked before it (see `docs/plans/transcription-queue.md`).
  */
 public enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING, WAITING }
 

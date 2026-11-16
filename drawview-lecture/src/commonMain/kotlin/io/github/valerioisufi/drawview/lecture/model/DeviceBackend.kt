@@ -30,7 +30,7 @@ internal enum class SchemaMode {
  *
  * The schema of the answer is asked in the instructions by default ([SchemaMode.ASKED]): measured
  * on the Mac, the constrained decoding of LiteRT-LM spoils the answers of Gemma 4 E2B and E4B on the
- * handwriting (`docs/local-models.md`, phase 2).
+ * handwriting (`docs/plans/local-models.md`, phase 2).
  *
  * The models of the device are an engine of [ModelProvider.LOCAL], as Ollama is: the lecture
  * records name the provider only.
@@ -79,7 +79,7 @@ internal class DeviceBackend(
         /** A model in memory between two requests of a lecture (as Ollama's `keep_alive`). */
         const val LIVE_KEEP_LOADED_MILLIS = OllamaBackend.LIVE_KEEP_LOADED_SECONDS * 1000L
 
-        /** The most tokens of an image: more than 560 read worse (`docs/local-models.md`, phase 2). */
+        /** The most tokens of an image: more than 560 read worse (`docs/plans/local-models.md`, phase 2). */
         const val MAX_IMAGE_TOKENS = 560
 
         /** The problem shown for [error], `null` when it is not an error of a model of the device. */

@@ -37,7 +37,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /**
- * Screenshots of the review of the proposals and of the access of the clients (`docs/agent-tools.md`).
+ * Screenshots of the review of the proposals and of the access of the clients (`docs/plans/agent-tools.md`).
  *
  * `./gradlew :drawview-agent-ui:recordRoborazziJvm` records them in `screenshots/`.
  */

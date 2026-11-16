@@ -22,7 +22,7 @@ import kotlinx.serialization.json.putJsonObject
  * The lines of a client of the Model Context Protocol forwarded to the application and back, for as
  * long as the client goes on (Indirection): the application not running yet, quitting or starting
  * again does not end it, since a client takes a bridge that ended for a server that failed. See
- * `docs/agent-ergonomics.md`.
+ * `docs/plans/agent-ergonomics.md`.
  *
  * One message at a time, as the application answers them: a request, then its answer. When the
  * application is not there, a request is answered here that it is not running; a client that opens

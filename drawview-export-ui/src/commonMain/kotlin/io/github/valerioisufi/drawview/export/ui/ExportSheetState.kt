@@ -18,7 +18,7 @@ internal enum class ExportProblem { LOADING, NO_NOTES, NOTE_MISSING, INVALID_RAN
 
 /**
  * The choices remembered from one export to the next while the application runs (see
- * `docs/export-ux.md`): the format of a note and of several, the pattern of the backgrounds, the
+ * `docs/plans/export-ux.md`): the format of a note and of several, the pattern of the backgrounds, the
  * subfolders.
  */
 internal class ExportPreferences {

@@ -85,7 +85,7 @@ private object JvmLiteRtEngine : LiteRtEngine {
     /**
      * The activations of a generation model on [backend]: in 32 bits on the GPU, whose 16 bits
      * spoil the long answers of E2B and E4B (four answers in JSON in ten valid, ten in ten in 32
-     * bits, phase 2 of docs/local-models.md); the default of the processor.
+     * bits, phase 2 of docs/plans/local-models.md); the default of the processor.
      */
     private fun activations(backend: Backend): ActivationDataType? = if (backend is Backend.GPU) ActivationDataType.FLOAT32 else null
 

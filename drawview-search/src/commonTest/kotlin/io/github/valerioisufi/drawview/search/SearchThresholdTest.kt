@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 
 /**
- * The least score of the vectors (phase 6 of docs/library-search.md): a chunk found by its meaning
+ * The least score of the vectors (phase 6 of docs/plans/library-search.md): a chunk found by its meaning
  * alone passes above it, a chunk holding the words of the query always passes.
  */
 class SearchThresholdTest {

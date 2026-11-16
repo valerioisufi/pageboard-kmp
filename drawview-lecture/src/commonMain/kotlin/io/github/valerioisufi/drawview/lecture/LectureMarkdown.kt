@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
 /**
- * The lectures of a note written as Markdown (see `docs/markdown-export.md`): for each lecture, the
+ * The lectures of a note written as Markdown (see `docs/plans/markdown-export.md`): for each lecture, the
  * oldest first, its date and length, its outline, its summary (the final review) and the notes the
  * assistant suggested that the student did not dismiss, grouped by kind, each with the minute of
  * the lecture it was said at. The transcript is left out: it is exported on its own.

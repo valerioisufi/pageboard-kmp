@@ -29,7 +29,7 @@ internal interface TranscriptionGate {
  * The transcriptions of whole recordings (an import, a lecture received without a transcript, a
  * lecture transcribed again), one at a time in the order they were asked (Pure Fabrication): a
  * transcription takes the speech model and minutes of the computer, so the others wait their turn
- * instead of being refused (see `docs/transcription-queue.md`).
+ * instead of being refused (see `docs/plans/transcription-queue.md`).
  *
  * A recording holds the queue ([hold], [release]): the transcription running stops at the end of the
  * piece it is on and frees its model ([gate]), no other one starts, and all goes on when the recording

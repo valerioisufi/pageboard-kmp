@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.model
 
 /**
  * How long the trash keeps what is deleted (the documents and the folders of a library, the pages
- * of a document) before it is deleted for good (see `docs/trash.md`).
+ * of a document) before it is deleted for good (see `docs/plans/trash.md`).
  */
 public object TrashRetention {
     /** 30 days, in milliseconds. */

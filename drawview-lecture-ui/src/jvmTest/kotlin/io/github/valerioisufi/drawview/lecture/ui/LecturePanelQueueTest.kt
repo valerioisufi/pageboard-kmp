@@ -45,7 +45,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 /**
- * The panel while recordings are transcribed (docs/transcription-queue.md): an import is always
+ * The panel while recordings are transcribed (docs/plans/transcription-queue.md): an import is always
  * taken, a recording too unless one is going on, and what waits or is transcribed says so and can be
  * taken out of the queue.
  */

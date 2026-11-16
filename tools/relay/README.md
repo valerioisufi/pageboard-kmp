@@ -4,7 +4,7 @@ The devices of the users meet through a relay when they are not on the same netw
 tells each device where the others are, helps them reach each other directly (hole punching), and
 carries their traffic when they cannot. The traffic is encrypted twice: by iroh between the
 devices, and with the key of each document inside it. The relay reads none of it. See
-[docs/internet-sync.md](../../docs/internet-sync.md).
+[docs/plans/internet-sync.md](../../docs/plans/internet-sync.md).
 
 The relay is the `iroh-relay` server of [iroh](https://github.com/n0-computer/iroh), of the
 version the bridge uses (`native/iroh-bridge/Cargo.lock`), run as a systemd service:

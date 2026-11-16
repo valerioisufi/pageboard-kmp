@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 /**
  * The width of [AdaptiveSheet] in a window that is not compact: a wide dialog as
  * wide as it asks (or as the window less its margins), a narrow one as wide as its content, as in
- * Material 3 (docs/ui-fit.md).
+ * Material 3 (docs/plans/ui-fit.md).
  */
 @OptIn(ExperimentalTestApi::class)
 class AdaptiveSheetWidthTest {

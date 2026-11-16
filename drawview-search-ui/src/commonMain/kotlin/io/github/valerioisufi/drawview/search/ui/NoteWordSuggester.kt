@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * Suggests the end of the word being written from the words of the notes
- * (`docs/writing-suggestions.md`): of the document being written, of its slides, handwriting and
+ * (`docs/plans/writing-suggestions.md`): of the document being written, of its slides, handwriting and
  * lectures, of the library ([vocabulary], `null` before the search starts), each with its weight.
  * A word is suggested only when the notes make it clearly the one being written.
  */

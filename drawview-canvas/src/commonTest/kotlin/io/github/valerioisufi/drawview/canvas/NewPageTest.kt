@@ -21,7 +21,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
 /**
- * A page added after another one takes its format (docs/new-page-format.md): its size, its
+ * A page added after another one takes its format (docs/plans/new-page-format.md): its size, its
  * background as that page has it (its own, or following the document), never its content.
  */
 class NewPageTest {

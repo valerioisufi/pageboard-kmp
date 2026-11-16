@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 
 /**
  * The settings of the assistant in their real dialog on a desktop: as wide as they are laid out
- * for, with the choice of each request beside its name (docs/ui-fit.md).
+ * for, with the choice of each request beside its name (docs/plans/ui-fit.md).
  */
 @OptIn(ExperimentalTestApi::class)
 class AssistantSettingsDialogTest {

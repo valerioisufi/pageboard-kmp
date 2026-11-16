@@ -13,7 +13,7 @@ public fun interface MarkdownAppendix {
 }
 
 /**
- * Writes a note as Markdown (see `docs/markdown-export.md`): its name as the title, then the texts
+ * Writes a note as Markdown (see `docs/plans/markdown-export.md`): its name as the title, then the texts
  * of its pages as they are written (Markdown with LaTeX formulas between `$`), each page after the
  * one before, a rule between two pages, the texts of a page in the order they are read (from the
  * top, then from the left); the pages without a text left out; then what [appendix] adds. The

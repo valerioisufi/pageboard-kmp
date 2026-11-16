@@ -36,7 +36,7 @@ import kotlin.test.Test
 /**
  * Screenshots of the library and of the editor in the reference windows ([ReferenceWindow]), with
  * their input, in the light theme and, on a phone and a desktop, in the dark one: the reference of
- * the adaptive interface (docs/adaptive-ui.md).
+ * the adaptive interface (docs/plans/adaptive-ui.md).
  *
  * `./gradlew :drawview-explorer:recordRoborazziJvm` records them in `screenshots/`,
  * `verifyRoborazziJvm` compares the interface with them, `compareRoborazziJvm` writes the
@@ -253,7 +253,7 @@ class AdaptiveScreenshotTest {
 
     /**
      * The screens in a window of macOS, whose traffic lights take the top-leading corner (see
-     * `docs/title-bar.md`): no button under them, in a wide window and in a narrow one.
+     * `docs/plans/title-bar.md`): no button under them, in a wide window and in a narrow one.
      */
     @Test
     fun macWindow() = listOf(ReferenceWindow.DESKTOP, ReferenceWindow.PHONE).forEach { window ->

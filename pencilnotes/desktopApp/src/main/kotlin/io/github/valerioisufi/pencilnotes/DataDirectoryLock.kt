@@ -8,7 +8,7 @@ import java.nio.file.StandardOpenOption
 
 /**
  * The hold of one process on a data directory: the database of a directory has one writer, because
- * two would number their operations alike (see `docs/agent-tools.md`). The system releases it when
+ * two would number their operations alike (see `docs/plans/agent-tools.md`). The system releases it when
  * the process ends, however it ends, so a crash leaves nothing to clean up.
  */
 internal class DataDirectoryLock private constructor(

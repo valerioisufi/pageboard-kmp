@@ -31,7 +31,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
 /**
- * The text of a box still open survives the process killed (see `docs/text-autosave.md`): what the
+ * The text of a box still open survives the process killed (see `docs/plans/text-autosave.md`): what the
  * store has is read by another process, nothing closed or flushed before.
  */
 @OptIn(ExperimentalCoroutinesApi::class)

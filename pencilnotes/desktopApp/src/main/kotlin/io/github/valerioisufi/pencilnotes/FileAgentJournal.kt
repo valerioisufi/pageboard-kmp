@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
  * The proposals of the clients and what the models changed, kept in a file of the data directory
  * (`agent/journal.json`): written to a file beside it and moved over it, so that it is whole or as it
  * was. A file that is not understood, or too long to be one, is moved to `journal-unread-<time>.json`
- * and left there. See `docs/agent-ergonomics.md`.
+ * and left there. See `docs/plans/agent-ergonomics.md`.
  */
 internal class FileAgentJournal(dataDirectory: File, private val clock: () -> Long = System::currentTimeMillis) : AgentJournal {
     private val directory = File(dataDirectory.absoluteFile, "agent")

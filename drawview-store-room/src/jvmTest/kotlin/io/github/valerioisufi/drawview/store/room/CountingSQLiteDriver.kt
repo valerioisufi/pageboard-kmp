@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A driver counting the statements run on the connections of [driver] (the queries apart) and the
- * time they take: the benchmarks of the store (see `docs/performance.md`).
+ * time they take: the benchmarks of the store (see `docs/plans/performance.md`).
  */
 internal class CountingSQLiteDriver(private val driver: SQLiteDriver) : SQLiteDriver {
     private val queryCount = AtomicInteger()

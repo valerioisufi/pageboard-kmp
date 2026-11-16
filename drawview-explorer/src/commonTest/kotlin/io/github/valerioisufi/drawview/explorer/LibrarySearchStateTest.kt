@@ -23,7 +23,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
-/** A search as a state of the library (docs/library-search.md): how it starts, where it looks, how it ends. */
+/** A search as a state of the library (docs/plans/library-search.md): how it starts, where it looks, how it ends. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibrarySearchStateTest {
 

@@ -112,7 +112,7 @@ internal data class Snapshot(val snapshot: DocumentSnapshot, val base: Map<Strin
 internal class Operations(val operations: List<SealedOperation>) : SyncMessage
 
 /**
- * Changes of the catalog of a shared folder (see `docs/shared-folders.md`), on a connection about
+ * Changes of the catalog of a shared folder (see `docs/plans/shared-folders.md`), on a connection about
  * the folder, in the order of their stamps, sealed with the key of the folder and signed by their
  * authors as the operations of the documents ([SealedOperation], see `OperationProof.signCatalog`).
  */

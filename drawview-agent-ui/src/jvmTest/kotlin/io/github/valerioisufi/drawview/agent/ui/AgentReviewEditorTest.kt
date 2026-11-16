@@ -493,7 +493,7 @@ class AgentReviewEditorTest {
         assertEquals(listOf("Old text"), scene.texts)
     }
 
-    /** The heights of an editor; how long the largest preview takes is in `docs/agent-placement.md`. */
+    /** The heights of an editor; how long the largest preview takes is in `docs/plans/agent-placement.md`. */
     @Test
     fun aPreviewInAnEditorIsMeasured() = scene { scene ->
         val answer = runBlocking {

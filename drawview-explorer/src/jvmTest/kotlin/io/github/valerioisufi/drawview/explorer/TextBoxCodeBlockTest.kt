@@ -23,7 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * A block of code stays a block while its code is written (docs/text-fidelity.md): the arrows go
+ * A block of code stays a block while its code is written (docs/plans/text-fidelity.md): the arrows go
  * through its code without stalling on its fences, up and down through its lines, and nothing of the
  * text moves. The walks are those of the starting point of the plan.
  */

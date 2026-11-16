@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 
 /**
  * The sizes of the characters on a page, in typographic points of the page, each `null` when the
- * page has too little of it to tell (see `docs/placement-text-size.md`).
+ * page has too little of it to tell (see `docs/plans/placement-text-size.md`).
  *
  * @param typed the size of most of the characters typed on the page.
  * @param slide the size of the body of the text of its PDF page, as the page shows it.
@@ -92,7 +92,7 @@ public data class PageTextSizes(
 }
 
 /**
- * The size a note of the application takes on a page (see `docs/placement-text-size.md`): like the
+ * The size a note of the application takes on a page (see `docs/plans/placement-text-size.md`): like the
  * student's typed texts there, else a little smaller than the body of the slide, else as large as
  * the handwriting, else the size of a new text; always a preset of [TextSizes] between [MIN] and
  * [MAX].

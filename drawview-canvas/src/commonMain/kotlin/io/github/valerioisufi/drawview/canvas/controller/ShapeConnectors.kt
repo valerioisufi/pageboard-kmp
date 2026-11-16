@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.model.shape.ShapeElement
 import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
 
 /**
- * The lines and the arrows joined to the boxes (see `docs/shape-adjust.md`): an end of a line on
+ * The lines and the arrows joined to the boxes (see `docs/plans/shape-adjust.md`): an end of a line on
  * an anchor of a shape (a corner, the middle of a side, the center: where the end snapped when it
  * was drawn) follows that anchor when the shape is moved, turned or resized. Nothing is stored: a
  * line is joined to a shape as long as its end is on one of its anchors, so a line drawn elsewhere

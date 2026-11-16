@@ -9,7 +9,7 @@ import io.github.valerioisufi.drawview.model.change.CopiedContent
 /**
  * The last content copied in the editors given this instance: one per application, shared by
  * the editors of all its documents and windows, so that what is copied in a document is pasted
- * in another one (see `docs/cross-document-paste.md`). It lives in memory, while the application
+ * in another one (see `docs/plans/cross-document-paste.md`). It lives in memory, while the application
  * runs.
  */
 @Stable

@@ -447,7 +447,7 @@ public class SearchIndex(
 
     /**
      * The texts of the chunks of [kinds], as they were indexed: of [documentId], or of every
-     * document when it is `null` (`docs/writing-suggestions.md`).
+     * document when it is `null` (`docs/plans/writing-suggestions.md`).
      */
     public fun texts(documentId: String?, kinds: Set<SearchChunkKind>): List<String> = syncLock(lock) {
         checkNotClosed()

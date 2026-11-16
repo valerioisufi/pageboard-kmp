@@ -12,7 +12,7 @@ import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
 
-/** The blue of what a model wrote, like the notes of the lecture assistant (see `docs/text-import.md`). */
+/** The blue of what a model wrote, like the notes of the lecture assistant (see `docs/plans/text-import.md`). */
 public const val AGENT_TEXT_COLOR: Int = 0xFF1F5AA6.toInt()
 
 /**

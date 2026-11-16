@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * The external models of PencilNotes, on the documents of the application: given by the application
- * of a platform that lets clients in (see `docs/agent-tools.md`), none on the others.
+ * of a platform that lets clients in (see `docs/plans/agent-tools.md`), none on the others.
  *
  * @param readFile the content of the file at a path of this device, or `null` when it is not a file or
  *   holds more than the bytes given: for the images a client adds.

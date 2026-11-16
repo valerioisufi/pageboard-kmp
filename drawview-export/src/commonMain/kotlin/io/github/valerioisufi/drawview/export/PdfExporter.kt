@@ -52,7 +52,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 /**
- * Writes the documents as PDF (see `docs/export.md`), the same way on every platform: every page
+ * Writes the documents as PDF (see `docs/plans/export.md`), the same way on every platform: every page
  * a page of the same size, with its background, the pages of the PDFs it shows (their vectors and
  * text kept; when they cover it, the page is theirs, imported once per file with their links), the
  * marks of their text as annotations, its images, its texts as real text in the

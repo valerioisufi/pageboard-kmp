@@ -13,7 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** A real paste in the field of a text and on the canvas (docs/text-box-fixes.md). */
+/** A real paste in the field of a text and on the canvas (docs/plans/text-box-fixes.md). */
 @OptIn(ExperimentalTestApi::class)
 class TextBoxPasteTest {
 

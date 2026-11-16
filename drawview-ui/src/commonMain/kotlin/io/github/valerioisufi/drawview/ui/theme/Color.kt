@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// The palette of the design (docs/ui-design.md): a green seed, olive and blue beside it; every role
+// The palette of the design (docs/plans/ui-design.md): a green seed, olive and blue beside it; every role
 // of Material 3, so that the containers never take the neutrals of its baseline.
 
 internal val md_theme_light_primary = Color(0xFF3E691A)

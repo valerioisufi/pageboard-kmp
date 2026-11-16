@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.time.measureTime
 
 /**
- * The cost of modeling the strokes of a document as it is loaded (see `docs/performance.md`): the
+ * The cost of modeling the strokes of a document as it is loaded (see `docs/plans/performance.md`): the
  * inputs of a stroke given at once, as `InkStrokeModeller` gives them, against the inputs added one
  * by one to one engine for all, as the editor adds them.
  */

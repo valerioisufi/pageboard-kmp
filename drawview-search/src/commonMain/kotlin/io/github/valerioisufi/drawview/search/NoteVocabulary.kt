@@ -13,7 +13,7 @@ import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 /**
- * The words of the notes as the search indexed them (`docs/writing-suggestions.md`): of the whole
+ * The words of the notes as the search indexed them (`docs/plans/writing-suggestions.md`): of the whole
  * library, and of what each document has besides its typed texts (its slides, its handwriting,
  * its lectures). It is the vocabulary from which the end of a word being written is suggested.
  *

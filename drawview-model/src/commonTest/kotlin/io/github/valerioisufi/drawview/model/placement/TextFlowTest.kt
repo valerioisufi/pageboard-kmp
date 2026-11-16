@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** A long text split into blocks and flowed through the free space of a page and onto new pages (see `docs/auto-placement.md`). */
+/** A long text split into blocks and flowed through the free space of a page and onto new pages (see `docs/plans/auto-placement.md`). */
 class TextFlowTest {
 
     private val flow = TextFlow()

@@ -22,7 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 
-/** Finding a text in the document open (see `docs/find-in-document.md`). */
+/** Finding a text in the document open (see `docs/plans/find-in-document.md`). */
 class DocumentFindTest {
 
     /**
