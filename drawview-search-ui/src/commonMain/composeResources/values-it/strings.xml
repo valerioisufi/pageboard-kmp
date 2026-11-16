@@ -16,6 +16,8 @@
     <string name="search_model_download">Scarica (%1$s)</string>
     <string name="search_model_cancel">Annulla</string>
     <string name="search_model_delete">Rimuovi</string>
+    <string name="search_model_delete_title">Rimuovere %1$s?</string>
+    <string name="search_model_delete_confirm">Per usarlo di nuovo dovrai scaricarlo ancora (%1$s).</string>
     <string name="search_model_use">Attivo</string>
     <string name="search_model_select">Usa</string>
     <string name="search_model_downloading">%1$s di %2$s (%3$d%)</string>

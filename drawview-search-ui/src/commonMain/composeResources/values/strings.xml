@@ -16,6 +16,8 @@
     <string name="search_model_download">Download (%1$s)</string>
     <string name="search_model_cancel">Cancel</string>
     <string name="search_model_delete">Remove</string>
+    <string name="search_model_delete_title">Remove %1$s?</string>
+    <string name="search_model_delete_confirm">You will have to download it again (%1$s) to use it.</string>
     <string name="search_model_use">Active</string>
     <string name="search_model_select">Use</string>
     <string name="search_model_downloading">%1$s of %2$s (%3$d%)</string>
