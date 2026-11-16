@@ -58,3 +58,9 @@ internal interface LiteRtEngine {
 
 /** LiteRT-LM on this platform, `null` where it is not built or its native library does not load. */
 internal expect fun liteRtEngine(): LiteRtEngine?
+
+/** The room left on the disk beyond the size of a model before its weights are cached (256 MiB). */
+internal const val CACHE_MARGIN: Long = 256L * 1024 * 1024
+
+/** The cache directory that tells LiteRT-LM to cache no weights (it writes them beside the model otherwise). */
+internal const val NO_CACHE: String = ":nocache"

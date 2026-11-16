@@ -63,7 +63,7 @@ private object JvmLiteRtEngine : LiteRtEngine {
                             visionBackend = if (options.images) backend else null,
                             audioBackend = if (options.audio) backend else null,
                             maxNumTokens = options.maxTokens,
-                            cacheDir = cache(cacheDirectory),
+                            cacheDir = cache(cacheDirectory, model),
                             activationDataType = activations(backend)
                         )
                     ).also { it.initialize() }
@@ -75,7 +75,7 @@ private object JvmLiteRtEngine : LiteRtEngine {
     override suspend fun embedder(model: InstalledModel, options: EmbedderOptions, cacheDirectory: String?): Embedder =
         withContext(Dispatchers.IO) {
             val (engine, accelerator) = load(options.accelerator) { backend ->
-                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cache(cacheDirectory)))
+                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cache(cacheDirectory, model)))
                     .also { it.initialize() }
             }
             val dimensions = options.dimensions.takeIf { it > 0 } ?: model.spec.dimensions
@@ -96,7 +96,18 @@ private object JvmLiteRtEngine : LiteRtEngine {
     }
 
     /** [directory], created if missing: LiteRT-LM refuses a cache directory that does not exist. */
-    private fun cache(directory: String?): String? = directory?.takeIf { File(it).apply { mkdirs() }.isDirectory }
+    /**
+     * Where LiteRT-LM caches the weights of [model]: [directory], or beside the model without one;
+     * [NO_CACHE] when that disk lacks the room. On the CPU the cache is about the size of the model,
+     * and LiteRT-LM aborts the whole process when a write of it fails. Without a cache the model
+     * loads more slowly, and nothing else changes.
+     */
+    private fun cache(directory: String?, model: InstalledModel): String? {
+        val file = File(model.path)
+        val disk = directory?.let { File(it).apply { mkdirs() } }?.takeIf { it.isDirectory } ?: file.absoluteFile.parentFile
+        if (disk != null && disk.usableSpace < file.length() + CACHE_MARGIN) return NO_CACHE
+        return directory?.takeIf { File(it).isDirectory }
+    }
 
     /** Loads on the GPU when asked and when it can be used, on the processor otherwise. */
     private fun <T : AutoCloseable> load(accelerator: Accelerator, open: (Backend) -> T): Pair<T, Accelerator> {

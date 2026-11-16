@@ -52,7 +52,7 @@ private object AndroidLiteRtEngine : LiteRtEngine {
             withContext(Dispatchers.IO) {
                 val imageTokens = imageTokens(model, options)
                 ExperimentalFlags.visualTokenBudget = imageTokens.takeIf { it > 0 }
-                val (engine, accelerator) = load(options.accelerator) { backend ->
+                val open = { backend: Backend ->
                     Engine(
                         EngineConfig(
                             modelPath = model.path,
@@ -60,19 +60,21 @@ private object AndroidLiteRtEngine : LiteRtEngine {
                             visionBackend = if (options.images) backend else null,
                             audioBackend = if (options.audio) backend else null,
                             maxNumTokens = options.maxTokens,
-                            cacheDir = cache(cacheDirectory),
+                            cacheDir = cache(cacheDirectory, model),
                             activationDataType = activations(backend)
                         )
                     ).also { it.initialize() }
                 }
-                AndroidLiteRtGenerator(model, engine, accelerator, imageTokens)
+                val (engine, accelerator) = load(options.accelerator, open)
+                val cpu = if (accelerator == Accelerator.GPU) ({ open(Backend.CPU()) }) else null
+                AndroidLiteRtGenerator(model, engine, accelerator, imageTokens, cpu)
             }
         }
 
     override suspend fun embedder(model: InstalledModel, options: EmbedderOptions, cacheDirectory: String?): Embedder =
         withContext(Dispatchers.IO) {
             val (engine, accelerator) = load(options.accelerator) { backend ->
-                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cache(cacheDirectory)))
+                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cache(cacheDirectory, model)))
                     .also { it.initialize() }
             }
             val dimensions = options.dimensions.takeIf { it > 0 } ?: model.spec.dimensions
@@ -86,7 +88,18 @@ private object AndroidLiteRtEngine : LiteRtEngine {
         return if (most > 0 && options.imageTokens > most) most else options.imageTokens
     }
 
-    private fun cache(directory: String?): String? = directory?.takeIf { File(it).apply { mkdirs() }.isDirectory }
+    /**
+     * Where LiteRT-LM caches the weights of [model]: [directory], or beside the model without one;
+     * [NO_CACHE] when that disk lacks the room. On the CPU the cache is about the size of the model,
+     * and LiteRT-LM aborts the whole process when a write of it fails. Without a cache the model
+     * loads more slowly, and nothing else changes.
+     */
+    private fun cache(directory: String?, model: InstalledModel): String? {
+        val file = File(model.path)
+        val disk = directory?.let { File(it).apply { mkdirs() } }?.takeIf { it.isDirectory } ?: file.absoluteFile.parentFile
+        if (disk != null && disk.usableSpace < file.length() + CACHE_MARGIN) return NO_CACHE
+        return directory?.takeIf { File(it).isDirectory }
+    }
 
     private fun <T : AutoCloseable> load(accelerator: Accelerator, open: (Backend) -> T): Pair<T, Accelerator> {
         if (accelerator == Accelerator.GPU) {
@@ -106,48 +119,75 @@ private object AndroidLiteRtEngine : LiteRtEngine {
 
 private val processFlags = Mutex()
 
+/**
+ * A model of LiteRT-LM answering on [accelerator]. On the GPU, LiteRT-LM loads a model without
+ * OpenCL (the Pixels, the emulators) and fails only when the first conversation starts: the first
+ * answer that fails before any piece of text then opens the model again on the CPU ([cpu]) and is
+ * asked there, and so are the next ones.
+ */
 private class AndroidLiteRtGenerator(
     override val model: InstalledModel,
-    private val engine: Engine,
-    override val accelerator: Accelerator,
-    private val imageTokens: Int
+    private var engine: Engine,
+    accelerator: Accelerator,
+    private val imageTokens: Int,
+    private var cpu: (() -> Engine)?
 ) : Generator {
-    @OptIn(ExperimentalApi::class)
+    override var accelerator: Accelerator = accelerator
+        private set
+
     override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String = processFlags.withLock {
         withContext(Dispatchers.IO) {
-            ExperimentalFlags.enableConversationConstrainedDecoding = request.jsonSchema != null
-            ExperimentalFlags.visualTokenBudget = imageTokens.takeIf { it > 0 }
-            val config = ConversationConfig(
-                systemInstruction = Contents.of(request.system),
-                samplerConfig = SamplerConfig(topK = TOP_K, topP = TOP_P, temperature = request.temperature.toDouble(), seed = 0),
-                maxOutputToken = request.maxOutputTokens,
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-                enableResponseFormat = request.jsonSchema != null
-            )
-            val conversation = try {
-                engine.createConversation(config)
+            var pieces = 0
+            try {
+                answer(request) { onProgress(++pieces) }
+            } catch (e: ModelException) {
+                val fallback = cpu?.takeIf { pieces == 0 } ?: throw e
+                cpu = null
+                engine.close()
+                engine = try {
+                    fallback()
+                } catch (failure: Exception) {
+                    throw ModelException("The model cannot be loaded: ${failure.message}", failure)
+                }
+                accelerator = Accelerator.CPU
+                answer(request) { onProgress(++pieces) }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalApi::class)
+    private suspend fun answer(request: GenerationRequest, onPiece: () -> Unit): String {
+        ExperimentalFlags.enableConversationConstrainedDecoding = request.jsonSchema != null
+        ExperimentalFlags.visualTokenBudget = imageTokens.takeIf { it > 0 }
+        val config = ConversationConfig(
+            systemInstruction = Contents.of(request.system),
+            samplerConfig = SamplerConfig(topK = TOP_K, topP = TOP_P, temperature = request.temperature.toDouble(), seed = 0),
+            maxOutputToken = request.maxOutputTokens,
+            thinkingConfig = ThinkingConfig(enableThinking = false),
+            enableResponseFormat = request.jsonSchema != null
+        )
+        val conversation = try {
+            engine.createConversation(config)
+        } catch (e: Exception) {
+            throw ModelException("${model.spec.name} cannot answer: ${e.message}", e)
+        }
+        return conversation.use {
+            val answer = StringBuilder()
+            try {
+                conversation.sendMessageAsync(
+                    Contents.of(request.parts.map { it.toContent() }),
+                    responseFormat = request.jsonSchema?.let { ResponseFormat.json(it) }
+                ).collect { message ->
+                    for (content in message.contents.contents) if (content is Content.Text) answer.append(content.text)
+                    onPiece()
+                }
+            } catch (e: CancellationException) {
+                conversation.cancelProcess()
+                throw e
             } catch (e: Exception) {
                 throw ModelException("${model.spec.name} cannot answer: ${e.message}", e)
             }
-            conversation.use {
-                val answer = StringBuilder()
-                var pieces = 0
-                try {
-                    conversation.sendMessageAsync(
-                        Contents.of(request.parts.map { it.toContent() }),
-                        responseFormat = request.jsonSchema?.let { ResponseFormat.json(it) }
-                    ).collect { message ->
-                        for (content in message.contents.contents) if (content is Content.Text) answer.append(content.text)
-                        onProgress(++pieces)
-                    }
-                } catch (e: CancellationException) {
-                    conversation.cancelProcess()
-                    throw e
-                } catch (e: Exception) {
-                    throw ModelException("${model.spec.name} cannot answer: ${e.message}", e)
-                }
-                answer.toString()
-            }
+            answer.toString()
         }
     }
 

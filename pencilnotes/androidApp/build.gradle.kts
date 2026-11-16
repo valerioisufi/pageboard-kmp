@@ -37,6 +37,11 @@ android {
         // The original Android app ended at versionCode 3 / versionName 2.1
         versionCode = 4
         versionName = "3.0"
+        // The ABIs the native engines are built for: the libraries of androidx bring x86 too,
+        // which would make an x86 split without the engines
+        ndk {
+            abiFilters += ANDROID_ABIS
+        }
     }
     packaging {
         resources {

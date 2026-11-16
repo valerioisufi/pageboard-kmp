@@ -98,7 +98,7 @@ PDF, so that a missing rule fails before the application does.
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | Done |
 | 4 | `docs/privacy.md` (English and Italian), `docs/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | Done |
-| 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | To do |
+| 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | Done on emulators (the tablet left: see the results) |
 
 The upload to the Play Console (internal testing, then production) is the user's.
 
@@ -208,6 +208,52 @@ The upload to the Play Console (internal testing, then production) is the user's
 * The policy is published at <https://valerioisufi.github.io/pencilnotes/privacy/> (the repository
   `valerioisufi/valerioisufi.github.io`, public, GitHub Pages; a copy of `docs/privacy.md` to keep
   the same; `DrawView-KMP` stays private until `docs/open-source.md`).
+
+### Phase 5 results
+
+* `bundleRelease` gives `pencilnotes-android-release.aab`, signed with the upload key of the
+  machine. The download per ABI (`bundletool get-size total --dimensions=ABI`): arm64-v8a 26.0 MB,
+  armeabi-v7a 14.9 MB, x86_64 27.3 MB.
+* Found and fixed while measuring: the libraries of androidx (graphics, sqlite) bring x86 too, which
+  made an x86 split without the engines of DrawView (a crash on an x86 device). The application keeps
+  `ANDROID_ABIS` only (`ndk.abiFilters`). LiteRT-LM has no armeabi-v7a library: there the local
+  models are not offered (`LiteRtRuntime.isAvailable`), and nothing else changes.
+* Installed from the bundle (the splits `bundletool` picks for the device) on two emulators made for
+  it: `PencilNotes_Release_Test` (Pixel Tablet, API 36.1, x86_64, 16 KB pages) and
+  `PencilNotes_API29_Test` (the same tablet on Android 10, the image
+  `system-images;android-29;google_apis;x86_64` installed for it). On both: the library, a note with
+  pen, eraser and a text with a formula (MicroTeX), a PDF imported with its text marked (PDFium),
+  the export as PDF (a valid `%PDF-1.7` file in Downloads) and as an archive, imported back with its
+  marks and strokes; EmbeddingGemma 2 downloaded, the index embedded, a search by meaning found with
+  no word in common; Gemma 4 E2B downloaded and "Ask your notes" answered with its citation.
+* Found and fixed on the way, each a crash or a failure of the release:
+  * LiteRT-LM (`litertlm-android` 0.18.0) ships no keep rules while its native code finds its
+    classes by name: the first embedding aborted the application. `drawview-ml-litert` keeps them
+    (`consumer-rules.pro`).
+  * On the GPU, LiteRT-LM loads a model without OpenCL (the emulators, the Pixels) and fails only
+    at the first conversation, past the fallback of `load`: "Can not find OpenCL library". The
+    generator of Android opens the model again on the CPU when its first answer fails before any
+    piece of text, and keeps the CPU.
+  * On the CPU, LiteRT-LM writes a cache of the weights about the size of the model (beside the
+    model when no directory is given) and aborts the whole process when the disk fills up while
+    writing it. With less room than the model and 256 MiB, the engines of Android and of the
+    desktop give `:nocache` (`NO_CACHE`): slower loads, no crash. Checked with 1.1 GB free: the
+    answer came, the disk did not fill.
+* Not tested here, left to the tablet and to internal testing: the update over 2.1 installed from
+  Google Play (the emulators hold builds of 2.1 signed with another key, so an update by `adb` is
+  refused, as it should be), a lecture recorded with the screen off (the microphone is a permission
+  to ask), the sync on the local network and over the internet, the speed of the models on a real
+  ARM device.
+* Seen, not fixed (small, for a plan of their own):
+  * The archive is saved as `slides.drawview.zip` (the picker of Android adds the extension of the
+    type `application/zip`), so the import names its folder "slides.drawview"; and the dialog says
+    "1 notes imported".
+  * The least score of a search by meaning (0.68) was measured at 512 dimensions, while the
+    application asks EmbeddingGemma 2 for all its 768 (`EmbedderOptions.dimensions = 0`): a
+    paraphrase scored 0.677 and was left out.
+  * A model removed is removed at once, with no confirmation (2.6 GB to download again). After a
+    download that failed with the disk full, the model showed as not installed while its space was
+    still taken: to check whether a failed download leaves its part on the disk.
 
 ## Left for later
 
