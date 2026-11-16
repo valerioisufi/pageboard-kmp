@@ -202,9 +202,11 @@ public class ArchiveImporter(private val documents: OpenDocuments) {
 
         var pages = 0
         for (note in read) {
-            val document = note.snapshot.copy(id = newElementId(), title = note.name).toDocument(store.strokeModeller)
+            // New identifiers for the pages, elements and resources too: the note it came from may be here
+            val (snapshot, files) = ArchiveIdentifiers.renew(note.snapshot, note.files)
+            val document = snapshot.copy(id = newElementId(), title = note.name).toDocument(store.strokeModeller)
             for (resource in document.resources) {
-                val content = note.files[resource.id] ?: continue
+                val content = files[resource.id] ?: continue
                 val extension = if (resource.type == DrawResource.ResourceType.PDF) "pdf" else "img"
                 val path = newResourcePath("archive", extension)
                 if (PlatformFiles.writeBytes(path, content)) resource.path = path

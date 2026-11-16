@@ -67,6 +67,7 @@ Backup.drawview (ZIP, entries stored)
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `ArchiveFormat`, `ZipReader`, `ArchiveExporter`, `ArchiveImporter`, `ArchiveException`; `ExportFormat.ARCHIVE` and its export; the sheet (four formats on two rows, no pages or paper for an archive); `PickerType.ARCHIVE` on Android, the desktop and iOS; `ImportArchiveDialog`, `DocumentExportUi.importAction` in PencilNotes; the strings; `ArchiveTest`; ABI recorded on purpose | Done |
+| 2 | An import gives new identifiers to the pages, the elements and the resources of every note, and to every reference to them (`ArchiveIdentifiers`); `ArchiveTest` imports an archive into the library it came from | Done |
 
 ### Phase 1 results
 
@@ -80,6 +81,42 @@ Backup.drawview (ZIP, entries stored)
 * The screenshots of the sheet change (four formats on two rows): `export-sheet-light` is to be
   recorded again on the Mac.
 * The klib dumps of `drawview-export`, `-export-ui` and `-ui` written by hand on Windows.
+
+### Phase 2: the identifiers of an import
+
+Found on 2026-11-16 (`docs/android-release.md`, phase 5): an archive of a note imported into the
+library that still holds the note took the pages of the original. `ArchiveImporter` gave the note
+a new identifier but kept those of its pages, elements and resources, while `drawview-store-room`
+keys its pages and elements by their identifier alone: the import wrote them again under the copy,
+the original was left with none, and the editor added a blank page to it. `ArchiveTest` imported
+into another library only, where identifiers never meet.
+
+* **`ArchiveIdentifiers`** (internal, `drawview-export`; Pure Fabrication): the identifiers of a
+  snapshot (its pages and removed pages, their elements and removed elements, its resources) each
+  given a new one, replaced everywhere in the JSON of the snapshot (the values and the keys: the
+  references of an element to a resource, to the next text, the versions keyed by element), so
+  that a reference added later to the model is renewed too. The files of the archive follow their
+  resources.
+* **`ArchiveImporter`** (Controller) renews the identifiers of every note before it inserts it.
+* **Test**: the archive of a library imported into the same library; the notes there keep their
+  pages, elements and resource; the copies share no identifier with them; their content and the
+  bytes of their files as they were.
+* A note whose pages were taken this way is not repaired: its pages are in the copy imported
+  (the folder of the import), where the user finds them.
+
+### Phase 2 results
+
+* `ArchiveIdentifiers.renew` in `ArchiveImporter.import`, before every note is inserted; internal,
+  so the ABI is the same.
+* `ArchiveTest`: `anArchiveImportedIntoTheLibraryItCameFromLeavesTheNotesThereAsTheyWere` (it fails
+  without the change: the copy had the identifiers of the original) and
+  `theIdentifiersOfASnapshotAreRenewedWithEveryReferenceToThem` (no old identifier left anywhere in
+  the JSON, the files following their resources). The tests of `drawview-export` and
+  `-export-ui` pass, but `ExportScopeTest.nothingToExportAndUnwritableFilesAreTold`, which fails on
+  this Windows host before the change too.
+* Not run in the application on a device here: the store of the tests is `KeyValueDocumentStore`,
+  where the pages live inside their document; the identifiers shared, which made the loss in
+  `drawview-store-room`, are what the test checks.
 
 ## Decisions
 

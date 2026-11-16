@@ -9,6 +9,8 @@ import io.github.valerioisufi.drawview.platform.newResourcePath
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
+import io.github.valerioisufi.drawview.model.change.snapshot
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -130,5 +132,53 @@ class ArchiveTest {
         assertEquals("slides", ArchiveFormat.folderNameOf("slides.zip"))
         assertEquals("Analysis 1.2", ArchiveFormat.folderNameOf("Analysis 1.2.drawview"))
         assertEquals("drawview", ArchiveFormat.folderNameOf(".drawview"))
+    }
+
+    @Test
+    fun anArchiveImportedIntoTheLibraryItCameFromLeavesTheNotesThereAsTheyWere() = runBlocking {
+        val (store, documents) = filled()
+        val limitsId = store.documents.first().single { it.name == "Limits" }.id
+        val before = checkNotNull(store.loadDocument(limitsId))
+        val pageIds = before.pages.map { it.id }
+        val elementIds = before.pages.flatMap { page -> page.texts.map { it.id } + page.images.map { it.id } }
+        val resourceIds = before.resources.map { it.id }
+
+        val items = DocumentExport(documents).folderDocuments(null, includeSubfolders = true)
+        val archive = ArchiveExporter(documents).write(items)
+        ArchiveImporter(documents).import(archive.bytes, "Backup")
+
+        // The note there keeps its pages, its elements and its resource
+        val after = checkNotNull(store.loadDocument(limitsId))
+        assertEquals(pageIds, after.pages.map { it.id })
+        assertEquals(elementIds, after.pages.flatMap { page -> page.texts.map { it.id } + page.images.map { it.id } })
+        assertEquals(resourceIds, after.resources.map { it.id })
+        assertEquals("# Limiti\n\$x \\to 0\$", after.pages.first().texts.single().text)
+
+        // The copy shares no identifier with it, and its image points to its own resource
+        val copyId = store.documents.first().single { it.name == "Limits" && it.id != limitsId }.id
+        val copy = checkNotNull(store.loadDocument(copyId))
+        val copyIds = copy.pages.map { it.id } + copy.pages.flatMap { page -> page.texts.map { it.id } + page.images.map { it.id } } + copy.resources.map { it.id }
+        assertTrue(copyIds.none { it in pageIds || it in elementIds || it in resourceIds }, "new identifiers: $copyIds")
+        val picture = copy.pages.first().images.single()
+        assertEquals(copy.resources.single().id, picture.resourceId)
+        assertContentEquals(byteArrayOf(1, 2, 3, 4), PlatformFiles.readBytes(copy.resources.single().path))
+        assertEquals("# Limiti\n\$x \\to 0\$", copy.pages.first().texts.single().text)
+    }
+
+    @Test
+    fun theIdentifiersOfASnapshotAreRenewedWithEveryReferenceToThem() = runBlocking {
+        val (store, _) = filled()
+        val limitsId = store.documents.first().single { it.name == "Limits" }.id
+        val snapshot = checkNotNull(store.loadDocument(limitsId)).snapshot()
+        val files = snapshot.resources.associate { it.id to byteArrayOf(9) }
+
+        val (renewed, renewedFiles) = ArchiveIdentifiers.renew(snapshot, files)
+        val old = ArchiveIdentifiers.identifiersOf(snapshot)
+        val new = ArchiveIdentifiers.identifiersOf(renewed)
+        assertEquals(old.size, new.size)
+        assertTrue(new.none { it in old })
+        val json = ArchiveFormat.json.encodeToString(DocumentSnapshot.serializer(), renewed)
+        assertTrue(old.none { it in json }, "no old identifier left in the snapshot")
+        assertEquals(renewed.resources.map { it.id }.toSet(), renewedFiles.keys)
     }
 }
