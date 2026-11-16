@@ -67,7 +67,7 @@ minor version may break.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the user) | To do |
+| 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the user) | Done here (the branches on GitHub left to the user) |
 | 2 | CLAUDE.md without the devices and the infrastructure of the user; `docs/plans/` with the links updated | To do |
 | 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | To do |
 | 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | To do |
@@ -75,6 +75,21 @@ minor version may break.
 | 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the user's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
 
 Open Collective and `FUNDING.yml` come after phase 5, on their own.
+
+### Phase 1 results
+
+* Every commit of every branch (`git log -p --all`) searched for the keys of Google (`AIza`),
+  GitHub (`ghp_`, `github_pat_`), OpenAI and Anthropic (`sk-`), Slack, AWS, Hugging Face, private
+  keys (PEM, PGP) and signing passwords: none. The only matches are the code of
+  `drawview.android.signing` and the placeholders of its documentation (`signing.keyPassword=...`).
+  gitleaks was not run (a binary to download): the secret scanning of GitHub runs on the whole
+  history when the repository becomes public (phase 5).
+* No key store, `local.properties`, `Local.xcconfig`, `.env` or `google-services.json` was ever
+  committed.
+* No address of the relay or of a machine of the user: the addresses in the code are of the
+  documentation ranges (`192.0.2.1`, `relay.example.com`) and of the tests.
+* Left to the user: the four branches on GitHub (`feat/ci-time`, `feat/lecture-eval`,
+  `feat/local-models`, `feat/native-ci-desktop-build`), merged or deleted there.
 
 ## Decisions
 
