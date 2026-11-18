@@ -90,7 +90,7 @@ Variations).
    apart by a comma; `matrix`, `aligned`, `array` without delimiters. Revertible.
 5. An unknown command reads as the content of its arguments in braces (a command of formatting
    or of a package), and by its name when it has none (a word or symbol of the formula).
-   `Nderbrace`/`overbrace` read their content, their label after it in parentheses. Revertible.
+   `\underbrace`/`\overbrace` read their content, their label after it in parentheses. Revertible.
 
 ## Left for later
 
