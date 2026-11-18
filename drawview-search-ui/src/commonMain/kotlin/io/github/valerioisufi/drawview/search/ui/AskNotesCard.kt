@@ -271,35 +271,35 @@ private fun AnswerBody(
         modifier = Modifier.fillMaxWidth()
     )
 
-    val displayedCitations = answer.citations.ifEmpty {
-        answer.passages.mapIndexed { idx, hit -> CitedPassage(number = idx + 1, hit = hit) }
-    }
-
-    if (displayedCitations.isNotEmpty()) {
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+    // A chip for each passage the answer cites, and for no other.
+    val citations = answer.citations
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (citations.isNotEmpty()) Arrangement.SpaceBetween else Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (citations.isNotEmpty()) {
                 Text(
                     text = stringResource(Res.string.search_ask_sources_title),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    text = stringResource(Res.string.search_ask_answered_by, answer.modelName),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
+            Text(
+                text = stringResource(Res.string.search_ask_answered_by, answer.modelName),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (citations.isNotEmpty()) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                for (citation in displayedCitations) {
+                for (citation in citations) {
                     CitationChip(
                         citation = citation,
                         onClick = { onOpenCitation(citation) }
