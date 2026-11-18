@@ -1,0 +1,34 @@
+PencilNotes è un quaderno per chi studia scrivendo a mano. Importa le slide della lezione, scrivici sopra e tieni ogni corso in ordine, sul tablet, sul telefono e sul computer.
+
+SCRIVI SULLE SLIDE
+• Importa un PDF e annotalo con penna, evidenziatore e forme.
+• Evidenzia, sottolinea o barra il testo delle slide, e copialo.
+• Pagine a righe, a quadretti, a puntini o bianche, aggiunte dove ti servono.
+• La penna digitale viene riconosciuta da sola: la penna scrive, le dita spostano e ingrandiscono.
+
+FORMULE E TESTO
+• Riquadri di testo in Markdown: titoli, elenchi, checklist, tabelle e codice.
+• Formule LaTeX, mostrate mentre scrivi: frazioni, limiti, matrici.
+• Immagini dai file e dalla galleria.
+
+TROVA TUTTO
+• Cerca per parole negli appunti e nel testo dei PDF.
+• Cerca per significato, con un piccolo modello che funziona sul dispositivo (un download facoltativo di 165 MB): trova «l'area sotto una curva» anche se hai scritto «integrale».
+• Chiedi ai tuoi appunti: una risposta scritta dalle tue pagine, con la pagina da cui viene. Anche questa funziona sul dispositivo (un download facoltativo di 2,6 GB, sui dispositivi a 64 bit).
+
+I TUOI APPUNTI SONO TUOI
+• Niente account, niente pubblicità, nessun tracciamento.
+• Tutto resta sul tuo dispositivo. Non viene inviato nulla se non lo scegli tu: la sincronizzazione con gli altri tuoi dispositivi è cifrata da un capo all'altro, e le funzioni online (Gemini) restano spente finché non aggiungi una tua chiave.
+• Esporta una nota in PDF o come immagine, o l'intera libreria in un archivio da importare di nuovo.
+
+LEZIONI
+• Registra la lezione mentre prendi appunti, anche a schermo spento, e riascoltala da qualsiasi momento.
+• Con una tua chiave Gemini, o un modello sul tuo computer, ricevi i punti spiegati a lezione che mancano nei tuoi appunti.
+
+SINCRONIZZA E CONDIVIDI
+• Tieni sincronizzati i tuoi dispositivi sulla stessa rete Wi-Fi o via internet: direttamente quando possono, altrimenti attraverso un relay che non può leggere i tuoi appunti.
+• Condividi un quaderno con un compagno di corso tramite un link.
+
+Open source: PencilNotes è costruita su DrawView, un insieme di librerie Kotlin Multiplatform rilasciate con licenza MIT. Il codice è su GitHub: https://github.com/valerioisufi/DrawView-KMP
+
+Informativa sulla privacy: https://valerioisufi.github.io/pencilnotes/privacy

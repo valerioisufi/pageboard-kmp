@@ -7,11 +7,13 @@ sending it.
 
 ## Store listing
 
-* **Name**: PencilNotes. **Short description** (80 characters): "Handwritten notes on your slides,
-  with a lecture assistant. No account." (to adjust).
-* **Category**: Productivity (or Education).
-* **Screenshots**: tablet (7" and 10") and phone, from the release on a device: the library, a note
-  with ink over a PDF, the lecture panel, the export sheet.
+* **The listing is in the repository**, in the layout of fastlane (which F-Droid reads too):
+  `pencilnotes/androidApp/fastlane/metadata/android/<en-US|it-IT>/` holds `title.txt`,
+  `short_description.txt`, `full_description.txt` and `images/` (`icon.png` 512 px,
+  `featureGraphic.png` 1024 x 500, `phoneScreenshots`, `sevenInchScreenshots`,
+  `tenInchScreenshots`). Copy them into the Play Console, one language at a time. How they were
+  made: `docs/plans/store-listing.md`.
+* **Category**: Education (students and lectures); Productivity is the other fit.
 * **Countries**: today one country of 178; at the release, at least Italy, the European Union, the
   United Kingdom and the United States.
 

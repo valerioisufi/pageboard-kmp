@@ -1,0 +1,34 @@
+PencilNotes is a notebook for students who write with a pen. Import the slides of your lecture, write on them, and keep every course in order — on your tablet, your phone and your computer.
+
+WRITE ON YOUR SLIDES
+• Import a PDF and annotate it with pen, highlighter and shapes.
+• Highlight, underline or strike out the text of the slides, and copy it.
+• Lined, grid, dotted or blank pages, added wherever you need them.
+• A stylus is recognized on its own: the pen writes, your fingers move and zoom.
+
+FORMULAS AND TEXT
+• Text boxes with Markdown: headings, lists, checklists, tables and code.
+• LaTeX formulas, rendered as you type: fractions, limits, matrices.
+• Images from your files and gallery.
+
+FIND ANYTHING
+• Search by words in your notes and in the text of your PDFs.
+• Search by meaning, with a small model that runs on your device (an optional download of 165 MB): find "the area under a curve" even when you wrote "integral".
+• Ask your notes: an answer written from your own pages, with the page it comes from. It runs on your device too (an optional download of 2.6 GB, on 64-bit devices).
+
+YOUR NOTES ARE YOURS
+• No account, no ads, no tracking.
+• Everything stays on your device. Nothing is sent anywhere unless you choose to: sync with your other devices is end-to-end encrypted, and the online features (Gemini) are off until you add your own key.
+• Export a note as PDF or image, or your whole library as an archive you can import again.
+
+LECTURES
+• Record a lecture while you take notes, even with the screen off, and listen again from any moment.
+• With your own Gemini key, or a model on your computer, get the points the lecturer made that are missing from your notes.
+
+SYNC AND SHARE
+• Keep your devices in sync on the same Wi-Fi or over the internet: directly when they can, otherwise through a relay that cannot read your notes.
+• Share a notebook with a classmate with a link.
+
+Open source: PencilNotes is built on DrawView, a set of Kotlin Multiplatform libraries released under the MIT license. The code is on GitHub: https://github.com/valerioisufi/DrawView-KMP
+
+Privacy policy: https://valerioisufi.github.io/pencilnotes/privacy

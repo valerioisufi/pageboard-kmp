@@ -4,8 +4,8 @@
 desktop (JVM), and **PencilNotes**, the note-taking application built on them.
 
 <p align="center">
-  <img src="docs/images/library.png" alt="The library of PencilNotes on the desktop" width="62%">
-  <img src="docs/images/lecture-assistant.png" alt="The lecture assistant" width="22%">
+  <img src="docs/images/annotate.png" alt="Slides of a lecture annotated by hand in PencilNotes" width="74%">
+  <img src="docs/images/ask.png" alt="An answer from the notes, written on the device with its source" width="22%">
 </p>
 
 * A canvas editor for the stylus: Google Ink strokes, text boxes with Markdown, code and LaTeX,
@@ -20,6 +20,8 @@ desktop (JVM), and **PencilNotes**, the note-taking application built on them.
 
 PencilNotes is a note app for students who write with a pen: the slides of a lecture imported as
 PDFs, notes in ink and formulas, everything kept on the device.
+
+<p align="center"><img src="docs/images/library.png" alt="The library of PencilNotes on a tablet" width="80%"></p>
 
 * **Android**: [Google Play](https://play.google.com/store/apps/details?id=com.studiomath.pencilnotes).
 * **Desktop and iOS**: built from the sources for now (see [Building](#building)).
