@@ -52,6 +52,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | This plan | done |
 | 2 | Parsing of the citation forms, math skipped, unit tests in `drawview-search` | done |
 | 3 | `AskNotesCard`: chips only for the cited passages | done |
+| 4 | Review: passages searched, formulas by `RichTextParser`, intervals | done |
 
 ## Decisions
 
@@ -64,3 +65,19 @@ The responsibilities are assigned following the GRASP principles.
 
 - Other forms some models use, such as `[Passage 2]` or `【1】`: not seen yet.
 - Making the citations in the text clickable, next to the chips.
+
+## Review (phase 4, done)
+
+- **No citation, still a source.** An answer that cites nothing lists the passages it was given
+  under "Passages searched" ("Passaggi consultati"), outlined chips quieter than the filled
+  chips of real citations (`AnswerSources`, Information Expert, unit tested). An answer that
+  cites lists only the cited passages.
+- **Formulas as the page finds them.** The brackets inside formulas and code are skipped with the
+  spans of `RichTextParser` (kinds FORMULA, CODE, CODE_BLOCK), which `drawview-search` already
+  uses through `drawview-store` → `drawview-model`; `$5 [1] and $10 [2]` keeps both citations.
+- **Intervals in prose** (decision, revertible): a bracket is a citation only when every number
+  in it is a passage given (so `[0, 1]`, `[2, 9]` with three passages or `[3-1000000]` cite
+  nothing, replacing the earlier "keep the others" and "cut the range"), and not right after the
+  word interval / intervals / intervallo / intervalli. Prepositions (on, in, su, tra) are not
+  used: "based on [1, 2]" is a citation. Known limit: "on [1, 2]" with at least two passages is
+  still read as two citations.

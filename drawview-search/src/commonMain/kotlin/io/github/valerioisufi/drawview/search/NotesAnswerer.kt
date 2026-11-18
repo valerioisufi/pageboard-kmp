@@ -9,6 +9,8 @@ import io.github.valerioisufi.drawview.ml.LoadedModels
 import io.github.valerioisufi.drawview.ml.ModelCatalog
 import io.github.valerioisufi.drawview.ml.ModelException
 import io.github.valerioisufi.drawview.ml.ModelSpec
+import io.github.valerioisufi.drawview.model.text.RichTextParser
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 
 /**
  * A passage from the student's notes cited by a [NotesAnswer].
@@ -181,8 +183,11 @@ public class NotesAnswerer(
         private val CITATION_REGEX =
             Regex("""\[\s*(\d{1,9}(?:\s*[-–]\s*\d{1,9})?(?:\s*[,;]\s*\d{1,9}(?:\s*[-–]\s*\d{1,9})?)*)\s*]""")
 
-        /** Display math, inline math and inline code, whose brackets are not citations. */
-        private val NON_CITATION_SPAN_REGEX = Regex("""\$\$[\s\S]*?\$\$|\$[^$\n]+\$|`[^`\n]*`""")
+        /** The words after which a bracket is an interval of numbers, not a list of citations. */
+        private val INTERVAL_WORD_REGEX = Regex("""(?i)\b(interval|intervals|intervallo|intervalli)\s*$""")
+
+        /** The spans whose brackets are not citations: formulas and code, as the page finds them. */
+        private val NON_CITATION_KINDS = setOf(Kind.FORMULA, Kind.CODE, Kind.CODE_BLOCK)
 
         internal const val SYSTEM_PROMPT: String =
             "You answer questions for a student using ONLY the numbered passages from their notes provided below.\n" +
@@ -213,27 +218,52 @@ public class NotesAnswerer(
 
         /**
          * Reads the passages cited in [answerText]: brackets holding numbers or ranges separated
-         * by `,` or `;` (`[1]`, `[1, 2]`, `[1][2]`, `[1-3]`), outside math and inline code.
-         * Numbers beyond [passages] are ignored; each passage is listed once, in the order of its
+         * by `,` or `;` (`[1]`, `[1, 2]`, `[1][2]`, `[1-3]`), outside formulas and code (found by
+         * [RichTextParser], as on the page). A bracket is a citation only when every number in it
+         * is a passage given (so neither `[0, 1]` nor `[2, 9]` with three passages is one) and it
+         * does not follow the word "interval"; each passage is listed once, in the order of its
          * first citation.
          */
         internal fun extractCitations(answerText: String, passages: List<SearchHit>): List<CitedPassage> {
             if (answerText.isBlank() || passages.isEmpty()) return emptyList()
-            val text = NON_CITATION_SPAN_REGEX.replace(answerText) { " ".repeat(it.value.length) }
+            val text = withoutFormulasAndCode(answerText)
             val count = passages.size
             val seen = LinkedHashSet<Int>()
             for (match in CITATION_REGEX.findAll(text)) {
-                for (item in match.groupValues[1].split(',', ';')) {
-                    val bounds = item.split('-', '–').map { it.trim().toIntOrNull() ?: 0 }
-                    val first = bounds.first()
-                    val last = bounds.last()
-                    if (first < 1 || last < first || first > count) continue
-                    for (number in first..minOf(last, count)) {
-                        seen.add(number)
-                    }
-                }
+                val before = text.substring(maxOf(0, match.range.first - 24), match.range.first)
+                if (INTERVAL_WORD_REGEX.containsMatchIn(before)) continue
+                seen += citedNumbers(match.groupValues[1], count) ?: continue
             }
             return seen.map { number -> CitedPassage(number = number, hit = passages[number - 1]) }
+        }
+
+        /**
+         * The numbers of the list [content] (`1, 2-3`) in their order, or `null` when one of them
+         * is not in `1..count` or a range is reversed.
+         */
+        private fun citedNumbers(content: String, count: Int): List<Int>? {
+            val numbers = ArrayList<Int>()
+            for (item in content.split(',', ';')) {
+                val bounds = item.split('-', '–').map { it.trim().toIntOrNull() ?: return null }
+                val first = bounds.first()
+                val last = bounds.last()
+                if (first < 1 || last < first || last > count) return null
+                for (number in first..last) numbers += number
+            }
+            return numbers
+        }
+
+        /** [text] with its formulas and code blanked out, every other character in its place. */
+        private fun withoutFormulasAndCode(text: String): String {
+            val spans = RichTextParser.parse(text).filter { it.kind in NON_CITATION_KINDS }
+            if (spans.isEmpty()) return text
+            val chars = text.toCharArray()
+            for (span in spans) {
+                for (i in span.start until span.end) {
+                    if (chars[i] != '\n') chars[i] = ' '
+                }
+            }
+            return chars.concatToString()
         }
 
         private fun formatPassageLocation(anchor: SearchAnchor): String = when (anchor) {

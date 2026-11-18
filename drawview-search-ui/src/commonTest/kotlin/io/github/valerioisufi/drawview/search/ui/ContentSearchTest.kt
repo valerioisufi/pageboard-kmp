@@ -298,3 +298,38 @@ class ContentSearchTest {
         }
     }
 }
+
+class AnswerSourcesTest {
+    private val hits = (1..3).map { n ->
+        io.github.valerioisufi.drawview.search.SearchHit(
+            anchor = io.github.valerioisufi.drawview.search.SearchAnchor.Page("doc", "p-$n", pageNumber = n),
+            kind = io.github.valerioisufi.drawview.search.SearchChunkKind.TEXT,
+            title = "Notes",
+            text = "Passage $n",
+            snippet = "Passage $n",
+            score = 1.0
+        )
+    }
+
+    private fun answer(citations: List<Int>) = io.github.valerioisufi.drawview.search.NotesAnswer(
+        question = "q",
+        text = "a",
+        citations = citations.map { io.github.valerioisufi.drawview.search.CitedPassage(it, hits[it - 1]) },
+        passages = hits,
+        modelName = "m"
+    )
+
+    @Test
+    fun anAnswerThatCitesListsOnlyTheCitedPassages() {
+        val sources = AnswerSources.of(answer(listOf(3, 1)))
+        kotlin.test.assertTrue(sources.cited)
+        kotlin.test.assertEquals(listOf(3, 1), sources.passages.map { it.number })
+    }
+
+    @Test
+    fun anAnswerThatCitesNothingListsThePassagesSearched() {
+        val sources = AnswerSources.of(answer(emptyList()))
+        kotlin.test.assertFalse(sources.cited)
+        kotlin.test.assertEquals(listOf(1, 2, 3), sources.passages.map { it.number })
+    }
+}

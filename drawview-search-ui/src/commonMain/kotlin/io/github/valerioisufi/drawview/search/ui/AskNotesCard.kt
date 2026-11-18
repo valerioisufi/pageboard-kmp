@@ -46,6 +46,7 @@ import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_sources_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_thinking
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_scope
+import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_searched_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_ask_title
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_indexing_status
 import io.github.valerioisufi.drawview.search.ui.generated.resources.search_searching
@@ -271,48 +272,67 @@ private fun AnswerBody(
         modifier = Modifier.fillMaxWidth()
     )
 
-    // A chip for each passage the answer cites, and for no other.
-    val citations = answer.citations
+    val sources = AnswerSources.of(answer)
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if (citations.isNotEmpty()) Arrangement.SpaceBetween else Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (citations.isNotEmpty()) {
-                Text(
-                    text = stringResource(Res.string.search_ask_sources_title),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = stringResource(
+                    if (sources.cited) Res.string.search_ask_sources_title else Res.string.search_ask_searched_title
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (sources.cited) FontWeight.Medium else FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 text = stringResource(Res.string.search_ask_answered_by, answer.modelName),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        if (citations.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                for (citation in citations) {
-                    CitationChip(
-                        citation = citation,
-                        onClick = { onOpenCitation(citation) }
-                    )
-                }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            for (passage in sources.passages) {
+                CitationChip(
+                    citation = passage,
+                    cited = sources.cited,
+                    onClick = { onOpenCitation(passage) }
+                )
             }
         }
     }
 }
 
+/**
+ * The passages listed under an answer: the ones it cites ([cited]), or, when it cites none, the
+ * ones it was given, under a quieter title, so that an answer without citations still tells
+ * where it looked.
+ */
+internal class AnswerSources(val cited: Boolean, val passages: List<CitedPassage>) {
+    internal companion object {
+        /** The sources of [answer]. */
+        fun of(answer: NotesAnswer): AnswerSources = if (answer.citations.isNotEmpty()) {
+            AnswerSources(cited = true, passages = answer.citations)
+        } else {
+            AnswerSources(
+                cited = false,
+                passages = answer.passages.mapIndexed { index, hit -> CitedPassage(number = index + 1, hit = hit) }
+            )
+        }
+    }
+}
+
+/** A passage under an answer: filled when the answer [cited] it, outlined and quieter otherwise. */
 @Composable
 private fun CitationChip(
     citation: CitedPassage,
+    cited: Boolean,
     onClick: () -> Unit
 ) {
     val hit = citation.hit
@@ -328,9 +348,11 @@ private fun CitationChip(
             append(location)
         }
     }
+    val content = if (cited) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+        color = if (cited) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f) else androidx.compose.ui.graphics.Color.Transparent,
+        border = if (cited) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
@@ -344,14 +366,14 @@ private fun CitationChip(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = content,
                     modifier = Modifier.size(13.dp)
                 )
             }
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                color = content,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

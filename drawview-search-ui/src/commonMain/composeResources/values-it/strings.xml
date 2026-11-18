@@ -31,6 +31,7 @@
     <string name="search_ask_install_hint">Installa Gemma 4 in Modelli di ricerca per rispondere alle domande su questo dispositivo.</string>
     <string name="search_ask_no_passages">Nei tuoi appunti non ci sono passaggi che corrispondono a questa domanda.</string>
     <string name="search_ask_sources_title">Passaggi citati</string>
+    <string name="search_ask_searched_title">Passaggi consultati</string>
     <string name="search_ask_answered_by">Risposta di %1$s</string>
     <string name="search_ask_error">Impossibile generare una risposta: %1$s</string>
 </resources>

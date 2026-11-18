@@ -150,9 +150,9 @@ class NotesAnswererTest {
     }
 
     @Test
-    fun ignoresNumbersBeyondThePassages() {
-        assertEquals(listOf(2), cited("See [2, 9] and [0] and [7]."))
-        assertEquals(listOf(3, 4), cited("See [3-1000000]."))
+    fun ignoresBracketsWithANumberBeyondThePassages() {
+        assertEquals(listOf(1), cited("See [2, 9] and [0] and [7], but [1]."))
+        assertEquals(emptyList(), cited("See [3-1000000] and [0, 1]."))
         assertEquals(emptyList(), cited("See [5-8] and [3-1] and [99999999999]."))
     }
 
@@ -160,6 +160,18 @@ class NotesAnswererTest {
     fun ignoresBracketsInMathAndCode() {
         assertEquals(listOf(2), cited("On $[0, 1]$ the function is bounded [2]."))
         assertEquals(listOf(3), cited("$$\\int_{[1,2]} f$$ and `a[1]` [3]."))
+        assertEquals(listOf(4), cited("```\nval a = b[1]\n```\nAn array [4]."))
+    }
+
+    @Test
+    fun readsCitationsBetweenDollarsOfPrices() {
+        assertEquals(listOf(1, 2), cited("It costs \$5 [1] and \$10 [2]."))
+    }
+
+    @Test
+    fun ignoresBracketsAfterTheWordInterval() {
+        assertEquals(listOf(3), cited("On the interval [1, 2] the function is continuous [3]."))
+        assertEquals(listOf(3), cited("Nell'intervallo [1,2] la funzione è continua [3]."))
     }
 
     @Test

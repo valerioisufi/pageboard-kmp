@@ -31,6 +31,7 @@
     <string name="search_ask_install_hint">Install Gemma 4 in Search models to answer questions on this device.</string>
     <string name="search_ask_no_passages">No matching passages were found in your notes for this question.</string>
     <string name="search_ask_sources_title">Cited passages</string>
+    <string name="search_ask_searched_title">Passages searched</string>
     <string name="search_ask_answered_by">Answered by %1$s</string>
     <string name="search_ask_error">Could not generate an answer: %1$s</string>
 </resources>
