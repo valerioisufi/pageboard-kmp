@@ -33,7 +33,7 @@ Variations).
 ## Requirements
 
 1. A snippet of a text (`SearchChunkKind.TEXT`) or of the notes of a lecture
-   (`LECTURE_NOTES`) shows its formulas as readable math on one line: `cos x ≤ sin x/x ≤ 1`, no
+   (`LECTURE_NOTES`) shows its formulas as readable math on one line: `cos x ≤ (sin x)/x ≤ 1`, no
    `$`, no `\frac`, no `\le`.
 2. The window keeps following the match: the word of the query found stays in the snippet.
 3. One line, ellipsized, at the cost of a string conversion: nothing waits for the formula engine,

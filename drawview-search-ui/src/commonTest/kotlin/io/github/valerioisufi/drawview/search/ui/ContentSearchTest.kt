@@ -97,6 +97,42 @@ class ContentSearchTest {
     }
 
     @Test
+    fun showsTheFormulasOfATextInItsSnippetAsPlainMath() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val doc = store.createDocument("Limits")
+        val page = doc.pages.single()
+        val filler = "The limit of the sine divided by the angle, as the angle goes to zero, is found by squeezing it between two functions. "
+        val text = DrawText().apply {
+            this.text = filler + "**Squeeze:** \$\\cos x \\le \\frac{\\sin x}{x} \\le 1\$ near zero."
+            x = 10f
+            y = 20f
+            width = 100f
+            height = 20f
+        }
+        page.add(text)
+        store.saveText(page, text)
+        store.flush()
+
+        SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
+            val indexer = SearchIndexer(catalog = store, index = index, sources = listOf(DocumentSearchSource(store)), quietMillis = 0L)
+            val engine = SearchEngine(index)
+            val contentSearch = ContentSearch(index = index, indexer = indexer, engine = engine)
+            indexer.indexNow()
+
+            contentSearch.onQueryChange("squeeze")
+            contentSearch.searchNow()
+
+            val snippet = contentSearch.matchesOf(doc.id).single().snippet
+            assertTrue("Squeeze: cos x ≤ (sin x)/x ≤ 1" in snippet, snippet)
+            assertTrue(snippet.startsWith("…"), snippet)
+            for (source in listOf("$", "\\", "**")) assertTrue(source !in snippet, snippet)
+            // What the agent and the answers read keep the LaTeX
+            val hit = engine.search("squeeze").single().hits.single()
+            assertTrue("\\frac{\\sin x}{x}" in hit.snippet, hit.snippet)
+        }
+    }
+
+    @Test
     fun opensPageAndLectureAnchorsAtTheirExactPlaces() = runTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val doc = DrawDocument(id = "doc-1", title = "Analisi 2").apply {

@@ -120,7 +120,8 @@ class SearchScreenshotTest {
                         anchor = SearchAnchor.Page(document.id, "p1", pageNumber = 3),
                         kind = SearchChunkKind.TEXT,
                         title = document.name,
-                        text = "Il teorema di Weierstrass garantisce che ogni funzione continua su un compatto ammette massimo e minimo assoluti."
+                        // Its formula is shown as plain math, not as its LaTeX
+                        text = "Teorema di Weierstrass: se \$f\$ è continua su un compatto \$K\$, allora \$\\exists\\, x_0 \\in K : f(x) \\le f(x_0)\$ per ogni \$x \\in K\$."
                     ),
                     SearchChunk(
                         sourceId = id,

@@ -38,6 +38,7 @@ import io.github.valerioisufi.drawview.search.SearchHit
 import io.github.valerioisufi.drawview.search.SearchIndex
 import io.github.valerioisufi.drawview.search.SearchIndexer
 import io.github.valerioisufi.drawview.search.SearchSource
+import io.github.valerioisufi.drawview.search.snippetOf
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -251,7 +252,11 @@ public class ContentSearch(
             resultsByDocument = emptyMap()
         } else {
             val scope = scopeFlow.value
-            val results = withContext(searchDispatcher) { engine.search(trimmed, documentIds = scope) }
+            val results = withContext(searchDispatcher) {
+                engine.search(trimmed, documentIds = scope).map { result ->
+                    result.copy(hits = result.hits.map { hit -> hit.withReadableSnippet(trimmed) })
+                }
+            }
             matchedDocumentIds = results.map { it.documentId }
             resultsByDocument = results.associateBy { it.documentId }
         }
@@ -349,6 +354,19 @@ public class ContentSearch(
     )
 
     public companion object {
+        /**
+         * [this] with the snippet the library shows: for a text or the notes of a lecture, its
+         * formulas written as plain math ([ReadableMath]) before the window is cut, so no formula
+         * is cut in half before it is read.
+         */
+        internal fun SearchHit.withReadableSnippet(query: String): SearchHit = when (kind) {
+            SearchChunkKind.TEXT, SearchChunkKind.LECTURE_NOTES -> {
+                val readable = ReadableMath.of(text)
+                if (readable == text) this else copy(snippet = snippetOf(readable, query))
+            }
+            else -> this
+        }
+
         /** The pause in the typing a search waits for. */
         private const val TYPING_PAUSE_MILLIS = 150L
 
