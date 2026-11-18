@@ -48,7 +48,8 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
-import io.github.valerioisufi.drawview.ui.components.peekingWidth
+import io.github.valerioisufi.drawview.ui.components.ScrolledContent
+import io.github.valerioisufi.drawview.ui.components.peekingHorizontalScroll
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
@@ -442,11 +443,13 @@ internal fun FloatingTools(controller: DrawViewController, commands: EditorComma
     ) {
         EditorHistory(commands)
         ToolDivider()
-        // A tool button and the space after it, to cut the last one shown in its middle
+        // A tool button and the space after it, to cut the last one shown in its middle: the row
+        // holds tool buttons only, all of this size (the dot of the ink is inside the button)
         val target = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified } ?: 0.dp
         val pitch = maxOf(LocalToolSizes.current.button, target) + 2.dp
+        val content = remember { ScrolledContent() }
         Row(
-            modifier = Modifier.weight(1f, fill = false).peekingWidth(pitch).fadingHorizontalScroll(rememberScrollState()),
+            modifier = Modifier.weight(1f, fill = false).peekingHorizontalScroll(rememberScrollState(), pitch, content),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {

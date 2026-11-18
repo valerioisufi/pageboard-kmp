@@ -37,7 +37,7 @@ The bar of the tools at the bottom of the editor on a phone, when it does not fi
   as the margin it asks around itself when brought into view: the chosen tool ends past the
   fade, whole, and the one cut at the edge is the one faded. A row that fits does not scroll, so
   the bars that fit (tablet, desktop) look the same.
-- **Pure Fabrication:** `peekingWidth(pitch)` in `ScrollFade.kt` sizes a scrolling row that does
+- **Pure Fabrication:** `peekingHorizontalScroll(state, pitch, content)` in `ScrollFade.kt` sizes a scrolling row that does
   not fit so it ends in the middle of an item (`pitch` is a button and the space after it): half
   a tool shows under the fade at the end that has more. Without it a phone of 411 dp shows five
   whole tools and a gap, and nothing says the row scrolls. The bar gets narrower by less than a
@@ -53,13 +53,19 @@ The bar of the tools at the bottom of the editor on a phone, when it does not fi
 
 - Undo and redo fixed rather than a snap to whole items: the snap would still let undo leave the
   view, and it needs a lazy row or a custom fling for a few buttons. Revertible.
-- `peekingWidth` reads the width of the content by its intrinsic width; the buttons are of one
-  size, so one pitch is enough. Revertible.
+- `peekingHorizontalScroll` takes no intrinsic measurement (a `SubcomposeLayout` in the row would
+  throw): the content reports its width after its layout (`ScrolledContent`) and the row takes its
+  cut width at the next one; the first frame shows it as wide as it can be. `PeekingScrollTest`
+  lays out a row holding a `BoxWithConstraints`. Revertible.
+- The cut assumes every item is one pitch wide (a tool button and the space after it), true of the
+  floating tools: they hold tool buttons only, the dot of the ink inside the button. A divider or
+  a wider button in that row would move the cut off the middle of an item; cutting by the measured
+  positions of the items would need a layout of its own instead of `Row`. Written beside the code too.
 - The margin of `bringIntoView` applies to every `ToolButton` in a scrolling row, the tool group
   of a narrow tablet window too: it only changes where a scroll stops. Revertible.
 - The new screenshot `editor-floating-tools-scrolled-phone-light.png` (the hand chosen, the last
   tool) and the two phone references that change, `editor-phone-light.png` and
-  `editor-phone-dark.png`, are to be recorded on the Mac: the references of the Windows host differ
+  `editor-phone-dark.png`, stay unrecorded here: they are to be recorded on the Mac: the references of the Windows host differ
   in antialiasing. Rendered on Windows before and after the change, every other `editor-*`
   screenshot (tablet, desktop, phone in landscape) is the same to the pixel.
 
