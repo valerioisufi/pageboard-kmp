@@ -34,8 +34,14 @@ internal object ReadableMath {
     private class Reader(private val source: String) {
         private var at = 0
 
-        /** What follows up to [end] (a closing brace or bracket, consumed) or the end of the formula. */
-        fun readUntil(end: Char?, depth: Int): String {
+        /** Whether the command read last was an `\end`, closing the environment being read. */
+        private var environmentEnded = false
+
+        /**
+         * What follows up to [end] (a closing brace or bracket, consumed) or the end of the formula;
+         * in an environment ([inEnvironment]), up to its `\end`, its cells apart by [cell].
+         */
+        fun readUntil(end: Char?, depth: Int, cell: String = " ", inEnvironment: Boolean = false): String {
             val out = StringBuilder()
             while (at < source.length) {
                 val ch = source[at]
@@ -59,13 +65,20 @@ internal object ReadableMath {
                     }
                     '&' -> {
                         at++
-                        out.append(' ')
+                        out.append(cell)
                     }
                     '~' -> {
                         at++
                         out.append(' ')
                     }
-                    '\\' -> out.append(command(depth))
+                    '\\' -> {
+                        val read = command(depth)
+                        if (environmentEnded) {
+                            environmentEnded = false
+                            if (inEnvironment) return out.toString()
+                        }
+                        out.append(read)
+                    }
                     else -> {
                         at++
                         out.append(ch)
@@ -162,17 +175,88 @@ internal object ReadableMath {
                 }
                 "mathbb" -> argument(depth).let { content -> content.map { DOUBLE_STRUCK[it] ?: it }.joinToString("") }
                 "text", "textrm", "textit", "textbf", "mathrm", "mathbf", "mathit", "mathsf", "mathtt", "mathcal",
-                "mathscr", "mathfrak", "boldsymbol", "bm", "operatorname", "mbox", "hbox", "overline", "underline",
-                "widehat", "widetilde", "hat", "tilde", "bar", "vec", "dot", "ddot", "overrightarrow" -> argument(depth)
-                "left", "right", "big", "Big", "bigg", "Bigg", "bigl", "bigr", "Bigl", "Bigr", "biggl", "biggr",
-                "displaystyle", "textstyle", "scriptstyle", "limits", "nolimits", "nonumber", "notag" -> ""
-                "begin", "end" -> {
+                "mathscr", "mathfrak", "boldsymbol", "bm", "mbox", "hbox", "overline", "underline", "mathop",
+                "widehat", "widetilde", "hat", "tilde", "bar", "vec", "dot", "ddot", "overrightarrow", "boxed",
+                "cancel", "bcancel", "xcancel" -> argument(depth)
+                "operatorname" -> {
+                    if (at < source.length && source[at] == '*') at++
+                    argument(depth)
+                }
+                "underbrace", "overbrace" -> {
+                    // The label under or over the brace, after what it labels
+                    val content = argument(depth)
+                    skipSpaces()
+                    if (at < source.length && (source[at] == '_' || source[at] == '^')) {
+                        at++
+                        "$content (${argument(depth).trim()})"
+                    } else {
+                        content
+                    }
+                }
+                "overset", "underset", "stackrel" -> {
+                    argument(depth)
+                    argument(depth)
+                }
+                "not" -> argument(depth).trim().let { negated -> NEGATIONS[negated] ?: "$negated̸" }
+                "textcolor" -> {
+                    argument(depth)
+                    argument(depth)
+                }
+                "color" -> {
                     argument(depth)
                     ""
                 }
+                "left", "right", "big", "Big", "bigg", "Bigg", "bigl", "bigr", "Bigl", "Bigr", "biggl", "biggr",
+                "displaystyle", "textstyle", "scriptstyle", "limits", "nolimits", "nonumber", "notag", "phantom" -> ""
+                "begin" -> environment(depth)
+                "end" -> {
+                    argument(depth)
+                    environmentEnded = true
+                    ""
+                }
                 "quad", "qquad", "enspace", "thinspace" -> " "
-                else -> name
+                else -> unknown(name, depth)
             }
+        }
+
+        /**
+         * An environment whose `\begin` was read, up to its `\end`: a matrix in its brackets, its
+         * rows apart by `;`; the cases in braces, each value and its condition apart by a comma.
+         */
+        private fun environment(depth: Int): String {
+            val name = argument(depth).trim().removeSuffix("*")
+            if (name == "array") argument(depth)
+            if (depth >= MAX_DEPTH) return ""
+            val (open, close, cell) = ENVIRONMENTS[name] ?: Triple("", "", " ")
+            environmentEnded = false
+            val body = readUntil(end = null, depth = depth + 1, cell = cell, inEnvironment = true)
+                .replace(SPACES, " ").replace(" ,", ",").replace(" ;", ";").trim().removeSuffix(";").trim()
+            return " $open$body$close "
+        }
+
+        /**
+         * A command not known: by the content of its arguments in braces, which a command of
+         * formatting or of a package would show; by its name when it has none, as a word or a
+         * symbol of the formula would be.
+         */
+        private fun unknown(name: String, depth: Int): String {
+            val after = at
+            skipSpaces()
+            if (at >= source.length || source[at] != '{') {
+                at = after
+                return name
+            }
+            val out = StringBuilder()
+            while (at < source.length && source[at] == '{') {
+                if (out.isNotEmpty()) out.append(' ')
+                out.append(argument(depth))
+                skipSpaces()
+            }
+            return out.toString()
+        }
+
+        private fun skipSpaces() {
+            while (at < source.length && source[at] == ' ') at++
         }
 
         /** [content] alone, in parentheses when it is more than one term. */
@@ -248,6 +332,24 @@ internal object ReadableMath {
         "bigwedge" to "⋀", "bigoplus" to "⊕", "bigotimes" to "⊗", "surd" to "√", "prime" to "′",
         "degree" to "°", "star" to "⋆", "bullet" to "•", "triangle" to "△", "square" to "□",
         "colon" to ":", "lbrace" to "{", "rbrace" to "}", "backslash" to "\\"
+    )
+
+    /** The environments by their delimiters and what is between their cells; the others have none. */
+    private val ENVIRONMENTS: Map<String, Triple<String, String, String>> = mapOf(
+        "pmatrix" to Triple("(", ")", " "),
+        "bmatrix" to Triple("[", "]", " "),
+        "Bmatrix" to Triple("{", "}", " "),
+        "vmatrix" to Triple("|", "|", " "),
+        "Vmatrix" to Triple("‖", "‖", " "),
+        "cases" to Triple("{ ", " }", ", "),
+        "dcases" to Triple("{ ", " }", ", ")
+    )
+
+    /** The symbols `\not` makes by a character of their own. */
+    private val NEGATIONS: Map<String, String> = mapOf(
+        "=" to "≠", "∈" to "∉", "⊂" to "⊄", "⊃" to "⊅", "⊆" to "⊈", "⊇" to "⊉", "≡" to "≢", "∼" to "≁",
+        "≃" to "≄", "≅" to "≇", "≈" to "≉", "<" to "≮", ">" to "≯", "≤" to "≰", "≥" to "≱", "∃" to "∄",
+        "|" to "∤", "∣" to "∤", "∥" to "∦"
     )
 
     private val SUPERSCRIPTS: Map<Char, Char> = mapOf(

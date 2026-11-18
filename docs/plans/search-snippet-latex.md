@@ -75,7 +75,8 @@ Variations).
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | `ReadableMath`, used by `ContentSearch` for the snippets of texts and lecture notes; tests of the conversion and of the snippet of a text with a formula; the screenshot of the results with a formula | done |
+| 1 | `ReadableMath`, used by `ContentSearch` for the snippets of texts and lecture notes; tests of the conversion and of the snippet of a text with a formula; the screenshot test of the results with a formula | done |
+| 2 | Review: matrices and cases with their delimiters, `\underbrace`, `\operatorname*`, `\not`, unknown commands by their arguments; the screenshots restored from `main` | done |
 
 ## Decisions
 
@@ -84,9 +85,22 @@ Variations).
 3. The conversion lives in `drawview-search-ui`, internal: what the library shows. It could move
    to `drawview-search` as a public function if another reader wants it.
 
+4. Environments: a matrix in its brackets (`pmatrix` ( ), `bmatrix` [ ], `Bmatrix` { },
+   `vmatrix` | |, `Vmatrix` ‖ ‖), rows apart by `;`; `cases` in `{ … }`, a value and its condition
+   apart by a comma; `matrix`, `aligned`, `array` without delimiters. Revertible.
+5. An unknown command reads as the content of its arguments in braces (a command of formatting
+   or of a package), and by its name when it has none (a word or symbol of the formula).
+   `Nderbrace`/`overbrace` read their content, their label after it in parentheses. Revertible.
+
 ## Left for later
 
 1. Highlighting the words of the query in the snippet (the row of `drawview-explorer` draws a
    plain `String` today).
 2. Formulas of the handwriting (recognized as LaTeX) in their snippets, once they have a notation
    of their own in the chunk.
+3. The screenshots of the results (`search-results-light.png`, `search-results-dark.png`) are not
+   recorded on Windows: its text antialiasing differs from the references of macOS. The test now
+   has a formula in its text, so they must be recorded again on the Mac (or by the CI, if a plan
+   for that lands first).
+4. Formulas drawn by the LaTeX engine in an expanded result, a richer preview than the line of
+   the snippet (rendering is not ruled out, only kept off the one-line row).
