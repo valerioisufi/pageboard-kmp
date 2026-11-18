@@ -109,4 +109,62 @@ class NotesAnswererTest {
             assertTrue(empty.passages.isEmpty())
         }
     }
+
+    private val passages = (1..4).map { n ->
+        SearchHit(
+            anchor = SearchAnchor.Page("doc", "p-$n", pageNumber = n),
+            kind = SearchChunkKind.TEXT,
+            title = "Calculus I",
+            text = "Passage $n",
+            snippet = "Passage $n",
+            score = 1.0
+        )
+    }
+
+    private fun cited(answer: String): List<Int> =
+        NotesAnswerer.extractCitations(answer, passages).map { it.number }
+
+    @Test
+    fun readsSingleCitations() {
+        assertEquals(listOf(1), cited("A limit exists [1]."))
+        assertEquals(listOf(2, 1), cited("First [2], then [1] and [2] again."))
+    }
+
+    @Test
+    fun readsListsWithAndWithoutSpaces() {
+        assertEquals(listOf(1, 2, 3), cited("See [1] and [2, 3]."))
+        assertEquals(listOf(2, 3), cited("See [2,3]."))
+        assertEquals(listOf(3, 1, 4), cited("See [ 3 ; 1 ,4 ]."))
+    }
+
+    @Test
+    fun readsAdjacentBrackets() {
+        assertEquals(listOf(1, 2), cited("See [1][2]."))
+    }
+
+    @Test
+    fun readsRanges() {
+        assertEquals(listOf(1, 2, 3), cited("See [1-3]."))
+        assertEquals(listOf(2, 3, 4), cited("See [2 – 4]."))
+        assertEquals(listOf(4, 1, 2), cited("See [4], [1-2, 4]."))
+    }
+
+    @Test
+    fun ignoresNumbersBeyondThePassages() {
+        assertEquals(listOf(2), cited("See [2, 9] and [0] and [7]."))
+        assertEquals(listOf(3, 4), cited("See [3-1000000]."))
+        assertEquals(emptyList(), cited("See [5-8] and [3-1] and [99999999999]."))
+    }
+
+    @Test
+    fun ignoresBracketsInMathAndCode() {
+        assertEquals(listOf(2), cited("On $[0, 1]$ the function is bounded [2]."))
+        assertEquals(listOf(3), cited("$$\\int_{[1,2]} f$$ and `a[1]` [3]."))
+    }
+
+    @Test
+    fun ignoresBracketsThatAreNotCitations() {
+        assertEquals(emptyList(), cited("See [a], [1a], [1-], [^1] and [ ]."))
+        assertEquals(emptyList(), NotesAnswerer.extractCitations("See [1].", emptyList()))
+    }
 }

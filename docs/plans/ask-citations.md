@@ -50,7 +50,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | What | Status |
 |---|---|---|
 | 1 | This plan | done |
-| 2 | Parsing of the citation forms, math skipped, unit tests in `drawview-search` | pending |
+| 2 | Parsing of the citation forms, math skipped, unit tests in `drawview-search` | done |
 | 3 | `AskNotesCard`: chips only for the cited passages | pending |
 
 ## Decisions

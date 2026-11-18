@@ -176,7 +176,13 @@ public class NotesAnswerer(
 
     public companion object {
         private const val KEEP_GENERATOR_LOADED_MS = 60_000L
-        private val CITATION_REGEX = Regex("""\[(\d+)]""")
+
+        /** A bracket holding a list of numbers or ranges (`1`, `2-3`) separated by `,` or `;`. */
+        private val CITATION_REGEX =
+            Regex("""\[\s*(\d{1,9}(?:\s*[-–]\s*\d{1,9})?(?:\s*[,;]\s*\d{1,9}(?:\s*[-–]\s*\d{1,9})?)*)\s*]""")
+
+        /** Display math, inline math and inline code, whose brackets are not citations. */
+        private val NON_CITATION_SPAN_REGEX = Regex("""\$\$[\s\S]*?\$\$|\$[^$\n]+\$|`[^`\n]*`""")
 
         internal const val SYSTEM_PROMPT: String =
             "You answer questions for a student using ONLY the numbered passages from their notes provided below.\n" +
@@ -205,13 +211,26 @@ public class NotesAnswerer(
             append(question)
         }
 
+        /**
+         * Reads the passages cited in [answerText]: brackets holding numbers or ranges separated
+         * by `,` or `;` (`[1]`, `[1, 2]`, `[1][2]`, `[1-3]`), outside math and inline code.
+         * Numbers beyond [passages] are ignored; each passage is listed once, in the order of its
+         * first citation.
+         */
         internal fun extractCitations(answerText: String, passages: List<SearchHit>): List<CitedPassage> {
             if (answerText.isBlank() || passages.isEmpty()) return emptyList()
+            val text = NON_CITATION_SPAN_REGEX.replace(answerText) { " ".repeat(it.value.length) }
+            val count = passages.size
             val seen = LinkedHashSet<Int>()
-            for (match in CITATION_REGEX.findAll(answerText)) {
-                val number = match.groupValues[1].toIntOrNull() ?: continue
-                if (number in 1..passages.size) {
-                    seen.add(number)
+            for (match in CITATION_REGEX.findAll(text)) {
+                for (item in match.groupValues[1].split(',', ';')) {
+                    val bounds = item.split('-', '–').map { it.trim().toIntOrNull() ?: 0 }
+                    val first = bounds.first()
+                    val last = bounds.last()
+                    if (first < 1 || last < first || first > count) continue
+                    for (number in first..minOf(last, count)) {
+                        seen.add(number)
+                    }
                 }
             }
             return seen.map { number -> CitedPassage(number = number, hit = passages[number - 1]) }
