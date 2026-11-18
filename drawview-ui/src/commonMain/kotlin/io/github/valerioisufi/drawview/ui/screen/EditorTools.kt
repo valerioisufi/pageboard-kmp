@@ -30,11 +30,12 @@ import org.jetbrains.compose.resources.stringResource
 // The tools of the editor in its bar, each one with its settings
 
 /**
- * The tools of the editor: undo and redo, the drawing tools (their settings in a popover opened
- * by their button chosen again, or by a long press), the imports when [withImports].
+ * The tools of the editor: undo and redo when [withHistory] (else the bar shows them apart, see
+ * [EditorHistory]), the drawing tools (their settings in a popover opened by their button chosen
+ * again, or by a long press), the imports when [withImports].
  */
 @Composable
-internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean) {
+internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean, withHistory: Boolean = true) {
     // Whether the document has PDF pages, as it changes (not at every change of the document)
     val hasPdfPages by controller.document.observe { hasPdfPages() }
     val pdfImportAvailable = controller.tileManager.tileRenderer.pdfAdapter != null
@@ -42,9 +43,10 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
     var openSettings by remember { mutableStateOf<Tool?>(null) }
 
     val barIcon = LocalToolSizes.current.barIcon
-    BarButton(commands.undo, DrawViewIcons.Undo, iconSize = barIcon)
-    BarButton(commands.redo, DrawViewIcons.Redo, iconSize = barIcon)
-    ToolDivider()
+    if (withHistory) {
+        EditorHistory(commands)
+        ToolDivider()
+    }
 
     ToolWithSettings(controller, Tool.INK_PEN, commands.pen, DrawViewIcons.Pen, openSettings, { openSettings = it }) {
         InkSettings(controller, Tool.INK_PEN, stringResource(Res.string.tool_pen), InkPalette.inks, HybridScale(0.1f..15f, linearThreshold = 3f, linearProportion = 0.5f))
@@ -99,6 +101,14 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
         paletteHandled.intValue = commands.paletteRequests
         openSettings = controller.selectedTool.takeIf { it != Tool.PAN }
     }
+}
+
+/** Undo and redo, the first of the tools. */
+@Composable
+internal fun EditorHistory(commands: EditorCommands) {
+    val barIcon = LocalToolSizes.current.barIcon
+    BarButton(commands.undo, DrawViewIcons.Undo, iconSize = barIcon)
+    BarButton(commands.redo, DrawViewIcons.Redo, iconSize = barIcon)
 }
 
 /**

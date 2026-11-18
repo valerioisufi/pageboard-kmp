@@ -44,9 +44,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.ui.components.fadingHorizontalScroll
+import io.github.valerioisufi.drawview.ui.components.peekingWidth
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
@@ -421,8 +423,9 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
 }
 
 /**
- * The tools floating at the bottom of the canvas (a phone, a short window): undo, redo and the
- * drawing tools, scrolled when they do not fit; the imports are in the "more" menu.
+ * The tools floating at the bottom of the canvas (a phone, a short window): undo and redo, always
+ * in view, then the drawing tools, scrolled when they do not fit; the imports are in the "more"
+ * menu.
  */
 @Composable
 internal fun FloatingTools(controller: DrawViewController, commands: EditorCommands, modifier: Modifier = Modifier) {
@@ -433,12 +436,22 @@ internal fun FloatingTools(controller: DrawViewController, commands: EditorComma
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(ToolbarLayout.FloatingHeight)
-            .fadingHorizontalScroll(rememberScrollState())
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        EditorTools(controller, commands, withImports = false)
+        EditorHistory(commands)
+        ToolDivider()
+        // A tool button and the space after it, to cut the last one shown in its middle
+        val target = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified } ?: 0.dp
+        val pitch = maxOf(LocalToolSizes.current.button, target) + 2.dp
+        Row(
+            modifier = Modifier.weight(1f, fill = false).peekingWidth(pitch).fadingHorizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            EditorTools(controller, commands, withImports = false, withHistory = false)
+        }
     }
 }
 

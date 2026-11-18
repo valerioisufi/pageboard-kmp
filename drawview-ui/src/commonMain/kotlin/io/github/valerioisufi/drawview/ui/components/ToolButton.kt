@@ -23,15 +23,22 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -68,7 +75,8 @@ internal val LocalToolSizes = staticCompositionLocalOf { ToolSizes.Thumb }
  * the dot of its [ink] (the color the tool draws with). It supports a long click and the popover
  * of its settings ([dropDownMenu], shown while [expanded]); it takes the minimum interactive size
  * of the input around it (48 dp for a finger, see `AdaptiveRoot`). Once [selected], it is brought
- * into view in a row that scrolls (the tools floating on a phone).
+ * into view in a row that scrolls (the tools floating on a phone), whole and past the fade of
+ * the row ([ScrollFadeLength]).
  *
  * @param command the command the button shows: its label and shortcut in a tooltip where a
  *   pointer hovers. The click is [onClick] (a tool opens its settings when chosen again).
@@ -92,12 +100,20 @@ internal fun ToolButton(
         val colors = MaterialTheme.colorScheme
         val sizes = LocalToolSizes.current
         val inView = remember { BringIntoViewRequester() }
-        LaunchedEffect(selected) { if (selected) inView.bringIntoView() }
+        var buttonSize by remember { mutableStateOf(IntSize.Zero) }
+        val density = LocalDensity.current
+        LaunchedEffect(selected) {
+            if (!selected) return@LaunchedEffect
+            // The button and a margin as long as the fade on each side, so it is not shown faded
+            val margin = with(density) { ScrollFadeLength.toPx() }
+            inView.bringIntoView(Rect(-margin, 0f, buttonSize.width + margin, buttonSize.height.toFloat()))
+        }
         val button = @Composable {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier
                     .bringIntoViewRequester(inView)
+                    .onSizeChanged { buttonSize = it }
                     .minimumInteractiveComponentSize()
                     .size(sizes.button)
                     .clip(ToolShape)

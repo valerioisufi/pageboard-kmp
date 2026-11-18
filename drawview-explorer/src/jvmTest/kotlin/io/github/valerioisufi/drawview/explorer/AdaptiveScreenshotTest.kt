@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
@@ -91,6 +92,17 @@ class AdaptiveScreenshotTest {
     fun editorMoreMenu() = capture("editor-more-menu", ReferenceWindow.PHONE, dark = false) { viewModels ->
         openNote(viewModels)
         onNodeWithContentDescription("More options").performClick()
+    }
+
+    /**
+     * The tools floating on a phone with the tool at their end chosen (the hand): undo and redo stay
+     * where they are, the tools scroll to the one chosen and fade where there are more.
+     */
+    @Test
+    fun editorFloatingToolsScrolled() = capture("editor-floating-tools-scrolled", ReferenceWindow.PHONE, dark = false) { viewModels ->
+        openNote(viewModels)
+        runOnIdle { viewModels.controller().selectTool(Tool.PAN) }
+        mainClock.advanceTimeBy(1_000)
     }
 
     /**
