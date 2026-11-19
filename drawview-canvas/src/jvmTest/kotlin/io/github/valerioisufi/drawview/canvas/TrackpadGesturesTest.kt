@@ -224,18 +224,19 @@ class TrackpadGesturesTest {
         val camera = controller.viewport.camera
         controller.zoomIn()
         val before = camera.getCurrentTranslation()
-        val unit = scrollUnitPx(1f)
+        // 5 px, whatever a unit of scroll is on this platform
+        val step = 5f / scrollUnitPx(1f)
 
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
         // AWT reports the two axes apart: the first event, vertical, chooses the axis...
         for (i in 0..5) {
-            scene.scroll(Offset(0f, 0.5f), timeMillis = 1_000L + i * 10L)
-            scene.scroll(Offset(0.5f, 0f), timeMillis = 1_005L + i * 10L)
+            scene.scroll(Offset(0f, step), timeMillis = 1_000L + i * 10L)
+            scene.scroll(Offset(step, 0f), timeMillis = 1_005L + i * 10L)
         }
         // ...and 15 px across break the gesture free: the last four horizontal events move it
         val after = camera.getCurrentTranslation()
-        assertEquals(before.y - 3f * unit, after.y, 1e-3f)
-        assertEquals(before.x - 2f * unit, after.x, 1e-3f)
+        assertEquals(before.y - 30f, after.y, 1e-3f)
+        assertEquals(before.x - 20f, after.x, 1e-3f)
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
     }
 
@@ -261,17 +262,18 @@ class TrackpadGesturesTest {
         val camera = controller.viewport.camera
         controller.zoomIn()
         val before = camera.getCurrentTranslation()
-        val unit = scrollUnitPx(1f)
+        // 10 px, below the move that breaks a gesture free, whatever a unit of scroll is here
+        val step = 10f / scrollUnitPx(1f)
 
-        scene.scroll(Offset(0f, 1f), timeMillis = 1_000L)
-        assertEquals(before.y - unit, camera.getCurrentTranslation().y, 1e-3f)
+        scene.scroll(Offset(0f, step), timeMillis = 1_000L)
+        assertEquals(before.y - 10f, camera.getCurrentTranslation().y, 1e-3f)
         // Within the gesture the other axis is left out...
-        scene.scroll(Offset(1f, 0f), timeMillis = 1_100L)
+        scene.scroll(Offset(step, 0f), timeMillis = 1_100L)
         assertEquals(before.x, camera.getCurrentTranslation().x, 1e-3f)
         // ...after a pause it starts a gesture of its own
-        scene.scroll(Offset(1f, 0f), timeMillis = 1_500L)
-        assertEquals(before.x - unit, camera.getCurrentTranslation().x, 1e-3f)
-        assertEquals(before.y - unit, camera.getCurrentTranslation().y, 1e-3f)
+        scene.scroll(Offset(step, 0f), timeMillis = 1_500L)
+        assertEquals(before.x - 10f, camera.getCurrentTranslation().x, 1e-3f)
+        assertEquals(before.y - 10f, camera.getCurrentTranslation().y, 1e-3f)
     }
 
     @Test

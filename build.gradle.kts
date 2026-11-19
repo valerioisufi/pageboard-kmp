@@ -79,7 +79,11 @@ mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm6
 //   assemblePdfiumXcframework  build/pdfium/PDFium.xcframework (device + simulator, macOS only)
 // =====================================================================================
 
-/** Downloads [url] into [destination], failing unless its SHA-256 digest is [sha256]. */
+/**
+ * Downloads [url] into [destination], failing unless its SHA-256 digest is [sha256]. A file already
+ * there with that digest is kept, as when the CI restores it. An error of the network is tried
+ * again for a few minutes; a wrong digest is not.
+ */
 @CacheableTask
 abstract class DownloadVerifiedFile : DefaultTask() {
     @get:Input
@@ -96,10 +100,26 @@ abstract class DownloadVerifiedFile : DefaultTask() {
         val target = destination.get().asFile
         val partial = File(target.parentFile, "${target.name}.part")
         target.parentFile.mkdirs()
+        if (target.isFile) {
+            val present = MessageDigest.getInstance("SHA-256").digest(target.readBytes())
+            if (present.joinToString("") { "%02x".format(it) }.equals(sha256.get(), ignoreCase = true)) return
+        }
 
-        val digest = MessageDigest.getInstance("SHA-256")
-        DigestInputStream(URI(url.get()).toURL().openStream(), digest).use { input ->
-            partial.outputStream().use { input.copyTo(it) }
+        var attempt = 1
+        var digest = MessageDigest.getInstance("SHA-256")
+        while (true) {
+            try {
+                digest = MessageDigest.getInstance("SHA-256")
+                DigestInputStream(URI(url.get()).toURL().openStream(), digest).use { input ->
+                    partial.outputStream().use { input.copyTo(it) }
+                }
+                break
+            } catch (e: java.io.IOException) {
+                if (attempt == 6) throw e
+                logger.warn("Download of ${url.get()} failed (attempt $attempt of 6): $e")
+                Thread.sleep(5_000L shl (attempt - 1))
+                attempt++
+            }
         }
         val actual = digest.digest().joinToString("") { "%02x".format(it) }
         if (!actual.equals(sha256.get(), ignoreCase = true)) {

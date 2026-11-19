@@ -169,7 +169,9 @@ class LectureRecorderTest {
     @Test
     fun withoutAKeyTheRecordingGoesOn() = runBlocking<Unit> {
         val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
+            update(settings.copy(notesSeconds = 60))
+        }
         val microphone = FakeMicrophone()
         val lecture = newLecture(settingsStore, engine)
         val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), FakeTranscriber())

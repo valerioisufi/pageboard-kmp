@@ -226,7 +226,8 @@ class LectureSharingTest {
         withContext(stateContext) { computer.show("doc", askedSummary) }
         val lecture = await { computer.shownLecture("doc")?.takeIf { it.id == asked.id } }
         withContext(stateContext) { computer.requestAudio(lecture) }
-        await { computer.sharingOf("doc").requestedAudio.isNotEmpty() && File(computer.library.documentDirectory("doc"), "sharing.json").exists() }
+        // Written with the request: the file is already there, from the change of the sharing above
+        await { File(computer.library.documentDirectory("doc"), "sharing.json").readText().contains(asked.id) }
         meet(tablet.attachments, computer.attachments)
         assertContentEquals(File(asked.directory, "audio.opus").readBytes(), File(directory, "audio.opus").readBytes())
         // The first one, shared afterwards from the tablet

@@ -118,7 +118,7 @@ commit per phase.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | This plan | Done |
-| 2 | The failures of the runners: `TrackpadGesturesTest` in pixels, the two lecture tests, the downloads tried again and kept | To do |
+| 2 | The failures of the runners: `TrackpadGesturesTest` in pixels, the two lecture tests, the downloads tried again and kept | Done, the tests run here; the retry not tried against a failing server |
 | 3 | `check.yml` and `release.yml` on `macos-26` | To do |
 | 4 | `check.yml` in two jobs, the APKs on Linux for one ABI (`drawview.android.debug.abis`); the `paths` of `native.yml` and the weekly run | To do |
 | 5 | The caches: Rust, ccache, the archives, the desktop libraries; the disk of the Android jobs freed; the results of failed tests kept | To do |
