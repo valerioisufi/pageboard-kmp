@@ -10,6 +10,7 @@ import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.TextData
+import io.github.valerioisufi.drawview.model.change.RestyleMarkups
 import io.github.valerioisufi.drawview.model.change.UpdateElementContent
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -41,7 +42,7 @@ public class AppliedProposal(
  *
  * Used on the thread of the document.
  */
-public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
+public class ProposalApplier(private val engines: AgentEngines = AgentEngines()) {
     private val planner = ProposalPlanner(engines)
 
     /** The indexes of [items] that would not be applied to [document] as it is now. */
@@ -100,6 +101,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                 is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument, is ProposalItem.SetDocumentDefaults,
                 is ProposalItem.RestorePages -> changes += PageItems.changesOf(document, item)
                 is ProposalItem.AddShape, is ProposalItem.UpdateShape -> changes += ShapeItems.changesOf(document, item)
+                is ProposalItem.AddMarkup, is ProposalItem.RestyleMarkups -> changes += MarkupItems.changesOf(document, item, engines)
                 else -> changes += ElementItems.changesOf(document, item)
             }
             touched += changes.subList(from, changes.size).flatMap { it.elementsLeft() }.distinct()
@@ -119,6 +121,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
         is PlaceElements -> placements.map { it.id }
         is ReorderElements -> orders.map { it.id }
         is UpdateElementContent -> listOf(id)
+        is RestyleMarkups -> styles.map { it.id }
         is CompositeChange -> this.changes.flatMap { it.elementsLeft() }
         else -> emptyList()
     }

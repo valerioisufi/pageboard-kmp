@@ -89,6 +89,8 @@ internal object ProposalMarks {
                 PlannedMark(PlannedMark.Kind.MOVED, page.id, before, toBox = piece.box, elementId = element.id)
             }
             is ProposalItem.AddStroke -> listOfNotNull(strokeMark(item))
+            is ProposalItem.AddMarkup -> planned.pieces.map { PlannedMark(PlannedMark.Kind.ADDED, it.pageId, it.box) }
+            is ProposalItem.RestyleMarkups -> elementMarks(document, item.markups.map { it.id }, PlannedMark.Kind.CHANGED, measure)
             is ProposalItem.AddShape -> listOf(PlannedMark(PlannedMark.Kind.ADDED, item.page, ShapeItems.boundsOf(ShapeItems.added(item).second)))
             is ProposalItem.UpdateShape -> {
                 val (page, element, value) = ShapeItems.findShape(document, item.shape) ?: return emptyList()

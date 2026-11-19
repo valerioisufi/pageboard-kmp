@@ -218,6 +218,18 @@ internal class ProposalLimits(
                     color(item.fill)
                 }
             }
+            is ProposalItem.AddMarkup -> {
+                if (item.kind !in MarkupItems.KINDS) refuse("markup_kind is highlight, underline or strikeout.")
+                if (item.quote.isBlank() || item.quote.length > MarkupItems.MAX_QUOTE_LENGTH) refuse("quote is a passage of the PDF text of the page, of at most ${MarkupItems.MAX_QUOTE_LENGTH} characters.")
+                if (item.occurrence !in 1..1000) refuse("occurrence is from 1, the first passage of the page.")
+                color(item.color)
+            }
+            is ProposalItem.RestyleMarkups -> {
+                refs(item.markups)
+                if (item.kind != null && item.kind !in MarkupItems.KINDS) refuse("markup_kind is highlight, underline or strikeout.")
+                color(item.color)
+                if (item.kind == null && item.color == null) refuse("restyle_markups needs markup_kind or color.")
+            }
             is ProposalItem.UpdateShape -> {
                 if (item.kind != null && item.kind !in ShapeItems.KINDS) refuse("shape_kind is ${ShapeItems.KINDS.keys.joinToString(", ")}.")
                 shapeStyle(item.color, item.widthMm, item.outline, item.startHead, item.endHead)
@@ -337,6 +349,16 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
             null
         }
         is ProposalItem.SetDocumentDefaults -> null
+        is ProposalItem.AddMarkup -> {
+            val page = pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            if (page.pdfs.none { it.removed == null }) throw AgentToolException(AgentErrorCode.REFUSED, "This page shows no PDF page: only the text of a PDF is marked.")
+            null
+        }
+        is ProposalItem.RestyleMarkups -> {
+            val (page, _) = elementsOf(item.page, item.markups, ::missing)
+            if (MarkupItems.marksOf(page, item.markups) == null) throw AgentToolException(AgentErrorCode.REFUSED, "restyle_markups changes the marks of read_page (markups) only.")
+            null
+        }
         is ProposalItem.AddShape -> {
             val page = pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
             checkInside(page, ShapeItems.boundsOf(ShapeItems.added(item).second), item.from, item.to)
@@ -443,6 +465,8 @@ internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
         is ProposalItem.UpdateText -> findText(item.text)?.first?.id
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(this, item.stroke)?.first?.id
         is ProposalItem.AddShape -> item.page
+        is ProposalItem.AddMarkup -> item.page
+        is ProposalItem.RestyleMarkups -> item.page
         is ProposalItem.UpdateShape -> ShapeItems.findShape(this, item.shape)?.first?.id
         else -> null
     } ?: return null

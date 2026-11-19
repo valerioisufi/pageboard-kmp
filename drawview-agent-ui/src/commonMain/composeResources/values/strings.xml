@@ -31,6 +31,8 @@
     <string name="agent_item_restore_pages">Put back removed pages</string>
     <string name="agent_item_add_shape">Draw a shape</string>
     <string name="agent_item_update_shape">Change a shape</string>
+    <string name="agent_item_add_markup">Mark a passage of the PDF</string>
+    <string name="agent_item_restyle_markups">Change marks of the PDF</string>
     <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
     <string name="agent_item_stale_other">This changed after the model read it, or is gone: it will not be touched.</string>
     <string name="agent_outcome_accepted">Applied</string>

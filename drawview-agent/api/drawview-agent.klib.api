@@ -509,6 +509,44 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         }
     }
 
+    final class AddMarkup : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/Int = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.String?){}[0]
+
+        final val color // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.color|{}color[0]
+            final fun <get-color>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.color.<get-color>|<get-color>(){}[0]
+        final val kind // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.kind|{}kind[0]
+            final fun <get-kind>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.kind.<get-kind>|<get-kind>(){}[0]
+        final val occurrence // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.occurrence|{}occurrence[0]
+            final fun <get-occurrence>(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.occurrence.<get-occurrence>|<get-occurrence>(){}[0]
+        final val page // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.page|{}page[0]
+            final fun <get-page>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.page.<get-page>|<get-page>(){}[0]
+        final val quote // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.quote|{}quote[0]
+            final fun <get-quote>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.quote.<get-quote>|<get-quote>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.component1|component1(){}[0]
+        final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.component2|component2(){}[0]
+        final fun component3(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.component3|component3(){}[0]
+        final fun component4(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.component4|component4(){}[0]
+        final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.component5|component5(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup> { // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup) // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.AddMarkup){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup> // io.github.valerioisufi.drawview.agent/ProposalItem.AddMarkup.Companion.serializer|serializer(){}[0]
+        }
+    }
+
     final class AddPage : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.AddPage|null[0]
         constructor <init>(kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.AddPage.<init>|<init>(kotlin.String?){}[0]
 
@@ -1016,6 +1054,43 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
             final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.Companion.$childSerializers|{}$childSerializers[0]
 
             final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages> // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class RestyleMarkups : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups|null[0]
+        constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>, kotlin/String? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.String?;kotlin.String?){}[0]
+
+        final val color // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.color|{}color[0]
+            final fun <get-color>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.color.<get-color>|<get-color>(){}[0]
+        final val kind // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.kind|{}kind[0]
+            final fun <get-kind>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.kind.<get-kind>|<get-kind>(){}[0]
+        final val markups // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.markups|{}markups[0]
+            final fun <get-markups>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.markups.<get-markups>|<get-markups>(){}[0]
+        final val page // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.page|{}page[0]
+            final fun <get-page>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.page.<get-page>|<get-page>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.component1|component1(){}[0]
+        final fun component2(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.component2|component2(){}[0]
+        final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.component3|component3(){}[0]
+        final fun component4(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.component4|component4(){}[0]
+        final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ..., kotlin/String? = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.String?;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups> { // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups) // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.RestyleMarkups){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.Companion|null[0]
+            final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups> // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleMarkups.Companion.serializer|serializer(){}[0]
         }
     }
 

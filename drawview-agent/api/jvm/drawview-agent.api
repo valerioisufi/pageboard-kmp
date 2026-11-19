@@ -914,6 +914,42 @@ public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddImage$C
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()I
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getOccurrence ()I
+	public final fun getPage ()Ljava/lang/String;
+	public final fun getQuote ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddMarkup$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$AddPage : io/github/valerioisufi/drawview/agent/ProposalItem {
 	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$AddPage$Companion;
 	public fun <init> ()V
@@ -1389,6 +1425,40 @@ public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$
 }
 
 public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestorePages$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups : io/github/valerioisufi/drawview/agent/ProposalItem {
+	public static final field Companion Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getMarkups ()Ljava/util/List;
+	public final fun getPage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/agent/ProposalItem$RestyleMarkups$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

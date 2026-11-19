@@ -76,6 +76,8 @@ internal val ProposalItem.wireKind: String
         is ProposalItem.RestorePages -> "restore_pages"
         is ProposalItem.AddShape -> "add_shape"
         is ProposalItem.UpdateShape -> "update_shape"
+        is ProposalItem.AddMarkup -> "add_markup"
+        is ProposalItem.RestyleMarkups -> "restyle_markups"
     }
 
 /**

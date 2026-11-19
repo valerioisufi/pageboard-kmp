@@ -289,6 +289,33 @@ public sealed interface ProposalItem {
         val to: List<Float>? = null
     ) : ProposalItem
 
+    /**
+     * Marks the passage [quote] of the text of the PDF page shown on the page [page], its
+     * [occurrence]-th one (from 1): spaces and line breaks count as one space.
+     *
+     * @param kind (`markup_kind`) `highlight`, `underline` or `strikeout`.
+     * @param color `#RRGGBB` or `#RRGGBBAA`; a translucent yellow for a highlight, the blue of the models otherwise.
+     */
+    @Serializable
+    @SerialName("add_markup")
+    public data class AddMarkup(
+        val page: String,
+        val quote: String,
+        @SerialName("markup_kind") val kind: String,
+        val occurrence: Int = 1,
+        val color: String? = null
+    ) : ProposalItem
+
+    /** Changes the kind or the color of the marks [markups] of the page [page], as they were when read. */
+    @Serializable
+    @SerialName("restyle_markups")
+    public data class RestyleMarkups(
+        val page: String,
+        val markups: List<ElementRef>,
+        @SerialName("markup_kind") val kind: String? = null,
+        val color: String? = null
+    ) : ProposalItem
+
     /** Puts the pages [pages] of the trash of the pages back where they were. */
     @Serializable
     @SerialName("restore_pages")

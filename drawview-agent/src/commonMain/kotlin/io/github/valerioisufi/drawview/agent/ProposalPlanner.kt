@@ -176,7 +176,12 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 is ProposalItem.PlaceElements -> planPlace(document, pages, item, measure, grown, chains.value)
                 is ProposalItem.ReorderElements,
                 is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage,
-                is ProposalItem.AddShape, is ProposalItem.UpdateShape -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.AddShape, is ProposalItem.UpdateShape, is ProposalItem.RestyleMarkups -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.AddMarkup -> {
+                    val page = document.pageById(item.page)!!
+                    val passage = MarkupItems.find(document, page, item.quote, item.occurrence, engines)!!
+                    PlannedItem(false, listOf(PlannedPiece("", "", page.id, false, MarkupItems.boxOf(page, passage), 0f)), 0, emptyList())
+                }
                 is ProposalItem.RemovePage -> {
                     // What comes after it does not go on it
                     pages.removeAt(pages.indexOfFirst { it.id == item.page })
@@ -225,6 +230,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.UpdateText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.AddStroke -> document.pageById(item.page) == null
         is ProposalItem.AddShape -> document.pageById(item.page) == null
+        is ProposalItem.AddMarkup -> document.pageById(item.page)?.let { MarkupItems.find(document, it, item.quote, item.occurrence, engines) } == null
+        is ProposalItem.RestyleMarkups -> ElementItems.isStale(document.pageById(item.page), item.markups) ||
+            document.pageById(item.page)?.let { MarkupItems.marksOf(it, item.markups) } == null
         is ProposalItem.UpdateShape -> ShapeItems.findShape(document, item.shape)?.second?.elementBase() != item.base
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(document, item.stroke)?.second?.elementBase() != item.base
         is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
