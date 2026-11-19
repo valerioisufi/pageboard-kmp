@@ -1,0 +1,40 @@
+# What cargo and the C++ compilers built on the earlier runs (docs/plans/ci-time.md). Not for release.yml:
+# what is published is built from its sources alone.
+name: Native caches
+description: Restores and saves the builds of the Rust bridge and of the C++ engines
+
+inputs:
+  key:
+    description: The cache of this job
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      with:
+        workspaces: native/iroh-bridge -> ../build/rust
+        key: ${{ inputs.key }}
+        cache-on-failure: true
+
+    # The Visual Studio generator of Windows does not use ccache
+    - if: runner.os != 'Windows'
+      uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
+      with:
+        key: ${{ inputs.key }}
+        max-size: 1G
+
+    - if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+        echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+        # The NDK may be installed anew by each run: its date would make every compilation a miss
+        echo "CCACHE_COMPILERCHECK=content" >> "$GITHUB_ENV"
+
+    # The archives of the engines, verified by their digest when they are used. The servers they
+    # come from fail now and then
+    - uses: actions/cache@v4
+      with:
+        path: build/*/downloads
+        key: native-downloads-${{ inputs.key }}-${{ hashFiles('build.gradle.kts', 'native/*/*.properties') }}
