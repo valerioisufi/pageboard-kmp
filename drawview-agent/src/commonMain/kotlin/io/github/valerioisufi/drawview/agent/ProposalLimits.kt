@@ -5,7 +5,9 @@ import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.placement.FreeSpace
+import io.github.valerioisufi.drawview.model.shape.ShapeElement
 import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
@@ -197,8 +199,50 @@ internal class ProposalLimits(
                 if (item.pages.isEmpty() || item.pages.size > maxElements) refuse("restore_pages puts back from 1 to $maxElements pages.")
                 if (item.pages.toSet().size != item.pages.size) refuse("A page is put back once.")
             }
+            is ProposalItem.AddShape -> {
+                val kind = ShapeItems.KINDS[item.kind] ?: refuse("shape_kind is ${ShapeItems.KINDS.keys.joinToString(", ")}.")
+                shapeStyle(item.color, item.widthMm, item.outline, item.startHead, item.endHead)
+                if (kind.isLine) {
+                    if (listOf(item.x, item.y, item.width, item.height, item.rotation).any { it != null } || item.fill != null) {
+                        refuse("A line is drawn by from and to, without x, y, width, height, rotation or fill.")
+                    }
+                    point(item.from ?: refuse("A line needs from and to."))
+                    point(item.to ?: refuse("A line needs from and to."))
+                    if (!ShapeItems.isLong(item.from, item.to)) refuse("The ends of a line are at least ${ShapeItems.MIN_SIDE_MM} millimeter apart.")
+                } else {
+                    if (item.from != null || item.to != null || item.startHead != null || item.endHead != null) refuse("A shape of a box has no from, to or heads.")
+                    val sides = listOf(item.x, item.y, item.width, item.height)
+                    if (sides.any { it == null || !it.isFinite() }) refuse("A shape of a box needs x, y, width and height in millimeters.")
+                    if (item.width!! < ShapeItems.MIN_SIDE_MM || item.height!! < ShapeItems.MIN_SIDE_MM) refuse("width and height are at least ${ShapeItems.MIN_SIDE_MM} millimeter.")
+                    item.rotation?.let { rotation(it) }
+                    color(item.fill)
+                }
+            }
+            is ProposalItem.UpdateShape -> {
+                if (item.kind != null && item.kind !in ShapeItems.KINDS) refuse("shape_kind is ${ShapeItems.KINDS.keys.joinToString(", ")}.")
+                shapeStyle(item.color, item.widthMm, item.outline, item.startHead, item.endHead)
+                if (item.fill != null && item.fill != "none") color(item.fill)
+                item.from?.let { point(it) }
+                item.to?.let { point(it) }
+                if (listOf(item.kind, item.color, item.fill, item.widthMm, item.outline, item.startHead, item.endHead, item.from, item.to).all { it == null }) {
+                    refuse("update_shape needs something to change.")
+                }
+            }
             else -> {}
         }
+    }
+
+    private fun shapeStyle(color: String?, widthMm: Float?, outline: String?, startHead: String?, endHead: String?) {
+        if (color != null && ElementItems.parseColor(color) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
+        if (widthMm != null && (!widthMm.isFinite() || widthMm < ShapeElement.MIN_WIDTH_MM || widthMm > ShapeElement.MAX_WIDTH_MM)) {
+            refuse("width_mm is between ${ShapeElement.MIN_WIDTH_MM} and ${ShapeElement.MAX_WIDTH_MM}.")
+        }
+        if (outline != null && outline !in ShapeItems.OUTLINES) refuse("outline is solid, dashed or dotted.")
+        if (listOf(startHead, endHead).any { it != null && it !in ShapeItems.HEADS }) refuse("A head is none, open or filled.")
+    }
+
+    private fun point(point: List<Float>) {
+        if (point.size != 2 || !point[0].isFinite() || !point[1].isFinite()) refuse("A point is [x, y] in millimeters.")
     }
 
     private fun side(value: Float?) {
@@ -293,6 +337,31 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
             null
         }
         is ProposalItem.SetDocumentDefaults -> null
+        is ProposalItem.AddShape -> {
+            val page = pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            checkInside(page, ShapeItems.boundsOf(ShapeItems.added(item).second), item.from, item.to)
+            null
+        }
+        is ProposalItem.UpdateShape -> {
+            val (page, element, value) = ShapeItems.findShape(this, item.shape) ?: missing("shape \"${item.shape.take(64)}\"")
+            val kind = item.kind?.let { ShapeItems.KINDS.getValue(it) }
+            if (kind != null && kind.isLine != value.kind.isLine) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "A line stays a line and a shape of a box a shape of a box: remove it and add another.")
+            }
+            if (value.kind.isLine && item.fill != null) throw AgentToolException(AgentErrorCode.REFUSED, "A line has no fill.")
+            if (!value.kind.isLine && listOf(item.from, item.to, item.startHead, item.endHead).any { it != null }) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "A shape of a box has no from, to or heads: place_elements moves and scales it.")
+            }
+            val (_, box) = ShapeItems.updated(element, value, item)
+            if (value.kind.isLine) {
+                val ends = ShapeItems.endsOf(box, value)
+                if (!ShapeItems.isLong(listOf(ends.from.x, ends.from.y), listOf(ends.to.x, ends.to.y))) {
+                    throw AgentToolException(AgentErrorCode.REFUSED, "The ends of a line are at least ${ShapeItems.MIN_SIDE_MM} millimeter apart.")
+                }
+            }
+            checkInside(page, null, item.from, item.to)
+            null
+        }
         is ProposalItem.RestorePages -> {
             for (id in item.pages) PageItems.restorable(this, id) ?: missing("page \"${id.take(64)}\" in the trash of its pages")
             null
@@ -351,6 +420,13 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
     }
 }
 
+/** Refuses a box or points outside [page]: the ends of a line may be at its edge, its box past it by the room of its heads. */
+private fun checkInside(page: DrawPage, box: Rect?, vararg points: List<Float>?) {
+    val outside = points.filterNotNull().any { (x, y) -> x < 0f || y < 0f || x > page.widthMm || y > page.heightMm } ||
+        (points.all { it == null } && box != null && (box.left < 0f || box.top < 0f || box.right > page.widthMm || box.bottom > page.heightMm))
+    if (outside) throw AgentToolException(AgentErrorCode.REFUSED, "It would go outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
+}
+
 /** The index of the page [item] is on, for an item on a page or its elements. */
 internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
     val id = when (item) {
@@ -366,6 +442,8 @@ internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
         is ProposalItem.RestyleText -> findText(item.text)?.first?.id
         is ProposalItem.UpdateText -> findText(item.text)?.first?.id
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(this, item.stroke)?.first?.id
+        is ProposalItem.AddShape -> item.page
+        is ProposalItem.UpdateShape -> ShapeItems.findShape(this, item.shape)?.first?.id
         else -> null
     } ?: return null
     return pages.indexOfFirst { it.id == id }.takeIf { it >= 0 }

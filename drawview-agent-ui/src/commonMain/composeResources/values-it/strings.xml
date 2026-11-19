@@ -29,6 +29,8 @@
     <string name="agent_item_rename_document">Rinomina il documento</string>
     <string name="agent_item_set_document_defaults">Cambia il formato delle nuove pagine</string>
     <string name="agent_item_restore_pages">Rimetti le pagine rimosse</string>
+    <string name="agent_item_add_shape">Disegna una forma</string>
+    <string name="agent_item_update_shape">Modifica una forma</string>
     <string name="agent_item_stale">Questo testo è cambiato dopo che il modello l\'ha letto: non verrà sovrascritto.</string>
     <string name="agent_item_stale_other">Questo è cambiato dopo che il modello l\'ha letto, oppure non c\'è più: non verrà toccato.</string>
     <string name="agent_outcome_accepted">Applicato</string>

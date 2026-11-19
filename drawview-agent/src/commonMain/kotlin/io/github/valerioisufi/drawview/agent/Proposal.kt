@@ -234,6 +234,61 @@ public sealed interface ProposalItem {
         @SerialName("background_color") val backgroundColor: String? = null
     ) : ProposalItem
 
+    /**
+     * Draws a shape of the shapes tool on the page [page]: of a box ([x], [y], [width], [height] in
+     * millimeters, turned by [rotation] degrees around its center), or a line from [from] to [to]
+     * (`[x, y]`).
+     *
+     * @param kind (`shape_kind`) `line`, `arrow`, `double_arrow`, `rectangle`, `rounded_rectangle`, `ellipse`,
+     *   `triangle`, `right_triangle`, `diamond`, `pentagon` or `hexagon`.
+     * @param color of its outline, `#RRGGBB` or `#RRGGBBAA`; the blue of the models by default.
+     * @param fill of the inside of a shape of a box; none by default.
+     * @param widthMm the width of its outline.
+     * @param outline `solid`, `dashed` or `dotted`.
+     * @param startHead the head at [from] of a line: `none`, `open` or `filled`; [endHead] at [to].
+     */
+    @Serializable
+    @SerialName("add_shape")
+    public data class AddShape(
+        val page: String,
+        @SerialName("shape_kind") val kind: String,
+        val x: Float? = null,
+        val y: Float? = null,
+        val width: Float? = null,
+        val height: Float? = null,
+        val rotation: Float? = null,
+        val from: List<Float>? = null,
+        val to: List<Float>? = null,
+        val color: String? = null,
+        val fill: String? = null,
+        @SerialName("width_mm") val widthMm: Float? = null,
+        val outline: String? = null,
+        @SerialName("start_head") val startHead: String? = null,
+        @SerialName("end_head") val endHead: String? = null
+    ) : ProposalItem
+
+    /**
+     * Changes the shape [shape], as it was when read ([base]): its kind (a line stays a line, a shape
+     * of a box a shape of a box), its style, and the ends of a line. What is `null` stays as it is.
+     *
+     * @param fill `#RRGGBB`, `#RRGGBBAA`, or `none` to empty it.
+     */
+    @Serializable
+    @SerialName("update_shape")
+    public data class UpdateShape(
+        val shape: String,
+        val base: String,
+        @SerialName("shape_kind") val kind: String? = null,
+        val color: String? = null,
+        val fill: String? = null,
+        @SerialName("width_mm") val widthMm: Float? = null,
+        val outline: String? = null,
+        @SerialName("start_head") val startHead: String? = null,
+        @SerialName("end_head") val endHead: String? = null,
+        val from: List<Float>? = null,
+        val to: List<Float>? = null
+    ) : ProposalItem
+
     /** Puts the pages [pages] of the trash of the pages back where they were. */
     @Serializable
     @SerialName("restore_pages")

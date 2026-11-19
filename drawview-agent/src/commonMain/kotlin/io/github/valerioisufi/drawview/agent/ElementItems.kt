@@ -225,6 +225,7 @@ internal object ElementItems {
         is ProposalItem.RestyleText -> listOf(item.text)
         is ProposalItem.UpdateText -> listOf(item.text)
         is ProposalItem.RestyleStroke -> listOf(item.stroke)
+        is ProposalItem.UpdateShape -> listOf(item.shape)
         is ProposalItem.RemoveElements -> item.elements.map { it.id }
         is ProposalItem.PlaceElements -> item.elements.map { it.id }
         is ProposalItem.ReorderElements -> item.elements.map { it.id }

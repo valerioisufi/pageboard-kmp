@@ -175,7 +175,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 }
                 is ProposalItem.PlaceElements -> planPlace(document, pages, item, measure, grown, chains.value)
                 is ProposalItem.ReorderElements,
-                is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage,
+                is ProposalItem.AddShape, is ProposalItem.UpdateShape -> PlannedItem(false, emptyList(), 0, emptyList())
                 is ProposalItem.RemovePage -> {
                     // What comes after it does not go on it
                     pages.removeAt(pages.indexOfFirst { it.id == item.page })
@@ -223,6 +224,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.RestyleText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.UpdateText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.AddStroke -> document.pageById(item.page) == null
+        is ProposalItem.AddShape -> document.pageById(item.page) == null
+        is ProposalItem.UpdateShape -> ShapeItems.findShape(document, item.shape)?.second?.elementBase() != item.base
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(document, item.stroke)?.second?.elementBase() != item.base
         is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
         // A document keeps one page at least

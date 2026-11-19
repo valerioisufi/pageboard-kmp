@@ -89,6 +89,16 @@ internal object ProposalMarks {
                 PlannedMark(PlannedMark.Kind.MOVED, page.id, before, toBox = piece.box, elementId = element.id)
             }
             is ProposalItem.AddStroke -> listOfNotNull(strokeMark(item))
+            is ProposalItem.AddShape -> listOf(PlannedMark(PlannedMark.Kind.ADDED, item.page, ShapeItems.boundsOf(ShapeItems.added(item).second)))
+            is ProposalItem.UpdateShape -> {
+                val (page, element, value) = ShapeItems.findShape(document, item.shape) ?: return emptyList()
+                val before = ShapeItems.boundsOf(ShapeItems.boxOf(element))
+                val after = ShapeItems.boundsOf(ShapeItems.updated(element, value, item).second)
+                buildList {
+                    if (isMoved(before, after)) add(PlannedMark(PlannedMark.Kind.MOVED, page.id, before, toBox = after, elementId = element.id))
+                    add(PlannedMark(PlannedMark.Kind.CHANGED, page.id, after, elementId = element.id))
+                }
+            }
             is ProposalItem.AddImage -> {
                 val page = item.page?.let { document.pageById(it) } ?: document.pages.lastOrNull()
                 val box = item.area?.rect

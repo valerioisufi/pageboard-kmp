@@ -10,6 +10,7 @@ import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.TextData
+import io.github.valerioisufi.drawview.model.change.UpdateElementContent
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
 
@@ -98,6 +99,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                 is ProposalItem.RemovePage, is ProposalItem.MovePage, is ProposalItem.DuplicatePage,
                 is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument, is ProposalItem.SetDocumentDefaults,
                 is ProposalItem.RestorePages -> changes += PageItems.changesOf(document, item)
+                is ProposalItem.AddShape, is ProposalItem.UpdateShape -> changes += ShapeItems.changesOf(document, item)
                 else -> changes += ElementItems.changesOf(document, item)
             }
             touched += changes.subList(from, changes.size).flatMap { it.elementsLeft() }.distinct()
@@ -116,6 +118,7 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
         is UpdateTexts -> texts.map { it.id }
         is PlaceElements -> placements.map { it.id }
         is ReorderElements -> orders.map { it.id }
+        is UpdateElementContent -> listOf(id)
         is CompositeChange -> this.changes.flatMap { it.elementsLeft() }
         else -> emptyList()
     }

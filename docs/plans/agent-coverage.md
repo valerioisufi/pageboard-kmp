@@ -130,8 +130,8 @@ AgentEndpoint ─► DocumentTools ─► ReadingTools  ─┐ reads
 
 | Item | Becomes | Check |
 |---|---|---|
-| `add_shape(page, kind, x, y, width, height, rotation?, color?, fill?, width_mm?, dash?, start_head?, end_head?)`; a line by `from`, `to` | `AddElements` of a custom element `drawview.shape` | the values of `ShapeElement` (`MIN_WIDTH_MM`…), inside the page |
-| `update_shape(shape, base, kind?, color?, fill?, width_mm?, dash?, start_head?, end_head?, from?, to?)` | `UpdateElementContent`, plus a `BoxPlacement` when the ends move | `base`; a line stays a line (`withKind`) |
+| `add_shape(page, shape_kind, x, y, width, height, rotation?, color?, fill?, width_mm?, outline?, start_head?, end_head?)`; a line by `from`, `to` (`kind` names the item) | `AddElements` of a custom element `drawview.shape` | the values of `ShapeElement` (`MIN_WIDTH_MM`…), inside the page |
+| `update_shape(shape, base, shape_kind?, color?, fill?, width_mm?, outline?, start_head?, end_head?, from?, to?)` | `UpdateElementContent`, plus a `BoxPlacement` when the ends move | `base`; a line stays a line (`withKind`) |
 | `add_markup(page, quote, occurrence?, kind, color?)` | `AddElements` of a `DrawTextMarkup` | the quote found in the PDF text of the page, once or at `occurrence`; at most a set length |
 | `restyle_markups(page, [id, base], kind?, color?)` | `RestyleMarkups` | each `base` |
 | `place_elements(…, rotation?, to_page?)` | `PlaceElements` with `rotation` added around the center of the group, and `toPageId` | each `base`, inside the target page; no PDF page or mark moved (as today) |
@@ -187,7 +187,7 @@ ABI of `drawview-agent` on purpose; the command line reaches the new tools with 
 |---|---|---|---|
 | 1 | Reading: marks, background details, dates, `is_shared`, `has_pdf`, the defaults in `read_document`, `list_removed_pages`, `read_image`. Tests: each field, a document of before reading as before, the bound of `read_image` | 2, 10, 11, 12, 8 | done |
 | 2 | The small items: `rotation` and `to_page` in `place_elements`, `rotation` and `auto_width` in `update_text`, `alignment` in `insert_text`, `set_document_defaults`, `restore_pages`, the background of `create_document`. Tests: each item, stale, one undo, converging on another device through the written operation | 3, 4, 6a, 10, 11, 13 | done |
-| 3 | Shapes: `add_shape`, `update_shape`. Tests: every kind, a line by its ends, refused values, a style kept by `withKind`, undo, the review marks | 1 | proposed |
+| 3 | Shapes: `add_shape`, `update_shape`. Tests: every kind, a line by its ends, refused values, a style kept by `withKind`, undo, the review marks | 1 | done |
 | 4 | Marks: `add_markup`, `restyle_markups`, their removal. Tests: a quote found once, at an occurrence, not found, a scanned page, the rects on a page of another format, undo | 2 | proposed |
 | 5 | Copies and the library: `copy_elements`, `copy_pages`, `duplicate_document`, `import_pdf` (`AgentPdfs`), `import_archive`. Tests: both documents allowed or refused, images and PDF pages carried, the undo of each, the bounds of the files | 4, 5, 15, 16 | proposed |
 | 6 | Files and the editor: `export` (`AgentExports`, every format), `show_page`. Tests: a new file never over another, a folder exported, a closed document, the desktop application on a scratch directory | 14, 18 | proposed |

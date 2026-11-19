@@ -7,9 +7,7 @@ import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.model.geometry.Rect
-import io.github.valerioisufi.drawview.model.shape.ShapeBox
 import io.github.valerioisufi.drawview.model.shape.ShapeElement
-import io.github.valerioisufi.drawview.model.shape.ShapeGeometry
 import io.github.valerioisufi.drawview.model.shape.ShapeHead
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerialName
@@ -76,6 +74,8 @@ internal val ProposalItem.wireKind: String
         is ProposalItem.RenameDocument -> "rename_document"
         is ProposalItem.SetDocumentDefaults -> "set_document_defaults"
         is ProposalItem.RestorePages -> "restore_pages"
+        is ProposalItem.AddShape -> "add_shape"
+        is ProposalItem.UpdateShape -> "update_shape"
     }
 
 /**
@@ -366,31 +366,33 @@ internal data class ShapeEntry(
     val fill: String? = null,
     val from: List<Float>? = null,
     val to: List<Float>? = null,
-    val rotation: Float? = null
+    val rotation: Float? = null,
+    @SerialName("start_head") val startHead: String? = null,
+    @SerialName("end_head") val endHead: String? = null
 )
 
 /** [value], the value of [element], as [ShapeEntry]. */
 internal fun shapeEntryOf(element: DrawCustomElement, value: ShapeElement): ShapeEntry {
-    val box = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
     val heads = listOf(value.startHead, value.endHead).count { it != ShapeHead.NONE }
     val kind = when {
         !value.kind.isLine -> value.kind.name.lowercase()
         heads == 2 -> "double_arrow"
-        // An arrow is read from its tail to its head
         heads == 1 -> "arrow"
         else -> "line"
     }
-    var ends = if (value.kind.isLine) ShapeGeometry.lineEnds(box) else null
-    if (ends != null && value.startHead != ShapeHead.NONE && value.endHead == ShapeHead.NONE) ends = ends.second to ends.first
+    // An arrow is read from its tail to its head
+    val ends = if (value.kind.isLine) ShapeItems.endsOf(ShapeItems.boxOf(element), value) else null
     return ShapeEntry(
         kind = kind,
         color = colorHex(value.stroke),
         width = value.widthMm.tenths().coerceAtLeast(0.1f),
         outline = value.dash.name.lowercase(),
         fill = value.fill?.let(::colorHex),
-        from = ends?.first?.let { listOf(it.x.tenths(), it.y.tenths()) },
-        to = ends?.second?.let { listOf(it.x.tenths(), it.y.tenths()) },
-        rotation = element.rotation.takeIf { !value.kind.isLine && it != 0f }?.tenths()
+        from = ends?.from?.let { listOf(it.x.tenths(), it.y.tenths()) },
+        to = ends?.to?.let { listOf(it.x.tenths(), it.y.tenths()) },
+        rotation = element.rotation.takeIf { !value.kind.isLine && it != 0f }?.tenths(),
+        startHead = ends?.headFrom?.takeIf { it != ShapeHead.NONE }?.name?.lowercase(),
+        endHead = ends?.headTo?.takeIf { it != ShapeHead.NONE }?.name?.lowercase()
     )
 }
 
