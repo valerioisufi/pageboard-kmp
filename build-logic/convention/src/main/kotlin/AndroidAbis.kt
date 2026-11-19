@@ -13,15 +13,19 @@ internal fun Project.localProperty(name: String): String? {
 }
 
 /**
- * The ABIs of the debug builds of this machine: `android.debug.abis` in `local.properties`, names
- * separated by commas, else [ANDROID_ABIS].
+ * The ABIs of the debug builds: the Gradle property `drawview.android.debug.abis`, as a workflow
+ * passes it (the runners have no `local.properties`), else `android.debug.abis` in
+ * `local.properties`, names separated by commas, else [ANDROID_ABIS].
  */
 fun Project.debugAbis(): List<String> {
-    val configured = localProperty("android.debug.abis") ?: return ANDROID_ABIS
+    val (source, configured) = providers.gradleProperty("drawview.android.debug.abis").orNull
+        ?.takeIf { it.isNotBlank() }?.let { "drawview.android.debug.abis" to it }
+        ?: localProperty("android.debug.abis")?.let { "android.debug.abis in local.properties" to it }
+        ?: return ANDROID_ABIS
     val abis = configured.split(',').map { it.trim() }.filter { it.isNotEmpty() }
     val unknown = abis - ANDROID_ABIS.toSet()
     if (abis.isEmpty() || unknown.isNotEmpty()) {
-        throw GradleException("android.debug.abis in local.properties is '$configured': names among $ANDROID_ABIS")
+        throw GradleException("$source is '$configured': names among $ANDROID_ABIS")
     }
     return abis
 }

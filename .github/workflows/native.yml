@@ -7,10 +7,36 @@ name: Native libraries
 # - android: the NDK libraries (+ the prebuilt libpdfium.so) of the debug APK;
 # - ios: the static libraries + PDFium.xcframework, tested on the simulator and linked by the app.
 
+# Only the changes that can touch the native engines start it (docs/plans/ci-time.md): the other ones
+# are checked by check.yml. The weekly run ignores the filter, and finds a change of the runners too.
 on:
   push:
     branches: [main]
+    paths: &native-paths
+      - native/**
+      - drawview-native-*/**
+      - drawview-ink/**
+      - drawview-canvas/**
+      - drawview-latex/**
+      - drawview-pdf/**
+      - drawview-lecture/**
+      - drawview-lecture-testing/**
+      - drawview-sync-iroh/**
+      - build-logic/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle/**
+      - gradle.properties
+      - gradlew
+      - gradlew.bat
+      - sample/**
+      - pencilnotes/androidApp/**
+      - .github/workflows/native.yml
+      - .github/actions/**
   pull_request:
+    paths: *native-paths
+  schedule:
+    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 concurrency:

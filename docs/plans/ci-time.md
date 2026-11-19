@@ -120,7 +120,7 @@ commit per phase.
 | 1 | This plan | Done |
 | 2 | The failures of the runners: `TrackpadGesturesTest` in pixels, the two lecture tests, the downloads tried again and kept | Done, the tests run here; the retry not tried against a failing server |
 | 3 | `check.yml` and `release.yml` on `macos-26` | Done, untried on Actions (green on `feat/ci-time` for `check.yml`) |
-| 4 | `check.yml` in two jobs, the APKs on Linux for one ABI (`drawview.android.debug.abis`); the `paths` of `native.yml` and the weekly run | To do |
+| 4 | `check.yml` in two jobs, the APKs on Linux for one ABI (`drawview.android.debug.abis`); the `paths` of `native.yml` and the weekly run | Done, the property checked here; the workflows untried on Actions |
 | 5 | The caches: Rust, ccache, the archives, the desktop libraries; the disk of the Android jobs freed; the results of failed tests kept | To do |
 | 6 | The times measured on Actions and written here; what did not pay removed | To do, once the repository is public or the minutes are there |
 
