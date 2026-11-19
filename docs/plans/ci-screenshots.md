@@ -155,30 +155,53 @@ tolerance keeps every regression visible; locally the comparison images serve to
 
 ### Migrating
 
-Once the workflow works, the `record` job records every reference on `feat/ci-screenshots` in one
-commit, `build(screenshots): every reference recorded again on the linux runner`, which says that
-the images change for the rendering of Linux and not for a change of the interface. Before it, the
-references of the Mac and the new ones are compared one by one by eye, on a sample of each module
-(the `_compare.png` of a verify on the runner), to tell the rendering apart from a real difference.
+Every reference is recorded again in the image, in one commit, `build(screenshots): every
+reference recorded again in the docker image of linux`, which says that the images change for the
+rendering of Linux and not for a change of the interface. Before it, the share of differing pixels
+of every reference is measured and the outliers are looked at by eye beside the reference of the
+Mac, to tell the rendering apart from a real difference.
 
-The branches open at that moment record their screenshots again after rebasing on `main` (the
-workflow, one run each).
+The Actions minutes being spent when this was done, the migration was recorded with
+`tools/screenshots/run.sh record` on the Windows host of the maintainer (Docker Desktop, x86_64),
+not by the workflow. What it found (2026-11-19, 166 images: 160 changed, 6 new):
+
+* **Rendering**: most references differ in 0.03-4% of their pixels, the antialiasing and the
+  weight of the glyphs (FreeType draws them thinner than CoreText).
+* **The time zone**: the times of the lecture panel moved by two hours, the tests now running in
+  UTC rather than in the zone of the Mac.
+* **The theme of the host**: `ComponentScreenshotTest.documentRename` took the theme of the system
+  (`isSystemInDarkTheme`), dark on the Mac; it now asks for the light theme.
+* **References behind the code**: the labels of the editor menu, the formats of the export
+  (Markdown, Archive), the close button of the search settings, the bar of the phone, and six
+  screenshots that had no reference.
+* **The JNI libraries did not build on Linux with GCC 13** (`std::modff` in Ink): the fix of
+  `feat/ci-time` (`fix(native): the desktop build without a local.properties and with the
+  libstdc++ of gcc 13`) is taken into this branch.
+* **The caret of the editor blinked at random in the screenshots**: `awaitPagesDrawn` advances the
+  clock of the test by as many frames as the tiles take in real time, so `textChainWritten` failed
+  one verify in two. `EditorScene.capture` now starts the blink again right before the capture (a
+  one-character selection, which the editor does not follow, then the caret put back);
+  `textLargerThanWindow`, whose caret is out of sight, is captured with `caretInSight = false`.
+* **Docker Desktop on Windows** refuses `chmod` on the mounted checkout to a user other than root,
+  and Git Bash rewrites the paths given to Docker: `run.sh` runs the container as root there, with
+  `pwd -W` and `MSYS_NO_PATHCONV`.
+
+The branches open at that moment record their screenshots again after rebasing on `main`.
 
 ## Phases
 
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The convention plugin `drawview.screenshots`: the plugin, `outputDir`, the test JVM, the notice of verify and the guard of record; the seven modules use it. The defaults of the comparison of Roborazzi 1.76 checked | Done: `SimpleImageComparator(maxDistance = 0.007)` and `ThresholdValidator(0)`; record refused and verify noticed on Windows |
-| 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on the label `record-screenshots` and on `workflow_dispatch`; `tools/screenshots/gradle.sh` and `collect.sh`; `.github/actions/screenshots-environment`. Tried on the branch: one verify that fails (the references of the Mac) and one record | Written; record refused and collect tried on Windows; not run on Actions yet |
-| 3 | The migration: every reference recorded on the runner, in one commit; a verify of the next run passes | Planned |
+| 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on the label `record-screenshots` and on `workflow_dispatch`; `tools/screenshots/gradle.sh` and `collect.sh`; `.github/actions/screenshots-environment` | Written. `gradle.sh` and `collect.sh` tried in the image and on Windows. **The workflow, the action and the label `record-screenshots` have not been run on Actions** (no minutes left): their first run is on the first pull request after the merge |
+| 3 | The migration: every reference recorded in the image, in one commit; a verify of the next run passes | Done on the Windows host (Docker), not by the workflow: 166 references; two verifies in a row with `--rerun-tasks` pass |
 | 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Done |
-| 5 | The Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, its JDK and fonts, cmake and cargo for the JNI libraries), `tools/screenshots/run.sh`, and the workflow running in the image | Written (approved 2026-11-19); not built yet: Docker is not running on the Windows host |
+| 5 | The Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, its JDK and fonts, cmake and cargo for the JNI libraries), `tools/screenshots/run.sh`, and the workflow running in the image | Done: built and run on Windows (Docker Desktop 29.9, x86_64): DejaVu Sans, Mono and Serif, OpenJDK 21.0.13, cargo 1.99.1. Not tried on Apple silicon (emulated) nor on a Linux host |
 
 **Minutes.** A run of `verify` is about 30 minutes of Linux with cold caches (the image, a few
 minutes; the JNI libraries, 19 minutes in the measures of `feat/ci-time`) and about 10 with warm
-ones. Phases 2 and 3 need
-about four runs, 60-80 minutes of Linux. Each run is asked to the maintainer first while the
-repository is private.
+ones; in Docker on the Windows host a record took 9 minutes with the JNI libraries built. Each run
+on Actions is asked to the maintainer first while the repository is private.
 
 ## Decisions
 
@@ -208,6 +231,9 @@ repository is private.
   more than the x86_64 laptops: it would make phase 5 native on the Macs.
 * **References of tests that no longer exist**: recording does not delete them; they are removed
   by hand with the test.
-* **Measuring whether two runs on different machines of the runner give the same images** (the
-  raster of Skia picks its code by the features of the CPU): phase 2 records twice and compares; if
-  they differ, a per-pixel distance just above those differences, decided then.
+* **The first runs on Actions**: the workflow verifying the references recorded on the Windows
+  host, then the label `record-screenshots` on a pull request of the repository. A failure of the
+  first verify with differences of a few pixels would mean that the runner and the Windows host draw
+  differently (the raster of Skia picks its code by the features of the CPU): then the references
+  are recorded once more by the workflow, and a per-pixel distance just above those differences is
+  decided if two runners also differ.
