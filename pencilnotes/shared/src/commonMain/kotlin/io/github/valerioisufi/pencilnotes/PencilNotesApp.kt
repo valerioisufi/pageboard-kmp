@@ -33,6 +33,10 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import io.github.valerioisufi.drawview.agent.ui.CanvasPageEngine
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.export.ExportWriters
+import io.github.valerioisufi.drawview.export.PageImageExporter
+import io.github.valerioisufi.drawview.export.PdfExporter
+import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
@@ -274,8 +278,19 @@ private fun AgentPages(agents: PencilNotesAgents?, engines: DrawViewEngines) {
     agents ?: return
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    val pages = remember(fontFamilyResolver, notesFonts, engines) {
-        CanvasPageEngine(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code), engines.pdfTiles, engines.elements, engines.images)
+    val textAdapter = remember(fontFamilyResolver, notesFonts, engines) {
+        ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code)
     }
-    SideEffect { agents.pageEngine = pages }
+    val pages = remember(textAdapter, engines) { CanvasPageEngine(textAdapter, engines.pdfTiles, engines.elements, engines.images) }
+    // The exports of the models are drawn as the export sheet draws them
+    val writers = remember(textAdapter, engines) {
+        ExportWriters(
+            pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = "PencilNotes", elements = engines.elements, formulas = engines.formulas),
+            image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images)
+        )
+    }
+    SideEffect {
+        agents.pageEngine = pages
+        agents.exportWriters = writers
+    }
 }

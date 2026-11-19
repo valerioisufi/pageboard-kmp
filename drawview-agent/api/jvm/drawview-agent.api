@@ -137,10 +137,11 @@ public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection
 
 public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDefaultTextSize ()F
 	public final fun getEditors ()Lio/github/valerioisufi/drawview/agent/AgentEditors;
+	public final fun getExports ()Lio/github/valerioisufi/drawview/agent/AgentExports;
 	public final fun getFiles ()Lio/github/valerioisufi/drawview/agent/AgentFiles;
 	public final fun getHandwriting ()Lkotlin/jvm/functions/Function3;
 	public final fun getImages ()Lio/github/valerioisufi/drawview/agent/AgentImages;
@@ -148,6 +149,7 @@ public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public final fun getPdfText ()Lkotlin/jvm/functions/Function3;
 	public final fun getRenderPage ()Lkotlin/jvm/functions/Function4;
 	public final fun getSearch ()Lkotlin/jvm/functions/Function4;
+	public final fun getShow ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentErrorCode : java/lang/Enum {
@@ -161,6 +163,26 @@ public final class io/github/valerioisufi/drawview/agent/AgentErrorCode : java/l
 	public final fun getWireName ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/AgentErrorCode;
 	public static fun values ()[Lio/github/valerioisufi/drawview/agent/AgentErrorCode;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentExportRequest {
+	public fun <init> (Ljava/util/List;Ljava/lang/String;Ljava/util/Set;Ljava/lang/String;)V
+	public final fun getDocumentIds ()Ljava/util/List;
+	public final fun getFolderId ()Ljava/lang/String;
+	public final fun getFormat ()Ljava/lang/String;
+	public final fun getPageIds ()Ljava/util/Set;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentExported {
+	public fun <init> (Ljava/lang/String;JII)V
+	public final fun getBytes ()J
+	public final fun getDocuments ()I
+	public final fun getPages ()I
+	public final fun getPath ()Ljava/lang/String;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/agent/AgentExports {
+	public abstract fun export (Lio/github/valerioisufi/drawview/agent/AgentExportRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/AgentFiles {

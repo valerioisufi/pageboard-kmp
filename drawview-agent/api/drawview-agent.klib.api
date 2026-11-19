@@ -92,6 +92,10 @@ abstract interface io.github.valerioisufi.drawview.agent/AgentEditors { // io.gi
     abstract fun textHeight(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.drawview.agent/AgentEditors.textHeight|textHeight(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.agent/AgentExports { // io.github.valerioisufi.drawview.agent/AgentExports|null[0]
+    abstract suspend fun export(io.github.valerioisufi.drawview.agent/AgentExportRequest): io.github.valerioisufi.drawview.agent/AgentExported // io.github.valerioisufi.drawview.agent/AgentExports.export|export(io.github.valerioisufi.drawview.agent.AgentExportRequest){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.agent/AgentFiles { // io.github.valerioisufi.drawview.agent/AgentFiles|null[0]
     abstract suspend fun importArchive(kotlin/String, kotlin/String?): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentFiles.importArchive|importArchive(kotlin.String;kotlin.String?){}[0]
     abstract suspend fun keepPdf(kotlin/String): io.github.valerioisufi.drawview.agent/AgentPdf? // io.github.valerioisufi.drawview.agent/AgentFiles.keepPdf|keepPdf(kotlin.String){}[0]
@@ -1720,12 +1724,14 @@ final class io.github.valerioisufi.drawview.agent/AgentEndpointConnection { // i
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.valerioisufi.drawview.agent/AgentEngines|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ..., io.github.valerioisufi.drawview.agent/AgentExports? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?;io.github.valerioisufi.drawview.agent.AgentExports?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String?,kotlin.Boolean>?){}[0]
 
     final val defaultTextSize // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize|{}defaultTextSize[0]
         final fun <get-defaultTextSize>(): kotlin/Float // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize.<get-defaultTextSize>|<get-defaultTextSize>(){}[0]
     final val editors // io.github.valerioisufi.drawview.agent/AgentEngines.editors|{}editors[0]
         final fun <get-editors>(): io.github.valerioisufi.drawview.agent/AgentEditors? // io.github.valerioisufi.drawview.agent/AgentEngines.editors.<get-editors>|<get-editors>(){}[0]
+    final val exports // io.github.valerioisufi.drawview.agent/AgentEngines.exports|{}exports[0]
+        final fun <get-exports>(): io.github.valerioisufi.drawview.agent/AgentExports? // io.github.valerioisufi.drawview.agent/AgentEngines.exports.<get-exports>|<get-exports>(){}[0]
     final val files // io.github.valerioisufi.drawview.agent/AgentEngines.files|{}files[0]
         final fun <get-files>(): io.github.valerioisufi.drawview.agent/AgentFiles? // io.github.valerioisufi.drawview.agent/AgentEngines.files.<get-files>|<get-files>(){}[0]
     final val handwriting // io.github.valerioisufi.drawview.agent/AgentEngines.handwriting|{}handwriting[0]
@@ -1740,6 +1746,34 @@ final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.va
         final fun <get-renderPage>(): kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? // io.github.valerioisufi.drawview.agent/AgentEngines.renderPage.<get-renderPage>|<get-renderPage>(){}[0]
     final val search // io.github.valerioisufi.drawview.agent/AgentEngines.search|{}search[0]
         final fun <get-search>(): kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? // io.github.valerioisufi.drawview.agent/AgentEngines.search.<get-search>|<get-search>(){}[0]
+    final val show // io.github.valerioisufi.drawview.agent/AgentEngines.show|{}show[0]
+        final fun <get-show>(): kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? // io.github.valerioisufi.drawview.agent/AgentEngines.show.<get-show>|<get-show>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentExportRequest { // io.github.valerioisufi.drawview.agent/AgentExportRequest|null[0]
+    constructor <init>(kotlin.collections/List<kotlin/String>, kotlin/String?, kotlin.collections/Set<kotlin/String>?, kotlin/String) // io.github.valerioisufi.drawview.agent/AgentExportRequest.<init>|<init>(kotlin.collections.List<kotlin.String>;kotlin.String?;kotlin.collections.Set<kotlin.String>?;kotlin.String){}[0]
+
+    final val documentIds // io.github.valerioisufi.drawview.agent/AgentExportRequest.documentIds|{}documentIds[0]
+        final fun <get-documentIds>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.agent/AgentExportRequest.documentIds.<get-documentIds>|<get-documentIds>(){}[0]
+    final val folderId // io.github.valerioisufi.drawview.agent/AgentExportRequest.folderId|{}folderId[0]
+        final fun <get-folderId>(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentExportRequest.folderId.<get-folderId>|<get-folderId>(){}[0]
+    final val format // io.github.valerioisufi.drawview.agent/AgentExportRequest.format|{}format[0]
+        final fun <get-format>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentExportRequest.format.<get-format>|<get-format>(){}[0]
+    final val pageIds // io.github.valerioisufi.drawview.agent/AgentExportRequest.pageIds|{}pageIds[0]
+        final fun <get-pageIds>(): kotlin.collections/Set<kotlin/String>? // io.github.valerioisufi.drawview.agent/AgentExportRequest.pageIds.<get-pageIds>|<get-pageIds>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentExported { // io.github.valerioisufi.drawview.agent/AgentExported|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.agent/AgentExported.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Int;kotlin.Int){}[0]
+
+    final val bytes // io.github.valerioisufi.drawview.agent/AgentExported.bytes|{}bytes[0]
+        final fun <get-bytes>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentExported.bytes.<get-bytes>|<get-bytes>(){}[0]
+    final val documents // io.github.valerioisufi.drawview.agent/AgentExported.documents|{}documents[0]
+        final fun <get-documents>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentExported.documents.<get-documents>|<get-documents>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.agent/AgentExported.pages|{}pages[0]
+        final fun <get-pages>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentExported.pages.<get-pages>|<get-pages>(){}[0]
+    final val path // io.github.valerioisufi.drawview.agent/AgentExported.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentExported.path.<get-path>|<get-path>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentGrants { // io.github.valerioisufi.drawview.agent/AgentGrants|null[0]

@@ -53,6 +53,7 @@ public class DocumentTools internal constructor(
     private val reading = ReadingTools(documents, access, engines, planner)
     private val proposing = ProposalTools(documents, access, engines, planner, proposals, submit, limits, library, activity, undo)
     private val libraryTools = LibraryTools(documents, access, engines, planner, limits, library, submitLibrary, trashLimiter)
+    private val exportTools = ExportTools(documents, access, engines, planner)
 
     /** The tools, those the application gives what they need for, in the order the models see them. */
     public val tools: List<AgentTool> = buildList {
@@ -73,6 +74,8 @@ public class DocumentTools internal constructor(
         add(libraryTools.proposeLibrary())
         add(proposing.listActivity())
         add(proposing.undoBatch())
+        if (engines.exports != null) add(exportTools.export())
+        if (engines.show != null) add(exportTools.showPage())
         add(reading.readGuide())
     }
 

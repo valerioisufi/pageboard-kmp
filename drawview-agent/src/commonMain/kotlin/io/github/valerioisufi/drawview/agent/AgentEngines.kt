@@ -136,6 +136,32 @@ public interface AgentFiles {
 }
 
 /**
+ * What a client asks to export: the documents [documentIds] (the pages [pageIds] of one of them,
+ * all of them when `null`), or the notes of the folder [folderId] and of the folders under it.
+ *
+ * @param format `pdf`, `png` or `markdown` for one document; `pdf_per_document` or `combined_pdf` for
+ *   several; `drawview` (an archive of the application) for any.
+ */
+public class AgentExportRequest(
+    public val documentIds: List<String>,
+    public val folderId: String?,
+    public val pageIds: Set<String>?,
+    public val format: String
+)
+
+/** A file exported for a client: where it is, how large it is, what it holds. */
+public class AgentExported(public val path: String, public val bytes: Long, public val documents: Int, public val pages: Int)
+
+/** The export of the application, for the clients (Indirection: `drawview-agent` does not depend on `drawview-export`). */
+public interface AgentExports {
+    /**
+     * Exports [request] into a new file of the folder of the exports of the agents, never over another
+     * file; fails with an [AgentToolException] telling why.
+     */
+    public suspend fun export(request: AgentExportRequest): AgentExported
+}
+
+/**
  * What the tools need from the application, each optional: without one the tool that needs it is not
  * offered, or says that it cannot tell (rule 1 of the libraries, see `docs/plans/modularization.md`).
  *
@@ -151,6 +177,9 @@ public interface AgentFiles {
  * @param images the image files a client adds (`add_image`), read by the application.
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
  * @param files the PDF files and the archives a client brings into the notes (`import_pdf`, `import_archive`).
+ * @param exports the export of the documents into files (`export`).
+ * @param show asks the application to show the page `pageId` (`null`: where it was) of the document
+ *   `documentId` in its editor, opening it: whether it could.
  */
 public class AgentEngines(
     public val editors: AgentEditors? = null,
@@ -161,7 +190,9 @@ public class AgentEngines(
     public val images: AgentImages? = null,
     public val defaultTextSize: Float = 16f,
     public val pages: (() -> PageEngine?)? = null,
-    public val files: AgentFiles? = null
+    public val files: AgentFiles? = null,
+    public val exports: AgentExports? = null,
+    public val show: (suspend (documentId: String, pageId: String?) -> Boolean)? = null
 ) {
     /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
     internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {
