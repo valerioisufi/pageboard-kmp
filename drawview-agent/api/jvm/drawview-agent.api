@@ -137,8 +137,8 @@ public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection
 
 public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDefaultTextSize ()F
 	public final fun getEditors ()Lio/github/valerioisufi/drawview/agent/AgentEditors;
 	public final fun getExports ()Lio/github/valerioisufi/drawview/agent/AgentExports;
@@ -150,6 +150,7 @@ public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public final fun getPdfText ()Lkotlin/jvm/functions/Function3;
 	public final fun getRenderPage ()Lkotlin/jvm/functions/Function4;
 	public final fun getSearch ()Lkotlin/jvm/functions/Function4;
+	public final fun getSharing ()Lkotlin/jvm/functions/Function2;
 	public final fun getShow ()Lkotlin/jvm/functions/Function3;
 }
 
@@ -284,6 +285,14 @@ public abstract interface class io/github/valerioisufi/drawview/agent/AgentLectu
 	public abstract fun lectures (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentMember {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRole ()Ljava/lang/String;
+	public final fun isOnline ()Z
+	public final fun isThisDevice ()Z
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentPdf {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
 	public final fun getHash ()Ljava/lang/String;
@@ -311,6 +320,12 @@ public final class io/github/valerioisufi/drawview/agent/AgentSearchHit {
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentSharing {
+	public fun <init> (ZLjava/util/List;)V
+	public final fun getInSharedFolder ()Z
+	public final fun getMembers ()Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentSpoken {

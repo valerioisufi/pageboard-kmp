@@ -97,6 +97,12 @@ public data class AgentSearchHit(
     val startMs: Long? = null
 )
 
+/** A device working on a shared document, as the editor shows it: its name, its role, whether it is this one, whether it is reached now. */
+public class AgentMember(public val name: String, public val role: String, public val isThisDevice: Boolean, public val isOnline: Boolean)
+
+/** Who works on a shared document: [members], and whether it is shared with its folder ([inSharedFolder]). */
+public class AgentSharing(public val inSharedFolder: Boolean, public val members: List<AgentMember>)
+
 /** A lecture recorded on a document: when, how long, what it has. */
 public class AgentLecture(
     public val id: String,
@@ -222,6 +228,7 @@ public interface AgentExports {
  * @param files the PDF files and the archives a client brings into the notes (`import_pdf`, `import_archive`).
  * @param exports the export of the documents into files (`export`).
  * @param lectures the lectures recorded on the documents, read only (`list_lectures`, `read_lecture`).
+ * @param sharing who works on a shared document, read only: names and roles, never a key or an address.
  * @param show asks the application to show the page `pageId` (`null`: where it was) of the document
  *   `documentId` in its editor, opening it: whether it could.
  */
@@ -237,7 +244,8 @@ public class AgentEngines(
     public val files: AgentFiles? = null,
     public val exports: AgentExports? = null,
     public val show: (suspend (documentId: String, pageId: String?) -> Boolean)? = null,
-    public val lectures: AgentLectures? = null
+    public val lectures: AgentLectures? = null,
+    public val sharing: (suspend (documentId: String) -> AgentSharing?)? = null
 ) {
     /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
     internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {

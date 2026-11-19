@@ -1730,7 +1730,7 @@ final class io.github.valerioisufi.drawview.agent/AgentEndpointConnection { // i
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.valerioisufi.drawview.agent/AgentEngines|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ..., io.github.valerioisufi.drawview.agent/AgentExports? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? = ..., io.github.valerioisufi.drawview.agent/AgentLectures? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?;io.github.valerioisufi.drawview.agent.AgentExports?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String?,kotlin.Boolean>?;io.github.valerioisufi.drawview.agent.AgentLectures?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ..., io.github.valerioisufi.drawview.agent/AgentExports? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? = ..., io.github.valerioisufi.drawview.agent/AgentLectures? = ..., kotlin.coroutines/SuspendFunction1<kotlin/String, io.github.valerioisufi.drawview.agent/AgentSharing?>? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?;io.github.valerioisufi.drawview.agent.AgentExports?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String?,kotlin.Boolean>?;io.github.valerioisufi.drawview.agent.AgentLectures?;kotlin.coroutines.SuspendFunction1<kotlin.String,io.github.valerioisufi.drawview.agent.AgentSharing?>?){}[0]
 
     final val defaultTextSize // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize|{}defaultTextSize[0]
         final fun <get-defaultTextSize>(): kotlin/Float // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize.<get-defaultTextSize>|<get-defaultTextSize>(){}[0]
@@ -1754,6 +1754,8 @@ final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.va
         final fun <get-renderPage>(): kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? // io.github.valerioisufi.drawview.agent/AgentEngines.renderPage.<get-renderPage>|<get-renderPage>(){}[0]
     final val search // io.github.valerioisufi.drawview.agent/AgentEngines.search|{}search[0]
         final fun <get-search>(): kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? // io.github.valerioisufi.drawview.agent/AgentEngines.search.<get-search>|<get-search>(){}[0]
+    final val sharing // io.github.valerioisufi.drawview.agent/AgentEngines.sharing|{}sharing[0]
+        final fun <get-sharing>(): kotlin.coroutines/SuspendFunction1<kotlin/String, io.github.valerioisufi.drawview.agent/AgentSharing?>? // io.github.valerioisufi.drawview.agent/AgentEngines.sharing.<get-sharing>|<get-sharing>(){}[0]
     final val show // io.github.valerioisufi.drawview.agent/AgentEngines.show|{}show[0]
         final fun <get-show>(): kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? // io.github.valerioisufi.drawview.agent/AgentEngines.show.<get-show>|<get-show>(){}[0]
 }
@@ -1869,6 +1871,19 @@ final class io.github.valerioisufi.drawview.agent/AgentLectureContent { // io.gi
         final fun <get-transcript>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSpoken> // io.github.valerioisufi.drawview.agent/AgentLectureContent.transcript.<get-transcript>|<get-transcript>(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.agent/AgentMember { // io.github.valerioisufi.drawview.agent/AgentMember|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Boolean, kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentMember.<init>|<init>(kotlin.String;kotlin.String;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val isOnline // io.github.valerioisufi.drawview.agent/AgentMember.isOnline|{}isOnline[0]
+        final fun <get-isOnline>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentMember.isOnline.<get-isOnline>|<get-isOnline>(){}[0]
+    final val isThisDevice // io.github.valerioisufi.drawview.agent/AgentMember.isThisDevice|{}isThisDevice[0]
+        final fun <get-isThisDevice>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentMember.isThisDevice.<get-isThisDevice>|<get-isThisDevice>(){}[0]
+    final val name // io.github.valerioisufi.drawview.agent/AgentMember.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentMember.name.<get-name>|<get-name>(){}[0]
+    final val role // io.github.valerioisufi.drawview.agent/AgentMember.role|{}role[0]
+        final fun <get-role>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentMember.role.<get-role>|<get-role>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.agent/AgentPdf { // io.github.valerioisufi.drawview.agent/AgentPdf|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/Float, kotlin/Float>>) // io.github.valerioisufi.drawview.agent/AgentPdf.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.Float,kotlin.Float>>){}[0]
 
@@ -1906,6 +1921,15 @@ final class io.github.valerioisufi.drawview.agent/AgentSearchHit { // io.github.
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentSearchHit.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentSearchHit.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentSharing { // io.github.valerioisufi.drawview.agent/AgentSharing|null[0]
+    constructor <init>(kotlin/Boolean, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentMember>) // io.github.valerioisufi.drawview.agent/AgentSharing.<init>|<init>(kotlin.Boolean;kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentMember>){}[0]
+
+    final val inSharedFolder // io.github.valerioisufi.drawview.agent/AgentSharing.inSharedFolder|{}inSharedFolder[0]
+        final fun <get-inSharedFolder>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentSharing.inSharedFolder.<get-inSharedFolder>|<get-inSharedFolder>(){}[0]
+    final val members // io.github.valerioisufi.drawview.agent/AgentSharing.members|{}members[0]
+        final fun <get-members>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentMember> // io.github.valerioisufi.drawview.agent/AgentSharing.members.<get-members>|<get-members>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentSpoken { // io.github.valerioisufi.drawview.agent/AgentSpoken|null[0]

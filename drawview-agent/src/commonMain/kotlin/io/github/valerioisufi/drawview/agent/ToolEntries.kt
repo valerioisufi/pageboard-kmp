@@ -194,6 +194,21 @@ internal fun spacingOf(background: PageBackground): Float? = when (background) {
     is PageBackground.Dotted -> background.spacingMm
 }
 
+/** Who works on a shared document, as a model reads it. */
+@Serializable
+internal data class SharingEntry(
+    @SerialName("in_shared_folder") val inSharedFolder: Boolean = false,
+    val members: List<MemberEntry>
+)
+
+@Serializable
+internal data class MemberEntry(
+    val name: String,
+    val role: String,
+    @SerialName("this_device") val thisDevice: Boolean = false,
+    val online: Boolean = false
+)
+
 /** A page in the trash of the pages of its document, as a model reads it. */
 @Serializable
 internal data class RemovedPageEntry(
@@ -246,6 +261,7 @@ internal data class DocumentContent(
     @SerialName("is_shared") val isShared: Boolean = false,
     @SerialName("has_pdf") val hasPdf: Boolean = false,
     @SerialName("removed_pages") val removedPages: Int = 0,
+    val sharing: SharingEntry? = null,
     val measured: Boolean? = null,
     val notice: String? = null
 )

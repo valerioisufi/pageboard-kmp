@@ -6,6 +6,11 @@ import io.github.valerioisufi.drawview.agent.AgentFiles
 import io.github.valerioisufi.drawview.agent.AgentPdf
 import io.github.valerioisufi.drawview.agent.AgentErrorCode
 import io.github.valerioisufi.drawview.agent.AgentLecture
+import io.github.valerioisufi.drawview.agent.AgentMember
+import io.github.valerioisufi.drawview.agent.AgentSharing
+import io.github.valerioisufi.drawview.sync.protocol.Membership
+import io.github.valerioisufi.drawview.sync.ui.Collaboration
+import kotlinx.coroutines.flow.first
 import io.github.valerioisufi.drawview.agent.AgentLectureContent
 import io.github.valerioisufi.drawview.agent.AgentLectures
 import io.github.valerioisufi.drawview.agent.AgentSpoken
@@ -71,6 +76,10 @@ class PencilNotesAgents(
     /** The pages of the documents in no editor, once the fonts of a window are there. */
     @Volatile
     internal var pageEngine: PageEngine? = null
+
+    /** The sharing of the documents, whose members the models read, once made. */
+    @Volatile
+    internal var collaboration: Collaboration? = null
 
     /** The lecture assistant, whose lectures and handwriting the models read, once made. */
     @Volatile
@@ -141,7 +150,8 @@ class PencilNotesAgents(
                 }
 
                 override suspend fun course(documentId: String): String? = lectureAssistant?.courseContext(documentId)?.text
-            }
+            },
+            sharing = ::sharingOf
         ),
         journal = journal
     )
@@ -186,6 +196,35 @@ class PencilNotesAgents(
             throw AgentToolException(AgentErrorCode.REFUSED, "The export failed: ${e.failure.name.lowercase()}.")
         }
         AgentExported(path, PlatformFiles.readBytes(path)?.size?.toLong() ?: 0L, outcome.documents, outcome.pages)
+    }
+
+    /**
+     * Who works on the document [documentId]: the members of its sharing, or of the shared folder it is
+     * in, as the owner decided; their names and roles only.
+     */
+    private suspend fun sharingOf(documentId: String): AgentSharing? {
+        val collaboration = collaboration ?: return null
+        fun Membership.told(inFolder: Boolean) = AgentSharing(
+            inFolder,
+            members.map { member ->
+                AgentMember(
+                    member.name,
+                    member.role.name.lowercase(),
+                    isThisDevice = member.device == collaboration.device,
+                    isOnline = collaboration.peers.value.any { it.device == member.device }
+                )
+            }
+        )
+        collaboration.memberships.value[documentId]?.takeIf { !it.ended }?.let { return it.told(inFolder = false) }
+        val catalog = PencilNotesData.documents.store
+        val folders = catalog.folders.first().associateBy { it.id }
+        var folder = catalog.documents.first().firstOrNull { it.id == documentId }?.folderId
+        while (folder != null) {
+            val space = collaboration.spaceOf(folder)
+            space?.let { collaboration.spaceMemberships.value[it] }?.takeIf { !it.ended }?.let { return it.told(inFolder = true) }
+            folder = folders[folder]?.parentId
+        }
+        return null
     }
 
     /** The lectures of [documentId] as they are saved, read only. */

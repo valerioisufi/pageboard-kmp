@@ -162,6 +162,7 @@ private fun PencilNotesWindow(
         SideEffect {
             agents?.contentSearch = services.search
             agents?.lectureAssistant = services.lectureAssistant
+            agents?.collaboration = services.collaboration
         }
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
             CommandRoot(host = commandHost) {
