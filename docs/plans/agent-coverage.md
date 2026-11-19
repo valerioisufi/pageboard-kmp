@@ -232,7 +232,23 @@ Taken alone, revertible:
 16. **The handwriting is the transcription already kept**: reading it starts no model; a page not
     transcribed answers none.
 
+Taken while building it, revertible:
+
+17. **`shape_kind` and `markup_kind`**: `kind` names the item of a proposal, so the kind of a shape or
+    of a mark has another name in the items; `read_page` still answers `kind` in the shape and the mark.
+18. **A copy is taken when the items are applied**, from its document as it is then and checked against
+    the bases read: a proposal keeps ids, never a copy of what it copies.
+19. **An arrow is read and written from its tail to its head**: `start_head` is at `from`, `end_head`
+    at `to`, whichever end of the box the head is stored at.
+20. **The export of the models writes no lecture notes in Markdown**: the writers are those of the
+    window (`AgentPages`), without the appendix of the lecture assistant.
+21. **The new tools are reached from the terminal with `call <tool>`**: no new command.
+
 ## Left for later
+
+* The notes of the lectures in a Markdown exported by a model (decision 20).
+* The export, `show_page`, the lectures and the sharing tried through the desktop application with a
+  real client: the tests use fakes of the ports.
 
 * Connectors and anchors of the shapes (`ShapeConnectors` is in the canvas, tied to the pointer).
 * The payload of third-party custom elements: a type would give the agent a codec of its own.
