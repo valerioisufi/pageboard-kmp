@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pencilnotes
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +18,11 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -49,7 +54,6 @@ import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
-import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.session.EditorSessionScreen
@@ -164,7 +168,7 @@ private fun PencilNotesWindow(
     }
 }
 
-/** The mark (a pencil on the primary color) and the wordmark of PencilNotes, in Cherry Bomb One. */
+/** The mark (the icon of the application) and the wordmark of PencilNotes, in Cherry Bomb One. */
 @Composable
 private fun PencilNotesBrand() {
     val name = stringResource(Res.string.app_name)
@@ -181,17 +185,30 @@ private fun PencilNotesBrand() {
     }
 }
 
-/** The mark of PencilNotes: a pencil on the primary color. */
+/**
+ * The mark of PencilNotes: its icon, the P of the wordmark underlined by a stroke, in the colors
+ * of the brand whatever the theme.
+ */
 @Composable
 private fun PencilNotesMark(size: Dp) {
     Box(
-        contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(size)
-            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(size * 14 / 40))
+            .clip(RoundedCornerShape(size * 9 / 40))
+            .background(BrandGreen)
     ) {
-        Icon(DrawViewIcons.Pencil, contentDescription = null, tint = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(size * 22 / 40))
+        Image(PencilNotesLogo, contentDescription = null, modifier = Modifier.fillMaxSize())
     }
+}
+
+private val BrandGreen = Color(0xFF3E691A)
+
+/** The P and its underline, on the canvas of the icon of the application. */
+private val PencilNotesLogo: ImageVector by lazy {
+    ImageVector.Builder("PencilNotesLogo", 24.dp, 24.dp, 1024f, 1024f)
+        .addPath(addPathNodes(PencilNotesLogoP), fill = SolidColor(Color(0xFFBDF292)))
+        .addPath(addPathNodes(PencilNotesLogoLine), fill = SolidColor(Color(0xFFEBE865)))
+        .build()
 }
 
 /** Opens the invitation [link] to a shared document (a `drawview://join` link opened on the device). */
