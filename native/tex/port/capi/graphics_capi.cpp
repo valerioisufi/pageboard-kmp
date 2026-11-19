@@ -1,6 +1,6 @@
 #include "config.h"
 
-#ifdef DRAWVIEW_TEX_CAPI
+#ifdef PAGEBOARD_TEX_CAPI
 
 #include "graphics_capi.h"
 
@@ -230,4 +230,4 @@ void Graphics2D_CAPI::fillRoundRect(float x, float y, float w, float h, float rx
     record(TEX_ACT_FILL_ROUND_RECT, 0, nullptr, p, 6);
 }
 
-#endif  // DRAWVIEW_TEX_CAPI
+#endif  // PAGEBOARD_TEX_CAPI

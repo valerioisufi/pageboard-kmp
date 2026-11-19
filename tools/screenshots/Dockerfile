@@ -38,6 +38,6 @@ RUN test -n "$RUST_TOOLCHAIN" \
 RUN mkdir -p /gradle /home/screenshots && chmod 777 /gradle /home/screenshots
 ENV GRADLE_USER_HOME=/gradle \
     HOME=/home/screenshots \
-    DRAWVIEW_SCREENSHOTS=reference
+    PAGEBOARD_SCREENSHOTS=reference
 
 WORKDIR /work

@@ -19,7 +19,7 @@ runs:
         context: tools/screenshots
         platforms: linux/amd64
         build-args: RUST_TOOLCHAIN=${{ steps.rust.outputs.toolchain }}
-        tags: drawview-screenshots
+        tags: pageboard-screenshots
         load: true
         cache-from: type=gha,scope=screenshots
         cache-to: type=gha,scope=screenshots,mode=max

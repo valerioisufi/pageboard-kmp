@@ -14,7 +14,7 @@ import org.gradle.api.tasks.TaskProvider
 import javax.inject.Inject
 
 /**
- * The licenses every artifact of DrawView carries (`META-INF/drawview/<module>/`): the license of
+ * The licenses every artifact of DrawView carries (`META-INF/pageboard/<module>/`): the license of
  * DrawView and the notices of the third-party code and fonts (`THIRD_PARTY_LICENSES.md`, a
  * superset of what each artifact contains), as resources of its JVM and Android parts.
  */
@@ -36,15 +36,15 @@ abstract class LicensesTask : DefaultTask() {
     fun copy() {
         fileSystem.sync {
             from(licenses)
-            into(output.dir("META-INF/drawview/${module.get()}"))
+            into(output.dir("META-INF/pageboard/${module.get()}"))
         }
     }
 }
 
 /** The task writing the licenses of this module (once per module). */
 internal fun Project.licensesTask(): TaskProvider<LicensesTask> =
-    if ("drawviewLicenses" in tasks.names) tasks.named("drawviewLicenses", LicensesTask::class.java)
-    else tasks.register("drawviewLicenses", LicensesTask::class.java) {
+    if ("pageboardLicenses" in tasks.names) tasks.named("pageboardLicenses", LicensesTask::class.java)
+    else tasks.register("pageboardLicenses", LicensesTask::class.java) {
         licenses.from(rootProject.file("LICENSE"), rootProject.file("THIRD_PARTY_LICENSES.md"))
         module.set(project.name)
         // A directory of its own: the Android plugin of a multiplatform library takes the assets,
@@ -52,5 +52,5 @@ internal fun Project.licensesTask(): TaskProvider<LicensesTask> =
         // build/generated, the assets would be build/generated/assets, where the Compose resources
         // of every component are copied (twice in the library, and the main assets would read
         // those of the device tests)
-        output.set(layout.buildDirectory.dir("generated/drawview-licenses/resources"))
+        output.set(layout.buildDirectory.dir("generated/pageboard-licenses/resources"))
     }

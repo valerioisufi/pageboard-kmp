@@ -9,7 +9,7 @@ import org.gradle.api.Project
  */
 class ComposeLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
-        pluginManager.apply("drawview.kmp.library")
+        pluginManager.apply("pageboard.kmp.library")
         pluginManager.apply("org.jetbrains.compose")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
     }

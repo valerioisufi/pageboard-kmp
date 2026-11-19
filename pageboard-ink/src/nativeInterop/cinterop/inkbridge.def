@@ -1,0 +1,5 @@
+package = io.github.valerioisufi.drawview.ink.cinterop
+headers = ink_bridge.h
+headerFilter = ink_bridge.h
+staticLibraries = libpageboard_ink.a
+linkerOpts = -lc++

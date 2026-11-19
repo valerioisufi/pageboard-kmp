@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     // The tests on a data directory of their own (build/test-data), never the one of the user
-    id("drawview.test.data")
+    id("pageboard.test.data")
     // The values of the shapes (an element type of the sample)
     alias(libs.plugins.kotlinSerialization)
 }
@@ -42,14 +42,14 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-canvas"))
-            api(project(":drawview-store-room"))
-            api(project(":drawview-ui"))
-            api(project(":drawview-session"))
-            implementation(project(":drawview-explorer"))
+            api(project(":pageboard-canvas"))
+            api(project(":pageboard-store-room"))
+            api(project(":pageboard-ui"))
+            api(project(":pageboard-session"))
+            implementation(project(":pageboard-explorer"))
             // The engines of the PDF pages and of the formulas
-            implementation(project(":drawview-pdf"))
-            implementation(project(":drawview-latex"))
+            implementation(project(":pageboard-pdf"))
+            implementation(project(":pageboard-latex"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

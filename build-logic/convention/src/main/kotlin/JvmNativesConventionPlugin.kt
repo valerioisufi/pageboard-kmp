@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * A local build holds the libraries of the machine building it only. A release (a version
  * without `-SNAPSHOT`) is published with the libraries of every desktop platform of the module
  * ([JvmNativesExtension.platforms]), built by the CI and given with
- * `-Pdrawview.native.prebuilt=true`: publishing one without them fails.
+ * `-Ppageboard.native.prebuilt=true`: publishing one without them fails.
  */
 class JvmNativesConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -37,7 +37,7 @@ class JvmNativesConventionPlugin : Plugin<Project> {
                 if (missing.isNotEmpty()) {
                     throw GradleException(
                         "The JNI libraries of ${missing.joinToString()} are missing from ${folder.get()}: " +
-                            "a release is published with the libraries of every desktop platform (-Pdrawview.native.prebuilt=true)"
+                            "a release is published with the libraries of every desktop platform (-Ppageboard.native.prebuilt=true)"
                     )
                 }
             }

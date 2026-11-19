@@ -1,0 +1,7 @@
+package = io.github.valerioisufi.drawview.pdf.cinterop
+headers = pdfium_bridge.h
+headerFilter = pdfium_bridge.h
+staticLibraries = libpageboard_pdf.a
+# PDFium itself is a dynamic framework (PDFium.xcframework): the application embeds it and gives
+# its framework search path; the executables linked by Gradle (tests) get it from build-logic
+linkerOpts = -lc++ -framework PDFium

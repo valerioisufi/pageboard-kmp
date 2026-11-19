@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
  * A Kotlin Multiplatform library of DrawView, published: Android, desktop JVM, iOS (device and
  * simulator).
  *
- * The Android namespace follows the name of the module (`drawview-sync-ui` →
+ * The Android namespace follows the name of the module (`pageboard-sync-ui` →
  * `io.github.valerioisufi.drawview.sync.ui`). The explicit API mode is strict: every public
  * declaration says so, with its type. A module whose native code reaches its classes by name keeps
  * them in its `consumer-rules.pro`, published with its Android library. The tests run on a data
@@ -29,9 +29,9 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("org.jetbrains.kotlin.multiplatform")
         pluginManager.apply("com.android.kotlin.multiplatform.library")
-        pluginManager.apply("drawview.publish")
-        pluginManager.apply("drawview.test.data")
-        pluginManager.apply("drawview.benchmarks")
+        pluginManager.apply("pageboard.publish")
+        pluginManager.apply("pageboard.test.data")
+        pluginManager.apply("pageboard.benchmarks")
 
         val module = name
         extensions.configure<KotlinMultiplatformExtension> {
@@ -40,7 +40,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             iosSimulatorArm64()
 
             (this as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("android") {
-                namespace = "io.github.valerioisufi.drawview." + module.removePrefix("drawview-").replace('-', '.')
+                namespace = "io.github.valerioisufi.drawview." + module.removePrefix("pageboard-").replace('-', '.')
                 compileSdk = libs.version("android-compileSdk").toInt()
                 minSdk = libs.version("android-minSdk").toInt()
                 compilerOptions {
@@ -59,7 +59,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 freeCompilerArgs.add("-Xexpect-actual-classes")
             }
 
-            // PDFium is a dynamic framework the applications embed (drawview-pdf links it without a
+            // PDFium is a dynamic framework the applications embed (pageboard-pdf links it without a
             // path): the iOS tests linked by Gradle find it in the slice of build/pdfium/PDFium.xcframework
             targets.withType(KotlinNativeTarget::class.java).configureEach {
                 val slice = if (konanTarget == KonanTarget.IOS_ARM64) "ios-arm64" else "ios-arm64-simulator"

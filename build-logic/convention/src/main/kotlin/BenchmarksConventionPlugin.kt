@@ -5,11 +5,11 @@ import org.gradle.api.tasks.testing.Test
 /**
  * The benchmarks of a module: the test classes whose name ends with `Benchmark` (see
  * `docs/plans/performance.md`). They are left out of the tests, and run alone with
- * `-Pdrawview.benchmarks=true`, every time (their results are what they print).
+ * `-Ppageboard.benchmarks=true`, every time (their results are what they print).
  */
 class BenchmarksConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
-        val benchmarks = providers.gradleProperty("drawview.benchmarks").map { it.toBoolean() }.orElse(false).get()
+        val benchmarks = providers.gradleProperty("pageboard.benchmarks").map { it.toBoolean() }.orElse(false).get()
         tasks.withType(Test::class.java).configureEach {
             if (benchmarks) {
                 filter {

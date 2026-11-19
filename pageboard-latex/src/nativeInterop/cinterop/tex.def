@@ -1,0 +1,5 @@
+package = io.github.valerioisufi.drawview.latex.cinterop
+headers = tex_capi.h
+headerFilter = tex_capi.h
+staticLibraries = libpageboard_tex.a
+linkerOpts = -lc++

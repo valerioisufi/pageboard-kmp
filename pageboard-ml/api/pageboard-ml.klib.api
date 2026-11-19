@@ -1,0 +1,262 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:pageboard-ml>
+final enum class io.github.valerioisufi.drawview.ml/Accelerator : kotlin/Enum<io.github.valerioisufi.drawview.ml/Accelerator> { // io.github.valerioisufi.drawview.ml/Accelerator|null[0]
+    enum entry CPU // io.github.valerioisufi.drawview.ml/Accelerator.CPU|null[0]
+    enum entry GPU // io.github.valerioisufi.drawview.ml/Accelerator.GPU|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.ml/Accelerator.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.ml/Accelerator> // io.github.valerioisufi.drawview.ml/Accelerator.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/Accelerator.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.ml/Accelerator> // io.github.valerioisufi.drawview.ml/Accelerator.values|values#static(){}[0]
+}
+
+final enum class io.github.valerioisufi.drawview.ml/ModelInput : kotlin/Enum<io.github.valerioisufi.drawview.ml/ModelInput> { // io.github.valerioisufi.drawview.ml/ModelInput|null[0]
+    enum entry AUDIO // io.github.valerioisufi.drawview.ml/ModelInput.AUDIO|null[0]
+    enum entry IMAGE // io.github.valerioisufi.drawview.ml/ModelInput.IMAGE|null[0]
+    enum entry TEXT // io.github.valerioisufi.drawview.ml/ModelInput.TEXT|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.ml/ModelInput.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.ml/ModelInput> // io.github.valerioisufi.drawview.ml/ModelInput.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.ml/ModelInput // io.github.valerioisufi.drawview.ml/ModelInput.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.ml/ModelInput> // io.github.valerioisufi.drawview.ml/ModelInput.values|values#static(){}[0]
+}
+
+final enum class io.github.valerioisufi.drawview.ml/ModelKind : kotlin/Enum<io.github.valerioisufi.drawview.ml/ModelKind> { // io.github.valerioisufi.drawview.ml/ModelKind|null[0]
+    enum entry EMBEDDING // io.github.valerioisufi.drawview.ml/ModelKind.EMBEDDING|null[0]
+    enum entry GENERATION // io.github.valerioisufi.drawview.ml/ModelKind.GENERATION|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.ml/ModelKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.ml/ModelKind> // io.github.valerioisufi.drawview.ml/ModelKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.ml/ModelKind // io.github.valerioisufi.drawview.ml/ModelKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.ml/ModelKind> // io.github.valerioisufi.drawview.ml/ModelKind.values|values#static(){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.ml/Embedder : kotlin/AutoCloseable { // io.github.valerioisufi.drawview.ml/Embedder|null[0]
+    abstract val accelerator // io.github.valerioisufi.drawview.ml/Embedder.accelerator|{}accelerator[0]
+        abstract fun <get-accelerator>(): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/Embedder.accelerator.<get-accelerator>|<get-accelerator>(){}[0]
+    abstract val dimensions // io.github.valerioisufi.drawview.ml/Embedder.dimensions|{}dimensions[0]
+        abstract fun <get-dimensions>(): kotlin/Int // io.github.valerioisufi.drawview.ml/Embedder.dimensions.<get-dimensions>|<get-dimensions>(){}[0]
+    abstract val model // io.github.valerioisufi.drawview.ml/Embedder.model|{}model[0]
+        abstract fun <get-model>(): io.github.valerioisufi.drawview.ml/InstalledModel // io.github.valerioisufi.drawview.ml/Embedder.model.<get-model>|<get-model>(){}[0]
+
+    abstract suspend fun embed(kotlin.collections/List<kotlin/String>): kotlin.collections/List<kotlin/FloatArray> // io.github.valerioisufi.drawview.ml/Embedder.embed|embed(kotlin.collections.List<kotlin.String>){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.ml/Generator : kotlin/AutoCloseable { // io.github.valerioisufi.drawview.ml/Generator|null[0]
+    abstract val accelerator // io.github.valerioisufi.drawview.ml/Generator.accelerator|{}accelerator[0]
+        abstract fun <get-accelerator>(): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/Generator.accelerator.<get-accelerator>|<get-accelerator>(){}[0]
+    abstract val model // io.github.valerioisufi.drawview.ml/Generator.model|{}model[0]
+        abstract fun <get-model>(): io.github.valerioisufi.drawview.ml/InstalledModel // io.github.valerioisufi.drawview.ml/Generator.model.<get-model>|<get-model>(){}[0]
+
+    abstract suspend fun generate(io.github.valerioisufi.drawview.ml/GenerationRequest, kotlin/Function1<kotlin/Int, kotlin/Unit> = ...): kotlin/String // io.github.valerioisufi.drawview.ml/Generator.generate|generate(io.github.valerioisufi.drawview.ml.GenerationRequest;kotlin.Function1<kotlin.Int,kotlin.Unit>){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.ml/ModelRuntime { // io.github.valerioisufi.drawview.ml/ModelRuntime|null[0]
+    abstract fun supports(io.github.valerioisufi.drawview.ml/ModelSpec): kotlin/Boolean // io.github.valerioisufi.drawview.ml/ModelRuntime.supports|supports(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+    abstract suspend fun embedder(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/EmbedderOptions): io.github.valerioisufi.drawview.ml/Embedder // io.github.valerioisufi.drawview.ml/ModelRuntime.embedder|embedder(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.EmbedderOptions){}[0]
+    abstract suspend fun generator(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/GeneratorOptions): io.github.valerioisufi.drawview.ml/Generator // io.github.valerioisufi.drawview.ml/ModelRuntime.generator|generator(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.GeneratorOptions){}[0]
+}
+
+sealed interface io.github.valerioisufi.drawview.ml/GenerationPart { // io.github.valerioisufi.drawview.ml/GenerationPart|null[0]
+    final class Audio : io.github.valerioisufi.drawview.ml/GenerationPart { // io.github.valerioisufi.drawview.ml/GenerationPart.Audio|null[0]
+        constructor <init>(kotlin/ByteArray) // io.github.valerioisufi.drawview.ml/GenerationPart.Audio.<init>|<init>(kotlin.ByteArray){}[0]
+
+        final val wav // io.github.valerioisufi.drawview.ml/GenerationPart.Audio.wav|{}wav[0]
+            final fun <get-wav>(): kotlin/ByteArray // io.github.valerioisufi.drawview.ml/GenerationPart.Audio.wav.<get-wav>|<get-wav>(){}[0]
+    }
+
+    final class Image : io.github.valerioisufi.drawview.ml/GenerationPart { // io.github.valerioisufi.drawview.ml/GenerationPart.Image|null[0]
+        constructor <init>(kotlin/ByteArray) // io.github.valerioisufi.drawview.ml/GenerationPart.Image.<init>|<init>(kotlin.ByteArray){}[0]
+
+        final val bytes // io.github.valerioisufi.drawview.ml/GenerationPart.Image.bytes|{}bytes[0]
+            final fun <get-bytes>(): kotlin/ByteArray // io.github.valerioisufi.drawview.ml/GenerationPart.Image.bytes.<get-bytes>|<get-bytes>(){}[0]
+    }
+
+    final class Text : io.github.valerioisufi.drawview.ml/GenerationPart { // io.github.valerioisufi.drawview.ml/GenerationPart.Text|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.ml/GenerationPart.Text.<init>|<init>(kotlin.String){}[0]
+
+        final val text // io.github.valerioisufi.drawview.ml/GenerationPart.Text.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.ml/GenerationPart.Text.text.<get-text>|<get-text>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.ml/DownloadProgress { // io.github.valerioisufi.drawview.ml/DownloadProgress|null[0]
+    constructor <init>(kotlin/Long, kotlin/Long) // io.github.valerioisufi.drawview.ml/DownloadProgress.<init>|<init>(kotlin.Long;kotlin.Long){}[0]
+
+    final val downloadedBytes // io.github.valerioisufi.drawview.ml/DownloadProgress.downloadedBytes|{}downloadedBytes[0]
+        final fun <get-downloadedBytes>(): kotlin/Long // io.github.valerioisufi.drawview.ml/DownloadProgress.downloadedBytes.<get-downloadedBytes>|<get-downloadedBytes>(){}[0]
+    final val fraction // io.github.valerioisufi.drawview.ml/DownloadProgress.fraction|{}fraction[0]
+        final fun <get-fraction>(): kotlin/Float // io.github.valerioisufi.drawview.ml/DownloadProgress.fraction.<get-fraction>|<get-fraction>(){}[0]
+    final val totalBytes // io.github.valerioisufi.drawview.ml/DownloadProgress.totalBytes|{}totalBytes[0]
+        final fun <get-totalBytes>(): kotlin/Long // io.github.valerioisufi.drawview.ml/DownloadProgress.totalBytes.<get-totalBytes>|<get-totalBytes>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/EmbedderOptions { // io.github.valerioisufi.drawview.ml/EmbedderOptions|null[0]
+    constructor <init>(kotlin/Int = ..., io.github.valerioisufi.drawview.ml/Accelerator = ...) // io.github.valerioisufi.drawview.ml/EmbedderOptions.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.ml.Accelerator){}[0]
+
+    final val accelerator // io.github.valerioisufi.drawview.ml/EmbedderOptions.accelerator|{}accelerator[0]
+        final fun <get-accelerator>(): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/EmbedderOptions.accelerator.<get-accelerator>|<get-accelerator>(){}[0]
+    final val dimensions // io.github.valerioisufi.drawview.ml/EmbedderOptions.dimensions|{}dimensions[0]
+        final fun <get-dimensions>(): kotlin/Int // io.github.valerioisufi.drawview.ml/EmbedderOptions.dimensions.<get-dimensions>|<get-dimensions>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.ml/EmbedderOptions.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.ml/EmbedderOptions.hashCode|hashCode(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/GenerationRequest { // io.github.valerioisufi.drawview.ml/GenerationRequest|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.ml/GenerationPart>, kotlin/String? = ..., kotlin/Int = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.ml/GenerationRequest.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.ml.GenerationPart>;kotlin.String?;kotlin.Int;kotlin.Float){}[0]
+
+    final val jsonSchema // io.github.valerioisufi.drawview.ml/GenerationRequest.jsonSchema|{}jsonSchema[0]
+        final fun <get-jsonSchema>(): kotlin/String? // io.github.valerioisufi.drawview.ml/GenerationRequest.jsonSchema.<get-jsonSchema>|<get-jsonSchema>(){}[0]
+    final val maxOutputTokens // io.github.valerioisufi.drawview.ml/GenerationRequest.maxOutputTokens|{}maxOutputTokens[0]
+        final fun <get-maxOutputTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/GenerationRequest.maxOutputTokens.<get-maxOutputTokens>|<get-maxOutputTokens>(){}[0]
+    final val parts // io.github.valerioisufi.drawview.ml/GenerationRequest.parts|{}parts[0]
+        final fun <get-parts>(): kotlin.collections/List<io.github.valerioisufi.drawview.ml/GenerationPart> // io.github.valerioisufi.drawview.ml/GenerationRequest.parts.<get-parts>|<get-parts>(){}[0]
+    final val system // io.github.valerioisufi.drawview.ml/GenerationRequest.system|{}system[0]
+        final fun <get-system>(): kotlin/String // io.github.valerioisufi.drawview.ml/GenerationRequest.system.<get-system>|<get-system>(){}[0]
+    final val temperature // io.github.valerioisufi.drawview.ml/GenerationRequest.temperature|{}temperature[0]
+        final fun <get-temperature>(): kotlin/Float // io.github.valerioisufi.drawview.ml/GenerationRequest.temperature.<get-temperature>|<get-temperature>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/GeneratorOptions { // io.github.valerioisufi.drawview.ml/GeneratorOptions|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.ml/Accelerator = ...) // io.github.valerioisufi.drawview.ml/GeneratorOptions.<init>|<init>(kotlin.Int;kotlin.Boolean;kotlin.Int;kotlin.Boolean;io.github.valerioisufi.drawview.ml.Accelerator){}[0]
+
+    final val accelerator // io.github.valerioisufi.drawview.ml/GeneratorOptions.accelerator|{}accelerator[0]
+        final fun <get-accelerator>(): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/GeneratorOptions.accelerator.<get-accelerator>|<get-accelerator>(){}[0]
+    final val audio // io.github.valerioisufi.drawview.ml/GeneratorOptions.audio|{}audio[0]
+        final fun <get-audio>(): kotlin/Boolean // io.github.valerioisufi.drawview.ml/GeneratorOptions.audio.<get-audio>|<get-audio>(){}[0]
+    final val imageTokens // io.github.valerioisufi.drawview.ml/GeneratorOptions.imageTokens|{}imageTokens[0]
+        final fun <get-imageTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/GeneratorOptions.imageTokens.<get-imageTokens>|<get-imageTokens>(){}[0]
+    final val images // io.github.valerioisufi.drawview.ml/GeneratorOptions.images|{}images[0]
+        final fun <get-images>(): kotlin/Boolean // io.github.valerioisufi.drawview.ml/GeneratorOptions.images.<get-images>|<get-images>(){}[0]
+    final val maxTokens // io.github.valerioisufi.drawview.ml/GeneratorOptions.maxTokens|{}maxTokens[0]
+        final fun <get-maxTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/GeneratorOptions.maxTokens.<get-maxTokens>|<get-maxTokens>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.ml/GeneratorOptions.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.ml/GeneratorOptions.hashCode|hashCode(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/InstalledModel { // io.github.valerioisufi.drawview.ml/InstalledModel|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.ml/ModelSpec, kotlin/String) // io.github.valerioisufi.drawview.ml/InstalledModel.<init>|<init>(io.github.valerioisufi.drawview.ml.ModelSpec;kotlin.String){}[0]
+
+    final val path // io.github.valerioisufi.drawview.ml/InstalledModel.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.ml/InstalledModel.path.<get-path>|<get-path>(){}[0]
+    final val spec // io.github.valerioisufi.drawview.ml/InstalledModel.spec|{}spec[0]
+        final fun <get-spec>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.ml/InstalledModel.spec.<get-spec>|<get-spec>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.ml/InstalledModel.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.ml/InstalledModel.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.ml/InstalledModel.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/InstalledModels { // io.github.valerioisufi.drawview.ml/InstalledModels|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.ml/ModelCatalog = ..., kotlin/String = ...) // io.github.valerioisufi.drawview.ml/InstalledModels.<init>|<init>(io.github.valerioisufi.drawview.ml.ModelCatalog;kotlin.String){}[0]
+
+    final val catalog // io.github.valerioisufi.drawview.ml/InstalledModels.catalog|{}catalog[0]
+        final fun <get-catalog>(): io.github.valerioisufi.drawview.ml/ModelCatalog // io.github.valerioisufi.drawview.ml/InstalledModels.catalog.<get-catalog>|<get-catalog>(){}[0]
+    final val directory // io.github.valerioisufi.drawview.ml/InstalledModels.directory|{}directory[0]
+        final fun <get-directory>(): kotlin/String // io.github.valerioisufi.drawview.ml/InstalledModels.directory.<get-directory>|<get-directory>(){}[0]
+    final val installed // io.github.valerioisufi.drawview.ml/InstalledModels.installed|{}installed[0]
+        final fun <get-installed>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Set<kotlin/String>> // io.github.valerioisufi.drawview.ml/InstalledModels.installed.<get-installed>|<get-installed>(){}[0]
+
+    final fun delete(io.github.valerioisufi.drawview.ml/ModelSpec): kotlin/Boolean // io.github.valerioisufi.drawview.ml/InstalledModels.delete|delete(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+    final fun get(io.github.valerioisufi.drawview.ml/ModelSpec): io.github.valerioisufi.drawview.ml/InstalledModel? // io.github.valerioisufi.drawview.ml/InstalledModels.get|get(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+    final fun get(kotlin/String): io.github.valerioisufi.drawview.ml/InstalledModel? // io.github.valerioisufi.drawview.ml/InstalledModels.get|get(kotlin.String){}[0]
+    final fun pathOf(io.github.valerioisufi.drawview.ml/ModelSpec): kotlin/String // io.github.valerioisufi.drawview.ml/InstalledModels.pathOf|pathOf(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+    final fun refresh() // io.github.valerioisufi.drawview.ml/InstalledModels.refresh|refresh(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.ml/InstalledModels.Companion|null[0]
+        final fun defaultDirectory(): kotlin/String // io.github.valerioisufi.drawview.ml/InstalledModels.Companion.defaultDirectory|defaultDirectory(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.ml/LoadedModels { // io.github.valerioisufi.drawview.ml/LoadedModels|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.ml/ModelRuntime, kotlin/Int = ..., kotlin/Int = ..., kotlinx.coroutines/CoroutineScope = ...) // io.github.valerioisufi.drawview.ml/LoadedModels.<init>|<init>(io.github.valerioisufi.drawview.ml.ModelRuntime;kotlin.Int;kotlin.Int;kotlinx.coroutines.CoroutineScope){}[0]
+
+    final val loaded // io.github.valerioisufi.drawview.ml/LoadedModels.loaded|{}loaded[0]
+        final fun <get-loaded>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Set<kotlin/String>> // io.github.valerioisufi.drawview.ml/LoadedModels.loaded.<get-loaded>|<get-loaded>(){}[0]
+
+    final suspend fun <#A1: kotlin/Any?> withEmbedder(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/EmbedderOptions = ..., kotlin/Long = ..., kotlin.coroutines/SuspendFunction1<io.github.valerioisufi.drawview.ml/Embedder, #A1>): #A1 // io.github.valerioisufi.drawview.ml/LoadedModels.withEmbedder|withEmbedder(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.EmbedderOptions;kotlin.Long;kotlin.coroutines.SuspendFunction1<io.github.valerioisufi.drawview.ml.Embedder,0:0>){0§<kotlin.Any?>}[0]
+    final suspend fun <#A1: kotlin/Any?> withGenerator(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/GeneratorOptions = ..., kotlin/Long = ..., kotlin.coroutines/SuspendFunction1<io.github.valerioisufi.drawview.ml/Generator, #A1>): #A1 // io.github.valerioisufi.drawview.ml/LoadedModels.withGenerator|withGenerator(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.GeneratorOptions;kotlin.Long;kotlin.coroutines.SuspendFunction1<io.github.valerioisufi.drawview.ml.Generator,0:0>){0§<kotlin.Any?>}[0]
+    final suspend fun unload(kotlin/String) // io.github.valerioisufi.drawview.ml/LoadedModels.unload|unload(kotlin.String){}[0]
+    final suspend fun unloadAll() // io.github.valerioisufi.drawview.ml/LoadedModels.unloadAll|unloadAll(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/ModelCatalog { // io.github.valerioisufi.drawview.ml/ModelCatalog|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.ml/ModelSpec>) // io.github.valerioisufi.drawview.ml/ModelCatalog.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.ml.ModelSpec>){}[0]
+
+    final val models // io.github.valerioisufi.drawview.ml/ModelCatalog.models|{}models[0]
+        final fun <get-models>(): kotlin.collections/List<io.github.valerioisufi.drawview.ml/ModelSpec> // io.github.valerioisufi.drawview.ml/ModelCatalog.models.<get-models>|<get-models>(){}[0]
+
+    final fun get(kotlin/String): io.github.valerioisufi.drawview.ml/ModelSpec? // io.github.valerioisufi.drawview.ml/ModelCatalog.get|get(kotlin.String){}[0]
+    final fun of(io.github.valerioisufi.drawview.ml/ModelKind): kotlin.collections/List<io.github.valerioisufi.drawview.ml/ModelSpec> // io.github.valerioisufi.drawview.ml/ModelCatalog.of|of(io.github.valerioisufi.drawview.ml.ModelKind){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion|null[0]
+        final val Default // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.Default|{}Default[0]
+            final fun <get-Default>(): io.github.valerioisufi.drawview.ml/ModelCatalog // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.Default.<get-Default>|<get-Default>(){}[0]
+        final val EMBEDDING_GEMMA_2_TEXT // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.EMBEDDING_GEMMA_2_TEXT|{}EMBEDDING_GEMMA_2_TEXT[0]
+            final fun <get-EMBEDDING_GEMMA_2_TEXT>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.EMBEDDING_GEMMA_2_TEXT.<get-EMBEDDING_GEMMA_2_TEXT>|<get-EMBEDDING_GEMMA_2_TEXT>(){}[0]
+        final val GEMMA_4_12B // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_12B|{}GEMMA_4_12B[0]
+            final fun <get-GEMMA_4_12B>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_12B.<get-GEMMA_4_12B>|<get-GEMMA_4_12B>(){}[0]
+        final val GEMMA_4_E2B // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_E2B|{}GEMMA_4_E2B[0]
+            final fun <get-GEMMA_4_E2B>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_E2B.<get-GEMMA_4_E2B>|<get-GEMMA_4_E2B>(){}[0]
+        final val GEMMA_4_E4B // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_E4B|{}GEMMA_4_E4B[0]
+            final fun <get-GEMMA_4_E4B>(): io.github.valerioisufi.drawview.ml/ModelSpec // io.github.valerioisufi.drawview.ml/ModelCatalog.Companion.GEMMA_4_E4B.<get-GEMMA_4_E4B>|<get-GEMMA_4_E4B>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.ml/ModelDownloads { // io.github.valerioisufi.drawview.ml/ModelDownloads|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.ml/InstalledModels, kotlinx.coroutines/CoroutineScope = ...) // io.github.valerioisufi.drawview.ml/ModelDownloads.<init>|<init>(io.github.valerioisufi.drawview.ml.InstalledModels;kotlinx.coroutines.CoroutineScope){}[0]
+
+    final val failures // io.github.valerioisufi.drawview.ml/ModelDownloads.failures|{}failures[0]
+        final fun <get-failures>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, kotlin/String>> // io.github.valerioisufi.drawview.ml/ModelDownloads.failures.<get-failures>|<get-failures>(){}[0]
+    final val progress // io.github.valerioisufi.drawview.ml/ModelDownloads.progress|{}progress[0]
+        final fun <get-progress>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.ml/DownloadProgress>> // io.github.valerioisufi.drawview.ml/ModelDownloads.progress.<get-progress>|<get-progress>(){}[0]
+
+    final fun cancel(io.github.valerioisufi.drawview.ml/ModelSpec) // io.github.valerioisufi.drawview.ml/ModelDownloads.cancel|cancel(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+    final fun download(io.github.valerioisufi.drawview.ml/ModelSpec): kotlinx.coroutines/Job? // io.github.valerioisufi.drawview.ml/ModelDownloads.download|download(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/ModelException : kotlin/Exception { // io.github.valerioisufi.drawview.ml/ModelException|null[0]
+    constructor <init>(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.drawview.ml/ModelException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
+}
+
+final class io.github.valerioisufi.drawview.ml/ModelSpec { // io.github.valerioisufi.drawview.ml/ModelSpec|null[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.ml/ModelKind, kotlin.collections/Set<io.github.valerioisufi.drawview.ml/ModelInput>, kotlin/String, kotlin/String, kotlin/Long, kotlin/String, kotlin/Long, kotlin/Int = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.ml/ModelSpec.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.ml.ModelKind;kotlin.collections.Set<io.github.valerioisufi.drawview.ml.ModelInput>;kotlin.String;kotlin.String;kotlin.Long;kotlin.String;kotlin.Long;kotlin.Int;kotlin.Int){}[0]
+
+    final val dimensions // io.github.valerioisufi.drawview.ml/ModelSpec.dimensions|{}dimensions[0]
+        final fun <get-dimensions>(): kotlin/Int // io.github.valerioisufi.drawview.ml/ModelSpec.dimensions.<get-dimensions>|<get-dimensions>(){}[0]
+    final val fileName // io.github.valerioisufi.drawview.ml/ModelSpec.fileName|{}fileName[0]
+        final fun <get-fileName>(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.fileName.<get-fileName>|<get-fileName>(){}[0]
+    final val id // io.github.valerioisufi.drawview.ml/ModelSpec.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.id.<get-id>|<get-id>(){}[0]
+    final val inputs // io.github.valerioisufi.drawview.ml/ModelSpec.inputs|{}inputs[0]
+        final fun <get-inputs>(): kotlin.collections/Set<io.github.valerioisufi.drawview.ml/ModelInput> // io.github.valerioisufi.drawview.ml/ModelSpec.inputs.<get-inputs>|<get-inputs>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.ml/ModelSpec.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.ml/ModelKind // io.github.valerioisufi.drawview.ml/ModelSpec.kind.<get-kind>|<get-kind>(){}[0]
+    final val maxImageTokens // io.github.valerioisufi.drawview.ml/ModelSpec.maxImageTokens|{}maxImageTokens[0]
+        final fun <get-maxImageTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/ModelSpec.maxImageTokens.<get-maxImageTokens>|<get-maxImageTokens>(){}[0]
+    final val memoryBytes // io.github.valerioisufi.drawview.ml/ModelSpec.memoryBytes|{}memoryBytes[0]
+        final fun <get-memoryBytes>(): kotlin/Long // io.github.valerioisufi.drawview.ml/ModelSpec.memoryBytes.<get-memoryBytes>|<get-memoryBytes>(){}[0]
+    final val name // io.github.valerioisufi.drawview.ml/ModelSpec.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.name.<get-name>|<get-name>(){}[0]
+    final val sha256 // io.github.valerioisufi.drawview.ml/ModelSpec.sha256|{}sha256[0]
+        final fun <get-sha256>(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.sha256.<get-sha256>|<get-sha256>(){}[0]
+    final val sizeBytes // io.github.valerioisufi.drawview.ml/ModelSpec.sizeBytes|{}sizeBytes[0]
+        final fun <get-sizeBytes>(): kotlin/Long // io.github.valerioisufi.drawview.ml/ModelSpec.sizeBytes.<get-sizeBytes>|<get-sizeBytes>(){}[0]
+    final val url // io.github.valerioisufi.drawview.ml/ModelSpec.url|{}url[0]
+        final fun <get-url>(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.url.<get-url>|<get-url>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.ml/ModelSpec.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.ml/ModelSpec.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.ml/ModelSpec.toString|toString(){}[0]
+}

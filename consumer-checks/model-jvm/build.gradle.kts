@@ -9,10 +9,10 @@ kotlin {
 }
 
 /** The version of DrawView checked (see the root build). */
-val drawViewVersion: String = rootProject.extra["drawViewVersion"] as String
+val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {
-    implementation("io.github.valerioisufi:drawview-model:$drawViewVersion")
+    implementation("io.github.valerioisufi:pageboard-model:$pageboardVersion")
 }
 
 application {
@@ -27,8 +27,8 @@ val checkHeadless by tasks.registering {
     doLast {
         val names = artifacts.get()
         val ui = names.filter { "compose" in it || "skiko" in it || "androidx" in it }
-        check(ui.isEmpty()) { "drawview-model brings $ui" }
-        println("drawview-model alone: ${names.size} artifacts, no Compose: ${names.joinToString()}")
+        check(ui.isEmpty()) { "pageboard-model brings $ui" }
+        println("pageboard-model alone: ${names.size} artifacts, no Compose: ${names.joinToString()}")
     }
 }
 

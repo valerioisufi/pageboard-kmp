@@ -1,7 +1,7 @@
-# A release of the libraries on Maven Central, from a tag drawview-vX.Y.Z (VERSION_NAME without
+# A release of the libraries on Maven Central, from a tag pageboard-vX.Y.Z (VERSION_NAME without
 # -SNAPSHOT; the applications have tags pencilnotes-v* of their own, which never release the libraries):
 # the JNI libraries of every desktop platform built on its own runner, then published together
-# (-Pdrawview.native.prebuilt=true: a release without one of them fails), signed.
+# (-Ppageboard.native.prebuilt=true: a release without one of them fails), signed.
 #
 # Secrets: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD (a token of the Central Portal),
 # SIGNING_KEY (an armored PGP key), SIGNING_KEY_PASSWORD.
@@ -9,7 +9,7 @@ name: Release
 
 on:
   push:
-    tags: ['drawview-v*']
+    tags: ['pageboard-v*']
 
 jobs:
   natives:
@@ -39,7 +39,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: JNI libraries of ${{ matrix.platform }}
-        run: ./gradlew buildDesktopNativeLibs -Pdrawview.desktop.platform=${{ matrix.platform }}
+        run: ./gradlew buildDesktopNativeLibs -Ppageboard.desktop.platform=${{ matrix.platform }}
       - uses: actions/upload-artifact@v4
         with:
           name: natives-${{ matrix.platform }}
@@ -61,7 +61,7 @@ jobs:
       - name: The tag is the version
         run: |
           version=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2)
-          if [ "${GITHUB_REF_NAME}" != "drawview-v${version}" ]; then
+          if [ "${GITHUB_REF_NAME}" != "pageboard-v${version}" ]; then
             echo "The tag ${GITHUB_REF_NAME} does not match VERSION_NAME=${version}" >&2
             exit 1
           fi
@@ -76,7 +76,7 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew publishToMavenCentral -Pdrawview.native.prebuilt=true -Pdrawview.pdfium.desktop=all
+        run: ./gradlew publishToMavenCentral -Ppageboard.native.prebuilt=true -Ppageboard.pdfium.desktop=all
       - name: PDFium for the iOS applications
         run: |
           ./gradlew assemblePdfiumXcframework

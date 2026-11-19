@@ -1,6 +1,6 @@
 #include "config.h"
 
-#ifdef DRAWVIEW_TEX_CAPI
+#ifdef PAGEBOARD_TEX_CAPI
 
 #include "graphics_capi.h"
 #include "tex_capi.h"
@@ -98,4 +98,4 @@ void tex_render_free(int64_t render) {
 
 }  // extern "C"
 
-#endif  // DRAWVIEW_TEX_CAPI
+#endif  // PAGEBOARD_TEX_CAPI

@@ -6,7 +6,7 @@ plugins {
 }
 
 /** The version of the libraries checked (the one of the build of DrawView). */
-val drawViewVersion: String = providers.fileContents(layout.projectDirectory.file("../gradle.properties")).asText.get()
+val pageboardVersion: String = providers.fileContents(layout.projectDirectory.file("../gradle.properties")).asText.get()
     .lines().first { it.startsWith("VERSION_NAME=") }.substringAfter('=')
 
-extra["drawViewVersion"] = drawViewVersion
+extra["pageboardVersion"] = pageboardVersion

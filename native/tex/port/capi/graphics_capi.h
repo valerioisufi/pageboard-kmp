@@ -1,6 +1,6 @@
 #include "config.h"
 
-#ifdef DRAWVIEW_TEX_CAPI
+#ifdef PAGEBOARD_TEX_CAPI
 
 #ifndef GRAPHICS_CAPI_INCLUDED
 #define GRAPHICS_CAPI_INCLUDED
@@ -95,4 +95,4 @@ public:
 };
 
 #endif  // GRAPHICS_CAPI_INCLUDED
-#endif  // DRAWVIEW_TEX_CAPI
+#endif  // PAGEBOARD_TEX_CAPI

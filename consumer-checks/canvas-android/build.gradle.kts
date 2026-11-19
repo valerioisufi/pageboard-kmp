@@ -9,7 +9,7 @@ plugins {
 }
 
 /** The version of DrawView checked (see the root build). */
-val drawViewVersion: String = rootProject.extra["drawViewVersion"] as String
+val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 kotlin {
     compilerOptions {
@@ -18,7 +18,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("io.github.valerioisufi:drawview-canvas:$drawViewVersion")
+    implementation("io.github.valerioisufi:pageboard-canvas:$pageboardVersion")
     implementation(libs.androidx.activity.compose)
 }
 
@@ -44,7 +44,7 @@ val checkNativeLibraries by tasks.registering {
         val libraries = ZipFile(apk).use { zip -> zip.entries().toList().map { it.name }.filter { it.startsWith("lib/") }.map { it.substringAfterLast('/') }.toSortedSet() }
         val drawView = libraries.filter { it in setOf("libink_bridge.so", "libtex.so", "libpdfium.so", "libpdfium_bridge.so", "libaudio_bridge.so") }
         check(drawView == listOf("libink_bridge.so")) { "The native libraries of DrawView in the APK: $drawView" }
-        println("drawview-canvas on Android: $libraries")
+        println("pageboard-canvas on Android: $libraries")
     }
 }
 

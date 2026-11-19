@@ -8,7 +8,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 SHOTS, REPO = sys.argv[1], sys.argv[2]
-FONT = os.path.join(REPO, "drawview-ui/src/commonMain/composeResources/font")
+FONT = os.path.join(REPO, "pageboard-ui/src/commonMain/composeResources/font")
 BOLD = os.path.join(FONT, "plus_jakarta_sans_extrabold.ttf")
 MEDIUM = os.path.join(FONT, "plus_jakarta_sans_medium.ttf")
 WORDMARK = os.path.join(REPO, "pencilnotes/shared/src/commonMain/composeResources/font/cherry_bomb_one.ttf")

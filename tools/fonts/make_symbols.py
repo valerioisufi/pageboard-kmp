@@ -1,15 +1,15 @@
 """
-Builds the symbols font of the texts (drawview-ui/src/commonMain/composeResources/font): the arrows,
+Builds the symbols font of the texts (pageboard-ui/src/commonMain/composeResources/font): the arrows,
 the mathematical operators, the geometric shapes and the check marks of Noto Sans Math and Noto Sans
 Symbols 2 (both under the SIL Open Font License), which Noto Sans does not have. Without it these
 characters come from a font of each system: other shapes and widths, an emoji for some.
 
 The lines of the font are those of Noto Sans: a symbol does not make its line higher.
 
-It prints the ranges it covers, for TextSymbols (drawview-model); a test keeps the two together.
+It prints the ranges it covers, for TextSymbols (pageboard-model); a test keeps the two together.
 
     python3 -I tools/fonts/make_symbols.py NotoSansMath-Regular.ttf NotoSansSymbols2-Regular.ttf \
-        drawview-ui/src/commonMain/composeResources/font
+        pageboard-ui/src/commonMain/composeResources/font
 """
 import os
 import sys

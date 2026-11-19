@@ -1,5 +1,5 @@
-#ifndef DRAWVIEW_TEX_CAPI_H
-#define DRAWVIEW_TEX_CAPI_H
+#ifndef PAGEBOARD_TEX_CAPI_H
+#define PAGEBOARD_TEX_CAPI_H
 
 /*
  * Plain C API of the MicroTeX engine, used by Kotlin/Native (iOS).
@@ -86,4 +86,4 @@ void tex_render_free(int64_t render);
 }
 #endif
 
-#endif /* DRAWVIEW_TEX_CAPI_H */
+#endif /* PAGEBOARD_TEX_CAPI_H */

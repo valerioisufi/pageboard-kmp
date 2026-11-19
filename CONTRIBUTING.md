@@ -32,7 +32,7 @@ open an issue first, so that its design can be agreed before the work.
 ## Checks
 
 Your own notes stay safe while you check: run the desktop applications on a scratch directory,
-`JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`.
+`JAVA_TOOL_OPTIONS="-Dpageboard.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`.
 
 ```bash
 ./gradlew jvmTest checkKotlinAbi

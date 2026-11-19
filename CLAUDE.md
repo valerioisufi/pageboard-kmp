@@ -1,7 +1,7 @@
 # DrawView-KMP
 
 Kotlin Multiplatform libraries for drawing and note-taking (Android, desktop JVM, iOS), published
-as `io.github.valerioisufi:drawview-*`, plus two applications built on them: PencilNotes and the
+as `io.github.valerioisufi:pageboard-*`, plus two applications built on them: PencilNotes and the
 sample. Start from:
 
 - `docs/reference.md`: the modules, the features, how to build, run and test (`README.md` is the
@@ -35,14 +35,14 @@ sample. Start from:
 ## Non-negotiable
 
 - **People keep real notes in PencilNotes. Never lose them.**
-  - Every change to the Room schema (`drawview-store-room/schemas`, `Migrations.kt`) needs a
+  - Every change to the Room schema (`pageboard-store-room/schemas`, `Migrations.kt`) needs a
     migration tested with `MigrationTestHelper`.
   - Every change to a stored format (documents, preferences, lecture records, attachments)
     needs a tested migration too.
   - Never use a destructive fallback, and never delete or rewrite stored data to "start clean".
 - **Never touch `~/.pencilnotes` or `~/.drawview` while verifying.** Run the desktop apps on a
   scratch directory:
-  `JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
+  `JAVA_TOOL_OPTIONS="-Dpageboard.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
 - **The sync protocol is live between devices** (`PROTOCOL_VERSION` in `OpenFrame.kt`: 1).
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version
@@ -69,14 +69,14 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
 - A module builds and runs with what it declares. An optional engine (PDF, formulas, native ink)
   is given by the application, and when it is missing the feature degrades, never the build.
 - **Headless modules have no Compose:**
-  - `drawview-platform`, `-model`, `-html`, `-ink`, `-store`, `-store-room`;
+  - `pageboard-platform`, `-model`, `-html`, `-ink`, `-store`, `-store-room`;
   - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`;
   - `-ml`, `-ml-litert`, `-search` (the local models and the search in the notes, see
     docs/plans/local-models.md and docs/plans/search.md);
   - `-agent` (what an external model reads and proposes, see docs/plans/agent-tools.md).
 
-  `drawview-lecture` keeps the Compose runtime only.
-- A native library ships with the module that uses it, and only with it: `drawview-native-*` on
+  `pageboard-lecture` keeps the Compose runtime only.
+- A native library ships with the module that uses it, and only with it: `pageboard-native-*` on
   Android, JNI in the jar on desktop, cinterop on iOS. The iroh bridge (`native/iroh-bridge`) is
   Rust, built by Gradle with the cargo of `rust.cargo` in `local.properties` (or `~/.cargo/bin`,
   or the `PATH`) into `native/build/rust`.
@@ -90,8 +90,8 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
   - Members called from JNI stay public, because `internal` names are mangled on the JVM.
 - A third-party element type uses the same API as the built-in ones.
 - **A new library:**
-  - Apply `drawview.kmp.library` or `drawview.compose.library` (plus `drawview.android.native` /
-    `drawview.jvm.natives` for native code).
+  - Apply `pageboard.kmp.library` or `pageboard.compose.library` (plus `pageboard.android.native` /
+    `pageboard.jvm.natives` for native code).
   - Add it to `settings.gradle.kts` and to the Dokka aggregate in `build.gradle.kts`.
   - Write its `Module.md`, and record its `api/` dump.
 
@@ -107,7 +107,7 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
   (`native/iroh-bridge/target` is not one to commit):
   `CARGO_TARGET_DIR=native/build/rust cargo test --manifest-path native/iroh-bridge/Cargo.toml --features dev-relay`
 - **The sync modules changed:** their tests on the iOS simulator too,
-  `./gradlew :drawview-sync-protocol:iosSimulatorArm64Test :drawview-sync:iosSimulatorArm64Test :drawview-sync-lan:iosSimulatorArm64Test :drawview-sync-iroh:iosSimulatorArm64Test`.
+  `./gradlew :pageboard-sync-protocol:iosSimulatorArm64Test :pageboard-sync:iosSimulatorArm64Test :pageboard-sync-lan:iosSimulatorArm64Test :pageboard-sync-iroh:iosSimulatorArm64Test`.
 
 - **UI changes:** check the screenshots, and run the desktop app on a scratch data directory.
   - The references are recorded only in the Docker image of `tools/screenshots/`
@@ -141,7 +141,7 @@ Each one gets its own plan.
     an application is no secret), privacy and the forms of the stores, the compatibility between
     versions of the protocol (see "Left for later" in the plan).
 - **Lecture assistant on small, specialized local models.**
-  - Today Gemini and Ollama are wired inside `drawview-lecture`.
+  - Today Gemini and Ollama are wired inside `pageboard-lecture`.
   - The model runtime (whisper.cpp today) should become a module of its own, shared with
     writing suggestions.
   - The lectures already recorded are user data: their format needs a migration.

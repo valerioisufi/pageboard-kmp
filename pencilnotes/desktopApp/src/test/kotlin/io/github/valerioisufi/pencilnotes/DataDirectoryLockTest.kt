@@ -23,7 +23,7 @@ internal object LockHolder {
 
 class DataDirectoryLockTest {
     private val directory: File = Files.createTempDirectory(
-        File(System.getProperty("drawview.dataDir")).apply { mkdirs() }.toPath(),
+        File(System.getProperty("pageboard.dataDir")).apply { mkdirs() }.toPath(),
         "lock"
     ).toFile()
 

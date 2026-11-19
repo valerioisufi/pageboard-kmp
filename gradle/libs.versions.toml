@@ -26,7 +26,7 @@ ksp = "2.3.6"
 ktor = "3.6.0"
 kotlinx-io = "0.9.1"
 ksoup = "0.2.6"
-# The runtime of the local models (drawview-ml-litert), from the Maven of Google
+# The runtime of the local models (pageboard-ml-litert), from the Maven of Google
 litertlm = "0.18.0"
 cryptography = "0.6.0"
 jmdns = "3.6.3"

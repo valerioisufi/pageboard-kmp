@@ -21,7 +21,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "drawview-consumer-checks"
+rootProject.name = "pageboard-consumer-checks"
 
 include(":model-jvm")
 include(":ui-desktop")

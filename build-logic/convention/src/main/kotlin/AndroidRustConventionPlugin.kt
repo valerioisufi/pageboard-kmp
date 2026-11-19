@@ -21,10 +21,10 @@ import org.gradle.kotlin.dsl.register
 class AndroidRustConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.library")
-        pluginManager.apply("drawview.publish")
+        pluginManager.apply("pageboard.publish")
 
         val rust = extensions.create<AndroidRustExtension>("androidRust")
-        val engine = name.removePrefix("drawview-native-")
+        val engine = name.removePrefix("pageboard-native-")
         val minSdk = libs.version("android-minSdk").toInt()
         extensions.configure<LibraryExtension> {
             namespace = "io.github.valerioisufi.drawview.nativelibs.$engine"
@@ -97,7 +97,7 @@ class AndroidRustConventionPlugin : Plugin<Project> {
     }
 }
 
-/** The Rust crate of a `drawview.android.rust` module. */
+/** The Rust crate of a `pageboard.android.rust` module. */
 abstract class AndroidRustExtension {
     /** The directory of the crate (its `Cargo.toml`). */
     abstract val crate: DirectoryProperty

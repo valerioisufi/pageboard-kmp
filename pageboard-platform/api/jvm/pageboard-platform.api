@@ -1,0 +1,68 @@
+public final class io/github/valerioisufi/drawview/platform/DeviceProfile {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/platform/DeviceProfile;
+	public static final field MAX_LENGTH I
+	public final fun getChosenName ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getName ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun rename (Ljava/lang/String;)V
+}
+
+public final class io/github/valerioisufi/drawview/platform/DeviceProfileKt {
+	public static final fun dataDirectory ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/platform/JvmNativeLibraries {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/platform/JvmNativeLibraries;
+	public final fun load (Ljava/lang/Class;[Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/drawview/platform/PlatformFiles {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/platform/PlatformFiles;
+	public final fun delete (Ljava/lang/String;)Z
+	public final fun exists (Ljava/lang/String;)Z
+	public final fun name (Ljava/lang/String;)Ljava/lang/String;
+	public final fun parent (Ljava/lang/String;)Ljava/lang/String;
+	public final fun readBytes (Ljava/lang/String;)[B
+	public final fun resourcesDirectory ()Ljava/lang/String;
+	public final fun writeBytes (Ljava/lang/String;[B)Z
+}
+
+public final class io/github/valerioisufi/drawview/platform/PlatformFilesKt {
+	public static final fun newResourcePath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/platform/PlatformFiles_jvmKt {
+	public static final field PAGEBOARD_DATA_DIRECTORY_PROPERTY Ljava/lang/String;
+	public static final fun getDrawViewDesktopDataDirectory ()Ljava/io/File;
+}
+
+public final class io/github/valerioisufi/drawview/platform/SecureStore {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/platform/SecureStore;
+	public final fun read (Ljava/lang/String;)Ljava/lang/String;
+	public final fun write (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/drawview/platform/Sha256 {
+	public static final field Companion Lio/github/valerioisufi/drawview/platform/Sha256$Companion;
+	public fun <init> ()V
+	public final fun digestHex ()Ljava/lang/String;
+	public final fun update ([BII)Lio/github/valerioisufi/drawview/platform/Sha256;
+	public static synthetic fun update$default (Lio/github/valerioisufi/drawview/platform/Sha256;[BIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/platform/Sha256;
+}
+
+public final class io/github/valerioisufi/drawview/platform/Sha256$Companion {
+	public final fun of ([B)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/platform/SyncLock {
+	public fun <init> ()V
+	public final fun getMonitor ()Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/platform/SynchronizationKt {
+	public static final fun syncLock (Lio/github/valerioisufi/drawview/platform/SyncLock;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/platform/TimeKt {
+	public static final fun currentTimeMillis ()J
+}
+

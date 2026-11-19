@@ -25,22 +25,22 @@ plugins {
     // The documentation of the libraries: each one, and all of them together (dokkaGenerate)
     alias(libs.plugins.dokka)
     // The classes of the convention plugins, for the native tasks of this script
-    id("drawview.publish") apply false
+    id("pageboard.publish") apply false
 }
 
 // The documentation of every library together: ./gradlew :dokkaGenerate (build/dokka/html)
 dependencies {
-    for (library in subprojects.filter { it.name.startsWith("drawview-") && !it.name.startsWith("drawview-native-") }) {
+    for (library in subprojects.filter { it.name.startsWith("pageboard-") && !it.name.startsWith("pageboard-native-") }) {
         dokka(project(library.path))
     }
 }
 
 dokka {
-    moduleName.set("DrawView")
+    moduleName.set("Pageboard")
 }
 // =====================================================================================
 // iOS native engines (Google Ink, MicroTeX, PDFium bridge), linked statically through cinterop.
-// Each task builds native/build/ios/<sdk>/lib/libdrawview_{ink,tex,pdf}.a
+// Each task builds native/build/ios/<sdk>/lib/libpageboard_{ink,tex,pdf}.a
 // =====================================================================================
 val nativeSourcesDir = layout.projectDirectory.dir("native")
 mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm64").forEach { (sdk, pdfiumPackage) ->
@@ -54,9 +54,9 @@ mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm6
         inputs.property("aacVersion", aacVersion)
         inputs.property("appleToolchain", appleToolchainVersion())
         outputs.cacheIf { true }
-        environment("DRAWVIEW_PDFIUM_DIR", layout.buildDirectory.dir("pdfium/$pdfiumPackage").get().asFile.absolutePath)
-        environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
-        environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
+        environment("PAGEBOARD_PDFIUM_DIR", layout.buildDirectory.dir("pdfium/$pdfiumPackage").get().asFile.absolutePath)
+        environment("PAGEBOARD_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
+        environment("PAGEBOARD_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
         inputs.files(
             fileTree(nativeSourcesDir) {
                 include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "external/**", "scripts/build_ios.sh")
@@ -73,8 +73,8 @@ mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm6
 // PDFium: prebuilt packages of bblanchon/pdfium-binaries, downloaded on demand, verified
 // against the SHA-256 checksums of native/pdfium/pdfium.properties and extracted into
 // build/pdfium/<package>/ (lib/, include/, licenses/). No PDFium binary is versioned.
-//   preparePdfiumDesktop       host package (-Pdrawview.pdfium.desktop=all: every desktop package)
-//   preparePdfiumJvmResources  libpdfium + licenses as jvmMain resources of :drawview-pdf
+//   preparePdfiumDesktop       host package (-Ppageboard.pdfium.desktop=all: every desktop package)
+//   preparePdfiumJvmResources  libpdfium + licenses as jvmMain resources of :pageboard-pdf
 //   preparePdfiumAndroid       armeabi-v7a, arm64-v8a, x86_64 packages
 //   assemblePdfiumXcframework  build/pdfium/PDFium.xcframework (device + simulator, macOS only)
 // =====================================================================================
@@ -193,7 +193,7 @@ val pdfiumHostPackage: String = run {
     }
 }
 val pdfiumDesktopPackages: List<String> =
-    if (providers.gradleProperty("drawview.pdfium.desktop").orNull == "all") pdfiumDesktopPlatforms.keys.toList()
+    if (providers.gradleProperty("pageboard.pdfium.desktop").orNull == "all") pdfiumDesktopPlatforms.keys.toList()
     else listOf(pdfiumHostPackage)
 val pdfiumAndroidPackages = listOf("android-arm", "android-arm64", "android-x64")
 val pdfiumIosPackages = listOf("ios-device-arm64", "ios-simulator-arm64")
@@ -304,17 +304,17 @@ val (aacVersion, aacSourceDir) = audioCodecSource("aac", { "vo-aacenc-$it" }) { 
 // Desktop JVM native engines (Google Ink, MicroTeX, PDFium bridge, whisper.cpp bridge): JNI
 // libraries built by native/scripts/build_desktop.sh into
 // build/nativeLibs/jvm/<module>/native/<platform>/, added to the jvmMain resources of
-// :drawview-ink, :drawview-canvas (trackpad of macOS), :drawview-latex, :drawview-pdf and :drawview-lecture.
-//   -Pdrawview.desktop.platform=<platform>  platform to build (default: the host; macOS hosts can
+// :pageboard-ink, :pageboard-canvas (trackpad of macOS), :pageboard-latex, :pageboard-pdf and :pageboard-lecture.
+//   -Ppageboard.desktop.platform=<platform>  platform to build (default: the host; macOS hosts can
 //                                           also build the other darwin architecture)
-//   -Pdrawview.native.prebuilt=true         skip the build: build/nativeLibs/jvm already holds the
+//   -Ppageboard.native.prebuilt=true         skip the build: build/nativeLibs/jvm already holds the
 //                                           libraries of every platform (CI release job)
 // =====================================================================================
-val desktopPlatform: String = providers.gradleProperty("drawview.desktop.platform").orNull
+val desktopPlatform: String = providers.gradleProperty("pageboard.desktop.platform").orNull
     ?: pdfiumDesktopPlatforms.getValue(pdfiumHostPackage)
 val desktopPdfiumPackage: String = pdfiumDesktopPlatforms.entries.firstOrNull { it.value == desktopPlatform }?.key
     ?: throw GradleException("Unknown desktop platform '$desktopPlatform': one of ${pdfiumDesktopPlatforms.values}")
-val nativeLibsPrebuilt = providers.gradleProperty("drawview.native.prebuilt").orNull == "true"
+val nativeLibsPrebuilt = providers.gradleProperty("pageboard.native.prebuilt").orNull == "true"
 
 /**
  * The bash that runs build_desktop.sh. On Windows it is the one of Git for Windows, found next to
@@ -351,14 +351,14 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     inputs.property("pdfium", "$pdfiumVersion/$desktopPdfiumPackage")
     inputs.property("appleToolchain", appleToolchainVersion())
     outputs.cacheIf { true }
-    listOf("drawview-ink", "drawview-canvas", "drawview-latex", "drawview-pdf", "drawview-lecture", "drawview-sync-iroh").forEach { module ->
+    listOf("pageboard-ink", "pageboard-canvas", "pageboard-latex", "pageboard-pdf", "pageboard-lecture", "pageboard-sync-iroh").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
-    environment("DRAWVIEW_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)
-    environment("DRAWVIEW_WHISPER_DIR", whisperSourceDir.get().asFile.absolutePath)
-    environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
-    environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
-    environment("DRAWVIEW_RUST_DIR", rustTargetDirectory.absolutePath)
+    environment("PAGEBOARD_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)
+    environment("PAGEBOARD_WHISPER_DIR", whisperSourceDir.get().asFile.absolutePath)
+    environment("PAGEBOARD_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
+    environment("PAGEBOARD_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
+    environment("PAGEBOARD_RUST_DIR", rustTargetDirectory.absolutePath)
     // JNI headers of the JDK running Gradle
     environment("JAVA_HOME", System.getProperty("java.home"))
     workingDir(nativeSourcesDir)

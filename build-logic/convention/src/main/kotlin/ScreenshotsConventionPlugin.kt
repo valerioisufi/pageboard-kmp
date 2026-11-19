@@ -11,8 +11,8 @@ import org.gradle.api.tasks.testing.Test
  *
  * The references are recorded and verified in one environment, the Linux runner of
  * `.github/workflows/screenshots.yml` (or its Docker image, `tools/screenshots/`), which sets
- * `DRAWVIEW_SCREENSHOTS=reference`. Elsewhere the glyphs are rasterized differently, so:
- * - `recordRoborazzi*` fails, unless `-Pdrawview.screenshots.recordHere=true` asks for images to
+ * `PAGEBOARD_SCREENSHOTS=reference`. Elsewhere the glyphs are rasterized differently, so:
+ * - `recordRoborazzi*` fails, unless `-Ppageboard.screenshots.recordHere=true` asks for images to
  *   look at, not to commit;
  * - `verifyRoborazzi*` compares as on the runner, after a notice that differences of antialiasing
  *   are expected.
@@ -34,7 +34,7 @@ class ScreenshotsConventionPlugin : Plugin<Project> {
 
         val reference = providers.environmentVariable(ENVIRONMENT).orNull == REFERENCE
         if (reference) return@with
-        val recordHere = providers.gradleProperty("drawview.screenshots.recordHere").orNull == "true"
+        val recordHere = providers.gradleProperty("pageboard.screenshots.recordHere").orNull == "true"
         val recordProperty = providers.gradleProperty("roborazzi.test.record").orNull == "true"
         val verifyProperty = providers.gradleProperty("roborazzi.test.verify").orNull == "true"
         val path = path
@@ -48,7 +48,7 @@ class ScreenshotsConventionPlugin : Plugin<Project> {
                         "Run the workflow Screenshots on your branch (gh workflow run screenshots.yml -f branch=<branch>), " +
                         "or take the artifact screenshots-new of the failing check of your pull request, " +
                         "or record in the Docker image (tools/screenshots/run.sh record). " +
-                        "-Pdrawview.screenshots.recordHere=true records here anyway, for images not to commit."
+                        "-Ppageboard.screenshots.recordHere=true records here anyway, for images not to commit."
                 )
             }
             if (verifying) {
@@ -64,7 +64,7 @@ class ScreenshotsConventionPlugin : Plugin<Project> {
 
     private companion object {
         /** The variable that marks the reference environment, and its value there. */
-        const val ENVIRONMENT = "DRAWVIEW_SCREENSHOTS"
+        const val ENVIRONMENT = "PAGEBOARD_SCREENSHOTS"
         const val REFERENCE = "reference"
     }
 }

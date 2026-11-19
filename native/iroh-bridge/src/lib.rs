@@ -1,5 +1,5 @@
 //! The iroh endpoint of DrawView: connections to other devices by their key, direct or through a
-//! relay, carrying whole frames (see `drawview-sync-iroh`).
+//! relay, carrying whole frames (see `pageboard-sync-iroh`).
 //!
 //! The endpoints, connections and streams are numbers ([bridge]): a number closed or never given
 //! is refused, so that a call racing a close fails instead of touching freed memory. The C API

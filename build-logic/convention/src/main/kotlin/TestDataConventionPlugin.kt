@@ -7,7 +7,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.process.CommandLineArgumentProvider
 
 /**
- * The data directory of the tests of a module: every [Test] task runs with `drawview.dataDir`
+ * The data directory of the tests of a module: every [Test] task runs with `pageboard.dataDir`
  * set to `build/test-data/<task>`, so that no test reads or writes the data of the user
  * (`~/.drawview`, `~/.pencilnotes`).
  *
@@ -29,9 +29,9 @@ class TestDataConventionPlugin : Plugin<Project> {
 }
 
 /**
- * The `drawview.dataDir` system property of the JVM of the tests. The directory is not an input:
+ * The `pageboard.dataDir` system property of the JVM of the tests. The directory is not an input:
  * its absolute path does not change the results, and the checkouts share them in the build cache.
  */
 class TestDataDirectory(@get:Internal val directory: Provider<Directory>) : CommandLineArgumentProvider {
-    override fun asArguments(): Iterable<String> = listOf("-Ddrawview.dataDir=${directory.get().asFile.absolutePath}")
+    override fun asArguments(): Iterable<String> = listOf("-Dpageboard.dataDir=${directory.get().asFile.absolutePath}")
 }

@@ -14,43 +14,43 @@ dependencies {
 gradlePlugin {
     plugins {
         register("kmpLibrary") {
-            id = "drawview.kmp.library"
+            id = "pageboard.kmp.library"
             implementationClass = "KmpLibraryConventionPlugin"
         }
         register("composeLibrary") {
-            id = "drawview.compose.library"
+            id = "pageboard.compose.library"
             implementationClass = "ComposeLibraryConventionPlugin"
         }
         register("androidNative") {
-            id = "drawview.android.native"
+            id = "pageboard.android.native"
             implementationClass = "AndroidNativeConventionPlugin"
         }
         register("androidRust") {
-            id = "drawview.android.rust"
+            id = "pageboard.android.rust"
             implementationClass = "AndroidRustConventionPlugin"
         }
         register("androidSigning") {
-            id = "drawview.android.signing"
+            id = "pageboard.android.signing"
             implementationClass = "AndroidSigningConventionPlugin"
         }
         register("jvmNatives") {
-            id = "drawview.jvm.natives"
+            id = "pageboard.jvm.natives"
             implementationClass = "JvmNativesConventionPlugin"
         }
         register("publish") {
-            id = "drawview.publish"
+            id = "pageboard.publish"
             implementationClass = "PublishConventionPlugin"
         }
         register("testData") {
-            id = "drawview.test.data"
+            id = "pageboard.test.data"
             implementationClass = "TestDataConventionPlugin"
         }
         register("screenshots") {
-            id = "drawview.screenshots"
+            id = "pageboard.screenshots"
             implementationClass = "ScreenshotsConventionPlugin"
         }
         register("benchmarks") {
-            id = "drawview.benchmarks"
+            id = "pageboard.benchmarks"
             implementationClass = "BenchmarksConventionPlugin"
         }
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Records or verifies the screenshots of every module that applies drawview.screenshots, in the
+# Records or verifies the screenshots of every module that applies pageboard.screenshots, in the
 # reference environment (the workflow Screenshots, or the image of tools/screenshots/Dockerfile).
 # Usage: tools/screenshots/gradle.sh record|verify|compare [gradle arguments...]
 set -euo pipefail
@@ -14,7 +14,7 @@ esac
 cd "$(dirname "$0")/../.."
 tasks=()
 for build in */build.gradle.kts; do
-  if grep -q 'id("drawview.screenshots")' "$build"; then
+  if grep -q 'id("pageboard.screenshots")' "$build"; then
     tasks+=(":$(dirname "$build"):$task")
   fi
 done

@@ -1,7 +1,7 @@
 // The codecs of the lecture recordings (plain C API, for the JNI bridge and Kotlin/Native):
 // Opus (libopus) to record and play them, AAC-LC (vo-aacenc) to export them.
-#ifndef DRAWVIEW_AUDIO_BRIDGE_H
-#define DRAWVIEW_AUDIO_BRIDGE_H
+#ifndef PAGEBOARD_AUDIO_BRIDGE_H
+#define PAGEBOARD_AUDIO_BRIDGE_H
 
 #include <stdint.h>
 

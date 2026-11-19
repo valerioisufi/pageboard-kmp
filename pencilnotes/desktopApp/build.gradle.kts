@@ -5,21 +5,21 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     // The tests on a data directory of their own (build/test-data), never the one of the user
-    id("drawview.test.data")
+    id("pageboard.test.data")
 }
 
 dependencies {
     implementation(project(":pencilnotes-shared"))
-    implementation(project(":drawview-ui"))
+    implementation(project(":pageboard-ui"))
     // Every pending change written before the application exits (DrawViewSessions)
-    implementation(project(":drawview-session"))
-    implementation(project(":drawview-lecture-ui"))
+    implementation(project(":pageboard-session"))
+    implementation(project(":pageboard-lecture-ui"))
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
 
     // The clients of the external models: the socket and the commands (docs/plans/agent-tools.md)
-    implementation(project(":drawview-agent"))
+    implementation(project(":pageboard-agent"))
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.kotlin.test)

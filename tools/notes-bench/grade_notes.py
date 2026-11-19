@@ -5,7 +5,7 @@ Every note is judged once per pass and every set of notes scored once per pass: 
 runs of NotesBench, and the requests stop at the cap. The lectures of test are refused without --test.
 
     python grade_notes.py --lectures <ids> --configs <names> [--reference <config>] [--passes 2]
-        [--estimate] [--test] [--cap 6] [--bench ~/drawview-bench] [--workspace ~/lecture-eval-2]
+        [--estimate] [--test] [--cap 6] [--bench ~/pageboard-bench] [--workspace ~/lecture-eval-2]
 """
 import argparse
 import hashlib
@@ -294,7 +294,7 @@ def main(argv=None):
     parser.add_argument("--estimate", action="store_true")
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--cap", type=float, default=6.0)
-    parser.add_argument("--bench", default=os.path.expanduser("~/drawview-bench"))
+    parser.add_argument("--bench", default=os.path.expanduser("~/pageboard-bench"))
     parser.add_argument("--workspace", default=os.path.expanduser("~/lecture-eval-2"))
     parser.add_argument("--evalset", default="evalset-2026-10-18-3.json")
     args = parser.parse_args(argv)

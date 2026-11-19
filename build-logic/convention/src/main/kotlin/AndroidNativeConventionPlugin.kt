@@ -17,9 +17,9 @@ import org.gradle.kotlin.dsl.configure
 class AndroidNativeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.library")
-        pluginManager.apply("drawview.publish")
+        pluginManager.apply("pageboard.publish")
 
-        val engine = name.removePrefix("drawview-native-")
+        val engine = name.removePrefix("pageboard-native-")
         extensions.configure<LibraryExtension> {
             namespace = "io.github.valerioisufi.drawview.nativelibs.$engine"
             compileSdk = libs.version("android-compileSdk").toInt()

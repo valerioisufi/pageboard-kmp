@@ -1,5 +1,5 @@
 """
-Builds the strut fonts of the texts (drawview-ui/src/commonMain/composeResources/font):
+Builds the strut fonts of the texts (pageboard-ui/src/commonMain/composeResources/font):
 one empty glyph for U+FFFC (the object replacement character), 1 em wide, all the room of its
 line above the baseline (strut_above.ttf) or below it (strut_below.ttf). Nothing else: Skia
 aborts on the default-ignorable characters (U+2060, U+200B) mapped to a glyph of these fonts.
@@ -8,7 +8,7 @@ A character in one of them gives its line exactly the room asked above or below 
 which a character of a text font cannot (its ascent and descent go together): the editor and
 the canvas reserve the room of the formulas and of the blocks of code with them.
 
-    python3 -I tools/fonts/make_struts.py drawview-ui/src/commonMain/composeResources/font
+    python3 -I tools/fonts/make_struts.py pageboard-ui/src/commonMain/composeResources/font
 """
 import sys
 

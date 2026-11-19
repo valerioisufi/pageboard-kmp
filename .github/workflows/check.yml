@@ -54,4 +54,4 @@ jobs:
           sudo docker image prune --all --force > /dev/null
           df -h /
       - name: The applications
-        run: ./gradlew :pencilnotes-android:assembleDebug :sample-android:assembleDebug -Pdrawview.android.debug.abis=arm64-v8a
+        run: ./gradlew :pencilnotes-android:assembleDebug :sample-android:assembleDebug -Ppageboard.android.debug.abis=arm64-v8a

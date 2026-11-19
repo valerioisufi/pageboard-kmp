@@ -9,7 +9,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.github.valerioisufi.drawview.lecture.ui.LectureExitDialog
-import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.platform.PAGEBOARD_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.platform.checkDataDirectoryProperty
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.DesktopAppIcon
@@ -27,11 +28,12 @@ import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) {
     // PencilNotes keeps its notes apart from the other DrawView applications (~/.pencilnotes),
-    // unless another directory is given with -Ddrawview.dataDir=...
-    if (System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
-        System.setProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY, File(System.getProperty("user.home"), ".pencilnotes").absolutePath)
+    // unless another directory is given with -Dpageboard.dataDir=...
+    checkDataDirectoryProperty()
+    if (System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
+        System.setProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY, File(System.getProperty("user.home"), ".pencilnotes").absolutePath)
     }
-    val dataDirectory = File(System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY))
+    val dataDirectory = File(System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY))
 
     // A command of the terminal: a client of the application, before anything of the interface starts
     if (args.firstOrNull() in AgentCli.COMMANDS) exitProcess(AgentCli(dataDirectory).run(args.toList()))

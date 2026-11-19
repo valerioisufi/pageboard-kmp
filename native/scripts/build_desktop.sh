@@ -9,8 +9,8 @@
 #   platform: darwin-aarch64, darwin-x86_64, linux-x86_64, linux-aarch64, windows-x86_64 or
 #             windows-aarch64 (default: the host). macOS hosts can build both darwin platforms;
 #             the other platforms must be built on a host of the same OS and architecture.
-#   Normally run through ./gradlew buildDesktopNativeLibs (-Pdrawview.desktop.platform=...),
-#   which provides DRAWVIEW_PDFIUM_DIR (the extracted pdfium-binaries package).
+#   Normally run through ./gradlew buildDesktopNativeLibs (-Ppageboard.desktop.platform=...),
+#   which provides PAGEBOARD_PDFIUM_DIR (the extracted pdfium-binaries package).
 #   Windows hosts need Git Bash and Visual Studio with the "C++ Clang tools" (clang-cl).
 set -euo pipefail
 
@@ -61,14 +61,14 @@ if [[ "$PLATFORM" != "$HOST_OS"-* || ( "$HOST_OS" != "darwin" && "$PLATFORM" != 
 fi
 
 # Prebuilt PDFium package (downloaded and verified by Gradle)
-PDFIUM_DIR="${DRAWVIEW_PDFIUM_DIR:-}"
+PDFIUM_DIR="${PAGEBOARD_PDFIUM_DIR:-}"
 if [[ -z "$PDFIUM_DIR" ]]; then
     PDFIUM_DIR="$ROOT_DIR/build/pdfium/$PDFIUM_PACKAGE"
     "$ROOT_DIR/gradlew" -p "$ROOT_DIR" -q ":extractPdfium-$PDFIUM_PACKAGE"
 fi
 
 # Source of whisper.cpp (downloaded and verified by Gradle)
-WHISPER_DIR="${DRAWVIEW_WHISPER_DIR:-}"
+WHISPER_DIR="${PAGEBOARD_WHISPER_DIR:-}"
 if [[ -z "$WHISPER_DIR" ]]; then
     WHISPER_VERSION="$(sed -n 's/^version=//p' "$NATIVE_DIR/whisper/whisper.properties")"
     WHISPER_DIR="$ROOT_DIR/build/whisper/src/whisper.cpp-$WHISPER_VERSION"
@@ -76,8 +76,8 @@ if [[ -z "$WHISPER_DIR" ]]; then
 fi
 
 # Sources of libopus and vo-aacenc (downloaded and verified by Gradle)
-OPUS_DIR="${DRAWVIEW_OPUS_DIR:-}"
-AAC_DIR="${DRAWVIEW_AAC_DIR:-}"
+OPUS_DIR="${PAGEBOARD_OPUS_DIR:-}"
+AAC_DIR="${PAGEBOARD_AAC_DIR:-}"
 if [[ -z "$OPUS_DIR" || -z "$AAC_DIR" ]]; then
     OPUS_DIR="$ROOT_DIR/build/opus/src/opus-$(sed -n 's/^version=//p' "$NATIVE_DIR/opus/opus.properties")"
     AAC_DIR="$ROOT_DIR/build/aac/src/vo-aacenc-$(sed -n 's/^version=//p' "$NATIVE_DIR/aac/aac.properties")"
@@ -114,7 +114,7 @@ fi
 [[ -n "$CARGO" ]] || CARGO="$(command -v cargo || true)"
 [[ -n "$CARGO" ]] || CARGO="$HOME/.cargo/bin/cargo"
 # Where cargo builds: given by Gradle (rustTargetDirectory), else the place of the checkout
-RUST_DIR="${DRAWVIEW_RUST_DIR:-$NATIVE_DIR/build/rust}"
+RUST_DIR="${PAGEBOARD_RUST_DIR:-$NATIVE_DIR/build/rust}"
 # rustc beside cargo (rustup)
 (cd "$NATIVE_DIR/iroh-bridge" && PATH="$(dirname "$CARGO"):$PATH" MACOSX_DEPLOYMENT_TARGET=13.0 CARGO_TARGET_DIR="$RUST_DIR" \
     "$CARGO" rustc --release --locked --lib --crate-type cdylib --target "$RUST_TARGET")
@@ -135,22 +135,22 @@ install_lib() {
     echo "Installed $dest/$file"
 }
 
-install_lib ink_bridge drawview-ink
+install_lib ink_bridge pageboard-ink
 IROH_FILE="${PREFIX}iroh_bridge.$EXT"
-mkdir -p "$OUT_DIR/drawview-sync-iroh/native/$PLATFORM"
-cp "$RUST_DIR/$RUST_TARGET/release/$IROH_FILE" "$OUT_DIR/drawview-sync-iroh/native/$PLATFORM/$IROH_FILE"
-echo "Installed $OUT_DIR/drawview-sync-iroh/native/$PLATFORM/$IROH_FILE"
+mkdir -p "$OUT_DIR/pageboard-sync-iroh/native/$PLATFORM"
+cp "$RUST_DIR/$RUST_TARGET/release/$IROH_FILE" "$OUT_DIR/pageboard-sync-iroh/native/$PLATFORM/$IROH_FILE"
+echo "Installed $OUT_DIR/pageboard-sync-iroh/native/$PLATFORM/$IROH_FILE"
 if [[ "$PLATFORM" == darwin-* ]]; then
-    install_lib trackpad_bridge drawview-canvas
+    install_lib trackpad_bridge pageboard-canvas
 fi
-cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-ink/native/$PLATFORM/INK_LICENSE.txt"
-install_lib tex drawview-latex
-install_lib pdfium_bridge drawview-pdf
-install_lib whisper_bridge drawview-lecture
-install_lib audio_bridge drawview-lecture
-cp "$OPUS_DIR/COPYING" "$OUT_DIR/drawview-lecture/native/$PLATFORM/OPUS_LICENSE.txt"
-cp "$AAC_DIR/COPYING" "$OUT_DIR/drawview-lecture/native/$PLATFORM/VO_AACENC_LICENSE.txt"
+cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/pageboard-ink/native/$PLATFORM/INK_LICENSE.txt"
+install_lib tex pageboard-latex
+install_lib pdfium_bridge pageboard-pdf
+install_lib whisper_bridge pageboard-lecture
+install_lib audio_bridge pageboard-lecture
+cp "$OPUS_DIR/COPYING" "$OUT_DIR/pageboard-lecture/native/$PLATFORM/OPUS_LICENSE.txt"
+cp "$AAC_DIR/COPYING" "$OUT_DIR/pageboard-lecture/native/$PLATFORM/VO_AACENC_LICENSE.txt"
 if [[ "$PLATFORM" == darwin-* ]]; then
-    install_lib audio_codec_bridge drawview-lecture
+    install_lib audio_codec_bridge pageboard-lecture
 fi
-cp "$WHISPER_DIR/LICENSE" "$OUT_DIR/drawview-lecture/native/$PLATFORM/WHISPER_CPP_LICENSE.txt"
+cp "$WHISPER_DIR/LICENSE" "$OUT_DIR/pageboard-lecture/native/$PLATFORM/WHISPER_CPP_LICENSE.txt"

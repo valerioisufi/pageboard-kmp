@@ -1,0 +1,35 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:pageboard-ink>
+final class io.github.valerioisufi.drawview.ink/InkStrokeEngine { // io.github.valerioisufi.drawview.ink/InkStrokeEngine|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.ink/InkStrokeEngine.<init>|<init>(){}[0]
+
+    final val inputs // io.github.valerioisufi.drawview.ink/InkStrokeEngine.inputs|{}inputs[0]
+        final fun <get-inputs>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> // io.github.valerioisufi.drawview.ink/InkStrokeEngine.inputs.<get-inputs>|<get-inputs>(){}[0]
+    final val isNative // io.github.valerioisufi.drawview.ink/InkStrokeEngine.isNative|{}isNative[0]
+        final fun <get-isNative>(): kotlin/Boolean // io.github.valerioisufi.drawview.ink/InkStrokeEngine.isNative.<get-isNative>|<get-isNative>(){}[0]
+
+    final fun addInput(kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.model/InputToolType = ...) // io.github.valerioisufi.drawview.ink/InkStrokeEngine.addInput|addInput(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+    final fun addPoint(kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.model/InputToolType = ...): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.addPoint|addPoint(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+    final fun cancelStroke() // io.github.valerioisufi.drawview.ink/InkStrokeEngine.cancelStroke|cancelStroke(){}[0]
+    final fun currentMesh(): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.currentMesh|currentMesh(){}[0]
+    final fun currentOutline(): io.github.valerioisufi.drawview.model/StrokeOutline? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.currentOutline|currentOutline(){}[0]
+    final fun finishStroke(): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.finishStroke|finishStroke(){}[0]
+    final fun predict(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>) // io.github.valerioisufi.drawview.ink/InkStrokeEngine.predict|predict(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>){}[0]
+    final fun release() // io.github.valerioisufi.drawview.ink/InkStrokeEngine.release|release(){}[0]
+    final fun startStroke(io.github.valerioisufi.drawview.model/BrushConfig, kotlin/Float = ...) // io.github.valerioisufi.drawview.ink/InkStrokeEngine.startStroke|startStroke(io.github.valerioisufi.drawview.model.BrushConfig;kotlin.Float){}[0]
+    final fun takeUpdatedRegion(): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.takeUpdatedRegion|takeUpdatedRegion(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.ink/InkStrokeEngine.Companion|null[0]
+        final fun buildMesh(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.Companion.buildMesh|buildMesh(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType;kotlin.Float){}[0]
+    }
+}
+
+final object io.github.valerioisufi.drawview.ink/InkStrokeModeller : io.github.valerioisufi.drawview.model/StrokeModeller { // io.github.valerioisufi.drawview.ink/InkStrokeModeller|null[0]
+    final fun buildMesh(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeModeller.buildMesh|buildMesh(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+}

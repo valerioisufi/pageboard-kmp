@@ -174,7 +174,7 @@ One commit per phase. The checks of `CLAUDE.md` run at the end of each phase fro
 |---|---|---|
 | 1 | This plan | Done |
 | 2 | The guard of the serial names, before anything moves | Done: every subclass already had its `@SerialName` |
-| 3 | The modules and the build: directories, `settings.gradle.kts`, the plugins, the properties, the environment variables, the data directory, the workflows, the consumer checks | To do |
+| 3 | The modules and the build: directories, `settings.gradle.kts`, the plugins, the properties, the environment variables, the data directory, the workflows, the consumer checks | Done, compiled for the JVM; the full checks run after phase 6 |
 | 4 | The packages, the JNI symbols, the cinterop and Swift code, the Room schema directory | To do |
 | 5 | The types, as in the table; `updateKotlinAbi` for the new names | To do |
 | 6 | The protocol and the stored names: ALPN, invitations, Bonjour, archives, shape type, secure store, deep links, channel; `ProtocolFormatTest` re-recorded | To do |

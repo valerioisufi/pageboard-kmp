@@ -4,9 +4,9 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
     // The tests on a data directory of their own (build/test-data), never the one of the user
-    id("drawview.test.data")
+    id("pageboard.test.data")
     // The release signed with the upload key of Google Play, when this machine has it
-    id("drawview.android.signing")
+    id("pageboard.android.signing")
 }
 
 kotlin {
@@ -17,7 +17,7 @@ kotlin {
 dependencies {
     implementation(project(":pencilnotes-shared"))
     // The commands of the screen shown, for the list of the shortcuts of the system
-    implementation(project(":drawview-ui"))
+    implementation(project(":pageboard-ui"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
