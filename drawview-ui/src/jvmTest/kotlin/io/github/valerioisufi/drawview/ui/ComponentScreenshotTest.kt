@@ -193,7 +193,8 @@ class ComponentScreenshotTest {
             val controller = DrawViewController(document = DrawDocument(title = "Lecture 1 — Limits"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
             var requests by mutableIntStateOf(0)
             setContent {
-                DrawViewTheme(dynamicColor = false) {
+                // Light whatever the theme of the host
+                DrawViewTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).padding(12.dp)) {
                         DocumentInfoSelector(controller.document, subtitle = "1 page", location = "Analysis", renamer = { true }, renameRequests = requests)
                     }
