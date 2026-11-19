@@ -16,6 +16,17 @@ set -euo pipefail
 mode=${1:?usage: run.sh record|verify|compare [gradle arguments...]}
 shift
 root=$(cd "$(dirname "$0")/../.." && pwd)
+# Git Bash on Windows: Docker takes D:/path, and the paths given to it are not to be rewritten
+# The container runs as the user of the host, so that what the build writes is the host's; on
+# Windows as root, the mounts of Docker Desktop refusing chmod to another user
+user=(--user "$(id -u):$(id -g)")
+case "$(uname -s)" in
+  MINGW* | MSYS*)
+    root=$(cd "$root" && pwd -W)
+    export MSYS_NO_PATHCONV=1
+    user=()
+    ;;
+esac
 image=${SCREENSHOTS_IMAGE:-drawview-screenshots}
 toolchain=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' "$root/native/iroh-bridge/rust-toolchain.toml")
 
@@ -36,7 +47,7 @@ fi
 project_cache=/gradle/project-cache/$(printf %s "$root" | cksum | cut -d' ' -f1)
 
 docker run --rm --platform linux/amd64 \
-  --user "$(id -u):$(id -g)" \
+  ${user[@]+"${user[@]}"} \
   "${mounts[@]}" \
   "$image" \
   tools/screenshots/gradle.sh "$mode" --project-cache-dir "$project_cache" "$@"
