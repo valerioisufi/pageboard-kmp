@@ -1,5 +1,8 @@
 # Application icon on desktop platforms
 
+> The icon of PencilNotes is now the P of its wordmark, made by `tools/brand/icon.py`: see
+> `docs/plans/app-identity.md`. What follows is the wiring of the desktop icons, which stays.
+
 The desktop applications of DrawView (PencilNotes and the sample application) show their brand icon
 instead of the generic Java coffee cup icon across all desktop platforms: in the macOS Dock and
 application switcher (both in development and when packaged), in the native window title bar and
