@@ -5,6 +5,14 @@ import io.github.valerioisufi.drawview.agent.AgentEngines
 import io.github.valerioisufi.drawview.agent.AgentFiles
 import io.github.valerioisufi.drawview.agent.AgentPdf
 import io.github.valerioisufi.drawview.agent.AgentErrorCode
+import io.github.valerioisufi.drawview.agent.AgentLecture
+import io.github.valerioisufi.drawview.agent.AgentLectureContent
+import io.github.valerioisufi.drawview.agent.AgentLectures
+import io.github.valerioisufi.drawview.agent.AgentSpoken
+import io.github.valerioisufi.drawview.agent.AgentSuggestion
+import io.github.valerioisufi.drawview.lecture.LectureAssistant
+import io.github.valerioisufi.drawview.lecture.LectureRecord
+import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.agent.AgentExportRequest
 import io.github.valerioisufi.drawview.agent.AgentExported
 import io.github.valerioisufi.drawview.agent.AgentExports
@@ -64,6 +72,10 @@ class PencilNotesAgents(
     @Volatile
     internal var pageEngine: PageEngine? = null
 
+    /** The lecture assistant, whose lectures and handwriting the models read, once made. */
+    @Volatile
+    internal var lectureAssistant: LectureAssistant? = null
+
     /** What the exports of the models are written with, once the fonts of a window are there. */
     @Volatile
     internal var exportWriters: ExportWriters? = null
@@ -109,7 +121,27 @@ class PencilNotesAgents(
             exports = object : AgentExports {
                 override suspend fun export(request: AgentExportRequest): AgentExported = exportFor(request)
             },
-            show = ::show
+            show = ::show,
+            // What the assistant transcribed and saved: reading it starts no model
+            handwriting = { documentId, pageId -> lectureAssistant?.handwritingByPage(documentId)?.get(pageId) },
+            lectures = object : AgentLectures {
+                override suspend fun lectures(documentId: String): List<AgentLecture> =
+                    records(documentId).map { it.toAgentLecture() }
+
+                override suspend fun lecture(documentId: String, lectureId: String): AgentLectureContent? {
+                    val record = records(documentId).firstOrNull { it.id == lectureId } ?: return null
+                    return AgentLectureContent(
+                        lecture = record.toAgentLecture(),
+                        outline = record.outline,
+                        currentTopic = record.currentTopic,
+                        transcript = record.transcript.map { AgentSpoken(it.startMs, it.endMs, it.text) },
+                        finalReview = record.finalReview,
+                        suggestions = record.suggestions.map { AgentSuggestion(it.kind.name.lowercase(), it.title, it.content, it.pageId.ifEmpty { null }, it.atMs) }
+                    )
+                }
+
+                override suspend fun course(documentId: String): String? = lectureAssistant?.courseContext(documentId)?.text
+            }
         ),
         journal = journal
     )
@@ -156,6 +188,15 @@ class PencilNotesAgents(
         AgentExported(path, PlatformFiles.readBytes(path)?.size?.toLong() ?: 0L, outcome.documents, outcome.pages)
     }
 
+    /** The lectures of [documentId] as they are saved, read only. */
+    private suspend fun records(documentId: String): List<LectureRecord> {
+        val assistant = lectureAssistant ?: return emptyList()
+        return withContext(Dispatchers.Default) { assistant.library.records(documentId) }
+    }
+
+    private fun LectureRecord.toAgentLecture() =
+        AgentLecture(id, startedAt, durationMs, finalReview != null, suggestions.size, isRecording = status != LectureStatus.FINISHED)
+
     /** [name] in [directory], with a number when a file has it: "Notes (2).pdf"... */
     private fun freePath(directory: String, name: String): String {
         val stem = name.substringBeforeLast('.')
@@ -189,7 +230,8 @@ class PencilNotesAgents(
             .filter { it.documentId in documentIds }
             .flatMap { document ->
                 document.hits.map { hit ->
-                    AgentSearchHit(document.documentId, document.title, (hit.anchor as? SearchAnchor.Page)?.pageId, hit.snippet)
+                    val lecture = hit.anchor as? SearchAnchor.Lecture
+                    AgentSearchHit(document.documentId, document.title, (hit.anchor as? SearchAnchor.Page)?.pageId, hit.snippet, lecture?.lectureId, lecture?.startMs)
                 }
             }
             .take(limit)

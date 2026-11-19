@@ -435,7 +435,9 @@ internal data class SearchEntry(
     val document: String,
     val title: String,
     val page: String? = null,
-    val snippet: String
+    val snippet: String,
+    val lecture: String? = null,
+    @SerialName("start_ms") val startMs: Long? = null
 )
 
 @Serializable

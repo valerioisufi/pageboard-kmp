@@ -121,7 +121,7 @@ AgentEndpoint ─► DocumentTools ─► ReadingTools  ─┐ reads
 | A shape item turned into a `ShapeElement` and its box, a style into `UpdateElementContent` | `ShapeItems` (`drawview-agent`, internal) | Information Expert (`ShapeElement` knows its values), Pure Fabrication |
 | A passage of the PDF text found and turned into a `DrawTextMarkup` with its rects | `MarkupItems` (`drawview-agent`, internal), on the PDF layout of `PageEngine` | Information Expert, Indirection |
 | Elements and pages copied from another document | `CopyItems` on `CopiedContent` / `CopiedPages` (`drawview-model`) | Creator (the copy makes the new ids), Low Coupling |
-| The lectures and the handwriting read | `LectureTools` (`drawview-agent`), `AgentLectures` port; `LectureReading` (`drawview-lecture`, public, read only) | High Cohesion, Indirection, Protected Variations (the format of the lectures stays theirs) |
+| The lectures and the handwriting read | `LectureTools` (`drawview-agent`), `AgentLectures` port; `LectureAssistant.handwritingByPage`, `courseContext` (`drawview-lecture`, read only) | High Cohesion, Indirection, Protected Variations (the format of the lectures stays theirs) |
 | Export and import of files | `ExportTools` (`drawview-agent`), `AgentExports` and `AgentPdfs` ports; their adapters in `PencilNotesAgents` | Indirection, Low Coupling (no dependency on `drawview-export`) |
 | A page shown in the editor | `AgentEngines.show` port | Indirection |
 | The new library items and their undo | `LibraryItem`, `LibraryApplier` | Polymorphism, Pure Fabrication |
@@ -191,7 +191,7 @@ ABI of `drawview-agent` on purpose; the command line reaches the new tools with 
 | 4 | Marks: `add_markup`, `restyle_markups`, their removal. Tests: a quote found once, at an occurrence, not found, a scanned page, the rects on a page of another format, undo | 2 | done |
 | 5 | Copies and the library: `copy_elements`, `copy_pages`, `duplicate_document`, `import_pdf` (`AgentPdfs`), `import_archive`. Tests: both documents allowed or refused, images and PDF pages carried, the undo of each, the bounds of the files | 4, 5, 15, 16 | done |
 | 6 | Files and the editor: `export` (`AgentExports`, every format), `show_page`. Tests: a new file never over another, a folder exported, a closed document; the export through the desktop application on a scratch directory is left to the user | 14, 18 | done |
-| 7 | Handwriting and lectures: `LectureReading` in `drawview-lecture` (public, read only), the handwriting of `handwriting.json` in `read_page`, `list_lectures`, `read_lecture`, the lecture hits of `search` and its filters. Tests: a page transcribed and one not, a lecture read by parts, the bounds, no model started | 20, 21, 23 | proposed |
+| 7 | Handwriting and lectures: `LectureAssistant.handwritingByPage` and `courseContext` in `drawview-lecture` (read only), the handwriting of `handwriting.json` in `read_page`, `list_lectures`, `read_lecture`, the lecture hits of `search` and its filters. Tests: a page transcribed and one not, a lecture read by parts, the bounds, no model started | 20, 21, 23 | done |
 | 8 | Sharing read: the members and roles in `read_document`. Tests: a shared document and one not, nothing of the keys answered | 25 | proposed |
 
 Each phase is useful without the next. Phases 1–4 touch only `drawview-agent`; 5–8 add ports wired in

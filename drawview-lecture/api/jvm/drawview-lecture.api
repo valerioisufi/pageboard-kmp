@@ -353,6 +353,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun changeSharing (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public final fun clearImportAndExportMessages ()V
 	public final fun contextOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
+	public final fun courseContext (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun declineGeneration (Lio/github/valerioisufi/drawview/lecture/GenerationOffer;)V
 	public final fun delete (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureSummary;)V
 	public final fun dismissArrival (Lio/github/valerioisufi/drawview/lecture/LectureArrival;)V
@@ -394,6 +395,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getStartError ()Ljava/lang/String;
 	public final fun getTranscribing ()Ljava/util/List;
 	public final fun getTranscriptExportExtension ()Ljava/lang/String;
+	public final fun handwritingByPage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun handwritingTexts (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/platform/ChosenFile;)Z
 	public final fun isBusy ()Z

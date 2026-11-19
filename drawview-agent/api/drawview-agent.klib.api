@@ -119,6 +119,12 @@ abstract interface io.github.valerioisufi.drawview.agent/AgentJournal { // io.gi
     }
 }
 
+abstract interface io.github.valerioisufi.drawview.agent/AgentLectures { // io.github.valerioisufi.drawview.agent/AgentLectures|null[0]
+    abstract suspend fun course(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentLectures.course|course(kotlin.String){}[0]
+    abstract suspend fun lecture(kotlin/String, kotlin/String): io.github.valerioisufi.drawview.agent/AgentLectureContent? // io.github.valerioisufi.drawview.agent/AgentLectures.lecture|lecture(kotlin.String;kotlin.String){}[0]
+    abstract suspend fun lectures(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentLecture> // io.github.valerioisufi.drawview.agent/AgentLectures.lectures|lectures(kotlin.String){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.agent/PageEngine { // io.github.valerioisufi.drawview.agent/PageEngine|null[0]
     abstract fun pdfLayout(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.agent/PageEngine.pdfLayout|pdfLayout(kotlin.String;kotlin.Int){}[0]
     abstract fun textHeight(kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.drawview.agent/PageEngine.textHeight|textHeight(kotlin.String;kotlin.Float;kotlin.Float){}[0]
@@ -1724,7 +1730,7 @@ final class io.github.valerioisufi.drawview.agent/AgentEndpointConnection { // i
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.valerioisufi.drawview.agent/AgentEngines|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ..., io.github.valerioisufi.drawview.agent/AgentExports? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?;io.github.valerioisufi.drawview.agent.AgentExports?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String?,kotlin.Boolean>?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ..., io.github.valerioisufi.drawview.agent/AgentExports? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String?, kotlin/Boolean>? = ..., io.github.valerioisufi.drawview.agent/AgentLectures? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?;io.github.valerioisufi.drawview.agent.AgentExports?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String?,kotlin.Boolean>?;io.github.valerioisufi.drawview.agent.AgentLectures?){}[0]
 
     final val defaultTextSize // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize|{}defaultTextSize[0]
         final fun <get-defaultTextSize>(): kotlin/Float // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize.<get-defaultTextSize>|<get-defaultTextSize>(){}[0]
@@ -1738,6 +1744,8 @@ final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.va
         final fun <get-handwriting>(): kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? // io.github.valerioisufi.drawview.agent/AgentEngines.handwriting.<get-handwriting>|<get-handwriting>(){}[0]
     final val images // io.github.valerioisufi.drawview.agent/AgentEngines.images|{}images[0]
         final fun <get-images>(): io.github.valerioisufi.drawview.agent/AgentImages? // io.github.valerioisufi.drawview.agent/AgentEngines.images.<get-images>|<get-images>(){}[0]
+    final val lectures // io.github.valerioisufi.drawview.agent/AgentEngines.lectures|{}lectures[0]
+        final fun <get-lectures>(): io.github.valerioisufi.drawview.agent/AgentLectures? // io.github.valerioisufi.drawview.agent/AgentEngines.lectures.<get-lectures>|<get-lectures>(){}[0]
     final val pages // io.github.valerioisufi.drawview.agent/AgentEngines.pages|{}pages[0]
         final fun <get-pages>(): kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? // io.github.valerioisufi.drawview.agent/AgentEngines.pages.<get-pages>|<get-pages>(){}[0]
     final val pdfText // io.github.valerioisufi.drawview.agent/AgentEngines.pdfText|{}pdfText[0]
@@ -1827,6 +1835,40 @@ final class io.github.valerioisufi.drawview.agent/AgentImage { // io.github.vale
         final fun <get-widthPx>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentImage.widthPx.<get-widthPx>|<get-widthPx>(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.agent/AgentLecture { // io.github.valerioisufi.drawview.agent/AgentLecture|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Long, kotlin/Boolean, kotlin/Int, kotlin/Boolean) // io.github.valerioisufi.drawview.agent/AgentLecture.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Long;kotlin.Boolean;kotlin.Int;kotlin.Boolean){}[0]
+
+    final val durationMs // io.github.valerioisufi.drawview.agent/AgentLecture.durationMs|{}durationMs[0]
+        final fun <get-durationMs>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentLecture.durationMs.<get-durationMs>|<get-durationMs>(){}[0]
+    final val hasReview // io.github.valerioisufi.drawview.agent/AgentLecture.hasReview|{}hasReview[0]
+        final fun <get-hasReview>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentLecture.hasReview.<get-hasReview>|<get-hasReview>(){}[0]
+    final val id // io.github.valerioisufi.drawview.agent/AgentLecture.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentLecture.id.<get-id>|<get-id>(){}[0]
+    final val isRecording // io.github.valerioisufi.drawview.agent/AgentLecture.isRecording|{}isRecording[0]
+        final fun <get-isRecording>(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentLecture.isRecording.<get-isRecording>|<get-isRecording>(){}[0]
+    final val startedAt // io.github.valerioisufi.drawview.agent/AgentLecture.startedAt|{}startedAt[0]
+        final fun <get-startedAt>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentLecture.startedAt.<get-startedAt>|<get-startedAt>(){}[0]
+    final val suggestions // io.github.valerioisufi.drawview.agent/AgentLecture.suggestions|{}suggestions[0]
+        final fun <get-suggestions>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentLecture.suggestions.<get-suggestions>|<get-suggestions>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentLectureContent { // io.github.valerioisufi.drawview.agent/AgentLectureContent|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/AgentLecture, kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSpoken>, kotlin/String?, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSuggestion>) // io.github.valerioisufi.drawview.agent/AgentLectureContent.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentLecture;kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSpoken>;kotlin.String?;kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSuggestion>){}[0]
+
+    final val currentTopic // io.github.valerioisufi.drawview.agent/AgentLectureContent.currentTopic|{}currentTopic[0]
+        final fun <get-currentTopic>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentLectureContent.currentTopic.<get-currentTopic>|<get-currentTopic>(){}[0]
+    final val finalReview // io.github.valerioisufi.drawview.agent/AgentLectureContent.finalReview|{}finalReview[0]
+        final fun <get-finalReview>(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentLectureContent.finalReview.<get-finalReview>|<get-finalReview>(){}[0]
+    final val lecture // io.github.valerioisufi.drawview.agent/AgentLectureContent.lecture|{}lecture[0]
+        final fun <get-lecture>(): io.github.valerioisufi.drawview.agent/AgentLecture // io.github.valerioisufi.drawview.agent/AgentLectureContent.lecture.<get-lecture>|<get-lecture>(){}[0]
+    final val outline // io.github.valerioisufi.drawview.agent/AgentLectureContent.outline|{}outline[0]
+        final fun <get-outline>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentLectureContent.outline.<get-outline>|<get-outline>(){}[0]
+    final val suggestions // io.github.valerioisufi.drawview.agent/AgentLectureContent.suggestions|{}suggestions[0]
+        final fun <get-suggestions>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSuggestion> // io.github.valerioisufi.drawview.agent/AgentLectureContent.suggestions.<get-suggestions>|<get-suggestions>(){}[0]
+    final val transcript // io.github.valerioisufi.drawview.agent/AgentLectureContent.transcript|{}transcript[0]
+        final fun <get-transcript>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSpoken> // io.github.valerioisufi.drawview.agent/AgentLectureContent.transcript.<get-transcript>|<get-transcript>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.agent/AgentPdf { // io.github.valerioisufi.drawview.agent/AgentPdf|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/Float, kotlin/Float>>) // io.github.valerioisufi.drawview.agent/AgentPdf.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.Float,kotlin.Float>>){}[0]
 
@@ -1839,14 +1881,18 @@ final class io.github.valerioisufi.drawview.agent/AgentPdf { // io.github.valeri
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentSearchHit { // io.github.valerioisufi.drawview.agent/AgentSearchHit|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, kotlin/String) // io.github.valerioisufi.drawview.agent/AgentSearchHit.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String?, kotlin/String, kotlin/String? = ..., kotlin/Long? = ...) // io.github.valerioisufi.drawview.agent/AgentSearchHit.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.String;kotlin.String?;kotlin.Long?){}[0]
 
     final val documentId // io.github.valerioisufi.drawview.agent/AgentSearchHit.documentId|{}documentId[0]
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val lectureId // io.github.valerioisufi.drawview.agent/AgentSearchHit.lectureId|{}lectureId[0]
+        final fun <get-lectureId>(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentSearchHit.lectureId.<get-lectureId>|<get-lectureId>(){}[0]
     final val pageId // io.github.valerioisufi.drawview.agent/AgentSearchHit.pageId|{}pageId[0]
         final fun <get-pageId>(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentSearchHit.pageId.<get-pageId>|<get-pageId>(){}[0]
     final val snippet // io.github.valerioisufi.drawview.agent/AgentSearchHit.snippet|{}snippet[0]
         final fun <get-snippet>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.snippet.<get-snippet>|<get-snippet>(){}[0]
+    final val startMs // io.github.valerioisufi.drawview.agent/AgentSearchHit.startMs|{}startMs[0]
+        final fun <get-startMs>(): kotlin/Long? // io.github.valerioisufi.drawview.agent/AgentSearchHit.startMs.<get-startMs>|<get-startMs>(){}[0]
     final val title // io.github.valerioisufi.drawview.agent/AgentSearchHit.title|{}title[0]
         final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.title.<get-title>|<get-title>(){}[0]
 
@@ -1854,10 +1900,38 @@ final class io.github.valerioisufi.drawview.agent/AgentSearchHit { // io.github.
     final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.component2|component2(){}[0]
     final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentSearchHit.component3|component3(){}[0]
     final fun component4(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.component4|component4(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/String = ...): io.github.valerioisufi.drawview.agent/AgentSearchHit // io.github.valerioisufi.drawview.agent/AgentSearchHit.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.String){}[0]
+    final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentSearchHit.component5|component5(){}[0]
+    final fun component6(): kotlin/Long? // io.github.valerioisufi.drawview.agent/AgentSearchHit.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Long? = ...): io.github.valerioisufi.drawview.agent/AgentSearchHit // io.github.valerioisufi.drawview.agent/AgentSearchHit.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.String;kotlin.String?;kotlin.Long?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/AgentSearchHit.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentSearchHit.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSearchHit.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentSpoken { // io.github.valerioisufi.drawview.agent/AgentSpoken|null[0]
+    constructor <init>(kotlin/Long, kotlin/Long, kotlin/String) // io.github.valerioisufi.drawview.agent/AgentSpoken.<init>|<init>(kotlin.Long;kotlin.Long;kotlin.String){}[0]
+
+    final val endMs // io.github.valerioisufi.drawview.agent/AgentSpoken.endMs|{}endMs[0]
+        final fun <get-endMs>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentSpoken.endMs.<get-endMs>|<get-endMs>(){}[0]
+    final val startMs // io.github.valerioisufi.drawview.agent/AgentSpoken.startMs|{}startMs[0]
+        final fun <get-startMs>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentSpoken.startMs.<get-startMs>|<get-startMs>(){}[0]
+    final val text // io.github.valerioisufi.drawview.agent/AgentSpoken.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSpoken.text.<get-text>|<get-text>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentSuggestion { // io.github.valerioisufi.drawview.agent/AgentSuggestion|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String?, kotlin/Long) // io.github.valerioisufi.drawview.agent/AgentSuggestion.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String?;kotlin.Long){}[0]
+
+    final val atMs // io.github.valerioisufi.drawview.agent/AgentSuggestion.atMs|{}atMs[0]
+        final fun <get-atMs>(): kotlin/Long // io.github.valerioisufi.drawview.agent/AgentSuggestion.atMs.<get-atMs>|<get-atMs>(){}[0]
+    final val content // io.github.valerioisufi.drawview.agent/AgentSuggestion.content|{}content[0]
+        final fun <get-content>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSuggestion.content.<get-content>|<get-content>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.agent/AgentSuggestion.kind|{}kind[0]
+        final fun <get-kind>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSuggestion.kind.<get-kind>|<get-kind>(){}[0]
+    final val pageId // io.github.valerioisufi.drawview.agent/AgentSuggestion.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentSuggestion.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val title // io.github.valerioisufi.drawview.agent/AgentSuggestion.title|{}title[0]
+        final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentSuggestion.title.<get-title>|<get-title>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentTool { // io.github.valerioisufi.drawview.agent/AgentTool|null[0]

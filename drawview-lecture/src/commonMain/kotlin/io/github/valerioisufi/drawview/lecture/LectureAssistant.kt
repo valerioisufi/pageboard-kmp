@@ -475,6 +475,20 @@ public class LectureAssistant(
     }
 
     /**
+     * The handwriting of document [documentId] read so far, by id of its page: the texts of its blocks
+     * one after the other, as last saved. Reading it runs no model: a page not transcribed has none.
+     */
+    public suspend fun handwritingByPage(documentId: String): Map<String, String> = withContext(Dispatchers.IO) {
+        HandwritingReader.readFile(library.documentDirectory(documentId) + "/handwriting.json").values
+            .filter { it.pageId.isNotEmpty() && it.text.isNotBlank() }
+            .groupBy({ it.pageId }, { it.text.trim() })
+            .mapValues { (_, texts) -> texts.joinToString("\n") }
+    }
+
+    /** What the assistant knows of the course of document [documentId], as last saved, or `null`. */
+    public suspend fun courseContext(documentId: String): CourseContext? = withContext(Dispatchers.IO) { library.loadContext(documentId) }
+
+    /**
      * Whether a recording, an import or a transcription is in progress or waits its turn: what
      * would be interrupted if the application quit now.
      */

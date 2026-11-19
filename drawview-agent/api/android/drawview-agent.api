@@ -137,14 +137,15 @@ public final class io/github/valerioisufi/drawview/agent/AgentEndpointConnection
 
 public final class io/github/valerioisufi/drawview/agent/AgentEngines {
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/agent/AgentEditors;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lio/github/valerioisufi/drawview/agent/AgentImages;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/agent/AgentFiles;Lio/github/valerioisufi/drawview/agent/AgentExports;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/agent/AgentLectures;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDefaultTextSize ()F
 	public final fun getEditors ()Lio/github/valerioisufi/drawview/agent/AgentEditors;
 	public final fun getExports ()Lio/github/valerioisufi/drawview/agent/AgentExports;
 	public final fun getFiles ()Lio/github/valerioisufi/drawview/agent/AgentFiles;
 	public final fun getHandwriting ()Lkotlin/jvm/functions/Function3;
 	public final fun getImages ()Lio/github/valerioisufi/drawview/agent/AgentImages;
+	public final fun getLectures ()Lio/github/valerioisufi/drawview/agent/AgentLectures;
 	public final fun getPages ()Lkotlin/jvm/functions/Function0;
 	public final fun getPdfText ()Lkotlin/jvm/functions/Function3;
 	public final fun getRenderPage ()Lkotlin/jvm/functions/Function4;
@@ -257,6 +258,32 @@ public final class io/github/valerioisufi/drawview/agent/AgentJournal$Companion 
 	public static final field MAX_LENGTH I
 }
 
+public final class io/github/valerioisufi/drawview/agent/AgentLecture {
+	public fun <init> (Ljava/lang/String;JJZIZ)V
+	public final fun getDurationMs ()J
+	public final fun getHasReview ()Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getStartedAt ()J
+	public final fun getSuggestions ()I
+	public final fun isRecording ()Z
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentLectureContent {
+	public fun <init> (Lio/github/valerioisufi/drawview/agent/AgentLecture;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;)V
+	public final fun getCurrentTopic ()Ljava/lang/String;
+	public final fun getFinalReview ()Ljava/lang/String;
+	public final fun getLecture ()Lio/github/valerioisufi/drawview/agent/AgentLecture;
+	public final fun getOutline ()Ljava/lang/String;
+	public final fun getSuggestions ()Ljava/util/List;
+	public final fun getTranscript ()Ljava/util/List;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/agent/AgentLectures {
+	public abstract fun course (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun lecture (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun lectures (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/agent/AgentPdf {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
 	public final fun getHash ()Ljava/lang/String;
@@ -265,20 +292,41 @@ public final class io/github/valerioisufi/drawview/agent/AgentPdf {
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentSearchHit {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/agent/AgentSearchHit;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/AgentSearchHit;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/AgentSearchHit;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/Long;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;)Lio/github/valerioisufi/drawview/agent/AgentSearchHit;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/agent/AgentSearchHit;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/agent/AgentSearchHit;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun getLectureId ()Ljava/lang/String;
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getSnippet ()Ljava/lang/String;
+	public final fun getStartMs ()Ljava/lang/Long;
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentSpoken {
+	public fun <init> (JJLjava/lang/String;)V
+	public final fun getEndMs ()J
+	public final fun getStartMs ()J
+	public final fun getText ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentSuggestion {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V
+	public final fun getAtMs ()J
+	public final fun getContent ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/agent/AgentTool {

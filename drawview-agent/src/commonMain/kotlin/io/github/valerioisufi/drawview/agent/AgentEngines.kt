@@ -84,13 +84,56 @@ public class PageMark(public val box: Rect, public val label: String, public val
     }
 }
 
-/** A passage found by the search of an application, for a model. */
+/**
+ * A passage found by the search of an application, for a model: on the page [pageId] of its document,
+ * or said in the lecture [lectureId] of it, [startMs] milliseconds from its beginning.
+ */
 public data class AgentSearchHit(
     val documentId: String,
     val title: String,
     val pageId: String?,
-    val snippet: String
+    val snippet: String,
+    val lectureId: String? = null,
+    val startMs: Long? = null
 )
+
+/** A lecture recorded on a document: when, how long, what it has. */
+public class AgentLecture(
+    public val id: String,
+    public val startedAt: Long,
+    public val durationMs: Long,
+    public val hasReview: Boolean,
+    public val suggestions: Int,
+    public val isRecording: Boolean
+)
+
+/** A piece of what was said in a lecture, from [startMs] to [endMs] milliseconds from its beginning. */
+public class AgentSpoken(public val startMs: Long, public val endMs: Long, public val text: String)
+
+/** A note the assistant suggested during a lecture: its kind, title and Markdown, the page it is about. */
+public class AgentSuggestion(public val kind: String, public val title: String, public val content: String, public val pageId: String?, public val atMs: Long)
+
+/** What a lecture holds: its outline, its current topic, what was said, its final review, its suggestions. */
+public class AgentLectureContent(
+    public val lecture: AgentLecture,
+    public val outline: String,
+    public val currentTopic: String,
+    public val transcript: List<AgentSpoken>,
+    public val finalReview: String?,
+    public val suggestions: List<AgentSuggestion>
+)
+
+/** The lectures of the documents, read only (Indirection: `drawview-agent` does not depend on `drawview-lecture`). */
+public interface AgentLectures {
+    /** The lectures of the document [documentId], the most recent first. */
+    public suspend fun lectures(documentId: String): List<AgentLecture>
+
+    /** The lecture [lectureId] of the document [documentId], or `null`. */
+    public suspend fun lecture(documentId: String, lectureId: String): AgentLectureContent?
+
+    /** What the assistant knows of the course of the document [documentId], or `null`. */
+    public suspend fun course(documentId: String): String?
+}
 
 /** An image file read by the application: where it is, its content, its size in pixels. */
 public class AgentImage(public val path: String, public val hash: String, public val widthPx: Int, public val heightPx: Int)
@@ -178,6 +221,7 @@ public interface AgentExports {
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
  * @param files the PDF files and the archives a client brings into the notes (`import_pdf`, `import_archive`).
  * @param exports the export of the documents into files (`export`).
+ * @param lectures the lectures recorded on the documents, read only (`list_lectures`, `read_lecture`).
  * @param show asks the application to show the page `pageId` (`null`: where it was) of the document
  *   `documentId` in its editor, opening it: whether it could.
  */
@@ -192,7 +236,8 @@ public class AgentEngines(
     public val pages: (() -> PageEngine?)? = null,
     public val files: AgentFiles? = null,
     public val exports: AgentExports? = null,
-    public val show: (suspend (documentId: String, pageId: String?) -> Boolean)? = null
+    public val show: (suspend (documentId: String, pageId: String?) -> Boolean)? = null,
+    public val lectures: AgentLectures? = null
 ) {
     /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
     internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {

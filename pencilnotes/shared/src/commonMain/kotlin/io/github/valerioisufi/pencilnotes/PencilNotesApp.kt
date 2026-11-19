@@ -159,7 +159,10 @@ private fun PencilNotesWindow(
         LectureMicrophone(services.lectureAssistant)
         CollaborationAccess(services.collaboration)
         AgentPages(agents, services.engines)
-        SideEffect { agents?.contentSearch = services.search }
+        SideEffect {
+            agents?.contentSearch = services.search
+            agents?.lectureAssistant = services.lectureAssistant
+        }
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
             CommandRoot(host = commandHost) {
                 if (showsApplicationDialogs) {
