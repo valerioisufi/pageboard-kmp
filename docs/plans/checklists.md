@@ -2,7 +2,7 @@
 
 Two things the texts lack, left for later by `docs/plans/text-editing.md` ("Checklists") and
 `docs/plans/text-blocks.md` ("A choice of the heading level in the bar"). This document starts from the
-code as it is (main at 9d7e1184, 2026-11-14).
+code as it is (main at ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

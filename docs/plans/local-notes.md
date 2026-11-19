@@ -6,7 +6,7 @@ notes, 6 that add to the slides, 35 that repeat them and 10 wrong. This plan fin
 that code is written, whether a local model with checks after it can write notes worth showing. It
 touches the bench only: nothing in the application changes until its verdict.
 
-It starts from `main` at d4b0c35e (2026-11-04) and continues what
+It starts from `main` at 3e366605 (2026-11-04) and continues what
 [docs/plans/lecture-cost.md](./lecture-cost.md) left for later ("A bench of more lectures"), with the
 lectures of [docs/lecture-eval.md](./lecture-eval.md), whose plan on the PC is closed.
 

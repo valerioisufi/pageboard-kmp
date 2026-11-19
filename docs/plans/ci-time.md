@@ -7,7 +7,7 @@ nothing.
 
 The work was first done on `feat/ci-time` (October and November 2026), measured on its runs until the
 spending limit of the account stopped them, and left 222 commits behind `main`. This plan brings it
-onto `main` of 2026-11-19 (66517658), redone on what `main` has now rather than replayed.
+onto `main` of 2026-11-19 (bbc7d453), redone on what `main` has now rather than replayed.
 
 The responsibilities are assigned following the GRASP principles, where they apply to a build:
 High Cohesion, Low Coupling, Information Expert and Protected Variations.
@@ -22,7 +22,7 @@ On `main` of 2026-11-19:
   green on `macos-26`. `release.yml` uses `macos-14` too, in its three macOS jobs.
 * `native.yml` runs on every push on `main` and on every pull request, with no filter on paths, and
   without any cache of cargo or of the C++ compilers (`ccache not found` in the logs).
-* The desktop build of the runners is already fixed on `main` (`ed5c3f83`: `build_desktop.sh`
+* The desktop build of the runners is already fixed on `main` (`d18daddb`: `build_desktop.sh`
   without a `local.properties`, `std::modf` for the libstdc++ of GCC 13).
 * The other failures of the first complete run of `native.yml` are not fixed on `main`:
   * `TrackpadGesturesTest` on Linux x86_64 and Windows: two tests scroll by units of the platform

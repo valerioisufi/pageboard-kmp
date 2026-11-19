@@ -3,7 +3,7 @@
 The search finds what it should ([docs/plans/search.md](search.md)), but it is not part of the library:
 it sits on top of the navigation, which keeps moving underneath without showing anything. This plan
 makes a search a state of the library, entered and left in one way, and fixes what follows from it.
-It starts from the code as it is (main at 7ef50513, 2026-11-05).
+It starts from the code as it is (main at 1725df81, 2026-11-05).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
@@ -223,7 +223,7 @@ difference: the field above the title, the title of the results, the text of "no
 `checkKotlinAbi`, the build and the tests on iOS and `./consumer-checks/check.sh` pass.
 
 `textSavedCode` and `textLargerThanWindow` of `TextScreenshotTest` fail with or without this work
-(they fail at 7ef50513 too), and `textChainWritten` fails now and then, by one column of pixels of
+(they fail at 1725df81 too), and `textChainWritten` fails now and then, by one column of pixels of
 the caret. Their references are left as they are: they are not of this plan.
 
 ### The measure of the threshold (phase 6)

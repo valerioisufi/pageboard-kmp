@@ -3,7 +3,7 @@
 Four improvements to the text boxes asked by the user on 2026-10-31: better lists (their bullets,
 nested numbered lists, Shift+Enter staying in the item), tables, a background for a box, and a
 text that goes on from one page to the next. This document starts from the code as it is (main at
-dede5d77, 2026-10-31), then gives the requirements, the design and the plan.
+797897e2, 2026-10-31), then gives the requirements, the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

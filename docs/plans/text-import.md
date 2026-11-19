@@ -5,7 +5,7 @@ book, an exported document) brought into a notebook: from a file or from the cli
 into the Markdown of the notebook, placed next to the pages it is about, in the style of the page;
 and, when the student asks, turned by a model into notes of a kind, each next to the words of the
 notebook it explains. This document starts from the code as it is (`feat/placement-text-size` at
-ccf5ef78, 2026-10-29, after `docs/plans/auto-placement.md` and `docs/plans/placement-text-size.md`): what can be
+0185283d, 2026-10-29, after `docs/plans/auto-placement.md` and `docs/plans/placement-text-size.md`): what can be
 done with a text today, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

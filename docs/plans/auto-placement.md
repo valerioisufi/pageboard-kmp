@@ -4,7 +4,7 @@ The notes of the lecture assistant, its review, and any text written elsewhere (
 asked to a model) put by the application in a sensible place of the notebook: next to what they
 are about, in the free space of the page, in the order the page is read, without covering what
 is already there; proposed, never imposed, and undone in one step. This document starts from the
-code as it is (main at 788d14a6, 2026-10-29): how the content of the assistant is inserted today,
+code as it is (main at 89a72c69, 2026-10-29): how the content of the assistant is inserted today,
 then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

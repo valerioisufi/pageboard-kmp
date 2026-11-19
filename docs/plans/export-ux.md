@@ -6,7 +6,7 @@ the way to reach it and to use it is not. This plan gives the export one flow, t
 page, a note, several notes, a folder and the Home, reachable where the user looks for it, that
 gives the file to where it is needed (saved, shared, shown) without blocking the application.
 
-This document starts from the code as it is (main at 62116fed, 2026-10-29): the entry points,
+This document starts from the code as it is (main at bc5dd83f, 2026-10-29): the entry points,
 the dialogs and their problems, then the requirements, the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

@@ -2,7 +2,7 @@
 
 The repository made public on GitHub, with the files a public project needs, PencilNotes kept in it
 under a name and an icon of its own, and the libraries released on Maven Central as 0.1.0 once the
-repository is public. This document starts from the code as it is (main at 90d87a8d, 2026-11-15).
+repository is public. This document starts from the code as it is (main at 8fa4cb22, 2026-11-15).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

@@ -2,7 +2,7 @@
 
 A text box moved with the lasso selection goes to the page under its center. The box of the text
 being written does not: it stays on its page, however far it is dragged. This document starts from
-the code as it is (main at 6d4d4af5, 2026-10-30), then gives the design and the plan.
+the code as it is (main at 7b23651d, 2026-10-30), then gives the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

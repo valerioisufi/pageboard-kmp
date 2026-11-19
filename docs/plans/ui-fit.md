@@ -4,7 +4,7 @@ The wide dialogs of the applications (the settings of the assistant, sharing, th
 the page and of the document, the settings of the search) open narrower than they were designed,
 so their content stacks and their labels are cut. Many buttons with rounded corners show a
 rectangular background when the pointer is over them. This document starts from the code as it is
-(main at 0ccf495e, 2026-10-30): the causes, then the design and the plan.
+(main at 28eb43c2, 2026-10-30): the causes, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

@@ -4,7 +4,7 @@ How far the canvas can be moved: a page narrower than the window stays centered,
 than the window stops at its edges, and a scroll of a wheel or of a trackpad follows the axis it
 started on. This document starts from the behavior reported on a wide desktop window (a document
 slightly zoomed in drifts far out of its bounds while scrolling, instead of staying centered) and
-from the code as it is (main at d337d589, 2026-10-25).
+from the code as it is (main at 1523d560, 2026-10-25).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Controller,
 Low Coupling, Pure Fabrication, Protected Variations).

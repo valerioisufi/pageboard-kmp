@@ -4,7 +4,7 @@
 `store-listing.md`) answered with a text citing `[1]` and `[2, 3]`, but under "Cited passages"
 only `[1] Calculus I - Limits · p. 2` was listed. Every citation the answer uses must have its
 chip, and a chip must exist only for a citation the answer uses. This document starts from the
-code as it is (main at e38d376e, 2026-11-18).
+code as it is (main at 6a9597f6, 2026-11-18).
 
 The responsibilities are assigned following the GRASP principles.
 

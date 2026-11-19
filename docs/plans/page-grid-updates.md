@@ -2,7 +2,7 @@
 
 The page grid does not show the changes of the pages made while it is open: pages deleted, added,
 pasted, restored, moved by dragging, undone or changed by another device stay as they were. This
-document starts from the code as it is (main at 18f34cfa, 2026-10-30): the cause, then the design
+document starts from the code as it is (main at 80082e25, 2026-10-30): the cause, then the design
 and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

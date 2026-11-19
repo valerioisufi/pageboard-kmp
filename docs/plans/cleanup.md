@@ -1,6 +1,6 @@
 # Cleanup
 
-Two audits of the code (main at 58029db4, 2026-11-13) listed dead, redundant and badly placed code,
+Two audits of the code (main at c9ce9cad, 2026-11-13) listed dead, redundant and badly placed code,
 and the places where the GRASP principles are not kept. This plan checks each finding against the
 code, drops the false ones, fixes the rest in small phases, and leaves the large redesigns to plans
 of their own.
@@ -52,7 +52,7 @@ so the `drawview-pdf` jar on Maven Central holds the PDFium of the runner only (
 native workflow checks all of them.
 
 **Also while fixing**: the screenshot `agent_marks` of `drawview-agent-ui` was older than the shapes
-tool in the bar (main at 58029db4 fails it): recorded again. `TranscriptionQueueTest` timed out
+tool in the bar (main at c9ce9cad fails it): recorded again. `TranscriptionQueueTest` timed out
 once under the load of the whole build, and passes alone.
 
 **Findings dropped** (false, or right as they are):

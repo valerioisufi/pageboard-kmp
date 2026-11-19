@@ -5,7 +5,7 @@ out dated 1 January 1980, and the PDFs themselves tell nothing of when the notes
 Whoever unpacks the archive loses the order of the notes by date, which the library shows. This
 plan gives the files exported the dates of their notes.
 
-This document starts from the code as it is (main at af9631de, 2026-11-07). The responsibilities
+This document starts from the code as it is (main at 4fa9fb21, 2026-11-07). The responsibilities
 are assigned following the GRASP principles.
 
 ## Starting point

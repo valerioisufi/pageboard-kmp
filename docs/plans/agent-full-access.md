@@ -5,7 +5,7 @@ the user allowed it from its editor, change only the texts and add pages, and ap
 a document open in an editor. This plan lets them change any document, open or not, in any way the
 editor can, including removing things, without allowing each document; what is removed still goes
 to the trash, and every change a model made can be undone. It starts from the code as it is (`main`
-at fa756440, 2026-11-06).
+at af5c85c7, 2026-11-06).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

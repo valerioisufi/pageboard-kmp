@@ -1,7 +1,7 @@
 # The speed of the build
 
 A new worktree takes 10 minutes to pass the checks, and each piece of work has a worktree of its
-own. This document starts from what was measured (main at 3cc39770, 2026-11-05, Mac M5 with 16 GB),
+own. This document starts from what was measured (main at d79f6482, 2026-11-05, Mac M5 with 16 GB),
 then gives the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

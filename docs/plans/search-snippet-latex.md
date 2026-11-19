@@ -5,7 +5,7 @@ The snippets of the library search show the formulas of a text as written: a tex
 `Squeeze: $\cos x \le \frac{\sin x}{x} \le 1$` (found while taking the store screenshots,
 `docs/plans/store-listing.md`). The answer of "Ask your notes" above it renders its Markdown and
 formulas; a snippet should read as math too. This document starts from the code as it is (main at
-e38d376e, 2026-11-18).
+6a9597f6, 2026-11-18).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

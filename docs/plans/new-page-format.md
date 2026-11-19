@@ -2,7 +2,7 @@
 
 A page added after another one takes its format: its size and its background, as that page has
 them. Today every new page takes the format of the document, whatever the page it follows. This
-document starts from the code as it is (main at d337d589, 2026-10-25): how a page is added today,
+document starts from the code as it is (main at 1523d560, 2026-10-25): how a page is added today,
 then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

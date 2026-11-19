@@ -4,7 +4,7 @@ A stroke drawn with the pen or the highlighter and held still at its end becomes
 looks like: a straight line, an arrow, a broken line, a circle or an ellipse, a triangle, a
 rectangle or a polygon. Today every stroke stays as the hand drew it, and there is no way to make
 a straight line, a box around a definition or the axes of a graph other than drawing them by hand.
-This document starts from the code as it is (main at dede5d77, 2026-10-31): how a stroke is drawn
+This document starts from the code as it is (main at 797897e2, 2026-10-31): how a stroke is drawn
 and stored today, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

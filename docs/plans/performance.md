@@ -4,7 +4,7 @@ Writing, opening a document, searching and scrolling do more work than they need
 makes the library query the whole catalog again, the search and the thumbnails load whole
 documents (every stroke modeled again by Ink) to read their texts or their first page, and the
 model looks for an element by its identifier through the whole document. This document starts
-from the code as it is (main at c4a57f5b, 2026-10-31): what costs, then the design and the plan.
+from the code as it is (main at a65a9bf9, 2026-10-31): what costs, then the design and the plan.
 Every change is measured before and after, and kept only when it gains.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

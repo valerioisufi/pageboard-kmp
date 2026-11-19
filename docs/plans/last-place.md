@@ -2,7 +2,7 @@
 
 A document opens where it was left: on the page, the point of it and the zoom the user was
 looking at when it was closed. Today every document opens at its top, at the zoom that fits the
-pages to the width of the window. This document starts from the code as it is (main at 53dc7f0a,
+pages to the width of the window. This document starts from the code as it is (main at 308c5132,
 2026-11-13): how a document opens today, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
@@ -158,7 +158,7 @@ No screenshot should change (`verifyRoborazziJvm` of ui, explorer).
 * Checks: `jvmTest` of every module (the whole suite, `--rerun-tasks`), the Android and iOS
   compilations, the two Android applications, the screenshots of ui unchanged. `checkKotlinAbi`
   fails on `drawview-session` (the order of `flush` and `flushAll` in the klib dump) and
-  `drawview-ui` (string resources of another change), as on main at 53dc7f0a: no change of this
+  `drawview-ui` (string resources of another change), as on main at 308c5132: no change of this
   work. The desktop application run on a scratch directory (`-Ddrawview.dataDir`): it starts,
   makes its database, no error; its window was not driven by hand, the tests going through the
   same calls. Trying it on the user's devices (close a document on a page, reopen it) is left to

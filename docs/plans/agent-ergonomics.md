@@ -3,7 +3,7 @@
 A model annotated documents of slides through the MCP server of PencilNotes and then listed what cost
 it time or produced mistakes: seventeen points. This plan checks each one against the code and says
 what changes. It continues `docs/plans/agent-tools.md`, `docs/plans/agent-placement.md` and
-`docs/plans/agent-full-access.md`, and starts from the code as it is (`main` at 5bdae29c, 2026-11-11).
+`docs/plans/agent-full-access.md`, and starts from the code as it is (`main` at ae0c6bcd, 2026-11-11).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

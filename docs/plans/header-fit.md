@@ -4,7 +4,7 @@ The bars at the top of the library and of the editor are crowded where the windo
 name of PencilNotes is cut, the title of a document gets a few letters. The editor hides the status
 bar also where a notch or an island keeps its room taken anyway, and on Android 10 the status bar
 comes back for good after a menu is opened. On an Android tablet the group of the tools looks too
-big. This document starts from the code as it is (main at 83c1c07c, 2026-10-31): the causes, then
+big. This document starts from the code as it is (main at cbff78ed, 2026-10-31): the causes, then
 the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
@@ -182,7 +182,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
     the editor and shows it again in the library.
 * **Android 10, the menus.** On the tablet of the user (Huawei MatePad 10.4, Android 10, density
   320 for 224 ppi) and on an emulator of Android 10 at the same size and density, with main
-  (83c1c07c): a menu shows the status bar, the bars of the editor go down by its height, and it
+  (cbff78ed): a menu shows the status bar, the bars of the editor go down by its height, and it
   stays after the menu. So it is Android 10, not the tablet. Three causes, three fixes:
   - The bars follow the window that has the focus, and a menu is a window of its own: menus and
     popovers do not take the focus under Android 11 where the editor hides the bars

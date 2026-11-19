@@ -3,7 +3,7 @@
 The export sheet offers a third format for one note: Markdown, the text of the note followed by
 the outlines, the summaries and the notes of its lectures. `docs/plans/export-ux.md` left "Exporting the
 notes of the lectures (Markdown) from the same sheet" for later. This document starts from the code
-as it is (main at 9d7e1184, 2026-11-14).
+as it is (main at ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

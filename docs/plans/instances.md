@@ -2,7 +2,7 @@
 
 Phase 3 of `docs/plans/architecture.md`: the libraries stop holding the store and the editing sessions
 in global objects; the applications create them and pass them. This document starts from the code
-as it is (main at af5e46ff, 2026-11-14). `LatexEngine`, `LectureRecordings` and `ImageCache` are
+as it is (main at 233d1083, 2026-11-14). `LatexEngine`, `LectureRecordings` and `ImageCache` are
 phase 4, with a plan of their own.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

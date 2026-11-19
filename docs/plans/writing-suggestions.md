@@ -4,7 +4,7 @@ The suggester of PencilNotes for the hook of the text box (`docs/plans/text-box-
 student writes in a text box, the end of the word being written, taken from the words of their
 notes, of the slides of the document and of its lectures. It is the plan named "Completion and
 suggestions while writing" in `CLAUDE.md`, and "The writing suggestions from the notes" left for
-later in `docs/plans/search.md`. This document starts from the code as it is (main at bbedf36c,
+later in `docs/plans/search.md`. This document starts from the code as it is (main at 5cc1b54a,
 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

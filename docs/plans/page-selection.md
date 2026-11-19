@@ -3,7 +3,7 @@
 In the page grid, several pages can be selected and the actions of a page run on all of them at
 once: copy, paste after, change the format and the background, delete, move. Today every action
 of the grid takes one page, from the menu of its card. This document starts from the code as it is
-(main at e5c9fb64, 2026-10-25): the grid and its actions, then the design and the plan.
+(main at 81500594, 2026-10-25): the grid and its actions, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

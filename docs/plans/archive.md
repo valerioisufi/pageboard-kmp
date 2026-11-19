@@ -4,7 +4,7 @@ A format of the export sheet that keeps notes whole (every page, every element, 
 the PDFs and the images) in one file, and "Import archive…" in the library bringing them back, on
 the same device or on another one. `docs/plans/export.md` left `ArchiveExporter` and its import for later,
 "to define near the first release, when its format becomes a contract". This document starts from
-the code as it is (main at 9d7e1184, 2026-11-14); the branch is stacked on `feat/markdown-export`
+the code as it is (main at ee07934d, 2026-11-14); the branch is stacked on `feat/markdown-export`
 (the two change the formats of the sheet).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

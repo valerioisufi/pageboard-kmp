@@ -4,7 +4,7 @@ A lecture of an hour and a half followed by the assistant costs about $0.55 of G
 its live notes alone. This plan brings it to about $0.12 with the same model and notes of the same
 quality: a request every five minutes instead of every minute and a half, the slides of the whole
 notebook at the start of every request, and that start kept in an explicit cache of Gemini. This
-document starts from the code as it is (main at 788d14a6, 2026-10-29) and from what a bench
+document starts from the code as it is (main at 89a72c69, 2026-10-29) and from what a bench
 measured on a recorded lecture, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

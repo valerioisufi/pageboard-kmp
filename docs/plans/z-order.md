@@ -3,7 +3,7 @@
 The stacking order of the elements of a page, chosen by the user: an element brought to the front
 or sent to the back, forward or backward past the next element it overlaps, alone or with others
 selected, on every platform, kept and synchronized like everything else. This document starts from
-the code as it is (main at a4d1be5a, 2026-10-25): how a page stacks its elements today, then the
+the code as it is (main at 4e5d06af, 2026-10-25): how a page stacks its elements today, then the
 design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

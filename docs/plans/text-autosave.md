@@ -5,7 +5,7 @@ process dies before, the text is lost. Seen on the Android tablet on 2026-11-06:
 `adb install -r` over the running application dropped a whole line typed in a box still open, and
 the box came back with the text it had before. The same happens when Android kills the application
 in the background, or when the desktop application is closed with a box open. This document gives
-the starting point, the requirements, the design and the plan. It starts from main at 9535abe7,
+the starting point, the requirements, the design and the plan. It starts from main at 08748615,
 2026-11-06.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

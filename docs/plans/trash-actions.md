@@ -2,7 +2,7 @@
 
 Three things left for later by `docs/plans/trash.md`: a preview, read only, of a document in the trash;
 selecting several items in the Trash; ⌘Z in the library undoing the last move to the trash. This
-document starts from the code as it is (main at 9d7e1184, 2026-11-14).
+document starts from the code as it is (main at ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

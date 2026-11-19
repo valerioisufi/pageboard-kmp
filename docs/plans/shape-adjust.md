@@ -2,7 +2,7 @@
 
 Two things left for later by `docs/plans/shapes.md` and `docs/plans/shape-insertion.md`: adjusting a shape
 while the pen is still held after it snapped, and connectors (arrows that stay joined to the boxes
-when the boxes move). This document starts from the code as it is (main at 9d7e1184, 2026-11-14).
+when the boxes move). This document starts from the code as it is (main at ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

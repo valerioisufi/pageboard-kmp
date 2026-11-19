@@ -2,7 +2,7 @@
 
 Numbers that stay right when an item is deleted or moved, a numbered list inside any other list
 made with one gesture, and a style of numbering chosen by the user. It starts from main at
-3cc39770, 2026-11-05. The responsibilities are assigned following the GRASP principles.
+d79f6482, 2026-11-05. The responsibilities are assigned following the GRASP principles.
 
 ## Starting point
 
@@ -188,7 +188,7 @@ approved on 2026-11-05, with the decisions left to me.
   the screenshots of the picker in the windows of a phone, a tablet and a desktop, light and dark.
 * **Not by hand**: the Android and iOS apps were compiled, not run; the keyboard of a phone and the
   pen on a tablet are left to the user.
-* `text-saved-code` and `text-larger-than-window` fail `verifyRoborazziJvm` on 3cc39770 too, by a
+* `text-saved-code` and `text-larger-than-window` fail `verifyRoborazziJvm` on d79f6482 too, by a
   scroll of 48 px that is not from this work. The first is left as it was (it still fails), the
   second is recorded again, because it has the bar.
 

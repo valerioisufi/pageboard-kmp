@@ -4,7 +4,7 @@ The size of the characters of what the application places in a notebook (the not
 assistant, its review) chosen from the page it goes on, as a student would write it there: like
 their typed notes, or in proportion to the slide, or to their handwriting; a margin note a step
 smaller rather than pushed away from what it is about. This document starts from the code as it is
-(main at 6b543da7, 2026-10-29), after `docs/plans/auto-placement.md`: how the size is chosen today, then
+(main at 517bffed, 2026-10-29), after `docs/plans/auto-placement.md`: how the size is chosen today, then
 the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

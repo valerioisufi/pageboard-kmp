@@ -1,6 +1,6 @@
 # Review of the codebase, November 2026
 
-A review of `main` on 2026-11-15 (`4534832d`), on the Windows machine of the user: `jvmTest`,
+A review of `main` on 2026-11-15 (`d9176cf5`), on the Windows machine of the user: `jvmTest`,
 `checkKotlinAbi`, and a reading of what another device sends, of the stores and of the paths.
 What it found, what was fixed, and what is left.
 
@@ -12,7 +12,7 @@ What it found, what was fixed, and what is left.
 * The klib dump of `drawview-lecture` had `markdownOf` out of its place, so `checkKotlinAbi`
   failed everywhere; the dumps of the Compose modules held the lambdas Compose keeps in
   `ComposableSingletons`, named by hashes of the compiler.
-* `feat/windows-paths` (done 2026-10-18) was not merged, and `eae9d704` (2026-11-13) had made
+* `feat/windows-paths` (done 2026-10-18) was not merged, and `4bcfa788` (2026-11-13) had made
   `dataDirectory()` the parent of the resources on Windows without moving what was kept inside
   them: the lectures, the speech and local models, the name of the device were no longer found.
 * `PersistenceQueue` logged a write that failed and left it out: a database busy for a moment

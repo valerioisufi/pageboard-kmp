@@ -2,7 +2,7 @@
 
 Phase 1 of `docs/plans/architecture.md`: the API by which an extension adds to the editor, fixed before
 the first release of the libraries. This document starts from the code as it is (main at
-62f75094, 2026-11-14).
+10df68ca, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

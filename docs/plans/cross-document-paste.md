@@ -3,7 +3,7 @@
 The elements selected with the lasso and the pages of a document can be copied in one document
 and pasted in another: in the same window after opening the other document, or in another window
 of the desktop application. Today the elements copied stay with the editor of their document, and
-a page cannot be copied at all. This document starts from the code as it is (main at f3942630,
+a page cannot be copied at all. This document starts from the code as it is (main at 26c6ce8e,
 2026-10-25): how copy and paste work today, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

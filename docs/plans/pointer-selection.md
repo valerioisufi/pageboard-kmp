@@ -3,7 +3,7 @@
 The first and the last characters of a bold or an italic text could not be selected alone with a
 pointer in the text being written. This document gives the cause, the requirement, the design and
 the plan. It continues `docs/plans/text-fidelity.md` (phase 4, the caret stops) and starts from `main` at
-d04b4613, 2026-11-12.
+6d3330cf, 2026-11-12.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Controller,
 Protected Variations).

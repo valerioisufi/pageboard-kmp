@@ -6,7 +6,7 @@ Two reports from real use of the lecture assistant on the desktop:
 2. while a lecture is transcribed, the window stutters.
 
 This document checks both against the code and gives the requirements, the design and the plan. It
-continues `docs/plans/lecture-assistant.md` and `docs/plans/local-models.md`, and starts from `main` at d04b4613,
+continues `docs/plans/lecture-assistant.md` and `docs/plans/local-models.md`, and starts from `main` at 6d3330cf,
 2026-11-12.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

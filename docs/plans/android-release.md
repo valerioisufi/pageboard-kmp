@@ -3,7 +3,7 @@
 PencilNotes 3.0 (the Kotlin Multiplatform application) published on Google Play as the update of the
 original Android app, signed with its key, shrunk by R8, with rules for the backups of the system, a
 privacy policy and what the Play Console asks. This document starts from the code as it is (main at
-90d87a8d, 2026-11-15).
+8fa4cb22, 2026-11-15).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

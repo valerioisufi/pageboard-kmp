@@ -4,7 +4,7 @@ A model the application does not ship (Claude Code, Codex, a script, a service c
 reads a document and proposes changes to it, from the terminal or from a panel of the application;
 the user reviews what it proposes, and what is accepted is an ordinary change of the document: it is
 stored, undone and synchronized as if the user had made it. This document starts from the code as it
-is (`main` at d4b0c35e, 2026-11-03): what exists today, then the design and the plan.
+is (`main` at 3e366605, 2026-11-03): what exists today, then the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

@@ -4,7 +4,7 @@ A shapes tool next to the pen: a line, an arrow, a box, an ellipse, a triangle..
 page, perfect at once, then edited as a shape (its ends, its corners, its color, its outline and
 its fill). Today the only way to get a shape is to draw it with the pen and hold the pen still at
 its end (`docs/plans/shapes.md`): the shape becomes a stroke, perfect but no longer a shape. This
-document starts from the code as it is (main at c99460eb, 2026-11-13): what exists, the
+document starts from the code as it is (main at 4b3574d0, 2026-11-13): what exists, the
 requirements, the experience, the design and the plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

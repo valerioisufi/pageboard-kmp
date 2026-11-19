@@ -4,7 +4,7 @@ The box of a text is what its lines take, as this device lays them out: the docu
 a text may go, never the size it took. This document starts from the behavior reported on
 2026-10-25 (a note of the lecture assistant, a bold title and two bulleted items over a slide,
 shows all its lines at one zoom and loses its last lines at another, cut in the middle of a line)
-and from the code as it is (main at 6a445240, 2026-10-25).
+and from the code as it is (main at 1a6e0240, 2026-10-25).
 
 A first plan corrected the stored heights when a document opens. The user asked instead for a
 document that does not depend on the layout of the version that wrote it: the application is not
@@ -37,7 +37,7 @@ Fabrication, Low Coupling, Polymorphism, Protected Variations).
    so are the frame of the selection, the lasso, the taps, the snapping, the presence of the
    other devices (`CollaboratorsOverlay`), the copy of a text lost to another
    (`DocumentChange.writeText`), the export (`PdfExporter`).
-6. **The layout changed under stored heights.** On 2026-10-20 (`fc240016`) the items of a list
+6. **The layout changed under stored heights.** On 2026-10-20 (`6a8ca08d`) the items of a list
    got a bullet and a hanging indent; a text measured before takes more lines now. The note of the
    screenshots, rebuilt and measured (Noto Sans, 11 pt, 66.5–67.25 mm wide, its line breaks the
    ones of the screenshots): 14 lines and 74.2 mm today, 12 lines and 63.6 mm before. Its box is

@@ -3,7 +3,7 @@
 What the note `E06 - 03 novembre` showed of the text boxes, apart from the lists
 (`docs/plans/list-numbering.md`): block quotes written as they are, levels of headings that look the
 same, a heading left alone at the end of a page, symbols drawn by whatever font the system has.
-It starts from main at fe9ce837, 2026-11-05. The responsibilities are assigned following the GRASP
+It starts from main at d92f991e, 2026-11-05. The responsibilities are assigned following the GRASP
 principles.
 
 ## Starting point
@@ -175,7 +175,7 @@ Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with 
 * **Not by hand**: the Android and iOS apps were compiled, not run; the keyboard of a phone and the pen
   on a tablet are left to the user.
 * `verifyRoborazziJvm` fails on three screenshots, none from this work: `text-saved-code` already on
-  3cc39770 (a scroll of 48 px); `text-chain-written` and `library-search`, when they fail, differ by
+  d79f6482 (a scroll of 48 px); `text-chain-written` and `library-search`, when they fail, differ by
   one column of pixels, the caret blinking.
 
 ## Decisions

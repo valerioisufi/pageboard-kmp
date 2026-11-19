@@ -2,7 +2,7 @@
 
 Two actions on the pages left for later by `docs/plans/new-page-format.md` ("Duplicating a page with its
 content", "Adding a page before another"). This document starts from the code as it is (main at
-9d7e1184, 2026-11-14).
+ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

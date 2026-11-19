@@ -4,7 +4,7 @@ The ink should follow the pen as closely as paper does. Today the stroke in prog
 through the same frames as the rest of the canvas: the input waits for the next frame of Compose,
 the whole canvas is drawn again, and the frame waits in the queue of the compositor before it
 shows; nothing predicts where the pen is going. This document starts from the code as it is
-(main at fefe1e2a, 2026-11-01): the path of an input, what it costs, then the design and the
+(main at 8f620a64, 2026-11-01): the path of an input, what it costs, then the design and the
 plan, approved by the user on 2026-11-01. As in `docs/plans/performance.md`, every change is measured
 before and after, and kept only when it gains.
 

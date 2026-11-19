@@ -8,7 +8,7 @@ is split along the seams this draws (step 2 of `docs/plans/lecture-ui-split.md`)
 `docs/plans/local-models.md` stays the reference for the models on the device, and the live notes stay on
 Gemini (`docs/plans/local-notes.md`).
 
-It starts from `main` at 8bbe86dc (2026-11-14).
+It starts from `main` at 958e2c70 (2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

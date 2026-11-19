@@ -3,7 +3,7 @@
 A bar in the editor finding a text in the note open, its places marked on the pages, the current
 one shown. `docs/plans/search.md` and `docs/plans/library-search.md` search the notes from the library
 (`ContentSearch`, FTS5 and the meaning); inside a note there is no search. This document starts from
-the code as it is (main at 9d7e1184, 2026-11-14).
+the code as it is (main at ee07934d, 2026-11-14).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

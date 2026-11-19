@@ -3,7 +3,7 @@
 A document, a folder or a page deleted is not lost at once: it goes to the trash, it can be put
 back for 30 days, and only then it is deleted for good. Every deletion can also be undone right
 away, from the message that tells it. This document starts from the code as it is (main at
-7121125a, 2026-10-29): how documents, folders and pages are deleted today, then the design and the
+1f0a2fcb, 2026-10-29): how documents, folders and pages are deleted today, then the design and the
 plan.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

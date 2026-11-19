@@ -1,6 +1,6 @@
 # The architecture after the cleanup
 
-The cleanup (`docs/plans/cleanup.md`, in main at 62f75094, 2026-11-14) removed the dead and duplicated
+The cleanup (`docs/plans/cleanup.md`, in main at 10df68ca, 2026-11-14) removed the dead and duplicated
 code and left aside the work that needs a design of its own. This document orders that work: for
 each piece, where it starts, what it must give, the design by the GRASP principles and its phases.
 Each piece gets its own detailed plan (`docs/<piece>.md`) when it starts, approved before its code;

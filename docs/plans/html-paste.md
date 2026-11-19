@@ -2,7 +2,7 @@
 
 A text copied in a browser, a word processor or a chat assistant keeps its formatting when pasted
 in a notebook: the HTML the other application puts in the clipboard becomes the Markdown of the
-texts (`RichTextParser`). This document starts from the code as it is (`main` at 7afc0d29,
+texts (`RichTextParser`). This document starts from the code as it is (`main` at ccb87fd3,
 2026-11-05): what a paste does today, the libraries that exist, then the design and the plan. It
 takes up "the rich text of the clipboard" left for later in `docs/plans/text-import.md`.
 

@@ -3,7 +3,7 @@
 Phase 2 of `docs/plans/architecture.md`: the point by which an extension of the editor suggests the
 words that follow while the user writes in a text box, the base of the suggestions while writing
 (see "Planned work" in `CLAUDE.md`). This document starts from the code as it is (main at
-65e9eea1, 2026-11-14). It gives the hook and the way the editor shows a suggestion; which model
+9a92e0d3, 2026-11-14). It gives the hook and the way the editor shows a suggestion; which model
 suggests, and on which device, is the plan of the suggestions themselves.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,

@@ -4,7 +4,7 @@ The review of what an external model proposes (CLI, MCP) is a list in a panel. T
 changes to be shown on the page itself before accepting them (2026-11-12). This document gives the
 starting point, the requirements, the design and the plan. It continues `docs/plans/agent-tools.md`,
 `docs/plans/agent-placement.md`, `docs/plans/agent-full-access.md` and `docs/plans/agent-ergonomics.md`, and starts from
-`main` at d04b4613, 2026-11-12.
+`main` at 6d3330cf, 2026-11-12.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Protected Variations).

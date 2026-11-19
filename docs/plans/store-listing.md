@@ -2,7 +2,7 @@
 
 What a visitor sees before installing PencilNotes or reading the code: the listing on Google Play
 (texts, icon, feature graphic, screenshots) and the images of the README and of a link to the
-repository. This document starts from main at e38d376e (2026-11-18).
+repository. This document starts from main at 6a9597f6 (2026-11-18).
 
 ## Starting point
 

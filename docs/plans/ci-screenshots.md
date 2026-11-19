@@ -3,7 +3,7 @@
 The reference images of the screenshot tests recorded and verified in one environment of the
 continuous integration, a Linux runner of GitHub Actions, so that a contributor on any system can
 check a change of the interface and get its references, without the MacBook of the maintainer.
-This document starts from the code as it is (main at 514f415f, 2026-11-19).
+This document starts from the code as it is (main at 80ed28a0, 2026-11-19).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected

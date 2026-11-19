@@ -16,7 +16,7 @@ the caret walks through it. The user reported on 2026-11-05:
 
 This document follows [text-parity.md](text-parity.md) (one presentation for the page and the
 editor, done) and [selection-formatting.md](selection-formatting.md) (a delimiter typed over a
-selection, done). It starts from main at 9535abe7. The responsibilities are assigned following
+selection, done). It starts from main at 08748615. The responsibilities are assigned following
 the GRASP principles (Information Expert, Creator, Controller, Low Coupling, High Cohesion,
 Polymorphism, Pure Fabrication, Indirection, Protected Variations).
 
