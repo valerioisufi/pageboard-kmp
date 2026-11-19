@@ -1,7 +1,7 @@
 plugins {
     id("drawview.compose.library")
     // Screenshot tests of the components (recordRoborazziJvm, verifyRoborazziJvm)
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "The DrawView editor: screen, bars, tool popovers, dialogs, commands, theme, editor extensions"
@@ -48,11 +48,6 @@ kotlin {
             implementation(libs.roborazzi.composeDesktop)
         }
     }
-}
-
-// The reference images of the components (see ComponentScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

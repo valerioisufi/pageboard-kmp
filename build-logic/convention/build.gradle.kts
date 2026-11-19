@@ -8,6 +8,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.mavenPublish.gradlePlugin)
     compileOnly(libs.dokka.gradlePlugin)
+    compileOnly(libs.roborazzi.gradlePlugin)
 }
 
 gradlePlugin {
@@ -43,6 +44,10 @@ gradlePlugin {
         register("testData") {
             id = "drawview.test.data"
             implementationClass = "TestDataConventionPlugin"
+        }
+        register("screenshots") {
+            id = "drawview.screenshots"
+            implementationClass = "ScreenshotsConventionPlugin"
         }
         register("benchmarks") {
             id = "drawview.benchmarks"

@@ -1,6 +1,6 @@
 plugins {
     id("drawview.compose.library")
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "Search in the notes of the DrawView document library, with snippets, model downloads and answers from the notes"
@@ -34,10 +34,6 @@ kotlin {
             implementation(libs.roborazzi.composeDesktop)
         }
     }
-}
-
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

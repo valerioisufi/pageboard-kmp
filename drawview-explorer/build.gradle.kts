@@ -1,7 +1,7 @@
 plugins {
     id("drawview.compose.library")
     // Screenshot tests of the library and of the editor (recordRoborazziJvm, verifyRoborazziJvm)
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "The DrawView library of documents and folders, with thumbnails and the editor"
@@ -52,9 +52,4 @@ kotlin {
 compose.resources {
     publicResClass = true
     packageOfResClass = "io.github.valerioisufi.drawview.explorer.generated.resources"
-}
-
-// The reference images of the screenshot tests (see AdaptiveScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }

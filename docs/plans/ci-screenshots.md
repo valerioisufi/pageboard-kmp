@@ -72,10 +72,11 @@ Variations).
   workflow, so that `Default`, `Monospace` and `Serif` resolve to fixed families. The bundled fonts
   need nothing.
 * **The test JVM** of the screenshot modules gets `-Duser.language=en -Duser.country=US
-  -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.awt.headless=true` from the convention plugin, on
-  every system, so that dates, numbers and text do not depend on the host.
-* **The comparison** is the default of Roborazzi 1.76 (checked in phase 1): a small distance per
-  pixel and no share of differing pixels allowed. The same on every system.
+  -Duser.timezone=UTC -Dfile.encoding=UTF-8` from the convention plugin, on every system, so that
+  dates, numbers and text do not depend on the host. Not `java.awt.headless`: some tests of the
+  modules open an AWT `Frame` (`WindowDecorTest`), and the runner gives them a display (`xvfb-run`).
+* **The comparison** is the default of Roborazzi 1.76: a distance per pixel of 0.007
+  (`SimpleImageComparator`) and no share of differing pixels allowed (`ThresholdValidator(0)`). The same on every system.
 
 ### Verifying
 
@@ -142,11 +143,11 @@ workflow, one run each).
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | The convention plugin `drawview.screenshots`: the plugin, `outputDir`, the test JVM, the notice of verify and the guard of record; the seven modules use it. The defaults of the comparison of Roborazzi 1.76 checked | Planned |
+| 1 | The convention plugin `drawview.screenshots`: the plugin, `outputDir`, the test JVM, the notice of verify and the guard of record; the seven modules use it. The defaults of the comparison of Roborazzi 1.76 checked | Done: `SimpleImageComparator(maxDistance = 0.007)` and `ThresholdValidator(0)`; record refused and verify noticed on Windows |
 | 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on `workflow_dispatch`. Tried on the branch: one verify that fails (the references of the Mac) and one record on a scratch branch | Planned |
 | 3 | The migration: every reference recorded on the runner, in one commit; a verify of the next run passes | Planned |
 | 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Planned |
-| 5 | Optional: a Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, the same JDK and fonts, cmake and cargo for the JNI libraries) and a script that records and verifies in it | To decide |
+| 5 | Optional: a Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, the same JDK and fonts, cmake and cargo for the JNI libraries) and a script that records and verifies in it | Planned (approved 2026-11-19) |
 
 **Minutes.** A run of `verify` is about 25 minutes of Linux with a cold cache (the JNI libraries,
 19 minutes in the measures of `feat/ci-time`) and about 10 with a warm one. Phases 2 and 3 need

@@ -1,7 +1,7 @@
 plugins {
     id("drawview.compose.library")
     // Screenshot tests of the dialog (recordRoborazziJvm, verifyRoborazziJvm)
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "The export of DrawView documents in an application: the dialog, \"Export\" in the library and in the editor"
@@ -36,11 +36,6 @@ kotlin {
             implementation(libs.roborazzi.composeDesktop)
         }
     }
-}
-
-// The reference images of the dialog (see ExportScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

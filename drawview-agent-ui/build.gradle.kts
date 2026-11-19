@@ -1,6 +1,6 @@
 plugins {
     id("drawview.compose.library")
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "The review in the DrawView editor of what external models propose, and the access of their clients"
@@ -34,10 +34,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
         }
     }
-}
-
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

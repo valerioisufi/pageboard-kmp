@@ -1,7 +1,7 @@
 plugins {
     id("drawview.compose.library")
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "Collaboration in the DrawView editor: sharing, invitations, people on the document"
@@ -41,11 +41,6 @@ kotlin {
             implementation(libs.roborazzi.composeDesktop)
         }
     }
-}
-
-// The reference images of the sharing (see SharingScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

@@ -1,7 +1,7 @@
 plugins {
     id("drawview.compose.library")
     // Screenshot tests of the panel (recordRoborazziJvm, verifyRoborazziJvm)
-    alias(libs.plugins.roborazzi)
+    id("drawview.screenshots")
 }
 
 description = "The DrawView lecture assistant in an application: its panel, its settings, the recording in the editor and in the library"
@@ -59,9 +59,4 @@ kotlin {
 
 compose.resources {
     packageOfResClass = "io.github.valerioisufi.drawview.lecture.ui.generated.resources"
-}
-
-// The reference images of the panel (see LecturePanelScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
