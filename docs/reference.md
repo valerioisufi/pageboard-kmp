@@ -1,4 +1,4 @@
-# DrawView reference
+# Pageboard reference
 
 What the modules are, the features of the editor and of PencilNotes, how the native libraries are
 built and how the tests run. The [README](../README.md) is the short version; the plans of the
@@ -9,7 +9,7 @@ features, with their decisions, are in [plans/](plans/).
 * [`/pageboard-model`](../pageboard-model) is the document without Compose (pages, elements, changes, clock, geometry), [`/pageboard-ink`](../pageboard-ink) models the strokes with Google Ink, [`/pageboard-canvas`](../pageboard-canvas) is the editor of a document and its tiled rendering. Every change of a document is a serializable `DocumentChange` submitted to the `DocumentSession` of the document (see [docs/plans/collaboration.md](plans/collaboration.md)).
 * [`/pageboard-store`](../pageboard-store) is the storage of the documents without a database: its ports (`DocumentCatalog`, `OperationLog`, `SharingStore`, `PreferenceStore`, together `DocumentStore`), `OpenDocuments` (the documents being changed, shared by the editor and the synchronization) and a store on any key-value storage (in memory for the tests); [`/pageboard-store-room`](../pageboard-store-room) implements it with Room (SQLite), with the migrations of its schema; [`/pageboard-store-testing`](../pageboard-store-testing) holds the tests every store must pass.
 * [`/pageboard-sync-protocol`](../pageboard-sync-protocol) is the protocol of the synchronization, without the documents (what a relay would need): the frames, the end-to-end encryption, the operations sealed with the key of their document (their identity in clear), the identities of the devices, the invitations and the membership; [`/pageboard-sync`](../pageboard-sync) is the sync engine, [`/pageboard-sync-lan`](../pageboard-sync-lan) the local network, [`/pageboard-sync-iroh`](../pageboard-sync-iroh) the internet (iroh: devices reached by their key, directly or through a relay; see [docs/plans/internet-sync.md](plans/internet-sync.md)), [`/pageboard-sync-ui`](../pageboard-sync-ui) sharing and joining in an application (see [docs/plans/collaboration.md](plans/collaboration.md)).
-* [`/pageboard-ui`](../pageboard-ui) contains the editor user interface (`DrawScreen`, `EditorScreen`), its components and its extension points (`EditorExtension`, which receives an `EditorContext`), without any store; [`/pageboard-session`](../pageboard-session) opens a document of a store in the editor and writes its changes (`DocumentEditorViewModel`, `EditorSessionScreen`).
+* [`/pageboard-ui`](../pageboard-ui) contains the editor user interface (`DocumentScreen`, `EditorScreen`), its components and its extension points (`EditorExtension`, which receives an `EditorContext`), without any store; [`/pageboard-session`](../pageboard-session) opens a document of a store in the editor and writes its changes (`DocumentEditorViewModel`, `EditorSessionScreen`).
 * [`/pageboard-explorer`](../pageboard-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
 * [`/pageboard-pdf`](../pageboard-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS), and the text of the pages with the position of every character.
 * [`/pageboard-latex`](../pageboard-latex) handles dynamic mathematical formula rendering via MicroTeX.
@@ -28,13 +28,13 @@ it opens once per process:
 // The documents in Room, in the data directory of the application (pageboard-store-room), their
 // strokes modeled by Google Ink (pageboard-ink)
 object MyNotes {
-    val documents by lazy { OpenDocuments(RoomDocumentStore(createDrawDatabase(), InkStrokeModeller)) }
+    val documents by lazy { OpenDocuments(RoomDocumentStore(createPageboardDatabase(), InkStrokeModeller)) }
     val sessions = EditorSessions()
 }
 
 @Composable
 fun App() {
-    DrawViewTheme {
+    PageboardTheme {
         DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
@@ -42,12 +42,12 @@ fun App() {
 
 ### Using the libraries
 
-Every module is published as `io.github.valerioisufi:<module>` (`0.1.0-SNAPSHOT` until the first release): an application declares the ones it uses (e.g. `pageboard-explorer`, `pageboard-store-room`, `pageboard-pdf` and `pageboard-latex` for the library with PDFs and formulas) and gets nothing else; the optional engines are given to the editor in `DrawViewEngines`. `./gradlew publishToMavenLocal` publishes them to the local repository.
+Every module is published as `io.github.valerioisufi:<module>` (`0.1.0-SNAPSHOT` until the first release): an application declares the ones it uses (e.g. `pageboard-explorer`, `pageboard-store-room`, `pageboard-pdf` and `pageboard-latex` for the library with PDFs and formulas) and gets nothing else; the optional engines are given to the editor in `PageboardEngines`. `./gradlew publishToMavenLocal` publishes them to the local repository.
 
 * **Documentation**: `./gradlew :dokkaGenerate` writes the documentation of every library in `build/dokka/html` (the javadoc jar of each one is the same); each module has its page (`Module.md`).
 * **Public API**: declared (explicit API mode) and recorded in the `api/` directory of each library (see Running Tests).
 * **As another developer uses them**: `./consumer-checks/check.sh` publishes them to `mavenLocal()` and builds against them a JVM program with `pageboard-model` alone (no Compose on its classpath), a desktop editor without the PDF and formula engines, and an Android application with the canvas (only the native library of Google Ink in its APK).
-* **Licenses**: every jar and Android library carries the license of DrawView and `THIRD_PARTY_LICENSES.md` (`META-INF/pageboard/<module>/`).
+* **Licenses**: every jar and Android library carries the license of Pageboard and `THIRD_PARTY_LICENSES.md` (`META-INF/pageboard/<module>/`).
 * **Releases**: a tag `pageboard-vX.Y.Z` (equal to `VERSION_NAME`) runs `.github/workflows/release.yml`, which builds the JNI libraries of the five desktop platforms, publishes the libraries on Maven Central, signed (see its secrets), and the API documentation on GitHub Pages; the applications have tags `pencilnotes-v*` of their own. `.github/workflows/check.yml` checks every change.
 
 ### Trackpad
@@ -56,7 +56,7 @@ On the canvas, two fingers on a trackpad move the pages like a finger on a touch
 
 ### Keyboard and menus
 
-Every action of the editor and of the library is a command (see [docs/plans/adaptive-ui.md](plans/adaptive-ui.md)), shown by the buttons (with a tooltip where a mouse or a trackpad rests), by the menu bar of the desktop and by the keyboard: ⌘Z / ⇧⌘Z undo and redo, ⌘X ⌘C ⌘V and ⌫ on the selection, ⌘+ / ⌘- zoom, ⌘0 the width of the pages, PgUp / PgDn the previous and next page, ⌘G the page grid, ⇧⌘P / ⇧⌘I import a PDF or an image, ⇧⌘E export, ⌘W close the document; the tools with a single key (P pen, H highlighter, U text markup, E eraser, T text, L lasso). In the library: ⌘N a note, ⇧⌘N a folder, ⌘A select all, ⌫ delete, ⌘↑ the enclosing folder, and a right click on an item opens its menu. Ctrl replaces ⌘ on Windows, Linux and Android. The desktop windows keep their size, position and placement between launches (`rememberDrawViewWindowState`). Android lists the shortcuts with Meta + / (`CommandHost.keyboardShortcutGroups`). An application shows the menu bar with `DrawViewMenuBar(host)` and runs the shortcuts of its window with `Window(onKeyEvent = { host.dispatch(it) })`, the host given to `CommandRoot` around its screens.
+Every action of the editor and of the library is a command (see [docs/plans/adaptive-ui.md](plans/adaptive-ui.md)), shown by the buttons (with a tooltip where a mouse or a trackpad rests), by the menu bar of the desktop and by the keyboard: ⌘Z / ⇧⌘Z undo and redo, ⌘X ⌘C ⌘V and ⌫ on the selection, ⌘+ / ⌘- zoom, ⌘0 the width of the pages, PgUp / PgDn the previous and next page, ⌘G the page grid, ⇧⌘P / ⇧⌘I import a PDF or an image, ⇧⌘E export, ⌘W close the document; the tools with a single key (P pen, H highlighter, U text markup, E eraser, T text, L lasso). In the library: ⌘N a note, ⇧⌘N a folder, ⌘A select all, ⌫ delete, ⌘↑ the enclosing folder, and a right click on an item opens its menu. Ctrl replaces ⌘ on Windows, Linux and Android. The desktop windows keep their size, position and placement between launches (`rememberPageboardWindowState`). Android lists the shortcuts with Meta + / (`CommandHost.keyboardShortcutGroups`). An application shows the menu bar with `PageboardMenuBar(host)` and runs the shortcuts of its window with `Window(onKeyEvent = { host.dispatch(it) })`, the host given to `CommandRoot` around its screens.
 
 ### Library
 
@@ -96,7 +96,7 @@ No native binary is versioned: Gradle builds or downloads them on demand.
 
 ## Sample Application
 
-[`/sample`](../sample) is the DrawView sample application: [`shared`](../sample/shared) (`:sample-shared`, the `App` composable) and the entry points [`androidApp`](../sample/androidApp) (`:sample-android`), [`desktopApp`](../sample/desktopApp) (`:sample-desktop`) and [`iosApp`](../sample/iosApp) (Xcode).
+[`/sample`](../sample) is the Pageboard sample application: [`shared`](../sample/shared) (`:sample-shared`, the `App` composable) and the entry points [`androidApp`](../sample/androidApp) (`:sample-android`), [`desktopApp`](../sample/desktopApp) (`:sample-desktop`) and [`iosApp`](../sample/iosApp) (Xcode).
 
 * **Android app**: `./gradlew :sample-android:assembleDebug`
 * **Desktop app**:
@@ -109,7 +109,7 @@ No native binary is versioned: Gradle builds or downloads them on demand.
 ## PencilNotes
 
 PencilNotes is the note-taking application designed for stylus input, ported from the original
-Android app to Kotlin Multiplatform. It is the DrawView document library (`DocumentLibrary`) with
+Android app to Kotlin Multiplatform. It is the Pageboard document library (`DocumentLibrary`) with
 the PencilNotes identity: theme (dynamic colors on Android 12+), Cherry Bomb One title, About
 information, icons and full-screen editor.
 

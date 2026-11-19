@@ -47,6 +47,6 @@ private fun copyToCache(context: Context, uri: Uri): ChosenFile? = try {
     resolver.openInputStream(uri)?.use { input -> file.outputStream().use { input.copyTo(it) } } ?: return null
     ChosenFile(file.absolutePath, name, lastModified, temporary = true)
 } catch (e: Exception) {
-    println("DrawView: cannot read the file chosen: ${e.message}")
+    println("Pageboard: cannot read the file chosen: ${e.message}")
     null
 }

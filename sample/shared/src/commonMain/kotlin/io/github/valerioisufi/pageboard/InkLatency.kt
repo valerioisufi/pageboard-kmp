@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 
 /**
  * Measures the latency of the ink (see `docs/plans/ink-latency.md`): a button of the toolbar switches the
@@ -23,7 +23,7 @@ fun inkLatencyExtension(): EditorExtension = EditorExtension {
     toolbarActions { context ->
         val controller = SampleData.sessions.find(context.documentId)?.controller ?: return@toolbarActions
         EditorActionButton(
-            DrawViewIcons.Clock,
+            PageboardIcons.Clock,
             "Measure the latency of the ink",
             onClick = { controller.isInkLatencyMeasured = !controller.isInkLatencyMeasured },
             active = controller.isInkLatencyMeasured
@@ -32,7 +32,7 @@ fun inkLatencyExtension(): EditorExtension = EditorExtension {
     canvasOverlay { context ->
         val controller = SampleData.sessions.find(context.documentId)?.controller ?: return@canvasOverlay
         val report by controller.inkLatency.collectAsState()
-        LaunchedEffect(report) { report?.let { println("DrawView $it") } }
+        LaunchedEffect(report) { report?.let { println("Pageboard $it") } }
         val shown = report
         if (controller.isInkLatencyMeasured && shown != null) {
             Text(

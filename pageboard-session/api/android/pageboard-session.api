@@ -1,13 +1,13 @@
 public final class io/github/valerioisufi/pageboard/session/DocumentEditorViewModel : androidx/lifecycle/ViewModel {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/store/PreferenceStore;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/store/PreferenceStore;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/store/PreferenceStore;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/store/PreferenceStore;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun closeSession ()V
 	public final fun createAndOpenDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun createAndOpenDocument$default (Lio/github/valerioisufi/pageboard/session/DocumentEditorViewModel;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun getClipboard ()Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;
 	public final fun getDocuments ()Lio/github/valerioisufi/pageboard/store/OpenDocuments;
-	public final fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;
+	public final fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;
 	public final fun getPreferences ()Lio/github/valerioisufi/pageboard/store/PreferenceStore;
 	public final fun getSession ()Lio/github/valerioisufi/pageboard/session/EditorSession;
 	public final fun getSessions ()Lio/github/valerioisufi/pageboard/session/EditorSessions;
@@ -18,7 +18,7 @@ public final class io/github/valerioisufi/pageboard/session/DocumentEditorViewMo
 public final class io/github/valerioisufi/pageboard/session/EditorSession {
 	public static final field $stable I
 	public final fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getController ()Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;
+	public final fun getController ()Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;
 	public final fun getDocument ()Lio/github/valerioisufi/pageboard/store/OpenDocument;
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun saveWriting ()V

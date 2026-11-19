@@ -2,10 +2,10 @@ package io.github.valerioisufi.pageboard.ui.screen
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.change.AddElements
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlin.test.Test
@@ -19,11 +19,11 @@ class EditorBenchmark {
 
     @Test
     fun drawingStrokes() = runDesktopComposeUiTest(width = 1280, height = 800) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val counter = CompositionCounter()
         setContent {
-            DrawViewTheme(dynamicColor = false) {
-                counter.Observe { DrawScreen(controller, onNavigateBack = {}) }
+            PageboardTheme(dynamicColor = false) {
+                counter.Observe { DocumentScreen(controller, onNavigateBack = {}) }
             }
         }
         waitForIdle()
@@ -42,11 +42,11 @@ class EditorBenchmark {
 
     @Test
     fun panningWhileWriting() = runDesktopComposeUiTest(width = 1280, height = 800) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val counter = CompositionCounter()
         setContent {
-            DrawViewTheme(dynamicColor = false) {
-                counter.Observe { DrawScreen(controller, onNavigateBack = {}) }
+            PageboardTheme(dynamicColor = false) {
+                counter.Observe { DocumentScreen(controller, onNavigateBack = {}) }
             }
         }
         waitForIdle()

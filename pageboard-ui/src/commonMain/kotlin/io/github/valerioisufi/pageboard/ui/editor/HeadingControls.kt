@@ -30,7 +30,7 @@ import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandTooltip
 import io.github.valerioisufi.pageboard.ui.components.ToolPopover
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 
 /**
  * The heading of the bar: the icon makes the line of the caret a heading of level 1 or text again,
@@ -40,7 +40,7 @@ import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
 internal fun HeadingButton(commands: EditorCommands) {
     val colors = MaterialTheme.colorScheme
     Row(verticalAlignment = Alignment.CenterVertically) {
-        FormatButton(commands.heading, DrawViewIcons.Heading)
+        FormatButton(commands.heading, PageboardIcons.Heading)
         Box {
             CommandTooltip(commands.headingLevels) {
                 Box(
@@ -55,7 +55,7 @@ internal fun HeadingButton(commands: EditorCommands) {
                             commands.headingLevelsOpen = true
                         }
                 ) {
-                    Icon(DrawViewIcons.ChevronDown, contentDescription = commands.headingLevels.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                    Icon(PageboardIcons.ChevronDown, contentDescription = commands.headingLevels.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
             }
             ToolPopover(expanded = commands.headingLevelsOpen, onDismissRequest = { commands.headingLevelsOpen = false }) {

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.model.text
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.change.toData
 import kotlin.test.Test
@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 /** The fill of a text box: kept with its content, around its box, in its bounds. */
 class TextBackgroundTest {
 
-    private fun text(background: Int?) = DrawText("t").apply {
+    private fun text(background: Int?) = TextElement("t").apply {
         x = 10f; y = 20f; width = 40f; height = 10f; fontSize = 72f
         this.background = background
     }
@@ -40,7 +40,7 @@ class TextBackgroundTest {
         val filled = text(0xFFD7E8FA.toInt())
         val data = filled.toData()
         assertEquals(0xFFD7E8FA.toInt(), data.background)
-        val copy = DrawText("t")
+        val copy = TextElement("t")
         data.applyTo(copy)
         assertEquals(0xFFD7E8FA.toInt(), copy.background)
         assertEquals(null, TextData("u", "a", x = 0f, y = 0f, width = 1f, color = 0, fontSize = 1f).background, "none by default")

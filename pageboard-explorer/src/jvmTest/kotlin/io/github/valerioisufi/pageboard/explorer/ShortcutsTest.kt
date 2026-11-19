@@ -32,7 +32,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.adaptive.platformConventions
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.util.Locale
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -100,12 +100,12 @@ class ShortcutsTest {
         val host = CommandHost()
         setContent {
             CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
-                DrawViewTheme(dynamicColor = false) {
+                PageboardTheme(dynamicColor = false) {
                     AdaptiveRoot(hints = InputHints.PointerAndKeyboard, conventions = platformConventions) {
                         CommandRoot(host = host) {
                             // The documents read on the thread asking (the scene of a test has no main thread)
                             DocumentLibrary(
-                                title = { Text("DrawView") },
+                                title = { Text("Pageboard") },
                                 documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
                                 sessions = remember { EditorSessions() },
                                 modifier = Modifier.fillMaxSize()

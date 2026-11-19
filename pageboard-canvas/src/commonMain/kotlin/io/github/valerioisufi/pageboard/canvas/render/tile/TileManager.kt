@@ -14,10 +14,10 @@ import io.github.valerioisufi.pageboard.canvas.geometry.mapRect
 import io.github.valerioisufi.pageboard.canvas.geometry.setRectToRect
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.geometry.toComposeMatrix
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.syncLock
@@ -74,7 +74,7 @@ public class TileManager internal constructor(
     private val recentBakes = mutableMapOf<Long, MutableList<BakedElement>>()
 
     /** An element committed to a page and baked into its tiles: a stroke or a mark of the text of a PDF. */
-    private class BakedElement(val sequence: Long, val stroke: DrawStroke? = null, val markup: DrawTextMarkup? = null)
+    private class BakedElement(val sequence: Long, val stroke: StrokeElement? = null, val markup: TextMarkupElement? = null)
 
     private val filterPaint = Paint().apply {
         filterQuality = FilterQuality.Medium
@@ -135,14 +135,14 @@ public class TileManager internal constructor(
      * @param cameraMatrix The current camera transformation matrix.
      * @param viewportBounds Visible screen bounds in pixels.
      * @param document The document data model.
-     * @param pageRects The World Space bounds of each page (indexed like [DrawDocument.pages]).
+     * @param pageRects The World Space bounds of each page (indexed like [Document.pages]).
      * @param skipPageKey Page not drawn (e.g. the page being dragged while reordering).
      */
     internal fun drawTiles(
         canvas: Canvas,
         cameraMatrix: Matrix2D,
         viewportBounds: Rect,
-        document: DrawDocument,
+        document: Document,
         pageRects: List<Rect>,
         skipPageKey: Long? = null
     ) {
@@ -368,7 +368,7 @@ public class TileManager internal constructor(
      * Draws all the tiles of a single page at an arbitrary destination rectangle (used to render
      * the page being dragged while reordering pages).
      */
-    internal fun drawPageTiles(canvas: Canvas, page: DrawPage, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float) {
+    internal fun drawPageTiles(canvas: Canvas, page: Page, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float) {
         val lod = TilePyramid.calculateLod(cameraScale)
         val range = TilePyramid.getPageIntersectingTileRange(
             0f, 0f, pageWorldRect.width, pageWorldRect.height,
@@ -417,7 +417,7 @@ public class TileManager internal constructor(
      * page changed): the tiles of the pages laid out at another scale are dropped, the ones on
      * screen are drawn stretched until the new ones are ready.
      */
-    internal fun updateLayout(pages: List<DrawPage>, pageRects: List<Rect>) {
+    internal fun updateLayout(pages: List<Page>, pageRects: List<Rect>) {
         for (i in 0 until min(pages.size, pageRects.size)) {
             ensurePageGeometry(pages[i].renderKey, pageRects[i])
         }
@@ -467,8 +467,8 @@ public class TileManager internal constructor(
     private fun enqueueTile(
         key: TileKey,
         priority: TilePriority,
-        document: DrawDocument,
-        page: DrawPage,
+        document: Document,
+        page: Page,
         pageWorldRect: Rect,
         order: Float = 0f
     ) {
@@ -498,7 +498,7 @@ public class TileManager internal constructor(
     /**
      * Rasterizes the tile [key] and publishes it in the cache.
      */
-    private fun rasterizeTile(key: TileKey, document: DrawDocument, page: DrawPage, pageWorldRect: Rect) {
+    private fun rasterizeTile(key: TileKey, document: Document, page: Page, pageWorldRect: Rect) {
         // Read generation, bake sequence and content atomically with respect to
         // bakeStrokesDirectlySync (which mutates the page under the same lock).
         var generation = 0
@@ -551,13 +551,13 @@ public class TileManager internal constructor(
      * thread (< 0.2 ms), eliminating any latency gap or flash before background rasterization.
      *
      * @param strokesByPage Strokes keyed by page index.
-     * @param pageRects The World Space bounds of each page (indexed like [DrawDocument.pages]).
+     * @param pageRects The World Space bounds of each page (indexed like [Document.pages]).
      * @param commit Mutation adding the strokes to their pages, executed atomically with the bake
      * so that background workers never miss or double-draw them.
      */
     internal fun bakeStrokesDirectlySync(
-        strokesByPage: Map<Int, List<DrawStroke>>,
-        document: DrawDocument,
+        strokesByPage: Map<Int, List<StrokeElement>>,
+        document: Document,
         pageRects: List<Rect>,
         cameraScale: Float,
         commit: () -> Unit = {}
@@ -624,7 +624,7 @@ public class TileManager internal constructor(
      * @param pageWorldRect World Space bounds of [page].
      * @param commit Mutation adding the marks to the page, executed atomically with the bake.
      */
-    internal fun bakeMarkupsDirectlySync(page: DrawPage, pageWorldRect: Rect, markups: List<DrawTextMarkup>, commit: () -> Unit) {
+    internal fun bakeMarkupsDirectlySync(page: Page, pageWorldRect: Rect, markups: List<TextMarkupElement>, commit: () -> Unit) {
         syncLock(lock) {
             commit()
             val bakes = recentBakes.getOrPut(page.renderKey) { mutableListOf() }
@@ -670,7 +670,7 @@ public class TileManager internal constructor(
         onInvalidate()
     }
 
-    private fun drawMarkup(canvas: Canvas, markup: DrawTextMarkup, widthMm: Float, heightMm: Float, mmToTile: Matrix2D) {
+    private fun drawMarkup(canvas: Canvas, markup: TextMarkupElement, widthMm: Float, heightMm: Float, mmToTile: Matrix2D) {
         TextMarkupPainter.draw(
             canvas = canvas,
             rects = markup.rects,
@@ -685,7 +685,7 @@ public class TileManager internal constructor(
      * Invalidates the tiles of [page] intersecting [dirtyMmRect] (page millimeters): they keep
      * being drawn (no flash) while a fresh version is rasterized in background.
      */
-    internal fun invalidatePageRegion(page: DrawPage, dirtyMmRect: Rect, pageWorldRect: Rect?) {
+    internal fun invalidatePageRegion(page: Page, dirtyMmRect: Rect, pageWorldRect: Rect?) {
         bumpGeneration(page.renderKey)
         val scaleX = if (pageWorldRect != null && page.widthMm > 0f) pageWorldRect.width / page.widthMm else null
         val scaleY = if (pageWorldRect != null && page.heightMm > 0f) pageWorldRect.height / page.heightMm else null
@@ -711,7 +711,7 @@ public class TileManager internal constructor(
      * content as it is now: none of them stale (e.g. elements put back in the tiles, drawn over
      * them until then, see `SelectionManager`).
      */
-    internal fun isRegionCurrent(page: DrawPage, mmRect: io.github.valerioisufi.pageboard.model.geometry.Rect): Boolean {
+    internal fun isRegionCurrent(page: Page, mmRect: io.github.valerioisufi.pageboard.model.geometry.Rect): Boolean {
         val onScreen = pageTiles[page.renderKey] ?: return true
         if (page.widthMm <= 0f || page.heightMm <= 0f) return true
         val region = Rect(mmRect.left / page.widthMm, mmRect.top / page.heightMm, mmRect.right / page.widthMm, mmRect.bottom / page.heightMm)
@@ -750,7 +750,7 @@ public class TileManager internal constructor(
     /**
      * Drops the tiles of pages that are no longer part of [document].
      */
-    internal fun retainDocumentPages(document: DrawDocument) {
+    internal fun retainDocumentPages(document: Document) {
         val live = document.pages.map { it.renderKey }.toSet()
         tileCache.retainPages(live)
         syncLock(lock) {
@@ -775,7 +775,7 @@ public class TileManager internal constructor(
     /**
      * Rasterizes the whole page into a thumbnail bitmap [widthPx] pixels wide.
      */
-    public fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
+    public fun renderThumbnail(document: Document, page: Page, widthPx: Int): ImageBitmap =
         tileRenderer.renderThumbnail(document, page, widthPx)
 
     internal fun cleanup() {

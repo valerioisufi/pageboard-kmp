@@ -46,7 +46,7 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_se
 import io.github.valerioisufi.pageboard.ui.components.NavigationItem
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /** How the library shows a folder, by the width it has. */
@@ -120,7 +120,7 @@ internal fun LibraryNavigationPane(
         LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             item(key = "home") {
                 NavigationItem(
-                    icon = DrawViewIcons.Home,
+                    icon = PageboardIcons.Home,
                     label = stringResource(Res.string.explorer_root_folder),
                     selected = section == Section.HOME && rootFolder == null,
                     onClick = { viewModel.showFolder(null) },
@@ -130,7 +130,7 @@ internal fun LibraryNavigationPane(
             }
             item(key = "recent") {
                 NavigationItem(
-                    icon = DrawViewIcons.Clock,
+                    icon = PageboardIcons.Clock,
                     label = stringResource(Res.string.explorer_section_recent),
                     selected = section == Section.RECENT,
                     onClick = { viewModel.showSection(Section.RECENT) },
@@ -139,7 +139,7 @@ internal fun LibraryNavigationPane(
             }
             item(key = "shared") {
                 NavigationItem(
-                    icon = DrawViewIcons.Users,
+                    icon = PageboardIcons.Users,
                     label = stringResource(Res.string.explorer_section_shared),
                     selected = section == Section.SHARED,
                     onClick = { viewModel.showSection(Section.SHARED) },
@@ -148,7 +148,7 @@ internal fun LibraryNavigationPane(
             }
             item(key = "trash") {
                 NavigationItem(
-                    icon = DrawViewIcons.Trash,
+                    icon = PageboardIcons.Trash,
                     label = stringResource(Res.string.explorer_section_trash),
                     selected = section == Section.TRASH,
                     onClick = { viewModel.showSection(Section.TRASH) },
@@ -165,7 +165,7 @@ internal fun LibraryNavigationPane(
             }
             items(viewModel.rootFolders, key = { it.key }) { folder ->
                 NavigationItem(
-                    icon = DrawViewIcons.Folder,
+                    icon = PageboardIcons.Folder,
                     label = folder.name,
                     selected = section == Section.HOME && rootFolder == folder.id,
                     onClick = { viewModel.showFolder(folder.id) },
@@ -175,7 +175,7 @@ internal fun LibraryNavigationPane(
             }
             item(key = "new-folder") {
                 TextButton(onClick = { commands.newFolder.performIfEnabled() }, modifier = Modifier.padding(top = 4.dp)) {
-                    Icon(DrawViewIcons.FolderPlus, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.FolderPlus, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.explorer_new_folder), style = MaterialTheme.typography.labelLarge)
                 }

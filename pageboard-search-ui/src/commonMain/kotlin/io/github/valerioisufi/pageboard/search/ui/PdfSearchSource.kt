@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.search.ui
 
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.platform.Sha256
 import io.github.valerioisufi.pageboard.search.SearchAnchor
 import io.github.valerioisufi.pageboard.search.SearchChunk
@@ -53,7 +53,7 @@ public class PdfSearchSource(
                 val pageNumber = pageIndex + 1
                 for (pdf in page.pdfs) {
                     val resource = outline.findResource(pdf.resourceId)
-                        ?.takeIf { it.type == DrawResource.ResourceType.PDF }
+                        ?.takeIf { it.type == DocumentResource.ResourceType.PDF }
                         ?: continue
                     val raw = try {
                         adapter.getPageText(resource.path, pdf.pdfPageIndex)

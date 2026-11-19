@@ -3,7 +3,7 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.pageboard.canvas.camera.CalcPage
 import io.github.valerioisufi.pageboard.canvas.camera.CameraPhysicsEngine
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,7 +20,7 @@ class CameraBoundsTest {
     private class Canvas(
         val width: Float,
         val density: Float,
-        pages: List<DrawPage> = listOf(DrawPage()),
+        pages: List<Page> = listOf(Page()),
         val height: Float = 900f * density
     ) {
         val layout = CalcPage(density = density).apply {
@@ -66,7 +66,7 @@ class CameraBoundsTest {
     }
 
     /** A desktop window of 1440 dp at 2×: the pages are 880 dp wide, the desk beside them. */
-    private fun wideWindow(pages: List<DrawPage> = listOf(DrawPage())) = Canvas(width = 2880f, density = 2f, pages = pages)
+    private fun wideWindow(pages: List<Page> = listOf(Page())) = Canvas(width = 2880f, density = 2f, pages = pages)
 
     @Test
     fun aPageNarrowerThanAWideWindowStaysCentered() {
@@ -120,8 +120,8 @@ class CameraBoundsTest {
 
     @Test
     fun aDocumentMixingWidthsIsBoundedByItsWidestPage() {
-        val portrait = DrawPage(widthMm = 210f, heightMm = 297f)
-        val landscape = DrawPage(widthMm = 297f, heightMm = 210f)
+        val portrait = Page(widthMm = 210f, heightMm = 297f)
+        val landscape = Page(widthMm = 297f, heightMm = 210f)
         val canvas = wideWindow(listOf(portrait, landscape))
 
         canvas.zoomTo(1.25f)

@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -26,8 +26,8 @@ class SharedResourceFilesTest {
 
     private fun file(name: String): File = File(directory, name).apply { writeBytes(byteArrayOf(1, 2, 3)) }
 
-    private suspend fun KeyValueDocumentStore.addImage(document: DrawDocument, file: File) {
-        val resource = DrawResource(id = "image-${document.id}", type = DrawResource.ResourceType.IMAGE, path = file.absolutePath, hash = "hash")
+    private suspend fun KeyValueDocumentStore.addImage(document: Document, file: File) {
+        val resource = DocumentResource(id = "image-${document.id}", type = DocumentResource.ResourceType.IMAGE, path = file.absolutePath, hash = "hash")
         document.addResource(resource)
         saveResource(document, resource)
     }

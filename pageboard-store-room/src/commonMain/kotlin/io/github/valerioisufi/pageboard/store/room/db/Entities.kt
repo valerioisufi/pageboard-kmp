@@ -124,7 +124,7 @@ internal data class StrokeEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp
 ) {
@@ -167,7 +167,7 @@ internal data class TextEntity(
     val pageId: String,
     val orderKey: ElementOrder,
     val text: String,
-    /** Its top-left corner, which it turns around (see `DrawText`). */
+    /** Its top-left corner, which it turns around (see `TextElement`). */
     val x: Float, // mm
     val y: Float, // mm
     /** The width its lines wrap on (its height is what they take, laid out). */
@@ -188,7 +188,7 @@ internal data class TextEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp,
     val contentVersions: Versions = Versions.NONE
@@ -219,13 +219,13 @@ internal data class ImageEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp
 )
 
 /**
- * An element of a type added by an application (see `DrawCustomElement`): its type, the format and
+ * An element of a type added by an application (see `CustomElement`): its type, the format and
  * the bytes of its value (CBOR, never read by the store), its box.
  */
 @Entity(
@@ -255,7 +255,7 @@ internal class CustomElementEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp
 )
@@ -281,7 +281,7 @@ internal data class PdfEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp
 )
@@ -322,7 +322,7 @@ internal data class TextMarkupEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp
 )

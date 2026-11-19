@@ -18,13 +18,13 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextBox
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.StrokeOutline
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
@@ -67,7 +67,7 @@ import kotlinx.coroutines.withContext
  *   the document.
  * @param elements draws the elements of the types of the application, written as images at
  *   300 dpi (placeholders for the types it does not know).
- * @param formulas the formula renderer of the editors (`DrawViewEngines.formulas`): the formulas
+ * @param formulas the formula renderer of the editors (`PageboardEngines.formulas`): the formulas
  *   are written as the vectors it draws ([FormulaRenderer.drawing]), else as images of them.
  * @param createWriter the PDF written.
  */
@@ -110,7 +110,7 @@ public class PdfExporter(
             return@withContext ExportResult(0, 0)
         }
         // The texts laid out once, the characters of their words embedded once per face
-        val layouts = HashMap<DrawText, TextBlockLayout?>()
+        val layouts = HashMap<TextElement, TextBlockLayout?>()
         for (content in contents) {
             for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text, page.background.backgroundColor)
         }
@@ -154,12 +154,12 @@ public class PdfExporter(
      * size (as the import of a PDF makes them), each once; `null` for the other pages.
      */
     private fun importBases(writer: PdfWriter, content: DocumentContent): List<BasePage?> {
-        val shown = arrayOfNulls<DrawPdf>(content.pages.size)
+        val shown = arrayOfNulls<PdfElement>(content.pages.size)
         val pagesByFile = LinkedHashMap<String, MutableList<Int>>()
         val imported = HashSet<Pair<String, Int>>()
         content.pages.forEachIndexed { index, page ->
-            val pdf = page.paintOrder.firstOrNull() as? DrawPdf ?: return@forEachIndexed
-            val file = content.resourceFile(pdf.resourceId, DrawResource.ResourceType.PDF) ?: return@forEachIndexed
+            val pdf = page.paintOrder.firstOrNull() as? PdfElement ?: return@forEachIndexed
+            val file = content.resourceFile(pdf.resourceId, DocumentResource.ResourceType.PDF) ?: return@forEachIndexed
             val size = writer.pdfPageSize(file, pdf.pdfPageIndex) ?: return@forEachIndexed
             val covers = abs(size.widthPt.toFloat() - page.widthMm * PT_PER_MM) < SAME_SIZE_PT &&
                 abs(size.heightPt.toFloat() - page.heightMm * PT_PER_MM) < SAME_SIZE_PT
@@ -176,7 +176,7 @@ public class PdfExporter(
     }
 
     /** A page written on [page], the page of a PDF [pdf] shows. */
-    private class BasePage(val pdf: DrawPdf, val page: PdfImportedPage)
+    private class BasePage(val pdf: PdfElement, val page: PdfImportedPage)
 
     /** Embeds in [writer] the subset of each face with the characters of the words it writes. */
     private fun embed(writer: PdfWriter, faces: Map<TextFace, TrueTypeFont>, layouts: List<TextBlockLayout>): Map<TextFace, PdfFont> {
@@ -194,7 +194,7 @@ public class PdfExporter(
     /** Writes the texts, their words with [fonts], their formulas as vectors. */
     private inner class TextWriter(
         private val writer: PdfWriter,
-        private val layouts: Map<DrawText, TextBlockLayout?>,
+        private val layouts: Map<TextElement, TextBlockLayout?>,
         private val fonts: Map<TextFace, PdfFont>,
         private val faces: Map<TextFace, TrueTypeFont>
     ) {
@@ -217,7 +217,7 @@ public class PdfExporter(
         }
 
         /** Writes [text] placed by [mmToPt] on its page of [paperColor]; returns whether it could. */
-        fun write(text: DrawText, mmToPt: Matrix2D, paperColor: Int): Boolean {
+        fun write(text: TextElement, mmToPt: Matrix2D, paperColor: Int): Boolean {
             val layout = layouts[text] ?: return writeImage(text, mmToPt, paperColor)
             val toBlock = Matrix2D()
                 .postRotate(text.rotation)
@@ -317,7 +317,7 @@ public class PdfExporter(
         }
 
         /** [text] as an image, the way the editor draws it (without a layout). */
-        private fun writeImage(text: DrawText, mmToPt: Matrix2D, paperColor: Int): Boolean {
+        private fun writeImage(text: TextElement, mmToPt: Matrix2D, paperColor: Int): Boolean {
             val adapter = textAdapter ?: return true
             if (text.width <= 0f || text.text.isBlank()) return true
             val toBlock = Matrix2D()
@@ -332,7 +332,7 @@ public class PdfExporter(
          * The image of [text] without its rotation at 300 dpi, drawn by the adapter when a part of
          * it is first needed, on the paper of [paperColor]; [toBlock] places the block.
          */
-        private inner class BlockRaster(private val text: DrawText, private val toBlock: Matrix2D, private val paperColor: Int) {
+        private inner class BlockRaster(private val text: TextElement, private val toBlock: Matrix2D, private val paperColor: Int) {
             private var pixels: IntArray? = null
             private var width = 0
             private var height = 0
@@ -404,12 +404,12 @@ public class PdfExporter(
             for (element in page.paintOrder) {
                 if (element === base?.pdf) continue
                 val written = when (element) {
-                    is DrawPdf -> writePdfPage(element)
-                    is DrawTextMarkup -> writeMarkup(element)
-                    is DrawImage -> writeImage(element)
-                    is DrawCustomElement -> writeCustomElement(element)
-                    is DrawText -> writeText(element)
-                    is DrawStroke -> writeStroke(element)
+                    is PdfElement -> writePdfPage(element)
+                    is TextMarkupElement -> writeMarkup(element)
+                    is ImageElement -> writeImage(element)
+                    is CustomElement -> writeCustomElement(element)
+                    is TextElement -> writeText(element)
+                    is StrokeElement -> writeStroke(element)
                 }
                 if (!written) skipped++
             }
@@ -444,8 +444,8 @@ public class PdfExporter(
             }
         }
 
-        private fun writePdfPage(pdf: DrawPdf): Boolean {
-            val file = content.resourceFile(pdf.resourceId, DrawResource.ResourceType.PDF) ?: return false
+        private fun writePdfPage(pdf: PdfElement): Boolean {
+            val file = content.resourceFile(pdf.resourceId, DocumentResource.ResourceType.PDF) ?: return false
             val size = writer.pdfPageSize(file, pdf.pdfPageIndex) ?: return false
             val toPage = pdfPointsToPageMm(size.widthPt.toFloat(), size.heightPt.toFloat(), page.widthMm, page.heightMm)
             if (covering) {
@@ -456,7 +456,7 @@ public class PdfExporter(
             return writer.drawPdfPage(file, pdf.pdfPageIndex, toPage.postConcat(mmToPt))
         }
 
-        private fun writeMarkup(markup: DrawTextMarkup): Boolean {
+        private fun writeMarkup(markup: TextMarkupElement): Boolean {
             val toPage = markup.pointsToPageMm(page.widthMm, page.heightMm).postConcat(mmToPt)
             val kind = when (markup.kind) {
                 TextMarkupKind.HIGHLIGHT -> PdfMarkupKind.HIGHLIGHT
@@ -476,7 +476,7 @@ public class PdfExporter(
          * [element] as the vectors its type gives, or drawn by its renderer at 300 dpi, without
          * its rotation, then placed.
          */
-        private fun writeCustomElement(element: DrawCustomElement): Boolean {
+        private fun writeCustomElement(element: CustomElement): Boolean {
             if (element.width <= 0f || element.height <= 0f) return true
             elements.vectorsOf(element)?.let { return writeVectors(it, element) }
             val scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(element.width, element.height))
@@ -491,7 +491,7 @@ public class PdfExporter(
         }
 
         /** [drawing] in the box of [element] (millimeters of the box), as paths of the PDF. */
-        private fun writeVectors(drawing: VectorDrawing, element: DrawCustomElement): Boolean {
+        private fun writeVectors(drawing: VectorDrawing, element: CustomElement): Boolean {
             val boxToPt = Matrix2D()
                 .postRotate(element.rotation, element.width / 2f, element.height / 2f)
                 .postTranslate(element.x, element.y)
@@ -522,9 +522,9 @@ public class PdfExporter(
             return written
         }
 
-        private fun writeImage(image: DrawImage): Boolean {
+        private fun writeImage(image: ImageElement): Boolean {
             if (image.width <= 0f || image.height <= 0f) return true
-            val file = content.resourceFile(image.resourceId, DrawResource.ResourceType.IMAGE) ?: return false
+            val file = content.resourceFile(image.resourceId, DocumentResource.ResourceType.IMAGE) ?: return false
             val bytes = PlatformFiles.readBytes(file) ?: return false
             val toPage = boxToPage(image.x, image.y, image.width, image.height, image.rotation)
             // A JPEG is embedded as it is, turned by its place as its Exif metadata say (as it is shown)
@@ -535,9 +535,9 @@ public class PdfExporter(
             return writer.drawImage(pixels, bitmap.width, bitmap.height, toPage)
         }
 
-        private fun writeText(text: DrawText): Boolean = texts.write(text, mmToPt, page.background.backgroundColor)
+        private fun writeText(text: TextElement): Boolean = texts.write(text, mmToPt, page.background.backgroundColor)
 
-        private fun writeStroke(stroke: DrawStroke): Boolean {
+        private fun writeStroke(stroke: StrokeElement): Boolean {
             val outline = outlineOf(stroke)
             val path = PdfPath()
             for (polygon in outline.polygons) {
@@ -566,7 +566,7 @@ public class PdfExporter(
     }
 
     /** The file of the resource [id] of [type], or `null`. */
-    private fun DocumentContent.resourceFile(id: String, type: DrawResource.ResourceType): String? =
+    private fun DocumentContent.resourceFile(id: String, type: DocumentResource.ResourceType): String? =
         resources[id]?.takeIf { it.type == type && PlatformFiles.exists(it.path) }?.path
 
     private fun rect(left: Float, top: Float, right: Float, bottom: Float) =
@@ -611,4 +611,4 @@ private val TextWord.printable: String get() = text.filter { it >= ' ' }
  * Outline of [stroke] on its page: the one of its mesh (from Google Ink), or the triangles of its
  * mesh when the modeller could not give it.
  */
-private fun outlineOf(stroke: DrawStroke): StrokeOutline = stroke.mesh.outline ?: stroke.mesh.triangleOutline()
+private fun outlineOf(stroke: StrokeElement): StrokeOutline = stroke.mesh.outline ?: stroke.mesh.triangleOutline()

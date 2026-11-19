@@ -58,10 +58,10 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_tr
 import io.github.valerioisufi.pageboard.store.TrashedItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -98,7 +98,7 @@ internal fun TrashPreview(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                DesignIconButton(DrawViewIcons.Close, stringResource(DrawViewRes.string.common_action_close), onDismiss, tint = colors.onSurface)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onDismiss, tint = colors.onSurface)
                 Column(modifier = Modifier.weight(1f)) {
                     Text(item.name, style = MaterialTheme.typography.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     val days = daysLeft(item, LocalLibraryClock.current())
@@ -111,7 +111,7 @@ internal fun TrashPreview(
                     )
                 }
                 TonalButton(onClick = onRestore) {
-                    Icon(DrawViewIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.explorer_trash_restore), maxLines = 1)
                 }
@@ -146,7 +146,7 @@ internal fun TrashPreview(
                                 .widthIn(max = MAX_PAGE_WIDTH)
                                 .fillMaxWidth()
                                 .aspectRatio(page.width.toFloat() / page.height.coerceAtLeast(1))
-                                .elevation(DrawViewElevation.Level1, RoundedCornerShape(4.dp))
+                                .elevation(PageboardElevation.Level1, RoundedCornerShape(4.dp))
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(Color.White)
                         )

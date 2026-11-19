@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "The local models of DrawView: their catalog, their downloads, the models in memory and the port of the runtime that runs them"
+description = "The local models of Pageboard: their catalog, their downloads, the models in memory and the port of the runtime that runs them"
 
 kotlin {
     sourceSets {

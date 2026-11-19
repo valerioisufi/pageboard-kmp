@@ -5,7 +5,7 @@ plugins {
     id("pageboard.android.native")
 }
 
-description = "Audio codecs of DrawView for Android, libopus and vo-aacenc (libaudio_bridge.so), used by pageboard-lecture"
+description = "Audio codecs of Pageboard for Android, libopus and vo-aacenc (libaudio_bridge.so), used by pageboard-lecture"
 
 /** The version of the source of an audio codec (native/<name>/<name>.properties). */
 fun codecVersion(name: String): String = Properties().apply {

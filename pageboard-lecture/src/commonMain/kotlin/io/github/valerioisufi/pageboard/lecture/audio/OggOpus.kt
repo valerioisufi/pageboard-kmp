@@ -42,7 +42,7 @@ internal object OggOpus {
     }
 
     fun tags(): ByteArray {
-        val vendor = "DrawView".encodeToByteArray()
+        val vendor = "Pageboard".encodeToByteArray()
         val bytes = Buffer()
         bytes.write("OpusTags".encodeToByteArray())
         bytes.writeIntLe(vendor.size)

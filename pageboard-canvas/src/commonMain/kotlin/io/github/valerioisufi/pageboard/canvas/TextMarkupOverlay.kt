@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 
 /**
@@ -16,7 +16,7 @@ import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 internal object TextMarkupOverlay {
     private val markingPaint = Paint()
 
-    fun draw(scope: DrawScope, controller: DrawViewController, primary: Color) = with(scope) {
+    fun draw(scope: DrawScope, controller: PageboardController, primary: Color) = with(scope) {
         val manager = controller.textMarkupManager
 
         manager.marking?.takeIf { it.isShown }?.let { marking ->

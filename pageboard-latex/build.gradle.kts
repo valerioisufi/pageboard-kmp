@@ -6,7 +6,7 @@ plugins {
     id("pageboard.jvm.natives")
 }
 
-description = "LaTeX formulas for DrawView, rendered by MicroTeX"
+description = "LaTeX formulas for Pageboard, rendered by MicroTeX"
 
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)

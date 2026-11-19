@@ -50,7 +50,7 @@ import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.platform.rememberFileSaver
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -93,7 +93,7 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                if (finished) DrawViewIcons.CheckCircle else DrawViewIcons.Mic,
+                if (finished) PageboardIcons.CheckCircle else PageboardIcons.Mic,
                 contentDescription = null,
                 tint = if (finished) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp)
@@ -111,13 +111,13 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Icon(if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(if (expanded) PageboardIcons.ChevronUp else PageboardIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             for (summary in lectures) {
                 MenuItem(
                     text = lectureDate(summary.startedAt) + " · " + formatDuration(summary.durationMs),
-                    icon = rememberVectorPainter(DrawViewIcons.Mic),
+                    icon = rememberVectorPainter(PageboardIcons.Mic),
                     checked = summary.directory == lecture.directory,
                     onClick = {
                         expanded = false
@@ -133,7 +133,7 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                 if (canExportAudio) {
                     MenuItem(
                         text = stringResource(Res.string.lecture_export_audio),
-                        icon = rememberVectorPainter(DrawViewIcons.Download),
+                        icon = rememberVectorPainter(PageboardIcons.Download),
                         onClick = {
                             expanded = false
                             assistant.clearImportAndExportMessages()
@@ -145,7 +145,7 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                 if (canExportTranscript) {
                     MenuItem(
                         text = stringResource(Res.string.lecture_export_transcript),
-                        icon = rememberVectorPainter(DrawViewIcons.FileText),
+                        icon = rememberVectorPainter(PageboardIcons.FileText),
                         onClick = {
                             expanded = false
                             assistant.clearImportAndExportMessages()
@@ -159,7 +159,7 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
             if (shown != null && !isActive && assistant.canRetranscribe(lecture) && assistant.canTranscribeHere) {
                 MenuItem(
                     text = stringResource(Res.string.lecture_retranscribe_local),
-                    icon = rememberVectorPainter(DrawViewIcons.Monitor),
+                    icon = rememberVectorPainter(PageboardIcons.Monitor),
                     onClick = {
                         expanded = false
                         assistant.retranscribe(lecture)
@@ -172,7 +172,7 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                 MenuDivider()
                 MenuItem(
                     text = stringResource(Res.string.lecture_delete),
-                    icon = rememberVectorPainter(DrawViewIcons.Trash),
+                    icon = rememberVectorPainter(PageboardIcons.Trash),
                     destructive = true,
                     onClick = {
                         expanded = false
@@ -187,10 +187,10 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
         val isTranscript = result.fileName.endsWith(".${assistant.transcriptExportExtension}", ignoreCase = true)
         if (result.failure == null) {
             val message = if (isTranscript) Res.string.lecture_export_transcript_done else Res.string.lecture_export_done
-            LectureNotice(DrawViewIcons.Download, stringResource(message, result.fileName), NoticeTone.Neutral)
+            LectureNotice(PageboardIcons.Download, stringResource(message, result.fileName), NoticeTone.Neutral)
         } else {
             val message = if (isTranscript) Res.string.lecture_export_transcript_failed else Res.string.lecture_export_failed
-            LectureNotice(DrawViewIcons.TriangleAlert, stringResource(message, result.failure.orEmpty()), NoticeTone.Error)
+            LectureNotice(PageboardIcons.TriangleAlert, stringResource(message, result.failure.orEmpty()), NoticeTone.Error)
         }
     }
 
@@ -256,19 +256,19 @@ internal fun RecordingSection(
             if (lecture.recordingHeardAt > 0 && now - lecture.recordingHeardAt > LectureRecorder.SILENT_ELSEWHERE_MS) {
                 // No news for long: the device may have stopped (it saves the lecture as finished when back)
                 LectureNotice(
-                    DrawViewIcons.TriangleAlert,
+                    PageboardIcons.TriangleAlert,
                     stringResource(Res.string.lecture_status_silent_elsewhere, lecture.recordedOn, silentMinutes.toInt()),
                     NoticeTone.Error
                 )
             } else {
                 LectureNotice(
-                    DrawViewIcons.Users,
+                    PageboardIcons.Users,
                     if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
                     else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
                     NoticeTone.Info
                 )
                 // Its notes written here as its audio arrives
-                if (lecture.followedHere) LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_followed_here), NoticeTone.Info)
+                if (lecture.followedHere) LectureNotice(PageboardIcons.Monitor, stringResource(Res.string.lecture_followed_here), NoticeTone.Info)
             }
         }
 
@@ -294,7 +294,7 @@ internal fun RecordingSection(
                     Progress(stringResource(Res.string.lecture_status_analyzing, settings.task(LectureTask.LIVE_NOTES).model))
                 }
                 OutlineButton(onClick = { recorder.catchUp() }, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                    Icon(DrawViewIcons.Zap, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Zap, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -309,13 +309,13 @@ internal fun RecordingSection(
             if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlineButton(onClick = onStart, enabled = canRecord, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
-                    Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (assistant.canImportAndExport) {
                     OutlineButton(onClick = onImport, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
-                        Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(PageboardIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
@@ -366,7 +366,7 @@ private fun ImportCard(assistant: LectureAssistant, lecture: Lecture) {
 internal fun ImportCard(title: String, duration: String?, progress: Float, remove: String? = null, onRemove: () -> Unit = {}) {
     PanelCard {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconTile(DrawViewIcons.Upload, MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
+            IconTile(PageboardIcons.Upload, MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 if (duration != null) {
@@ -397,42 +397,42 @@ internal fun Notices(assistant: LectureAssistant, lecture: Lecture?, recorder: L
     val recordingElsewhere = assistant.activeRecorder?.takeIf { it !== recorder }?.lecture?.takeIf { it !== lecture }
     val settings = stringResource(Res.string.lecture_action_settings)
     recordingElsewhere?.let {
-        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle), NoticeTone.Neutral)
+        LectureNotice(PageboardIcons.Mic, stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle), NoticeTone.Neutral)
     }
     // The other recordings being transcribed here, or waiting to be: nothing waits for them but the next one
     val transcribedBeside = assistant.transcribing.count { it !== lecture }
     if (transcribedBeside > 0) {
-        LectureNotice(DrawViewIcons.Upload, pluralStringResource(Res.plurals.lecture_transcriptions_beside, transcribedBeside, transcribedBeside), NoticeTone.Neutral)
+        LectureNotice(PageboardIcons.Upload, pluralStringResource(Res.plurals.lecture_transcriptions_beside, transcribedBeside, transcribedBeside), NoticeTone.Neutral)
     }
     assistant.startError?.let {
-        LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_problem_start, it), NoticeTone.Error)
+        LectureNotice(PageboardIcons.TriangleAlert, stringResource(Res.string.lecture_problem_start, it), NoticeTone.Error)
     }
     if (assistant.microphoneDenied) {
-        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_microphone_denied), NoticeTone.Error)
+        LectureNotice(PageboardIcons.Mic, stringResource(Res.string.lecture_microphone_denied), NoticeTone.Error)
     }
     if (lecture?.deletedElsewhere == true) {
-        LectureNotice(DrawViewIcons.Trash, stringResource(Res.string.lecture_deleted_elsewhere), NoticeTone.Neutral)
+        LectureNotice(PageboardIcons.Trash, stringResource(Res.string.lecture_deleted_elsewhere), NoticeTone.Neutral)
     }
     assistant.importError?.let {
-        LectureNotice(DrawViewIcons.Upload, stringResource(Res.string.lecture_import_failed, it), NoticeTone.Error)
+        LectureNotice(PageboardIcons.Upload, stringResource(Res.string.lecture_import_failed, it), NoticeTone.Error)
     }
     if (lecture?.microphoneInterrupted == true && lecture.status == LectureStatus.RECORDING) {
-        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_microphone_interrupted), NoticeTone.Warning)
+        LectureNotice(PageboardIcons.Mic, stringResource(Res.string.lecture_microphone_interrupted), NoticeTone.Warning)
     }
     if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
         LectureNotice(
-            DrawViewIcons.Volume,
+            PageboardIcons.Volume,
             stringResource(if (isComputer) Res.string.lecture_no_audio_warning else Res.string.lecture_no_audio_warning_device),
             NoticeTone.Warning
         )
     }
     lecture?.problem?.let { problem ->
         val (icon, tone) = when (problem) {
-            LectureProblem.MissingApiKey, is LectureProblem.Authentication -> DrawViewIcons.Key to NoticeTone.Error
-            is LectureProblem.Retrying -> DrawViewIcons.Refresh to NoticeTone.Warning
-            is LectureProblem.LocalModelUnavailable -> DrawViewIcons.Monitor to NoticeTone.Error
-            LectureProblem.NoTranscript -> DrawViewIcons.FileText to NoticeTone.Warning
-            else -> DrawViewIcons.TriangleAlert to NoticeTone.Error
+            LectureProblem.MissingApiKey, is LectureProblem.Authentication -> PageboardIcons.Key to NoticeTone.Error
+            is LectureProblem.Retrying -> PageboardIcons.Refresh to NoticeTone.Warning
+            is LectureProblem.LocalModelUnavailable -> PageboardIcons.Monitor to NoticeTone.Error
+            LectureProblem.NoTranscript -> PageboardIcons.FileText to NoticeTone.Warning
+            else -> PageboardIcons.TriangleAlert to NoticeTone.Error
         }
         val message = when (problem) {
             LectureProblem.MissingApiKey -> stringResource(Res.string.lecture_problem_no_api_key)
@@ -480,7 +480,7 @@ internal fun ProfessorPageBanner(lecture: Lecture, editor: EditorContext) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Icon(DrawViewIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Icon(PageboardIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
         Text(
             text = listOfNotNull(
                 stringResource(Res.string.lecture_professor_page, page + 1),

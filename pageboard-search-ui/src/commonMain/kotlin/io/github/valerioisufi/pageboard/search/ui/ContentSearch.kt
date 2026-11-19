@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.explorer.DocumentOpener
 import io.github.valerioisufi.pageboard.explorer.LibrarySearch
@@ -41,7 +41,7 @@ import io.github.valerioisufi.pageboard.search.SearchSource
 import io.github.valerioisufi.pageboard.search.snippetOf
 import io.github.valerioisufi.pageboard.store.DocumentStore
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -389,18 +389,18 @@ public class ContentSearch(
 
         internal fun iconForKind(kind: SearchChunkKind): ImageVector? = when (kind) {
             SearchChunkKind.TITLE -> null
-            SearchChunkKind.TEXT -> DrawViewIcons.Text
-            SearchChunkKind.PDF -> DrawViewIcons.FileText
-            SearchChunkKind.HANDWRITING -> DrawViewIcons.Pencil
-            SearchChunkKind.LECTURE_TRANSCRIPT -> DrawViewIcons.Mic
-            SearchChunkKind.LECTURE_NOTES -> DrawViewIcons.Transcript
+            SearchChunkKind.TEXT -> PageboardIcons.Text
+            SearchChunkKind.PDF -> PageboardIcons.FileText
+            SearchChunkKind.HANDWRITING -> PageboardIcons.Pencil
+            SearchChunkKind.LECTURE_TRANSCRIPT -> PageboardIcons.Mic
+            SearchChunkKind.LECTURE_NOTES -> PageboardIcons.Transcript
         }
     }
 }
 
 /**
  * A [ContentSearch] of [store] across [DocumentSearchSource], the pages of its PDFs (read by the
- * adapters of [pdfTiles], see `DrawViewEngines.pdfTiles`) and any [extraSources] (such as the
+ * adapters of [pdfTiles], see `PageboardEngines.pdfTiles`) and any [extraSources] (such as the
  * lectures), its index at [indexPath]: for an application whose windows share one search, which
  * [ContentSearch.start]s it in a scope of its own and [ContentSearch.close]s it once that scope is
  * cancelled. [rememberContentSearch] does both in a composition.
@@ -496,7 +496,7 @@ private fun searchOver(
 @Composable
 public fun rememberContentSearch(
     store: DocumentStore,
-    engines: DrawViewEngines = DrawViewEngines.None,
+    engines: PageboardEngines = PageboardEngines.None,
     elementTypes: List<ElementType<*>> = emptyList(),
     extraSources: List<SearchSource> = emptyList(),
     indexPath: String = SearchIndex.defaultPath(),

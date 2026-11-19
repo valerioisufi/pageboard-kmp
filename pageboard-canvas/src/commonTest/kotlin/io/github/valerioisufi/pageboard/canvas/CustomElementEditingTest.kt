@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -31,8 +31,8 @@ class CustomElementEditingTest {
         override val serializer = Note.serializer()
     }
 
-    private fun controller(scope: CoroutineScope): DrawViewController =
-        DrawViewController(document = DrawDocument(), coroutineScope = scope).apply { viewport.setSize(800f, 1200f) }
+    private fun controller(scope: CoroutineScope): PageboardController =
+        PageboardController(document = Document(), coroutineScope = scope).apply { viewport.setSize(800f, 1200f) }
 
     @Test
     fun anElementOfTheApplicationIsAddedMovedChangedCopiedAndRemoved() = runTest(UnconfinedTestDispatcher()) {

@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
@@ -35,10 +35,10 @@ public data class DocumentSnapshot(
 ) {
     /**
      * A new document with this state, its strokes modeled by [modeller]; its resources have no
-     * file ([DrawResource.path] empty) until they are received.
+     * file ([DocumentResource.path] empty) until they are received.
      */
-    public fun toDocument(modeller: StrokeModeller = KotlinStrokeModeller): DrawDocument {
-        val document = DrawDocument(
+    public fun toDocument(modeller: StrokeModeller = KotlinStrokeModeller): Document {
+        val document = Document(
             id = id,
             title = title,
             defaultWidthMm = defaultWidthMm,
@@ -49,7 +49,7 @@ public data class DocumentSnapshot(
         )
         document.defaultsVersion = defaultsVersion
         document.titleVersion = titleVersion
-        for (resource in resources) document.addResource(DrawResource(resource.id, resource.type, "", resource.hash))
+        for (resource in resources) document.addResource(DocumentResource(resource.id, resource.type, "", resource.hash))
         pages.forEach { document.appendPage(it.toPage(document)) }
         removedPages.forEach { snapshot -> snapshot.toPage(document).let { document.removedPages[it.id] = it } }
         document.reindexPages()
@@ -59,8 +59,8 @@ public data class DocumentSnapshot(
 
 /**
  * A page as its data (see [PageData]), its removed elements (hidden, see
- * [DrawPage.removedElements]) and the stamps of its last changes and of its elements'; the
- * versions of its content and what of it its removal saw (see [DrawPage.isHidden]).
+ * [Page.removedElements]) and the stamps of its last changes and of its elements'; the
+ * versions of its content and what of it its removal saw (see [Page.isHidden]).
  */
 @Serializable
 public data class PageSnapshot(
@@ -75,7 +75,7 @@ public data class PageSnapshot(
     val removalSaw: Versions? = null
 ) {
     /** A new page of [document] with this state. */
-    public fun toPage(document: DrawDocument): DrawPage {
+    public fun toPage(document: Document): Page {
         val page = data.toPage(document)
         page.added = added
         page.removed = removed
@@ -90,7 +90,7 @@ public data class PageSnapshot(
 }
 
 /**
- * The stamps of the last changes of an element (see [DrawElement]); [ordered] `null` (a snapshot
+ * The stamps of the last changes of an element (see [PageElement]); [ordered] `null` (a snapshot
  * made before the order had its own register): the stamp of its placement, which held the order.
  */
 @Serializable
@@ -101,7 +101,7 @@ public data class ElementVersions(
     val updated: Stamp,
     val ordered: Stamp? = null
 ) {
-    public fun applyTo(element: DrawElement) {
+    public fun applyTo(element: PageElement) {
         element.added = added
         element.removed = removed
         element.placed = placed
@@ -111,7 +111,7 @@ public data class ElementVersions(
 }
 
 /** The state of this document (see [DocumentSnapshot]). */
-public fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
+public fun Document.snapshot(): DocumentSnapshot = DocumentSnapshot(
     id = id,
     title = title,
     defaultWidthMm = defaultWidthMm,
@@ -125,7 +125,7 @@ public fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
 )
 
 /** The state of this page (see [PageSnapshot]). */
-public fun DrawPage.snapshot(): PageSnapshot = PageSnapshot(
+public fun Page.snapshot(): PageSnapshot = PageSnapshot(
     data = toData(),
     added = added,
     removed = removed,

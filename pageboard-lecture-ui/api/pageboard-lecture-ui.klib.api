@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-lecture-ui>
+// Library unique name: <pageboard-kmp:pageboard-lecture-ui>
 final class io.github.valerioisufi.pageboard.lecture.ui/LectureSearchSource : io.github.valerioisufi.pageboard.search/SearchSource { // io.github.valerioisufi.pageboard.lecture.ui/LectureSearchSource|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.lecture/LectureLibrary, io.github.valerioisufi.pageboard.store/DocumentStore? = ..., kotlinx.coroutines.flow/Flow<kotlin/Unit> = ...) // io.github.valerioisufi.pageboard.lecture.ui/LectureSearchSource.<init>|<init>(io.github.valerioisufi.pageboard.lecture.LectureLibrary;io.github.valerioisufi.pageboard.store.DocumentStore?;kotlinx.coroutines.flow.Flow<kotlin.Unit>){}[0]
 

@@ -38,8 +38,8 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.takahirom.roborazzi.captureRoboImage
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.latex.LatexEngine
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.pdf.PdfiumEngine
@@ -53,7 +53,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.pageboard.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +70,7 @@ import kotlinx.coroutines.cancel
  * @param clipboard the text in the clipboard of the scene, which has its own: what the computer
  * holds is neither shown (the paste of the menus) nor replaced.
  * @param macWindow a window of macOS: the insets of its traffic lights ([LocalWindowDecorInsets],
- * as `DrawViewWindowDecor` gives them), the lights drawn over the window where macOS puts them,
+ * as `PageboardWindowDecor` gives them), the lights drawn over the window where macOS puts them,
  * recorded as `<screen>-mac-<window>-<theme>.png`.
  * @param caretInSight the caret of the text being written is in sight: its blink is started again
  * right before the capture (see [restartCaretBlink]). `false` for a caret out of sight, which
@@ -116,12 +116,12 @@ internal fun capture(
     setContent {
         // Five days after the changes: what went to the trash has 25 days left
         CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels, sceneClipboard, LocalLibraryClock provides { FIXED_TIME + 5 * DAY }) {
-            DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+            PageboardTheme(darkTheme = dark, dynamicColor = false) {
                 // The shortcuts written as on a Mac on every system
                 AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
                     CompositionLocalProvider(LocalWindowDecorInsets provides if (macWindow) MAC_DECOR_INSETS else PaddingValues(0.dp)) {
                         DocumentLibrary(
-                            title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
+                            title = { Text("Pageboard", modifier = Modifier.padding(horizontal = 16.dp)) },
                             documents = documents,
                             sessions = remember { EditorSessions() },
                             // The PDF pages and the formulas drawn as in the applications
@@ -150,7 +150,7 @@ internal fun capture(
     storeScope.cancel()
 }
 
-/** The insets of the traffic lights in a window of macOS, as `DrawViewWindowDecor` gives them. */
+/** The insets of the traffic lights in a window of macOS, as `PageboardWindowDecor` gives them. */
 private val MAC_DECOR_INSETS = PaddingValues(start = 78.dp, top = 52.dp)
 
 /**
@@ -186,7 +186,7 @@ internal fun DesktopComposeUiTest.openNote(viewModels: ViewModelStoreOwner) {
 }
 
 /** The engines of the applications: PDFium and MicroTeX. */
-private val ENGINES = DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine())
+private val ENGINES = PageboardEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine())
 
 /** The thumbnails of the library of a test. */
 private class ThumbnailsHolder {
@@ -269,7 +269,7 @@ internal fun ViewModelStoreOwner.library(): FileExplorerViewModel =
     viewModelStore.keys().firstNotNullOf { viewModelStore[it] as? FileExplorerViewModel }
 
 /** The controller of the document open in the editor. */
-internal fun ViewModelStoreOwner.controller(): DrawViewController = checkNotNull(editor()?.session?.controller)
+internal fun ViewModelStoreOwner.controller(): PageboardController = checkNotNull(editor()?.session?.controller)
 
 /** The note opened in the editor. */
 internal const val NOTE = "Lecture 1 — Limits"

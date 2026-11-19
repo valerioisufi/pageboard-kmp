@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.PageSnapshot
@@ -96,7 +96,7 @@ internal data class StoredProofs(val version: Int = 1, val proofs: List<StoredPr
 internal data class StoredProof(val replica: String, val sequence: Long, val proof: String)
 
 
-internal fun DrawDocument.toStored(): StoredDocument = StoredDocument(
+internal fun Document.toStored(): StoredDocument = StoredDocument(
     pages = pages.map { it.snapshot() },
     resources = resources.map { StoredResource(it.id, it.type.name, it.path, it.hash) },
     defaultsVersion = defaultsVersion,

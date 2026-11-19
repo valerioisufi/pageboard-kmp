@@ -3,8 +3,8 @@ package io.github.valerioisufi.pageboard.sync
 import androidx.room.Room
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -18,8 +18,8 @@ import io.github.valerioisufi.pageboard.model.change.snapshot
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.getInMemoryDatabaseBuilder
 import io.github.valerioisufi.pageboard.sync.protocol.InMemoryNetwork
 import java.io.File
@@ -47,10 +47,10 @@ class OfflineWorkBenchmark {
     private class Device(val name: String, scope: CoroutineScope, network: InMemoryNetwork) {
         // In a file (as on the devices) with PAGEBOARD_BENCHMARK_FILES, otherwise in memory
         val store = RoomDocumentStore(
-            createDrawDatabase(
+            createPageboardDatabase(
                 System.getenv("PAGEBOARD_BENCHMARK_FILES")?.let { folder ->
                     File(folder, "$name.db").also { it.delete() }
-                    Room.databaseBuilder<DrawDatabase>(name = File(folder, "$name.db").absolutePath)
+                    Room.databaseBuilder<PageboardDatabase>(name = File(folder, "$name.db").absolutePath)
                 } ?: getInMemoryDatabaseBuilder()
             )
         , InkStrokeModeller)
@@ -90,7 +90,7 @@ class OfflineWorkBenchmark {
                 for ((device, offset) in listOf(ada to 0f, bob to 100f)) {
                     val open = device.documents.open(document.id)!!
                     val made = measureTime {
-                        open.edit { session -> session.submit(AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(session.document.pages.size)))) }
+                        open.edit { session -> session.submit(AddPage.of(Page(orderKey = session.document.orderKeyAt(session.document.pages.size)))) }
                         repeat(strokes) { i ->
                             val stroke = stroke(offset + random.nextFloat() * 100f, random.nextFloat() * 280f)
                             open.edit { session ->
@@ -148,9 +148,9 @@ class OfflineWorkBenchmark {
     }
 
     /** A stroke as drawn by hand: 150 inputs. */
-    private fun stroke(x: Float, y: Float): DrawStroke {
+    private fun stroke(x: Float, y: Float): StrokeElement {
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = 0xFF000000.toInt())
         val points = (0 until 150).map { i -> StrokePoint(x + i * 0.2f, y + 3f * sin(i / 10f), 0.5f, i * 8L) }
-        return DrawStroke(mesh = KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS)!!, brushConfig = brush)
+        return StrokeElement(mesh = KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS)!!, brushConfig = brush)
     }
 }

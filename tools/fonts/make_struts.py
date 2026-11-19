@@ -43,5 +43,5 @@ def build(path, family, ascent, descent):
 
 if __name__ == "__main__":
     directory = sys.argv[1]
-    build(directory + "/strut_above.ttf", "DrawView Strut Above", UNITS_PER_EM, 0)
-    build(directory + "/strut_below.ttf", "DrawView Strut Below", 0, UNITS_PER_EM)
+    build(directory + "/strut_above.ttf", "Pageboard Strut Above", UNITS_PER_EM, 0)
+    build(directory + "/strut_below.ttf", "Pageboard Strut Below", 0, UNITS_PER_EM)

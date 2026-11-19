@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -24,7 +24,7 @@ public enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  *
  * @param content notebook-ready Markdown (formulas between `$...$`).
  * @param pageIndex page of the document where the content belongs (0-based), if known.
- * @param pageId identifier of that page ([io.github.valerioisufi.pageboard.model.DrawPage.id]):
+ * @param pageId identifier of that page ([io.github.valerioisufi.pageboard.model.Page.id]):
  *   the page is found again when the pages have been reordered (see [resolvedPageIndex]).
  * @param importance 1 (detail) to 3 (stressed by the lecturer, exam).
  * @param atMs time of the lecture when it was said.
@@ -52,7 +52,7 @@ public data class NoteSuggestion(
 )
 
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */
-public fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
+public fun NoteSuggestion.resolvedPageIndex(document: Document): Int? {
     if (pageId.isNotEmpty()) {
         val index = document.pages.indexOfFirst { it.id == pageId }
         if (index >= 0) return index

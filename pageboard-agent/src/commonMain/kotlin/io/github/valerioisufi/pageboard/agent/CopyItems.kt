@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.AddResource
@@ -54,7 +54,7 @@ internal object CopyItems {
     }
 
     /** What [item] copies from [source], or `null` when it is gone or changed since it was read. */
-    fun copyOf(source: DrawDocument, item: ProposalItem): CopiedContent? = when (item) {
+    fun copyOf(source: Document, item: ProposalItem): CopiedContent? = when (item) {
         is ProposalItem.CopyElements -> {
             val page = source.pageById(item.fromPage)
             if (page == null || ElementItems.isStale(page, item.elements)) null
@@ -71,11 +71,11 @@ internal object CopyItems {
     }
 
     /** The box holding [elements] of [page], or `null` when none has one (a PDF page alone). */
-    fun boundsOf(page: DrawPage, elements: List<DrawElement>): Rect? =
+    fun boundsOf(page: Page, elements: List<PageElement>): Rect? =
         elements.mapNotNull { page.boundsOf(it) }.reduceOrNull { all, next -> all.union(next) }
 
     /** The change pasting [copy] as [item] asks, into [document] as it is now; `null` when nothing would be pasted. */
-    fun changeOf(document: DrawDocument, item: ProposalItem, copy: CopiedContent): DocumentChange? = when (item) {
+    fun changeOf(document: Document, item: ProposalItem, copy: CopiedContent): DocumentChange? = when (item) {
         is ProposalItem.CopyElements -> (copy as? CopiedElements)?.let { elements ->
             document.pageById(item.page)?.let { page -> elements.pasteInto(document, page, item.dx, item.dy).change }
         }
@@ -87,18 +87,18 @@ internal object CopyItems {
     }
 
     /** The changes of [item], the pages of its PDF file after the page it names, on the background of the document. */
-    fun importChanges(document: DrawDocument, item: ProposalItem.ImportPdf): List<DocumentChange> {
+    fun importChanges(document: Document, item: ProposalItem.ImportPdf): List<DocumentChange> {
         val after = item.after?.let { document.pageById(it) } ?: document.pages.last()
         val next = document.pages.getOrNull(document.pages.indexOf(after) + 1)
         val resourceId = newElementId()
         var key = after.orderKey
         val pages = item.pageSizes.mapIndexed { pdfIndex, (widthMm, heightMm) ->
             key = FractionalIndex.between(key, next?.orderKey)
-            DrawPage(widthMm = widthMm, heightMm = heightMm, background = document.defaultBackground, orderKey = key).apply {
-                add(DrawPdf(pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId })
+            Page(widthMm = widthMm, heightMm = heightMm, background = document.defaultBackground, orderKey = key).apply {
+                add(PdfElement(pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId })
             }
         }
-        return listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, item.path, item.hash)) + pages.map { AddPage.of(it) }
+        return listOf(AddResource.of(resourceId, DocumentResource.ResourceType.PDF, item.path, item.hash)) + pages.map { AddPage.of(it) }
     }
 }
 

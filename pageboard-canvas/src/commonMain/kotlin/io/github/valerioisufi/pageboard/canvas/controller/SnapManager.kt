@@ -9,8 +9,8 @@ import io.github.valerioisufi.pageboard.canvas.snap.SnapGuide
 import io.github.valerioisufi.pageboard.canvas.snap.SnapLine
 import io.github.valerioisufi.pageboard.canvas.snap.SnapTargets
 import io.github.valerioisufi.pageboard.canvas.snap.Snapped
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
@@ -24,7 +24,7 @@ import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
  * paper), how near is near (a few dp on the screen, whatever the zoom), and the guides shown
  * meanwhile. On by default ([isEnabled]); a gesture made with ⌥ / Alt held is free.
  */
-public class SnapManager internal constructor(private val controller: DrawViewController) {
+public class SnapManager internal constructor(private val controller: PageboardController) {
 
     /** Whether the boxes snap (a preference of the user). */
     public var isEnabled: Boolean by mutableStateOf(true)
@@ -43,7 +43,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
         controller.preferencesChanged()
     }
 
-    internal fun applyPreferences(preferences: DrawPreferences) {
+    internal fun applyPreferences(preferences: EditorPreferences) {
         isEnabled = preferences.isSnapEnabled
     }
 
@@ -52,7 +52,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
      * elements of its page except [moved], and the middle of the page; [baseline] (a y of the
      * box) sits on the rows of the paper. Nothing when snapping is off or the gesture is [free].
      */
-    internal fun snapBox(pageIndex: Int, box: Rect, moved: Collection<DrawElement>, baseline: Float? = null, free: Boolean = false): Point {
+    internal fun snapBox(pageIndex: Int, box: Rect, moved: Collection<PageElement>, baseline: Float? = null, free: Boolean = false): Point {
         val snapped = snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapBox(box, targets, tolerance, baseline) }
             ?: return Point.Zero
         return Point(snapped.dx, snapped.dy)
@@ -63,7 +63,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
      * aligned with the elements of its page except [moved]; [point] itself when snapping is off or
      * the gesture is [free].
      */
-    internal fun snapPoint(pageIndex: Int, point: Point, moved: Collection<DrawElement>, free: Boolean = false): Point {
+    internal fun snapPoint(pageIndex: Int, point: Point, moved: Collection<PageElement>, free: Boolean = false): Point {
         val snapped = snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapPoint(point, targets, tolerance) } ?: return point
         return Point(point.x + snapped.dx, point.y + snapped.dy)
     }
@@ -107,7 +107,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
      * How much the vertical edge at [x] (a side of a box from [top] to [bottom], being dragged)
      * moves to be aligned with the elements of the page [pageIndex] except [moved].
      */
-    internal fun snapEdge(pageIndex: Int, x: Float, top: Float, bottom: Float, moved: Collection<DrawElement>, free: Boolean = false): Float =
+    internal fun snapEdge(pageIndex: Int, x: Float, top: Float, bottom: Float, moved: Collection<PageElement>, free: Boolean = false): Float =
         snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapEdge(x, top, bottom, targets, tolerance) }?.dx ?: 0f
 
     /**
@@ -128,7 +128,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
         guidesPageIndex = -1
     }
 
-    private inline fun snap(pageIndex: Int, moved: Collection<DrawElement>, free: Boolean, compute: (SnapTargets, Float) -> Snapped): Snapped? {
+    private inline fun snap(pageIndex: Int, moved: Collection<PageElement>, free: Boolean, compute: (SnapTargets, Float) -> Snapped): Snapped? {
         val page = controller.document.pages.getOrNull(pageIndex)
         if (!isEnabled || free || page == null) {
             clearGuides()
@@ -141,7 +141,7 @@ public class SnapManager internal constructor(private val controller: DrawViewCo
         return snapped
     }
 
-    private fun targetsOf(page: DrawPage, moved: Collection<DrawElement>): SnapTargets {
+    private fun targetsOf(page: Page, moved: Collection<PageElement>): SnapTargets {
         val xs = mutableListOf(SnapLine(page.widthMm / 2f, 0f, page.heightMm))
         val ys = mutableListOf(SnapLine(page.heightMm / 2f, 0f, page.widthMm))
         val boxes = page.strokes.filter { it !in moved }.map { it.bounds } +

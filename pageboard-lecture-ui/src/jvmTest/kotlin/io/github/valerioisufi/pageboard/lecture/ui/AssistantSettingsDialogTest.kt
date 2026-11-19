@@ -14,7 +14,7 @@ import io.github.valerioisufi.pageboard.lecture.LectureAssistant
 import io.github.valerioisufi.pageboard.lecture.LectureLibrary
 import io.github.valerioisufi.pageboard.lecture.testing.FakeMicrophone
 import io.github.valerioisufi.pageboard.lecture.testing.MemorySecrets
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.io.File
 import java.nio.file.Files
 import java.util.Locale
@@ -55,7 +55,7 @@ class AssistantSettingsDialogTest {
         )
         runDesktopComposeUiTest(width = 1280, height = 900) {
             setContent {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     AssistantSettingsDialog(store, assistant.localModels, onDismiss = {})
                 }
             }

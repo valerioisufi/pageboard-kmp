@@ -1,5 +1,5 @@
 /*
- * The C API of the iroh bridge of DrawView (native/iroh-bridge/src/ffi.rs), read by cinterop on
+ * The C API of the iroh bridge of Pageboard (native/iroh-bridge/src/ffi.rs), read by cinterop on
  * iOS. Endpoints, connections and streams are numbers: a number closed or never given is
  * refused (DV_IROH_CLOSED).
  *

@@ -114,7 +114,7 @@ internal class JavaSoundAudioOutput : AudioOutput {
         line = newLine
         true
     } catch (e: Exception) {
-        println("DrawView: cannot play the recording: ${e.message}")
+        println("Pageboard: cannot play the recording: ${e.message}")
         false
     }
 

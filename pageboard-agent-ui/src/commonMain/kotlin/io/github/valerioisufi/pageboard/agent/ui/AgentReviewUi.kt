@@ -134,7 +134,7 @@ import io.github.valerioisufi.pageboard.agent.ui.generated.resources.agent_warni
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementItem
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementRequest
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.command.Command
@@ -145,7 +145,7 @@ import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.extension.EditorPanel
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -181,7 +181,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
 
     /** The sheet of the access in the library, for every document. */
     public val libraryAction: LibraryAction = LibraryAction(
-        icon = DrawViewIcons.Sparkles,
+        icon = PageboardIcons.Sparkles,
         label = { stringResource(Res.string.agent_access_title) },
         content = { onDone -> Access(documentId = null, onDismiss = onDone) }
     )
@@ -222,7 +222,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         toolbarActions { context ->
             val proposals by agents.proposals.proposals.collectAsState()
             if (proposals.any { it.documentId == context.documentId && it.isWaiting }) {
-                EditorActionButton(DrawViewIcons.Sparkles, stringResource(Res.string.agent_review_show), onClick = { openPanels += context.documentId })
+                EditorActionButton(PageboardIcons.Sparkles, stringResource(Res.string.agent_review_show), onClick = { openPanels += context.documentId })
             }
         }
         canvasOverlay { context ->
@@ -254,7 +254,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         title = { stringResource(Res.string.agent_review_title) },
         isOpen = { documentId in openPanels },
         onClose = { openPanels -= documentId },
-        icon = DrawViewIcons.Sparkles,
+        icon = PageboardIcons.Sparkles,
         content = { ReviewContent(documentId, context) }
     )
 
@@ -327,7 +327,7 @@ public class AgentReviewUi(private val agents: ExternalAgents) {
         }
         val items = pieces.mapNotNull { piece ->
             val spot = spotOf(piece, plan, pages.map { it.id }) ?: return@mapNotNull null
-            val preview = DrawText().apply {
+            val preview = TextElement().apply {
                 text = piece.markdown
                 width = piece.box.width
                 height = piece.box.height

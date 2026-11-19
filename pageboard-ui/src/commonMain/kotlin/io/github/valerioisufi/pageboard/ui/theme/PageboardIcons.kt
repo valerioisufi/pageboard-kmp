@@ -12,9 +12,9 @@ import androidx.compose.ui.unit.dp
 // a stroke 2 wide with round caps and joins. Tinted by the content color, as the Material icons.
 
 /**
- * The icons of DrawView: Lucide, as drawn in the design of the interface (see docs/plans/ui-design.md).
+ * The icons of Pageboard: Lucide, as drawn in the design of the interface (see docs/plans/ui-design.md).
  */
-public object DrawViewIcons {
+public object PageboardIcons {
     internal val AlignCenter: ImageVector by lazy { icon("AlignCenter", "M17 12H7", "M19 18H5", "M21 6H3") }
     internal val AlignLeft: ImageVector by lazy { icon("AlignLeft", "M15 12H3", "M17 18H3", "M21 6H3") }
     internal val AlignRight: ImageVector by lazy { icon("AlignRight", "M21 12H9", "M21 18H7", "M21 6H3") }

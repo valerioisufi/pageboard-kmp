@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_version">Versione 3.0</string>
-    <string name="about_description">App per prendere appunti pensata per la penna, basata su DrawView.</string>
+    <string name="about_description">App per prendere appunti pensata per la penna, basata su Pageboard.</string>
 </resources>

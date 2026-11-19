@@ -9,9 +9,9 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -24,13 +24,13 @@ class PageGridSelectionTest {
 
     @Test
     fun pagesSelectedWithTouchAreDeletedTogether() = runDesktopComposeUiTest {
-        val document = DrawDocument(title = "Notes").apply { repeat(4) { addPage() } }
-        val controller = DrawViewController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val document = Document(title = "Notes").apply { repeat(4) { addPage() } }
+        val controller = PageboardController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         controller.isPageGridVisible = true
         val pages = document.pages.map { it.id }
         val (second, fourth) = pages[1] to pages[3]
         setContent {
-            DrawViewTheme(dynamicColor = false) {
+            PageboardTheme(dynamicColor = false) {
                 PageGridOverlay(controller)
             }
         }
@@ -57,12 +57,12 @@ class PageGridSelectionTest {
 
     @Test
     fun aSelectedPageDragsTheSelectionAsOneBlock() = runDesktopComposeUiTest {
-        val document = DrawDocument(title = "Notes").apply { repeat(3) { addPage() } }
-        val controller = DrawViewController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val document = Document(title = "Notes").apply { repeat(3) { addPage() } }
+        val controller = PageboardController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         controller.isPageGridVisible = true
         val pages = document.pages.map { it.id }
         setContent {
-            DrawViewTheme(dynamicColor = false) {
+            PageboardTheme(dynamicColor = false) {
                 PageGridOverlay(controller)
             }
         }

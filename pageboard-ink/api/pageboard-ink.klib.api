@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-ink>
+// Library unique name: <pageboard-kmp:pageboard-ink>
 final class io.github.valerioisufi.pageboard.ink/InkStrokeEngine { // io.github.valerioisufi.pageboard.ink/InkStrokeEngine|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.ink/InkStrokeEngine.<init>|<init>(){}[0]
 

@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import kotlin.math.abs
 import kotlin.math.max
@@ -70,7 +70,7 @@ public class PlannedMark(
 internal object ProposalMarks {
 
     /** The marks of [item], planned as [planned], on [document]. */
-    fun of(document: DrawDocument, item: ProposalItem, planned: PlannedItem, measure: TextMeasure): List<PlannedMark> {
+    fun of(document: Document, item: ProposalItem, planned: PlannedItem, measure: TextMeasure): List<PlannedMark> {
         if (planned.isStale) return stale(document, item, measure)
         return when (item) {
             is ProposalItem.InsertText -> planned.pieces.map { piece ->
@@ -124,7 +124,7 @@ internal object ProposalMarks {
      * be, and their way there when the item [moves] them (a box only growing with its words does not
      * move).
      */
-    private fun changedTexts(document: DrawDocument, planned: PlannedItem, measure: TextMeasure, moves: Boolean, color: (DrawText) -> Int): List<PlannedMark> =
+    private fun changedTexts(document: Document, planned: PlannedItem, measure: TextMeasure, moves: Boolean, color: (TextElement) -> Int): List<PlannedMark> =
         planned.pieces.flatMap { piece ->
             val (page, text) = document.findText(piece.textId) ?: return@flatMap emptyList()
             val before = measure.boundsOf(text)
@@ -138,13 +138,13 @@ internal object ProposalMarks {
     private fun isMoved(before: Rect, after: Rect): Boolean =
         abs(before.left - after.left) > MOVED_MM || abs(before.top - after.top) > MOVED_MM || abs(before.width - after.width) > MOVED_MM
 
-    private fun elementMarks(document: DrawDocument, ids: List<String>, kind: PlannedMark.Kind, measure: TextMeasure): List<PlannedMark> = ids.mapNotNull { id ->
+    private fun elementMarks(document: Document, ids: List<String>, kind: PlannedMark.Kind, measure: TextMeasure): List<PlannedMark> = ids.mapNotNull { id ->
         val (page, element) = find(document, id) ?: return@mapNotNull null
         val box = boxOf(page, element, measure) ?: return@mapNotNull null
         PlannedMark(kind, page.id, box, elementId = id)
     }
 
-    private fun pageMark(document: DrawDocument, pageId: String, kind: PlannedMark.Kind): List<PlannedMark> =
+    private fun pageMark(document: Document, pageId: String, kind: PlannedMark.Kind): List<PlannedMark> =
         listOfNotNull(document.pageById(pageId)?.let { PlannedMark(kind, it.id, it.rect()) })
 
     /** The stroke [item] draws: its points as they are given, in the box holding them. */
@@ -173,7 +173,7 @@ internal object ProposalMarks {
     }
 
     /** What a stale item was about, where it still is: nothing when it is gone. */
-    private fun stale(document: DrawDocument, item: ProposalItem, measure: TextMeasure): List<PlannedMark> {
+    private fun stale(document: Document, item: ProposalItem, measure: TextMeasure): List<PlannedMark> {
         val pageId = when (item) {
             is ProposalItem.RemovePage -> item.page
             is ProposalItem.MovePage -> item.page
@@ -186,7 +186,7 @@ internal object ProposalMarks {
     }
 
     /** The element [id] shown in [document], with its page. */
-    private fun find(document: DrawDocument, id: String): Pair<DrawPage, DrawElement>? {
+    private fun find(document: Document, id: String): Pair<Page, PageElement>? {
         for (page in document.pages) {
             val element = page.elements().firstOrNull { it.id == id && it.removed == null }
             if (element != null) return page to element
@@ -195,8 +195,8 @@ internal object ProposalMarks {
     }
 
     /** The box of [element] on [page]: a text at the height it is laid out at. */
-    private fun boxOf(page: DrawPage, element: DrawElement, measure: TextMeasure): Rect? =
-        if (element is DrawText) measure.boundsOf(element) else page.boundsOf(element)
+    private fun boxOf(page: Page, element: PageElement, measure: TextMeasure): Rect? =
+        if (element is TextElement) measure.boundsOf(element) else page.boundsOf(element)
 
     /** Boxes closer than this are the same place. */
     private const val MOVED_MM = 0.05f

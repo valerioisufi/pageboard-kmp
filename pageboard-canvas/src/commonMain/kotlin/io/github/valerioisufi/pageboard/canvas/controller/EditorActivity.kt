@@ -3,8 +3,8 @@ package io.github.valerioisufi.pageboard.canvas.controller
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.StrokeMesh
@@ -57,9 +57,9 @@ public data class Collaborator(
     val ink: StrokeMesh? = null,
     val inkPageId: String? = null,
     val inkAlpha: Float = 1f,
-    val text: DrawText? = null,
+    val text: TextElement? = null,
     val textPageId: String? = null,
-    val selection: List<DrawElement> = emptyList(),
+    val selection: List<PageElement> = emptyList(),
     val selectionPageId: String? = null,
     val selectionTransform: AffineTransform? = null
 )

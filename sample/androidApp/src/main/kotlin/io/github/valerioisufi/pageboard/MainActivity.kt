@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 
 class MainActivity : ComponentActivity() {
     private var activeDocumentId by mutableStateOf<String?>(null)
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Context used by the database, the document resources and the TeX fonts
-        DrawViewAndroid.init(applicationContext)
+        PageboardAndroid.init(applicationContext)
 
         activeDocumentId = documentIdOf(intent)
 

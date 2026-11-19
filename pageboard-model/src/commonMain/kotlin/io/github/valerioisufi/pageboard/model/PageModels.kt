@@ -41,20 +41,20 @@ import kotlinx.serialization.Serializable
  * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
  *
  * [id] identifies the element on every device (see [newElementId]); [order] is its position in
- * the stack of its page (see [DrawPage.stack]), an order written before the one stack read in
+ * the stack of its page (see [Page.stack]), an order written before the one stack read in
  * the layer of its kind (see [ElementOrder]). Each piece of an element is changed by the most
  * recent change of it on every device (last-writer-wins), whatever the order the changes arrive
  * in:
  * - its presence: [added] and [removed] are the stamps of the last addition and of the last
  *   removal (removed when [removed] is set: kept hidden on its page, see
- *   [DrawPage.removedElements]);
+ *   [Page.removedElements]);
  * - its placement (page, position, size, rotation): [placed] is the stamp of its last change;
  * - its order: [ordered] is the stamp of its last change (apart from the placement, so that a
  *   move and a change of order made apart both stay);
  * - its content (a text and its format, the style of a mark): [updated] is the stamp of its last
  *   change.
  */
-public sealed interface DrawElement {
+public sealed interface PageElement {
     public val id: String
     public var order: ElementOrder
     public var added: Stamp
@@ -72,12 +72,12 @@ public sealed interface DrawElement {
  * geometry, in page millimeters, so that the content is independent from the window size, the
  * zoom level and the screen density.
  */
-public class DrawStroke(
+public class StrokeElement(
     override val id: String = newElementId(),
     mesh: StrokeMesh,
     brushConfig: BrushConfig,
     transform: AffineTransform = AffineTransform.IDENTITY
-) : DrawElement {
+) : PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.STROKE_LAYER)
@@ -192,7 +192,7 @@ public interface RotatableItem {
  *
  * [id] identifies the block on every device (see [newElementId]).
  */
-public class DrawText(override val id: String = newElementId()) : RotatableItem, DrawElement {
+public class TextElement(override val id: String = newElementId()) : RotatableItem, PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.TEXT_LAYER)
@@ -326,8 +326,8 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     public companion object {
         /**
          * The corner of a text whose box [width] x [height] (at [boxLeft] along its lines, see
-         * [DrawText.boxLeft]) is turned by [rotation] degrees around the middle ([centerX],
-         * [centerY]): where its lines start (see [DrawText]).
+         * [TextElement.boxLeft]) is turned by [rotation] degrees around the middle ([centerX],
+         * [centerY]): where its lines start (see [TextElement]).
          */
         public fun cornerFor(centerX: Float, centerY: Float, width: Float, height: Float, rotation: Float, boxLeft: Float = 0f): Point {
             val half = turn(boxLeft + width / 2f, height / 2f, rotation)
@@ -343,7 +343,7 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
         }
     }
 
-    public fun copyFrom(other: DrawText) {
+    public fun copyFrom(other: TextElement) {
         text = other.text
         alignment = other.alignment
         autoWidth = other.autoWidth
@@ -363,12 +363,12 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
 }
 
 /**
- * A raster image placed on a page. The pixels live in the document [DrawResource] referenced
+ * A raster image placed on a page. The pixels live in the document [DocumentResource] referenced
  * by [resourceId].
  *
  * [id] identifies the image on every device (see [newElementId]).
  */
-public class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawElement {
+public class ImageElement(override val id: String = newElementId()) : RotatableItem, PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.IMAGE_LAYER)
@@ -398,11 +398,11 @@ public class DrawImage(override val id: String = newElementId()) : RotatableItem
  * The model never reads the payload: a device without the type [type] keeps the element as it
  * is, synchronizes it and draws a placeholder in its box.
  */
-public class DrawCustomElement(
+public class CustomElement(
     /** The identifier of its type ([ElementType.id]). */
     public val type: String,
     override val id: String = newElementId()
-) : RotatableItem, DrawElement {
+) : RotatableItem, PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.CUSTOM_LAYER)
@@ -426,7 +426,7 @@ public class DrawCustomElement(
     @Volatile override var rotation: Float = 0f
 
     /** A copy of this element, the same on every device (e.g. a page copied while it is exported). */
-    public fun copy(): DrawCustomElement = DrawCustomElement(type, id).also {
+    public fun copy(): CustomElement = CustomElement(type, id).also {
         it.order = order
         it.version = version
         it.payload = payload
@@ -440,11 +440,11 @@ public class DrawCustomElement(
 
 /**
  * A page of an imported PDF document rendered as the page background (its text can be marked,
- * see [DrawTextMarkup]).
+ * see [TextMarkupElement]).
  *
  * [id] identifies it on every device (see [newElementId]).
  */
-public class DrawPdf(public var pdfPageIndex: Int = 0, override val id: String = newElementId()) : DrawElement {
+public class PdfElement(public var pdfPageIndex: Int = 0, override val id: String = newElementId()) : PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.PDF_LAYER)
@@ -461,7 +461,7 @@ public class DrawPdf(public var pdfPageIndex: Int = 0, override val id: String =
  * A file owned by a document (imported images and PDFs). [id] identifies the resource on every
  * device (see [newElementId]), [path] is the file on this device.
  */
-public class DrawResource(
+public class DocumentResource(
     public val id: String,
     public val type: ResourceType,
     public var path: String,
@@ -480,10 +480,10 @@ public class DrawResource(
  * [id] identifies the page on every device (see [newElementId]); the pages of a document are
  * ordered by [orderKey] (see [FractionalIndex]), then by [id]. [added] and [removed] are the
  * stamps of the last changes of its presence (removed when [removed] is set, see
- * [DrawDocument.removedPages]), [orderVersion] and [formatVersion] of its position and of its
+ * [Document.removedPages]), [orderVersion] and [formatVersion] of its position and of its
  * format: the most recent change wins on every device.
  */
-public class DrawPage(
+public class Page(
     public var index: Int = 0,
     widthMm: Float = 210f,
     heightMm: Float = 297f,
@@ -516,14 +516,14 @@ public class DrawPage(
      * another device made before it saw the removal), so that an element put back is the same on
      * every device. Put by [load] and by the changes of the document.
      */
-    public val removedElements: List<DrawElement> get() = hidden
+    public val removedElements: List<PageElement> get() = hidden
 
-    private val hidden = mutableListOf<DrawElement>()
+    private val hidden = mutableListOf<PageElement>()
 
     // The elements by identifier, shown and removed: changed with them, on the thread of the
     // document (like add and remove)
-    private val shownById = HashMap<String, DrawElement>()
-    private val hiddenById = HashMap<String, DrawElement>()
+    private val shownById = HashMap<String, PageElement>()
+    private val hiddenById = HashMap<String, PageElement>()
 
     @Volatile public var widthMm: Float = widthMm
     @Volatile public var heightMm: Float = heightMm
@@ -543,23 +543,23 @@ public class DrawPage(
     @Volatile
     private var content: PageElements = PageElements()
 
-    public val strokes: List<DrawStroke> get() = content.strokes
-    public val texts: List<DrawText> get() = content.texts
-    public val images: List<DrawImage> get() = content.images
-    public val pdfs: List<DrawPdf> get() = content.pdfs
+    public val strokes: List<StrokeElement> get() = content.strokes
+    public val texts: List<TextElement> get() = content.texts
+    public val images: List<ImageElement> get() = content.images
+    public val pdfs: List<PdfElement> get() = content.pdfs
 
     /** Highlights, underlines and strikeouts of the text of [pdfs]. */
-    public val markups: List<DrawTextMarkup> get() = content.markups
+    public val markups: List<TextMarkupElement> get() = content.markups
 
     /** The elements of the kinds added by the applications ([ElementType]). */
-    public val customElements: List<DrawCustomElement> get() = content.customs
+    public val customElements: List<CustomElement> get() = content.customs
 
     /**
      * The content of the page in its stack, from the bottom: the images, the elements of the
      * applications, the texts and the strokes, by their order (see [stackOrder]). The PDF pages and
      * the marks of their text are under it, apart (the paper).
      */
-    public val stack: List<DrawElement> get() = content.stack
+    public val stack: List<PageElement> get() = content.stack
 
     /** Incremented on every content change (used by thumbnails and caches). */
     @Volatile public var contentVersion: Int = 0
@@ -582,22 +582,22 @@ public class DrawPage(
      * Every element of the page: PDF pages, images, strokes, texts, marks and the elements of the
      * applications, each kind in order.
      */
-    public fun elements(): List<DrawElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups + it.customs }
+    public fun elements(): List<PageElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups + it.customs }
 
     /** The removed element [id] of this page (see [removedElements]), or `null`. */
-    internal fun findRemoved(id: String): DrawElement? = hiddenById[id]
+    internal fun findRemoved(id: String): PageElement? = hiddenById[id]
 
     /** The element [id] shown on this page, or `null`: on the thread of the document, like [add]. */
-    public fun find(id: String): DrawElement? = shownById[id]
+    public fun find(id: String): PageElement? = shownById[id]
 
     /** Keeps the removed [element] on this page, hidden (see [removedElements]). */
-    internal fun keepRemoved(element: DrawElement) {
+    internal fun keepRemoved(element: PageElement) {
         hidden.add(element)
         hiddenById[element.id] = element
     }
 
     /** Forgets the removed [element] of this page (shown again, moved or purged); whether it was there. */
-    internal fun forgetRemoved(element: DrawElement): Boolean {
+    internal fun forgetRemoved(element: PageElement): Boolean {
         if (!hidden.remove(element)) return false
         if (hiddenById[element.id] === element) hiddenById.remove(element.id)
         return true
@@ -609,7 +609,7 @@ public class DrawPage(
      * (which copies the elements of its kind). An element shown without order gets the one [add]
      * would give it, in the order of [shown].
      */
-    public fun load(shown: Collection<DrawElement>, removed: Collection<DrawElement> = emptyList()) {
+    public fun load(shown: Collection<PageElement>, removed: Collection<PageElement> = emptyList()) {
         val c = content
         val strokes = ArrayList(c.strokes)
         val texts = ArrayList(c.texts)
@@ -619,7 +619,7 @@ public class DrawPage(
         val customs = ArrayList(c.customs)
         // The elements built so of each layer, as add counts them
         val built = HashMap<Char, Int>()
-        fun <T : DrawElement> MutableList<T>.put(element: T) {
+        fun <T : PageElement> MutableList<T>.put(element: T) {
             val layer = ElementOrder.layerOf(element)
             var count = built.getOrPut(layer) { count { ElementOrder.isBuilt(it.order, layer) } }
             if (element.order == ElementOrder.UNASSIGNED) element.order = ElementOrder.built(layer, count)
@@ -629,12 +629,12 @@ public class DrawPage(
         }
         for (element in shown) {
             when (element) {
-                is DrawStroke -> strokes.put(element)
-                is DrawText -> texts.put(element)
-                is DrawImage -> images.put(element)
-                is DrawPdf -> pdfs.put(element)
-                is DrawTextMarkup -> markups.put(element)
-                is DrawCustomElement -> customs.put(element)
+                is StrokeElement -> strokes.put(element)
+                is TextElement -> texts.put(element)
+                is ImageElement -> images.put(element)
+                is PdfElement -> pdfs.put(element)
+                is TextMarkupElement -> markups.put(element)
+                is CustomElement -> customs.put(element)
             }
             shownById[element.id] = element
         }
@@ -654,8 +654,8 @@ public class DrawPage(
      * element without order (a page being built, outside of the changes) gets the next order of
      * the elements of its kind built so, below the ones of the changes.
      */
-    public fun add(element: DrawElement) {
-        fun <T : DrawElement> List<T>.inserted(item: T): List<T> {
+    public fun add(element: PageElement) {
+        fun <T : PageElement> List<T>.inserted(item: T): List<T> {
             if (item.order == ElementOrder.UNASSIGNED) {
                 val layer = ElementOrder.layerOf(item)
                 item.order = ElementOrder.built(layer, count { ElementOrder.isBuilt(it.order, layer) })
@@ -666,36 +666,36 @@ public class DrawPage(
         }
         val c = content
         content = when (element) {
-            is DrawStroke -> c.copy(strokes = c.strokes.inserted(element))
-            is DrawText -> c.copy(texts = c.texts.inserted(element))
-            is DrawImage -> c.copy(images = c.images.inserted(element))
-            is DrawPdf -> c.copy(pdfs = c.pdfs.inserted(element))
-            is DrawTextMarkup -> c.copy(markups = c.markups.inserted(element))
-            is DrawCustomElement -> c.copy(customs = c.customs.inserted(element))
+            is StrokeElement -> c.copy(strokes = c.strokes.inserted(element))
+            is TextElement -> c.copy(texts = c.texts.inserted(element))
+            is ImageElement -> c.copy(images = c.images.inserted(element))
+            is PdfElement -> c.copy(pdfs = c.pdfs.inserted(element))
+            is TextMarkupElement -> c.copy(markups = c.markups.inserted(element))
+            is CustomElement -> c.copy(customs = c.customs.inserted(element))
         }
         shownById[element.id] = element
     }
 
     /** Removes [element]; returns its position among the elements of its kind, or -1. */
-    public fun remove(element: DrawElement): Int {
-        fun <T : DrawElement> List<T>.without(item: T): List<T> = toMutableList().apply { remove(item) }
+    public fun remove(element: PageElement): Int {
+        fun <T : PageElement> List<T>.without(item: T): List<T> = toMutableList().apply { remove(item) }
         val c = content
         val position = when (element) {
-            is DrawStroke -> c.strokes.indexOf(element)
-            is DrawText -> c.texts.indexOf(element)
-            is DrawImage -> c.images.indexOf(element)
-            is DrawPdf -> c.pdfs.indexOf(element)
-            is DrawTextMarkup -> c.markups.indexOf(element)
-            is DrawCustomElement -> c.customs.indexOf(element)
+            is StrokeElement -> c.strokes.indexOf(element)
+            is TextElement -> c.texts.indexOf(element)
+            is ImageElement -> c.images.indexOf(element)
+            is PdfElement -> c.pdfs.indexOf(element)
+            is TextMarkupElement -> c.markups.indexOf(element)
+            is CustomElement -> c.customs.indexOf(element)
         }
         if (position < 0) return -1
         content = when (element) {
-            is DrawStroke -> c.copy(strokes = c.strokes.without(element))
-            is DrawText -> c.copy(texts = c.texts.without(element))
-            is DrawImage -> c.copy(images = c.images.without(element))
-            is DrawPdf -> c.copy(pdfs = c.pdfs.without(element))
-            is DrawTextMarkup -> c.copy(markups = c.markups.without(element))
-            is DrawCustomElement -> c.copy(customs = c.customs.without(element))
+            is StrokeElement -> c.copy(strokes = c.strokes.without(element))
+            is TextElement -> c.copy(texts = c.texts.without(element))
+            is ImageElement -> c.copy(images = c.images.without(element))
+            is PdfElement -> c.copy(pdfs = c.pdfs.without(element))
+            is TextMarkupElement -> c.copy(markups = c.markups.without(element))
+            is CustomElement -> c.copy(customs = c.customs.without(element))
         }
         if (shownById[element.id] === element) shownById.remove(element.id)
         return position
@@ -705,13 +705,13 @@ public class DrawPage(
      * Area of [element] in page millimeters (what must be drawn again when it changes), or `null`
      * for the whole page.
      */
-    public fun boundsOf(element: DrawElement): Rect? = when (element) {
-        is DrawStroke -> element.bounds
-        is DrawText -> element.getRotatedBounds()
-        is DrawImage -> element.getRotatedBounds()
-        is DrawPdf -> null
-        is DrawTextMarkup -> element.boundsMm(this)
-        is DrawCustomElement -> element.getRotatedBounds()
+    public fun boundsOf(element: PageElement): Rect? = when (element) {
+        is StrokeElement -> element.bounds
+        is TextElement -> element.getRotatedBounds()
+        is ImageElement -> element.getRotatedBounds()
+        is PdfElement -> null
+        is TextMarkupElement -> element.boundsMm(this)
+        is CustomElement -> element.getRotatedBounds()
     }
 
     /**
@@ -736,73 +736,73 @@ public class DrawPage(
 
     public companion object {
         /** The order of the stack of a page: by order, then by identifier (the same orders made apart). */
-        public val stackOrder: Comparator<DrawElement> = compareBy<DrawElement>({ it.order }, { it.id })
+        public val stackOrder: Comparator<PageElement> = compareBy<PageElement>({ it.order }, { it.id })
     }
 }
 
-/** The elements shown on a page, by kind, each kind in its stacking order (see [DrawPage]). */
+/** The elements shown on a page, by kind, each kind in its stacking order (see [Page]). */
 private data class PageElements(
-    val strokes: List<DrawStroke> = emptyList(),
-    val texts: List<DrawText> = emptyList(),
-    val images: List<DrawImage> = emptyList(),
-    val pdfs: List<DrawPdf> = emptyList(),
-    val markups: List<DrawTextMarkup> = emptyList(),
-    val customs: List<DrawCustomElement> = emptyList()
+    val strokes: List<StrokeElement> = emptyList(),
+    val texts: List<TextElement> = emptyList(),
+    val images: List<ImageElement> = emptyList(),
+    val pdfs: List<PdfElement> = emptyList(),
+    val markups: List<TextMarkupElement> = emptyList(),
+    val customs: List<CustomElement> = emptyList()
 ) {
-    /** The content in its stack (see [DrawPage.stack]), made once when it is read. */
-    val stack: List<DrawElement> by lazy { stackOf(images, customs, texts, strokes) }
+    /** The content in its stack (see [Page.stack]), made once when it is read. */
+    val stack: List<PageElement> by lazy { stackOf(images, customs, texts, strokes) }
 }
 
-/** [images], [customs], [texts] and [strokes] (each in its order) as one stack (see [DrawPage.stack]). */
+/** [images], [customs], [texts] and [strokes] (each in its order) as one stack (see [Page.stack]). */
 private fun stackOf(
-    images: List<DrawImage>,
-    customs: List<DrawCustomElement>,
-    texts: List<DrawText>,
-    strokes: List<DrawStroke>
-): List<DrawElement> = (images + customs + texts + strokes).sortedWith(DrawPage.stackOrder)
+    images: List<ImageElement>,
+    customs: List<CustomElement>,
+    texts: List<TextElement>,
+    strokes: List<StrokeElement>
+): List<PageElement> = (images + customs + texts + strokes).sortedWith(Page.stackOrder)
 
 /**
- * Immutable view of the content of a [DrawPage].
+ * Immutable view of the content of a [Page].
  */
 public class PageContentSnapshot(
-    public val strokes: List<DrawStroke>,
-    public val texts: List<DrawText>,
-    public val images: List<DrawImage>,
-    public val pdfs: List<DrawPdf>,
+    public val strokes: List<StrokeElement>,
+    public val texts: List<TextElement>,
+    public val images: List<ImageElement>,
+    public val pdfs: List<PdfElement>,
     public val background: PageBackground,
     public val widthMm: Float,
     public val heightMm: Float,
-    public val markups: List<DrawTextMarkup> = emptyList(),
+    public val markups: List<TextMarkupElement> = emptyList(),
     /** The elements of the kinds added by the applications. */
-    public val customs: List<DrawCustomElement> = emptyList(),
-    /** The content in its stack (see [DrawPage.stack]); `null`: made from the lists of the kinds. */
-    stack: List<DrawElement>? = null
+    public val customs: List<CustomElement> = emptyList(),
+    /** The content in its stack (see [Page.stack]); `null`: made from the lists of the kinds. */
+    stack: List<PageElement>? = null
 ) {
     public fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
 
-    /** The content in its stack, from the bottom (see [DrawPage.stack]). */
-    public val stack: List<DrawElement> = stack ?: stackOf(images, customs, texts, strokes)
+    /** The content in its stack, from the bottom (see [Page.stack]). */
+    public val stack: List<PageElement> = stack ?: stackOf(images, customs, texts, strokes)
 
     /**
      * The elements in the order they are painted, from the bottom: the PDF pages, the marks of
      * their text (the paper), then the content in its [stack].
      */
-    public val paintOrder: List<DrawElement> get() = pdfs + markups + stack
+    public val paintOrder: List<PageElement> get() = pdfs + markups + stack
 
     /**
      * A copy of this content whose elements are copies too: the elements of a page are changed in
      * place, this copy stays as it is (e.g. while a document is exported).
      */
     public fun detached(): PageContentSnapshot = PageContentSnapshot(
-        strokes = strokes.map { stroke -> DrawStroke(stroke.id, stroke.baseMesh, stroke.baseBrush, stroke.transform).also { it.order = stroke.order } },
+        strokes = strokes.map { stroke -> StrokeElement(stroke.id, stroke.baseMesh, stroke.baseBrush, stroke.transform).also { it.order = stroke.order } },
         texts = texts.map { text ->
-            DrawText(text.id).also {
+            TextElement(text.id).also {
                 it.copyFrom(text)
                 it.order = text.order
             }
         },
         images = images.map { image ->
-            DrawImage(image.id).also {
+            ImageElement(image.id).also {
                 it.order = image.order
                 it.resourceId = image.resourceId
                 it.x = image.x
@@ -813,7 +813,7 @@ public class PageContentSnapshot(
             }
         },
         pdfs = pdfs.map { pdf ->
-            DrawPdf(pdf.pdfPageIndex, pdf.id).also {
+            PdfElement(pdf.pdfPageIndex, pdf.id).also {
                 it.resourceId = pdf.resourceId
                 it.order = pdf.order
             }
@@ -822,7 +822,7 @@ public class PageContentSnapshot(
         widthMm = widthMm,
         heightMm = heightMm,
         markups = markups.map { markup ->
-            DrawTextMarkup(
+            TextMarkupElement(
                 markup.id, markup.resourceId, markup.pdfPageIndex, markup.pdfWidthPt, markup.pdfHeightPt, markup.startIndex, markup.endIndex,
                 markup.text, markup.rects, markup.kind, markup.color
             ).also { it.order = markup.order }
@@ -837,7 +837,7 @@ public class PageContentSnapshot(
  * [id] identifies the document on every device (see [newElementId]); [strokeModeller] models
  * the strokes it receives as data (loaded, from another device, put back by undo).
  */
-public class DrawDocument(
+public class Document(
     public val id: String = newElementId(),
     title: String = "Untitled",
     defaultWidthMm: Float = 210f,
@@ -876,14 +876,14 @@ public class DrawDocument(
     @Volatile public var defaultBackground: PageBackground = defaultBackground
 
     /**
-     * The pages shown, ordered by [DrawPage.orderKey] (then by [DrawPage.id]): replaced as a whole
+     * The pages shown, ordered by [Page.orderKey] (then by [Page.id]): replaced as a whole
      * by every change, readable on any thread.
      */
-    @Volatile public var pages: List<DrawPage> = emptyList()
+    @Volatile public var pages: List<Page> = emptyList()
         private set
 
     /** The files of the document (imported images and PDFs), readable on any thread. */
-    @Volatile public var resources: List<DrawResource> = emptyList()
+    @Volatile public var resources: List<DocumentResource> = emptyList()
         private set
 
     /** Stamp of the last change of the default format and background. */
@@ -897,7 +897,7 @@ public class DrawDocument(
      * changes of another device made before it saw the removal), so that a page put back is the
      * same on every device.
      */
-    public val removedPages: MutableMap<String, DrawPage> = mutableMapOf()
+    public val removedPages: MutableMap<String, Page> = mutableMapOf()
 
     /**
      * Removes for good the pages and the elements hidden by a removal that [stable] says can be
@@ -909,7 +909,7 @@ public class DrawDocument(
     public fun purgeHidden(pagesRemovedBefore: Long = Long.MAX_VALUE, stable: (Stamp) -> Boolean): PurgedContent {
         val pages = removedPages.values.filter { page -> page.removed?.let { it.time < pagesRemovedBefore && stable(it) } == true }
         pages.forEach { removedPages.remove(it.id) }
-        val elements = mutableListOf<Pair<DrawPage, DrawElement>>()
+        val elements = mutableListOf<Pair<Page, PageElement>>()
         for (page in this.pages + removedPages.values) {
             val gone = page.removedElements.filter { element -> element.removed?.let(stable) == true }
             if (gone.isEmpty()) continue
@@ -928,8 +928,8 @@ public class DrawDocument(
         width: Float = defaultWidthMm,
         height: Float = defaultHeightMm,
         bg: PageBackground = defaultBackground
-    ): DrawPage {
-        val newPage = DrawPage(
+    ): Page {
+        val newPage = Page(
             index = pages.size,
             widthMm = width,
             heightMm = height,
@@ -941,13 +941,13 @@ public class DrawDocument(
     }
 
     /** Appends [page] after the others (building a document whose pages are in their order). */
-    public fun appendPage(page: DrawPage) {
+    public fun appendPage(page: Page) {
         pages = pages + page
         reindexPages()
     }
 
-    /** Inserts [page] at the position of its [DrawPage.orderKey]. */
-    public fun insertPage(page: DrawPage) {
+    /** Inserts [page] at the position of its [Page.orderKey]. */
+    public fun insertPage(page: Page) {
         val list = pages
         var position = list.size
         while (position > 0 && pageOrder.compare(list[position - 1], page) > 0) position--
@@ -956,15 +956,15 @@ public class DrawDocument(
     }
 
     /** Takes [page] out of the pages shown; whether it was shown. */
-    internal fun removeShownPage(page: DrawPage): Boolean {
+    internal fun removeShownPage(page: Page): Boolean {
         if (page !in pages) return false
         pages = pages - page
         reindexPages()
         return true
     }
 
-    /** Moves [page] to the position of its [DrawPage.orderKey]. */
-    internal fun repositionPage(page: DrawPage) {
+    /** Moves [page] to the position of its [Page.orderKey]. */
+    internal fun repositionPage(page: Page) {
         if (!removeShownPage(page)) return
         insertPage(page)
     }
@@ -982,13 +982,13 @@ public class DrawDocument(
     }
 
     /** Shows [order] as the pages again (the order before a [movePage]). */
-    public fun restorePageOrder(order: List<DrawPage>) {
+    public fun restorePageOrder(order: List<Page>) {
         pages = order.toList()
         reindexPages()
     }
 
     /** Adds the file [resource] to the document. */
-    public fun addResource(resource: DrawResource) {
+    public fun addResource(resource: DocumentResource) {
         resources = resources + resource
         markChanged()
     }
@@ -1009,58 +1009,58 @@ public class DrawDocument(
                     // The changes that changed nothing are among the versions only
                     page.contentVersions.stamps.values + (page.elements() + page.removedElements).asSequence().flatMap {
                         sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.ordered, it.updated) +
-                            ((it as? DrawText)?.contentVersions?.stamps?.values ?: emptyList())
+                            ((it as? TextElement)?.contentVersions?.stamps?.values ?: emptyList())
                     }
             }
         return stamps.maxOrNull() ?: Stamp.ZERO
     }
 
-    /** Re-assigns the [DrawPage.index] of every page after a structural change. */
+    /** Re-assigns the [Page.index] of every page after a structural change. */
     public fun reindexPages() {
         pages.forEachIndexed { i, p -> p.index = i }
         markChanged()
     }
 
-    public fun pageById(id: String): DrawPage? = pages.firstOrNull { it.id == id }
+    public fun pageById(id: String): Page? = pages.firstOrNull { it.id == id }
 
     /**
      * The pages removed since [time] (milliseconds), the most recent removal first: the ones the
      * trash of the document shows (see `docs/plans/trash.md`).
      */
-    public fun removedPagesSince(time: Long): List<DrawPage> =
+    public fun removedPagesSince(time: Long): List<Page> =
         removedPages.values.filter { page -> page.removed.let { it != null && it.time >= time } }.sortedByDescending { it.removed }
 
     /** Every page, shown or removed (see [removedPages]). */
-    public fun allPages(): List<DrawPage> = pages + removedPages.values
+    public fun allPages(): List<Page> = pages + removedPages.values
 
     /** The page [id], shown or removed (see [removedPages]), or `null`. */
-    internal fun anyPage(id: String): DrawPage? = pageById(id) ?: removedPages[id]
+    internal fun anyPage(id: String): Page? = pageById(id) ?: removedPages[id]
 
     /** Whether [page] is shown (not removed). */
-    public fun isShown(page: DrawPage): Boolean = page.id !in removedPages
+    public fun isShown(page: Page): Boolean = page.id !in removedPages
 
     /**
      * The element [id] (not removed) and the page holding it, shown or removed, looked for in
      * [hint] first (an element can be moved to another page by another device), or `null`.
      */
-    public fun findElement(id: String, hint: DrawPage? = null): Pair<DrawPage, DrawElement>? {
+    public fun findElement(id: String, hint: Page? = null): Pair<Page, PageElement>? {
         hint?.find(id)?.let { return hint to it }
         for (page in pages) if (page !== hint) page.find(id)?.let { return page to it }
         for (page in removedPages.values) if (page !== hint) page.find(id)?.let { return page to it }
         return null
     }
 
-    /** The removed element [id] and the page holding it (see [DrawPage.removedElements]), or `null`. */
-    internal fun findRemovedElement(id: String): Pair<DrawPage, DrawElement>? {
+    /** The removed element [id] and the page holding it (see [Page.removedElements]), or `null`. */
+    internal fun findRemovedElement(id: String): Pair<Page, PageElement>? {
         for (page in pages) page.findRemoved(id)?.let { return page to it }
         for (page in removedPages.values) page.findRemoved(id)?.let { return page to it }
         return null
     }
 
-    public fun findResource(resourceId: String): DrawResource? = resources.firstOrNull { it.id == resourceId }
+    public fun findResource(resourceId: String): DocumentResource? = resources.firstOrNull { it.id == resourceId }
 
     private companion object {
-        val pageOrder: Comparator<DrawPage> = compareBy<DrawPage>({ it.orderKey }, { it.id })
+        val pageOrder: Comparator<Page> = compareBy<Page>({ it.orderKey }, { it.id })
     }
 }
 
@@ -1076,7 +1076,7 @@ private fun nextPageRenderKey(): Long = pageRenderKeys.incrementAndGet()
 @OptIn(ExperimentalUuidApi::class)
 public fun newElementId(): String = Uuid.random().toString()
 
-/** The pages and the elements removed for good (see [DrawDocument.purgeHidden]), with the page of each element. */
-public class PurgedContent(public val pages: List<DrawPage>, public val elements: List<Pair<DrawPage, DrawElement>>) {
+/** The pages and the elements removed for good (see [Document.purgeHidden]), with the page of each element. */
+public class PurgedContent(public val pages: List<Page>, public val elements: List<Pair<Page, PageElement>>) {
     public val isEmpty: Boolean get() = pages.isEmpty() && elements.isEmpty()
 }

@@ -8,7 +8,7 @@ import io.github.valerioisufi.pageboard.platform.syncLock
 /**
  * The images of the resources decoded, kept by file for the ones drawn last, at most [maxBytes]
  * of pixels: the images of the documents are data, their pixels a cache of the renderers (given
- * to them by `DrawViewEngines.images`).
+ * to them by `PageboardEngines.images`).
  * Thread-safe: the tiles are rasterized on background workers.
  */
 public class ImageCache(private val maxBytes: Long = 256L * 1024 * 1024) {

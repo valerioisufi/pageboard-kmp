@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.model.change
 
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeMesh
@@ -79,10 +79,10 @@ class ApplyBenchmark {
     }
 
     /** The page the stores build of [elements]. */
-    private fun build(elements: List<DrawElement>): DrawPage = DrawPage().apply { load(elements) }
+    private fun build(elements: List<PageElement>): Page = Page().apply { load(elements) }
 
-    private fun largeDocument(): DrawDocument {
-        val document = DrawDocument(addInitialPage = false)
+    private fun largeDocument(): Document {
+        val document = Document(addInitialPage = false)
         repeat(PAGES) {
             val page = document.addPage()
             repeat(STROKES_PER_PAGE) { page.add(stroke()) }
@@ -91,7 +91,7 @@ class ApplyBenchmark {
     }
 
     /** A stroke of one triangle: what is measured is finding and adding it, not its mesh. */
-    private fun stroke() = DrawStroke(
+    private fun stroke() = StrokeElement(
         mesh = StrokeMesh(
             positions = floatArrayOf(0f, 0f, 1f, 0f, 0f, 1f),
             indices = shortArrayOf(0, 1, 2),

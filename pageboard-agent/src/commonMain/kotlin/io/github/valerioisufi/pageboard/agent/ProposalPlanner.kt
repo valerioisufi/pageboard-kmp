@@ -1,11 +1,11 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddPage
@@ -141,7 +141,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      *
      * @param chosen the places chosen by the user, by index of an item and in the order of its pieces.
      */
-    public fun plan(document: DrawDocument, items: List<ProposalItem>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): ProposalPlan {
+    public fun plan(document: Document, items: List<ProposalItem>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): ProposalPlan {
         val measure = TextMeasure(document.id, engines.editors, engines.pages?.invoke())
         val pages = plannedPages(document)
         val grown = mutableMapOf<String, Rect>()
@@ -202,7 +202,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     }
 
     /** The geometry of [page] for a model: how its texts are laid out, and where there is room. */
-    internal fun geometryOf(document: DrawDocument, page: DrawPage): PageGeometry {
+    internal fun geometryOf(document: Document, page: Page): PageGeometry {
         val measure = TextMeasure(document.id, engines.editors, engines.pages?.invoke())
         val occupancy = occupancyOf(document, PlannedPage(page.id, page.orderKey, page.widthMm, page.heightMm, page.background, null, page), measure)
         val boxes = page.texts.filter { it.removed == null }.associate { it.id to measure.boundsOf(it) }
@@ -210,12 +210,12 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     }
 
     /** The indexes of [items] that would not be applied to [document] as it is now. */
-    public fun staleItems(document: DrawDocument, items: List<ProposalItem>): Set<Int> {
+    public fun staleItems(document: Document, items: List<ProposalItem>): Set<Int> {
         val pages = plannedPages(document)
         return items.indices.filterTo(mutableSetOf()) { isStale(document, pages, items[it]) }
     }
 
-    private fun isStale(document: DrawDocument, pages: List<PlannedPage>, item: ProposalItem): Boolean = when (item) {
+    private fun isStale(document: Document, pages: List<PlannedPage>, item: ProposalItem): Boolean = when (item) {
         is ProposalItem.ReplaceText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.RemoveText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.InsertText -> when {
@@ -253,7 +253,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     }
 
     private fun planReplace(
-        document: DrawDocument,
+        document: Document,
         pages: List<PlannedPage>,
         item: ProposalItem.ReplaceText,
         measure: TextMeasure,
@@ -280,18 +280,18 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     }
 
     /** An element as an item would leave it: its box now and after, and its text when it is one. */
-    private class Moved(val element: DrawElement, val before: Rect, val after: Rect, val markdown: String = "", val fontSize: Float = 0f, val grows: Boolean = false)
+    private class Moved(val element: PageElement, val before: Rect, val after: Rect, val markdown: String = "", val fontSize: Float = 0f, val grows: Boolean = false)
 
     /** [text] as [data] would leave it. */
-    private fun moved(text: DrawText, data: TextData, measure: TextMeasure): Moved {
+    private fun moved(text: TextElement, data: TextData, measure: TextMeasure): Moved {
         val before = measure.boundsOf(text)
-        val as_ = DrawText(text.id).also { data.applyTo(it) }
+        val as_ = TextElement(text.id).also { data.applyTo(it) }
         val after = as_.getRotatedBounds(measure.height(data.text, data.width, data.fontSize))
         return Moved(text, before, after, data.text, data.fontSize, grows = after.bottom > before.bottom)
     }
 
     private fun planPlace(
-        document: DrawDocument,
+        document: Document,
         pages: List<PlannedPage>,
         item: ProposalItem.PlaceElements,
         measure: TextMeasure,
@@ -303,7 +303,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val matrix = ElementItems.matrixOf(page, elements, item) ?: return PlannedItem(false, emptyList(), 0, emptyList())
         val placements = ElementItems.placements(elements, matrix, item.rotation).associateBy { it.id }
         val moved = elements.mapNotNull { element ->
-            if (element is DrawText) {
+            if (element is TextElement) {
                 val placement = placements[element.id] as? TextPlacement ?: return@mapNotNull null
                 val data = element.toData().copy(x = placement.x, y = placement.y, width = placement.width, fontSize = placement.fontSize, rotation = placement.rotation)
                 moved(element, data, measure).let { Moved(it.element, it.before, it.after, it.markdown, it.fontSize) }
@@ -325,9 +325,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      * @param fresh they come from another page: nothing of what they cover was covered before.
      */
     private fun planMoved(
-        document: DrawDocument,
+        document: Document,
         pages: List<PlannedPage>,
-        page: DrawPage,
+        page: Page,
         moved: List<Moved>,
         measure: TextMeasure,
         grown: MutableMap<String, Rect>,
@@ -358,7 +358,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val pieces = moved.map { one ->
             planned.boxes += one.after
             grown[one.element.id] = one.after
-            PlannedPiece(one.element.id, one.markdown, page.id, false, one.after, one.fontSize, (one.element as? DrawText)?.next)
+            PlannedPiece(one.element.id, one.markdown, page.id, false, one.after, one.fontSize, (one.element as? TextElement)?.next)
         }
         return PlannedItem(false, pieces, 0, warnings)
     }
@@ -367,16 +367,16 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      * What [after], the box of a text or an element, would cover that [before], its box now, did not;
      * [moving]: what moves with it, which it does not cover.
      */
-    private fun coveredBy(document: DrawDocument, page: PlannedPage, moving: Set<String>, after: Rect, before: Rect?, measure: TextMeasure): List<String> {
+    private fun coveredBy(document: Document, page: PlannedPage, moving: Set<String>, after: Rect, before: Rect?, measure: TextMeasure): List<String> {
         fun new(box: Rect) = box.overlaps(after) && (before == null || !box.overlaps(before))
         val model = page.model ?: return if (page.boxes.any { new(it) }) listOf(NEW_TEXT) else emptyList()
         val covered = linkedSetOf<String>()
         for (element in model.elements()) {
             when {
                 element.id in moving || element.id in page.excluded -> {}
-                element is DrawText -> if (new(measure.boundsOf(element))) covered += element.id
-                element is DrawStroke -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
-                element is DrawPdf -> {
+                element is TextElement -> if (new(measure.boundsOf(element))) covered += element.id
+                element is StrokeElement -> if (new(element.bounds)) covered += PlacementWarning.Overlaps.INK
+                element is PdfElement -> {
                     val others = model.elements().filter { it.id != element.id }.mapTo(mutableSetOf()) { it.id }
                     val pdf = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, pdfInk = { engines.pdfInk(document, it) }, excluded = others)
                     if (pdf.boxes.any { new(it) }) covered += PlacementWarning.Overlaps.PDF
@@ -389,7 +389,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
     }
 
     private fun planInsert(
-        document: DrawDocument,
+        document: Document,
         pages: MutableList<PlannedPage>,
         item: ProposalItem.InsertText,
         measure: TextMeasure,
@@ -464,7 +464,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      * says or as the area, whatever is there. What it covers and how much higher it is are warned about.
      */
     private fun planInside(
-        document: DrawDocument,
+        document: Document,
         pages: List<PlannedPage>,
         page: PlannedPage,
         item: ProposalItem.InsertText,
@@ -516,7 +516,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
      * What [page] holds as the items before leave it: the elements of the page, its texts at the height
      * [measure] tells, without what they removed or replaced, and what they added.
      */
-    private fun occupancyOf(document: DrawDocument, page: PlannedPage, measure: TextMeasure): PageOccupancy {
+    private fun occupancyOf(document: Document, page: PlannedPage, measure: TextMeasure): PageOccupancy {
         val model = page.model ?: return PageOccupancy(page.widthMm, page.heightMm, page.boxes.toList(), PageOccupancy.lineSpacingOf(page.background))
         val texts = model.texts.filter { it.removed == null }
         val others = PageOccupancy.of(model, pdfText = { engines.pdfLayout(document, it) }, pdfInk = { engines.pdfInk(document, it) }, excluded = texts.mapTo(mutableSetOf()) { it.id } + page.excluded)
@@ -555,21 +555,21 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         return AddPage(PageData(id, key, template.widthMm, template.heightMm, template.ownBackground))
     }
 
-    private fun fontSizeFor(document: DrawDocument, page: PlannedPage): Float {
+    private fun fontSizeFor(document: Document, page: PlannedPage): Float {
         val model = page.model
             ?: return TextSizePolicy.nearestPreset(PageTextSizes.ofDocument(document) ?: engines.defaultTextSize)
         return TextSizePolicy.forNote(textSizesOf(document, model), engines.defaultTextSize)
     }
 
     /** The sizes of the characters on [page]: typed, of its PDF page, of its handwriting. */
-    internal fun textSizesOf(document: DrawDocument, page: DrawPage): PageTextSizes =
+    internal fun textSizesOf(document: Document, page: Page): PageTextSizes =
         PageTextSizes.of(page, page.pdfs.firstOrNull { it.removed == null }?.let { engines.pdfLayout(document, it) })
 
     /** The size a text added to [page] takes when its model asks for none. */
-    internal fun noteSizeOf(document: DrawDocument, page: DrawPage): Float =
+    internal fun noteSizeOf(document: Document, page: Page): Float =
         TextSizePolicy.forNote(textSizesOf(document, page), engines.defaultTextSize)
 
-    private fun plannedPages(document: DrawDocument): MutableList<PlannedPage> =
+    private fun plannedPages(document: Document): MutableList<PlannedPage> =
         document.pages.mapTo(mutableListOf()) { page ->
             PlannedPage(
                 id = page.id,
@@ -599,7 +599,7 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val heightMm: Float,
         val background: PageBackground,
         val ownBackground: PageBackground?,
-        val model: DrawPage?,
+        val model: Page?,
         val excluded: MutableSet<String> = mutableSetOf(),
         val boxes: MutableList<Rect> = mutableListOf()
     )
@@ -659,7 +659,7 @@ internal class TextMeasure(private val documentId: String, private val editors: 
      * The box of [text]: its editor laid it out and it keeps that height; in no editor its height is
      * not stored (see `docs/plans/text-heights.md`), so it is laid out again or estimated.
      */
-    fun boundsOf(text: DrawText): Rect =
+    fun boundsOf(text: TextElement): Rect =
         if (inEditor) text.getRotatedBounds() else text.getRotatedBounds(height(text.text, text.width, text.fontSize))
 
     private companion object {

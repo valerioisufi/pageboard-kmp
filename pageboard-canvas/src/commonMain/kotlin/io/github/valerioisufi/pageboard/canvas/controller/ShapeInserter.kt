@@ -3,7 +3,7 @@ package io.github.valerioisufi.pageboard.canvas.controller
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
@@ -77,7 +77,7 @@ public data class ShapeToolStyle(
 }
 
 /**
- * The [ShapeToolStyle] as kept with the preferences of the user ([DrawPreferences.shapeTool]): the
+ * The [ShapeToolStyle] as kept with the preferences of the user ([EditorPreferences.shapeTool]): the
  * names of the kinds as text, read back with the defaults for what is not known.
  */
 @Serializable
@@ -147,7 +147,7 @@ public class ShapeDraft(
  * its page in one change, selected. A tap puts one of a standard size. The [style] of the tool is
  * a preference of the user.
  */
-public class ShapeInserter internal constructor(private val controller: DrawViewController) {
+public class ShapeInserter internal constructor(private val controller: PageboardController) {
 
     /** What the tool draws next (a preference of the user). */
     public var style: ShapeToolStyle by mutableStateOf(ShapeToolStyle())
@@ -166,7 +166,7 @@ public class ShapeInserter internal constructor(private val controller: DrawView
         controller.preferencesChanged()
     }
 
-    internal fun applyPreferences(preferences: DrawPreferences) {
+    internal fun applyPreferences(preferences: EditorPreferences) {
         style = preferences.shapeTool.toStyle()
     }
 
@@ -219,7 +219,7 @@ public class ShapeInserter internal constructor(private val controller: DrawView
      * Adds the shape drawn on top of its page, selected (one step of undo); `null` when it is too
      * small to be one, or the document may only be read.
      */
-    internal fun commit(): DrawCustomElement? {
+    internal fun commit(): CustomElement? {
         val shape = draft
         cancel()
         if (shape == null) return null
@@ -245,7 +245,7 @@ public class ShapeInserter internal constructor(private val controller: DrawView
      * Adds a shape of the style of the tool, of a standard size, centered on [at] (page
      * millimeters) of the page [pageIndex], selected.
      */
-    public fun insertAt(pageIndex: Int, at: Point): DrawCustomElement? {
+    public fun insertAt(pageIndex: Int, at: Point): CustomElement? {
         cancel()
         val value = style.element()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
@@ -264,7 +264,7 @@ public class ShapeInserter internal constructor(private val controller: DrawView
     }
 
     /** Adds a shape of the style of the tool in the middle of the page shown the most, selected (see [insertAt]). */
-    public fun insertInView(): DrawCustomElement? {
+    public fun insertInView(): CustomElement? {
         val pageIndex = controller.viewport.mostVisiblePageIndex() ?: return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         val viewport = controller.viewport

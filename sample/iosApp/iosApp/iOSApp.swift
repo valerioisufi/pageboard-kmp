@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct iOSApp: App {
     var body: some Scene {
-        WindowGroup("DrawView", id: "library") {
+        WindowGroup("Pageboard", id: "library") {
             ContentView()
         }
         WindowGroup("Note", id: "sample-note", for: String.self) { $documentId in

@@ -35,7 +35,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextFormula
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.text.TextBackground
@@ -140,7 +140,7 @@ public class ComposeTextTileAdapter(
     }
 
 
-    override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {
+    override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {
         val scale = mmToCanvas.scaleFactor
         if (scale <= 0f || text.width <= 0f) return
         syncLock(lock) { drawRichText(canvas, inItsBox(text).first, mmToCanvas, scale, paperColor) }
@@ -150,7 +150,7 @@ public class ComposeTextTileAdapter(
      * The size of [text] as [drawText] lays it out, kept for the next texts of the same content and
      * size: for a text following its width, its longest line in its room and the height of its box.
      */
-    override fun measure(text: DrawText): TextBlockSize? {
+    override fun measure(text: TextElement): TextBlockSize? {
         if (text.width <= 0f) return null
         return syncLock(lock) {
             val size = sizeOf(text)
@@ -158,7 +158,7 @@ public class ComposeTextTileAdapter(
         }
     }
 
-    private fun sizeOf(text: DrawText): TextBlockSize =
+    private fun sizeOf(text: TextElement): TextBlockSize =
         sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment)) { measureLayout(text) }
 
     /**
@@ -166,12 +166,12 @@ public class ComposeTextTileAdapter(
      * its width (see [TextRoom]) on the width of its box, at its place in the room, its lines wrapping
      * and its block formulas centered in it as in the editor; any other text as it is.
      */
-    private fun inItsBox(text: DrawText): Pair<DrawText, Float> {
+    private fun inItsBox(text: TextElement): Pair<TextElement, Float> {
         if (!text.autoWidth) return text to 0f
         val width = TextRoom.boxWidth(sizeOf(text).width, text.width)
         val left = TextRoom.boxLeft(width, text.width, text.alignment)
         val turned = Matrix2D().postRotate(text.rotation).mapPoint(left, 0f)
-        val box = DrawText(text.id).apply {
+        val box = TextElement(text.id).apply {
             copyFrom(text)
             autoWidth = false
             x = text.x + turned.x
@@ -181,7 +181,7 @@ public class ComposeTextTileAdapter(
         return box to left
     }
 
-    private fun measureLayout(text: DrawText): TextBlockSize {
+    private fun measureLayout(text: TextElement): TextBlockSize {
         val scale = LAYOUT_PX_PER_MM
         val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1), TextTileAdapter.NO_PAPER)
         val layout = prepared.layout
@@ -213,7 +213,7 @@ public class ComposeTextTileAdapter(
     }
 
     /** The words, the formulas and the backgrounds of a text, laid out as [drawRichText] does. */
-    override fun layout(text: DrawText, paperColor: Int): TextBlockLayout? {
+    override fun layout(text: TextElement, paperColor: Int): TextBlockLayout? {
         if (text.width <= 0f || text.text.isBlank()) return null
         return syncLock(lock) {
             // At a resolution where the rounding of the width is negligible
@@ -312,7 +312,7 @@ public class ComposeTextTileAdapter(
      * The fill of [text] (see [TextBackground]) around its lines laid out [widthPx] x [heightPx]
      * from [left], in the pixels of the layout.
      */
-    private fun fillRect(text: DrawText, widthPx: Float, heightPx: Float, left: Float): Rect {
+    private fun fillRect(text: TextElement, widthPx: Float, heightPx: Float, left: Float): Rect {
         val outset = TextBackground.outsetMm(text.fontSize) * LAYOUT_PX_PER_MM
         return Rect(left - outset, -outset, left + widthPx + outset, heightPx + outset)
     }
@@ -384,7 +384,7 @@ public class ComposeTextTileAdapter(
         formulaImages.clear()
     }
 
-    private fun drawRichText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, scale: Float, paperColor: Int) {
+    private fun drawRichText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, scale: Float, paperColor: Int) {
         if (text.fontSize * PT_TO_MM * scale < 0.5f) return
         // Laid out as it is measured, then scaled: at the pixels of each zoom the lines would
         // wrap and round their heights differently, out of the box of the text
@@ -461,7 +461,7 @@ public class ComposeTextTileAdapter(
         textAlign = align
     )
 
-    private fun prepare(text: DrawText, fontPx: Float, widthPx: Int, paperColor: Int): PreparedText {
+    private fun prepare(text: TextElement, fontPx: Float, widthPx: Int, paperColor: Int): PreparedText {
         val color = Color(text.color)
         val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign())
         val formulaSizes = HashMap<ImageBitmap, Float>()

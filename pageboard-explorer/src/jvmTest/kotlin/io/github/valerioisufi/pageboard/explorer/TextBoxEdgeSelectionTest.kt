@@ -12,7 +12,7 @@ import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 class TextBoxEdgeSelectionTest {
 
     /** The box of a text being written, with where its characters are in the window. */
-    private class Written(val test: DesktopComposeUiTest, val controller: DrawViewController, val text: String) {
+    private class Written(val test: DesktopComposeUiTest, val controller: PageboardController, val text: String) {
         private val layout: TextLayoutResult
         private val field = test.fieldBounds()
         private val scale: Float
@@ -74,7 +74,7 @@ class TextBoxEdgeSelectionTest {
         }
     }
 
-    private fun DesktopComposeUiTest.write(controller: DrawViewController, text: String): Written {
+    private fun DesktopComposeUiTest.write(controller: PageboardController, text: String): Written {
         startBox(controller, 20f, 40f, widthMm = 180f)
         type(text)
         return Written(this, controller, text)

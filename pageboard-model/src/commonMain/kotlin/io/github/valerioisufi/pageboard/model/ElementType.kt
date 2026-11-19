@@ -7,7 +7,7 @@ import kotlinx.serialization.cbor.Cbor
 /**
  * A kind of element added by an application or a library (a table, a shape, a recording...): the
  * value of its elements ([T], immutable and serializable), stored in the documents as CBOR (see
- * [DrawCustomElement]).
+ * [CustomElement]).
  *
  * The documents carry the elements of the types they do not know as they are: every device keeps
  * them, synchronizes them and draws a placeholder in their box, so that the elements of a device
@@ -42,7 +42,7 @@ public interface ElementType<T : Any> {
     public fun searchText(value: T): String? = null
 }
 
-/** [value] as the payload of an element of this type (see [DrawCustomElement.payload]). */
+/** [value] as the payload of an element of this type (see [CustomElement.payload]). */
 @OptIn(ExperimentalSerializationApi::class)
 public fun <T : Any> ElementType<T>.encode(value: T): ByteArray = Cbor.encodeToByteArray(serializer, value)
 
@@ -51,7 +51,7 @@ public fun <T : Any> ElementType<T>.encode(value: T): ByteArray = Cbor.encodeToB
  * [ElementType.version]), `null` otherwise.
  */
 @OptIn(ExperimentalSerializationApi::class)
-public fun <T : Any> ElementType<T>.decode(element: DrawCustomElement): T? {
+public fun <T : Any> ElementType<T>.decode(element: CustomElement): T? {
     if (element.type != id) return null
     val payload = element.payload
     val version = element.version
@@ -70,5 +70,5 @@ public fun <T : Any> ElementType<T>.decode(element: DrawCustomElement): T? {
  * The text of [element] for the search of the library when it is of this type and readable,
  * `null` otherwise.
  */
-public fun <T : Any> ElementType<T>.searchTextOf(element: DrawCustomElement): String? =
+public fun <T : Any> ElementType<T>.searchTextOf(element: CustomElement): String? =
     decode(element)?.let(::searchText)?.takeIf { it.isNotBlank() }

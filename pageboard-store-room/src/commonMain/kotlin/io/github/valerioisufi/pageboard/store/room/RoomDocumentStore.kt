@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.store.room
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeModeller
@@ -16,10 +16,10 @@ import io.github.valerioisufi.pageboard.store.LoadedPage
 import io.github.valerioisufi.pageboard.store.PreferenceStore
 import io.github.valerioisufi.pageboard.store.TrashedItem
 import io.github.valerioisufi.pageboard.store.room.db.DocumentEntity
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.FolderEntity
 import io.github.valerioisufi.pageboard.store.room.db.SharedDocumentEntity
-import io.github.valerioisufi.pageboard.store.room.repository.DrawDocumentRepository
+import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
 import io.github.valerioisufi.pageboard.store.room.repository.FileRepository
 import io.github.valerioisufi.pageboard.store.room.repository.SpaceRepository
 import io.github.valerioisufi.pageboard.store.space.SpaceStore
@@ -42,10 +42,10 @@ import kotlinx.coroutines.withContext
  * `pageboard-ink`). One per database and per process: the application creates it once.
  */
 public class RoomDocumentStore(
-    internal val database: DrawDatabase,
+    internal val database: PageboardDatabase,
     override val strokeModeller: StrokeModeller
 ) : DocumentStore, PreferenceStore, SpaceStore by SpaceRepository(database) {
-    internal val repository = DrawDocumentRepository(database, strokeModeller)
+    internal val repository = DocumentRepository(database, strokeModeller)
     internal val fileRepository = FileRepository(database)
 
     private val sharedDocuments = database.sharedDocumentDao()
@@ -100,12 +100,12 @@ public class RoomDocumentStore(
         heightMm: Float,
         background: PageBackground,
         folderId: String?
-    ): DrawDocument = repository.createDocument(name, widthMm, heightMm, background, folderId)
+    ): Document = repository.createDocument(name, widthMm, heightMm, background, folderId)
 
-    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>): Unit =
+    override suspend fun insertDocument(document: Document, folderId: String?, versionVector: Map<String, Long>): Unit =
         repository.insertDocument(document, folderId, versionVector)
 
-    override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
+    override suspend fun loadDocument(documentId: String): Document? = repository.loadDocument(documentId)
 
     override suspend fun loadOutline(documentId: String): DocumentOutline? = repository.loadOutline(documentId)
 

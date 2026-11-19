@@ -16,9 +16,9 @@ import io.github.valerioisufi.pageboard.lecture.handwriting.blockKey
 import io.github.valerioisufi.pageboard.lecture.handwriting.groupStrokes
 import io.github.valerioisufi.pageboard.lecture.handwriting.unionOf
 import io.github.valerioisufi.pageboard.lecture.ui.platform.encodeJpeg
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -72,7 +72,7 @@ internal class ControllerNotebookSource(private val editor: EditorContext) : Not
             val contentByIndex = pageContents.associateBy { it.index }
             // Close-ups of the new strokes, page by page
             val strokeIds = mutableSetOf<String>()
-            val newStrokesByPage = mutableMapOf<Int, List<DrawStroke>>()
+            val newStrokesByPage = mutableMapOf<Int, List<StrokeElement>>()
             for ((index, content) in contents.withIndex()) {
                 content.strokes.forEach { strokeIds.add(it.id) }
                 val newStrokes = content.strokes.filter { it.id !in knownStrokeIds }
@@ -169,7 +169,7 @@ internal class ControllerNotebookSource(private val editor: EditorContext) : Not
     /** The text of a PDF page, without the empty lines, at most `MAX_SLIDE_TEXT_CHARS`. */
     private fun slideText(resourceId: String, pdfPageIndex: Int): String {
         syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] }?.let { return it }
-        val resource = editor.document.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }
+        val resource = editor.document.document.findResource(resourceId)?.takeIf { it.type == DocumentResource.ResourceType.PDF }
         val text = cleanSlideText(resource?.let { editor.rendering.pdfPageText(it.path, pdfPageIndex) }.orEmpty())
         syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] = text }
         return text
@@ -178,7 +178,7 @@ internal class ControllerNotebookSource(private val editor: EditorContext) : Not
     /** Renders [region] of the page (with its background), at most [CROP_MAX_SIDE_PX] pixels. */
     private fun renderRegion(
         renderer: EditorRendering,
-        document: DrawDocument,
+        document: Document,
         content: PageContentSnapshot,
         pageIndex: Int,
         region: Rect
@@ -217,7 +217,7 @@ internal class ControllerNotebookSource(private val editor: EditorContext) : Not
  * The handwriting of page [pageIndex] ([pageId]) in blocks of strokes close to each other, among
  * [strokes] (the highlights left out), each with the key its text is kept by.
  */
-internal fun inkBlocksOf(pageIndex: Int, pageId: String, strokes: List<DrawStroke>): List<InkBlock> {
+internal fun inkBlocksOf(pageIndex: Int, pageId: String, strokes: List<StrokeElement>): List<InkBlock> {
     val writing = strokes.filter { it.isHandwriting }
     if (writing.isEmpty()) return emptyList()
     return groupStrokes(writing.map { it.bounds }).map { group ->
@@ -228,7 +228,7 @@ internal fun inkBlocksOf(pageIndex: Int, pageId: String, strokes: List<DrawStrok
 }
 
 /** A stroke of writing or drawing (the highlights mark the slides, they are not read). */
-private val DrawStroke.isHandwriting: Boolean
+private val StrokeElement.isHandwriting: Boolean
     get() = brushConfig.tool != StrokeTool.HIGHLIGHTER && brushConfig.tool != StrokeTool.ERASER && brushConfig.tool != StrokeTool.LASSO
 
 private fun union(a: Rect, b: Rect) = Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))

@@ -2,16 +2,16 @@ package io.github.valerioisufi.pageboard.store.room.repository
 
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.PageBackground
@@ -37,7 +37,7 @@ import io.github.valerioisufi.pageboard.store.LoadedPage
 import io.github.valerioisufi.pageboard.store.PageOutline
 import io.github.valerioisufi.pageboard.store.room.db.CustomElementEntity
 import io.github.valerioisufi.pageboard.store.room.db.DocumentEntity
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.ImageEntity
 import io.github.valerioisufi.pageboard.store.room.db.OperationBaseEntity
 import io.github.valerioisufi.pageboard.store.room.db.OperationEntity
@@ -69,8 +69,8 @@ import kotlinx.serialization.json.Json
  * Every row has the identifier of its element in the model, with its order and the stamps of its
  * last changes. All the content coordinates are stored in page millimeters.
  */
-internal class DrawDocumentRepository(
-    val database: DrawDatabase,
+internal class DocumentRepository(
+    val database: PageboardDatabase,
     /** Models the strokes loaded from their inputs. */
     private val strokeModeller: StrokeModeller
 ) : DocumentPersistence {
@@ -95,14 +95,14 @@ internal class DrawDocumentRepository(
     // Loading
     // ==========================================================
 
-    suspend fun loadDocument(documentId: String): DrawDocument? {
+    suspend fun loadDocument(documentId: String): Document? {
         val docWithPages = withContext(Dispatchers.IO) { documentDao.getFullDocumentWithPages(documentId) } ?: return null
         val resources = withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
 
         // Re-modeling the strokes is CPU bound
         return withContext(Dispatchers.Default) {
             val docEntity = docWithPages.document
-            val doc = DrawDocument(
+            val doc = Document(
                 id = docEntity.id,
                 title = docEntity.name,
                 defaultWidthMm = docEntity.defaultWidth,
@@ -190,14 +190,14 @@ internal class DrawDocumentRepository(
     }
 
     /** The strokes of [entities] modeled on every core, in their order, with their stamps. */
-    private suspend fun modelStrokes(entities: List<StrokeEntity>): List<DrawStroke> = coroutineScope {
+    private suspend fun modelStrokes(entities: List<StrokeEntity>): List<StrokeElement> = coroutineScope {
         entities.chunked(STROKES_PER_TASK).map { chunk ->
             async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } }
         }.awaitAll().flatten()
     }
 
     /** The elements of [rows] but its strokes whose removal is [read], with their order and stamps. */
-    private fun elementsBesideStrokes(rows: PageWithContent, read: (removed: Stamp?) -> Boolean): List<DrawElement> =
+    private fun elementsBesideStrokes(rows: PageWithContent, read: (removed: Stamp?) -> Boolean): List<PageElement> =
         rows.texts.filter { read(it.removed) }.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
             rows.images.filter { read(it.removed) }.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
             rows.pdfs.filter { read(it.removed) }.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
@@ -231,7 +231,7 @@ internal class DrawDocumentRepository(
         return DocumentOutline(documentId, shown, resources.map(::mapResource))
     }
 
-    private fun mapPage(entity: PageEntity, document: DocumentEntity): DrawPage = DrawPage(
+    private fun mapPage(entity: PageEntity, document: DocumentEntity): Page = Page(
         widthMm = entity.width,
         heightMm = entity.height,
         background = entity.background ?: document.defaultBackground,
@@ -247,13 +247,13 @@ internal class DrawDocumentRepository(
         removalSaw = entity.removalSaw
     }
 
-    private fun mapResource(entity: ResourceEntity): DrawResource {
-        val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(entity.type, ignoreCase = true) }
-            ?: DrawResource.ResourceType.COLOR
-        return DrawResource(entity.id, type, entity.uri, entity.contentHash)
+    private fun mapResource(entity: ResourceEntity): DocumentResource {
+        val type = DocumentResource.ResourceType.entries.firstOrNull { it.name.equals(entity.type, ignoreCase = true) }
+            ?: DocumentResource.ResourceType.COLOR
+        return DocumentResource(entity.id, type, entity.uri, entity.contentHash)
     }
 
-    private fun <T : DrawElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, ordered: Stamp, updated: Stamp): T =
+    private fun <T : PageElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, ordered: Stamp, updated: Stamp): T =
         apply {
             this.order = order
             this.added = added
@@ -263,7 +263,7 @@ internal class DrawDocumentRepository(
             this.updated = updated
         }
 
-    private fun mapStroke(entity: StrokeEntity): DrawStroke = StrokeData(
+    private fun mapStroke(entity: StrokeEntity): StrokeElement = StrokeData(
         id = entity.id,
         points = StrokeInputCodec.decode(entity.inputs),
         tool = StrokeTool.fromName(entity.brushFamily) ?: StrokeTool.PRESSURE_PEN,
@@ -273,12 +273,12 @@ internal class DrawDocumentRepository(
         transform = entity.transform
     ).toElement(strokeModeller)
 
-    private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
+    private fun mapTextMarkup(entity: TextMarkupEntity): TextMarkupElement? {
         val rects = try {
             json.decodeFromString<List<Float>>(entity.rects)
         } catch (e: Exception) {
             // Not shown, but kept in the database as it is
-            println("DrawView: the text markup ${entity.id} cannot be read: ${e.message}")
+            println("Pageboard: the text markup ${entity.id} cannot be read: ${e.message}")
             return null
         }
         return TextMarkupData(
@@ -296,7 +296,7 @@ internal class DrawDocumentRepository(
         ).toElement()
     }
 
-    private fun mapText(entity: TextEntity) = DrawText(entity.id).apply {
+    private fun mapText(entity: TextEntity) = TextElement(entity.id).apply {
         text = entity.text
         alignment = TextAlignment.fromName(entity.alignment) ?: TextAlignment.START
         autoWidth = entity.autoWidth
@@ -314,7 +314,7 @@ internal class DrawDocumentRepository(
         contentVersions = entity.contentVersions
     }
 
-    private fun mapCustomElement(entity: CustomElementEntity) = DrawCustomElement(entity.type, entity.id).apply {
+    private fun mapCustomElement(entity: CustomElementEntity) = CustomElement(entity.type, entity.id).apply {
         version = entity.version
         payload = entity.payload
         x = entity.x
@@ -324,7 +324,7 @@ internal class DrawDocumentRepository(
         rotation = entity.rotation
     }
 
-    private fun mapImage(entity: ImageEntity) = DrawImage(entity.id).apply {
+    private fun mapImage(entity: ImageEntity) = ImageElement(entity.id).apply {
         resourceId = entity.resourceId
         x = entity.x
         y = entity.y
@@ -333,7 +333,7 @@ internal class DrawDocumentRepository(
         rotation = entity.rotation
     }
 
-    private fun mapPdf(entity: PdfEntity) = DrawPdf(entity.pdfPageIndex, entity.id).apply { resourceId = entity.resourceId }
+    private fun mapPdf(entity: PdfEntity) = PdfElement(entity.pdfPageIndex, entity.id).apply { resourceId = entity.resourceId }
 
     // ==========================================================
     // Documents
@@ -348,9 +348,9 @@ internal class DrawDocumentRepository(
         heightMm: Float,
         background: PageBackground,
         folderId: String? = null
-    ): DrawDocument {
+    ): Document {
         val now = currentTimeMillis()
-        val document = DrawDocument(
+        val document = Document(
             title = name,
             defaultWidthMm = widthMm,
             defaultHeightMm = heightMm,
@@ -383,7 +383,7 @@ internal class DrawDocumentRepository(
      * Stores [document] with its whole content (removed pages and elements included) in
      * [folderId] (see [io.github.valerioisufi.pageboard.store.DocumentStore.insertDocument]).
      */
-    suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long> = emptyMap()) {
+    suspend fun insertDocument(document: Document, folderId: String?, versionVector: Map<String, Long> = emptyMap()) {
         val now = currentTimeMillis()
         withContext(Dispatchers.IO) {
             documentDao.insert(
@@ -410,15 +410,15 @@ internal class DrawDocumentRepository(
         for (page in document.allPages()) {
             savePage(document, page)
             val elements = page.elements() + page.removedElements
-            saveStrokes(page, elements.filterIsInstance<DrawStroke>())
+            saveStrokes(page, elements.filterIsInstance<StrokeElement>())
             for (element in elements) {
                 when (element) {
-                    is DrawStroke -> {}
-                    is DrawText -> saveText(page, element)
-                    is DrawImage -> saveImage(page, element)
-                    is DrawPdf -> savePdf(page, element)
-                    is DrawTextMarkup -> saveTextMarkup(page, element)
-                    is DrawCustomElement -> saveCustomElement(page, element)
+                    is StrokeElement -> {}
+                    is TextElement -> saveText(page, element)
+                    is ImageElement -> saveImage(page, element)
+                    is PdfElement -> savePdf(page, element)
+                    is TextMarkupElement -> saveTextMarkup(page, element)
+                    is CustomElement -> saveCustomElement(page, element)
                 }
             }
         }
@@ -464,15 +464,15 @@ internal class DrawDocumentRepository(
         operationDao.baseEntities(documentId).associate { it.replica to it.stamp }
     }
 
-    override suspend fun deleteForGood(document: DrawDocument, content: PurgedContent) = withContext(Dispatchers.IO) {
+    override suspend fun deleteForGood(document: Document, content: PurgedContent) = withContext(Dispatchers.IO) {
         purgeDao.deletePages(content.pages.map { it.id })
         val elements = content.elements.map { it.second }
-        purgeDao.deleteStrokes(elements.filterIsInstance<DrawStroke>().map { it.id })
-        purgeDao.deleteTexts(elements.filterIsInstance<DrawText>().map { it.id })
-        purgeDao.deleteImages(elements.filterIsInstance<DrawImage>().map { it.id })
-        purgeDao.deleteCustomElements(elements.filterIsInstance<DrawCustomElement>().map { it.id })
-        purgeDao.deletePdfs(elements.filterIsInstance<DrawPdf>().map { it.id })
-        purgeDao.deleteTextMarkups(elements.filterIsInstance<DrawTextMarkup>().map { it.id })
+        purgeDao.deleteStrokes(elements.filterIsInstance<StrokeElement>().map { it.id })
+        purgeDao.deleteTexts(elements.filterIsInstance<TextElement>().map { it.id })
+        purgeDao.deleteImages(elements.filterIsInstance<ImageElement>().map { it.id })
+        purgeDao.deleteCustomElements(elements.filterIsInstance<CustomElement>().map { it.id })
+        purgeDao.deletePdfs(elements.filterIsInstance<PdfElement>().map { it.id })
+        purgeDao.deleteTextMarkups(elements.filterIsInstance<TextMarkupElement>().map { it.id })
     }
 
     /** The proofs kept of the operations [ids] of [documentId] (see `OperationLog.proofs`). */
@@ -515,7 +515,7 @@ internal class DrawDocumentRepository(
     // ==========================================================
 
     // The stroke as it was drawn, and its placement
-    private fun DrawStroke.toEntity(pageId: String) = StrokeEntity(
+    private fun StrokeElement.toEntity(pageId: String) = StrokeEntity(
         id = id,
         pageId = pageId,
         orderKey = order,
@@ -538,14 +538,14 @@ internal class DrawDocumentRepository(
      * the coroutine context, which the `withContext(Dispatchers.IO)` of the writes keeps.
      */
     override suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T =
-        database.useWriterConnection { transactor -> transactor.immediateTransaction { block(this@DrawDocumentRepository) } }
+        database.useWriterConnection { transactor -> transactor.immediateTransaction { block(this@DocumentRepository) } }
 
-    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+    override suspend fun saveStrokes(page: Page, strokes: List<StrokeElement>) {
         if (strokes.isEmpty()) return
         withContext(Dispatchers.IO) { strokeDao.upsertAll(strokes.map { it.toEntity(page.id) }) }
     }
 
-    override suspend fun saveText(page: DrawPage, text: DrawText) = withContext(Dispatchers.IO) {
+    override suspend fun saveText(page: Page, text: TextElement) = withContext(Dispatchers.IO) {
         textDao.upsert(
             TextEntity(
                 id = text.id,
@@ -573,7 +573,7 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun saveImage(page: DrawPage, image: DrawImage) = withContext(Dispatchers.IO) {
+    override suspend fun saveImage(page: Page, image: ImageElement) = withContext(Dispatchers.IO) {
         imageDao.upsert(
             ImageEntity(
                 id = image.id,
@@ -594,7 +594,7 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement) = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomElement(page: Page, element: CustomElement) = withContext(Dispatchers.IO) {
         customElementDao.upsert(
             CustomElementEntity(
                 id = element.id,
@@ -617,7 +617,7 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = withContext(Dispatchers.IO) {
+    override suspend fun savePdf(page: Page, pdf: PdfElement) = withContext(Dispatchers.IO) {
         pdfDao.upsert(
             PdfEntity(
                 id = pdf.id,
@@ -634,7 +634,7 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = withContext(Dispatchers.IO) {
+    override suspend fun saveTextMarkup(page: Page, markup: TextMarkupElement) = withContext(Dispatchers.IO) {
         textMarkupDao.upsert(
             TextMarkupEntity(
                 id = markup.id,
@@ -659,14 +659,14 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun saveResource(document: DrawDocument, resource: DrawResource) = withContext(Dispatchers.IO) {
+    override suspend fun saveResource(document: Document, resource: DocumentResource) = withContext(Dispatchers.IO) {
         resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = resource.path, contentHash = resource.hash))
     }
 
     override suspend fun fileWithContent(hash: String): String? =
         if (hash.isEmpty()) null else withContext(Dispatchers.IO) { resourceDao.findUriByHash(hash) }
 
-    override suspend fun savePage(document: DrawDocument, page: DrawPage) = withContext(Dispatchers.IO) {
+    override suspend fun savePage(document: Document, page: Page) = withContext(Dispatchers.IO) {
         pageDao.upsert(
             PageEntity(
                 id = page.id,
@@ -685,21 +685,21 @@ internal class DrawDocumentRepository(
         )
     }
 
-    override suspend fun updateDocumentDefaults(document: DrawDocument) = withContext(Dispatchers.IO) {
+    override suspend fun updateDocumentDefaults(document: Document) = withContext(Dispatchers.IO) {
         documentDao.updateDocumentDefaults(
             document.id, document.defaultBackground, document.defaultWidthMm, document.defaultHeightMm, document.defaultsVersion
         )
     }
 
-    override suspend fun updateDocumentTitle(document: DrawDocument) = withContext(Dispatchers.IO) {
+    override suspend fun updateDocumentTitle(document: Document) = withContext(Dispatchers.IO) {
         documentDao.updateDocumentTitle(document.id, document.title, document.titleVersion)
     }
 
-    override suspend fun touchDocument(document: DrawDocument, timestamp: Long) = withContext(Dispatchers.IO) {
+    override suspend fun touchDocument(document: Document, timestamp: Long) = withContext(Dispatchers.IO) {
         documentDao.touchDocument(document.id, timestamp)
     }
 
-    override suspend fun appendOperation(document: DrawDocument, operation: Operation) = withContext(Dispatchers.IO) {
+    override suspend fun appendOperation(document: Document, operation: Operation) = withContext(Dispatchers.IO) {
         operationDao.insert(
             OperationEntity(
                 documentId = document.id,

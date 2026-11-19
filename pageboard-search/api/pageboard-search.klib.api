@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-search>
+// Library unique name: <pageboard-kmp:pageboard-search>
 final enum class io.github.valerioisufi.pageboard.search/SearchChunkKind : kotlin/Enum<io.github.valerioisufi.pageboard.search/SearchChunkKind> { // io.github.valerioisufi.pageboard.search/SearchChunkKind|null[0]
     enum entry HANDWRITING // io.github.valerioisufi.pageboard.search/SearchChunkKind.HANDWRITING|null[0]
     enum entry LECTURE_NOTES // io.github.valerioisufi.pageboard.search/SearchChunkKind.LECTURE_NOTES|null[0]

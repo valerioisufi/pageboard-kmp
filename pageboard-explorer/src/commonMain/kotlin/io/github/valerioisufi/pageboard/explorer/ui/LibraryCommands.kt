@@ -38,9 +38,9 @@ import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.command.Shortcut
 import io.github.valerioisufi.pageboard.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.pageboard.ui.extension.LibrarySelection
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.about_dialog_title
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -80,20 +80,20 @@ internal class LibraryCommands internal constructor(
 
     val newNote = Command(
         "new-note", label(Res.string.explorer_dialog_new_note), CommandGroup.FILE,
-        icon = { rememberVectorPainter(DrawViewIcons.FilePlus) },
+        icon = { rememberVectorPainter(PageboardIcons.FilePlus) },
         shortcuts = listOf(Shortcut(Key.N, primary = true))
     ) { showDialog(LibraryDialog.NewItem(FileType.FILE)) }
 
     val newFolder = Command(
         "new-folder", label(Res.string.explorer_dialog_new_folder), CommandGroup.FILE,
-        icon = { rememberVectorPainter(DrawViewIcons.FolderPlus) },
+        icon = { rememberVectorPainter(PageboardIcons.FolderPlus) },
         shortcuts = listOf(Shortcut(Key.N, primary = true, shift = true))
     ) { showDialog(LibraryDialog.NewItem(FileType.FOLDER)) }
 
     val openInNewWindow: Command? = openDocumentInNewWindow?.let { openNew ->
         Command(
             "open-in-new-window", label(Res.string.explorer_action_open_in_new_window), CommandGroup.FILE,
-            icon = { rememberVectorPainter(DrawViewIcons.ExternalLink) },
+            icon = { rememberVectorPainter(PageboardIcons.ExternalLink) },
             shortcuts = listOf(Shortcut(Key.O, primary = true, alt = true)),
             isEnabled = { selectedDocument != null }
         ) { selectedDocument?.let { openNew(it.id) } }
@@ -102,7 +102,7 @@ internal class LibraryCommands internal constructor(
     /** Moves the focus to the search of the library. */
     val search = Command(
         "search", label(Res.string.explorer_command_search), CommandGroup.EDIT, section = 2,
-        icon = { rememberVectorPainter(DrawViewIcons.Search) },
+        icon = { rememberVectorPainter(PageboardIcons.Search) },
         shortcuts = listOf(Shortcut(Key.K, primary = true), Shortcut(Key.F, primary = true))
     ) { focusSearch() }
 
@@ -172,7 +172,7 @@ internal class LibraryCommands internal constructor(
     /** Puts back what was moved to the trash last (see [FileExplorerViewModel.lastTrashed]). */
     val undoTrash = Command(
         "undo-trash", label(Res.string.explorer_command_undo_trash), CommandGroup.EDIT,
-        icon = { rememberVectorPainter(DrawViewIcons.RotateCcw) },
+        icon = { rememberVectorPainter(PageboardIcons.RotateCcw) },
         shortcuts = listOf(Shortcut(Key.Z, primary = true)),
         isEnabled = { viewModel.lastTrashed != null }
     ) { viewModel.undoLastTrash() }
@@ -187,19 +187,19 @@ internal class LibraryCommands internal constructor(
 
     val rename = Command(
         "rename", label(Res.string.explorer_action_rename), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(DrawViewIcons.Pencil) },
+        icon = { rememberVectorPainter(PageboardIcons.Pencil) },
         isEnabled = { selection.size == 1 }
     ) { selection.singleOrNull()?.let { showDialog(LibraryDialog.Rename(it)) } }
 
     val move = Command(
         "move", label(Res.string.explorer_action_move_to), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(DrawViewIcons.FolderInput) },
+        icon = { rememberVectorPainter(PageboardIcons.FolderInput) },
         isEnabled = { selection.isNotEmpty() }
     ) { showDialog(LibraryDialog.Move(selection)) }
 
     val delete = Command(
         "delete", label(Res.string.explorer_action_delete), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(DrawViewIcons.Trash) },
+        icon = { rememberVectorPainter(PageboardIcons.Trash) },
         shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
         isEnabled = { if (inTrash) viewModel.selectingTrash else selection.isNotEmpty() },
         destructive = true
@@ -251,7 +251,7 @@ internal class LibraryCommands internal constructor(
 
     // ----- Help -----
 
-    val about = Command("about", label(DrawViewRes.string.about_dialog_title), CommandGroup.HELP) {
+    val about = Command("about", label(PageboardRes.string.about_dialog_title), CommandGroup.HELP) {
         showDialog(LibraryDialog.About)
     }
 
@@ -266,7 +266,7 @@ internal class LibraryCommands internal constructor(
     fun forItem(item: FileItem): List<Command> {
         val openCommand = Command(
             "open", label(Res.string.explorer_action_open), CommandGroup.FILE,
-            icon = { rememberVectorPainter(if (item.type == FileType.FILE) DrawViewIcons.FileText else DrawViewIcons.FolderOpen) }
+            icon = { rememberVectorPainter(if (item.type == FileType.FILE) PageboardIcons.FileText else PageboardIcons.FolderOpen) }
         ) {
             when (item.type) {
                 FileType.FILE -> openDocument(item.id)
@@ -276,7 +276,7 @@ internal class LibraryCommands internal constructor(
         val itemOpenInNewWindow = if (item.type == FileType.FILE && openDocumentInNewWindow != null) {
             Command(
                 "open-in-new-window", label(Res.string.explorer_action_open_in_new_window), CommandGroup.FILE,
-                icon = { rememberVectorPainter(DrawViewIcons.ExternalLink) },
+                icon = { rememberVectorPainter(PageboardIcons.ExternalLink) },
                 shortcuts = listOf(Shortcut(Key.O, primary = true, alt = true))
             ) {
                 openDocumentInNewWindow.invoke(item.id)

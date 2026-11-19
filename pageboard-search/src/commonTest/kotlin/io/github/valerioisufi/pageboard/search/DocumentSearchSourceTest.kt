@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.search
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.encode
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -36,7 +36,7 @@ class DocumentSearchSourceTest {
         val doc = store.createDocument("Appunti sul cifrario", folderId = courseFolder.id)
         val page = doc.pages.single()
 
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = "# Sicurezza semantica\nUn cifrario **perfetto** soddisfa $\$P(M = m \\mid C = c) = P(M = m)\$."
             x = 10f
             y = 20f
@@ -46,7 +46,7 @@ class DocumentSearchSourceTest {
         page.add(text)
         store.saveText(page, text)
 
-        val customElement = DrawCustomElement(FlashcardType.id).apply {
+        val customElement = CustomElement(FlashcardType.id).apply {
             version = FlashcardType.version
             payload = FlashcardType.encode(Flashcard("Diffie-Hellman", "Scambio di chiavi su gruppo ciclico"))
             x = 15f
@@ -57,7 +57,7 @@ class DocumentSearchSourceTest {
         page.add(customElement)
         store.saveCustomElement(page, customElement)
 
-        val unknownCustom = DrawCustomElement("unregistered.type").apply {
+        val unknownCustom = CustomElement("unregistered.type").apply {
             version = 1
             payload = "ignored".encodeToByteArray()
             x = 0f

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +35,7 @@ public enum class ChangeOrigin {
  * of another device that changed nothing here), where it comes from and what it did.
  */
 public class CommittedChange(
-    public val document: DrawDocument,
+    public val document: Document,
     public val operation: Operation,
     public val inverse: DocumentChange?,
     public val origin: ChangeOrigin,
@@ -66,7 +66,7 @@ public fun interface ChangeObserver {
  * @param knownOperations the version vector of the operations already applied to [document].
  */
 public class DocumentSession(
-    public val document: DrawDocument,
+    public val document: Document,
     public val replica: String = newElementId(),
     knownOperations: Map<String, Long> = emptyMap()
 ) {

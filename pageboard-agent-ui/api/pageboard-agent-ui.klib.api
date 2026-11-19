@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-agent-ui>
+// Library unique name: <pageboard-kmp:pageboard-agent-ui>
 final class io.github.valerioisufi.pageboard.agent.ui/AgentReviewUi { // io.github.valerioisufi.pageboard.agent.ui/AgentReviewUi|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.agent/ExternalAgents) // io.github.valerioisufi.pageboard.agent.ui/AgentReviewUi.<init>|<init>(io.github.valerioisufi.pageboard.agent.ExternalAgents){}[0]
 
@@ -21,7 +21,7 @@ final class io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine : io.gith
     final fun pdfInk(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.model/PdfInk? // io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine.pdfInk|pdfInk(kotlin.String;kotlin.Int){}[0]
     final fun pdfLayout(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine.pdfLayout|pdfLayout(kotlin.String;kotlin.Int){}[0]
     final fun textHeight(kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine.textHeight|textHeight(kotlin.String;kotlin.Float;kotlin.Float){}[0]
-    final suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource>, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin/Int, io.github.valerioisufi.pageboard.model.geometry/Rect?, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/PageMark>): kotlin/ByteArray? // io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawResource>;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.Int;io.github.valerioisufi.pageboard.model.geometry.Rect?;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.PageMark>){}[0]
+    final suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource>, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin/Int, io.github.valerioisufi.pageboard.model.geometry/Rect?, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/PageMark>): kotlin/ByteArray? // io.github.valerioisufi.pageboard.agent.ui/CanvasPageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.pageboard.model.DocumentResource>;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.Int;io.github.valerioisufi.pageboard.model.geometry.Rect?;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.PageMark>){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors : io.github.valerioisufi.pageboard.agent/AgentEditors { // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors|null[0]
@@ -29,7 +29,7 @@ final class io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors : io.g
 
     final fun isInEditor(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.isInEditor|isInEditor(kotlin.String){}[0]
     final fun openForReview(kotlin/String) // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.openForReview|openForReview(kotlin.String){}[0]
-    final fun pdfLayout(kotlin/String, io.github.valerioisufi.pageboard.model/DrawPdf): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.pdfLayout|pdfLayout(kotlin.String;io.github.valerioisufi.pageboard.model.DrawPdf){}[0]
+    final fun pdfLayout(kotlin/String, io.github.valerioisufi.pageboard.model/PdfElement): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.pdfLayout|pdfLayout(kotlin.String;io.github.valerioisufi.pageboard.model.PdfElement){}[0]
     final fun settle(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.settle|settle(kotlin.String){}[0]
     final fun textHeight(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.textHeight|textHeight(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float){}[0]
     final suspend fun renderPage(kotlin/String, kotlin/String, kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.pageboard.agent.ui/SessionAgentEditors.renderPage|renderPage(kotlin.String;kotlin.String;kotlin.Int){}[0]

@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-sync-ui>
+// Library unique name: <pageboard-kmp:pageboard-sync-ui>
 final class io.github.valerioisufi.pageboard.sync.ui/Collaboration { // io.github.valerioisufi.pageboard.sync.ui/Collaboration|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, io.github.valerioisufi.pageboard.sync.lan/LanDiscovery, kotlin.coroutines/SuspendFunction0<kotlin/String>, kotlinx.coroutines/CoroutineScope, io.github.valerioisufi.pageboard.model/DocumentAttachments? = ..., io.github.valerioisufi.pageboard.sync.protocol/DeviceIdentity = ..., io.github.valerioisufi.pageboard.sync/InternetSync? = ...) // io.github.valerioisufi.pageboard.sync.ui/Collaboration.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;io.github.valerioisufi.pageboard.sync.lan.LanDiscovery;kotlin.coroutines.SuspendFunction0<kotlin.String>;kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.pageboard.model.DocumentAttachments?;io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity;io.github.valerioisufi.pageboard.sync.InternetSync?){}[0]
 

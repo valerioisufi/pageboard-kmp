@@ -75,7 +75,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.canvas.canvasGesturesOverField
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.observe
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.text.TableEditing
@@ -124,7 +124,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param barBounds where the formatting bar is on the canvas, which the strip of a hidden source avoids.
  */
 @Composable
-internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace) -> Unit, barBounds: () -> Rect? = { null }) {
+internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace) -> Unit, barBounds: () -> Rect? = { null }) {
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
@@ -337,7 +337,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onCaret: (CaretPlace)
                     val origin = controller.editedBoxOrigin()
                     translationX = origin.x
                     translationY = origin.y
-                    // A text turns around its top-left corner (see DrawText)
+                    // A text turns around its top-left corner (see TextElement)
                     rotationZ = editor.rotation
                     transformOrigin = TransformOrigin(0f, 0f)
                 }
@@ -786,7 +786,7 @@ private fun caretRect(layout: TextLayoutResult, shown: PresentedText<*>, tableCa
  * Where the box of the text being written is on the screen. Read while placing, it follows the
  * camera and the pages without composing the field again.
  */
-private fun DrawViewController.editedBoxOrigin(): Point {
+private fun PageboardController.editedBoxOrigin(): Point {
     @Suppress("UNUSED_VARIABLE") val frame = version
     @Suppress("UNUSED_VARIABLE") val camera = viewport.camera.moveCount
     val editor = textEditorManager

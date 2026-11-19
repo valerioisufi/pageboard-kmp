@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 
@@ -31,7 +31,7 @@ internal interface LiveInkLayer {
     fun strokeEnded(finished: StrokeMesh? = null)
 
     /** Draws the stroke where the layer draws in the frames of Compose, over the committed content. */
-    fun draw(scope: DrawScope, controller: DrawViewController)
+    fun draw(scope: DrawScope, controller: PageboardController)
 
     /** The frame being recorded has drawn the tiles, with the strokes committed so far. */
     fun tilesDrawn() = Unit
@@ -43,7 +43,7 @@ internal interface LiveInkLayer {
 
 /** The layer of the stroke in progress of this platform. */
 @Composable
-internal expect fun rememberLiveInkLayer(controller: DrawViewController): LiveInkLayer
+internal expect fun rememberLiveInkLayer(controller: PageboardController): LiveInkLayer
 
 /**
  * The stroke in progress drawn in the frames of Compose, in a canvas of its own over the tiles: a
@@ -71,7 +71,7 @@ internal class ComposeLiveInkLayer : LiveInkLayer {
         tick++
     }
 
-    override fun draw(scope: DrawScope, controller: DrawViewController) {
+    override fun draw(scope: DrawScope, controller: PageboardController) {
         @Suppress("UNUSED_VARIABLE") val observed = tick
         val engine = engine ?: return
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return

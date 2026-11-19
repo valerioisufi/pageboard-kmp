@@ -37,13 +37,13 @@ import androidx.room.TypeConverters
     AffineTransformConverter::class,
     VersionConverters::class
 )
-@ConstructedBy(DrawDatabaseConstructor::class)
+@ConstructedBy(PageboardDatabaseConstructor::class)
 /**
  * The Room database of the documents, their folders, operations, sharing, the shared folders
- * and the preferences of the applications: opened by [createDrawDatabase], migrated from version 16 on (see
+ * and the preferences of the applications: opened by [createPageboardDatabase], migrated from version 16 on (see
  * `DRAW_DATABASE_MIGRATIONS`).
  */
-public abstract class DrawDatabase : RoomDatabase() {
+public abstract class PageboardDatabase : RoomDatabase() {
     internal abstract fun folderDao(): FolderDao
     internal abstract fun documentDao(): DocumentDao
     internal abstract fun pageDao(): PageDao
@@ -64,6 +64,6 @@ public abstract class DrawDatabase : RoomDatabase() {
 
 // The Room compiler generates the implementation of this interface
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-internal expect object DrawDatabaseConstructor : RoomDatabaseConstructor<DrawDatabase> {
-    override fun initialize(): DrawDatabase
+internal expect object PageboardDatabaseConstructor : RoomDatabaseConstructor<PageboardDatabase> {
+    override fun initialize(): PageboardDatabase
 }

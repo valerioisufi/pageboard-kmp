@@ -23,11 +23,11 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import io.github.valerioisufi.pageboard.lecture.R
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 
-internal actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(DrawViewAndroid.context)
+internal actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(PageboardAndroid.context)
 
-internal actual fun createAudioOutput(): AudioOutput? = AndroidAudioOutput(DrawViewAndroid.context)
+internal actual fun createAudioOutput(): AudioOutput? = AndroidAudioOutput(PageboardAndroid.context)
 
 /**
  * The microphone of Android ([AudioRecord], 16 kHz mono). While it records, a foreground service
@@ -215,7 +215,7 @@ internal class AndroidAudioOutput(private val context: Context) : AudioOutput {
         follow(onStopped)
         true
     } catch (e: Exception) {
-        println("DrawView: cannot play the recording: ${e.message}")
+        println("Pageboard: cannot play the recording: ${e.message}")
         false
     }
 

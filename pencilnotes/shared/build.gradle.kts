@@ -77,7 +77,7 @@ compose.resources {
     packageOfResClass = "io.github.valerioisufi.pencilnotes.generated.resources"
 }
 
-// The sync of DrawView is experimental for its users; the modules of the repository use it freely
+// The sync of Pageboard is experimental for its users; the modules of the repository use it freely
 kotlin {
     sourceSets.all {
         languageSettings.optIn("io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi")

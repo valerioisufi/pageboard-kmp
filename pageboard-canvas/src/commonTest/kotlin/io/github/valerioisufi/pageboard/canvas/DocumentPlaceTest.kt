@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.canvas
 
 import io.github.valerioisufi.pageboard.canvas.camera.DocumentPlace
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,10 +53,10 @@ class DocumentPlaceTest {
 
     // --- The viewport ---
 
-    private fun document(pages: Int): DrawDocument = DrawDocument().apply { repeat(pages - 1) { addPage() } }
+    private fun document(pages: Int): Document = Document().apply { repeat(pages - 1) { addPage() } }
 
-    private fun controller(doc: DrawDocument, scope: CoroutineScope, laidOut: Boolean = true): DrawViewController =
-        DrawViewController(document = doc, coroutineScope = scope).apply {
+    private fun controller(doc: Document, scope: CoroutineScope, laidOut: Boolean = true): PageboardController =
+        PageboardController(document = doc, coroutineScope = scope).apply {
             if (laidOut) viewport.setSize(800f, 1200f)
         }
 
@@ -64,7 +64,7 @@ class DocumentPlaceTest {
         assertTrue(abs(expected - actual) <= tolerance, "expected $expected, was $actual")
 
     /** Zooms in by [factor] around the center of the canvas, as a pinch does. */
-    private fun DrawViewController.zoom(factor: Float) {
+    private fun PageboardController.zoom(factor: Float) {
         viewport.camera.onDrag(0f, 0f, factor, viewport.width / 2f, viewport.height / 2f)
         viewport.camera.restoreToBounds(animated = false)
     }

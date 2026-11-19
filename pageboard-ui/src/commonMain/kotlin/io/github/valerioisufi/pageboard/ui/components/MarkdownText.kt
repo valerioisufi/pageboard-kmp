@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.ui.editor.QUOTE_BAR_ALPHA
@@ -49,7 +49,7 @@ import io.github.valerioisufi.pageboard.ui.editor.tableOrigin
 import io.github.valerioisufi.pageboard.ui.render.TableLayout
 import io.github.valerioisufi.pageboard.ui.render.CodeBlockLayout
 import io.github.valerioisufi.pageboard.ui.render.CodeTheme
-import io.github.valerioisufi.pageboard.ui.render.LocalDrawViewEngines
+import io.github.valerioisufi.pageboard.ui.render.LocalPageboardEngines
 import io.github.valerioisufi.pageboard.ui.render.codeChips
 import io.github.valerioisufi.pageboard.ui.theme.NotesFonts
 import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
@@ -59,7 +59,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /**
  * The Markdown of a text of the notes shown out of the page, as the page draws it (see
  * [RichTextPresenter]): its delimiters hidden, its formulas rendered by the engine of
- * [LocalDrawViewEngines] once it is ready, its blocks of code laid out at the width given to it in
+ * [LocalPageboardEngines] once it is ready, its blocks of code laid out at the width given to it in
  * the colors of their language, its code in the line on a background. Until its formulas can be
  * rendered, a text with formulas shows its notation styled (see [MarkdownTextUtil.toLiveAnnotatedString]).
  */
@@ -71,7 +71,7 @@ public fun MarkdownText(
     style: TextStyle = LocalTextStyle.current
 ) {
     val density = LocalDensity.current
-    val engines = LocalDrawViewEngines.current
+    val engines = LocalPageboardEngines.current
     val formulas = engines.formulas
     val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
     val resolver = LocalFontFamilyResolver.current
@@ -140,7 +140,7 @@ private fun markdownContent(
     color: Color,
     style: TextStyle,
     density: Density,
-    engines: DrawViewEngines,
+    engines: PageboardEngines,
     latexReady: Boolean,
     widthPx: Float?,
     measurer: TextMeasurer,

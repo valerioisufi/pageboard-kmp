@@ -4,15 +4,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.pageboard.canvas.history.HistoryManager
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -60,7 +60,7 @@ import kotlinx.serialization.json.Json
 
 class DocumentChangeTest {
 
-    private fun stroke(x: Float, y: Float): DrawStroke {
+    private fun stroke(x: Float, y: Float): StrokeElement {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, y, x + 5f, y, x + 5f, y + 5f, x, y + 5f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
@@ -69,21 +69,21 @@ class DocumentChangeTest {
             size = 1f,
             points = listOf(StrokePoint(x, y, 0.5f, 0L), StrokePoint(x + 5f, y + 5f, 0.5f, 16L))
         )
-        return DrawStroke(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
+        return StrokeElement(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
     }
 
-    private fun text(content: String, x: Float = 10f) = DrawText().apply {
+    private fun text(content: String, x: Float = 10f) = TextElement().apply {
         text = content
         this.x = x; y = 20f; width = 40f; height = 10f
         fontSize = 16f
     }
 
-    private fun image(x: Float = 30f) = DrawImage().apply {
+    private fun image(x: Float = 30f) = ImageElement().apply {
         resourceId = "img"
         this.x = x; y = 40f; width = 20f; height = 15f
     }
 
-    private fun markup() = DrawTextMarkup(
+    private fun markup() = TextMarkupElement(
         resourceId = "pdf", pdfPageIndex = 0, pdfWidthPt = 595f, pdfHeightPt = 842f,
         startIndex = 0, endIndex = 4, text = "Hash", rects = listOf(Rect(72f, 100f, 120f, 124f)),
         kind = TextMarkupKind.HIGHLIGHT, color = 0xFFFFF176.toInt()
@@ -93,7 +93,7 @@ class DocumentChangeTest {
      * The whole content of [this] as values, one line per page and per element (not the versions
      * of the texts, like the stamps).
      */
-    private fun DrawDocument.snapshot(): List<String> =
+    private fun Document.snapshot(): List<String> =
         listOf("defaults $defaultWidthMm x $defaultHeightMm $defaultBackground", "resources ${resources.map { it.id }}") +
             pages.flatMap { page ->
                 val data = page.toData()
@@ -107,8 +107,8 @@ class DocumentChangeTest {
         throw AssertionError("$message: line $line\nexpected: ${expected.getOrNull(line)}\nactual:   ${actual.getOrNull(line)}")
     }
 
-    private fun documentWithContent(): DrawDocument {
-        val document = DrawDocument()
+    private fun documentWithContent(): Document {
+        val document = Document()
         document.addPage()
         document.addPage()
         val (first, second) = document.pages
@@ -116,7 +116,7 @@ class DocumentChangeTest {
         first.add(text("one"))
         first.add(text("two", 60f))
         first.add(image())
-        second.add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "pdf" })
+        second.add(PdfElement(pdfPageIndex = 0).apply { resourceId = "pdf" })
         second.add(markup())
         second.add(stroke(10f, 80f))
         return document
@@ -126,7 +126,7 @@ class DocumentChangeTest {
      * Applies [change] ([check] runs after it), its inverse (undo), the inverse of the inverse
      * (redo) and undo again: the document is left as it was.
      */
-    private fun assertUndoable(document: DrawDocument, change: DocumentChange, check: () -> Unit = {}) {
+    private fun assertUndoable(document: Document, change: DocumentChange, check: () -> Unit = {}) {
         val session = DocumentSession(document)
         val before = document.snapshot()
         val undo = assertNotNull(session.submit(change), "$change changed nothing")
@@ -207,7 +207,7 @@ class DocumentChangeTest {
     @Test
     fun pagesAreAddedRemovedReorderedAndFormatted() {
         val document = documentWithContent()
-        val added = DrawPage().apply { add(stroke(1f, 1f)) }
+        val added = Page().apply { add(stroke(1f, 1f)) }
         added.orderKey = document.orderKeyAt(1)
         assertUndoable(document, AddPage.of(added)) {
             assertEquals(added, document.pages[1])
@@ -230,18 +230,18 @@ class DocumentChangeTest {
     @Test
     fun theLastPageCanBeRemovedByAnotherDevice() {
         // Two devices removing the two pages at once agree: the document is empty
-        val document = DrawDocument()
+        val document = Document()
         assertNotNull(DocumentSession(document).submit(RemovePage(document.pages[0].id)))
         assertTrue(document.pages.isEmpty())
     }
 
     @Test
     fun resourcesAreKeptByUndo() {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document)
         val image = image()
         val change = CompositeChange(
-            listOf(AddResource.of("img", DrawResource.ResourceType.IMAGE, "/tmp/img.png"), AddElements.of(document.pages[0], listOf(image)))
+            listOf(AddResource.of("img", DocumentResource.ResourceType.IMAGE, "/tmp/img.png"), AddElements.of(document.pages[0], listOf(image)))
         )
         val undo = assertNotNull(session.submit(change))
         assertEquals("/tmp/img.png", document.findResource("img")?.path)
@@ -289,19 +289,19 @@ class DocumentChangeTest {
         assertSameContent(final, document.snapshot(), "redo of $made changes")
     }
 
-    private fun randomChange(document: DrawDocument, random: Random): DocumentChange? {
+    private fun randomChange(document: Document, random: Random): DocumentChange? {
         val page = document.pages[random.nextInt(document.pages.size)]
         val elements = page.elements()
-        fun someElements(): List<DrawElement> = elements.shuffled(random).take(random.nextInt(1, 4))
+        fun someElements(): List<PageElement> = elements.shuffled(random).take(random.nextInt(1, 4))
         return when (random.nextInt(9)) {
             0 -> AddElements.of(page, List(random.nextInt(1, 3)) { stroke(random.nextFloat() * 100f, random.nextFloat() * 100f) } + text("t${random.nextInt()}"))
             1 -> if (elements.isEmpty()) null else RemoveElements.of(page, someElements())
             2 -> {
                 val placements = someElements().mapNotNull { element ->
                     when (element) {
-                        is DrawStroke -> StrokePlacement(element.id, AffineTransform(tx = random.nextFloat() * 10f, ty = random.nextFloat() * 10f))
-                        is DrawText -> TextPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, random.nextFloat() * 90f, 16f, autoWidth = false)
-                        is DrawImage -> BoxPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, 10f, random.nextFloat() * 90f)
+                        is StrokeElement -> StrokePlacement(element.id, AffineTransform(tx = random.nextFloat() * 10f, ty = random.nextFloat() * 10f))
+                        is TextElement -> TextPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, random.nextFloat() * 90f, 16f, autoWidth = false)
+                        is ImageElement -> BoxPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, 10f, random.nextFloat() * 90f)
                         else -> null
                     }
                 }
@@ -309,7 +309,7 @@ class DocumentChangeTest {
                 if (placements.isEmpty()) null else PlaceElements(page.id, placements, target.id)
             }
             3 -> page.texts.firstOrNull()?.let { UpdateTexts(page.id, listOf(it.toData().copy(text = "u${random.nextInt()}"))) }
-            4 -> AddPage.of(DrawPage(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
+            4 -> AddPage.of(Page(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
             5 -> if (document.pages.size > 1) RemovePage(page.id) else null
             6 -> MovePages.toOrder(document, document.pages.map { it.id }.shuffled(random))
             7 -> SetPageFormat(page.id, 100f + random.nextInt(100), 100f + random.nextInt(100), if (random.nextBoolean()) PageBackground.Ruled() else null)
@@ -331,12 +331,12 @@ class DocumentChangeTest {
             PlaceElements(first.id, listOf(StrokePlacement(first.strokes[0].id, AffineTransform(tx = 3f))), second.id),
             UpdateTexts(first.id, listOf(first.texts[0].toData().copy(text = "x"))),
             RestyleMarkups(second.id, listOf(MarkupStyle(second.markups[0].id, TextMarkupKind.UNDERLINE, 1))),
-            AddPage.of(DrawPage(orderKey = "a").apply { add(stroke(5f, 5f)) }),
+            AddPage.of(Page(orderKey = "a").apply { add(stroke(5f, 5f)) }),
             RemovePage(second.id),
             MovePages(listOf(PageMove(first.id, "z"))),
             SetPageFormat(first.id, 148f, 210f, PageBackground.Grid()),
             SetDocumentDefaults(210f, 297f, PageBackground.Ruled()),
-            CompositeChange(listOf(AddResource.of("r", DrawResource.ResourceType.PDF, "/tmp/r.pdf"), RemovePage(first.id)))
+            CompositeChange(listOf(AddResource.of("r", DocumentResource.ResourceType.PDF, "/tmp/r.pdf"), RemovePage(first.id)))
         )
         val serializer = ListSerializer(DocumentChange.serializer())
         val json = Json.encodeToString(serializer, changes)
@@ -346,7 +346,7 @@ class DocumentChangeTest {
     @Test
     fun aDeserializedOperationIsAppliedToAnotherCopyOfTheDocument() {
         val document = documentWithContent()
-        val copy = DrawDocument(id = document.id, addInitialPage = false)
+        val copy = Document(id = document.id, addInitialPage = false)
         for (page in document.pages) copy.appendPage(page.toData().toPage(copy))
         copy.reindexPages()
 
@@ -366,19 +366,19 @@ class DocumentChangeTest {
 
     @Test
     fun theEffectsAreWrittenInOrder() = runBlocking {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document)
         val calls = mutableListOf<String>()
         val persistence = object : DocumentPersistence {
-            override suspend fun savePage(document: DrawDocument, page: DrawPage) {
+            override suspend fun savePage(document: Document, page: Page) {
                 calls.add(if (page.removed != null) "page ${page.id} removed=true" else "page ${page.id} ${page.orderKey}")
             }
 
-            override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+            override suspend fun saveStrokes(page: Page, strokes: List<StrokeElement>) {
                 calls.add("strokes ${strokes.map { "${it.id} removed=${it.removed != null}" }} on ${page.id}")
             }
 
-            override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+            override suspend fun touchDocument(document: Document, timestamp: Long) {
                 calls.add("touch")
             }
         }
@@ -386,7 +386,7 @@ class DocumentChangeTest {
         session.addObserver(ChangePersister { operations.add(it) })
 
         val stroke = stroke(1f, 1f)
-        val page = DrawPage(id = newElementId()).apply { add(stroke) }
+        val page = Page(id = newElementId()).apply { add(stroke) }
         page.orderKey = document.orderKeyAt(1)
         val undo = assertNotNull(session.submit(AddPage.of(page)))
         suspend fun write() {
@@ -410,7 +410,7 @@ class DocumentChangeTest {
 
     @Test
     fun theEffectsOfAnOperationAreWrittenInOneTransaction() = runBlocking {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document)
         val calls = mutableListOf<String>()
         val persistence = object : DocumentPersistence {
@@ -419,26 +419,26 @@ class DocumentChangeTest {
                 return block().also { calls.add("end") }
             }
 
-            override suspend fun savePage(document: DrawDocument, page: DrawPage) {
+            override suspend fun savePage(document: Document, page: Page) {
                 calls.add("page")
             }
 
-            override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+            override suspend fun saveStrokes(page: Page, strokes: List<StrokeElement>) {
                 calls.add("strokes")
             }
 
-            override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
+            override suspend fun appendOperation(document: Document, operation: Operation) {
                 calls.add("operation")
             }
 
-            override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+            override suspend fun touchDocument(document: Document, timestamp: Long) {
                 calls.add("touch")
             }
         }
         val operations = mutableListOf<suspend DocumentPersistence.() -> Unit>()
         session.addObserver(ChangePersister { operations.add(it) })
 
-        val page = DrawPage(id = newElementId()).apply { add(stroke(1f, 1f)) }
+        val page = Page(id = newElementId()).apply { add(stroke(1f, 1f)) }
         page.orderKey = document.orderKeyAt(1)
         session.submit(AddPage.of(page))
         session.submit(AddElements.of(page, listOf(stroke(2f, 2f))))

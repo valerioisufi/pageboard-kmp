@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.observe
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.ElementRenderers
 import io.github.valerioisufi.pageboard.explorer.DocumentLibrary
 import io.github.valerioisufi.pageboard.explorer.DocumentThumbnails
@@ -22,7 +22,7 @@ import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.app_name
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -33,8 +33,8 @@ import org.jetbrains.compose.resources.stringResource
 private val editorClipboard = EditorClipboard()
 
 /**
- * DrawView sample application: the document library and the editor of the open document, with
- * the DrawView theme, and an element type of its own (the shapes, see [ShapeType]).
+ * Pageboard sample application: the document library and the editor of the open document, with
+ * the Pageboard theme, and an element type of its own (the shapes, see [ShapeType]).
  *
  * @param commandHost the commands of the screen shown: the desktop gives them to the menu bar and
  *   to the shortcuts of its window.
@@ -47,7 +47,7 @@ fun App(
 ) {
     // The PDF pages drawn by PDFium, the formulas by MicroTeX, the shapes of the sample by their renderer
     val engines = remember {
-        DrawViewEngines(
+        PageboardEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
             formulas = SampleData.latex,
             elements = ElementRenderers(listOf(ShapeRenderer)),
@@ -57,7 +57,7 @@ fun App(
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }
     // The documents of the sample, in its data directory (see SampleData)
     val documents = SampleData.documents
-    DrawViewTheme {
+    PageboardTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
                 title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
@@ -75,7 +75,7 @@ fun App(
 }
 
 /**
- * A standalone document editor window for the DrawView sample (multi-window desktop mode).
+ * A standalone document editor window for the Pageboard sample (multi-window desktop mode).
  */
 @Composable
 fun SampleDocumentWindow(
@@ -86,7 +86,7 @@ fun SampleDocumentWindow(
     onModifiedChange: (Boolean) -> Unit = {}
 ) {
     val engines = remember {
-        DrawViewEngines(
+        PageboardEngines(
             pdfTiles = PdfiumEngine::createTileAdapter,
             formulas = SampleData.latex,
             elements = ElementRenderers(listOf(ShapeRenderer)),
@@ -95,7 +95,7 @@ fun SampleDocumentWindow(
     }
     val shapes = remember { shapesExtension() + inkLatencyExtension() + wordSuggestionsExtension() }
     val documents = SampleData.documents
-    DrawViewTheme {
+    PageboardTheme {
         val editorViewModel = viewModel(key = "sample-doc-$documentId") {
             DocumentEditorViewModel(documents, SampleData.sessions, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)

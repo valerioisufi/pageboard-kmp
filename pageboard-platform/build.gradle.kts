@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "Platform services of DrawView: files, native libraries, secure store, device name, locks, time, SHA-256"
+description = "Platform services of Pageboard: files, native libraries, secure store, device name, locks, time, SHA-256"
 
 kotlin {
     sourceSets {

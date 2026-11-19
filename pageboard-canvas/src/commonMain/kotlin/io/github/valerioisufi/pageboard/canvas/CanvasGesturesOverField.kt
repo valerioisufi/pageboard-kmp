@@ -9,7 +9,7 @@ import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 
 /**
  * Gives the canvas under an element the gestures that move the camera, which never reach it
@@ -19,7 +19,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
  * What is left stays with the element: a tap, a long press and what follows it, a pen, the other
  * buttons of a mouse.
  */
-public fun Modifier.canvasGesturesOverField(controller: DrawViewController): Modifier = pointerInput(controller) {
+public fun Modifier.canvasGesturesOverField(controller: PageboardController): Modifier = pointerInput(controller) {
     val touchSlop = viewConfiguration.touchSlop
     val longPressTimeout = viewConfiguration.longPressTimeoutMillis
     val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis

@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.export
 
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.newResourcePath
@@ -41,11 +41,11 @@ class ArchiveTest {
         val open = checkNotNull(documents.open(limits.id))
         open.edit { session ->
             val document = session.document
-            val resource = DrawResource("res-1", DrawResource.ResourceType.IMAGE, image)
+            val resource = DocumentResource("res-1", DocumentResource.ResourceType.IMAGE, image)
             document.addResource(resource)
             val page = document.pages.first()
-            val text = DrawText().apply { text = "# Limiti\n\$x \\to 0\$"; x = 10f; y = 10f; width = 100f; fontSize = 12f }
-            val picture = DrawImage().apply { resourceId = resource.id; x = 10f; y = 40f; width = 30f; height = 20f }
+            val text = TextElement().apply { text = "# Limiti\n\$x \\to 0\$"; x = 10f; y = 10f; width = 100f; fontSize = 12f }
+            val picture = ImageElement().apply { resourceId = resource.id; x = 10f; y = 40f; width = 30f; height = 20f }
             session.submit(AddElements.of(page, listOf(text, picture)))
         }
         documents.close(open)

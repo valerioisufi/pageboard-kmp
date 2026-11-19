@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "The protocol of the DrawView synchronization, without the documents: the frames, the end-to-end encryption, the identities of the devices, the invitations, the membership, the transports"
+description = "The protocol of the Pageboard synchronization, without the documents: the frames, the end-to-end encryption, the identities of the devices, the invitations, the membership, the transports"
 
 kotlin {
     sourceSets {

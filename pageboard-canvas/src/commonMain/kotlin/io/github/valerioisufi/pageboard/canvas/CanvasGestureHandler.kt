@@ -24,7 +24,7 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorActivity
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeHandle
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeSnapper
@@ -32,9 +32,9 @@ import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -106,7 +106,7 @@ internal class CanvasLiveState {
  * original Android implementation.
  */
 internal class CanvasGestureHandler(
-    private val controller: DrawViewController,
+    private val controller: PageboardController,
     private val engine: InkStrokeEngine,
     private val live: CanvasLiveState,
     private val ink: LiveInkLayer,
@@ -1045,15 +1045,15 @@ internal class CanvasGestureHandler(
     }
 
     /** The shape under [position] (screen pixels), on top, with the index of its page: hit by its outline, or its inside when filled. */
-    private fun shapeAt(position: Offset): Pair<Int, DrawCustomElement>? {
+    private fun shapeAt(position: Offset): Pair<Int, CustomElement>? {
         val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         val at = controller.viewport.screenToPageMm(pageIndex, position) ?: return null
         val elements = controller.engines.elements
         val shape = page.stack.lastOrNull { element ->
-            element is DrawCustomElement && element.type == ShapeElementType.id &&
+            element is CustomElement && element.type == ShapeElementType.id &&
                 !controller.hiddenElements.isHidden(element.id) && elements.hits(element, at.x, at.y)
-        } as? DrawCustomElement ?: return null
+        } as? CustomElement ?: return null
         return pageIndex to shape
     }
 
@@ -1130,16 +1130,16 @@ internal class CanvasGestureHandler(
             val elements = controller.engines.elements
             val hit = page.stack.lastOrNull { element ->
                 when (element) {
-                    is DrawCustomElement -> elements.hits(element, mm.x, mm.y)
-                    is DrawImage -> element.containsPoint(mm.x, mm.y)
-                    is DrawText -> element.containsPoint(mm.x, mm.y)
+                    is CustomElement -> elements.hits(element, mm.x, mm.y)
+                    is ImageElement -> element.containsPoint(mm.x, mm.y)
+                    is TextElement -> element.containsPoint(mm.x, mm.y)
                     else -> false
                 }
             }
             when (hit) {
-                is DrawCustomElement -> controller.selectionManager.selectCustomElement(pageIndex, hit)
-                is DrawImage -> controller.selectionManager.selectImage(pageIndex, hit)
-                is DrawText -> controller.selectionManager.selectText(pageIndex, hit)
+                is CustomElement -> controller.selectionManager.selectCustomElement(pageIndex, hit)
+                is ImageElement -> controller.selectionManager.selectImage(pageIndex, hit)
+                is TextElement -> controller.selectionManager.selectText(pageIndex, hit)
                 else -> controller.selectionManager.clearSelection()
             }
         }

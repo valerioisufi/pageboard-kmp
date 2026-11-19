@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.store.testing
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -136,7 +136,7 @@ public suspend fun <S> checkSharedFolders(ada: S, bob: S, scope: CoroutineScope)
         for (entry in toLibrary.view(space.id).filter { it.kind == CatalogItemKind.DOCUMENT }) {
             if (to.documents.first().any { it.id == entry.id } || to.trash.first().any { it.id == entry.id }) continue
             val document = from.loadDocument(entry.id) ?: continue
-            to.insertDocument(DrawDocument(document.id, document.title), toLibrary.folderOf(entry.id)!!.getOrNull())
+            to.insertDocument(Document(document.id, document.title), toLibrary.folderOf(entry.id)!!.getOrNull())
         }
         toLibrary.reconcile()
     }

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandTooltip
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 
 /**
@@ -39,7 +39,7 @@ internal fun ActionBar(modifier: Modifier = Modifier, height: Int = 48, scrolls:
     val shape = RoundedCornerShape((height / 2).dp)
     Row(
         modifier = modifier
-            .elevation(DrawViewElevation.Level2, shape)
+            .elevation(PageboardElevation.Level2, shape)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(height.dp)

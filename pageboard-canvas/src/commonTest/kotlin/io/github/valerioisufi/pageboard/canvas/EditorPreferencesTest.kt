@@ -1,12 +1,12 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawPreferences
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.EditorPreferences
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.pageboard.canvas.controller.ToolManager
 import io.github.valerioisufi.pageboard.canvas.controller.ToolPreset
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
@@ -29,15 +29,15 @@ class EditorPreferencesTest {
 
     @Test
     fun thePreferencesAreWrittenAsTextAndReadAgain() {
-        val preferences = DrawPreferences(
+        val preferences = EditorPreferences(
             isStylusOnlyMode = true,
             lastSelectedTool = Tool.LAZO,
             textDefaults = TextDefaults(18f, 0xFF00FF00.toInt(), TextAlignment.END),
             isSnapEnabled = false,
             presets = ToolManager.defaultPresets() + (Tool.TEXT_MARKUP to listOf(ToolPreset(0f, 0xFFE53935.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.STRIKEOUT)))
         )
-        assertEquals(preferences, DrawPreferences.decode(preferences.encode()))
-        assertNull(DrawPreferences.decode("not the preferences"))
+        assertEquals(preferences, EditorPreferences.decode(preferences.encode()))
+        assertNull(EditorPreferences.decode("not the preferences"))
     }
 
     @Test
@@ -49,9 +49,9 @@ class EditorPreferencesTest {
              "presets":{"INK_PEN":[{"sizeMm":0.5,"color":-15066088,"family":"PRESSURE_PEN"}],
                         "TEXT_MARKUP":[{"sizeMm":0.0,"color":-2999493,"family":"HIGHLIGHTER","markup":"UNDERLINE"}]}}
         """
-        val preferences = DrawPreferences.decode(migrated)
+        val preferences = EditorPreferences.decode(migrated)
         assertEquals(
-            DrawPreferences(
+            EditorPreferences(
                 lastSelectedTool = Tool.TEXT_MARKUP,
                 textDefaults = TextDefaults(11f, -14722394, TextAlignment.START),
                 presets = mapOf(
@@ -71,25 +71,25 @@ class EditorPreferencesTest {
 
     @Test
     fun theStyleOfTheShapesToolIsKeptAndWhatIsNotUnderstoodIsItsDefault() = runTest(UnconfinedTestDispatcher()) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val controller = PageboardController(document = Document(), coroutineScope = backgroundScope)
         val style = ShapeToolStyle(ShapeKind.LINE, 0xFFE53935.toInt(), 1f, ShapeDash.DASHED, fill = 0x33E53935, heads = 2, head = ShapeHead.FILLED)
         controller.shapeInserter.updateStyle(style)
         val text = controller.preferences.value.encode()
-        val other = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
-        other.applyPreferences(DrawPreferences.decode(text)!!)
+        val other = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        other.applyPreferences(EditorPreferences.decode(text)!!)
         assertEquals(style, other.shapeInserter.style)
         assertEquals(ShapeHead.FILLED, style.element().startHead)
         assertNull(style.element().fill, "a line has no fill")
 
         // A kind of a later version, a width out of bounds, heads not understood: the defaults
         val later = """{"shapeTool":{"kind":"STAR","widthMm":99.0,"dash":"WAVY","heads":7,"head":"NONE","stroke":-1}}"""
-        val read = DrawPreferences.decode(later)!!.shapeTool.toStyle()
+        val read = EditorPreferences.decode(later)!!.shapeTool.toStyle()
         assertEquals(ShapeToolStyle(stroke = -1), read)
     }
 
     @Test
     fun theEditorTellsItsPreferencesAsTheyChangeAndTakesThemBack() = runTest(UnconfinedTestDispatcher()) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val controller = PageboardController(document = Document(), coroutineScope = backgroundScope)
         controller.updateStylusOnlyMode(true)
         controller.snapManager.updateEnabled(false)
         controller.shapeSnapper.updateEnabled(false)
@@ -100,8 +100,8 @@ class EditorPreferencesTest {
         assertEquals(Tool.INK_HIGHLIGHTER, told.lastSelectedTool)
 
         // Another editor takes them back
-        val other = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
-        other.applyPreferences(DrawPreferences.decode(told.encode())!!)
+        val other = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        other.applyPreferences(EditorPreferences.decode(told.encode())!!)
         assertTrue(other.isStylusOnlyMode)
         assertEquals(false, other.snapManager.isEnabled)
         assertEquals(false, other.shapeSnapper.isEnabled)
@@ -113,20 +113,20 @@ class EditorPreferencesTest {
     fun thePreferencesWrittenBeforeTheSuggestionsTurnThemOn() {
         // As the version before the suggestions while writing writes them (the defaults left out)
         val written = """{"isStylusOnlyMode":true,"lastSelectedTool":"TEXT","isShapeRecognitionEnabled":false}"""
-        val preferences = DrawPreferences.decode(written)!!
+        val preferences = EditorPreferences.decode(written)!!
         assertTrue(preferences.areTextSuggestionsEnabled)
         assertEquals(Tool.TEXT, preferences.lastSelectedTool)
-        val off = DrawPreferences(areTextSuggestionsEnabled = false)
-        assertEquals(off, DrawPreferences.decode(off.encode()))
+        val off = EditorPreferences(areTextSuggestionsEnabled = false)
+        assertEquals(off, EditorPreferences.decode(off.encode()))
     }
 
     @Test
     fun theSuggestionsTurnedOffAreKept() = runTest {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val controller = PageboardController(document = Document(), coroutineScope = backgroundScope)
         assertTrue(controller.areTextSuggestionsEnabled)
         controller.updateTextSuggestionsEnabled(false)
         assertEquals(false, controller.preferences.value.areTextSuggestionsEnabled)
-        val reopened = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val reopened = PageboardController(document = Document(), coroutineScope = backgroundScope)
         reopened.applyPreferences(controller.preferences.value)
         assertEquals(false, reopened.areTextSuggestionsEnabled)
     }

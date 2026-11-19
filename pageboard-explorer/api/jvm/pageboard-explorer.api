@@ -1,5 +1,5 @@
 public final class io/github/valerioisufi/pageboard/explorer/DocumentLibraryKt {
-	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/pageboard/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
+	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/pageboard/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/explorer/DocumentOpener {
@@ -26,7 +26,7 @@ public final class io/github/valerioisufi/pageboard/explorer/DocumentThumbnails$
 }
 
 public final class io/github/valerioisufi/pageboard/explorer/DocumentThumbnailsKt {
-	public static final fun rememberDocumentThumbnails (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;
+	public static final fun rememberDocumentThumbnails (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/explorer/LibrarySearch {

@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "What an external model can read of a DrawView document and propose for it, reviewed by the user"
+description = "What an external model can read of a Pageboard document and propose for it, reviewed by the user"
 
 kotlin {
     sourceSets {

@@ -7,7 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.pm.PackageManager
 import android.os.Build
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 
 public actual val isComputer: Boolean = false
 
@@ -17,7 +17,7 @@ internal actual fun environmentApiKey(): String? = null
 internal actual fun restrictToOwner(path: String) {}
 
 internal actual fun showNotification(channel: String, title: String, text: String) {
-    val context = DrawViewAndroid.context
+    val context = PageboardAndroid.context
     // Without the permission (Android 13+), nothing is shown
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
         context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED

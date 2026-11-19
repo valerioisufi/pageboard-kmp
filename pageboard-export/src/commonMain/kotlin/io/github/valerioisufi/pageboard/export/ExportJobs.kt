@@ -115,7 +115,7 @@ public class ExportJobs(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    println("DrawView: cannot export ${request.fileName}: ${e.message}")
+                    println("Pageboard: cannot export ${request.fileName}: ${e.message}")
                     ExportJobState.Failed(ExportFailure.of(e))
                 }
                 setActive(id, result)

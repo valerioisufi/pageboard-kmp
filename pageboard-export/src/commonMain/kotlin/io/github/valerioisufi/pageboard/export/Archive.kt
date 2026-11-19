@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.export
 
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.change.DocumentSnapshot
 import io.github.valerioisufi.pageboard.model.change.snapshot
 import io.github.valerioisufi.pageboard.model.newElementId
@@ -112,7 +112,7 @@ public class ArchiveExporter(private val documents: OpenDocuments) {
                 continue
             }
             val (snapshot, resources) = try {
-                open.edit { session -> session.document.snapshot() to session.document.resources.map { DrawResource(it.id, it.type, it.path, it.hash) } }
+                open.edit { session -> session.document.snapshot() to session.document.resources.map { DocumentResource(it.id, it.type, it.path, it.hash) } }
             } finally {
                 documents.close(open)
             }
@@ -142,9 +142,9 @@ public class ArchiveExporter(private val documents: OpenDocuments) {
         return ArchiveResult(zip.toByteArray(), manifest.size, pages, missing)
     }
 
-    private fun extensionOf(resource: DrawResource): String =
+    private fun extensionOf(resource: DocumentResource): String =
         resource.path.substringAfterLast('/').substringAfterLast('.', "").takeIf { it.isNotEmpty() && it.length <= 8 }
-            ?: if (resource.type == DrawResource.ResourceType.PDF) "pdf" else "bin"
+            ?: if (resource.type == DocumentResource.ResourceType.PDF) "pdf" else "bin"
 
     /** The folders of the path [relativePath] of a note in an archive of PDFs (its file name dropped). */
     private fun folderNames(relativePath: String): List<String> = relativePath.split('/').dropLast(1).filter { it.isNotEmpty() }
@@ -207,7 +207,7 @@ public class ArchiveImporter(private val documents: OpenDocuments) {
             val document = snapshot.copy(id = newElementId(), title = note.name).toDocument(store.strokeModeller)
             for (resource in document.resources) {
                 val content = files[resource.id] ?: continue
-                val extension = if (resource.type == DrawResource.ResourceType.PDF) "pdf" else "img"
+                val extension = if (resource.type == DocumentResource.ResourceType.PDF) "pdf" else "img"
                 val path = newResourcePath("archive", extension)
                 if (PlatformFiles.writeBytes(path, content)) resource.path = path
             }

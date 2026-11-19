@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.BoxPlacement
 import io.github.valerioisufi.pageboard.model.change.CustomElementData
@@ -47,7 +47,7 @@ internal object ShapeItems {
     data class Ends(val from: Point, val to: Point, val headFrom: ShapeHead, val headTo: ShapeHead)
 
     /** The box of [element] as a shape. */
-    fun boxOf(element: DrawCustomElement): ShapeBox = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
+    fun boxOf(element: CustomElement): ShapeBox = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
 
     /** The ends of the line [value] in its [box], as a model reads them. */
     fun endsOf(box: ShapeBox, value: ShapeElement): Ends {
@@ -84,7 +84,7 @@ internal object ShapeItems {
     }
 
     /** The shape [element] is, and the box [item] leaves it in. */
-    fun updated(element: DrawCustomElement, value: ShapeElement, item: ProposalItem.UpdateShape): Pair<ShapeElement, ShapeBox> {
+    fun updated(element: CustomElement, value: ShapeElement, item: ProposalItem.UpdateShape): Pair<ShapeElement, ShapeBox> {
         val stroke = item.color?.let { ElementItems.parseColor(it) } ?: value.stroke
         val width = item.widthMm ?: value.widthMm
         val dash = item.outline?.let { OUTLINES.getValue(it) } ?: value.dash
@@ -110,7 +110,7 @@ internal object ShapeItems {
     }
 
     /** The changes of [item], applied to [document] as it is now (not stale). */
-    fun changesOf(document: DrawDocument, item: ProposalItem): List<DocumentChange> = when (item) {
+    fun changesOf(document: Document, item: ProposalItem): List<DocumentChange> = when (item) {
         is ProposalItem.AddShape -> {
             val (value, box) = added(item)
             val data = CustomElementData(newElementId(), ShapeElementType.id, ShapeElementType.version, ShapeElementType.encode(value), box.x, box.y, box.width, box.height, box.rotation)
@@ -128,7 +128,7 @@ internal object ShapeItems {
     }
 
     /** The shape [id] shown in [document]: its page, its element and its value; `null` when it is not one. */
-    fun findShape(document: DrawDocument, id: String): Triple<DrawPage, DrawCustomElement, ShapeElement>? {
+    fun findShape(document: Document, id: String): Triple<Page, CustomElement, ShapeElement>? {
         for (page in document.pages) {
             val element = page.customElements.firstOrNull { it.id == id && it.removed == null } ?: continue
             val value = ShapeElementType.decode(element) ?: return null

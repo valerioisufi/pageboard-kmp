@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-sync>
+// Library unique name: <pageboard-kmp:pageboard-sync>
 final enum class io.github.valerioisufi.pageboard.sync/JoinStatus : kotlin/Enum<io.github.valerioisufi.pageboard.sync/JoinStatus> { // io.github.valerioisufi.pageboard.sync/JoinStatus|null[0]
     enum entry ADMITTED // io.github.valerioisufi.pageboard.sync/JoinStatus.ADMITTED|null[0]
     enum entry LOOKING_FOR_OWNER // io.github.valerioisufi.pageboard.sync/JoinStatus.LOOKING_FOR_OWNER|null[0]

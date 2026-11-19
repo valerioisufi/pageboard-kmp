@@ -1,14 +1,14 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.zip.ZipFile
 
-// An Android application with the canvas of DrawView: among the native libraries of DrawView,
+// An Android application with the canvas of Pageboard: among the native libraries of Pageboard,
 // its APK holds the one of Google Ink only (no PDFium, MicroTeX nor audio codecs)
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
 }
 
-/** The version of DrawView checked (see the root build). */
+/** The version of Pageboard checked (see the root build). */
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 kotlin {
@@ -43,7 +43,7 @@ val checkNativeLibraries by tasks.registering {
         val apk = apks.get().asFile.listFiles().orEmpty().single { it.extension == "apk" }
         val libraries = ZipFile(apk).use { zip -> zip.entries().toList().map { it.name }.filter { it.startsWith("lib/") }.map { it.substringAfterLast('/') }.toSortedSet() }
         val drawView = libraries.filter { it in setOf("libink_bridge.so", "libtex.so", "libpdfium.so", "libpdfium_bridge.so", "libaudio_bridge.so") }
-        check(drawView == listOf("libink_bridge.so")) { "The native libraries of DrawView in the APK: $drawView" }
+        check(drawView == listOf("libink_bridge.so")) { "The native libraries of Pageboard in the APK: $drawView" }
         println("pageboard-canvas on Android: $libraries")
     }
 }

@@ -32,7 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
@@ -41,7 +41,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.find_next
 import io.github.valerioisufi.pageboard.ui.generated.resources.find_none
 import io.github.valerioisufi.pageboard.ui.generated.resources.find_placeholder
 import io.github.valerioisufi.pageboard.ui.generated.resources.find_previous
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -50,7 +50,7 @@ import org.jetbrains.compose.resources.stringResource
  * (Escape). It takes the focus when it opens, with its text selected.
  */
 @Composable
-internal fun FindBar(controller: DrawViewController, modifier: Modifier = Modifier) {
+internal fun FindBar(controller: PageboardController, modifier: Modifier = Modifier) {
     val find = controller.find
     if (!find.isOpen) return
     val colors = MaterialTheme.colorScheme
@@ -58,7 +58,7 @@ internal fun FindBar(controller: DrawViewController, modifier: Modifier = Modifi
     var field by remember { mutableStateOf(TextFieldValue(find.query, TextRange(0, find.query.length))) }
     LaunchedEffect(Unit) { focus.requestFocus() }
     ActionBar(modifier = modifier.padding(top = 8.dp, end = 12.dp), scrolls = false) {
-        Icon(DrawViewIcons.Search, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.padding(start = 8.dp, end = 4.dp).size(18.dp))
+        Icon(PageboardIcons.Search, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.padding(start = 8.dp, end = 4.dp).size(18.dp))
         Box(modifier = Modifier.widthIn(min = 140.dp, max = 220.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
             if (field.text.isEmpty()) {
                 Text(stringResource(Res.string.find_placeholder), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant, maxLines = 1)
@@ -101,8 +101,8 @@ internal fun FindBar(controller: DrawViewController, modifier: Modifier = Modifi
             else -> stringResource(Res.string.find_count, find.current + 1, count)
         }
         Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant, maxLines = 1, modifier = Modifier.widthIn(min = 56.dp).padding(horizontal = 4.dp))
-        DesignIconButton(DrawViewIcons.ChevronUp, stringResource(Res.string.find_previous), { find.previous() }, enabled = count > 0, tint = colors.onSurface)
-        DesignIconButton(DrawViewIcons.ChevronDown, stringResource(Res.string.find_next), { find.next() }, enabled = count > 0, tint = colors.onSurface)
-        DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.common_action_close), { find.close() }, tint = colors.onSurface)
+        DesignIconButton(PageboardIcons.ChevronUp, stringResource(Res.string.find_previous), { find.previous() }, enabled = count > 0, tint = colors.onSurface)
+        DesignIconButton(PageboardIcons.ChevronDown, stringResource(Res.string.find_next), { find.next() }, enabled = count > 0, tint = colors.onSurface)
+        DesignIconButton(PageboardIcons.Close, stringResource(Res.string.common_action_close), { find.close() }, tint = colors.onSurface)
     }
 }

@@ -17,13 +17,13 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.command.RegisterCommands
 import io.github.valerioisufi.pageboard.ui.command.Shortcut
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -33,7 +33,7 @@ import org.jetbrains.compose.resources.stringResource
  * cancels as the system back does.
  */
 @Composable
-internal fun PlacementBar(controller: DrawViewController, modifier: Modifier = Modifier) {
+internal fun PlacementBar(controller: PageboardController, modifier: Modifier = Modifier) {
     val placement = controller.placementManager
     val commands = remember(placement) {
         val active = { placement.isActive }
@@ -44,7 +44,7 @@ internal fun PlacementBar(controller: DrawViewController, modifier: Modifier = M
                 label = { stringResource(Res.string.placement_next) },
                 group = CommandGroup.EDIT,
                 section = 9,
-                icon = { rememberVectorPainter(DrawViewIcons.ChevronRight) },
+                icon = { rememberVectorPainter(PageboardIcons.ChevronRight) },
                 shortcuts = listOf(Shortcut(Key.Tab), Shortcut(Key.DirectionRight), Shortcut(Key.DirectionDown)),
                 isEnabled = { active() && several() }
             ) { placement.next() },
@@ -53,7 +53,7 @@ internal fun PlacementBar(controller: DrawViewController, modifier: Modifier = M
                 label = { stringResource(Res.string.placement_previous) },
                 group = CommandGroup.EDIT,
                 section = 9,
-                icon = { rememberVectorPainter(DrawViewIcons.ChevronLeft) },
+                icon = { rememberVectorPainter(PageboardIcons.ChevronLeft) },
                 shortcuts = listOf(Shortcut(Key.Tab, shift = true), Shortcut(Key.DirectionLeft), Shortcut(Key.DirectionUp)),
                 isEnabled = { active() && several() }
             ) { placement.previous() },
@@ -62,7 +62,7 @@ internal fun PlacementBar(controller: DrawViewController, modifier: Modifier = M
                 label = { stringResource(Res.string.placement_confirm) },
                 group = CommandGroup.EDIT,
                 section = 9,
-                icon = { rememberVectorPainter(DrawViewIcons.Check) },
+                icon = { rememberVectorPainter(PageboardIcons.Check) },
                 shortcuts = listOf(Shortcut(Key.Enter), Shortcut(Key.NumPadEnter)),
                 isEnabled = { active() && placement.canConfirm }
             ) { placement.confirm() }
@@ -103,12 +103,12 @@ internal fun PlacementBar(controller: DrawViewController, modifier: Modifier = M
                 }
             }
             if (proposals.size > 1) {
-                BarAction(DrawViewIcons.ChevronLeft, stringResource(Res.string.placement_previous), { placement.previous() }, command = commands[1])
-                BarAction(DrawViewIcons.ChevronRight, stringResource(Res.string.placement_next), { placement.next() }, command = commands[0])
+                BarAction(PageboardIcons.ChevronLeft, stringResource(Res.string.placement_previous), { placement.previous() }, command = commands[1])
+                BarAction(PageboardIcons.ChevronRight, stringResource(Res.string.placement_next), { placement.next() }, command = commands[0])
             }
             BarDivider()
-            BarAction(DrawViewIcons.Close, stringResource(Res.string.common_button_cancel), { placement.cancel() })
-            if (placement.canConfirm) DoneAction(stringResource(Res.string.placement_confirm), { placement.confirm() }, DrawViewIcons.Check)
+            BarAction(PageboardIcons.Close, stringResource(Res.string.common_button_cancel), { placement.cancel() })
+            if (placement.canConfirm) DoneAction(stringResource(Res.string.placement_confirm), { placement.confirm() }, PageboardIcons.Check)
         }
     }
 }

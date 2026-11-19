@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.store.testing
 
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -41,7 +41,7 @@ import kotlinx.coroutines.Dispatchers
  * What every [DocumentStore] reads of a page of a document without loading the document: its
  * fingerprint ([DocumentStore.pageFingerprint]) changes with every change of the page as it is
  * drawn and with no change of another page, and the page loaded alone ([DocumentStore.loadPage])
- * is the one of the document loaded whole. Run by the tests of each store, of DrawView or of an
+ * is the one of the document loaded whole. Run by the tests of each store, of Pageboard or of an
  * application, on an empty store.
  */
 public suspend fun checkPageFingerprint(store: DocumentStore) {
@@ -111,7 +111,7 @@ public suspend fun checkPageFingerprint(store: DocumentStore) {
         val resource = newElementId()
         CompositeChange(
             listOf(
-                AddResource.of(resource, DrawResource.ResourceType.IMAGE, "fingerprint.png", "hash-of-the-image"),
+                AddResource.of(resource, DocumentResource.ResourceType.IMAGE, "fingerprint.png", "hash-of-the-image"),
                 AddElements(s.document.pages[0].id, listOf(ImageData(newElementId(), resource, 20f, 20f, 40f, 30f)))
             )
         )

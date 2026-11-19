@@ -11,7 +11,7 @@ import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.db.DRAW_DATABASE_MIGRATIONS
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import java.io.File
 import kotlin.test.Test
@@ -38,7 +38,7 @@ class CatalogQueriesTest {
         val file = File(checkNotNull(System.getProperty("pageboard.dataDir")), "catalog/${newElementId()}.db")
         file.parentFile.mkdirs()
         val driver = CountingSQLiteDriver(BundledSQLiteDriver())
-        val database = Room.databaseBuilder<DrawDatabase>(name = file.absolutePath)
+        val database = Room.databaseBuilder<PageboardDatabase>(name = file.absolutePath)
             .addMigrations(*DRAW_DATABASE_MIGRATIONS)
             .setDriver(driver)
             .setQueryCoroutineContext(Dispatchers.IO)

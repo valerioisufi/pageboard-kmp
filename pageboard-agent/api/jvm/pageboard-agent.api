@@ -111,7 +111,7 @@ public final class io/github/valerioisufi/pageboard/agent/AgentConnection {
 public abstract interface class io/github/valerioisufi/pageboard/agent/AgentEditors {
 	public abstract fun isInEditor (Ljava/lang/String;)Z
 	public abstract fun openForReview (Ljava/lang/String;)V
-	public abstract fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawPdf;)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
+	public abstract fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/PdfElement;)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
 	public abstract fun settle (Ljava/lang/String;)Z
 	public abstract fun textHeight (Ljava/lang/String;Ljava/lang/String;FF)Ljava/lang/Float;
 }
@@ -993,7 +993,7 @@ public final class io/github/valerioisufi/pageboard/agent/ProposalApplier {
 	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/agent/AgentEngines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun apply (Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Ljava/util/List;Ljava/util/Map;Ljava/util/Map;)Lio/github/valerioisufi/pageboard/agent/AppliedProposal;
 	public static synthetic fun apply$default (Lio/github/valerioisufi/pageboard/agent/ProposalApplier;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Ljava/util/List;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/agent/AppliedProposal;
-	public final fun staleItems (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;)Ljava/util/Set;
+	public final fun staleItems (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;)Ljava/util/Set;
 }
 
 public final class io/github/valerioisufi/pageboard/agent/ProposalApplierKt {
@@ -1983,9 +1983,9 @@ public final class io/github/valerioisufi/pageboard/agent/ProposalPlanner {
 	public fun <init> ()V
 	public fun <init> (Lio/github/valerioisufi/pageboard/agent/AgentEngines;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/agent/AgentEngines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun plan (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;Ljava/util/Map;)Lio/github/valerioisufi/pageboard/agent/ProposalPlan;
-	public static synthetic fun plan$default (Lio/github/valerioisufi/pageboard/agent/ProposalPlanner;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/agent/ProposalPlan;
-	public final fun staleItems (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;)Ljava/util/Set;
+	public final fun plan (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;Ljava/util/Map;)Lio/github/valerioisufi/pageboard/agent/ProposalPlan;
+	public static synthetic fun plan$default (Lio/github/valerioisufi/pageboard/agent/ProposalPlanner;Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/agent/ProposalPlan;
+	public final fun staleItems (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;)Ljava/util/Set;
 }
 
 public final class io/github/valerioisufi/pageboard/agent/ProposalPlanner$Companion {

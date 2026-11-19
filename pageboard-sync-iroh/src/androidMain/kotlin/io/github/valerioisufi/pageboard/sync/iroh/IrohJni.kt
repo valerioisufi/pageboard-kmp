@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.sync.iroh
 
 import android.content.Context
 import android.util.Log
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 
 /** The iroh bridge on Android: the JNI functions of `native/iroh-bridge/src/jni.rs`. */
 internal object IrohJni : IrohBridge {
@@ -36,10 +36,10 @@ private const val TAG = "IrohBridge"
  */
 internal actual fun loadIrohBridge(): IrohBridge? = try {
     System.loadLibrary("iroh_bridge")
-    if (DrawViewAndroid.isInitialized) {
-        IrohJni.initAndroid(DrawViewAndroid.context)
+    if (PageboardAndroid.isInitialized) {
+        IrohJni.initAndroid(PageboardAndroid.context)
     } else {
-        Log.w(TAG, "DrawViewAndroid.init(context) was not called: iroh cannot read the DNS servers of the system")
+        Log.w(TAG, "PageboardAndroid.init(context) was not called: iroh cannot read the DNS servers of the system")
     }
     IrohJni
 } catch (e: UnsatisfiedLinkError) {

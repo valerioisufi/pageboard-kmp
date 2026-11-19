@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.TrashRetention
@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asSharedFlow
  * Page management: insertion, deletion, copy and paste, reordering (drag & drop on the canvas
  * or in the page grid), templates and navigation.
  */
-public class PageManager internal constructor(private val controller: DrawViewController) {
+public class PageManager internal constructor(private val controller: PageboardController) {
 
     /** The pages selected in the page grid. */
     public val selection: PageSelection = PageSelection(controller.document)
@@ -52,7 +52,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
         private set
 
     private var dragTouchOffset = Offset.Zero
-    private var originalPageOrder: List<DrawPage>? = null
+    private var originalPageOrder: List<Page>? = null
 
     private val document get() = controller.document
 
@@ -61,9 +61,9 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * its own (else the page follows the background of the document, as [template] does). Without
      * a template, the format of the document.
      */
-    private fun newPage(index: Int, template: DrawPage?): DrawPage {
+    private fun newPage(index: Int, template: Page?): Page {
         val ownBackground = template?.takeIf { it.hasCustomBackground }?.background
-        return DrawPage(
+        return Page(
             index = index,
             widthMm = template?.widthMm ?: document.defaultWidthMm,
             heightMm = template?.heightMm ?: document.defaultHeightMm,
@@ -76,7 +76,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * [count] new pages to put right after [pageIndex], one after the other, of the format of that
      * page, not added yet (the changes adding them are the caller's, see `AddPage`).
      */
-    internal fun newPagesAfter(pageIndex: Int, count: Int): List<DrawPage> {
+    internal fun newPagesAfter(pageIndex: Int, count: Int): List<Page> {
         val template = pageBefore(pageIndex)
         val index = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
         var before = document.pages.getOrNull(index - 1)?.orderKey
@@ -88,7 +88,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
         }
     }
 
-    private fun DrawPage.copyWithOrderKey(key: String): DrawPage = DrawPage(
+    private fun Page.copyWithOrderKey(key: String): Page = Page(
         index = index,
         widthMm = widthMm,
         heightMm = heightMm,
@@ -97,13 +97,13 @@ public class PageManager internal constructor(private val controller: DrawViewCo
     ).also { it.hasCustomBackground = hasCustomBackground }
 
     /** The page a new page put after [pageIndex] follows: that page, or the last one when it is not a page. */
-    private fun pageBefore(pageIndex: Int): DrawPage? = document.pages.getOrNull(pageIndex) ?: document.pages.lastOrNull()
+    private fun pageBefore(pageIndex: Int): Page? = document.pages.getOrNull(pageIndex) ?: document.pages.lastOrNull()
 
     /**
      * Inserts a new page at the end, of the format of [template] (by default the last page; `null`:
      * the format of the document).
      */
-    public fun addNewPageAtBottom(template: DrawPage? = document.pages.lastOrNull()): DrawPage =
+    public fun addNewPageAtBottom(template: Page? = document.pages.lastOrNull()): Page =
         insertPage(document.pages.size, template)
 
     /**
@@ -111,7 +111,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * format of [template]: by default the page it follows, so that a page added after another one
      * is like it; `null`: the format of the document.
      */
-    public fun addNewPageAfter(pageIndex: Int, template: DrawPage? = pageBefore(pageIndex)): DrawPage {
+    public fun addNewPageAfter(pageIndex: Int, template: Page? = pageBefore(pageIndex)): Page {
         val target = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
         return insertPage(target, template)
     }
@@ -121,12 +121,12 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * format of [template]: by default the page it goes before, so that it is like its neighbor;
      * `null`: the format of the document.
      */
-    public fun addNewPageBefore(pageIndex: Int, template: DrawPage? = pageBefore(pageIndex)): DrawPage {
+    public fun addNewPageBefore(pageIndex: Int, template: Page? = pageBefore(pageIndex)): Page {
         val target = if (pageIndex in document.pages.indices) pageIndex else document.pages.size
         return insertPage(target, template)
     }
 
-    private fun insertPage(index: Int, template: DrawPage?): DrawPage {
+    private fun insertPage(index: Int, template: Page?): Page {
         controller.selectionManager.clearSelection()
         val page = newPage(index, template)
         controller.session.submit(AddPage.of(page))
@@ -142,7 +142,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
     }
 
     /** The pages [ids] shown, in the order of the document. */
-    private fun pagesOf(ids: Collection<String>): List<DrawPage> = ids.toSet().let { wanted -> document.pages.filter { it.id in wanted } }
+    private fun pagesOf(ids: Collection<String>): List<Page> = ids.toSet().let { wanted -> document.pages.filter { it.id in wanted } }
 
     /** [changes] as one change (one step to undo), or `null` for none. */
     private fun oneChange(changes: List<DocumentChange>): DocumentChange? = when (changes.size) {
@@ -171,7 +171,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * The pages removed in the last [TrashRetention] at [now] (milliseconds), here or on another
      * device, the most recent removal first: the trash of the document (see `docs/plans/trash.md`).
      */
-    public fun deletedPagesAt(now: Long): List<DrawPage> = document.removedPagesSince(TrashRetention.expiredBefore(now))
+    public fun deletedPagesAt(now: Long): List<Page> = document.removedPagesSince(TrashRetention.expiredBefore(now))
 
     /**
      * Puts the pages [ids] removed back where they were, in one change (one step to undo): the
@@ -208,7 +208,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
      * Duplicates the pages [ids] with all their content, in the order of the document, right after
      * the last of them, in one change (one step to undo), and shows the first copy. The clipboard
      * of the application is left as it is. The elements of a file not on this device are left out
-     * (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
+     * (see [PageboardController.Message.PASTED_WITHOUT_MISSING_FILES]).
      */
     public fun duplicatePages(ids: Collection<String>) {
         if (controller.isReadOnly) return
@@ -216,7 +216,7 @@ public class PageManager internal constructor(private val controller: DrawViewCo
         controller.selectionManager.clearSelection()
         val index = document.pages.indexOf(pages.last()) + 1
         val pasted = document.copyPages(pages).pasteInto(document, index)
-        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        if (pasted.leftOut > 0) controller.emitMessage(PageboardController.Message.PASTED_WITHOUT_MISSING_FILES)
         controller.session.submit(pasted.change ?: return) ?: return
         jumpToPage(document.pages.indexOf(pasted.pages.first()))
     }
@@ -227,14 +227,14 @@ public class PageManager internal constructor(private val controller: DrawViewCo
     /**
      * Pastes the pages of the clipboard right after [pageIndex] (at the end when the index is
      * invalid), with all their content, and shows the first one. The elements of a file not on
-     * this device are left out (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
+     * this device are left out (see [PageboardController.Message.PASTED_WITHOUT_MISSING_FILES]).
      */
     public fun pastePages(pageIndex: Int) {
         val copied = controller.clipboard.content as? CopiedPages ?: return
         controller.selectionManager.clearSelection()
         val index = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
         val pasted = copied.pasteInto(document, index)
-        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        if (pasted.leftOut > 0) controller.emitMessage(PageboardController.Message.PASTED_WITHOUT_MISSING_FILES)
         controller.session.submit(pasted.change ?: return) ?: return
         jumpToPage(document.pages.indexOf(pasted.pages.first()))
     }

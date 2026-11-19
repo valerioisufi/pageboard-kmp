@@ -49,7 +49,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_upper_a
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_upper_roman
 import io.github.valerioisufi.pageboard.ui.command.CommandTooltip
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -61,7 +61,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun NumberedListButton(target: TextFormatTarget, commands: EditorCommands) {
     val colors = MaterialTheme.colorScheme
     Row(verticalAlignment = Alignment.CenterVertically) {
-        FormatButton(commands.numberedList, DrawViewIcons.ListOrdered)
+        FormatButton(commands.numberedList, PageboardIcons.ListOrdered)
         Box {
             CommandTooltip(commands.numbering) {
                 Box(
@@ -74,7 +74,7 @@ internal fun NumberedListButton(target: TextFormatTarget, commands: EditorComman
                         .keepsTextFocus()
                         .clickable(enabled = commands.numbering.isEnabled(), role = Role.Button, onClickLabel = commands.numbering.label()) { commands.numberingOpen = true }
                 ) {
-                    Icon(DrawViewIcons.ChevronDown, contentDescription = commands.numbering.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                    Icon(PageboardIcons.ChevronDown, contentDescription = commands.numbering.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
             }
             ToolPopover(expanded = commands.numberingOpen, onDismissRequest = { commands.numberingOpen = false }) {

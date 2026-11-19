@@ -12,7 +12,7 @@ internal object PdfiumNative {
             System.loadLibrary("pdfium_bridge")
             true
         } catch (e: UnsatisfiedLinkError) {
-            System.err.println("DrawView: native PDFium libraries not available: ${e.message}")
+            System.err.println("Pageboard: native PDFium libraries not available: ${e.message}")
             false
         }
     }

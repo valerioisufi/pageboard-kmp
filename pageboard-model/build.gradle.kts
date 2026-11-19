@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "The DrawView document model, headless: pages, elements, changes, clock, geometry"
+description = "The Pageboard document model, headless: pages, elements, changes, clock, geometry"
 
 kotlin {
     sourceSets {

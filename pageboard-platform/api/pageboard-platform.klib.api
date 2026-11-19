@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-platform>
+// Library unique name: <pageboard-kmp:pageboard-platform>
 final class io.github.valerioisufi.pageboard.platform/Sha256 { // io.github.valerioisufi.pageboard.platform/Sha256|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.platform/Sha256.<init>|<init>(){}[0]
 

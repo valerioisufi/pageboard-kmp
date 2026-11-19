@@ -5,16 +5,16 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-session>
+// Library unique name: <pageboard-kmp:pageboard-session>
 final class io.github.valerioisufi.pageboard.session/DocumentEditorViewModel : androidx.lifecycle/ViewModel { // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, io.github.valerioisufi.pageboard.session/EditorSessions, io.github.valerioisufi.pageboard.canvas.render/DrawViewEngines = ..., io.github.valerioisufi.pageboard.store/PreferenceStore? = ..., io.github.valerioisufi.pageboard.canvas.controller/EditorClipboard = ...) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;io.github.valerioisufi.pageboard.session.EditorSessions;io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines;io.github.valerioisufi.pageboard.store.PreferenceStore?;io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, io.github.valerioisufi.pageboard.session/EditorSessions, io.github.valerioisufi.pageboard.canvas.render/PageboardEngines = ..., io.github.valerioisufi.pageboard.store/PreferenceStore? = ..., io.github.valerioisufi.pageboard.canvas.controller/EditorClipboard = ...) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;io.github.valerioisufi.pageboard.session.EditorSessions;io.github.valerioisufi.pageboard.canvas.render.PageboardEngines;io.github.valerioisufi.pageboard.store.PreferenceStore?;io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard){}[0]
 
     final val clipboard // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.clipboard|{}clipboard[0]
         final fun <get-clipboard>(): io.github.valerioisufi.pageboard.canvas.controller/EditorClipboard // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.clipboard.<get-clipboard>|<get-clipboard>(){}[0]
     final val documents // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.documents|{}documents[0]
         final fun <get-documents>(): io.github.valerioisufi.pageboard.store/OpenDocuments // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.documents.<get-documents>|<get-documents>(){}[0]
     final val engines // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.engines|{}engines[0]
-        final fun <get-engines>(): io.github.valerioisufi.pageboard.canvas.render/DrawViewEngines // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.engines.<get-engines>|<get-engines>(){}[0]
+        final fun <get-engines>(): io.github.valerioisufi.pageboard.canvas.render/PageboardEngines // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.engines.<get-engines>|<get-engines>(){}[0]
     final val preferences // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.preferences|{}preferences[0]
         final fun <get-preferences>(): io.github.valerioisufi.pageboard.store/PreferenceStore? // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.preferences.<get-preferences>|<get-preferences>(){}[0]
     final val sessions // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.sessions|{}sessions[0]
@@ -24,9 +24,9 @@ final class io.github.valerioisufi.pageboard.session/DocumentEditorViewModel : a
         final fun <get-session>(): io.github.valerioisufi.pageboard.session/EditorSession? // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.session.<get-session>|<get-session>(){}[0]
 
     final fun closeSession() // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.closeSession|closeSession(){}[0]
-    final fun createAndOpenDocument(kotlin/String, kotlin/String? = ..., kotlin/Function1<io.github.valerioisufi.pageboard.canvas.controller/DrawViewController, kotlin/Unit> = ...) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.createAndOpenDocument|createAndOpenDocument(kotlin.String;kotlin.String?;kotlin.Function1<io.github.valerioisufi.pageboard.canvas.controller.DrawViewController,kotlin.Unit>){}[0]
+    final fun createAndOpenDocument(kotlin/String, kotlin/String? = ..., kotlin/Function1<io.github.valerioisufi.pageboard.canvas.controller/PageboardController, kotlin/Unit> = ...) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.createAndOpenDocument|createAndOpenDocument(kotlin.String;kotlin.String?;kotlin.Function1<io.github.valerioisufi.pageboard.canvas.controller.PageboardController,kotlin.Unit>){}[0]
     final fun openDocument(kotlin/String) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.openDocument|openDocument(kotlin.String){}[0]
-    final fun openDocument(kotlin/String, kotlin/Function1<io.github.valerioisufi.pageboard.canvas.controller/DrawViewController, kotlin/Unit>) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.openDocument|openDocument(kotlin.String;kotlin.Function1<io.github.valerioisufi.pageboard.canvas.controller.DrawViewController,kotlin.Unit>){}[0]
+    final fun openDocument(kotlin/String, kotlin/Function1<io.github.valerioisufi.pageboard.canvas.controller/PageboardController, kotlin/Unit>) // io.github.valerioisufi.pageboard.session/DocumentEditorViewModel.openDocument|openDocument(kotlin.String;kotlin.Function1<io.github.valerioisufi.pageboard.canvas.controller.PageboardController,kotlin.Unit>){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.session/EditorSession { // io.github.valerioisufi.pageboard.session/EditorSession|null[0]
@@ -34,7 +34,7 @@ final class io.github.valerioisufi.pageboard.session/EditorSession { // io.githu
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.pageboard.session/EditorSession.documentId.<get-documentId>|<get-documentId>(){}[0]
 
     final var controller // io.github.valerioisufi.pageboard.session/EditorSession.controller|{}controller[0]
-        final fun <get-controller>(): io.github.valerioisufi.pageboard.canvas.controller/DrawViewController? // io.github.valerioisufi.pageboard.session/EditorSession.controller.<get-controller>|<get-controller>(){}[0]
+        final fun <get-controller>(): io.github.valerioisufi.pageboard.canvas.controller/PageboardController? // io.github.valerioisufi.pageboard.session/EditorSession.controller.<get-controller>|<get-controller>(){}[0]
     final var document // io.github.valerioisufi.pageboard.session/EditorSession.document|{}document[0]
         final fun <get-document>(): io.github.valerioisufi.pageboard.store/OpenDocument? // io.github.valerioisufi.pageboard.session/EditorSession.document.<get-document>|<get-document>(){}[0]
 

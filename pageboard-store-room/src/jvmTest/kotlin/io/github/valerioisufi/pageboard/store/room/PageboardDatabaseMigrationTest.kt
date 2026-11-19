@@ -14,7 +14,7 @@ import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.change.TextPlacement
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
 import io.github.valerioisufi.pageboard.store.room.db.DRAW_DATABASE_MIGRATIONS
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.Migration18To19
 import io.github.valerioisufi.pageboard.store.room.db.Migration19To20
 import io.github.valerioisufi.pageboard.store.room.db.Migration20To21
@@ -23,8 +23,8 @@ import io.github.valerioisufi.pageboard.store.room.db.Migration22To23
 import io.github.valerioisufi.pageboard.store.room.db.Migration23To24
 import io.github.valerioisufi.pageboard.store.room.db.Migration24To25
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
-import io.github.valerioisufi.pageboard.store.room.repository.DrawDocumentRepository
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
+import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.*
@@ -37,7 +37,7 @@ import kotlinx.serialization.json.Json
  * preferences (its pages their look), a database without a migration is not opened (and not
  * dropped).
  */
-class DrawDatabaseMigrationTest {
+class PageboardDatabaseMigrationTest {
 
     private val directory: Path = Files.createTempDirectory("pageboard-migration")
     private val databaseFile: Path = directory.resolve("database.db")
@@ -46,7 +46,7 @@ class DrawDatabaseMigrationTest {
         schemaDirectoryPath = Path.of("schemas"),
         databasePath = databaseFile,
         driver = BundledSQLiteDriver(),
-        databaseClass = DrawDatabase::class
+        databaseClass = PageboardDatabase::class
     )
 
     @AfterTest
@@ -76,7 +76,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(25, DRAW_DATABASE_MIGRATIONS.toList()).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
@@ -114,7 +114,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(19, listOf(Migration18To19)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             assertEquals(mapOf("bob" to 1L), store.versionVector(DOCUMENT))
@@ -179,7 +179,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(20, listOf(Migration19To20)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val page = assertNotNull(RoomDocumentStore(database, InkStrokeModeller).loadDocument(DOCUMENT)).pages.single()
             // The look it had: each kind in its layer
@@ -241,7 +241,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(21, listOf(Migration20To21)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val page = assertNotNull(store.loadDocument(DOCUMENT)).pages.single()
@@ -293,7 +293,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(22, listOf(Migration21To22)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val summary = store.documents.first().single()
@@ -343,7 +343,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(23, listOf(Migration22To23)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
@@ -353,7 +353,7 @@ class DrawDatabaseMigrationTest {
 
             // A fill kept and read again
             text.background = 0xFFFFF1B8.toInt()
-            DrawDocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
+            DocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals(0xFFFFF1B8.toInt(), again.background)
         } finally {
@@ -384,7 +384,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(24, listOf(Migration23To24)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val document = assertNotNull(store.loadDocument(DOCUMENT))
@@ -394,7 +394,7 @@ class DrawDatabaseMigrationTest {
 
             text.next = "following"
             text.continuesLine = true
-            DrawDocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
+            DocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals("following" to true, again.next to again.continuesLine)
         } finally {
@@ -425,7 +425,7 @@ class DrawDatabaseMigrationTest {
 
         helper.runMigrationsAndValidate(25, listOf(Migration24To25)).close()
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             val store = RoomDocumentStore(database, InkStrokeModeller)
             val summary = store.documents.first().single()
@@ -459,7 +459,7 @@ class DrawDatabaseMigrationTest {
             connection.execSQL("PRAGMA user_version = 99")
         }
 
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
             assertFails { RoomDocumentStore(database, InkStrokeModeller).loadDocument(DOCUMENT) }
         } finally {

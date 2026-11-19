@@ -56,7 +56,7 @@ public interface CodeHighlighter {
 }
 
 /**
- * The highlighter of DrawView: a lexer of its own reading the code once, from the start, for the
+ * The highlighter of Pageboard: a lexer of its own reading the code once, from the start, for the
  * languages of [languages] (the family of C, Python, the shell, SQL, JSON, YAML). It knows the
  * words, the strings, the comments, the numbers and the annotations of a language, not its
  * grammar: what it reads wrong is a color, never the text.

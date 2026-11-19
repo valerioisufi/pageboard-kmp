@@ -83,11 +83,11 @@ public final class io/github/valerioisufi/pageboard/model/DocumentAttachments$De
 	public static fun received (Lio/github/valerioisufi/pageboard/model/DocumentAttachments;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawCustomElement : io/github/valerioisufi/pageboard/model/DrawElement, io/github/valerioisufi/pageboard/model/RotatableItem {
+public final class io/github/valerioisufi/pageboard/model/CustomElement : io/github/valerioisufi/pageboard/model/PageElement, io/github/valerioisufi/pageboard/model/RotatableItem {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun containsPoint (FF)Z
-	public final fun copy ()Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
+	public final fun copy ()Lio/github/valerioisufi/pageboard/model/CustomElement;
 	public fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public fun getCenterX ()F
 	public fun getCenterY ()F
@@ -123,18 +123,18 @@ public final class io/github/valerioisufi/pageboard/model/DrawCustomElement : io
 	public fun toLocal (FF)Lio/github/valerioisufi/pageboard/model/geometry/Point;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawDocument {
+public final class io/github/valerioisufi/pageboard/model/Document {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;JJZLio/github/valerioisufi/pageboard/model/StrokeModeller;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;JJZLio/github/valerioisufi/pageboard/model/StrokeModeller;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun addPage (FFLio/github/valerioisufi/pageboard/model/PageBackground;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public static synthetic fun addPage$default (Lio/github/valerioisufi/pageboard/model/DrawDocument;FFLio/github/valerioisufi/pageboard/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public final fun addResource (Lio/github/valerioisufi/pageboard/model/DrawResource;)V
+	public final fun addPage (FFLio/github/valerioisufi/pageboard/model/PageBackground;)Lio/github/valerioisufi/pageboard/model/Page;
+	public static synthetic fun addPage$default (Lio/github/valerioisufi/pageboard/model/Document;FFLio/github/valerioisufi/pageboard/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Page;
+	public final fun addResource (Lio/github/valerioisufi/pageboard/model/DocumentResource;)V
 	public final fun allPages ()Ljava/util/List;
-	public final fun appendPage (Lio/github/valerioisufi/pageboard/model/DrawPage;)V
-	public final fun findElement (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawPage;)Lkotlin/Pair;
-	public static synthetic fun findElement$default (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawPage;ILjava/lang/Object;)Lkotlin/Pair;
-	public final fun findResource (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawResource;
+	public final fun appendPage (Lio/github/valerioisufi/pageboard/model/Page;)V
+	public final fun findElement (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Page;)Lkotlin/Pair;
+	public static synthetic fun findElement$default (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Page;ILjava/lang/Object;)Lkotlin/Pair;
+	public final fun findResource (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DocumentResource;
 	public final fun getCreatedAt ()J
 	public final fun getDefaultBackground ()Lio/github/valerioisufi/pageboard/model/PageBackground;
 	public final fun getDefaultHeightMm ()F
@@ -150,13 +150,13 @@ public final class io/github/valerioisufi/pageboard/model/DrawDocument {
 	public final fun getStrokeModeller ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
 	public final fun getTitle ()Ljava/lang/String;
 	public final fun getTitleVersion ()Lio/github/valerioisufi/pageboard/model/Stamp;
-	public final fun insertPage (Lio/github/valerioisufi/pageboard/model/DrawPage;)V
-	public final fun isShown (Lio/github/valerioisufi/pageboard/model/DrawPage;)Z
+	public final fun insertPage (Lio/github/valerioisufi/pageboard/model/Page;)V
+	public final fun isShown (Lio/github/valerioisufi/pageboard/model/Page;)Z
 	public final fun movePage (II)V
 	public final fun orderKeyAt (I)Ljava/lang/String;
-	public final fun pageById (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawPage;
+	public final fun pageById (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/Page;
 	public final fun purgeHidden (JLkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/model/PurgedContent;
-	public static synthetic fun purgeHidden$default (Lio/github/valerioisufi/pageboard/model/DrawDocument;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/PurgedContent;
+	public static synthetic fun purgeHidden$default (Lio/github/valerioisufi/pageboard/model/Document;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/PurgedContent;
 	public final fun reindexPages ()V
 	public final fun removedPagesSince (J)Ljava/util/List;
 	public final fun restorePageOrder (Ljava/util/List;)V
@@ -171,7 +171,7 @@ public final class io/github/valerioisufi/pageboard/model/DrawDocument {
 	public final fun setTitleVersion (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 }
 
-public abstract interface class io/github/valerioisufi/pageboard/model/DrawElement {
+public abstract interface class io/github/valerioisufi/pageboard/model/PageElement {
 	public abstract fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public abstract fun getId ()Ljava/lang/String;
 	public abstract fun getOrder ()Lio/github/valerioisufi/pageboard/model/ElementOrder;
@@ -187,7 +187,7 @@ public abstract interface class io/github/valerioisufi/pageboard/model/DrawEleme
 	public abstract fun setUpdated (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawImage : io/github/valerioisufi/pageboard/model/DrawElement, io/github/valerioisufi/pageboard/model/RotatableItem {
+public final class io/github/valerioisufi/pageboard/model/ImageElement : io/github/valerioisufi/pageboard/model/PageElement, io/github/valerioisufi/pageboard/model/RotatableItem {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -224,15 +224,15 @@ public final class io/github/valerioisufi/pageboard/model/DrawImage : io/github/
 	public fun toLocal (FF)Lio/github/valerioisufi/pageboard/model/geometry/Point;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawPage {
-	public static final field Companion Lio/github/valerioisufi/pageboard/model/DrawPage$Companion;
+public final class io/github/valerioisufi/pageboard/model/Page {
+	public static final field Companion Lio/github/valerioisufi/pageboard/model/Page$Companion;
 	public fun <init> ()V
 	public fun <init> (IFFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (IFFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun add (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
-	public final fun boundsOf (Lio/github/valerioisufi/pageboard/model/DrawElement;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun add (Lio/github/valerioisufi/pageboard/model/PageElement;)V
+	public final fun boundsOf (Lio/github/valerioisufi/pageboard/model/PageElement;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public final fun elements ()Ljava/util/List;
-	public final fun find (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawElement;
+	public final fun find (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/PageElement;
 	public final fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getBackground ()Lio/github/valerioisufi/pageboard/model/PageBackground;
 	public final fun getContentVersion ()I
@@ -259,9 +259,9 @@ public final class io/github/valerioisufi/pageboard/model/DrawPage {
 	public final fun getWidthMm ()F
 	public final fun isHidden ()Z
 	public final fun load (Ljava/util/Collection;Ljava/util/Collection;)V
-	public static synthetic fun load$default (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/Collection;Ljava/util/Collection;ILjava/lang/Object;)V
+	public static synthetic fun load$default (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/Collection;Ljava/util/Collection;ILjava/lang/Object;)V
 	public final fun rect ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public final fun remove (Lio/github/valerioisufi/pageboard/model/DrawElement;)I
+	public final fun remove (Lio/github/valerioisufi/pageboard/model/PageElement;)I
 	public final fun setAdded (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 	public final fun setBackground (Lio/github/valerioisufi/pageboard/model/PageBackground;)V
 	public final fun setContentVersions (Lio/github/valerioisufi/pageboard/model/Versions;)V
@@ -277,11 +277,11 @@ public final class io/github/valerioisufi/pageboard/model/DrawPage {
 	public final fun snapshotContent ()Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawPage$Companion {
+public final class io/github/valerioisufi/pageboard/model/Page$Companion {
 	public final fun getStackOrder ()Ljava/util/Comparator;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawPdf : io/github/valerioisufi/pageboard/model/DrawElement {
+public final class io/github/valerioisufi/pageboard/model/PdfElement : io/github/valerioisufi/pageboard/model/PageElement {
 	public fun <init> ()V
 	public fun <init> (ILjava/lang/String;)V
 	public synthetic fun <init> (ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -304,26 +304,26 @@ public final class io/github/valerioisufi/pageboard/model/DrawPdf : io/github/va
 	public fun setUpdated (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawResource {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/model/DocumentResource {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getHash ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getPath ()Ljava/lang/String;
-	public final fun getType ()Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
+	public final fun getType ()Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
 	public final fun setPath (Ljava/lang/String;)V
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawResource$ResourceType : java/lang/Enum {
-	public static final field COLOR Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
-	public static final field IMAGE Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
-	public static final field PDF Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
+public final class io/github/valerioisufi/pageboard/model/DocumentResource$ResourceType : java/lang/Enum {
+	public static final field COLOR Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
+	public static final field IMAGE Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
+	public static final field PDF Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
-	public static fun values ()[Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawStroke : io/github/valerioisufi/pageboard/model/DrawElement {
+public final class io/github/valerioisufi/pageboard/model/StrokeElement : io/github/valerioisufi/pageboard/model/PageElement {
 	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/StrokeMesh;Lio/github/valerioisufi/pageboard/model/BrushConfig;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;)V
 	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/StrokeMesh;Lio/github/valerioisufi/pageboard/model/BrushConfig;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
@@ -348,13 +348,13 @@ public final class io/github/valerioisufi/pageboard/model/DrawStroke : io/github
 	public fun setUpdated (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawText : io/github/valerioisufi/pageboard/model/DrawElement, io/github/valerioisufi/pageboard/model/RotatableItem {
-	public static final field Companion Lio/github/valerioisufi/pageboard/model/DrawText$Companion;
+public final class io/github/valerioisufi/pageboard/model/TextElement : io/github/valerioisufi/pageboard/model/PageElement, io/github/valerioisufi/pageboard/model/RotatableItem {
+	public static final field Companion Lio/github/valerioisufi/pageboard/model/TextElement$Companion;
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun containsPoint (FF)Z
-	public final fun copyFrom (Lio/github/valerioisufi/pageboard/model/DrawText;)V
+	public final fun copyFrom (Lio/github/valerioisufi/pageboard/model/TextElement;)V
 	public fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public final fun getAutoWidth ()Z
@@ -412,18 +412,18 @@ public final class io/github/valerioisufi/pageboard/model/DrawText : io/github/v
 	public fun toLocal (FF)Lio/github/valerioisufi/pageboard/model/geometry/Point;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawText$Companion {
+public final class io/github/valerioisufi/pageboard/model/TextElement$Companion {
 	public final fun cornerFor (FFFFFF)Lio/github/valerioisufi/pageboard/model/geometry/Point;
-	public static synthetic fun cornerFor$default (Lio/github/valerioisufi/pageboard/model/DrawText$Companion;FFFFFFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/geometry/Point;
+	public static synthetic fun cornerFor$default (Lio/github/valerioisufi/pageboard/model/TextElement$Companion;FFFFFFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/geometry/Point;
 }
 
-public final class io/github/valerioisufi/pageboard/model/DrawTextMarkup : io/github/valerioisufi/pageboard/model/DrawElement {
+public final class io/github/valerioisufi/pageboard/model/TextMarkupElement : io/github/valerioisufi/pageboard/model/PageElement {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/TextMarkupKind;I)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/TextMarkupKind;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun boundsMm (FF)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public final fun boundsMm (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public final fun containsPoint (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/geometry/Point;F)Z
-	public static synthetic fun containsPoint$default (Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/geometry/Point;FILjava/lang/Object;)Z
+	public final fun boundsMm (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun containsPoint (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/geometry/Point;F)Z
+	public static synthetic fun containsPoint$default (Lio/github/valerioisufi/pageboard/model/TextMarkupElement;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/geometry/Point;FILjava/lang/Object;)Z
 	public fun getAdded ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getBoundsPoints ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public final fun getColor ()I
@@ -443,7 +443,7 @@ public final class io/github/valerioisufi/pageboard/model/DrawTextMarkup : io/gi
 	public final fun getText ()Ljava/lang/String;
 	public fun getUpdated ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun pointsToPageMm (FF)Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;
-	public final fun pointsToPageMm (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;
+	public final fun pointsToPageMm (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;
 	public fun setAdded (Lio/github/valerioisufi/pageboard/model/Stamp;)V
 	public final fun setColor (I)V
 	public final fun setKind (Lio/github/valerioisufi/pageboard/model/TextMarkupKind;)V
@@ -489,9 +489,9 @@ public final class io/github/valerioisufi/pageboard/model/ElementType$DefaultImp
 }
 
 public final class io/github/valerioisufi/pageboard/model/ElementTypeKt {
-	public static final fun decode (Lio/github/valerioisufi/pageboard/model/ElementType;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;)Ljava/lang/Object;
+	public static final fun decode (Lio/github/valerioisufi/pageboard/model/ElementType;Lio/github/valerioisufi/pageboard/model/CustomElement;)Ljava/lang/Object;
 	public static final fun encode (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;)[B
-	public static final fun searchTextOf (Lio/github/valerioisufi/pageboard/model/ElementType;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;)Ljava/lang/String;
+	public static final fun searchTextOf (Lio/github/valerioisufi/pageboard/model/ElementType;Lio/github/valerioisufi/pageboard/model/CustomElement;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/pageboard/model/FractionalIndex {
@@ -1038,7 +1038,7 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/AddEl
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/AddElements$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/AddElements;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/AddElements;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1071,7 +1071,7 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/AddPa
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/AddPage$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/change/AddPage;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/change/AddPage;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1104,8 +1104,8 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/AddRe
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/AddResource$Companion {
-	public final fun of (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/change/AddResource;
-	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/change/AddResource$Companion;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/AddResource;
+	public final fun of (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/change/AddResource;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/change/AddResource$Companion;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/AddResource;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1113,7 +1113,7 @@ public final class io/github/valerioisufi/pageboard/model/change/BoxPlacement : 
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/BoxPlacement$Companion;
 	public fun <init> (Ljava/lang/String;FFFFFLio/github/valerioisufi/pageboard/model/ElementOrder;)V
 	public synthetic fun <init> (Ljava/lang/String;FFFFFLio/github/valerioisufi/pageboard/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
+	public fun applyTo (Lio/github/valerioisufi/pageboard/model/PageElement;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()F
 	public final fun component3 ()F
@@ -1185,9 +1185,9 @@ public final class io/github/valerioisufi/pageboard/model/change/ChangePersister
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/CommittedChange {
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/change/Operation;Lio/github/valerioisufi/pageboard/model/change/DocumentChange;Lio/github/valerioisufi/pageboard/model/change/ChangeOrigin;Lio/github/valerioisufi/pageboard/model/change/ChangeEffects;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/change/Operation;Lio/github/valerioisufi/pageboard/model/change/DocumentChange;Lio/github/valerioisufi/pageboard/model/change/ChangeOrigin;Lio/github/valerioisufi/pageboard/model/change/ChangeEffects;)V
 	public final fun getChange ()Lio/github/valerioisufi/pageboard/model/change/DocumentChange;
-	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/DrawDocument;
+	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/Document;
 	public final fun getEffects ()Lio/github/valerioisufi/pageboard/model/change/ChangeEffects;
 	public final fun getInverse ()Lio/github/valerioisufi/pageboard/model/change/DocumentChange;
 	public final fun getOperation ()Lio/github/valerioisufi/pageboard/model/change/Operation;
@@ -1228,10 +1228,10 @@ public final class io/github/valerioisufi/pageboard/model/change/CompositeChange
 
 public final class io/github/valerioisufi/pageboard/model/change/ContentPasteKt {
 	public static final fun isFileHere (Ljava/lang/String;)Z
-	public static final fun pasteInto (Lio/github/valerioisufi/pageboard/model/change/CopiedElements;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;FFLkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/model/change/PastedElements;
-	public static final fun pasteInto (Lio/github/valerioisufi/pageboard/model/change/CopiedPages;Lio/github/valerioisufi/pageboard/model/DrawDocument;ILkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/model/change/PastedPages;
-	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/pageboard/model/change/CopiedElements;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;FFLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/PastedElements;
-	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/pageboard/model/change/CopiedPages;Lio/github/valerioisufi/pageboard/model/DrawDocument;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/PastedPages;
+	public static final fun pasteInto (Lio/github/valerioisufi/pageboard/model/change/CopiedElements;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;FFLkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/model/change/PastedElements;
+	public static final fun pasteInto (Lio/github/valerioisufi/pageboard/model/change/CopiedPages;Lio/github/valerioisufi/pageboard/model/Document;ILkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/model/change/PastedPages;
+	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/pageboard/model/change/CopiedElements;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;FFLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/PastedElements;
+	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/pageboard/model/change/CopiedPages;Lio/github/valerioisufi/pageboard/model/Document;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/PastedPages;
 }
 
 public abstract class io/github/valerioisufi/pageboard/model/change/CopiedContent {
@@ -1240,9 +1240,9 @@ public abstract class io/github/valerioisufi/pageboard/model/change/CopiedConten
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/CopiedContentKt {
-	public static final fun copyElements (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/geometry/Rect;F)Lio/github/valerioisufi/pageboard/model/change/CopiedElements;
-	public static synthetic fun copyElements$default (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/geometry/Rect;FILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/CopiedElements;
-	public static final fun copyPages (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/CopiedPages;
+	public static final fun copyElements (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/geometry/Rect;F)Lio/github/valerioisufi/pageboard/model/change/CopiedElements;
+	public static synthetic fun copyElements$default (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/geometry/Rect;FILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/CopiedElements;
+	public static final fun copyPages (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/CopiedPages;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/CopiedElements : io/github/valerioisufi/pageboard/model/change/CopiedContent {
@@ -1288,8 +1288,8 @@ public final class io/github/valerioisufi/pageboard/model/change/CustomElementDa
 	public final fun getX ()F
 	public final fun getY ()F
 	public fun hashCode ()I
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1329,52 +1329,52 @@ public final class io/github/valerioisufi/pageboard/model/change/DocumentChange$
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/DocumentChangeKt {
-	public static final fun placementOf (Lio/github/valerioisufi/pageboard/model/DrawElement;)Lio/github/valerioisufi/pageboard/model/change/Placement;
+	public static final fun placementOf (Lio/github/valerioisufi/pageboard/model/PageElement;)Lio/github/valerioisufi/pageboard/model/change/Placement;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/model/change/DocumentPersistence {
-	public fun appendOperation (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun deleteForGood (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun appendOperation (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveImage (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePage (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePdf (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveResource (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveStrokes (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveText (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun touchDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/CustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/ImageElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/DocumentResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextMarkupElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/pageboard/model/Document;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/DocumentPersistence$DefaultImpls {
-	public static fun appendOperation (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun deleteForGood (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun appendOperation (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun deleteForGood (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun fileWithContent (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveImage (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun savePage (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun savePdf (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveResource (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveStrokes (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveText (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun touchDocument (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/CustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveImage (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/ImageElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun savePage (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun savePdf (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveResource (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/DocumentResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveStrokes (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveText (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextMarkupElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun touchDocument (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun transaction (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/DocumentSession {
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun addObserver (Lio/github/valerioisufi/pageboard/model/change/ChangeObserver;)V
 	public final fun admits (Lio/github/valerioisufi/pageboard/model/change/Operation;)Z
 	public final fun getClock ()Lio/github/valerioisufi/pageboard/model/change/HybridClock;
-	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/DrawDocument;
+	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/Document;
 	public final fun getReadOnly ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getReplica ()Ljava/lang/String;
 	public final fun getVersionVector ()Ljava/util/Map;
@@ -1415,8 +1415,8 @@ public final class io/github/valerioisufi/pageboard/model/change/DocumentSnapsho
 	public final fun getTitle ()Ljava/lang/String;
 	public final fun getTitleVersion ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public fun hashCode ()I
-	public final fun toDocument (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawDocument;
-	public static synthetic fun toDocument$default (Lio/github/valerioisufi/pageboard/model/change/DocumentSnapshot;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawDocument;
+	public final fun toDocument (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/Document;
+	public static synthetic fun toDocument$default (Lio/github/valerioisufi/pageboard/model/change/DocumentSnapshot;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Document;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1436,16 +1436,16 @@ public final class io/github/valerioisufi/pageboard/model/change/DocumentSnapsho
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/DocumentSnapshotKt {
-	public static final fun snapshot (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Lio/github/valerioisufi/pageboard/model/change/DocumentSnapshot;
-	public static final fun snapshot (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/change/PageSnapshot;
+	public static final fun snapshot (Lio/github/valerioisufi/pageboard/model/Document;)Lio/github/valerioisufi/pageboard/model/change/DocumentSnapshot;
+	public static final fun snapshot (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/change/PageSnapshot;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/model/change/ElementData {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/ElementData$Companion;
 	public abstract fun getId ()Ljava/lang/String;
 	public abstract fun getOrder ()Lio/github/valerioisufi/pageboard/model/ElementOrder;
-	public abstract fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public static synthetic fun toElement$default (Lio/github/valerioisufi/pageboard/model/change/ElementData;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawElement;
+	public abstract fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public static synthetic fun toElement$default (Lio/github/valerioisufi/pageboard/model/change/ElementData;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/PageElement;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ElementData$Companion {
@@ -1453,19 +1453,19 @@ public final class io/github/valerioisufi/pageboard/model/change/ElementData$Com
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ElementData$DefaultImpls {
-	public static synthetic fun toElement$default (Lio/github/valerioisufi/pageboard/model/change/ElementData;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawElement;
+	public static synthetic fun toElement$default (Lio/github/valerioisufi/pageboard/model/change/ElementData;Lio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/PageElement;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ElementDataKt {
 	public static final fun placement (Lio/github/valerioisufi/pageboard/model/change/ElementData;)Lio/github/valerioisufi/pageboard/model/change/Placement;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawCustomElement;)Lio/github/valerioisufi/pageboard/model/change/CustomElementData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawElement;)Lio/github/valerioisufi/pageboard/model/change/ElementData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawImage;)Lio/github/valerioisufi/pageboard/model/change/ImageData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/change/PageData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawPdf;)Lio/github/valerioisufi/pageboard/model/change/PdfData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawStroke;)Lio/github/valerioisufi/pageboard/model/change/StrokeData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/model/change/TextData;
-	public static final fun toData (Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;)Lio/github/valerioisufi/pageboard/model/change/TextMarkupData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/CustomElement;)Lio/github/valerioisufi/pageboard/model/change/CustomElementData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/PageElement;)Lio/github/valerioisufi/pageboard/model/change/ElementData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/ImageElement;)Lio/github/valerioisufi/pageboard/model/change/ImageData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/change/PageData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/PdfElement;)Lio/github/valerioisufi/pageboard/model/change/PdfData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/StrokeElement;)Lio/github/valerioisufi/pageboard/model/change/StrokeData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/model/change/TextData;
+	public static final fun toData (Lio/github/valerioisufi/pageboard/model/TextMarkupElement;)Lio/github/valerioisufi/pageboard/model/change/TextMarkupData;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ElementOrdering {
@@ -1502,7 +1502,7 @@ public final class io/github/valerioisufi/pageboard/model/change/ElementVersions
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/ElementVersions$Companion;
 	public fun <init> (Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
+	public final fun applyTo (Lio/github/valerioisufi/pageboard/model/PageElement;)V
 	public final fun component1 ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/Stamp;
@@ -1573,8 +1573,8 @@ public final class io/github/valerioisufi/pageboard/model/change/ImageData : io/
 	public final fun getX ()F
 	public final fun getY ()F
 	public fun hashCode ()I
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawImage;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/ImageElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1654,26 +1654,26 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/MoveP
 
 public final class io/github/valerioisufi/pageboard/model/change/MovePages$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-	public final fun toOrder (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/MovePages;
+	public final fun toOrder (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/MovePages;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/NoOpDocumentPersistence : io/github/valerioisufi/pageboard/model/change/DocumentPersistence {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/change/NoOpDocumentPersistence;
-	public fun appendOperation (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun deleteForGood (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun appendOperation (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveImage (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePage (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePdf (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveResource (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveStrokes (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveText (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun touchDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/CustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/ImageElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/DocumentResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextMarkupElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/pageboard/model/Document;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/Operation {
@@ -1756,7 +1756,7 @@ public final class io/github/valerioisufi/pageboard/model/change/PageData {
 	public final fun getOrderKey ()Ljava/lang/String;
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
-	public final fun toPage (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Lio/github/valerioisufi/pageboard/model/DrawPage;
+	public final fun toPage (Lio/github/valerioisufi/pageboard/model/Document;)Lio/github/valerioisufi/pageboard/model/Page;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1830,7 +1830,7 @@ public final class io/github/valerioisufi/pageboard/model/change/PageSnapshot {
 	public final fun getRemovedElements ()Ljava/util/List;
 	public final fun getVersions ()Ljava/util/Map;
 	public fun hashCode ()I
-	public final fun toPage (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Lio/github/valerioisufi/pageboard/model/DrawPage;
+	public final fun toPage (Lio/github/valerioisufi/pageboard/model/Document;)Lio/github/valerioisufi/pageboard/model/Page;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1881,8 +1881,8 @@ public final class io/github/valerioisufi/pageboard/model/change/PdfData : io/gi
 	public final fun getPdfPageIndex ()I
 	public final fun getResourceId ()Ljava/lang/String;
 	public fun hashCode ()I
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawPdf;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PdfElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1946,7 +1946,7 @@ public final class io/github/valerioisufi/pageboard/model/change/PlaceElements$C
 
 public abstract interface class io/github/valerioisufi/pageboard/model/change/Placement {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/Placement$Companion;
-	public abstract fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
+	public abstract fun applyTo (Lio/github/valerioisufi/pageboard/model/PageElement;)V
 	public abstract fun getId ()Ljava/lang/String;
 	public abstract fun getOrder ()Lio/github/valerioisufi/pageboard/model/ElementOrder;
 }
@@ -1986,7 +1986,7 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/Remov
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/RemoveElements$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/RemoveElements;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/RemoveElements;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -2089,24 +2089,24 @@ public final synthetic class io/github/valerioisufi/pageboard/model/change/Reord
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ReorderElements$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/model/change/StackMove;)Lio/github/valerioisufi/pageboard/model/change/ReorderElements;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/model/change/StackMove;)Lio/github/valerioisufi/pageboard/model/change/ReorderElements;
 	public final fun onTop (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/change/ReorderElements;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class io/github/valerioisufi/pageboard/model/change/ResourceData {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/ResourceData$Companion;
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/change/ResourceData;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/change/ResourceData;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/ResourceData;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/change/ResourceData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/change/ResourceData;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/change/ResourceData;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getHash ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
-	public final fun getType ()Lio/github/valerioisufi/pageboard/model/DrawResource$ResourceType;
+	public final fun getType ()Lio/github/valerioisufi/pageboard/model/DocumentResource$ResourceType;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -2268,8 +2268,8 @@ public final class io/github/valerioisufi/pageboard/model/change/StrokeData : io
 	public final fun getTool ()Lio/github/valerioisufi/pageboard/model/StrokeTool;
 	public final fun getTransform ()Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;
 	public fun hashCode ()I
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawStroke;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/StrokeElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -2292,7 +2292,7 @@ public final class io/github/valerioisufi/pageboard/model/change/StrokePlacement
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/StrokePlacement$Companion;
 	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;Lio/github/valerioisufi/pageboard/model/ElementOrder;)V
 	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;Lio/github/valerioisufi/pageboard/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
+	public fun applyTo (Lio/github/valerioisufi/pageboard/model/PageElement;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/ElementOrder;
@@ -2325,7 +2325,7 @@ public final class io/github/valerioisufi/pageboard/model/change/TextData : io/g
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/TextData$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/model/ElementOrder;Lio/github/valerioisufi/pageboard/model/Versions;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/TextAlignment;ZFFFFIFLjava/lang/Integer;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/model/ElementOrder;Lio/github/valerioisufi/pageboard/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawText;)V
+	public final fun applyTo (Lio/github/valerioisufi/pageboard/model/TextElement;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()F
 	public final fun component11 ()Ljava/lang/Integer;
@@ -2361,8 +2361,8 @@ public final class io/github/valerioisufi/pageboard/model/change/TextData : io/g
 	public final fun getX ()F
 	public final fun getY ()F
 	public fun hashCode ()I
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawText;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/TextElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -2413,8 +2413,8 @@ public final class io/github/valerioisufi/pageboard/model/change/TextMarkupData 
 	public final fun getStartIndex ()I
 	public final fun getText ()Ljava/lang/String;
 	public fun hashCode ()I
-	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawElement;
-	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;
+	public synthetic fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/PageElement;
+	public fun toElement (Lio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/TextMarkupElement;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -2437,7 +2437,7 @@ public final class io/github/valerioisufi/pageboard/model/change/TextPlacement :
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/change/TextPlacement$Companion;
 	public fun <init> (Ljava/lang/String;FFFFFZLio/github/valerioisufi/pageboard/model/ElementOrder;)V
 	public synthetic fun <init> (Ljava/lang/String;FFFFFZLio/github/valerioisufi/pageboard/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun applyTo (Lio/github/valerioisufi/pageboard/model/DrawElement;)V
+	public fun applyTo (Lio/github/valerioisufi/pageboard/model/PageElement;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()F
 	public final fun component3 ()F
@@ -2866,10 +2866,10 @@ public final class io/github/valerioisufi/pageboard/model/placement/PageOccupanc
 
 public final class io/github/valerioisufi/pageboard/model/placement/PageOccupancy$Companion {
 	public final fun lineSpacingOf (Lio/github/valerioisufi/pageboard/model/PageBackground;)F
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
-	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
-	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/pageboard/model/Page;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
 }
 
 public final class io/github/valerioisufi/pageboard/model/placement/PageTextSizes {
@@ -2895,9 +2895,9 @@ public final class io/github/valerioisufi/pageboard/model/placement/PageTextSize
 }
 
 public final class io/github/valerioisufi/pageboard/model/placement/PageTextSizes$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;)Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes;
-	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes$Companion;Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes;
-	public final fun ofDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Ljava/lang/Float;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;)Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes$Companion;Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageTextSizes;
+	public final fun ofDocument (Lio/github/valerioisufi/pageboard/model/Document;)Ljava/lang/Float;
 }
 
 public final class io/github/valerioisufi/pageboard/model/placement/PlacementBlock {
@@ -3528,14 +3528,14 @@ public final class io/github/valerioisufi/pageboard/model/text/TextChains {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/text/TextChains$Companion;
 	public final fun chainOf (Ljava/lang/String;)Ljava/util/List;
 	public final fun isChained (Ljava/lang/String;)Z
-	public final fun next (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawText;
+	public final fun next (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/TextElement;
 	public final fun pageOf (Ljava/lang/String;)I
-	public final fun previous (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawText;
+	public final fun previous (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/TextElement;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/TextChains$Companion {
 	public final fun joined (Ljava/util/List;)Ljava/lang/String;
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Lio/github/valerioisufi/pageboard/model/text/TextChains;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Document;)Lio/github/valerioisufi/pageboard/model/text/TextChains;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/TextCleanup {

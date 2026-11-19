@@ -81,7 +81,7 @@ internal class FormulaPaths(private val fonts: (FormulaFont) -> TrueTypeFont?) {
                     pivotX = 0f
                     pivotY = 0f
                 }
-                is FormulaOp.DrawText -> text(op.text, x(op.x), y(op.y))
+                is FormulaOp.TextElement -> text(op.text, x(op.x), y(op.y))
                 is FormulaOp.DrawLine -> {
                     val path = PdfPath()
                     path.moveTo(map(x(op.x1), y(op.y1)))

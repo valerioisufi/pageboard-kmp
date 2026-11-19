@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 
 /**
  * What can be read of a document without modeling its strokes: the texts, the elements of the
@@ -16,14 +16,14 @@ public class DocumentOutline(
     public val id: String,
     /** The pages shown, in their order. */
     public val pages: List<PageOutline>,
-    public val resources: List<DrawResource>
+    public val resources: List<DocumentResource>
 ) {
     /** The resource [resourceId] of the document, or `null`. */
-    public fun findResource(resourceId: String): DrawResource? = resources.firstOrNull { it.id == resourceId }
+    public fun findResource(resourceId: String): DocumentResource? = resources.firstOrNull { it.id == resourceId }
 
     public companion object {
         /** The outline of [document], loaded whole. */
-        public fun of(document: DrawDocument): DocumentOutline = DocumentOutline(
+        public fun of(document: Document): DocumentOutline = DocumentOutline(
             id = document.id,
             pages = document.pages.map { page ->
                 PageOutline(page.id, page.texts.toList(), page.customElements.toList(), page.pdfs.toList())
@@ -36,7 +36,7 @@ public class DocumentOutline(
 /** The elements shown on a page that can be read (see [DocumentOutline]). */
 public class PageOutline(
     public val id: String,
-    public val texts: List<DrawText>,
-    public val customElements: List<DrawCustomElement>,
-    public val pdfs: List<DrawPdf>
+    public val texts: List<TextElement>,
+    public val customElements: List<CustomElement>,
+    public val pdfs: List<PdfElement>
 )

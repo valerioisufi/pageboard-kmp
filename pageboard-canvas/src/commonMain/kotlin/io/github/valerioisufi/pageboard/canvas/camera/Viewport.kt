@@ -8,7 +8,7 @@ import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.pageboard.canvas.geometry.mapOffset
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileManager
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.math.hypot
 
@@ -25,7 +25,7 @@ import kotlin.math.hypot
  * - **screen**: world transformed by the camera ([getRenderMatrix]).
  */
 public class Viewport internal constructor(
-    private val document: DrawDocument,
+    private val document: Document,
     density: Float,
     private val tileManager: TileManager,
     private val requestRedraw: () -> Unit

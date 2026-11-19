@@ -45,7 +45,7 @@ public class NotesFonts(
     }
 }
 
-/** The fonts of the notes, Noto Sans and Noto Sans Mono, and the strut fonts (shipped with DrawView). */
+/** The fonts of the notes, Noto Sans and Noto Sans Mono, and the strut fonts (shipped with Pageboard). */
 @Composable
 public fun rememberNotesFonts(): NotesFonts {
     val regular = Font(Res.font.noto_sans_regular, FontWeight.Normal, FontStyle.Normal)

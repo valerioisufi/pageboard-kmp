@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.TrashRetention
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
@@ -142,7 +142,7 @@ internal class ReadingTools(
     }
 
     /** A page as [session] holds it, with the files and pages of its PDF pages, whose text is read apart. */
-    private fun pageContent(session: DocumentSession, page: DrawPage, listStrokes: Boolean, area: AgentArea?): Pair<PageContent, List<Pair<String, Int>>> {
+    private fun pageContent(session: DocumentSession, page: Page, listStrokes: Boolean, area: AgentArea?): Pair<PageContent, List<Pair<String, Int>>> {
         val geometry = planner.geometryOf(session.document, page)
         val strokes = page.strokes.filter { it.removed == null }
         val listed = if (!listStrokes) null else strokes.filter { area == null || it.bounds.overlaps(area.rect) }
@@ -443,4 +443,4 @@ internal fun imageType(bytes: ByteArray): String? {
 }
 
 /** What a page is drawn from, taken on the thread of its document. */
-private class PageToDraw(val pageId: String, val resources: List<DrawResource>, val content: PageContentSnapshot, val marks: List<PageMark>)
+private class PageToDraw(val pageId: String, val resources: List<DocumentResource>, val content: PageContentSnapshot, val marks: List<PageMark>)

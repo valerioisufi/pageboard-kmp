@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.canvas.observe
 import io.github.valerioisufi.pageboard.canvas.observeChanges
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.util.formatDateTime
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -69,7 +69,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 internal fun DocumentInfoSelector(
-    document: DrawDocument?,
+    document: Document?,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     location: String? = null,
@@ -135,7 +135,7 @@ internal fun DocumentInfoSelector(
                 }
             }
             Icon(
-                imageVector = if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown,
+                imageVector = if (expanded) PageboardIcons.ChevronUp else PageboardIcons.ChevronDown,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
@@ -213,7 +213,7 @@ private fun DocumentTitleField(
  * format and elements.
  */
 @Composable
-private fun DocumentInfo(document: DrawDocument, location: String?, title: @Composable () -> Unit) {
+private fun DocumentInfo(document: Document, location: String?, title: @Composable () -> Unit) {
     document.observeChanges()
     val monthNames = stringArrayResource(Res.array.date_months_short)
     val firstPage = document.pages.firstOrNull()
@@ -228,11 +228,11 @@ private fun DocumentInfo(document: DrawDocument, location: String?, title: @Comp
             Text(location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
         }
         Spacer(modifier = Modifier.height(12.dp))
-        InfoRow(DrawViewIcons.Clock, stringResource(Res.string.document_info_label_created_date), document.createdAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
-        InfoRow(DrawViewIcons.Pencil, stringResource(Res.string.document_info_label_modified_date), document.modifiedAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
-        InfoRow(DrawViewIcons.FileText, stringResource(Res.string.document_info_label_pages), document.pages.size.toString())
-        InfoRow(DrawViewIcons.Grid, stringResource(Res.string.document_info_label_format), dimensions)
-        InfoRow(DrawViewIcons.Layers, stringResource(Res.string.document_info_label_elements_count), elements.toString())
+        InfoRow(PageboardIcons.Clock, stringResource(Res.string.document_info_label_created_date), document.createdAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
+        InfoRow(PageboardIcons.Pencil, stringResource(Res.string.document_info_label_modified_date), document.modifiedAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
+        InfoRow(PageboardIcons.FileText, stringResource(Res.string.document_info_label_pages), document.pages.size.toString())
+        InfoRow(PageboardIcons.Grid, stringResource(Res.string.document_info_label_format), dimensions)
+        InfoRow(PageboardIcons.Layers, stringResource(Res.string.document_info_label_elements_count), elements.toString())
     }
 }
 

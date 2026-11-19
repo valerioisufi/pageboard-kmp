@@ -1,6 +1,6 @@
 # Modularization and publishing
 
-The modules of DrawView are to be published on Maven and reused by other developers: each one
+The modules of Pageboard are to be published on Maven and reused by other developers: each one
 must compile, publish and run with only the dependencies it declares, so that an application
 pays only for what it adds (the canvas without PDFium or MicroTeX, a server without Compose, the
 storage without Room). Two decisions shape the work (2026-10-10):
@@ -27,22 +27,22 @@ until the release (see the release checklist at the end).
   all of them for three ABIs.
 * **Engines reached as global singletons, past their ports.** `pageboard-core` declares
   `PdfTileAdapter` and `LatexTileAdapter`, but `pageboard-ui` calls `LatexEngine` and
-  `PdfiumEngine` directly (`FormulaImages`, `TextBoxEditor`, `DrawScreen`,
+  `PdfiumEngine` directly (`FormulaImages`, `TextBoxEditor`, `DocumentScreen`,
   `DocumentEditorViewModel`), and so do `DocumentLibrary` and `DocumentThumbnails` in
   `pageboard-explorer`: neither module compiles without `:pageboard-latex` and `:pageboard-pdf`.
   `LatexTileAdapter` and `LatexEngine.asTileAdapter()` are not used. `LatexEngine` keeps a global
   configuration (`setTextFonts`, `initialize`).
-* **`DrawScreen` reaches into the rendering pipeline**: it sets the text adapter of the renderer
+* **`DocumentScreen` reaches into the rendering pipeline**: it sets the text adapter of the renderer
   and clears its caches through `controller.tileManager.tileRenderer.textAdapter` when the
   formula engine becomes ready.
-* **The model is Compose state.** `DrawPage` and `DrawDocument` hold `SnapshotStateList` and
+* **The model is Compose state.** `Page` and `Document` hold `SnapshotStateList` and
   `mutableStateOf`, their readers use `readSnapshot` for consistent reads from the tile workers,
-  `DocumentSession.isReadOnly` is a `mutableStateOf`, `DrawImage` keeps its decoded
+  `DocumentSession.isReadOnly` is a `mutableStateOf`, `ImageElement` keeps its decoded
   `ImageBitmap`, and the model, the changes and the geometry use Compose `Rect`, `Offset` and
   `Color` (`TextFieldValue` in `RichTextEditing`). The changes themselves are close to headless:
   `DocumentChange`, `Operation` and `DocumentSnapshot` import nothing of Compose, `ElementData`
   only `Rect` and `Color`.
-* **The element kinds are closed.** `DrawElement` and `ElementData` are sealed; the code
+* **The element kinds are closed.** `PageElement` and `ElementData` are sealed; the code
   specific to each kind is spread over `PageModels` (one list per kind), the changes, the
   persistence (one save method and one table per kind), `TileRenderer`, `CollaboratorsOverlay`,
   `SelectionManager` (one list per kind in a selection), `SnapManager`, `EraserManager`,
@@ -55,10 +55,10 @@ until the release (see the release checklist at the end).
   in-memory store of the tests and the Room store in one module, so Room and SQLite come with
   it; it also imports Compose (`toArgb`). `DocumentStore` mixes documents, folders, preferences,
   the operations log and the sharing secrets; `DrawPersistence` mixes the document with the user
-  preferences. `DrawViewStore.default` is a global store.
+  preferences. `PageboardStore.default` is a global store.
 * **`pageboard-sync` is not headless**: sync → data → core brings Compose UI, Foundation,
   Material3 and Room. The protocol, the encryption and the engine are one module.
-* **`DrawViewController`** (812 lines) holds the camera, the layout of the pages, the tools, the
+* **`PageboardController`** (812 lines) holds the camera, the layout of the pages, the tools, the
   ink, the presence of the collaborators, the persistence queue and the text formatting; its
   eight managers receive the controller itself (`SelectionManager(this)`...), and all of them are
   public properties.
@@ -148,10 +148,10 @@ applications never declare them.
 |---|---|---|
 | The data of a kind of element: identifier, format version, serializer, migration | `ElementType<T>` (`pageboard-model`) | Polymorphism, Protected Variations |
 | Reading the value of an element of a type | `ElementType.decode` (`pageboard-model`): the model and the stores never read the payloads | Information Expert, Protected Variations |
-| The element types an application draws | `ElementRenderers` (`pageboard-canvas`), given by `DrawViewEngines.elements` to the editors, the thumbnails and the export | Pure Fabrication, Indirection |
+| The element types an application draws | `ElementRenderers` (`pageboard-canvas`), given by `PageboardEngines.elements` to the editors, the thumbnails and the export | Pure Fabrication, Indirection |
 | Adding an element of a type, replacing its value | `CustomElementManager` of the controller (`AddElements`, `UpdateElementContent`) | Creator, Controller |
 | An element whose type is not installed: kept, synced, undone, drawn as a placeholder | `CustomElementData` with an opaque payload, decoded when its type is registered | Protected Variations |
-| What every element has (identifier, page, order, stamps, presence, rotated box) | the element envelope (`DrawElement`, `RotatableItem`) | Information Expert |
+| What every element has (identifier, page, order, stamps, presence, rotated box) | the element envelope (`PageElement`, `RotatableItem`) | Information Expert |
 | Placing, selecting, snapping, erasing, moving between pages any element | the editor through the envelope (`PlaceElements`, `BoxPlacement`, selection of elements) | Information Expert, Polymorphism |
 | Drawing an element, its bounds, whether a point hits it | `ElementRenderer<T>` (`pageboard-canvas`), one per type, built-in ones included | Polymorphism, Information Expert |
 | Writing an element in a PDF | `ElementExporter<T>` (`pageboard-export`); without one, the element is drawn by its renderer at 300 dpi | Polymorphism, Protected Variations |
@@ -159,7 +159,7 @@ applications never declare them.
 | Consistent reads of a page from the tile workers | copy-on-write content of the pages (immutable lists replaced by each change) | Information Expert |
 | Telling the UI what changed | `StateFlow`s of the model, observed by the Compose layer | Low Coupling, Indirection |
 | Decoded images | `ImageCache` (`pageboard-canvas`), keyed by resource | Pure Fabrication |
-| The optional engines of an editor (PDF, formulas) | `DrawViewEngines` (`pageboard-canvas`), given to the controller, the thumbnails and the library; `LocalDrawViewEngines` for the composables | Pure Fabrication, Indirection, Protected Variations |
+| The optional engines of an editor (PDF, formulas) | `PageboardEngines` (`pageboard-canvas`), given to the controller, the thumbnails and the library; `LocalPageboardEngines` for the composables | Pure Fabrication, Indirection, Protected Variations |
 | Rendering a formula, telling when the engine is ready | `FormulaRenderer` port (`pageboard-canvas`), implemented by `pageboard-latex` | Indirection, Protected Variations |
 | Clearing the text caches when the formula engine becomes ready | the text adapter, subscribed to its `FormulaRenderer` | Information Expert |
 | Storage of documents, folders, operations, sharing secrets, preferences | segregated ports in `pageboard-store` (`DocumentCatalog`, `OperationLog`, `SharingStore`, `PreferenceStore`; `DocumentStore` adds the content and the persistence), Room behind them in `pageboard-store-room` | Protected Variations, High Cohesion |
@@ -200,7 +200,7 @@ applications never declare them.
   with a page), draws a placeholder in its box and does not let it be edited: it never destroys
   the elements of a device that has the type.
 * **Behaviours by layer.** `ElementRenderer` (draw in the box, hit test) in the canvas, registered
-  in `ElementRenderers` (`DrawViewEngines.elements`); the tool creating an element and its editor
+  in `ElementRenderers` (`PageboardEngines.elements`); the tool creating an element and its editor
   through `EditorExtension` and `CustomElementManager`; in the PDF export, the element drawn by its
   renderer at 300 dpi. The model needs no registry: it never reads a payload.
 * **What the editor does with them.** Like the images: selected by a long press and by the lasso,
@@ -226,7 +226,7 @@ applications never declare them.
   decoded images move to `ImageCache`, the flags of the editor (`isDragging`,
   `isShownByCollaborator`) to `HiddenElements` of the canvas.
 * **Strokes.** `StrokeData.toElement` models the stroke through the `StrokeModeller` of the
-  document (`DrawDocument.strokeModeller`), not through a global engine: `KotlinStrokeModeller` in
+  document (`Document.strokeModeller`), not through a global engine: `KotlinStrokeModeller` in
   the model, `InkStrokeModeller` of `pageboard-ink` given by the stores (they depend on it). The
   meshes are local (the inputs are what is synced), so two modellers never break the
   convergence.
@@ -239,14 +239,14 @@ applications never declare them.
   facade of its engine, `LatexEngine` is an instance the application creates over the one native
   engine (`docs/plans/engine-instances.md`); no other library reaches them. They give the
   implementations of the ports of the canvas (`PdfiumEngine.createTileAdapter`, a `LatexEngine`
-  is a `FormulaRenderer`); the application builds a `DrawViewEngines` with them and gives
+  is a `FormulaRenderer`); the application builds a `PageboardEngines` with them and gives
   it to the editor and the library; `pageboard-ui`, `pageboard-explorer` and `pageboard-lecture` no
   longer depend on `pageboard-pdf` and `pageboard-latex`. Only `pageboard-export` uses PDFium
   directly (it writes the PDFs); it takes the vectors of the formulas from the formula renderer
   (`FormulaRenderer.drawing`, `docs/plans/vector-formulas.md`).
 * The controller receives the engines: it creates the PDF adapter of its renderer (Creator) and
   draws the texts again when the formula renderer becomes ready (Information Expert), so that
-  `DrawScreen` no longer reaches into the renderer.
+  `DocumentScreen` no longer reaches into the renderer.
 * The formula renderer is prepared with the fonts of the text of the formulas (`\text{}` in the
   font of the notes) by whoever shows the editor (`DocumentLibrary`), through the port.
 * Without a formula renderer the formulas stay as their LaTeX source; without a PDF renderer a
@@ -263,7 +263,7 @@ applications never declare them.
   stamps). The tests every store must pass are in `pageboard-store-testing`, for the stores of the
   applications too.
 * No library reaches a global store: the library, the editor, the collaboration and the export
-  receive the `OpenDocuments` of the application (`DrawViewStore.documents` of
+  receive the `OpenDocuments` of the application (`PageboardStore.documents` of
   `pageboard-store-room` is the one of the data directory, called by the applications only); the
   thumbnails are kept on disk only when the application says where
   (`DocumentThumbnails.defaultDirectory`).
@@ -278,7 +278,7 @@ applications never declare them.
   `ui.extension`.
 * `EditorScreen` (`pageboard-ui`) is the editor of a controller with its extensions, whoever keeps
   the document. The editor session bound to a store (`EditorSession`, `DocumentEditorViewModel`,
-  `EditorSessionScreen`, `DrawViewSessions`) is in `pageboard-session`, with its package; the
+  `EditorSessionScreen`, `PageboardSessions`) is in `pageboard-session`, with its package; the
   library depends on it, `pageboard-ui` depends on no store (nor on the lifecycle of the view
   models).
 
@@ -375,13 +375,13 @@ applications never declare them.
 |---|---|---|
 | 0. Build foundation | `build-logic` convention plugins applied to every library; publishing skeleton (`publishToMavenLocal` of every library); explicit API measurable (`-Ppageboard.explicitApi=warning`, strict module by module in phase 5); `currentOs` out of the libraries; no iOS framework in the libraries; `material3` out of the core | Done |
 | 1. Native per engine | `pageboard-native` split into `pageboard-native-ink`, `-tex`, `-pdfium`, `-audio`; `pdfium.def` without absolute paths in the published klib; check of the desktop platforms when publishing a release | Done |
-| 2. Engines as ports | ports `FormulaRenderer` and `PdfTileAdapter`, `DrawViewEngines` (given to the controller, the library, the thumbnails; `LocalDrawViewEngines`); `pageboard-ui`, `pageboard-explorer` and `pageboard-lecture` without `pageboard-pdf` / `pageboard-latex`; the text adapter clears its own caches; dead `LatexTileAdapter` removed | Done |
+| 2. Engines as ports | ports `FormulaRenderer` and `PdfTileAdapter`, `PageboardEngines` (given to the controller, the library, the thumbnails; `LocalPageboardEngines`); `pageboard-ui`, `pageboard-explorer` and `pageboard-lecture` without `pageboard-pdf` / `pageboard-latex`; the text adapter clears its own caches; dead `LatexTileAdapter` removed | Done |
 | 3a. Model values | `pageboard-platform` (files, native libraries, secure store, device, locks, time, SHA-256) and `pageboard-model` created; `Point`, `Rect` and ARGB colors in the model, converted at the border of the canvas (`ComposeGeometry`); moved: stamps, versions, element order, fractional index, `Matrix2D`, `AffineTransform`, measures, hit testing, PDF page fit, stroke points, tools, meshes, outlines, brushes, PDF text layout, rich text parsing, text sizes, backgrounds, alignment, attachments | Done |
-| 3b. Headless state | `pageboard-ink` (Google Ink, its bridges) and the `StrokeModeller` of the document (Kotlin in the model, Ink in the stores); `HiddenElements` and `ImageCache` in the canvas instead of flags and pixels in the elements; the content of a page one immutable value, copy-on-write pages and files, `DrawDocument.revision` and the read only of the session as `StateFlow`s (`observeChanges` in the composables); document, changes and session moved; `pageboard-core` renamed `pageboard-canvas` | Done |
-| 3c. Open element types | `ElementType` (CBOR payloads, versions, migration), `DrawCustomElement`, `CustomElementData`, `UpdateElementContent`, unknown types kept as bytes; `ElementRenderer` / `ElementRenderers` (placeholders for the unknown types) in the tiles, the overlays, the selection, the snapping, the thumbnails, the image and PDF export; `CustomElementManager`; Room table `custom_elements`; the shapes of `sample` | Done |
-| 4a. Persistence port | `DocumentPersistence`, `ChangePersister`, `PersistenceQueue` in the model; the preferences of the editor as text by key (`PreferenceStore`, `DrawPreferences.encode`) | Done |
+| 3b. Headless state | `pageboard-ink` (Google Ink, its bridges) and the `StrokeModeller` of the document (Kotlin in the model, Ink in the stores); `HiddenElements` and `ImageCache` in the canvas instead of flags and pixels in the elements; the content of a page one immutable value, copy-on-write pages and files, `Document.revision` and the read only of the session as `StateFlow`s (`observeChanges` in the composables); document, changes and session moved; `pageboard-core` renamed `pageboard-canvas` | Done |
+| 3c. Open element types | `ElementType` (CBOR payloads, versions, migration), `CustomElement`, `CustomElementData`, `UpdateElementContent`, unknown types kept as bytes; `ElementRenderer` / `ElementRenderers` (placeholders for the unknown types) in the tiles, the overlays, the selection, the snapping, the thumbnails, the image and PDF export; `CustomElementManager`; Room table `custom_elements`; the shapes of `sample` | Done |
+| 4a. Persistence port | `DocumentPersistence`, `ChangePersister`, `PersistenceQueue` in the model; the preferences of the editor as text by key (`PreferenceStore`, `EditorPreferences.encode`) | Done |
 | 4b. Stores | `pageboard-store` / `pageboard-store-room` / `pageboard-store-testing`; segregated ports; no global store in the libraries; the Room migrations from version 16 (no destructive fallback); `SelectionActivity` in the model (the synchronization without the canvas) | Done |
-| 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `pageboard-ui`; `pageboard-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`); `pageboard-ui` without any store; the extension points in `ui.extension` | Done |
+| 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `pageboard-ui`; `pageboard-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `PageboardSessions`); `pageboard-ui` without any store; the extension points in `ui.extension` | Done |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`; no `EditorHost` (see Controller); explicit API strict in every library, the internals by their use; KDoc on every top-level public declaration; ABI dumps (`api/`, checked by `check`) | Done |
 | 6. Sync and relay protocol | `pageboard-sync-protocol` (frames, encryption, identities, invitations, membership, transports; on `pageboard-platform` only); sealed operations with their identity in clear | Done |
 | 7. Feature modules | `pageboard-lecture` / `pageboard-lecture-ui` / `pageboard-lecture-testing`; `pageboard-export` / `pageboard-export-ui` (the use case writing a file at a path, the dialog delivering it: no `FileTarget` in the export) | Done |
@@ -400,7 +400,7 @@ the sample running, and the modules it touches published to `mavenLocal()`.
 * Packages follow the modules (`io.github.valerioisufi.pageboard.model...`): no package split
   across two artifacts.
 * The engine modules implement the ports of the canvas (they depend on it): one module per
-  engine, at the price of not being a PDF or TeX library usable without DrawView.
+  engine, at the price of not being a PDF or TeX library usable without Pageboard.
 * PDF export stays in `pageboard-export` with `pageboard-pdf`: the image-only export is not worth
   a module of its own.
 * The coordinates and the SCM address (`https://github.com/valerioisufi/DrawView-KMP`, to fix

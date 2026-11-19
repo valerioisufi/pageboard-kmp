@@ -1,4 +1,4 @@
-// A desktop application with the editor of DrawView and no optional engine: it compiles without
+// A desktop application with the editor of Pageboard and no optional engine: it compiles without
 // pageboard-pdf and pageboard-latex (and no store: pageboard-ui depends on none)
 plugins {
     alias(libs.plugins.kotlinJvm)
@@ -10,7 +10,7 @@ kotlin {
     jvmToolchain(21)
 }
 
-/** The version of DrawView checked (see the root build). */
+/** The version of Pageboard checked (see the root build). */
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {

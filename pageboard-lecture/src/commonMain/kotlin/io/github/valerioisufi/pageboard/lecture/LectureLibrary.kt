@@ -159,7 +159,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         val recordedMs = try {
             RecordingFile(directory).durationMs()
         } catch (e: Throwable) {
-            println("DrawView: cannot read the recording $directory: ${e.message}")
+            println("Pageboard: cannot read the recording $directory: ${e.message}")
             0L
         }
         val recovered = record.copy(status = LectureStatus.FINISHED, durationMs = maxOf(record.durationMs, recordedMs))
@@ -185,7 +185,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         deleteRecursively(Path(directory))
         true
     } catch (e: Throwable) {
-        println("DrawView: cannot delete the lecture $directory: ${e.message}")
+        println("Pageboard: cannot delete the lecture $directory: ${e.message}")
         false
     }
 
@@ -294,6 +294,6 @@ internal fun writeAtomically(path: String, bytes: ByteArray): Boolean = try {
         true
     }
 } catch (e: Throwable) {
-    println("DrawView: cannot write $path: ${e.message}")
+    println("Pageboard: cannot write $path: ${e.message}")
     false
 }

@@ -37,7 +37,7 @@ class PdfInkTest {
 
     @Test
     fun whatAPdfPageDrawsIsTakenOnItsPage() {
-        val page = DrawPage(widthMm = 200f, heightMm = 100f).apply { add(DrawPdf(0)) }
+        val page = Page(widthMm = 200f, heightMm = 100f).apply { add(PdfElement(0)) }
         // A figure in the right half of a page of the same proportions
         val figure = ink(100, 50, intArrayOf(60, 10, 89, 39))
         val occupancy = PageOccupancy.of(page, pdfText = { null }, pdfInk = { figure })
@@ -52,7 +52,7 @@ class PdfInkTest {
     @Test
     fun aPdfPageOfOtherProportionsIsTakenWhereItIsDrawn() {
         // A wide slide on a tall page: drawn in a band in its middle
-        val page = DrawPage(widthMm = 100f, heightMm = 200f).apply { add(DrawPdf(0)) }
+        val page = Page(widthMm = 100f, heightMm = 200f).apply { add(PdfElement(0)) }
         val all = ink(4, 2, intArrayOf(0, 0, 3, 1))
         assertEquals(listOf(Rect(0f, 75f, 100f, 125f)), PageOccupancy.of(page, pdfText = { null }, pdfInk = { all }).boxes)
     }

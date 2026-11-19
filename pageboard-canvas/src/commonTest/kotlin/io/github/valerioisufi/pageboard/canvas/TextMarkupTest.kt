@@ -3,14 +3,14 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextMarkupManager
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -110,18 +110,18 @@ class TextMarkupTest {
         override fun getTextLayout(resourcePath: String, pdfPageIndex: Int): PdfTextLayout? = layout
     }
 
-    private fun controllerWithPdf(scope: CoroutineScope, layout: PdfTextLayout? = layout()): DrawViewController {
-        val document = DrawDocument()
-        document.addResource(DrawResource("pdf-1", DrawResource.ResourceType.PDF, "/notes/slides.pdf"))
-        document.pages[0].add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "pdf-1" })
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+    private fun controllerWithPdf(scope: CoroutineScope, layout: PdfTextLayout? = layout()): PageboardController {
+        val document = Document()
+        document.addResource(DocumentResource("pdf-1", DocumentResource.ResourceType.PDF, "/notes/slides.pdf"))
+        document.pages[0].add(PdfElement(pdfPageIndex = 0).apply { resourceId = "pdf-1" })
+        val controller = PageboardController(document = document, coroutineScope = scope)
         controller.tileManager.tileRenderer.pdfAdapter = FakePdfAdapter(layout)
         controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
     /** Screen position of the point ([x], [y]) of the PDF of the first page. */
-    private fun DrawViewController.screenOf(x: Float, y: Float): Offset {
+    private fun PageboardController.screenOf(x: Float, y: Float): Offset {
         val page = document.pages[0]
         val toScreen = pdfPointsToPageMm(A4_WIDTH_PT, A4_HEIGHT_PT, page.widthMm, page.heightMm)
             .postConcat(assertNotNull(viewport.pageMmToScreen(0)))
@@ -173,10 +173,10 @@ class TextMarkupTest {
     @Test
     fun scannedPageTellsThatItHasNoText() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWithPdf(backgroundScope, PdfTextLayout(A4_WIDTH_PT, A4_HEIGHT_PT, IntArray(0), FloatArray(0)))
-        val messages = mutableListOf<DrawViewController.Message>()
+        val messages = mutableListOf<PageboardController.Message>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { controller.messages.collect { messages.add(it) } }
         assertFalse(controller.textMarkupManager.beginMarking(controller.screenOf(100f, 110f), 10f))
-        assertEquals(listOf(DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT), messages)
+        assertEquals(listOf(PageboardController.Message.PDF_PAGE_WITHOUT_TEXT), messages)
     }
 
     @Test

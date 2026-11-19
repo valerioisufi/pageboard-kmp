@@ -110,7 +110,7 @@ internal class AssistantLectures(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot write the course context: ${e.message}")
+            println("Pageboard: cannot write the course context: ${e.message}")
             null
         }
         val context = text?.takeIf { it.isNotBlank() }?.let {

@@ -2,13 +2,13 @@ package io.github.valerioisufi.pageboard.canvas
 
 import androidx.compose.ui.graphics.Canvas
 import io.github.valerioisufi.pageboard.canvas.controller.DocumentFind
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.test.Test
@@ -30,8 +30,8 @@ class DocumentFindTest {
      * the source a line of 10 mm, each character 2 mm wide.
      */
     private class WordsAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
-        override fun layout(text: DrawText, paperColor: Int): TextBlockLayout {
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun layout(text: TextElement, paperColor: Int): TextBlockLayout {
             val words = ArrayList<TextWord>()
             for ((line, source) in text.text.replace("**", "").split('\n').withIndex()) {
                 var left = 0f
@@ -44,15 +44,15 @@ class DocumentFindTest {
         }
     }
 
-    private fun TestScope.controller(vararg pages: List<String>): DrawViewController {
-        val document = DrawDocument()
+    private fun TestScope.controller(vararg pages: List<String>): PageboardController {
+        val document = Document()
         repeat(pages.size - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = document, coroutineScope = backgroundScope)
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = WordsAdapter()
         for ((index, texts) in pages.withIndex()) {
             val page = document.pages[index]
-            val elements = texts.mapIndexed { k, source -> DrawText().apply { text = source; x = 10f; y = 20f + 40f * k; width = 150f; fontSize = 12f } }
+            val elements = texts.mapIndexed { k, source -> TextElement().apply { text = source; x = 10f; y = 20f + 40f * k; width = 150f; fontSize = 12f } }
             if (elements.isNotEmpty()) controller.session.submit(AddElements.of(page, elements))
         }
         return controller
@@ -131,7 +131,7 @@ class DocumentFindTest {
         assertTrue(find.matches.isEmpty())
         assertFalse(find.isSearching)
         val page = controller.document.pages[0]
-        val added = DrawText().apply { text = "due"; x = 10f; y = 100f; width = 150f; fontSize = 12f }
+        val added = TextElement().apply { text = "due"; x = 10f; y = 100f; width = 150f; fontSize = 12f }
         controller.session.submit(AddElements.of(page, listOf(added)))
         // After the document stayed unchanged a while
         advanceTimeBy(1_000)

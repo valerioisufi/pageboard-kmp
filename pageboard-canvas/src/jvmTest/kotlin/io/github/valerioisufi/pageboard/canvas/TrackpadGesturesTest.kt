@@ -10,13 +10,13 @@ import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.DrawCanvas
+import io.github.valerioisufi.pageboard.canvas.PageCanvas
 import io.github.valerioisufi.pageboard.canvas.MacTrackpad
 import io.github.valerioisufi.pageboard.canvas.TrackpadPinchPhase
 import io.github.valerioisufi.pageboard.canvas.TrackpadScrollPhase
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.scrollUnitPx
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -27,7 +27,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * Trackpad gestures sent to a [DrawCanvas] as Compose delivers them: two-finger pan and pinch
+ * Trackpad gestures sent to a [PageCanvas] as Compose delivers them: two-finger pan and pinch
  * (Android, iOS), scroll and pinch of a macOS trackpad. The pan and the pinch are sent with
  * [ComposeScenePointer], internal to Compose (the desktop does not produce them).
  */
@@ -36,13 +36,13 @@ class TrackpadGesturesTest {
 
     private val center = Offset(400f, 600f)
 
-    private fun withCanvas(pages: Int, block: (ImageComposeScene, DrawViewController) -> Unit) {
+    private fun withCanvas(pages: Int, block: (ImageComposeScene, PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val document = DrawDocument()
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+        val controller = PageboardController(document = document, coroutineScope = scope)
         val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) {
-            DrawCanvas(controller)
+            PageCanvas(controller)
         }
         try {
             scene.render()
@@ -164,7 +164,7 @@ class TrackpadGesturesTest {
     }
 
     /** Zooms in around the center, so that the page can move on both axes. */
-    private fun DrawViewController.zoomIn() {
+    private fun PageboardController.zoomIn() {
         viewport.camera.onDrag(0f, 0f, 3f, center.x, center.y)
         viewport.camera.restoreToBounds(animated = false)
         assertTrue(viewport.camera.canMoveX && viewport.camera.canMoveY)

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.export
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 
 /**
@@ -50,9 +50,9 @@ public class MarkdownExporter(private val appendix: MarkdownAppendix? = null) {
             .joinToString("\n\n")
 
         /** [texts] from the top, those at the same height from the left. */
-        internal fun readingOrder(texts: List<DrawText>): List<DrawText> {
+        internal fun readingOrder(texts: List<TextElement>): List<TextElement> {
             val byTop = texts.sortedBy { it.y }
-            val lines = ArrayList<MutableList<DrawText>>()
+            val lines = ArrayList<MutableList<TextElement>>()
             for (text in byTop) {
                 val line = lines.lastOrNull()
                 if (line != null && text.y - line.first().y <= SAME_LINE_MM) line += text else lines += mutableListOf(text)

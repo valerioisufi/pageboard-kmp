@@ -2,8 +2,8 @@ package io.github.valerioisufi.pageboard.canvas.controller
 
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.ChangeEffects
 import io.github.valerioisufi.pageboard.model.change.toData
 import kotlin.math.abs
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * The boxes of the texts of the document of [controller] as this device lays them out (their
- * [DrawText.height], the [DrawText.naturalWidth] a box following its text takes): the box of a
+ * [TextElement.height], the [TextElement.naturalWidth] a box following its text takes): the box of a
  * text is what its lines take, never what a version of the application measured when it wrote
  * it (docs/plans/text-heights.md).
  *
@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * a text not changed is not laid out again); the tiles of the box it had and of the box it has are
  * drawn again. The frame of the selection, the lasso, the taps and the snapping read its heights.
  */
-internal class TextBoxes(private val controller: DrawViewController) {
+internal class TextBoxes(private val controller: PageboardController) {
 
     private var layingOut: Job? = null
 
@@ -51,7 +51,7 @@ internal class TextBoxes(private val controller: DrawViewController) {
     /** Lays out again the texts [effects] changed, and the texts of the pages that came. */
     fun onChange(effects: ChangeEffects) {
         for ((element, page) in effects.savedElements) {
-            if (element is DrawText && element.removed == null) layOut(page, element)
+            if (element is TextElement && element.removed == null) layOut(page, element)
         }
         if (effects.layoutChanged) {
             for (page in controller.document.pages) for (text in page.texts) layOut(page, text)
@@ -63,12 +63,12 @@ internal class TextBoxes(private val controller: DrawViewController) {
         layingOut?.cancel()
     }
 
-    private fun layOut(page: DrawPage, text: DrawText) {
+    private fun layOut(page: Page, text: TextElement) {
         val size = controller.textAdapter?.measure(text) ?: return
         apply(page, text, size)
     }
 
-    private fun apply(page: DrawPage, text: DrawText, size: TextBlockSize) {
+    private fun apply(page: Page, text: TextElement, size: TextBlockSize) {
         val sameWidth = abs(size.width - text.naturalWidth) <= SIZE_EPSILON_MM
         if (abs(size.height - text.height) <= SIZE_EPSILON_MM && sameWidth) return
         val before = text.getRotatedBounds()

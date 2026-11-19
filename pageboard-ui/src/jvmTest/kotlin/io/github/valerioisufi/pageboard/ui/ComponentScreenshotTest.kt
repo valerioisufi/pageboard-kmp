@@ -25,14 +25,14 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.pageboard.model.shape.ShapeDash
 import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import io.github.valerioisufi.pageboard.ui.screen.ShapeSettings
 import io.github.valerioisufi.pageboard.ui.screen.ShapeToolTarget
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementRequest
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.placement.BesideAnchor
 import io.github.valerioisufi.pageboard.model.placement.PlacementBlock
 import io.github.valerioisufi.pageboard.ui.editor.PlacementBar
@@ -41,7 +41,7 @@ import io.github.valerioisufi.pageboard.ui.editor.previewOf
 import io.github.valerioisufi.pageboard.canvas.controller.TextImport
 import io.github.valerioisufi.pageboard.canvas.controller.TextImportPlace
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.geometry.Dimension
 import io.github.valerioisufi.pageboard.model.geometry.mm
@@ -59,9 +59,9 @@ import io.github.valerioisufi.pageboard.ui.screen.LassoSettings
 import io.github.valerioisufi.pageboard.ui.screen.MarkupSettings
 import io.github.valerioisufi.pageboard.ui.screen.ReadOnlyBadge
 import io.github.valerioisufi.pageboard.ui.screen.TextToolSettings
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.pageboard.ui.theme.elevation
@@ -88,7 +88,7 @@ class ComponentScreenshotTest {
     private fun capture(name: String, width: Int, height: Int, dark: Boolean = false, content: @Composable () -> Unit) =
         runDesktopComposeUiTest(width = width, height = height) {
             setContent {
-                DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                PageboardTheme(darkTheme = dark, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) { content() }
                 }
             }
@@ -119,7 +119,7 @@ class ComponentScreenshotTest {
     @Test
     fun toolPopovers() = listOf(false, true).forEach { dark ->
         capture("tool-popovers-${if (dark) "dark" else "light"}", width = 1320, height = 1040, dark = dark) {
-            val controller = remember { DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)) }
+            val controller = remember { PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)) }
             Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
                     Popover { InkSettings(controller, Tool.INK_PEN, "Pen", InkPalette.inks, HybridScale(0.1f..15f, 3f, 0.5f)) }
@@ -143,14 +143,14 @@ class ComponentScreenshotTest {
     @Test
     fun shapePopovers() = listOf(false, true).forEach { dark ->
         capture("shape-popovers-${if (dark) "dark" else "light"}", width = 1000, height = 760, dark = dark) {
-            val box = remember { DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)) }
+            val box = remember { PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)) }
             val arrow = remember {
-                DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
                     shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.LINE, heads = 1, stroke = 0xFF1F5FBF.toInt(), widthMm = 0.7f))
                 }
             }
             val dashed = remember {
-                DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
                     shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.ELLIPSE, stroke = 0xFFD23B3B.toInt(), dash = ShapeDash.DASHED, fill = 0x33D23B3B))
                 }
             }
@@ -190,11 +190,11 @@ class ComponentScreenshotTest {
     @Test
     fun documentRename() = listOf(false, true).forEach { invalid ->
         runDesktopComposeUiTest(width = 420, height = 560) {
-            val controller = DrawViewController(document = DrawDocument(title = "Lecture 1 — Limits"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+            val controller = PageboardController(document = Document(title = "Lecture 1 — Limits"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
             var requests by mutableIntStateOf(0)
             setContent {
                 // Light whatever the theme of the host
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).padding(12.dp)) {
                         DocumentInfoSelector(controller.document, subtitle = "1 page", location = "Analysis", renamer = { true }, renameRequests = requests)
                     }
@@ -225,11 +225,11 @@ class ComponentScreenshotTest {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(false, true).forEach { full ->
                 val controller = remember {
-                    DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                    PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
                         viewport.setSize(800f, 1200f)
-                        if (full) document.pages[0].add(DrawText().apply { width = 210f; height = 297f; text = "Full" })
+                        if (full) document.pages[0].add(TextElement().apply { width = 210f; height = 297f; text = "Full" })
                         val spots = placementManager.spotsFor(0, PlacementBlock(90f) { 20f }, BesideAnchor(null))
-                        placementManager.start(PlacementRequest(DrawText(), onPlace = {}, spots = spots, label = "Bayes' theorem"))
+                        placementManager.start(PlacementRequest(TextElement(), onPlace = {}, spots = spots, label = "Bayes' theorem"))
                         if (!full) placementManager.next()
                     }
                 }
@@ -260,7 +260,7 @@ class ComponentScreenshotTest {
         Column(
             modifier = Modifier
                 .width(300.dp)
-                .elevation(DrawViewElevation.Level3, shape)
+                .elevation(PageboardElevation.Level3, shape)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh, shape)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             content = content
@@ -274,17 +274,17 @@ class ComponentScreenshotTest {
         Column(
             modifier = Modifier
                 .width(260.dp)
-                .elevation(DrawViewElevation.Level3, shape)
+                .elevation(PageboardElevation.Level3, shape)
                 .background(MaterialTheme.colorScheme.surfaceContainer, shape)
                 .padding(8.dp)
         ) {
             MenuLabel("Sort by")
-            MenuItem("Name", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Check), selected = true, alignWithIcons = true)
+            MenuItem("Name", onClick = {}, icon = rememberVectorPainter(PageboardIcons.Check), selected = true, alignWithIcons = true)
             MenuItem("Date created", onClick = {}, alignWithIcons = true)
             MenuDivider()
-            MenuItem("Rename", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Pencil), shortcut = "⌘R")
-            MenuItem("Snap to guides", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Magnet), checked = true)
-            MenuItem("Delete", onClick = {}, icon = rememberVectorPainter(DrawViewIcons.Trash), shortcut = "⌫", destructive = true)
+            MenuItem("Rename", onClick = {}, icon = rememberVectorPainter(PageboardIcons.Pencil), shortcut = "⌘R")
+            MenuItem("Snap to guides", onClick = {}, icon = rememberVectorPainter(PageboardIcons.Magnet), checked = true)
+            MenuItem("Delete", onClick = {}, icon = rememberVectorPainter(PageboardIcons.Trash), shortcut = "⌫", destructive = true)
         }
     }
 }

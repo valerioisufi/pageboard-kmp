@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.ui.extension
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import kotlin.test.Test
@@ -16,7 +16,7 @@ class EditorExtensionTest {
 
     @Test
     fun theBuilderSetsWhatItIsGivenAndLeavesTheRestEmpty() = runTest {
-        val context = EditorContext(DrawViewController(DrawDocument(), backgroundScope))
+        val context = EditorContext(PageboardController(Document(), backgroundScope))
         val extension = EditorExtension {
             commands { listOf(command("a")) }
         }
@@ -27,7 +27,7 @@ class EditorExtensionTest {
 
     @Test
     fun aSubclassAndABuiltExtensionCombineInOrder() = runTest {
-        val context = EditorContext(DrawViewController(DrawDocument(), backgroundScope))
+        val context = EditorContext(PageboardController(Document(), backgroundScope))
         val first = object : EditorExtension() {
             override val commands: (EditorContext) -> List<Command> = { listOf(command("first")) }
             override val pageGridActions: (EditorContext) -> List<Command> = { listOf(command("grid")) }
@@ -42,7 +42,7 @@ class EditorExtensionTest {
 
     @Test
     fun theFirstExtensionThatSuggestsWins() = runTest {
-        val context = EditorContext(DrawViewController(DrawDocument(), backgroundScope))
+        val context = EditorContext(PageboardController(Document(), backgroundScope))
         val writing = TextBeingWritten("The flux thr", caret = 12, pageIndex = 0, textId = "t")
         val silent = EditorExtension { textSuggestions { _, _ -> null } }
         val words = EditorExtension { textSuggestions { _, w -> TextSuggestion(if (w.source.endsWith("thr")) "ough" else "") } }

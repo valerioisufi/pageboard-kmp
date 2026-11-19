@@ -37,7 +37,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -46,7 +46,7 @@ import org.jetbrains.compose.resources.stringResource
  * wide button of the navigation pane where there is one.
  */
 public fun Collaboration.joinAction(): LibraryAction = LibraryAction(
-    icon = DrawViewIcons.Link,
+    icon = PageboardIcons.Link,
     label = { stringResource(Res.string.sync_join) },
     prominent = true
 ) { onDone -> JoinDialog(this, link = "", onDismiss = onDone) }
@@ -71,7 +71,7 @@ private fun JoinRequestDialog(collaboration: Collaboration, request: JoinRequest
     val role = stringResource(roleLabel(request.role))
     AlertDialog(
         onDismissRequest = {},
-        icon = { Icon(DrawViewIcons.UserPlus, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
+        icon = { Icon(PageboardIcons.UserPlus, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
         title = { Text(stringResource(Res.string.sync_request_title), textAlign = TextAlign.Center) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -201,15 +201,15 @@ internal fun LibraryRootChoice(title: String, intoLibrary: Boolean, onChange: (B
 internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean, kind: InvitationKind = InvitationKind.DOCUMENT) {
     if (!online && status != JoinStatus.ADMITTED && status != JoinStatus.REFUSED) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Notice(DrawViewIcons.WifiOff, stringResource(Res.string.sync_no_network))
+            Notice(PageboardIcons.WifiOff, stringResource(Res.string.sync_no_network))
             Text(stringResource(Res.string.sync_join_waiting, title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         return
     }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         when (status) {
-            JoinStatus.ADMITTED -> Icon(DrawViewIcons.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
-            JoinStatus.REFUSED -> Icon(DrawViewIcons.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(26.dp))
+            JoinStatus.ADMITTED -> Icon(PageboardIcons.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
+            JoinStatus.REFUSED -> Icon(PageboardIcons.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(26.dp))
             else -> CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp, trackColor = MaterialTheme.colorScheme.primaryContainer)
         }
         Text(

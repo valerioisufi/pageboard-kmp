@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-lecture-testing>
+// Library unique name: <pageboard-kmp:pageboard-lecture-testing>
 final class io.github.valerioisufi.pageboard.lecture.testing/FakeMicrophone : io.github.valerioisufi.pageboard.lecture.audio/AudioCapture { // io.github.valerioisufi.pageboard.lecture.testing/FakeMicrophone|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.lecture.testing/FakeMicrophone.<init>|<init>(){}[0]
 

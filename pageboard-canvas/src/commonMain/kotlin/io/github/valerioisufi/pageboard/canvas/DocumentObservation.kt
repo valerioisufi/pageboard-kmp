@@ -7,16 +7,16 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 
 /**
- * Recomposes the caller with every change of this document ([DrawDocument.revision]): the model
+ * Recomposes the caller with every change of this document ([Document.revision]): the model
  * is not Compose state, so what shows the document calls it before reading the document.
  *
  * @return the revision of the document shown.
  */
 @Composable
-public fun DrawDocument.observeChanges(): Long = revision.collectAsState().value
+public fun Document.observeChanges(): Long = revision.collectAsState().value
 
 /**
  * What [read] reads of this document, as it changes: a state whose readers are composed again
@@ -27,7 +27,7 @@ public fun DrawDocument.observeChanges(): Long = revision.collectAsState().value
  * composition: it reads little.
  */
 @Composable
-public fun <T> DrawDocument.observe(read: DrawDocument.() -> T): State<T> {
+public fun <T> Document.observe(read: Document.() -> T): State<T> {
     val revision = revision.collectAsState()
     val currentRead by rememberUpdatedState(read)
     return remember(this) {

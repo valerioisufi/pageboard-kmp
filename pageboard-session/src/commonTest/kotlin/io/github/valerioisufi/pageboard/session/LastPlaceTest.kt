@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.session
 
 import io.github.valerioisufi.pageboard.canvas.camera.DocumentPlace
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.session.EditorSessions
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -52,7 +52,7 @@ class LastPlaceTest {
         val viewModel = DocumentEditorViewModel(OpenDocuments(store, main, scope), EditorSessions())
 
         /** The editor open on the document [documentId], laid out; [then] as whoever opens it asks. */
-        fun TestScope.open(documentId: String, then: (DrawViewController) -> Unit = {}): DrawViewController {
+        fun TestScope.open(documentId: String, then: (PageboardController) -> Unit = {}): PageboardController {
             viewModel.openDocument(documentId, then)
             advanceUntilIdle()
             val controller = assertNotNull(viewModel.session?.controller)
@@ -85,7 +85,7 @@ class LastPlaceTest {
     }
 
     /** Moves the camera to the page [index] at [scale], as the user does, and lets it rest. */
-    private fun TestScope.moveTo(controller: DrawViewController, index: Int, scale: Float = 1f) {
+    private fun TestScope.moveTo(controller: PageboardController, index: Int, scale: Float = 1f) {
         val page = controller.document.pages[index]
         controller.viewport.showPlace(DocumentPlace(page.id, index + 1, 0.5f, 0.5f, scale))
         runCurrent()

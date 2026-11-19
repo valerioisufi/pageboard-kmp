@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-agent>
+// Library unique name: <pageboard-kmp:pageboard-agent>
 final enum class io.github.valerioisufi.pageboard.agent/AgentErrorCode : kotlin/Enum<io.github.valerioisufi.pageboard.agent/AgentErrorCode> { // io.github.valerioisufi.pageboard.agent/AgentErrorCode|null[0]
     enum entry ACCESS_OFF // io.github.valerioisufi.pageboard.agent/AgentErrorCode.ACCESS_OFF|null[0]
     enum entry BAD_REQUEST // io.github.valerioisufi.pageboard.agent/AgentErrorCode.BAD_REQUEST|null[0]
@@ -87,7 +87,7 @@ final enum class io.github.valerioisufi.pageboard.agent/UndoOutcome : kotlin/Enu
 abstract interface io.github.valerioisufi.pageboard.agent/AgentEditors { // io.github.valerioisufi.pageboard.agent/AgentEditors|null[0]
     abstract fun isInEditor(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.agent/AgentEditors.isInEditor|isInEditor(kotlin.String){}[0]
     abstract fun openForReview(kotlin/String) // io.github.valerioisufi.pageboard.agent/AgentEditors.openForReview|openForReview(kotlin.String){}[0]
-    abstract fun pdfLayout(kotlin/String, io.github.valerioisufi.pageboard.model/DrawPdf): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent/AgentEditors.pdfLayout|pdfLayout(kotlin.String;io.github.valerioisufi.pageboard.model.DrawPdf){}[0]
+    abstract fun pdfLayout(kotlin/String, io.github.valerioisufi.pageboard.model/PdfElement): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent/AgentEditors.pdfLayout|pdfLayout(kotlin.String;io.github.valerioisufi.pageboard.model.PdfElement){}[0]
     abstract fun settle(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.agent/AgentEditors.settle|settle(kotlin.String){}[0]
     abstract fun textHeight(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.pageboard.agent/AgentEditors.textHeight|textHeight(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float){}[0]
 }
@@ -128,7 +128,7 @@ abstract interface io.github.valerioisufi.pageboard.agent/AgentLectures { // io.
 abstract interface io.github.valerioisufi.pageboard.agent/PageEngine { // io.github.valerioisufi.pageboard.agent/PageEngine|null[0]
     abstract fun pdfLayout(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.model/PdfTextLayout? // io.github.valerioisufi.pageboard.agent/PageEngine.pdfLayout|pdfLayout(kotlin.String;kotlin.Int){}[0]
     abstract fun textHeight(kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.pageboard.agent/PageEngine.textHeight|textHeight(kotlin.String;kotlin.Float;kotlin.Float){}[0]
-    abstract suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource>, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin/Int, io.github.valerioisufi.pageboard.model.geometry/Rect? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.agent/PageMark> = ...): kotlin/ByteArray? // io.github.valerioisufi.pageboard.agent/PageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawResource>;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.Int;io.github.valerioisufi.pageboard.model.geometry.Rect?;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.PageMark>){}[0]
+    abstract suspend fun renderPage(kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource>, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin/Int, io.github.valerioisufi.pageboard.model.geometry/Rect? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.agent/PageMark> = ...): kotlin/ByteArray? // io.github.valerioisufi.pageboard.agent/PageEngine.renderPage|renderPage(kotlin.collections.List<io.github.valerioisufi.pageboard.model.DocumentResource>;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.Int;io.github.valerioisufi.pageboard.model.geometry.Rect?;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.PageMark>){}[0]
     open fun pdfInk(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.model/PdfInk? // io.github.valerioisufi.pageboard.agent/PageEngine.pdfInk|pdfInk(kotlin.String;kotlin.Int){}[0]
 }
 
@@ -2223,7 +2223,7 @@ final class io.github.valerioisufi.pageboard.agent/ProposalApplier { // io.githu
     constructor <init>(io.github.valerioisufi.pageboard.agent/AgentEngines = ...) // io.github.valerioisufi.pageboard.agent/ProposalApplier.<init>|<init>(io.github.valerioisufi.pageboard.agent.AgentEngines){}[0]
 
     final fun apply(io.github.valerioisufi.pageboard.model.change/DocumentSession, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ChosenPlace>> = ..., kotlin.collections/Map<kotlin/Int, io.github.valerioisufi.pageboard.model.change/CopiedContent> = ...): io.github.valerioisufi.pageboard.agent/AppliedProposal // io.github.valerioisufi.pageboard.agent/ProposalApplier.apply|apply(io.github.valerioisufi.pageboard.model.change.DocumentSession;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ChosenPlace>>;kotlin.collections.Map<kotlin.Int,io.github.valerioisufi.pageboard.model.change.CopiedContent>){}[0]
-    final fun staleItems(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.pageboard.agent/ProposalApplier.staleItems|staleItems(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>){}[0]
+    final fun staleItems(io.github.valerioisufi.pageboard.model/Document, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.pageboard.agent/ProposalApplier.staleItems|staleItems(io.github.valerioisufi.pageboard.model.Document;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.agent/ProposalBook { // io.github.valerioisufi.pageboard.agent/ProposalBook|null[0]
@@ -2285,8 +2285,8 @@ final class io.github.valerioisufi.pageboard.agent/ProposalPlan { // io.github.v
 final class io.github.valerioisufi.pageboard.agent/ProposalPlanner { // io.github.valerioisufi.pageboard.agent/ProposalPlanner|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.agent/AgentEngines = ...) // io.github.valerioisufi.pageboard.agent/ProposalPlanner.<init>|<init>(io.github.valerioisufi.pageboard.agent.AgentEngines){}[0]
 
-    final fun plan(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ChosenPlace>> = ...): io.github.valerioisufi.pageboard.agent/ProposalPlan // io.github.valerioisufi.pageboard.agent/ProposalPlanner.plan|plan(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ChosenPlace>>){}[0]
-    final fun staleItems(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.pageboard.agent/ProposalPlanner.staleItems|staleItems(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>){}[0]
+    final fun plan(io.github.valerioisufi.pageboard.model/Document, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ChosenPlace>> = ...): io.github.valerioisufi.pageboard.agent/ProposalPlan // io.github.valerioisufi.pageboard.agent/ProposalPlanner.plan|plan(io.github.valerioisufi.pageboard.model.Document;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ChosenPlace>>){}[0]
+    final fun staleItems(io.github.valerioisufi.pageboard.model/Document, kotlin.collections/List<io.github.valerioisufi.pageboard.agent/ProposalItem>): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.pageboard.agent/ProposalPlanner.staleItems|staleItems(io.github.valerioisufi.pageboard.model.Document;kotlin.collections.List<io.github.valerioisufi.pageboard.agent.ProposalItem>){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.agent/ProposalPlanner.Companion|null[0]
         final const val NEW_TEXT // io.github.valerioisufi.pageboard.agent/ProposalPlanner.Companion.NEW_TEXT|{}NEW_TEXT[0]

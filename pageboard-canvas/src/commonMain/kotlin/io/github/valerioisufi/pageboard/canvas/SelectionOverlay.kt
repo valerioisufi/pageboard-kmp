@@ -17,16 +17,16 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.PointerType
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.SelectionGroup
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
@@ -168,7 +168,7 @@ public class SelectionFrame(
         /**
          * Computes the frame of [selection], or `null` when its page is not laid out.
          */
-        internal fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
+        internal fun compute(controller: PageboardController, selection: SelectionGroup): SelectionFrame? {
             val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
             controller.shapeEditing.single()?.let { (element, value) -> return ofShape(mmToScreen, element, value, controller.viewport.density) }
@@ -182,7 +182,7 @@ public class SelectionFrame(
          * The frame of the text being written (see `TextEditorManager`): its width handles, no
          * rotation nor scale; `null` when no text is being written.
          */
-        public fun ofEditedText(controller: DrawViewController): SelectionFrame? {
+        public fun ofEditedText(controller: PageboardController): SelectionFrame? {
             val editor = controller.textEditorManager
             if (!editor.isEditing) return null
             val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return null
@@ -214,7 +214,7 @@ public class SelectionFrame(
          * The frame of a shape alone in the selection: a line by its ends only, a shape of a box
          * by its frame with the middles of its sides.
          */
-        private fun ofShape(mmToScreen: Matrix2D, element: DrawCustomElement, value: ShapeElement, density: Float): SelectionFrame? {
+        private fun ofShape(mmToScreen: Matrix2D, element: CustomElement, value: ShapeElement, density: Float): SelectionFrame? {
             val box = Rect(element.x, element.y, element.x + element.width, element.y + element.height)
             val frame = of(mmToScreen, box, element.rotation, density, sideHandles = false, transformable = true) ?: return null
             if (value.kind.isLine) {
@@ -276,7 +276,7 @@ internal object SelectionOverlay {
         isAntiAlias = true
     }
 
-    fun draw(scope: DrawScope, controller: DrawViewController, selection: SelectionGroup, primary: Color) {
+    fun draw(scope: DrawScope, controller: PageboardController, selection: SelectionGroup, primary: Color) {
         // A shape dragged by a handle: its draft is drawn instead (see `ShapeEditing`)
         if (controller.shapeEditing.handleDraft != null) return
         val frame = SelectionFrame.compute(controller, selection) ?: return
@@ -285,23 +285,23 @@ internal object SelectionOverlay {
     }
 
     /** Draws the elements put back in the tiles that the tiles do not draw yet (see `SelectionManager`). */
-    fun drawSettling(scope: DrawScope, controller: DrawViewController) {
+    fun drawSettling(scope: DrawScope, controller: PageboardController) {
         val settling = controller.selectionManager.settlingElements() ?: return
         val mmToScreen = controller.viewport.pageMmToScreen(settling.pageIndex) ?: return
         drawElements(scope, controller, settling.elements, settling.pageIndex, mmToScreen)
     }
 
     /** Draws [elements] of the page [pageIndex] with [mmToScreen], in the order of the stack. */
-    private fun drawElements(scope: DrawScope, controller: DrawViewController, elements: List<DrawElement>, pageIndex: Int, mmToScreen: Matrix2D) {
+    private fun drawElements(scope: DrawScope, controller: PageboardController, elements: List<PageElement>, pageIndex: Int, mmToScreen: Matrix2D) {
         val document = controller.document
         val renderer = controller.tileManager.tileRenderer
         scope.drawIntoCanvas { canvas ->
-            for (element in elements.sortedWith(DrawPage.stackOrder)) {
+            for (element in elements.sortedWith(Page.stackOrder)) {
                 when (element) {
-                    is DrawImage -> renderer.imageOf(document, element)?.let { TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint) }
-                    is DrawCustomElement -> renderer.elements.draw(canvas, element, mmToScreen)
-                    is DrawText -> renderer.textAdapter?.drawText(canvas, element, mmToScreen, controller.paperOf(pageIndex))
-                    is DrawStroke -> painter.draw(canvas, element.mesh, mmToScreen)
+                    is ImageElement -> renderer.imageOf(document, element)?.let { TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint) }
+                    is CustomElement -> renderer.elements.draw(canvas, element, mmToScreen)
+                    is TextElement -> renderer.textAdapter?.drawText(canvas, element, mmToScreen, controller.paperOf(pageIndex))
+                    is StrokeElement -> painter.draw(canvas, element.mesh, mmToScreen)
                     else -> Unit
                 }
             }
@@ -309,7 +309,7 @@ internal object SelectionOverlay {
     }
 
     /** Draws the frame of the text being written (its field, over the canvas, draws the text). */
-    fun drawEditedText(scope: DrawScope, controller: DrawViewController, primary: Color) {
+    fun drawEditedText(scope: DrawScope, controller: PageboardController, primary: Color) {
         val frame = SelectionFrame.ofEditedText(controller) ?: return
         drawFrame(scope, frame, primary, controller.viewport.density)
     }

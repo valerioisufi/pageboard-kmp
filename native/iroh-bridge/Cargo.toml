@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT"
 publish = false
-description = "The iroh endpoint of DrawView behind a C API (iOS) and JNI (Android, desktop JVM)"
+description = "The iroh endpoint of Pageboard behind a C API (iOS) and JNI (Android, desktop JVM)"
 
 [lib]
 # Built as a cdylib (Android, desktop) or a staticlib (iOS) with `cargo rustc --crate-type`

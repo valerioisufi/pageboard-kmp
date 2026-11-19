@@ -9,12 +9,12 @@ import io.github.valerioisufi.pageboard.canvas.FrameStyle
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.HiddenElements
 import io.github.valerioisufi.pageboard.canvas.tool.LassoMode
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.change.AddElements
@@ -51,13 +51,13 @@ import kotlin.math.min
  * [SelectionManager.applyTransformation].
  */
 public class SelectionGroup(
-    public val strokes: MutableList<DrawStroke> = mutableListOf(),
-    public val texts: MutableList<DrawText> = mutableListOf(),
-    public val images: MutableList<DrawImage> = mutableListOf(),
+    public val strokes: MutableList<StrokeElement> = mutableListOf(),
+    public val texts: MutableList<TextElement> = mutableListOf(),
+    public val images: MutableList<ImageElement> = mutableListOf(),
     internal var boundingBox: Rect = Rect.Zero,
     public var pageIndex: Int = -1,
     /** The elements of the types of the applications, placed by their box like the images. */
-    public val customs: MutableList<DrawCustomElement> = mutableListOf()
+    public val customs: MutableList<CustomElement> = mutableListOf()
 ) {
     /** Live transformation (page millimeters of the source page). */
     public val transform: Matrix2D = Matrix2D()
@@ -87,7 +87,7 @@ public class SelectionGroup(
         originalPlacements = elements().mapNotNull { placementOf(it) }.associateBy { it.id }
     }
 
-    public fun elements(): List<DrawElement> = strokes + texts + images + customs
+    public fun elements(): List<PageElement> = strokes + texts + images + customs
 
     /**
      * Whether the elements are lifted over the page while they are moved, scaled or rotated: left
@@ -108,12 +108,12 @@ public class SelectionGroup(
  * over the page until the tiles of [boundsMm] draw them again, so that they never disappear for a
  * frame.
  */
-internal class SettlingElements(val pageIndex: Int, val elements: List<DrawElement>, val boundsMm: Rect)
+internal class SettlingElements(val pageIndex: Int, val elements: List<PageElement>, val boundsMm: Rect)
 
 /**
  * Lasso selection, clipboard and transformation of the selected elements.
  */
-public class SelectionManager internal constructor(private val controller: DrawViewController) {
+public class SelectionManager internal constructor(private val controller: PageboardController) {
 
     private var selectionState by mutableStateOf<SelectionGroup?>(null)
 
@@ -237,7 +237,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
     /**
      * Selects a single image (long press on an image).
      */
-    internal fun selectImage(pageIndex: Int, image: DrawImage) {
+    internal fun selectImage(pageIndex: Int, image: ImageElement) {
         clearSelection()
         controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
@@ -251,7 +251,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
     /**
      * Selects a single element of a type of the application (a tap on it).
      */
-    internal fun selectCustomElement(pageIndex: Int, element: DrawCustomElement) {
+    internal fun selectCustomElement(pageIndex: Int, element: CustomElement) {
         clearSelection()
         controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
@@ -266,7 +266,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
      * Selects the elements [elements] of types of the application of the page [pageIndex] (one
      * of them as [selectCustomElement], turned with it).
      */
-    internal fun selectCustomElements(pageIndex: Int, elements: List<DrawCustomElement>) {
+    internal fun selectCustomElements(pageIndex: Int, elements: List<CustomElement>) {
         if (elements.size == 1) return selectCustomElement(pageIndex, elements[0])
         clearSelection()
         if (elements.isEmpty()) return
@@ -278,7 +278,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
     /**
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
-    public fun selectText(pageIndex: Int, text: DrawText) {
+    public fun selectText(pageIndex: Int, text: TextElement) {
         controller.presence.writerOf(text)?.let { writer ->
             controller.presence.refuseEdit(writer)
             return
@@ -492,7 +492,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
             text.width = max(minWidth, edge)
         } else if (text.width - edge >= minWidth) {
             // The corner moves along the lines, the right edge stays
-            val corner = DrawText.cornerFor(text.centerX, text.centerY, text.width, text.height, text.rotation)
+            val corner = TextElement.cornerFor(text.centerX, text.centerY, text.width, text.height, text.rotation)
             val moved = Matrix2D().postRotate(text.rotation).mapPoint(edge, 0f)
             text.x = corner.x + moved.x
             text.y = corner.y + moved.y
@@ -558,7 +558,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
             val width = text.width * scale
             val rotation = (text.rotation + angle) % 360f
-            val corner = DrawText.cornerFor(c.x, c.y, text.boxWidth * scale, text.height * scale, rotation, text.boxLeft * scale)
+            val corner = TextElement.cornerFor(c.x, c.y, text.boxWidth * scale, text.height * scale, rotation, text.boxLeft * scale)
             placements.add(
                 TextPlacement(
                     text.id, corner.x, corner.y, width, rotation, text.fontSize * scale,
@@ -587,7 +587,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
         }
         val move = PlaceElements(oldPage.id, placements, newPage.id)
         // On another page: on top of its elements, in their order
-        val ids = selection.elements().sortedWith(DrawPage.stackOrder).map { it.id }
+        val ids = selection.elements().sortedWith(Page.stackOrder).map { it.id }
         controller.session.submit(if (newPage === oldPage) move else CompositeChange(listOf(move, ReorderElements.onTop(newPage.id, ids))))
         selection.pageIndex = doc.pages.indexOf(newPage)
         fitFrame(selection)
@@ -663,7 +663,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
      * Pastes the elements of the clipboard centered at [targetScreen], selecting them. Without a
      * point: on the page shown, 10 mm away from where they were in their own document, where they
      * were on their page in another one (kept inside the page). The elements of a file not on
-     * this device are left out (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
+     * this device are left out (see [PageboardController.Message.PASTED_WITHOUT_MISSING_FILES]).
      */
     public fun pasteSelection(targetScreen: Offset? = null) {
         val copied = controller.clipboard.content as? CopiedElements ?: return
@@ -688,17 +688,17 @@ public class SelectionManager internal constructor(private val controller: DrawV
 
         // On top of the page, in the order of what was copied
         val pasted = copied.pasteInto(doc, targetPage, offsetX, offsetY)
-        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        if (pasted.leftOut > 0) controller.emitMessage(PageboardController.Message.PASTED_WITHOUT_MISSING_FILES)
         controller.session.submit(pasted.change ?: return)
 
         val elements = pasted.elements
         val selection = SelectionGroup(
-            strokes = elements.filterIsInstance<DrawStroke>().toMutableList(),
-            texts = elements.filterIsInstance<DrawText>().toMutableList(),
-            images = elements.filterIsInstance<DrawImage>().toMutableList(),
+            strokes = elements.filterIsInstance<StrokeElement>().toMutableList(),
+            texts = elements.filterIsInstance<TextElement>().toMutableList(),
+            images = elements.filterIsInstance<ImageElement>().toMutableList(),
             boundingBox = pasted.bounds,
             pageIndex = targetIndex,
-            customs = elements.filterIsInstance<DrawCustomElement>().toMutableList()
+            customs = elements.filterIsInstance<CustomElement>().toMutableList()
         ).apply { baseRotation = pasted.baseRotation }
         // Some left out: the frame around the others
         if (pasted.leftOut > 0) fitFrame(selection)
@@ -722,7 +722,7 @@ public class SelectionManager internal constructor(private val controller: DrawV
      */
     public val selectedPlainText: String?
         get() = currentSelection?.texts?.takeIf { it.isNotEmpty() }
-            ?.sortedWith(compareBy<DrawText> { it.y }.thenBy { it.x })
+            ?.sortedWith(compareBy<TextElement> { it.y }.thenBy { it.x })
             ?.joinToString("\n\n") { it.text }
 
     /** The texts selected, as a target of the formatting; `null` when no text is selected. */
@@ -788,4 +788,4 @@ public class SelectionManager internal constructor(private val controller: DrawV
  * The frame of the selection of [this] text: its box before its rotation, placed so that turning
  * it around its middle (as the frame of a selection turns) puts it on the text.
  */
-private fun DrawText.frame(): Rect = Rect(centerX - boxWidth / 2f, centerY - height / 2f, centerX + boxWidth / 2f, centerY + height / 2f)
+private fun TextElement.frame(): Rect = Rect(centerX - boxWidth / 2f, centerY - height / 2f, centerX + boxWidth / 2f, centerY + height / 2f)

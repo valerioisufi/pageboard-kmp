@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.search.SearchAnchor
 import io.github.valerioisufi.pageboard.search.SearchChunk
@@ -24,7 +24,7 @@ import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.screen.EditorScreen
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -69,7 +69,7 @@ class WritingSuggestionsTest {
         waitForIdle()
     }
 
-    private fun scene(enabled: Boolean, block: DesktopComposeUiTest.(DrawViewController) -> Unit) {
+    private fun scene(enabled: Boolean, block: DesktopComposeUiTest.(PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val search = createContentSearch(store, extraSources = listOf(Slides()), indexPath = SearchIndex.MEMORY_PATH)
@@ -81,11 +81,11 @@ class WritingSuggestionsTest {
             withTimeout(10_000) { search.index.revision.first { search.index.texts(id, setOf(SearchChunkKind.PDF)).isNotEmpty() } }
             checkNotNull(documents.open(id))
         }
-        val controller = DrawViewController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session)
+        val controller = PageboardController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session)
         controller.updateTextSuggestionsEnabled(enabled)
         runDesktopComposeUiTest(width = 1200, height = 900) {
             setContent {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize(), extension = search.editorExtension)
                 }
             }

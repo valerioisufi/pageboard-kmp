@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.model.text
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
@@ -17,14 +17,14 @@ import kotlin.test.assertTrue
 /** The chains of text boxes across the pages: read from their links, the links not trusted. */
 class TextChainsTest {
 
-    private val session = DocumentSession(DrawDocument())
+    private val session = DocumentSession(Document())
     private val document get() = session.document
 
     /** A page with a text of [content] going on into [next]. */
-    private fun page(id: String, content: String, next: String? = null, continuesLine: Boolean = false): DrawText {
-        val page = DrawPage(orderKey = document.orderKeyAt(document.pages.size))
+    private fun page(id: String, content: String, next: String? = null, continuesLine: Boolean = false): TextElement {
+        val page = Page(orderKey = document.orderKeyAt(document.pages.size))
         session.submit(AddPage.of(page))
-        val text = DrawText(id).apply {
+        val text = TextElement(id).apply {
             text = content; x = 10f; y = 10f; width = 100f
             this.next = next
             this.continuesLine = continuesLine

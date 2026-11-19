@@ -4,7 +4,7 @@ plugins {
     id("pageboard.jvm.natives")
 }
 
-description = "PDF documents for DrawView, read, rendered and written by PDFium"
+description = "PDF documents for Pageboard, read, rendered and written by PDFium"
 
 kotlin {
     val nativeDir = rootProject.layout.projectDirectory.dir("native")

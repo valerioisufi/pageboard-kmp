@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-export>
+// Library unique name: <pageboard-kmp:pageboard-export>
 final enum class io.github.valerioisufi.pageboard.export/ExportFailure : kotlin/Enum<io.github.valerioisufi.pageboard.export/ExportFailure> { // io.github.valerioisufi.pageboard.export/ExportFailure|null[0]
     enum entry DOCUMENT_MISSING // io.github.valerioisufi.pageboard.export/ExportFailure.DOCUMENT_MISSING|null[0]
     enum entry NOTHING_TO_EXPORT // io.github.valerioisufi.pageboard.export/ExportFailure.NOTHING_TO_EXPORT|null[0]
@@ -171,7 +171,7 @@ final class io.github.valerioisufi.pageboard.export/ArchiveResult { // io.github
 }
 
 final class io.github.valerioisufi.pageboard.export/DocumentContent { // io.github.valerioisufi.pageboard.export/DocumentContent|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageContentSnapshot>, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/DrawResource>, kotlin/Long? = ..., kotlin/Long? = ...) // io.github.valerioisufi.pageboard.export/DocumentContent.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageContentSnapshot>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.DrawResource>;kotlin.Long?;kotlin.Long?){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageContentSnapshot>, kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/DocumentResource>, kotlin/Long? = ..., kotlin/Long? = ...) // io.github.valerioisufi.pageboard.export/DocumentContent.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageContentSnapshot>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.DocumentResource>;kotlin.Long?;kotlin.Long?){}[0]
 
     final val createdAt // io.github.valerioisufi.pageboard.export/DocumentContent.createdAt|{}createdAt[0]
         final fun <get-createdAt>(): kotlin/Long? // io.github.valerioisufi.pageboard.export/DocumentContent.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
@@ -180,12 +180,12 @@ final class io.github.valerioisufi.pageboard.export/DocumentContent { // io.gith
     final val pages // io.github.valerioisufi.pageboard.export/DocumentContent.pages|{}pages[0]
         final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageContentSnapshot> // io.github.valerioisufi.pageboard.export/DocumentContent.pages.<get-pages>|<get-pages>(){}[0]
     final val resources // io.github.valerioisufi.pageboard.export/DocumentContent.resources|{}resources[0]
-        final fun <get-resources>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/DrawResource> // io.github.valerioisufi.pageboard.export/DocumentContent.resources.<get-resources>|<get-resources>(){}[0]
+        final fun <get-resources>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/DocumentResource> // io.github.valerioisufi.pageboard.export/DocumentContent.resources.<get-resources>|<get-resources>(){}[0]
     final val title // io.github.valerioisufi.pageboard.export/DocumentContent.title|{}title[0]
         final fun <get-title>(): kotlin/String // io.github.valerioisufi.pageboard.export/DocumentContent.title.<get-title>|<get-title>(){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.export/DocumentContent.Companion|null[0]
-        final fun of(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin.collections/Set<kotlin/String>? = ..., kotlin.collections/Set<kotlin/Int>? = ...): io.github.valerioisufi.pageboard.export/DocumentContent // io.github.valerioisufi.pageboard.export/DocumentContent.Companion.of|of(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.collections.Set<kotlin.String>?;kotlin.collections.Set<kotlin.Int>?){}[0]
+        final fun of(io.github.valerioisufi.pageboard.model/Document, kotlin.collections/Set<kotlin/String>? = ..., kotlin.collections/Set<kotlin/Int>? = ...): io.github.valerioisufi.pageboard.export/DocumentContent // io.github.valerioisufi.pageboard.export/DocumentContent.Companion.of|of(io.github.valerioisufi.pageboard.model.Document;kotlin.collections.Set<kotlin.String>?;kotlin.collections.Set<kotlin.Int>?){}[0]
     }
 }
 

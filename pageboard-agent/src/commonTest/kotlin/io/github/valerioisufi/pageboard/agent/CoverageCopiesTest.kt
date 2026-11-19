@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent
 
 import io.github.valerioisufi.pageboard.agent.AgentHarness.Companion.item
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.BoxPlacement
@@ -32,13 +32,13 @@ class CoverageCopiesTest {
     }
 
     /** A second document, allowed, with an image and a text on its page. */
-    private suspend fun AgentHarness.other(allowed: Boolean = true): Pair<OpenDocument, Pair<DrawImage, DrawText>> {
+    private suspend fun AgentHarness.other(allowed: Boolean = true): Pair<OpenDocument, Pair<ImageElement, TextElement>> {
         val document = store.createDocument("Chemistry", 210f, 297f, PageBackground.Solid())
         if (allowed) agents.access.grant(document.id)
         val open = assertNotNull(documents.open(document.id))
         val added = open.edit { session ->
-            val image = DrawImage().apply { resourceId = "picture"; x = 30f; y = 40f; width = 50f; height = 40f }
-            val text = DrawText().apply { text = "Moles"; x = 30f; y = 100f; width = 80f; height = 10f; fontSize = 16f }
+            val image = ImageElement().apply { resourceId = "picture"; x = 30f; y = 40f; width = 50f; height = 40f }
+            val text = TextElement().apply { text = "Moles"; x = 30f; y = 100f; width = 80f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(session.document.pages[0], listOf(image, text)))
             image to text
         }
@@ -148,7 +148,7 @@ class CoverageCopiesTest {
     fun aDocumentIsDuplicatedWithAllItsPagesAndUndoneToTheTrash() = runTest {
         val harness = AgentHarness.of(this, backgroundScope)
         harness.open.edit { session ->
-            val text = DrawText().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+            val text = TextElement().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(session.document.pages[0], listOf(text)))
         }
         harness.open.flush()

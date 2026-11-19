@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.store
 
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.PageBackground
@@ -34,13 +34,13 @@ import kotlinx.coroutines.test.runTest
 
 class KeyValueDocumentStoreTest {
 
-    private fun stroke(offset: Float): DrawStroke {
+    private fun stroke(offset: Float): StrokeElement {
         val points = (0 until 10).map { i ->
             StrokePoint(x = 10f + offset + i * 2f, y = 20f + i, pressure = 0.5f, timestampMs = i * 8L)
         }
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = 0xFF0000FF.toInt())
         val mesh = assertNotNull(KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS))
-        return DrawStroke(mesh = mesh, brushConfig = brush, transform = AffineTransform(tx = offset))
+        return StrokeElement(mesh = mesh, brushConfig = brush, transform = AffineTransform(tx = offset))
     }
 
     @Test
@@ -55,7 +55,7 @@ class KeyValueDocumentStoreTest {
         val strokes = listOf(stroke(0f), stroke(30f))
         strokes.forEach(page::add)
         store.saveStrokes(page, strokes)
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = "**Hello** \$x^2\$"
             x = 5f
             y = 6f
@@ -67,7 +67,7 @@ class KeyValueDocumentStoreTest {
         }
         page.add(text)
         store.saveText(page, text)
-        val markup = DrawTextMarkup(
+        val markup = TextMarkupElement(
             resourceId = "pdf",
             pdfPageIndex = 3,
             pdfWidthPt = 595f,
@@ -82,7 +82,7 @@ class KeyValueDocumentStoreTest {
         page.add(markup)
         store.saveTextMarkup(page, markup)
 
-        val second = DrawPage(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
+        val second = Page(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
         second.hasCustomBackground = true
         document.appendPage(second)
         store.savePage(document, second)
@@ -149,7 +149,7 @@ class KeyValueDocumentStoreTest {
         removed.placed = Stamp(3L, 0, "device")
         page.load(emptyList(), listOf(removed))
         store.saveStrokes(page, listOf(kept, removed))
-        val second = DrawPage(index = 1)
+        val second = Page(index = 1)
         second.removed = Stamp(4L, 0, "device")
         second.add(stroke(60f))
         document.removedPages[second.id] = second

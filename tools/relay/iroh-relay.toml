@@ -1,4 +1,4 @@
-# The relay of DrawView: an iroh-relay server, of the version of iroh the bridge uses
+# The relay of Pageboard: an iroh-relay server, of the version of iroh the bridge uses
 # (native/iroh-bridge/Cargo.lock). install.sh writes it to /etc/iroh-relay/iroh-relay.toml with
 # @HOSTNAME@ and @CONTACT@ replaced; the access token is in /etc/iroh-relay/token.env
 # (IROH_RELAY_ACCESS_TOKEN), never in this file.

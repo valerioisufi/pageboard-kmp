@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.model.placement
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.geometry.fitPdfPage
@@ -37,14 +37,14 @@ public data class PageTextSizes(
         public const val HANDWRITING_HEIGHT_PER_POINT: Float = 0.7f
 
         /** The sizes of [page], the text of its PDF page read from [pdfText] when there is one. */
-        public fun of(page: DrawPage, pdfText: PdfTextLayout? = null): PageTextSizes =
+        public fun of(page: Page, pdfText: PdfTextLayout? = null): PageTextSizes =
             PageTextSizes(typedSize(page.texts), pdfText?.let { slideSize(page, it) }, handwritingSize(page))
 
         /** The size of most of the characters typed in [document], or `null` when it has too few. */
-        public fun ofDocument(document: DrawDocument): Float? = typedSize(document.pages.flatMap { it.texts })
+        public fun ofDocument(document: Document): Float? = typedSize(document.pages.flatMap { it.texts })
 
         /** The size covering the most characters of [texts] (a large heading does not outweigh the paragraphs). */
-        private fun typedSize(texts: List<DrawText>): Float? {
+        private fun typedSize(texts: List<TextElement>): Float? {
             val chars = mutableMapOf<Float, Int>()
             for (text in texts) {
                 val count = text.text.count { !it.isWhitespace() }
@@ -58,7 +58,7 @@ public data class PageTextSizes(
          * The most frequent height of the boxes of the characters of [layout], in points of [page]
          * (a slide shown smaller than its PDF has smaller characters), to half a point.
          */
-        private fun slideSize(page: DrawPage, layout: PdfTextLayout): Float? {
+        private fun slideSize(page: Page, layout: PdfTextLayout): Float? {
             if (!layout.hasText || layout.widthPt <= 0f) return null
             val fit = fitPdfPage(layout.widthPt.toDouble(), layout.heightPt.toDouble(), page.rect())
             val mmPerPdfPoint = fit.width / layout.widthPt
@@ -78,7 +78,7 @@ public data class PageTextSizes(
         }
 
         /** The size of a font as large as the median height of the strokes of writing of [page]. */
-        private fun handwritingSize(page: DrawPage): Float? {
+        private fun handwritingSize(page: Page): Float? {
             val heights = page.strokes
                 .filter { it.brushConfig.tool != StrokeTool.HIGHLIGHTER && it.brushConfig.tool != StrokeTool.ERASER && it.brushConfig.tool != StrokeTool.LASSO }
                 .map { it.bounds.height }

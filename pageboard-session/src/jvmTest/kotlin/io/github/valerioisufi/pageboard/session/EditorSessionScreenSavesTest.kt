@@ -16,14 +16,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.session.EditorSessions
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -46,7 +46,7 @@ class EditorSessionScreenSavesTest {
         override val lifecycle: Lifecycle get() = registry
     }
 
-    private class Scene(val controller: DrawViewController, val lifecycle: TestLifecycle, val hide: () -> Unit) {
+    private class Scene(val controller: PageboardController, val lifecycle: TestLifecycle, val hide: () -> Unit) {
         /** The texts of the document, as saved in it. */
         val texts: List<String> get() = controller.document.pages.single().texts.filter { it.removed == null }.map { it.text }
 
@@ -66,7 +66,7 @@ class EditorSessionScreenSavesTest {
         var shown by mutableStateOf(true)
         setContent {
             CompositionLocalProvider(LocalLifecycleOwner provides lifecycle) {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
                         val session = viewModel.session
                         if (shown && session != null) EditorSessionScreen(session, onClose = {})

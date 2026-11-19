@@ -20,7 +20,7 @@ public final class io/github/valerioisufi/pageboard/agent/ui/SessionAgentEditors
 	public fun <init> (Lio/github/valerioisufi/pageboard/session/EditorSessions;Lkotlin/jvm/functions/Function1;)V
 	public fun isInEditor (Ljava/lang/String;)Z
 	public fun openForReview (Ljava/lang/String;)V
-	public fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/DrawPdf;)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
+	public fun pdfLayout (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/PdfElement;)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
 	public final fun renderPage (Ljava/lang/String;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun settle (Ljava/lang/String;)Z
 	public fun textHeight (Ljava/lang/String;Ljava/lang/String;FF)Ljava/lang/Float;

@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.agent
 
 import io.github.valerioisufi.pageboard.agent.AgentHarness.Companion.item
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
@@ -51,7 +51,7 @@ class CoverageMarkupsTest {
 
         override fun textHeight(markdown: String, widthMm: Float, fontSize: Float): Float? = null
         override fun pdfLayout(path: String, pageIndex: Int): PdfTextLayout? = layout.takeIf { path == "/slides.pdf" }
-        override suspend fun renderPage(resources: List<DrawResource>, page: PageContentSnapshot, maxSidePx: Int, area: Rect?, marks: List<PageMark>): ByteArray? = null
+        override suspend fun renderPage(resources: List<DocumentResource>, page: PageContentSnapshot, maxSidePx: Int, area: Rect?, marks: List<PageMark>): ByteArray? = null
     }
 
     private val pages = FakePages(listOf("The law of Gauss holds", "for every surface of Gauss"))
@@ -62,7 +62,7 @@ class CoverageMarkupsTest {
             session.submit(
                 CompositeChange(
                     listOf(
-                        AddResource.of("slides", DrawResource.ResourceType.PDF, "/slides.pdf", ""),
+                        AddResource.of("slides", DocumentResource.ResourceType.PDF, "/slides.pdf", ""),
                         AddElements(session.document.pages[0].id, listOf(PdfData("pdf", "slides", 0)))
                     )
                 )

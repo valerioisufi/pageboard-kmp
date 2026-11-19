@@ -45,7 +45,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_center
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_end
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_start
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -96,7 +96,7 @@ internal fun TextBackgroundButton(target: TextFormatTarget) {
                     .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(5.dp))
             ) {
                 if (fill == null) {
-                    Icon(DrawViewIcons.SquareDashed, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+                    Icon(PageboardIcons.SquareDashed, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                 }
             }
         }
@@ -115,7 +115,7 @@ internal fun TextBackgroundButton(target: TextFormatTarget) {
                         }
                         .semantics { contentDescription = none }
                 ) {
-                    Icon(DrawViewIcons.CircleX, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Icon(PageboardIcons.CircleX, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                 }
                 ColorSwatches(
                     colors = TextBackground.TINTS.map { Color(it) },
@@ -208,9 +208,9 @@ internal fun TextAlignmentButtons(target: TextFormatTarget, commands: EditorComm
 private class AlignmentButton(val command: Command?, val icon: ImageVector, val description: StringResource)
 
 private fun alignmentButtons(commands: EditorCommands?) = listOf(
-    TextAlignment.START to AlignmentButton(commands?.alignStart, DrawViewIcons.AlignLeft, Res.string.text_align_start),
-    TextAlignment.CENTER to AlignmentButton(commands?.alignCenter, DrawViewIcons.AlignCenter, Res.string.text_align_center),
-    TextAlignment.END to AlignmentButton(commands?.alignEnd, DrawViewIcons.AlignRight, Res.string.text_align_end)
+    TextAlignment.START to AlignmentButton(commands?.alignStart, PageboardIcons.AlignLeft, Res.string.text_align_start),
+    TextAlignment.CENTER to AlignmentButton(commands?.alignCenter, PageboardIcons.AlignCenter, Res.string.text_align_center),
+    TextAlignment.END to AlignmentButton(commands?.alignEnd, PageboardIcons.AlignRight, Res.string.text_align_end)
 )
 
 /** A button of a format that is on or off, with the tooltip of [command] when given. */

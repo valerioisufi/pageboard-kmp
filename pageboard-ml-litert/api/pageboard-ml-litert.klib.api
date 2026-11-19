@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-ml-litert>
+// Library unique name: <pageboard-kmp:pageboard-ml-litert>
 final class io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime : io.github.valerioisufi.pageboard.ml/ModelRuntime { // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime|null[0]
     constructor <init>(kotlin/String? = ...) // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.<init>|<init>(kotlin.String?){}[0]
 

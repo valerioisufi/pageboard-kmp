@@ -11,7 +11,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TileKey
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TilePyramid
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileState
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
@@ -36,7 +36,7 @@ class TileScreenTest {
 
         val rasterized = AtomicInteger()
         val manager = TileManager(onInvalidate = { rasterized.incrementAndGet() })
-        val doc = DrawDocument("doc", "Doc")
+        val doc = Document("doc", "Doc")
         val canvas = Canvas(ImageBitmap(64, 64))
 
         // Draw frames until nothing is rasterized anymore (bounded in time)
@@ -70,7 +70,7 @@ class TileScreenTest {
     @Test
     fun adjacentTilesLeaveNoSeam() {
         val manager = TileManager()
-        val doc = DrawDocument("doc", "Doc")
+        val doc = Document("doc", "Doc")
         val page = doc.pages[0]
         for (col in 0..1) for (row in 0..1) {
             val bitmap = manager.tileCache.obtainBitmap()
@@ -99,7 +99,7 @@ class TileScreenTest {
     @Test
     fun aCellWithoutItsTileShowsTheOverviewWithTheDescendantsOverIt() {
         val manager = TileManager()
-        val doc = DrawDocument("doc", "Doc")
+        val doc = Document("doc", "Doc")
         val pageKey = doc.pages[0].renderKey
         fun tile(key: TileKey, color: Color) {
             val bitmap = manager.tileCache.obtainBitmap()

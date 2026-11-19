@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.canvas.controller
 
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.placement.PageOccupancy
 import io.github.valerioisufi.pageboard.model.placement.PageTextSizes
@@ -21,7 +21,7 @@ import kotlin.math.min
  * (see [PlacementManager]) and undone at once; the sections of a text next to the pages they are
  * about when the application gives the [PageTopics] (see `docs/plans/text-import.md`).
  */
-public class TextPlacer internal constructor(private val controller: DrawViewController) {
+public class TextPlacer internal constructor(private val controller: PageboardController) {
 
     private val textFlow = TextFlow(controller.placementManager.planner)
 
@@ -43,8 +43,8 @@ public class TextPlacer internal constructor(private val controller: DrawViewCon
         parts: List<Pair<Int?, String>>,
         color: Int,
         label: String,
-        fontSize: ((DrawPage?) -> Float)? = null,
-        measure: (DrawText) -> TextBlockSize? = controller::measureText,
+        fontSize: ((Page?) -> Float)? = null,
+        measure: (TextElement) -> TextBlockSize? = controller::measureText,
         onInserted: () -> Unit = {}
     ): Boolean {
         val document = controller.document
@@ -125,7 +125,7 @@ public class TextPlacer internal constructor(private val controller: DrawViewCon
     }
 
     /** The size of a text placed on [page]: like the texts typed there, the slide, the handwriting, or a new text. */
-    public fun sizeOfPage(page: DrawPage): Float =
+    public fun sizeOfPage(page: Page): Float =
         TextSizePolicy.forNote(PageTextSizes.of(page, controller.placementManager.pdfTextOf(page.index)), controller.textDefaults.fontSize)
 
     /**
@@ -140,7 +140,7 @@ public class TextPlacer internal constructor(private val controller: DrawViewCon
         newPage: PageOccupancy,
         fontSize: Float,
         color: Int,
-        measure: (DrawText) -> TextBlockSize?
+        measure: (TextElement) -> TextBlockSize?
     ): List<PlacementItem> {
         val first = startPageIndex?.let { controller.placementManager.occupancyOf(it) }
         val pieces = textFlow.flow(markdown, first, newPage) { text, width -> heightOf(text, width, fontSize, color, measure) }
@@ -155,7 +155,7 @@ public class TextPlacer internal constructor(private val controller: DrawViewCon
     }
 
     /** Adds [text] to [page] in the box of [spot], its height laid out again on its width. */
-    private fun place(page: DrawPage, text: DrawText, spot: PlacementSpot, measure: (DrawText) -> TextBlockSize?) {
+    private fun place(page: Page, text: TextElement, spot: PlacementSpot, measure: (TextElement) -> TextBlockSize?) {
         text.width = min(spot.box.width, page.widthMm)
         text.height = heightOf(text.text, text.width, text.fontSize, text.color, measure)
         text.x = spot.box.left.coerceIn(0f, max(0f, page.widthMm - text.width))
@@ -171,10 +171,10 @@ public class TextPlacer internal constructor(private val controller: DrawViewCon
         if (rect.height > controller.viewport.height) controller.viewport.panBy(0f, PAGE_TOP_INSET_PX - rect.top)
     }
 
-    private fun heightOf(markdown: String, widthMm: Float, fontSize: Float, color: Int, measure: (DrawText) -> TextBlockSize?): Float =
+    private fun heightOf(markdown: String, widthMm: Float, fontSize: Float, color: Int, measure: (TextElement) -> TextBlockSize?): Float =
         measure(newText(markdown, widthMm, 0f, fontSize, color))?.height ?: (markdown.lines().size * TextSizes.estimatedLineHeightMm(fontSize))
 
-    private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float, textColor: Int) = DrawText().apply {
+    private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float, textColor: Int) = TextElement().apply {
         text = content
         width = widthMm
         height = heightMm

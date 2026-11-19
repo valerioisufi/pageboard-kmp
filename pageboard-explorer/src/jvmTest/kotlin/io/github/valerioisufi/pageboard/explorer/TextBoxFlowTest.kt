@@ -6,7 +6,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class TextBoxFlowTest {
 
     /** A box low on the first page with lines reaching its bottom margin. */
-    private fun androidx.compose.ui.test.DesktopComposeUiTest.fillToTheBottom(controller: DrawViewController) {
+    private fun androidx.compose.ui.test.DesktopComposeUiTest.fillToTheBottom(controller: PageboardController) {
         startBox(controller, 30f, 262f, widthMm = 120f)
         type("one\ntwo\nthree")
     }

@@ -2,15 +2,15 @@ package io.github.valerioisufi.pageboard.explorer
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 
 /**
- * Opens a document in the editor and runs [then] on its [DrawViewController] once loaded
+ * Opens a document in the editor and runs [then] on its [PageboardController] once loaded
  * (e.g. to center the camera on a page and its area).
  */
 public fun interface DocumentOpener {
     /** Opens [documentId] and invokes [then] with its controller once loaded. */
-    public fun open(documentId: String, then: (DrawViewController) -> Unit)
+    public fun open(documentId: String, then: (PageboardController) -> Unit)
 
     /** Opens [documentId] at its default view. */
     public fun open(documentId: String) {

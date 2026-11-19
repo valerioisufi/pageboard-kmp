@@ -4,13 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.pageboard.canvas.render.HiddenElements
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.asStateFlow
  * ([collaborators], told by the synchronization, see `pageboard-sync-ui`).
  */
 public class CollaboratorPresence internal constructor(
-    private val document: DrawDocument,
+    private val document: Document,
     private val hiddenElements: HiddenElements,
-    private val invalidate: (DrawPage, Rect?) -> Unit,
+    private val invalidate: (Page, Rect?) -> Unit,
     private val onCollaboratorsChanged: () -> Unit
 ) {
     private val currentActivity = MutableStateFlow<EditorActivity?>(null)
@@ -89,7 +89,7 @@ public class CollaboratorPresence internal constructor(
      * The other device writing the text [element] (see [collaborators]), if any: meanwhile the
      * text can be neither edited nor selected here (the user is told, see [editsRefused]).
      */
-    internal fun writerOf(element: DrawElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
+    internal fun writerOf(element: PageElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
 
     private val refusedEdits = MutableSharedFlow<Collaborator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -117,7 +117,7 @@ public class CollaboratorPresence internal constructor(
 
     private fun setShownByCollaborator(id: String, shown: Boolean) {
         val (page, element) = document.findElement(id) ?: return
-        if (element !is DrawStroke && element !is DrawText && element !is DrawImage && element !is DrawCustomElement) return
+        if (element !is StrokeElement && element !is TextElement && element !is ImageElement && element !is CustomElement) return
         hiddenElements.setShownByCollaborator(id, shown)
         invalidate(page, page.boundsOf(element))
     }

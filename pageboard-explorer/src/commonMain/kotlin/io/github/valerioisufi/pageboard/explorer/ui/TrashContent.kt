@@ -71,7 +71,7 @@ import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.IconButtonStyle
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -126,7 +126,7 @@ internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, comman
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(DrawViewIcons.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
+                Icon(PageboardIcons.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
                 Text(stringResource(Res.string.explorer_no_results_title, viewModel.searchQuery.trim()), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
             }
         }
@@ -139,7 +139,7 @@ internal fun LazyGridScope.trashContent(viewModel: FileExplorerViewModel, comman
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(DrawViewIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
+                Icon(PageboardIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
                 Text(stringResource(Res.string.explorer_trash_empty_state), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
                 Text(stringResource(Res.string.explorer_trash_empty_state_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -164,7 +164,7 @@ private fun TrashSelectionBar(viewModel: FileExplorerViewModel, commands: Librar
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.explorer_action_clear_selection), onClick = { viewModel.clearTrashSelection() })
+        DesignIconButton(PageboardIcons.Close, stringResource(Res.string.explorer_action_clear_selection), onClick = { viewModel.clearTrashSelection() })
         Text(
             stringResource(Res.string.explorer_selected_count, count),
             style = MaterialTheme.typography.titleMedium,
@@ -173,19 +173,19 @@ private fun TrashSelectionBar(viewModel: FileExplorerViewModel, commands: Librar
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
-        DesignIconButton(DrawViewIcons.CheckCheck, stringResource(Res.string.explorer_action_select_all), onClick = { viewModel.selectAllTrash() })
+        DesignIconButton(PageboardIcons.CheckCheck, stringResource(Res.string.explorer_action_select_all), onClick = { viewModel.selectAllTrash() })
         val restore = { viewModel.restore(viewModel.selectedTrash) }
         if (compact) {
-            DesignIconButton(DrawViewIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = restore, style = IconButtonStyle.Tonal)
+            DesignIconButton(PageboardIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = restore, style = IconButtonStyle.Tonal)
         } else {
             TonalButton(onClick = restore) {
-                Icon(DrawViewIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(Res.string.explorer_trash_restore), maxLines = 1)
             }
         }
         if (commands != null) {
-            DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.explorer_trash_delete_forever), onClick = { commands.deleteForGood(viewModel.selectedTrash) }, tint = colors.error)
+            DesignIconButton(PageboardIcons.Trash, stringResource(Res.string.explorer_trash_delete_forever), onClick = { commands.deleteForGood(viewModel.selectedTrash) }, tint = colors.error)
         }
     }
 }
@@ -241,7 +241,7 @@ private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, comman
     ) {
         if (viewModel.selectingTrash) {
             if (selected) {
-                Icon(DrawViewIcons.CheckCircle, contentDescription = null, tint = colors.primary, modifier = Modifier.size(22.dp))
+                Icon(PageboardIcons.CheckCircle, contentDescription = null, tint = colors.primary, modifier = Modifier.size(22.dp))
             } else {
                 Box(modifier = Modifier.size(22.dp).padding(1.dp).border(2.dp, colors.outline, CircleShape))
             }
@@ -253,7 +253,7 @@ private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, comman
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(40.dp, 52.dp).clip(RoundedCornerShape(6.dp)).background(colors.surfaceContainerHigh)
                 ) {
-                    Icon(DrawViewIcons.FileText, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Icon(PageboardIcons.FileText, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 }
             }
         }
@@ -270,21 +270,21 @@ private fun TrashRow(item: TrashedItem, viewModel: FileExplorerViewModel, comman
         // A phone has room for the icon only; nothing while items are selected (the bar acts on them)
         if (viewModel.selectingTrash) return@Row
         if (compact) {
-            DesignIconButton(DrawViewIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = { viewModel.restore(item) }, style = IconButtonStyle.Tonal)
+            DesignIconButton(PageboardIcons.RotateCcw, stringResource(Res.string.explorer_trash_restore), onClick = { viewModel.restore(item) }, style = IconButtonStyle.Tonal)
         } else {
             TonalButton(onClick = { viewModel.restore(item) }) {
-                Icon(DrawViewIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.RotateCcw, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(Res.string.explorer_trash_restore), maxLines = 1)
             }
         }
         if (commands != null) {
             Box {
-                DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_trash_delete_forever), onClick = { menu = true })
+                DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.explorer_trash_delete_forever), onClick = { menu = true })
                 DesignMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     MenuItem(
                         text = stringResource(Res.string.explorer_trash_delete_forever),
-                        icon = rememberVectorPainter(DrawViewIcons.Trash),
+                        icon = rememberVectorPainter(PageboardIcons.Trash),
                         destructive = true,
                         onClick = {
                             menu = false

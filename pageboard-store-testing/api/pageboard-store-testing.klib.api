@@ -5,12 +5,12 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-store-testing>
+// Library unique name: <pageboard-kmp:pageboard-store-testing>
 final object io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments { // io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments|null[0]
     final val NoMeshes // io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments.NoMeshes|{}NoMeshes[0]
         final fun <get-NoMeshes>(): io.github.valerioisufi.pageboard.model/StrokeModeller // io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments.NoMeshes.<get-NoMeshes>|<get-NoMeshes>(){}[0]
 
-    final fun notebook(kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/String = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/StrokeModeller = ...): io.github.valerioisufi.pageboard.model/DrawDocument // io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments.notebook|notebook(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Float;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
+    final fun notebook(kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/String = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/StrokeModeller = ...): io.github.valerioisufi.pageboard.model/Document // io.github.valerioisufi.pageboard.store.testing/SyntheticDocuments.notebook|notebook(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Float;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
 }
 
 final suspend fun <#A: io.github.valerioisufi.pageboard.store.space/SpaceStore & io.github.valerioisufi.pageboard.store/DocumentStore> io.github.valerioisufi.pageboard.store.testing/checkSharedFolders(#A, #A, kotlinx.coroutines/CoroutineScope) // io.github.valerioisufi.pageboard.store.testing/checkSharedFolders|checkSharedFolders(0:0;0:0;kotlinx.coroutines.CoroutineScope){0§<io.github.valerioisufi.pageboard.store.DocumentStore&io.github.valerioisufi.pageboard.store.space.SpaceStore>}[0]

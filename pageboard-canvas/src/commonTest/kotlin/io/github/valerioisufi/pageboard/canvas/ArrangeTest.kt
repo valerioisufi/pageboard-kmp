@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.StackMove
 import kotlin.test.Test
@@ -23,14 +23,14 @@ import kotlinx.coroutines.test.runTest
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArrangeTest {
 
-    private fun image(x: Float, y: Float = 0f) = DrawImage().apply {
+    private fun image(x: Float, y: Float = 0f) = ImageElement().apply {
         this.x = x; this.y = y; width = 20f; height = 20f
     }
 
-    private fun controller(scope: CoroutineScope, pages: Int = 1): DrawViewController {
-        val document = DrawDocument()
+    private fun controller(scope: CoroutineScope, pages: Int = 1): PageboardController {
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        return DrawViewController(document = document, coroutineScope = scope).also { it.viewport.setSize(800f, 1200f) }
+        return PageboardController(document = document, coroutineScope = scope).also { it.viewport.setSize(800f, 1200f) }
     }
 
     @Test
@@ -79,7 +79,7 @@ class ArrangeTest {
         selections.arrange(StackMove.FRONT)
         assertEquals(listOf(over, under), page.stack)
         // Still selected, at its new level
-        assertEquals<List<DrawImage>?>(listOf(under), selections.currentSelection?.images)
+        assertEquals<List<ImageElement>?>(listOf(under), selections.currentSelection?.images)
         assertFalse(selections.canArrange(StackMove.FRONT))
         assertTrue(selections.canArrange(StackMove.BACK))
 
@@ -125,7 +125,7 @@ class ArrangeTest {
 
         val pasted = page.stack.drop(2)
         assertEquals(2, pasted.size)
-        assertEquals(over.x, (pasted[0] as DrawImage).x - 10f)
-        assertEquals(under.x, (pasted[1] as DrawImage).x - 10f)
+        assertEquals(over.x, (pasted[0] as ImageElement).x - 10f)
+        assertEquals(under.x, (pasted[1] as ImageElement).x - 10f)
     }
 }

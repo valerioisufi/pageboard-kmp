@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.change.StrokeData
@@ -55,10 +55,10 @@ class ProposalPlannerTest {
         return Setup(agents, agents.access.connect("test").id, document.id, open, engines)
     }
 
-    private suspend fun Setup.addText(content: String, x: Float = 20f, y: Float = 40f, width: Float = 170f, pageIndex: Int = 0): DrawText =
+    private suspend fun Setup.addText(content: String, x: Float = 20f, y: Float = 40f, width: Float = 170f, pageIndex: Int = 0): TextElement =
         open.edit { session ->
             val page = session.document.pages[pageIndex]
-            val text = DrawText().apply {
+            val text = TextElement().apply {
                 text = content
                 this.x = x; this.y = y; this.width = width; height = 10f; fontSize = 16f
             }
@@ -90,7 +90,7 @@ class ProposalPlannerTest {
 
     private suspend fun Setup.pageId(index: Int = 0): String = open.edit { it.document.pages[index].id }
 
-    private suspend fun Setup.boxOf(text: DrawText) = open.edit { text.getRotatedBounds() }
+    private suspend fun Setup.boxOf(text: TextElement) = open.edit { text.getRotatedBounds() }
 
     @Test
     fun aTextGoesBelowTheBoxItIsAbout() = runTest {
@@ -295,7 +295,7 @@ class ProposalPlannerTest {
         override fun isInEditor(documentId: String): Boolean = inEditor
         override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? =
             if (inEditor) markdown.lines().size * 5f else null
-        override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.pageboard.model.DrawPdf): io.github.valerioisufi.pageboard.model.PdfTextLayout? = null
+        override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.pageboard.model.PdfElement): io.github.valerioisufi.pageboard.model.PdfTextLayout? = null
     }
 
     private suspend fun Setup.preview(vararg items: JsonObject): JsonObject = call(
@@ -524,7 +524,7 @@ class ProposalPlannerTest {
         val second = setup.addText("Goes on", y = 12f, pageIndex = 1)
         val first = setup.open.edit { session ->
             val page = session.document.pages[0]
-            val text = DrawText().apply {
+            val text = TextElement().apply {
                 text = "Short"
                 x = 20f; y = 270f; width = 170f; height = 10f; fontSize = 16f
                 next = second.id
@@ -567,7 +567,7 @@ class ProposalPlannerTest {
         setup.addText("Gauss", y = 100f)
         val image = setup.open.edit { session ->
             val page = session.document.pages[0]
-            val image = DrawImage().apply {
+            val image = ImageElement().apply {
                 resourceId = "picture"
                 x = 30f; y = 200f; width = 50f; height = 40f
             }
@@ -615,7 +615,7 @@ class ProposalPlannerTest {
         val setup = setup(this, backgroundScope)
         setup.open.edit { session ->
             val page = session.document.pages[0]
-            session.submit(AddElements.of(page, listOf(DrawPdf().apply { resourceId = "scan" })))
+            session.submit(AddElements.of(page, listOf(PdfElement().apply { resourceId = "scan" })))
         }
 
         val page = setup.readPage()

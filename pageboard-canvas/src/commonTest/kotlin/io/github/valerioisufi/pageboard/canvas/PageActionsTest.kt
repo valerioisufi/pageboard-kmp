@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.CopiedPages
@@ -23,21 +23,21 @@ import kotlinx.coroutines.test.runTest
 class PageActionsTest {
 
     /** A document of [pages] pages, a text on each one naming it ("1", "2"...). */
-    private fun controller(scope: CoroutineScope, pages: Int = 3, clipboard: EditorClipboard = EditorClipboard()): DrawViewController {
-        val document = DrawDocument(defaultBackground = PageBackground.Ruled())
+    private fun controller(scope: CoroutineScope, pages: Int = 3, clipboard: EditorClipboard = EditorClipboard()): PageboardController {
+        val document = Document(defaultBackground = PageBackground.Ruled())
         repeat(pages - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = scope, clipboard = clipboard)
+        val controller = PageboardController(document = document, coroutineScope = scope, clipboard = clipboard)
         controller.viewport.setSize(800f, 1200f)
         for ((i, page) in document.pages.withIndex()) {
-            val text = DrawText().apply { text = "${i + 1}"; x = 10f; y = 10f; width = 20f; fontSize = 16f }
+            val text = TextElement().apply { text = "${i + 1}"; x = 10f; y = 10f; width = 20f; fontSize = 16f }
             controller.session.submit(AddElements.of(page, listOf(text)))
         }
         return controller
     }
 
-    private fun DrawViewController.names() = document.pages.map { page -> page.texts.singleOrNull()?.text ?: "-" }
+    private fun PageboardController.names() = document.pages.map { page -> page.texts.singleOrNull()?.text ?: "-" }
 
-    private fun DrawViewController.ids(vararg names: String) = names.map { name -> document.pages.first { it.texts.single().text == name }.id }
+    private fun PageboardController.ids(vararg names: String) = names.map { name -> document.pages.first { it.texts.single().text == name }.id }
 
     @Test
     fun aPageIsDuplicatedWithItsContentRightAfterIt() = runTest(UnconfinedTestDispatcher()) {

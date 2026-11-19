@@ -89,11 +89,11 @@ import io.github.valerioisufi.pageboard.ui.extension.DocumentTag
 import io.github.valerioisufi.pageboard.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.pageboard.ui.extension.LibrarySelection
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.pageboard.ui.platform.PickedFile
 import io.github.valerioisufi.pageboard.ui.platform.fileDropTarget
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -431,8 +431,8 @@ private fun LazyGridScope.libraryHeader(
 @Composable
 public fun aboutLibraryAction(): LibraryAction = remember {
     LibraryAction(
-        icon = DrawViewIcons.Info,
-        label = { stringResource(DrawViewRes.string.about_dialog_title) }
+        icon = PageboardIcons.Info,
+        label = { stringResource(PageboardRes.string.about_dialog_title) }
     ) { onDone -> AboutLicensesDialog(onDismiss = onDone) }
 }
 
@@ -502,7 +502,7 @@ private fun LibraryDialogHost(
                 viewModel.renameFile(dialog.item, text)
                 onDismiss()
             },
-            icon = DrawViewIcons.Pencil
+            icon = PageboardIcons.Pencil
         )
         is LibraryDialog.Move -> {
             val from = viewModel.folderName(dialog.items.firstOrNull()?.folderId) ?: stringResource(Res.string.explorer_root_folder)

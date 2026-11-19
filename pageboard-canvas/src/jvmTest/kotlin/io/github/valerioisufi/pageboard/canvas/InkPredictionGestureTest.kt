@@ -9,10 +9,10 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -87,12 +87,12 @@ class InkPredictionGestureTest {
         )
     }
 
-    private fun withCanvas(block: (ImageComposeScene, DrawViewController, InkStrokeEngine) -> Unit) {
+    private fun withCanvas(block: (ImageComposeScene, PageboardController, InkStrokeEngine) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.selectTool(Tool.INK_PEN)
         val engine = InkStrokeEngine()
-        val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) { DrawCanvas(controller, engine = engine) }
+        val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) { PageCanvas(controller, engine = engine) }
         try {
             scene.render()
             block(scene, controller, engine)

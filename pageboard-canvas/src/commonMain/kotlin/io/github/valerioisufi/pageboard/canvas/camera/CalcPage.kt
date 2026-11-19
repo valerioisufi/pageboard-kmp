@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.canvas.camera
 
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.pageboard.canvas.geometry.mapRect
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.px
 import kotlin.math.round
@@ -56,7 +56,7 @@ public class CalcPage(
      * pixel off, which blurs them.
      */
     internal fun calcPagesRectOnWindow(
-        pages: List<DrawPage>,
+        pages: List<Page>,
         windowRect: Rect,
         options: PagePositionOnWindowOption = PagePositionOnWindowOption()
     ) {

@@ -10,11 +10,11 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.latex.LatexEngine
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,9 +49,9 @@ class TextBoxFidelityTest {
     }
 
     /** The baselines of the lines with text of the text being written as the page lays it out. */
-    private fun pageBaselines(controller: DrawViewController): List<Float> {
+    private fun pageBaselines(controller: PageboardController): List<Float> {
         val editor = controller.textEditorManager
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             text = editor.value.text
             fontSize = editor.fontSize
             width = editor.boxWidth
@@ -61,7 +61,7 @@ class TextBoxFidelityTest {
         return layout.words.filter { word -> word.text.any { it.isLetterOrDigit() } }.map { it.baseline }.distinct().sorted()
     }
 
-    private fun DesktopComposeUiTest.assertLinesOfThePage(controller: DrawViewController, what: String) {
+    private fun DesktopComposeUiTest.assertLinesOfThePage(controller: PageboardController, what: String) {
         val field = fieldBaselines()
         val page = pageBaselines(controller)
         assertEquals(page.size, field.size, "the lines $what: page $page, field $field")
@@ -77,7 +77,7 @@ class TextBoxFidelityTest {
             type("# Appunti\n$paragraphs\n- una voce con `codice` in mezzo\n- un'altra **voce**")
             assertLinesOfThePage(controller, "at a zoom of $factor")
             // Its height is the page's
-            val measured = controller.measureText(DrawText().apply {
+            val measured = controller.measureText(TextElement().apply {
                 text = controller.textEditorManager.value.text
                 fontSize = controller.textEditorManager.fontSize
                 width = controller.textEditorManager.boxWidth
@@ -137,10 +137,10 @@ class TextBoxFidelityTest {
         /** Half a pixel of the layout. */
         const val TOLERANCE_MM = 0.5f / PX_PER_MM
 
-        val FORMULAS: DrawViewEngines by lazy {
+        val FORMULAS: PageboardEngines by lazy {
             val latex = LatexEngine()
             runBlocking { latex.initialize() }
-            DrawViewEngines(formulas = latex)
+            PageboardEngines(formulas = latex)
         }
     }
 }

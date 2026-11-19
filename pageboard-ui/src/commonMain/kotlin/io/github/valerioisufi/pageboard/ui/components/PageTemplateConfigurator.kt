@@ -49,8 +49,8 @@ import io.github.valerioisufi.pageboard.model.geometry.mm
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import io.github.valerioisufi.pageboard.ui.util.formatDecimal
 import kotlin.math.roundToInt
@@ -233,7 +233,7 @@ internal fun PageTemplateConfigurator(
                     }
                 }
                 if (wide) {
-                    DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.common_button_cancel), onCancel, tint = MaterialTheme.colorScheme.onSurface)
+                    DesignIconButton(PageboardIcons.Close, stringResource(Res.string.common_button_cancel), onCancel, tint = MaterialTheme.colorScheme.onSurface)
                 } else if (!isDimensionInvalid) {
                     Box(modifier = Modifier.height(48.dp).aspectRatio(0.72f), contentAlignment = Alignment.Center) { preview() }
                 }
@@ -270,7 +270,7 @@ internal fun PageTemplateConfigurator(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(formatText(selectedFormat), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                Icon(DrawViewIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                Icon(PageboardIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                             }
                             DesignMenu(expanded = formatExpanded, onDismissRequest = { formatExpanded = false }) {
                                 PageFormat.entries.forEach { formatOption ->
@@ -411,7 +411,7 @@ private fun PagePreview(
         modifier = Modifier
             .aspectRatio(ratio.coerceIn(0.1f, 10f))
             .fillMaxSize()
-            .elevation(DrawViewElevation.Level1, RoundedCornerShape(2.dp))
+            .elevation(PageboardElevation.Level1, RoundedCornerShape(2.dp))
     ) {
         val w = size.width
         val h = size.height

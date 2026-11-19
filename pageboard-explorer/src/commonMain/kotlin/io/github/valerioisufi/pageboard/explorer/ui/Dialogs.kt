@@ -74,9 +74,9 @@ import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -95,7 +95,7 @@ internal fun RequestNameDialog(
     isAllowedInput: (inputText: String) -> StringResource? = { null },
     initialText: String = "",
     error: StringResource? = null,
-    icon: ImageVector = DrawViewIcons.FolderPlus
+    icon: ImageVector = PageboardIcons.FolderPlus
 ) {
     var inputError by remember { mutableStateOf<StringResource?>(null) }
     var text by remember { mutableStateOf(initialText) }
@@ -150,7 +150,7 @@ internal fun ConfirmActionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        icon = { Icon(DrawViewIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+        icon = { Icon(PageboardIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(text = title, textAlign = TextAlign.Center) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -164,7 +164,7 @@ internal fun ConfirmActionDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(DrawViewIcons.Users, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(18.dp))
+                        Icon(PageboardIcons.Users, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(18.dp))
                         Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     }
                 }
@@ -222,7 +222,7 @@ internal fun MoveFileDialog(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp)) {
                     path.forEachIndexed { index, (_, name) ->
                         val last = index == path.lastIndex
-                        if (index > 0) Icon(DrawViewIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(horizontal = 0.dp))
+                        if (index > 0) Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(horizontal = 0.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -231,7 +231,7 @@ internal fun MoveFileDialog(
                                 .clickable(enabled = !last) { path = path.take(index + 1) }
                                 .padding(horizontal = 8.dp, vertical = 6.dp)
                         ) {
-                            if (index == 0) Icon(DrawViewIcons.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                            if (index == 0) Icon(PageboardIcons.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                             Text(
                                 name,
                                 style = MaterialTheme.typography.labelLarge,
@@ -256,7 +256,7 @@ internal fun MoveFileDialog(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(DrawViewIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
+                            Icon(PageboardIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
                             Text(stringResource(Res.string.explorer_move_empty_state), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
@@ -273,9 +273,9 @@ internal fun MoveFileDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(DrawViewIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+                                    Icon(PageboardIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
                                     Text(folder.name, style = MaterialTheme.typography.labelLarge, color = content, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Icon(DrawViewIcons.ChevronRight, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
+                                    Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
                                 }
                             }
                         }
@@ -337,7 +337,7 @@ internal fun NewNoteDialog(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                DesignIconButton(DrawViewIcons.Close, stringResource(DrawViewRes.string.common_action_close), onDismiss)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onDismiss)
             }
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
@@ -371,14 +371,14 @@ internal fun NewNoteDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (onImportPdf != null) {
                         OutlineButton(onClick = { onDismiss(); onImportPdf() }, modifier = Modifier.weight(1f)) {
-                            Icon(DrawViewIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(PageboardIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_pdf_short), maxLines = 1)
                         }
                     }
                     if (onImportImage != null) {
                         OutlineButton(onClick = { onDismiss(); onImportImage() }, modifier = Modifier.weight(1f)) {
-                            Icon(DrawViewIcons.Image, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(PageboardIcons.Image, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_image), maxLines = 1)
                         }
@@ -391,7 +391,7 @@ internal fun NewNoteDialog(
                 enabled = name.isNotBlank() && error == null,
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) {
-                Icon(DrawViewIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(PageboardIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(stringResource(Res.string.explorer_create_note), style = MaterialTheme.typography.titleMedium)
             }
@@ -486,16 +486,16 @@ private fun FolderChooser(viewModel: FileExplorerViewModel, folderId: String?, o
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Icon(DrawViewIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+            Icon(PageboardIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(Res.string.explorer_details_folder), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(chosenName, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Icon(DrawViewIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Icon(PageboardIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
         }
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            val home = rememberVectorPainter(DrawViewIcons.Home)
-            val folder = rememberVectorPainter(DrawViewIcons.Folder)
+            val home = rememberVectorPainter(PageboardIcons.Home)
+            val folder = rememberVectorPainter(PageboardIcons.Folder)
             MenuItem(rootName, onClick = { onChoose(null); expanded = false }, icon = home, selected = folderId == null)
             for ((id, path) in paths) {
                 MenuItem(path, onClick = { onChoose(id); expanded = false }, icon = folder, selected = folderId == id)

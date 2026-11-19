@@ -11,14 +11,14 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.pageboard.canvas.CanvasGestureHandler
 import io.github.valerioisufi.pageboard.canvas.platform.encodePng
-import io.github.valerioisufi.pageboard.canvas.DrawThemeColors
+import io.github.valerioisufi.pageboard.canvas.PageboardColors
 import io.github.valerioisufi.pageboard.canvas.camera.Viewport
 import io.github.valerioisufi.pageboard.canvas.geometry.mapOffset
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
 import io.github.valerioisufi.pageboard.canvas.history.HistoryManager
 import io.github.valerioisufi.pageboard.canvas.port.EditorPorts
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.HiddenElements
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
@@ -28,13 +28,13 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.pageboard.canvas.tool.LassoMode
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.change.AddElements
@@ -78,8 +78,8 @@ import kotlinx.coroutines.withContext
  *
  * Every piece of state observed by the UI is backed by Compose snapshot state.
  */
-public class DrawViewController(
-    public val document: DrawDocument = DrawDocument(),
+public class PageboardController(
+    public val document: Document = Document(),
     public val coroutineScope: CoroutineScope,
     density: Float = 1f,
     persistence: DocumentPersistence = NoOpDocumentPersistence,
@@ -92,7 +92,7 @@ public class DrawViewController(
      */
     sharedSession: DocumentSession? = null,
     /** The engines drawing the PDF pages and the formulas (none: drawn blank and as their source). */
-    public val engines: DrawViewEngines = DrawViewEngines.None,
+    public val engines: PageboardEngines = PageboardEngines.None,
     /**
      * What is copied and pasted: the one of the application, shared by the editors of all its
      * documents (by default this editor's own).
@@ -167,7 +167,7 @@ public class DrawViewController(
 
     private val redrawPending = atomic(false)
 
-    public var themeColors: DrawThemeColors by mutableStateOf(DrawThemeColors())
+    public var themeColors: PageboardColors by mutableStateOf(PageboardColors())
 
     private var drawingModeChosen by mutableStateOf(true)
 
@@ -351,17 +351,17 @@ public class DrawViewController(
         preferencesChanged()
     }
 
-    private val preferencesState = MutableStateFlow(DrawPreferences())
+    private val preferencesState = MutableStateFlow(EditorPreferences())
 
     /**
      * The preferences of the user, as they change (the presets of the tools, the stylus only
      * mode, the last tool, the defaults of the texts, the snapping, the shapes): whoever keeps them collects
      * them and gives them back with [applyPreferences].
      */
-    public val preferences: StateFlow<DrawPreferences> = preferencesState.asStateFlow()
+    public val preferences: StateFlow<EditorPreferences> = preferencesState.asStateFlow()
 
     /** Applies the preferences of the user kept (e.g. when the editor opens). */
-    public fun applyPreferences(preferences: DrawPreferences) {
+    public fun applyPreferences(preferences: EditorPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
         areTextSuggestionsEnabled = preferences.areTextSuggestionsEnabled
         textDefaults = preferences.textDefaults
@@ -377,7 +377,7 @@ public class DrawViewController(
         preferencesState.value = currentPreferences()
     }
 
-    private fun currentPreferences() = DrawPreferences(
+    private fun currentPreferences() = EditorPreferences(
         isStylusOnlyMode = isStylusOnlyMode,
         lastSelectedTool = toolManager.selectedTool,
         textDefaults = textDefaults,
@@ -416,7 +416,7 @@ public class DrawViewController(
     public suspend fun flushPersistence(): Unit = persistenceQueue.flush()
 
     /** The size of [text] as the renderer lays it out, or `null` without a text adapter. */
-    public fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
+    public fun measureText(text: TextElement): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
 
     /**
      * The page [pageId] as a PNG, drawn as this editor draws it, at most [maxSidePx] on its longest
@@ -467,7 +467,7 @@ public class DrawViewController(
         requestRedraw()
     }
 
-    internal fun invalidatePageContent(page: DrawPage, mmRect: MmRect?) {
+    internal fun invalidatePageContent(page: Page, mmRect: MmRect?) {
         val pageWorldRect = viewport.layout.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect.toCompose(), pageWorldRect)
@@ -478,7 +478,7 @@ public class DrawViewController(
      * The file of [resource] arrived (from another device): the images and the PDF pages showing
      * it are drawn again.
      */
-    public fun onResourceAvailable(resource: DrawResource) {
+    public fun onResourceAvailable(resource: DocumentResource) {
         for (page in document.pages) {
             if (page.images.any { it.resourceId == resource.id } || page.pdfs.any { it.resourceId == resource.id }) {
                 invalidatePageContent(page, null)
@@ -559,7 +559,7 @@ public class DrawViewController(
         if (mesh.isEmpty) return
         val bounds = mesh.computeBounds()
 
-        val strokesByPage = LinkedHashMap<Int, MutableList<DrawStroke>>()
+        val strokesByPage = LinkedHashMap<Int, MutableList<StrokeElement>>()
         val originToWorld = viewport.pageMmToWorld(originPageIndex)
         val worldBounds = originToWorld?.mapRect(bounds)?.toCompose()
 
@@ -578,7 +578,7 @@ public class DrawViewController(
             } else {
                 AffineTransform.IDENTITY
             }
-            val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform)
+            val stroke = StrokeElement(mesh = mesh, brushConfig = brush, transform = transform)
             strokesByPage.getOrPut(index) { mutableListOf() }.add(stroke)
         }
         if (strokesByPage.isEmpty()) return

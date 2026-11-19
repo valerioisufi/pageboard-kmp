@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.search
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.searchTextOf
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Indexes the names of the documents with the path of their folders, their typed texts
- * (`DrawText`, Markdown marks removed and LaTeX kept) and the elements of the types added by an
+ * (`TextElement`, Markdown marks removed and LaTeX kept) and the elements of the types added by an
  * application ([ElementType.searchText]).
  */
 public class DocumentSearchSource(
@@ -89,7 +89,7 @@ public class DocumentSearchSource(
         return result
     }
 
-    private fun customSearchText(element: DrawCustomElement): String? {
+    private fun customSearchText(element: CustomElement): String? {
         val type = elementTypes.firstOrNull { it.id == element.type } ?: return null
         return type.searchTextOf(element)
     }

@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import io.github.valerioisufi.pageboard.model.text.code.CodeHighlighter
@@ -32,7 +32,7 @@ class ComposeTextTileAdapterTest {
 
     private val adapter = ComposeTextTileAdapter(createFontFamilyResolver())
 
-    private fun text(content: String, alignment: TextAlignment = TextAlignment.START, width: Float = 100f) = DrawText().apply {
+    private fun text(content: String, alignment: TextAlignment = TextAlignment.START, width: Float = 100f) = TextElement().apply {
         text = content
         this.alignment = alignment
         this.width = width
@@ -41,7 +41,7 @@ class ComposeTextTileAdapterTest {
     }
 
     /** Left and right of the words of [text] in millimeters of its box. */
-    private fun extent(text: DrawText): Pair<Float, Float> {
+    private fun extent(text: TextElement): Pair<Float, Float> {
         val words = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words
         return words.minOf { it.left } to words.maxOf { it.left + it.width }
     }
@@ -117,7 +117,7 @@ class ComposeTextTileAdapterTest {
     }
 
     /** The words of [text] that are not spaces, with their text trimmed. */
-    private fun words(text: DrawText) = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words.filter { it.text.isNotBlank() }
+    private fun words(text: TextElement) = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words.filter { it.text.isNotBlank() }
 
     private fun List<TextWord>.word(text: String) = first { it.text.trim() == text }
 

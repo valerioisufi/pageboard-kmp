@@ -11,7 +11,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TilePyramid
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileState
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import kotlin.math.max
@@ -98,7 +98,7 @@ class TileBenchmark {
     private fun at(rects: List<Rect>, index: Int): Matrix2D = Matrix2D().postTranslate(0f, -(rects[index].top - 8f))
 
     /** Draws frames with [camera] until every tile on screen is rasterized; how long it took. */
-    private fun showUntilFilled(manager: TileManager, document: DrawDocument, rects: List<Rect>, camera: Matrix2D): Duration {
+    private fun showUntilFilled(manager: TileManager, document: Document, rects: List<Rect>, camera: Matrix2D): Duration {
         val canvas = Canvas(ImageBitmap(64, 64))
         val start = TimeSource.Monotonic.markNow()
         while (start.elapsedNow() < TIMEOUT) {
@@ -109,7 +109,7 @@ class TileBenchmark {
         error("The screen is not filled after $TIMEOUT")
     }
 
-    private fun visibleTiles(document: DrawDocument, rects: List<Rect>, camera: Matrix2D): List<TileKey> {
+    private fun visibleTiles(document: Document, rects: List<Rect>, camera: Matrix2D): List<TileKey> {
         val screenToWorld = Matrix2D()
         check(camera.invert(screenToWorld))
         val world = screenToWorld.mapRect(viewport)

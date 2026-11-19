@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.TextBeingWritten
@@ -18,9 +18,9 @@ class WordSuggestionsTest {
 
     @Test
     fun theMostFrequentWordOfTheDocumentEndsTheOneWritten() = runBlocking {
-        val document = DrawDocument()
-        val controller = DrawViewController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
-        val texts = listOf("The flux through a surface", "surface integrals", "a surplus").map { DrawText().apply { text = it; x = 10f; y = 10f; width = 80f } }
+        val document = Document()
+        val controller = PageboardController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val texts = listOf("The flux through a surface", "surface integrals", "a surplus").map { TextElement().apply { text = it; x = 10f; y = 10f; width = 80f } }
         controller.session.submit(AddElements.of(document.pages[0], texts))
         val context = EditorContext(controller)
         val suggester = checkNotNull(wordSuggestionsExtension().textSuggestions)

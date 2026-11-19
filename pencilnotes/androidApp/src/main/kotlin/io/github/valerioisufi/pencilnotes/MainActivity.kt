@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.keyboardShortcutGroups
 
@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Context used by the database, the document resources and the TeX fonts
-        DrawViewAndroid.init(applicationContext)
+        PageboardAndroid.init(applicationContext)
         alive++
 
         activeDocumentId = documentIdOf(intent)

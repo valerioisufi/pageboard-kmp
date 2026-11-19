@@ -19,7 +19,7 @@ public sealed interface SearchAnchor {
     /**
      * A page of a document, and the area of the page when the piece is an element of it.
      *
-     * @param pageId identifier of the page ([io.github.valerioisufi.pageboard.model.DrawPage.id]).
+     * @param pageId identifier of the page ([io.github.valerioisufi.pageboard.model.Page.id]).
      * @param bounds the box of the element on the page in millimeters, `null` for the whole page.
      * @param pageNumber the 1-based number of the page in the document.
      */

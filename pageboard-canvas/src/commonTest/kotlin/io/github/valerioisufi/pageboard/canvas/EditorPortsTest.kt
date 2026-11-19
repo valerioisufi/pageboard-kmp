@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -27,8 +27,8 @@ class EditorPortsTest {
 
     @Test
     fun theChangesSubmittedInAGroupAreUndoneTogetherAndObserved() = runTest {
-        val document = DrawDocument(defaultBackground = PageBackground.Ruled())
-        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        val document = Document(defaultBackground = PageBackground.Ruled())
+        val controller = PageboardController(document = document, coroutineScope = backgroundScope)
         val ports = controller.ports
         var observed = 0
         val observer = ChangeObserver { observed++ }
@@ -52,9 +52,9 @@ class EditorPortsTest {
 
     @Test
     fun thePagesAndTheEditsAreThoseOfTheEditor() = runTest {
-        val document = DrawDocument(defaultBackground = PageBackground.Ruled())
+        val document = Document(defaultBackground = PageBackground.Ruled())
         document.addPage()
-        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = document, coroutineScope = backgroundScope)
         controller.viewport.setSize(800f, 1200f)
         val ports = controller.ports
 

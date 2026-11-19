@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.export
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,9 +11,9 @@ import kotlinx.coroutines.test.runTest
 /** A note written as Markdown (see `docs/plans/markdown-export.md`). */
 class MarkdownExporterTest {
 
-    private fun text(source: String, x: Float, y: Float) = DrawText().apply { text = source; this.x = x; this.y = y; width = 80f; height = 10f; fontSize = 12f }
+    private fun text(source: String, x: Float, y: Float) = TextElement().apply { text = source; this.x = x; this.y = y; width = 80f; height = 10f; fontSize = 12f }
 
-    private fun note(): DrawDocument = DrawDocument(title = "Analisi").apply {
+    private fun note(): Document = Document(title = "Analisi").apply {
         addPage()
         addPage()
         // Read from the top, then from the left: the second column after the first on its line
@@ -43,7 +43,7 @@ class MarkdownExporterTest {
 
     @Test
     fun aNoteWithoutTextHasNothingToWriteUnlessTheApplicationAddsSomething() = runTest {
-        val empty = DocumentContent.of(DrawDocument(title = "Vuota"))
+        val empty = DocumentContent.of(Document(title = "Vuota"))
         assertFalse(MarkdownExporter().hasText(empty, "id"))
         assertTrue(MarkdownExporter { "## Lectures" }.hasText(empty, "id"))
         assertEquals("# Vuota\n\n## Lectures\n", MarkdownExporter { "## Lectures" }.write(empty, "id"))

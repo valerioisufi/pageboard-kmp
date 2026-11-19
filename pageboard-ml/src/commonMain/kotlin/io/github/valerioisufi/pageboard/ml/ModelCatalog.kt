@@ -81,7 +81,7 @@ public class ModelCatalog(public val models: List<ModelSpec>) {
             dimensions = 768
         )
 
-        /** The models of DrawView. */
+        /** The models of Pageboard. */
         public val Default: ModelCatalog = ModelCatalog(listOf(GEMMA_4_E2B, GEMMA_4_E4B, GEMMA_4_12B, EMBEDDING_GEMMA_2_TEXT))
 
         private fun huggingFace(repository: String, revision: String, file: String): String =

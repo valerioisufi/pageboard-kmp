@@ -22,8 +22,8 @@ public final class io/github/valerioisufi/pageboard/store/testing/SharedFoldersC
 public final class io/github/valerioisufi/pageboard/store/testing/SyntheticDocuments {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/testing/SyntheticDocuments;
 	public final fun getNoMeshes ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
-	public final fun notebook (IIIIFLjava/lang/String;ILio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/DrawDocument;
-	public static synthetic fun notebook$default (Lio/github/valerioisufi/pageboard/store/testing/SyntheticDocuments;IIIIFLjava/lang/String;ILio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawDocument;
+	public final fun notebook (IIIIFLjava/lang/String;ILio/github/valerioisufi/pageboard/model/StrokeModeller;)Lio/github/valerioisufi/pageboard/model/Document;
+	public static synthetic fun notebook$default (Lio/github/valerioisufi/pageboard/store/testing/SyntheticDocuments;IIIIFLjava/lang/String;ILio/github/valerioisufi/pageboard/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Document;
 }
 
 public final class io/github/valerioisufi/pageboard/store/testing/TrashContractKt {

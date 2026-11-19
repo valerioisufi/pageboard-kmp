@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
@@ -124,7 +124,7 @@ class AgentJournalTest {
         val world = world(this, backgroundScope)
         val first = world.start()
         val text = first.open.edit { session ->
-            DrawText().apply { this.text = "old"; x = 10f; y = 20f; width = 100f; height = 10f }.also { session.submit(AddElements.of(session.document.pages.first(), listOf(it))) }
+            TextElement().apply { this.text = "old"; x = 10f; y = 20f; width = 100f; height = 10f }.also { session.submit(AddElements.of(session.document.pages.first(), listOf(it))) }
         }
         val base = first.call("read_page", buildJsonObject { put("document", world.documentId) }).getValue("texts").jsonArray.single().jsonObject.getValue("base").jsonPrimitive.content
         val id = first.propose(world.documentId, buildJsonObject {

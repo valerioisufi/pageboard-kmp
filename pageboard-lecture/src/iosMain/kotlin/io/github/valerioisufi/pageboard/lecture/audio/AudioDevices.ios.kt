@@ -206,7 +206,7 @@ internal class AvAudioOutput : AudioOutput {
 
     override fun open(onStopped: () -> Unit): Boolean {
         activateSession()?.let {
-            println("DrawView: cannot play the recording: $it")
+            println("Pageboard: cannot play the recording: $it")
             return false
         }
         val newEngine = AVAudioEngine()
@@ -216,7 +216,7 @@ internal class AvAudioOutput : AudioOutput {
         newEngine.prepare()
         val started = memScoped {
             val error = alloc<ObjCObjectVar<NSError?>>()
-            newEngine.startAndReturnError(error.ptr).also { if (!it) println("DrawView: cannot play the recording: ${error.value?.localizedDescription}") }
+            newEngine.startAndReturnError(error.ptr).also { if (!it) println("Pageboard: cannot play the recording: ${error.value?.localizedDescription}") }
         }
         if (!started) return false
         newPlayer.play()

@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.handwriting.groupStrokes
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.geometry.fitPdfPage
@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 /**
  * What a note of the lecture is about on its page, found from the time the content of the page was
- * written (`DrawElement.added`, the clock of the device that wrote it): the block of writing the
+ * written (`PageElement.added`, the clock of the device that wrote it): the block of writing the
  * student was adding when the note was said, else the last block written during the lecture.
  * A preference for the placement of the note, never a constraint: the clock of another device may
  * be off, and a lecture imported has no writing of its time.
@@ -27,7 +27,7 @@ public object LectureAnchors {
      * The box of the writing of [page] about a note said at [saidAt] (wall clock) during a lecture
      * from [lectureStart] until [lectureEnd], or `null` when the page has none of that time.
      */
-    public fun anchorOf(page: DrawPage, saidAt: Long, lectureStart: Long, lectureEnd: Long): Rect? {
+    public fun anchorOf(page: Page, saidAt: Long, lectureStart: Long, lectureEnd: Long): Rect? {
         val written = page.strokes + page.texts
         return blockNearest(page, written.filter { it.added.time in (saidAt - BEFORE_MS)..(saidAt + AFTER_MS) }, saidAt)
             ?: blockNearest(page, written.filter { it.added.time in lectureStart..lectureEnd }, lectureEnd)
@@ -39,7 +39,7 @@ public object LectureAnchors {
      * words of the text of its PDF page ([pdfText], drawn on the page as [fitPdfPage] places it)
      * sharing the most words with the quote; `null` when none shares [MIN_SHARED_WORDS] of them.
      */
-    public fun quoteAnchor(page: DrawPage, quote: String, handwriting: List<Pair<Rect, String>> = emptyList(), pdfText: PdfTextLayout? = null): Rect? {
+    public fun quoteAnchor(page: Page, quote: String, handwriting: List<Pair<Rect, String>> = emptyList(), pdfText: PdfTextLayout? = null): Rect? {
         val wanted = wordsOf(quote)
         if (wanted.isEmpty()) return null
         var best: Rect? = null
@@ -121,7 +121,7 @@ public object LectureAnchors {
     public const val MIN_SHARED_WORDS: Double = 0.6
 
     /** The box of the block of [elements] holding the one written the nearest to [time]. */
-    private fun blockNearest(page: DrawPage, elements: List<DrawElement>, time: Long): Rect? {
+    private fun blockNearest(page: Page, elements: List<PageElement>, time: Long): Rect? {
         val placed = elements.mapNotNull { element -> page.boundsOf(element)?.takeIf { !it.isEmpty }?.let { element to it } }
         if (placed.isEmpty()) return null
         val nearest = placed.indices.minBy { abs(placed[it].first.added.time - time) }

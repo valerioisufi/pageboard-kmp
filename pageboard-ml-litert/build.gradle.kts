@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "LiteRT-LM as the runtime of the local models of DrawView (Gemma 4, EmbeddingGemma 2)"
+description = "LiteRT-LM as the runtime of the local models of Pageboard (Gemma 4, EmbeddingGemma 2)"
 
 kotlin {
     sourceSets {

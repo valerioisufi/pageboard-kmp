@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.graphics.lowlatency.CanvasFrontBufferedRenderer
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
 import io.github.valerioisufi.pageboard.model.StrokeMesh
@@ -26,7 +26,7 @@ import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.syncLock
 
 @Composable
-internal actual fun rememberLiveInkLayer(controller: DrawViewController): LiveInkLayer =
+internal actual fun rememberLiveInkLayer(controller: PageboardController): LiveInkLayer =
     remember(controller) { FrontBufferedLiveInkLayer(controller) }
 
 /**
@@ -40,7 +40,7 @@ internal actual fun rememberLiveInkLayer(controller: DrawViewController): LiveIn
  * would show darker. So does every stroke when the buffer is not there (the surface not ready, a
  * renderer that could not be created) or the modeller gives no outline.
  */
-internal class FrontBufferedLiveInkLayer(private val controller: DrawViewController) : LiveInkLayer {
+internal class FrontBufferedLiveInkLayer(private val controller: PageboardController) : LiveInkLayer {
     private enum class Mode { NONE, FRONT_BUFFER, COMPOSE }
 
     private enum class HandOffStep { NONE, AWAITING_TILES, AWAITING_COMMIT, REACHING_SCREEN }
@@ -164,7 +164,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: DrawViewControl
         }
     }
 
-    override fun draw(scope: DrawScope, controller: DrawViewController) = compose.draw(scope, controller)
+    override fun draw(scope: DrawScope, controller: PageboardController) = compose.draw(scope, controller)
 
     /**
      * The tiles recorded in this frame hold the stroke, unless a cell is still waiting for its first

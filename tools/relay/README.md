@@ -1,4 +1,4 @@
-# The relay of DrawView
+# The relay of Pageboard
 
 The devices of the users meet through a relay when they are not on the same network: the relay
 tells each device where the others are, helps them reach each other directly (hole punching), and

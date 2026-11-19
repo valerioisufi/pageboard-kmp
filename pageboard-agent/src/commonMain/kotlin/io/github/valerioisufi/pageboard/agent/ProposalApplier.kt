@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.CompositeChange
@@ -47,7 +47,7 @@ public class ProposalApplier(private val engines: AgentEngines = AgentEngines())
     private val planner = ProposalPlanner(engines)
 
     /** The indexes of [items] that would not be applied to [document] as it is now. */
-    public fun staleItems(document: DrawDocument, items: List<ProposalItem>): Set<Int> = planner.staleItems(document, items)
+    public fun staleItems(document: Document, items: List<ProposalItem>): Set<Int> = planner.staleItems(document, items)
 
     /**
      * Applies [items] to the document of [session], those still valid.

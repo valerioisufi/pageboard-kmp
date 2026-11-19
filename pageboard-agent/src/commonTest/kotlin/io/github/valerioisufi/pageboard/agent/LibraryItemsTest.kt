@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -91,7 +91,7 @@ class LibraryItemsTest {
         val open = assertNotNull(setup.documents.open(created))
         testScheduler.advanceTimeBy(5)
         open.edit { session ->
-            val text = DrawText().apply { text = "Written by the user"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+            val text = TextElement().apply { text = "Written by the user"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(session.document.pages[0], listOf(text)))
         }
         open.flush()

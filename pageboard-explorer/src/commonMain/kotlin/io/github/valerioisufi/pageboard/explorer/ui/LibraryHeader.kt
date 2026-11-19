@@ -86,7 +86,7 @@ import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.IconButtonStyle
 import io.github.valerioisufi.pageboard.ui.components.SearchField
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -108,7 +108,7 @@ internal fun LibraryAppBar(
     // The Trash, then the actions: the last ones leave the bar first
     val trashLabel = stringResource(Res.string.explorer_trash_open)
     val buttons = buildList {
-        if (onOpenTrash != null) add(BarEntry(DrawViewIcons.Trash, { trashLabel }, onOpenTrash))
+        if (onOpenTrash != null) add(BarEntry(PageboardIcons.Trash, { trashLabel }, onOpenTrash))
         for (action in actions) add(BarEntry(action.icon, action.label) { onAction(action) })
     }
     val button = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified }?.coerceAtLeast(40.dp) ?: 40.dp
@@ -144,7 +144,7 @@ private class BarEntry(val icon: ImageVector, val label: @Composable () -> Strin
 private fun BarOverflowButton(entries: List<BarEntry>) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true })
+        DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true })
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             for (entry in entries) {
                 MenuItem(
@@ -197,7 +197,7 @@ internal fun LibraryTitle(
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (viewModel.section == Section.TRASH) {
             DesignIconButton(
-                icon = DrawViewIcons.ArrowLeft,
+                icon = PageboardIcons.ArrowLeft,
                 label = stringResource(Res.string.explorer_action_back),
                 onClick = { viewModel.showFolder(null) },
                 style = IconButtonStyle.Tonal
@@ -206,7 +206,7 @@ internal fun LibraryTitle(
         // A search is left with back, or by going somewhere: going up would change nothing on screen
         if (folder != null && viewModel.section == Section.HOME && !viewModel.isSearching) {
             DesignIconButton(
-                icon = DrawViewIcons.ArrowUp,
+                icon = PageboardIcons.ArrowUp,
                 label = stringResource(Res.string.explorer_action_back),
                 onClick = { commands.enclosingFolder.performIfEnabled() },
                 style = IconButtonStyle.Tonal,
@@ -283,13 +283,13 @@ internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: Lib
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (showViews) {
             DesignIconButton(
-                icon = DrawViewIcons.PageGrid,
+                icon = PageboardIcons.PageGrid,
                 label = stringResource(Res.string.explorer_view_grid),
                 onClick = { viewModel.viewMode = ViewMode.GRID },
                 selected = viewModel.viewMode == ViewMode.GRID
             )
             DesignIconButton(
-                icon = DrawViewIcons.List,
+                icon = PageboardIcons.List,
                 label = stringResource(Res.string.explorer_view_list),
                 onClick = { viewModel.viewMode = ViewMode.LIST },
                 selected = viewModel.viewMode == ViewMode.LIST
@@ -310,7 +310,7 @@ internal fun FolderActionsButton(viewModel: FileExplorerViewModel, commands: Lib
     if (!viewModel.showsFolder || commands.folderActionCommands.isEmpty()) return
     var expanded by remember { mutableStateOf(false) }
     Box {
-        DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)
+        DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)
         CommandMenu(commands = commands.folderActionCommands, expanded = expanded, onDismissRequest = { expanded = false })
     }
 }
@@ -319,9 +319,9 @@ internal fun FolderActionsButton(viewModel: FileExplorerViewModel, commands: Lib
 @Composable
 internal fun SortButton(viewModel: FileExplorerViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val check = rememberVectorPainter(DrawViewIcons.Check)
+    val check = rememberVectorPainter(PageboardIcons.Check)
     Box {
-        DesignIconButton(DrawViewIcons.ArrowUpDown, stringResource(Res.string.explorer_sort), { expanded = true }, style = IconButtonStyle.Tonal)
+        DesignIconButton(PageboardIcons.ArrowUpDown, stringResource(Res.string.explorer_sort), { expanded = true }, style = IconButtonStyle.Tonal)
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             MenuLabel(stringResource(Res.string.explorer_sort_by))
             listOf(
@@ -417,7 +417,7 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.explorer_action_clear_selection), { viewModel.clearSelection() })
+        DesignIconButton(PageboardIcons.Close, stringResource(Res.string.explorer_action_clear_selection), { viewModel.clearSelection() })
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             stringResource(Res.string.explorer_selected_count, viewModel.selectedItems.size),
@@ -427,10 +427,10 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
             modifier = if (withActions) Modifier.weight(1f) else Modifier
         )
         if (withActions) {
-            DesignIconButton(DrawViewIcons.CheckCheck, stringResource(Res.string.explorer_action_select_all), { commands.selectAll.performIfEnabled() })
-            DesignIconButton(DrawViewIcons.FolderInput, commands.move.label(), { commands.move.performIfEnabled() }, enabled = commands.move.isEnabled())
+            DesignIconButton(PageboardIcons.CheckCheck, stringResource(Res.string.explorer_action_select_all), { commands.selectAll.performIfEnabled() })
+            DesignIconButton(PageboardIcons.FolderInput, commands.move.label(), { commands.move.performIfEnabled() }, enabled = commands.move.isEnabled())
             DesignIconButton(
-                DrawViewIcons.Trash,
+                PageboardIcons.Trash,
                 commands.delete.label(),
                 { commands.delete.performIfEnabled() },
                 enabled = commands.delete.isEnabled(),
@@ -448,7 +448,7 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
         } else {
             Spacer(modifier = Modifier.width(16.dp))
             TextButton(onClick = { commands.selectAll.performIfEnabled() }) {
-                Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(Res.string.explorer_action_select_all), style = MaterialTheme.typography.labelLarge)
             }

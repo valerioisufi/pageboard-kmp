@@ -1,8 +1,8 @@
 # Module pageboard-model
 
-The document of DrawView, headless (no Compose): a `DrawDocument` of `DrawPage`s holding
+The document of Pageboard, headless (no Compose): a `Document` of `Page`s holding
 strokes, texts, images, PDF pages, marks of their text and the elements of the types of the
-applications (`ElementType`, `DrawCustomElement`).
+applications (`ElementType`, `CustomElement`).
 
 Every change is a serializable `DocumentChange` submitted to the `DocumentSession` of the
 document: applied with the stamp of its operation (last writer wins, `HybridClock`), undone,

@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
 
 /**
- * Folder operations every [DocumentStore] must support: run by the tests of each store, of DrawView
+ * Folder operations every [DocumentStore] must support: run by the tests of each store, of Pageboard
  * or of an application, on an empty store.
  */
 public suspend fun checkFolderOperations(store: DocumentStore) {

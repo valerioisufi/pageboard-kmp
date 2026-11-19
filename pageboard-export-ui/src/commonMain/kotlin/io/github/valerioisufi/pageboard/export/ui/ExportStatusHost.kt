@@ -53,7 +53,7 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_sta
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_stop
 import io.github.valerioisufi.pageboard.ui.platform.FileReveal
 import io.github.valerioisufi.pageboard.ui.platform.fileReveal
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
@@ -117,9 +117,9 @@ internal fun ExportStatusCard(job: ExportJob, reveal: FileReveal?, onStop: () ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val state = job.state
                 val (icon, tint) = when (state) {
-                    is ExportJobState.Done -> DrawViewIcons.CheckCircle to colors.inversePrimary
-                    is ExportJobState.Failed -> DrawViewIcons.TriangleAlert to colors.errorContainer
-                    else -> DrawViewIcons.Share to colors.inverseOnSurface
+                    is ExportJobState.Done -> PageboardIcons.CheckCircle to colors.inversePrimary
+                    is ExportJobState.Failed -> PageboardIcons.TriangleAlert to colors.errorContainer
+                    else -> PageboardIcons.Share to colors.inverseOnSurface
                 }
                 Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
@@ -157,7 +157,7 @@ internal fun ExportStatusCard(job: ExportJob, reveal: FileReveal?, onStop: () ->
                 }
                 if (!job.isActive) {
                     IconButton(onClick = onClose, modifier = Modifier.size(36.dp)) {
-                        Icon(DrawViewIcons.Close, contentDescription = stringResource(Res.string.export_close), modifier = Modifier.size(18.dp))
+                        Icon(PageboardIcons.Close, contentDescription = stringResource(Res.string.export_close), modifier = Modifier.size(18.dp))
                     }
                 }
             }

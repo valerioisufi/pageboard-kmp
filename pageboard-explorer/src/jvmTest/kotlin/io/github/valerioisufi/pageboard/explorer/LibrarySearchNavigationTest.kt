@@ -38,7 +38,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.InputHints
 import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.adaptive.platformConventions
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.util.Locale
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -72,11 +72,11 @@ class LibrarySearchNavigationTest {
         }
         setContent {
             CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
-                DrawViewTheme(dynamicColor = false) {
+                PageboardTheme(dynamicColor = false) {
                     AdaptiveRoot(hints = InputHints.PointerAndKeyboard, conventions = platformConventions) {
                         CommandRoot {
                             DocumentLibrary(
-                                title = { Text("DrawView") },
+                                title = { Text("Pageboard") },
                                 documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
                                 sessions = remember { EditorSessions() },
                                 modifier = Modifier.fillMaxSize()
@@ -184,14 +184,14 @@ class LibrarySearchNavigationTest {
         var gridState: LazyGridState? = null
         setContent {
             CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
-                DrawViewTheme(dynamicColor = false) {
+                PageboardTheme(dynamicColor = false) {
                     AdaptiveRoot(hints = InputHints.PointerAndKeyboard, conventions = platformConventions) {
                         CommandRoot {
                             val documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) }
                             val viewModel = viewModel { FileExplorerViewModel(documents) }
                             val state = rememberLibraryGridState(viewModel)
                             gridState = state
-                            ExplorerScreen(viewModel, onOpenDocument = {}, title = { Text("DrawView") }, gridState = state, modifier = Modifier.fillMaxSize())
+                            ExplorerScreen(viewModel, onOpenDocument = {}, title = { Text("Pageboard") }, gridState = state, modifier = Modifier.fillMaxSize())
                         }
                     }
                 }

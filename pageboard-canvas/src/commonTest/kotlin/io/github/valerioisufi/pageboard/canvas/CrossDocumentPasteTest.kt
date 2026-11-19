@@ -1,11 +1,11 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -32,11 +32,11 @@ import kotlinx.coroutines.test.runTest
 class CrossDocumentPasteTest {
 
     private fun controller(scope: CoroutineScope, clipboard: EditorClipboard, background: PageBackground = PageBackground.Solid()) =
-        DrawViewController(document = DrawDocument(defaultBackground = background), coroutineScope = scope, clipboard = clipboard)
+        PageboardController(document = Document(defaultBackground = background), coroutineScope = scope, clipboard = clipboard)
             .also { it.viewport.setSize(800f, 1200f) }
 
     /** A stroke at [x], 10 mm down, and a text under it on the first page of [controller]. */
-    private fun addContent(controller: DrawViewController) {
+    private fun addContent(controller: PageboardController) {
         val stroke = StrokeData(
             id = newElementId(),
             points = (0 until 5).map { StrokePoint(x = 30f + it, y = 10f + it, pressure = 0.5f, timestampMs = it * 8L) },
@@ -44,12 +44,12 @@ class CrossDocumentPasteTest {
             size = 0.5f,
             color = 0xFF000000.toInt()
         ).toElement()
-        val text = DrawText().apply { text = "Notes"; x = 30f; y = 40f; width = 50f; fontSize = 16f }
+        val text = TextElement().apply { text = "Notes"; x = 30f; y = 40f; width = 50f; fontSize = 16f }
         controller.session.submit(AddElements.of(controller.document.pages[0], listOf(stroke, text)))
     }
 
     /** Selects everything on the first page of [controller] with the lasso. */
-    private fun selectAll(controller: DrawViewController) {
+    private fun selectAll(controller: PageboardController) {
         controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, 210f, 0f, 210f, 297f, 0f, 297f))
         assertNotNull(controller.selectionManager.currentSelection)
     }
@@ -98,7 +98,7 @@ class CrossDocumentPasteTest {
         val clipboard = EditorClipboard()
         val first = controller(backgroundScope, clipboard)
         val second = controller(backgroundScope, clipboard)
-        val text = DrawText().apply { text = "Far"; x = 180f; y = 280f; width = 25f; fontSize = 16f }
+        val text = TextElement().apply { text = "Far"; x = 180f; y = 280f; width = 25f; fontSize = 16f }
         first.session.submit(AddElements.of(first.document.pages[0], listOf(text)))
         first.selectionManager.selectText(0, text)
         first.selectionManager.copySelection()
@@ -116,11 +116,11 @@ class CrossDocumentPasteTest {
         val clipboard = EditorClipboard()
         val first = controller(backgroundScope, clipboard)
         val second = controller(backgroundScope, clipboard)
-        val messages = mutableListOf<DrawViewController.Message>()
+        val messages = mutableListOf<PageboardController.Message>()
         backgroundScope.launch { second.messages.collect { messages.add(it) } }
         addContent(first)
-        first.session.submit(AddResource.of("r", DrawResource.ResourceType.IMAGE, "/not/here.png", "hash"))
-        val image = DrawImage().apply { resourceId = "r"; x = 100f; y = 100f; width = 20f; height = 20f }
+        first.session.submit(AddResource.of("r", DocumentResource.ResourceType.IMAGE, "/not/here.png", "hash"))
+        val image = ImageElement().apply { resourceId = "r"; x = 100f; y = 100f; width = 20f; height = 20f }
         first.session.submit(AddElements.of(first.document.pages[0], listOf(image)))
 
         selectAll(first)
@@ -130,7 +130,7 @@ class CrossDocumentPasteTest {
         val page = second.document.pages[0]
         assertTrue(page.images.isEmpty())
         assertEquals(2, page.stack.size)
-        assertEquals(listOf(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES), messages)
+        assertEquals(listOf(PageboardController.Message.PASTED_WITHOUT_MISSING_FILES), messages)
         // The frame around what was pasted
         assertEquals(2, assertNotNull(second.selectionManager.currentSelection).elements().size)
     }
@@ -177,8 +177,8 @@ class CrossDocumentPasteTest {
 
     @Test
     fun editorsGivenNoClipboardKeepTheirOwn() = runTest(UnconfinedTestDispatcher()) {
-        val first = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope).also { it.viewport.setSize(800f, 1200f) }
-        val second = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
+        val first = PageboardController(document = Document(), coroutineScope = backgroundScope).also { it.viewport.setSize(800f, 1200f) }
+        val second = PageboardController(document = Document(), coroutineScope = backgroundScope)
         addContent(first)
         selectAll(first)
         first.selectionManager.copySelection()

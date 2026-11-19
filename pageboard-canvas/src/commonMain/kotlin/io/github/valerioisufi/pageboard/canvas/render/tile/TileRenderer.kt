@@ -15,15 +15,15 @@ import io.github.valerioisufi.pageboard.canvas.geometry.toComposeMatrix
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
 import io.github.valerioisufi.pageboard.canvas.render.ElementRenderers
 import io.github.valerioisufi.pageboard.canvas.render.ImageCache
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.math.ceil
@@ -39,7 +39,7 @@ import kotlin.math.min
  *
  * @param pdfAdapter Optional adapter for rendering PDF document pages.
  * @param textAdapter Optional adapter for rasterizing text blocks and LaTeX formulas.
- * @param images the pixels of the images of the documents (`DrawViewEngines.images`; by default
+ * @param images the pixels of the images of the documents (`PageboardEngines.images`; by default
  *   a cache of this renderer).
  */
 public class TileRenderer(
@@ -59,8 +59,8 @@ public class TileRenderer(
     internal fun renderTile(
         tileKey: TileKey,
         targetBitmap: ImageBitmap,
-        document: DrawDocument,
-        page: DrawPage,
+        document: Document,
+        page: Page,
         pageWorldRect: Rect
     ) {
         renderTile(tileKey, targetBitmap, document, page.snapshotContent(), pageWorldRect)
@@ -74,7 +74,7 @@ public class TileRenderer(
     internal fun renderTile(
         tileKey: TileKey,
         targetBitmap: ImageBitmap,
-        document: DrawDocument,
+        document: Document,
         content: PageContentSnapshot,
         pageWorldRect: Rect
     ) {
@@ -91,14 +91,14 @@ public class TileRenderer(
     /**
      * Renders the whole page into a new bitmap [widthPx] pixels wide (page thumbnails).
      */
-    public fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
+    public fun renderThumbnail(document: Document, page: Page, widthPx: Int): ImageBitmap =
         renderThumbnail(document, page.snapshotContent(), widthPx)
 
     /**
      * Rasterizes [content] (a page copied, drawn on any thread) into a thumbnail [widthPx] wide;
      * [document] gives the files of its resources.
      */
-    public fun renderThumbnail(document: DrawDocument, content: PageContentSnapshot, widthPx: Int): ImageBitmap {
+    public fun renderThumbnail(document: Document, content: PageContentSnapshot, widthPx: Int): ImageBitmap {
         val w = widthPx.coerceAtLeast(1)
         val h = if (content.widthMm > 0f) ceil(w * content.heightMm / content.widthMm).toInt().coerceAtLeast(1) else w
         val bitmap = ImageBitmap(w, h)
@@ -117,7 +117,7 @@ public class TileRenderer(
      */
     public fun renderPageContent(
         canvas: Canvas,
-        document: DrawDocument,
+        document: Document,
         content: PageContentSnapshot,
         mmToCanvas: Matrix2D,
         clipBounds: Rect
@@ -159,10 +159,10 @@ public class TileRenderer(
         val strokePainter = StrokeMeshPainter()
         for (element in content.paintOrder) {
             when (element) {
-                is DrawPdf -> {
+                is PdfElement -> {
                     if (pdf == null) continue
                     val resource = document.findResource(element.resourceId) ?: continue
-                    if (resource.type != DrawResource.ResourceType.PDF) continue
+                    if (resource.type != DocumentResource.ResourceType.PDF) continue
                     try {
                         pdf.renderPdfPage(canvas, resource.path, element.pdfPageIndex, pageCanvasRect, visibleRect)
                     } catch (_: Throwable) {
@@ -170,7 +170,7 @@ public class TileRenderer(
                     }
                 }
 
-                is DrawTextMarkup -> {
+                is TextMarkupElement -> {
                     val pointsToMm = element.pointsToPageMm(content.widthMm, content.heightMm)
                     if (!pointsToMm.mapRect(element.boundsPoints).overlaps(visibleMmBounds)) continue
                     TextMarkupPainter.draw(
@@ -183,14 +183,14 @@ public class TileRenderer(
                     )
                 }
 
-                is DrawImage -> {
+                is ImageElement -> {
                     if (isHidden(element.id)) continue
                     if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
                     val bitmap = imageOf(document, element) ?: continue
                     drawImage(canvas, element, bitmap, mmToCanvas, imagePaint)
                 }
 
-                is DrawText -> {
+                is TextElement -> {
                     if (text == null || isHidden(element.id)) continue
                     // As high as its lines are laid out, which is what is drawn
                     val height = text.measure(element)?.height ?: element.height
@@ -201,13 +201,13 @@ public class TileRenderer(
                     }
                 }
 
-                is DrawCustomElement -> {
+                is CustomElement -> {
                     if (isHidden(element.id)) continue
                     if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
                     elements.draw(canvas, element, mmToCanvas)
                 }
 
-                is DrawStroke -> {
+                is StrokeElement -> {
                     if (isHidden(element.id)) continue
                     val bounds = element.bounds
                     if (bounds.left < visibleMmBounds.right &&
@@ -225,7 +225,7 @@ public class TileRenderer(
     }
 
     /** The decoded pixels of [image] of [document] (loaded from its resource file when needed). */
-    internal fun imageOf(document: DrawDocument, image: DrawImage): ImageBitmap? =
+    internal fun imageOf(document: Document, image: ImageElement): ImageBitmap? =
         document.findResource(image.resourceId)?.let { images.load(it.path) }
 
     public companion object {
@@ -233,7 +233,7 @@ public class TileRenderer(
         /**
          * Draws [bitmap] stretched over the (rotated) rectangle of [image].
          */
-        public fun drawImage(canvas: Canvas, image: DrawImage, bitmap: ImageBitmap, mmToCanvas: Matrix2D, paint: Paint) {
+        public fun drawImage(canvas: Canvas, image: ImageElement, bitmap: ImageBitmap, mmToCanvas: Matrix2D, paint: Paint) {
             if (bitmap.width <= 0 || bitmap.height <= 0) return
             val imageMatrix = Matrix2D()
                 .postScale(image.width / bitmap.width, image.height / bitmap.height)

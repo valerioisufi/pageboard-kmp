@@ -39,8 +39,8 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_fa
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_fab_state_collapsed
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_fab_state_expanded
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_fab_toggle_menu
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import org.jetbrains.compose.resources.stringResource
 
@@ -65,11 +65,11 @@ internal fun NewItemButton(
     Column(modifier = modifier, horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         AnimatedVisibility(visible = expanded, enter = fadeIn() + scaleIn(transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 1f)), exit = fadeOut() + scaleOut(transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 1f))) {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(end = 4.dp)) {
-                MenuEntry(DrawViewIcons.FolderPlus, stringResource(Res.string.explorer_fab_item_folder), MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurface) {
+                MenuEntry(PageboardIcons.FolderPlus, stringResource(Res.string.explorer_fab_item_folder), MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurface) {
                     onExpandedChange(false)
                     commands.newFolder.perform()
                 }
-                MenuEntry(DrawViewIcons.FilePlus, stringResource(Res.string.explorer_fab_item_note), MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer) {
+                MenuEntry(PageboardIcons.FilePlus, stringResource(Res.string.explorer_fab_item_note), MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer) {
                     onExpandedChange(false)
                     commands.newNote.perform()
                 }
@@ -84,7 +84,7 @@ internal fun NewItemButton(
             color = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier
-                .elevation(DrawViewElevation.Level2, FabShape)
+                .elevation(PageboardElevation.Level2, FabShape)
                 .semantics {
                     if (withMenu) {
                         contentDescription = toggle
@@ -100,12 +100,12 @@ internal fun NewItemButton(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(PageboardIcons.Plus, contentDescription = null, modifier = Modifier.size(24.dp))
                     Text(label, style = MaterialTheme.typography.titleSmall)
                 }
             } else {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(56.dp)) {
-                    Icon(if (expanded) DrawViewIcons.Close else DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(24.dp))
+                    Icon(if (expanded) PageboardIcons.Close else PageboardIcons.Plus, contentDescription = null, modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -132,7 +132,7 @@ private fun MenuEntry(icon: ImageVector, label: String, container: Color, conten
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(48.dp)
-                .elevation(DrawViewElevation.Level1, RoundedCornerShape(16.dp))
+                .elevation(PageboardElevation.Level1, RoundedCornerShape(16.dp))
                 .background(container, RoundedCornerShape(16.dp))
         ) {
             Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(22.dp))

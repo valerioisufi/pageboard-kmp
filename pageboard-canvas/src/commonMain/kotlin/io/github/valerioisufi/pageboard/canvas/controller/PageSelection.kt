@@ -4,7 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 
 /**
  * The pages selected in the page grid (see `docs/plans/page-selection.md`), kept by their identifiers:
@@ -12,7 +12,7 @@ import io.github.valerioisufi.pageboard.model.DrawDocument
  * leaves it. It is not stored and not sent to the others.
  */
 @Stable
-public class PageSelection internal constructor(private val document: DrawDocument) {
+public class PageSelection internal constructor(private val document: Document) {
     private var ids by mutableStateOf(emptySet<String>())
 
     /** The last page selected or deselected one by one: where a range starts from ([selectRange]). */

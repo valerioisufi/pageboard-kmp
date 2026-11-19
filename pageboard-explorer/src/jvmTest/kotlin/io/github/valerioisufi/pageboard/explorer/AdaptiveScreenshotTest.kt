@@ -28,7 +28,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.extension.EditorPanel
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.test.BeforeTest
@@ -248,11 +248,11 @@ class AdaptiveScreenshotTest {
     @Test
     fun libraryActions() {
         val actions = listOf(
-            LibraryAction(DrawViewIcons.Link, { "Join a shared document" }, prominent = true) { },
-            LibraryAction(DrawViewIcons.Search, { "Search models" }) { },
-            LibraryAction(DrawViewIcons.Download, { "Import archive…" }) { },
-            LibraryAction(DrawViewIcons.Sparkles, { "External models" }) { },
-            LibraryAction(DrawViewIcons.Info, { "About" }) { },
+            LibraryAction(PageboardIcons.Link, { "Join a shared document" }, prominent = true) { },
+            LibraryAction(PageboardIcons.Search, { "Search models" }) { },
+            LibraryAction(PageboardIcons.Download, { "Import archive…" }) { },
+            LibraryAction(PageboardIcons.Sparkles, { "External models" }) { },
+            LibraryAction(PageboardIcons.Info, { "About" }) { },
         )
         capture("library-actions", ReferenceWindow.DESKTOP, dark = false, libraryActions = actions)
     }
@@ -298,9 +298,9 @@ class AdaptiveScreenshotTest {
     /** An extension with three actions in the top bar, as those of PencilNotes. */
     private fun actionsExtension() = EditorExtension {
         toolbarActions {
-            EditorActionButton(DrawViewIcons.Sparkles, "Lecture", onClick = {})
-            EditorActionButton(DrawViewIcons.UserPlus, "Share", onClick = {})
-            EditorActionButton(DrawViewIcons.Share, "Export", onClick = {})
+            EditorActionButton(PageboardIcons.Sparkles, "Lecture", onClick = {})
+            EditorActionButton(PageboardIcons.UserPlus, "Share", onClick = {})
+            EditorActionButton(PageboardIcons.Share, "Export", onClick = {})
         }
     }
 

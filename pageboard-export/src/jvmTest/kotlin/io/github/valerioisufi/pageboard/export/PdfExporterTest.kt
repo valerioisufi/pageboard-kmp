@@ -16,14 +16,14 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
 import io.github.valerioisufi.pageboard.latex.LatexEngine
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -143,13 +143,13 @@ class PdfExporterTest {
 
     @Test
     fun theTextIsTheEditorsAndItsFormulasAreVectors() = runBlocking {
-        val document = DrawDocument(title = "Testo")
+        val document = Document(title = "Testo")
         val page = document.pages[0]
-        page.add(DrawText().apply {
+        page.add(TextElement().apply {
             text = "Hash αβγ **grassetto** _corsivo_ `codice` ~~barrato~~ [sito](https://example.com) e \$x^2+1\$ fine"
             x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
         })
-        page.add(DrawText().apply {
+        page.add(TextElement().apply {
             text = "\$\$\\int_0^1 x^2\\,dx = \\frac{1}{3}\$\$"
             x = 15f; y = 90f; width = 120f; height = 30f; fontSize = 24f
         })
@@ -174,8 +174,8 @@ class PdfExporterTest {
 
     @Test
     fun theCodeIsTextOnItsBackgroundAsTheEditorDrawsIt() = runBlocking {
-        val document = DrawDocument(title = "Codice")
-        document.pages[0].add(DrawText().apply {
+        val document = Document(title = "Codice")
+        document.pages[0].add(TextElement().apply {
             text = "```kotlin\nfun squares(n: Int) = (1..n).map { it * it }\n```\nand `inline` code"
             x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
         })
@@ -201,8 +201,8 @@ class PdfExporterTest {
 
     @Test
     fun theSymbolsAreRealText() = runBlocking {
-        val document = DrawDocument(title = "Simboli")
-        document.pages[0].add(DrawText().apply { text = "uno → due ↔ tre ≤ quattro ✔ **grassetto →**"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
+        val document = Document(title = "Simboli")
+        document.pages[0].add(TextElement().apply { text = "uno → due ↔ tre ≤ quattro ✔ **grassetto →**"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
         val pdf = tempFile("symbols", ".pdf")
         PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
@@ -215,8 +215,8 @@ class PdfExporterTest {
 
     @Test
     fun aQuoteIsItsTextAndABar() = runBlocking {
-        val document = DrawDocument(title = "Citazioni")
-        document.pages[0].add(DrawText().apply { text = "> quoted **words**\n> * in a list"; x = 15f; y = 20f; width = 170f; height = 30f; fontSize = 24f })
+        val document = Document(title = "Citazioni")
+        document.pages[0].add(TextElement().apply { text = "> quoted **words**\n> * in a list"; x = 15f; y = 20f; width = 170f; height = 30f; fontSize = 24f })
         val pdf = tempFile("quote", ".pdf")
         PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         PdfiumEngine.open(pdf.path).use { exported ->
@@ -239,8 +239,8 @@ class PdfExporterTest {
 
     @Test
     fun theCharactersOutOfTheFontAreImagesOfTheirWords() = runBlocking {
-        val document = DrawDocument(title = "Emoji")
-        document.pages[0].add(DrawText().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
+        val document = Document(title = "Emoji")
+        document.pages[0].add(TextElement().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
         val pdf = tempFile("emoji", ".pdf")
         PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
@@ -254,14 +254,14 @@ class PdfExporterTest {
     @Test
     fun thePagesOfAPdfAreImportedOncePerFileWithTheirLinks() = runBlocking {
         // The pages of a PDF imported on a grid, a page showing the first one again
-        val document = DrawDocument(title = "Slides", defaultBackground = PageBackground.Grid(lineColor = 0xFF0000FF.toInt()), addInitialPage = false)
-        val pdf = resource(document, "pdf", DrawResource.ResourceType.PDF, slides())
+        val document = Document(title = "Slides", defaultBackground = PageBackground.Grid(lineColor = 0xFF0000FF.toInt()), addInitialPage = false)
+        val pdf = resource(document, "pdf", DocumentResource.ResourceType.PDF, slides())
         for (index in listOf(0, 1, 2, 0)) {
-            document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM).add(DrawPdf(index).apply { resourceId = pdf })
+            document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM).add(PdfElement(index).apply { resourceId = pdf })
         }
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black.toArgb(), epsilon = 0.05f)
         val points = (0..30).map { StrokePoint(10f + it * 2f, 10f, 0.6f, 16L * (it + 1)) }
-        document.pages[1].add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
+        document.pages[1].add(StrokeElement(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
 
         val exported = tempFile("slides", ".pdf")
         val result = PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), exported.path)
@@ -289,12 +289,12 @@ class PdfExporterTest {
 
     @Test
     fun theMarksAreDrawnAsByTheEditor() = runBlocking {
-        val document = DrawDocument(title = "Marks", addInitialPage = false)
-        val pdf = resource(document, "pdf", DrawResource.ResourceType.PDF, SOURCE_PDF.encodeToByteArray())
+        val document = Document(title = "Marks", addInitialPage = false)
+        val pdf = resource(document, "pdf", DocumentResource.ResourceType.PDF, SOURCE_PDF.encodeToByteArray())
         val page = document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM)
-        page.add(DrawPdf(0).apply { resourceId = pdf })
+        page.add(PdfElement(0).apply { resourceId = pdf })
         page.add(
-            DrawTextMarkup(
+            TextMarkupElement(
                 resourceId = pdf, pdfPageIndex = 0, pdfWidthPt = 300f, pdfHeightPt = 200f, startIndex = 0, endIndex = 4,
                 text = "Hash", rects = listOf(Rect(150f, 100f, 250f, 130f)), kind = TextMarkupKind.STRIKEOUT, color = 0xFFFF0000.toInt()
             )
@@ -322,9 +322,9 @@ class PdfExporterTest {
         assertEquals(16 to 32, shown.width to shown.height)
         val shownPixels = IntArray(16 * 32).also { shown.readPixels(it) }
 
-        val document = DrawDocument(title = "Photo")
-        val image = resource(document, "jpg", DrawResource.ResourceType.IMAGE, jpeg)
-        document.pages[0].add(DrawImage().apply { resourceId = image; x = 20f; y = 20f; width = 20f; height = 40f })
+        val document = Document(title = "Photo")
+        val image = resource(document, "jpg", DocumentResource.ResourceType.IMAGE, jpeg)
+        document.pages[0].add(ImageElement().apply { resourceId = image; x = 20f; y = 20f; width = 20f; height = 40f })
         val exported = tempFile("photo", ".pdf")
         PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), exported.path)
 
@@ -343,7 +343,7 @@ class PdfExporterTest {
     @Test
     fun theElementsAreWrittenInTheOrderTheyArePaintedAndTheMissingFilesAreSkipped() = runBlocking {
         val document = notebook()
-        document.resources.first { it.type == DrawResource.ResourceType.IMAGE }.path = "/missing.png"
+        document.resources.first { it.type == DocumentResource.ResourceType.IMAGE }.path = "/missing.png"
         val writer = RecordingWriter()
         val result = PdfExporter(textAdapter, fontFiles, formulas = LATEX) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
         assertEquals(1, result.skipped)
@@ -360,15 +360,15 @@ class PdfExporterTest {
 
     @Test
     fun theShapesAreVectors() = runBlocking {
-        val document = DrawDocument(title = "Shapes", defaultBackground = PageBackground.Solid())
+        val document = Document(title = "Shapes", defaultBackground = PageBackground.Solid())
         val page = document.pages[0]
-        page.add(DrawCustomElement(ShapeElementType.id).apply {
+        page.add(CustomElement(ShapeElementType.id).apply {
             payload = ShapeElementType.encode(ShapeElement(ShapeKind.RECTANGLE, 0xFF000000.toInt(), 1f, ShapeDash.DASHED))
             x = 20f; y = 20f; width = 60f; height = 40f; rotation = 0f
         })
         val arrow = ShapeElement(ShapeKind.LINE, 0xFF000000.toInt(), 1f, endHead = ShapeHead.FILLED)
         val box = ShapeGeometry.lineBox(Point(20f, 100f), Point(120f, 100f), arrow)
-        page.add(DrawCustomElement(ShapeElementType.id).apply {
+        page.add(CustomElement(ShapeElementType.id).apply {
             payload = ShapeElementType.encode(arrow)
             x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
         })
@@ -407,26 +407,26 @@ class PdfExporterTest {
     // ==========================================================
 
     /** A grid page with a stroke, a text, a PNG and a JPEG; a page showing a PDF with a highlight. */
-    private fun notebook(): DrawDocument {
-        val document = DrawDocument(title = "Lezione 3: hash", defaultBackground = PageBackground.Grid(lineColor = 0x660000FF))
+    private fun notebook(): Document {
+        val document = Document(title = "Lezione 3: hash", defaultBackground = PageBackground.Grid(lineColor = 0x660000FF))
         val page = document.pages[0]
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black.toArgb(), epsilon = 0.05f)
         val points = (0..30).map { StrokePoint(20f + it * 3f, 40f + sin(it / 5f) * 5f, 0.6f, 16L * (it + 1)) }
-        page.add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
-        page.add(DrawText().apply {
+        page.add(StrokeElement(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
+        page.add(TextElement().apply {
             text = "Funzioni **hash** crittografiche"
             x = 20f; y = 60f; width = 120f; height = 12f; fontSize = 14f
         })
-        val png = resource(document, "png", DrawResource.ResourceType.IMAGE, encoded(0xFFFF0000.toInt(), EncodedImageFormat.PNG))
-        val jpeg = resource(document, "jpg", DrawResource.ResourceType.IMAGE, encoded(0xFF0000FF.toInt(), EncodedImageFormat.JPEG))
-        page.add(DrawImage().apply { resourceId = png; x = 20f; y = 100f; width = 30f; height = 30f })
-        page.add(DrawImage().apply { resourceId = jpeg; x = 60f; y = 100f; width = 30f; height = 30f })
+        val png = resource(document, "png", DocumentResource.ResourceType.IMAGE, encoded(0xFFFF0000.toInt(), EncodedImageFormat.PNG))
+        val jpeg = resource(document, "jpg", DocumentResource.ResourceType.IMAGE, encoded(0xFF0000FF.toInt(), EncodedImageFormat.JPEG))
+        page.add(ImageElement().apply { resourceId = png; x = 20f; y = 100f; width = 30f; height = 30f })
+        page.add(ImageElement().apply { resourceId = jpeg; x = 60f; y = 100f; width = 30f; height = 30f })
 
         val second = document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM, bg = PageBackground.Solid())
-        val pdf = resource(document, "pdf", DrawResource.ResourceType.PDF, SOURCE_PDF.encodeToByteArray())
-        second.add(DrawPdf(0).apply { resourceId = pdf })
+        val pdf = resource(document, "pdf", DocumentResource.ResourceType.PDF, SOURCE_PDF.encodeToByteArray())
+        second.add(PdfElement(0).apply { resourceId = pdf })
         second.add(
-            DrawTextMarkup(
+            TextMarkupElement(
                 resourceId = pdf, pdfPageIndex = 0, pdfWidthPt = 300f, pdfHeightPt = 200f, startIndex = 0, endIndex = 4,
                 text = "Hash", rects = listOf(Rect(38f, 26f, 100f, 56f)), kind = TextMarkupKind.HIGHLIGHT, color = 0xFFFFF176.toInt()
             )
@@ -486,9 +486,9 @@ class PdfExporterTest {
     /** [text] as a string of PDF (UTF-16BE in hexadecimal). */
     private fun hex(text: String) = "<FEFF" + text.map { it.code.toString(16).uppercase().padStart(4, '0') }.joinToString("") + ">"
 
-    private fun resource(document: DrawDocument, extension: String, type: DrawResource.ResourceType, bytes: ByteArray): String {
+    private fun resource(document: Document, extension: String, type: DocumentResource.ResourceType, bytes: ByteArray): String {
         val file = tempFile("resource", ".$extension").apply { writeBytes(bytes) }
-        val resource = DrawResource(id = "$extension-${document.resources.size}", type = type, path = file.path)
+        val resource = DocumentResource(id = "$extension-${document.resources.size}", type = type, path = file.path)
         document.addResource(resource)
         return resource.id
     }
@@ -502,7 +502,7 @@ class PdfExporterTest {
     private fun tempFile(prefix: String, suffix: String) = File.createTempFile(prefix, suffix).apply { deleteOnExit() }
 
     /** The first page of [document] as the editor draws it, [width] x [height] pixels. */
-    private fun renderEditor(document: DrawDocument, width: Int, height: Int): Page {
+    private fun renderEditor(document: Document, width: Int, height: Int): Page {
         val content = document.pages[0].snapshotContent()
         val bitmap = ImageBitmap(width, height)
         val scale = width / content.widthMm

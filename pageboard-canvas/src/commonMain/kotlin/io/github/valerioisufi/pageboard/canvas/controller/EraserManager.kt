@@ -3,7 +3,7 @@ package io.github.valerioisufi.pageboard.canvas.controller
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawElement
+import io.github.valerioisufi.pageboard.model.PageElement
 import io.github.valerioisufi.pageboard.model.change.RemoveElements
 import io.github.valerioisufi.pageboard.model.geometry.HitTesting
 import io.github.valerioisufi.pageboard.model.geometry.Point
@@ -16,7 +16,7 @@ import kotlin.math.min
  * shapes, it touches) as soon as it touches them; what a gesture
  * erases is undone at once.
  */
-internal class EraserManager(private val controller: DrawViewController) {
+internal class EraserManager(private val controller: PageboardController) {
 
     /** A gesture is erasing: its changes are a group of the history until [commitGesture]. */
     private var inGesture = false
@@ -48,7 +48,7 @@ internal class EraserManager(private val controller: DrawViewController) {
                 max(a.x, b.x) + radiusMm, max(a.y, b.y) + radiusMm
             )
 
-            val toRemove = mutableListOf<DrawElement>()
+            val toRemove = mutableListOf<PageElement>()
             for (stroke in page.strokes) {
                 if (controller.hiddenElements.isHidden(stroke.id)) continue
                 val sb = stroke.bounds

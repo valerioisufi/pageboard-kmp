@@ -79,7 +79,7 @@ internal class KeyValueSpaces(private val storage: KeyValueStorage, private val 
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Throwable) {
-        println("DrawView: unreadable stored space (${e.message})")
+        println("Pageboard: unreadable stored space (${e.message})")
         null
     }
 

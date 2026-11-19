@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
@@ -12,8 +12,8 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.snap.SnapEngine
 import io.github.valerioisufi.pageboard.canvas.snap.SnapLine
 import io.github.valerioisufi.pageboard.canvas.snap.SnapTargets
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -68,13 +68,13 @@ class SnapTest {
 
     /** Lines 0.5 mm per point high, their baseline 0.4 mm per point from their top. */
     private class FakeTextAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
-        override fun measure(text: DrawText) = TextBlockSize(minOf(text.width, text.text.length * text.fontSize * 0.5f), text.fontSize * 0.5f)
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun measure(text: TextElement) = TextBlockSize(minOf(text.width, text.text.length * text.fontSize * 0.5f), text.fontSize * 0.5f)
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(fontSize * 0.5f, fontSize * 0.4f)
     }
 
-    private fun controller(scope: CoroutineScope, background: PageBackground = PageBackground.Solid()): DrawViewController {
-        val controller = DrawViewController(document = DrawDocument(defaultBackground = background), coroutineScope = scope)
+    private fun controller(scope: CoroutineScope, background: PageBackground = PageBackground.Solid()): PageboardController {
+        val controller = PageboardController(document = Document(defaultBackground = background), coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = FakeTextAdapter()
         return controller
@@ -84,8 +84,8 @@ class SnapTest {
     fun aSelectionMovedSnapsToTheTextsAroundIt() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]
-        val anchor = DrawText().apply { text = "Anchor"; x = 30f; y = 20f; width = 40f; height = 8f }
-        val moved = DrawText().apply { text = "Moved"; x = 100f; y = 100f; width = 40f; height = 8f }
+        val anchor = TextElement().apply { text = "Anchor"; x = 30f; y = 20f; width = 40f; height = 8f }
+        val moved = TextElement().apply { text = "Moved"; x = 100f; y = 100f; width = 40f; height = 8f }
         controller.session.submit(AddElements.of(page, listOf(anchor, moved)))
         val selection = controller.selectionManager
 
@@ -140,7 +140,7 @@ class SnapTest {
     fun theSideOfAWrittenTextSnapsToTheTextsAroundIt() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]
-        val anchor = DrawText().apply { text = "Anchor"; x = 30f; y = 20f; width = 100f; height = 8f }
+        val anchor = TextElement().apply { text = "Anchor"; x = 30f; y = 20f; width = 100f; height = 8f }
         controller.session.submit(AddElements.of(page, listOf(anchor)))
         val editor = controller.textEditorManager
         editor.startDrawnText(0, Rect(30f, 60f, 90f, 70f).toCompose())

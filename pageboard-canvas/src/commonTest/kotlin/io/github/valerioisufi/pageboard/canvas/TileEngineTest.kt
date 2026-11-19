@@ -83,7 +83,7 @@ class TileEngineTest {
         val cache = TileCache()
         val bitmap = cache.obtainBitmap()
 
-        val doc = DrawDocument("test_doc", "Test Document")
+        val doc = Document("test_doc", "Test Document")
         val page = doc.pages[0]
         page.background = PageBackground.Grid(spacingMm = 5f)
 
@@ -108,15 +108,15 @@ class TileEngineTest {
         // Every text laid out 40 mm high; the text says 5 mm (a height of an older layout)
         val drawn = mutableListOf<String>()
         val renderer = TileRenderer(textAdapter = object : TextTileAdapter {
-            override fun drawText(canvas: androidx.compose.ui.graphics.Canvas, text: DrawText, mmToCanvas: io.github.valerioisufi.pageboard.model.geometry.Matrix2D, paperColor: Int) {
+            override fun drawText(canvas: androidx.compose.ui.graphics.Canvas, text: TextElement, mmToCanvas: io.github.valerioisufi.pageboard.model.geometry.Matrix2D, paperColor: Int) {
                 drawn += text.id
             }
 
-            override fun measure(text: DrawText) = TextBlockSize(text.width, 40f)
+            override fun measure(text: TextElement) = TextBlockSize(text.width, 40f)
         })
-        val doc = DrawDocument("test_doc", "Test Document")
+        val doc = Document("test_doc", "Test Document")
         val page = doc.pages[0]
-        val text = DrawText().apply { this.text = "lines"; x = 10f; y = 10f; width = 50f; height = 5f }
+        val text = TextElement().apply { this.text = "lines"; x = 10f; y = 10f; width = 50f; height = 5f }
         page.add(text)
 
         // 1 px per mm, the region from 30 mm down: under the old box, over the lines
@@ -133,7 +133,7 @@ class TileEngineTest {
     @Test
     fun testSynchronousBaking() {
         val manager = TileManager()
-        val doc = DrawDocument("test_doc", "Test Document")
+        val doc = Document("test_doc", "Test Document")
         val page = doc.pages[0]
 
         val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)
@@ -151,7 +151,7 @@ class TileEngineTest {
             size = 2f,
             points = emptyList()
         )
-        val stroke = DrawStroke(mesh = mesh, brushConfig = BrushConfig())
+        val stroke = StrokeElement(mesh = mesh, brushConfig = BrushConfig())
 
         manager.bakeStrokesDirectlySync(
             strokesByPage = mapOf(0 to listOf(stroke)),
@@ -171,7 +171,7 @@ class TileEngineTest {
     @Test
     fun testTilesDroppedWhenPageGeometryChanges() {
         val manager = TileManager()
-        val doc = DrawDocument("test_doc", "Test Document")
+        val doc = Document("test_doc", "Test Document")
         val page = doc.pages[0]
         val canvas = androidx.compose.ui.graphics.Canvas(ImageBitmap(100, 100))
         val camera = io.github.valerioisufi.pageboard.model.geometry.Matrix2D()
@@ -197,7 +197,7 @@ class TileEngineTest {
     @Test
     fun testTilesOnScreenDrawnStretchedUntilTheNewLayoutIsReady() {
         val manager = TileManager()
-        val doc = DrawDocument("test_doc", "Test Document")
+        val doc = Document("test_doc", "Test Document")
         val page = doc.pages[0]
         val camera = io.github.valerioisufi.pageboard.model.geometry.Matrix2D()
         val viewport = Rect(0f, 0f, 200f, 200f)

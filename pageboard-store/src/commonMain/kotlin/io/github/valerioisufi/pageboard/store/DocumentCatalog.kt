@@ -1,11 +1,11 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A document as shown by the document list ([id]: [DrawDocument.id], the same on every device;
+ * A document as shown by the document list ([id]: [Document.id], the same on every device;
  * [isShared]: shared with other devices, see [SharingStore.sharingSecrets]; [pageCount]: its
  * pages; [hasPdf]: one of its pages holds a PDF).
  */
@@ -66,7 +66,7 @@ public interface DocumentCatalog {
         heightMm: Float = 297f,
         background: PageBackground = PageBackground.Solid(),
         folderId: String? = null
-    ): DrawDocument
+    ): Document
 
     /**
      * Whether the document [documentId] can be named [name]: no other document of its folder has

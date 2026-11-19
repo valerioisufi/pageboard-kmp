@@ -11,8 +11,8 @@ import io.github.valerioisufi.pageboard.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.pageboard.canvas.controller.EditorActivity
 import io.github.valerioisufi.pageboard.canvas.port.EditorDocument
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -146,12 +146,12 @@ private class CollaboratorsDrawing(private val document: EditorDocument, private
 
         // The text being written
         var textData: TextData? = null
-        var text: DrawText? = null
+        var text: TextElement? = null
         var textPageId: String? = null
 
         // The elements selected, and how they are being moved (shown: gliding to the target)
         var selectionIds: List<String> = emptyList()
-        var selection: List<DrawElement> = emptyList()
+        var selection: List<PageElement> = emptyList()
         var selectionPageId: String? = null
         var moveTarget: AffineTransform? = null
         var moveShown: AffineTransform? = null
@@ -212,7 +212,7 @@ private class CollaboratorsDrawing(private val document: EditorDocument, private
             peer.text = null
         } else if (data != peer.textData) {
             // A new text each time, for the canvas to draw it again
-            peer.text = DrawText(data.id).also { data.applyTo(it) }
+            peer.text = TextElement(data.id).also { data.applyTo(it) }
             peer.textData = data
         }
     }

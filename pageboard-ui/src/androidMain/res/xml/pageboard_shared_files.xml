@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The files shared by the editor (see DrawViewFileProvider) -->
+<!-- The files shared by the editor (see PageboardFileProvider) -->
 <paths>
     <cache-path name="shared" path="pageboard-shared/" />
 </paths>

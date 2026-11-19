@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-latex>
+// Library unique name: <pageboard-kmp:pageboard-latex>
 final class io.github.valerioisufi.pageboard.latex/LatexEngine : io.github.valerioisufi.pageboard.canvas.render.tile/FormulaRenderer { // io.github.valerioisufi.pageboard.latex/LatexEngine|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.latex/LatexEngine.<init>|<init>(){}[0]
 

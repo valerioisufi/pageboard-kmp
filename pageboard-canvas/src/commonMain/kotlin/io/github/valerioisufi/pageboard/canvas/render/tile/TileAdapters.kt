@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlinx.coroutines.flow.StateFlow
@@ -73,20 +73,20 @@ public interface TextTileAdapter {
      * the paper of [paperColor] (ARGB, the background of its page: the backgrounds of its code are
      * opaque on it; [NO_PAPER] when there is none, and they are translucent).
      */
-    public fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int)
+    public fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int)
 
     /**
      * [text] as [drawText] lays it out on the paper of [paperColor] (its words, their style and
      * place, its formulas, the backgrounds of its code), e.g. to write it in a PDF; `null` when
      * the adapter cannot tell it.
      */
-    public fun layout(text: DrawText, paperColor: Int): TextBlockLayout? = null
+    public fun layout(text: TextElement, paperColor: Int): TextBlockLayout? = null
 
     /**
      * The size of [text] as [drawText] lays it out on its width; `null` when the adapter cannot
      * tell it.
      */
-    public fun measure(text: DrawText): TextBlockSize? = null
+    public fun measure(text: TextElement): TextBlockSize? = null
 
     /** A line of a text of [fontSize] points; `null` when the adapter cannot tell it. */
     public fun lineMetrics(fontSize: Float): TextLineMetrics? = null

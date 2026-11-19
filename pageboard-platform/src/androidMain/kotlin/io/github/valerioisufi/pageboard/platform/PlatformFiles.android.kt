@@ -5,13 +5,13 @@ import android.content.Context
 import java.io.File
 
 /**
- * Holds the application [Context] needed by the Android implementations of DrawView
+ * Holds the application [Context] needed by the Android implementations of Pageboard
  * (files directory, database location, LaTeX resources).
  *
  * Must be initialized once, typically from `Application.onCreate()` or `Activity.onCreate()`.
  */
 @SuppressLint("StaticFieldLeak")
-public object DrawViewAndroid {
+public object PageboardAndroid {
     private var appContext: Context? = null
 
     public fun init(context: Context) {
@@ -20,7 +20,7 @@ public object DrawViewAndroid {
 
     public val context: Context
         get() = checkNotNull(appContext) {
-            "DrawViewAndroid.init(context) must be called before using DrawView on Android"
+            "PageboardAndroid.init(context) must be called before using Pageboard on Android"
         }
 
     public val isInitialized: Boolean get() = appContext != null
@@ -28,7 +28,7 @@ public object DrawViewAndroid {
 
 public actual object PlatformFiles {
     public actual fun resourcesDirectory(): String {
-        val dir = File(DrawViewAndroid.context.filesDir, "pageboard_resources")
+        val dir = File(PageboardAndroid.context.filesDir, "pageboard_resources")
         dir.mkdirs()
         return dir.absolutePath
     }

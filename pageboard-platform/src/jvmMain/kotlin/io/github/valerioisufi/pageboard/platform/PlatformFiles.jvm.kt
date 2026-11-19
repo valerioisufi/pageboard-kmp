@@ -6,7 +6,7 @@ import java.io.File
 public const val PAGEBOARD_DATA_DIRECTORY_PROPERTY: String = "pageboard.dataDir"
 
 /**
- * Root directory of the DrawView desktop data (database, resources, LaTeX fonts): the
+ * Root directory of the Pageboard desktop data (database, resources, LaTeX fonts): the
  * [PAGEBOARD_DATA_DIRECTORY_PROPERTY] system property, so that each application keeps its own
  * data, `~/.drawview` by default. Its layout is brought up to date the first time it is read
  * ([DesktopDataLayout]).
@@ -24,7 +24,7 @@ public fun checkDataDirectoryProperty() {
 
 private const val OLD_DATA_DIRECTORY_PROPERTY = "drawview.dataDir"
 
-public val drawViewDesktopDataDirectory: File
+public val pageboardDesktopDataDirectory: File
     get() {
         checkDataDirectoryProperty()
         val configured = System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY)?.takeIf { it.isNotBlank() }
@@ -36,7 +36,7 @@ public val drawViewDesktopDataDirectory: File
 
 public actual object PlatformFiles {
     public actual fun resourcesDirectory(): String {
-        val dir = File(drawViewDesktopDataDirectory, DesktopDataLayout.RESOURCES)
+        val dir = File(pageboardDesktopDataDirectory, DesktopDataLayout.RESOURCES)
         dir.mkdirs()
         return dir.absolutePath
     }

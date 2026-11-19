@@ -56,8 +56,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
-import io.github.valerioisufi.pageboard.canvas.DrawCanvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.PageCanvas
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.observe
 import io.github.valerioisufi.pageboard.canvas.observeChanges
 import io.github.valerioisufi.pageboard.model.PageBackground
@@ -89,8 +89,8 @@ import io.github.valerioisufi.pageboard.ui.platform.PickerType
 import io.github.valerioisufi.pageboard.ui.platform.fileDropTarget
 import io.github.valerioisufi.pageboard.ui.platform.rememberFilePicker
 import io.github.valerioisufi.pageboard.ui.render.ComposeTextTileAdapter
-import io.github.valerioisufi.pageboard.ui.render.LocalDrawViewEngines
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.render.LocalPageboardEngines
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
@@ -119,12 +119,12 @@ import org.jetbrains.compose.resources.stringResource
  * @param renamer renames the document from its title and the command "Rename…" (none: the title
  *   is not changed in the editor).
  *
- * The engines of the controller ([DrawViewController.engines]) are the [LocalDrawViewEngines] of
+ * The engines of the controller ([PageboardController.engines]) are the [LocalPageboardEngines] of
  * what the editor composes (its panels and overlays included).
  */
 @Composable
-internal fun DrawScreen(
-    controller: DrawViewController,
+internal fun DocumentScreen(
+    controller: PageboardController,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
@@ -140,15 +140,15 @@ internal fun DrawScreen(
     // The room of the system bars given to the editor, where it gains some, and kept by the
     // windows opened over it (menus, popovers, dialogs)
     val hiddenBars = immersiveSystemBars()
-    CompositionLocalProvider(LocalDrawViewEngines provides controller.engines, LocalHiddenSystemBars provides hiddenBars) {
-        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote, renamer)
+    CompositionLocalProvider(LocalPageboardEngines provides controller.engines, LocalHiddenSystemBars provides hiddenBars) {
+        DocumentScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote, renamer)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DrawScreenContent(
-    controller: DrawViewController,
+private fun DocumentScreenContent(
+    controller: PageboardController,
     onNavigateBack: () -> Unit,
     modifier: Modifier,
     isLoading: Boolean,
@@ -168,7 +168,7 @@ private fun DrawScreenContent(
     val colorScheme = MaterialTheme.colorScheme
     val canvasColors = LocalCanvasColors.current
     LaunchedEffect(colorScheme, canvasColors) {
-        controller.themeColors = io.github.valerioisufi.pageboard.canvas.DrawThemeColors(
+        controller.themeColors = io.github.valerioisufi.pageboard.canvas.PageboardColors(
             backgroundColor = canvasColors.desk.toArgb(),
             surfaceColor = colorScheme.surface.toArgb(),
             primaryColor = colorScheme.primary.toArgb(),
@@ -192,12 +192,12 @@ private fun DrawScreenContent(
     LaunchedEffect(controller) {
         controller.messages.collect { message ->
             val text = when (message) {
-                DrawViewController.Message.STYLUS_MODE_ACTIVATED -> getString(Res.string.stylus_mode_activated)
-                DrawViewController.Message.IMPORT_IMAGE_FAILED -> getString(Res.string.message_import_image_failed)
-                DrawViewController.Message.IMPORT_PDF_FAILED -> getString(Res.string.message_import_pdf_failed)
-                DrawViewController.Message.PDF_NOT_SUPPORTED -> getString(Res.string.message_pdf_not_supported)
-                DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT -> getString(Res.string.message_pdf_page_without_text)
-                DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES -> getString(Res.string.message_pasted_without_missing_files)
+                PageboardController.Message.STYLUS_MODE_ACTIVATED -> getString(Res.string.stylus_mode_activated)
+                PageboardController.Message.IMPORT_IMAGE_FAILED -> getString(Res.string.message_import_image_failed)
+                PageboardController.Message.IMPORT_PDF_FAILED -> getString(Res.string.message_import_pdf_failed)
+                PageboardController.Message.PDF_NOT_SUPPORTED -> getString(Res.string.message_pdf_not_supported)
+                PageboardController.Message.PDF_PAGE_WITHOUT_TEXT -> getString(Res.string.message_pdf_page_without_text)
+                PageboardController.Message.PASTED_WITHOUT_MISSING_FILES -> getString(Res.string.message_pasted_without_missing_files)
             }
             snackbarHostState.showSnackbar(text)
         }
@@ -350,7 +350,7 @@ private fun DrawScreenContent(
                                 trackColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         } else {
-                            DrawCanvas(
+                            PageCanvas(
                                 controller = controller,
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -523,7 +523,7 @@ private fun DrawScreenContent(
     pendingDocumentTemplate?.let { (dimension, background) ->
         AlertDialog(
             onDismissRequest = { pendingDocumentTemplate = null },
-            icon = { Icon(DrawViewIcons.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
+            icon = { Icon(PageboardIcons.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
             title = { Text(stringResource(Res.string.dialog_override_bg_title)) },
             text = { Text(stringResource(Res.string.dialog_override_bg_message)) },
             confirmButton = {

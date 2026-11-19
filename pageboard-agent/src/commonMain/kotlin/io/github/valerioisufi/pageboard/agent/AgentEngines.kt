@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.PdfInk
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
@@ -33,7 +33,7 @@ public interface AgentEditors {
     public fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float?
 
     /** The text of the PDF page [pdf] as the editor of [documentId] knows it, or `null`. */
-    public fun pdfLayout(documentId: String, pdf: DrawPdf): PdfTextLayout?
+    public fun pdfLayout(documentId: String, pdf: PdfElement): PdfTextLayout?
 }
 
 /**
@@ -59,7 +59,7 @@ public interface PageEngine {
      * @param marks boxes outlined over it, each with its label.
      */
     public suspend fun renderPage(
-        resources: List<DrawResource>,
+        resources: List<DocumentResource>,
         page: PageContentSnapshot,
         maxSidePx: Int,
         area: Rect? = null,
@@ -248,15 +248,15 @@ public class AgentEngines(
     public val sharing: (suspend (documentId: String) -> AgentSharing?)? = null
 ) {
     /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
-    internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {
+    internal fun pdfLayout(document: Document, pdf: PdfElement): PdfTextLayout? {
         editors?.pdfLayout(document.id, pdf)?.let { return it }
-        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return null
+        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DocumentResource.ResourceType.PDF } ?: return null
         return pages?.invoke()?.pdfLayout(resource.path, pdf.pdfPageIndex)
     }
 
     /** What the PDF page [pdf] of [document] draws, as [pages] tells it. */
-    internal fun pdfInk(document: DrawDocument, pdf: DrawPdf): PdfInk? {
-        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return null
+    internal fun pdfInk(document: Document, pdf: PdfElement): PdfInk? {
+        val resource = document.findResource(pdf.resourceId)?.takeIf { it.type == DocumentResource.ResourceType.PDF } ?: return null
         return pages?.invoke()?.pdfInk(resource.path, pdf.pdfPageIndex)
     }
 }

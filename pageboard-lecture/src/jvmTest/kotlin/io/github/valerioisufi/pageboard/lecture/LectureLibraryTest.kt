@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.pageboard.lecture.audio.RecordingFile
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -153,7 +153,7 @@ class LectureLibraryTest {
 
     @Test
     fun suggestionsFindTheirPageAfterAReorder() {
-        val document = DrawDocument()
+        val document = Document()
         document.addPage()
         document.addPage()
         val suggestion = NoteSuggestion("n", NoteKind.OTHER, "t", "c", pageIndex = 0, pageId = document.pages[0].id)

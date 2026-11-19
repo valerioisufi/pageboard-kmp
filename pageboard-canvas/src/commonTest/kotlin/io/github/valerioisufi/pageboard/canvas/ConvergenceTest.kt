@@ -4,14 +4,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.pageboard.canvas.history.HistoryManager
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
@@ -61,7 +61,7 @@ import kotlinx.serialization.json.Json
  */
 class ConvergenceTest {
 
-    private fun stroke(x: Float, y: Float): DrawStroke {
+    private fun stroke(x: Float, y: Float): StrokeElement {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, y, x + 5f, y, x + 5f, y + 5f, x, y + 5f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
@@ -70,10 +70,10 @@ class ConvergenceTest {
             size = 1f,
             points = listOf(StrokePoint(x, y, 0.5f, 0L), StrokePoint(x + 5f, y + 5f, 0.5f, 16L))
         )
-        return DrawStroke(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
+        return StrokeElement(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
     }
 
-    private fun text(content: String) = DrawText().apply {
+    private fun text(content: String) = TextElement().apply {
         text = content
         x = 10f; y = 20f; width = 40f; height = 10f
         fontSize = 16f
@@ -81,16 +81,16 @@ class ConvergenceTest {
 
     /** The content shared by the devices at the start. */
     private fun initialPages(): List<PageData> {
-        val document = DrawDocument()
+        val document = Document()
         document.addPage()
         document.addPage()
         val (first, second, third) = document.pages
         listOf(stroke(10f, 10f), stroke(30f, 10f), stroke(50f, 10f)).forEach { first.add(it) }
         first.add(text("one"))
-        first.add(DrawImage().apply { resourceId = "img"; x = 30f; y = 40f; width = 20f; height = 15f })
-        second.add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "pdf" })
+        first.add(ImageElement().apply { resourceId = "img"; x = 30f; y = 40f; width = 20f; height = 15f })
+        second.add(PdfElement(pdfPageIndex = 0).apply { resourceId = "pdf" })
         second.add(
-            DrawTextMarkup(
+            TextMarkupElement(
                 resourceId = "pdf", pdfPageIndex = 0, pdfWidthPt = 595f, pdfHeightPt = 842f, startIndex = 0, endIndex = 4,
                 text = "Hash", rects = listOf(Rect(72f, 100f, 120f, 124f)), kind = TextMarkupKind.HIGHLIGHT, color = 1
             )
@@ -101,7 +101,7 @@ class ConvergenceTest {
 
     /** A device: its copy of the document, its history and the operations it made. */
     private class Device(val name: String, pages: List<PageData>) {
-        val document = DrawDocument(id = "document", addInitialPage = false).also { document ->
+        val document = Document(id = "document", addInitialPage = false).also { document ->
             pages.forEach { document.appendPage(it.toPage(document)) }
             document.reindexPages()
         }
@@ -209,7 +209,7 @@ class ConvergenceTest {
      * The content of [document] with the stamps of its pages and elements, one line each: the
      * pages shown in their order, then the removed ones (hidden), by identifier.
      */
-    private fun snapshot(document: DrawDocument): List<String> =
+    private fun snapshot(document: Document): List<String> =
         listOf(
             "defaults ${document.defaultWidthMm} ${document.defaultBackground} ${document.defaultsVersion}",
             "title ${document.title} ${document.titleVersion}"
@@ -224,23 +224,23 @@ class ConvergenceTest {
                     page.removedElements.sortedBy { it.id }.map { "  hidden ${element(it)}" }
             }
 
-    private fun element(element: DrawElement) =
+    private fun element(element: PageElement) =
         "${element.toData()} ${element.added} ${element.removed} ${element.placed} ${element.ordered} ${element.updated}"
 
-    private fun randomChange(document: DrawDocument, random: Random): DocumentChange? {
-        if (document.pages.isEmpty()) return AddPage.of(DrawPage(orderKey = document.orderKeyAt(0)))
+    private fun randomChange(document: Document, random: Random): DocumentChange? {
+        if (document.pages.isEmpty()) return AddPage.of(Page(orderKey = document.orderKeyAt(0)))
         val page = document.pages[random.nextInt(document.pages.size)]
         val elements = page.elements()
-        fun someElements(): List<DrawElement> = elements.shuffled(random).take(random.nextInt(1, 4))
+        fun someElements(): List<PageElement> = elements.shuffled(random).take(random.nextInt(1, 4))
         return when (random.nextInt(14)) {
             0, 1 -> AddElements.of(page, List(random.nextInt(1, 3)) { stroke(random.nextFloat() * 100f, random.nextFloat() * 100f) } + text("t${random.nextInt(100)}"))
             2 -> if (elements.isEmpty()) null else RemoveElements.of(page, someElements())
             3 -> {
                 val placements = someElements().mapNotNull { element ->
                     when (element) {
-                        is DrawStroke -> StrokePlacement(element.id, AffineTransform(tx = random.nextInt(10).toFloat(), ty = random.nextInt(10).toFloat()))
-                        is DrawText -> TextPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 0f, 10f + random.nextInt(10), autoWidth = false)
-                        is DrawImage -> BoxPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 10f, 0f)
+                        is StrokeElement -> StrokePlacement(element.id, AffineTransform(tx = random.nextInt(10).toFloat(), ty = random.nextInt(10).toFloat()))
+                        is TextElement -> TextPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 0f, 10f + random.nextInt(10), autoWidth = false)
+                        is ImageElement -> BoxPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 10f, 0f)
                         else -> null
                     }
                 }
@@ -254,7 +254,7 @@ class ConvergenceTest {
                 }
             }
             4 -> page.texts.firstOrNull()?.let { UpdateTexts(page.id, listOf(it.toData().copy(text = "u${random.nextInt(100)}"))) }
-            5 -> AddPage.of(DrawPage(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
+            5 -> AddPage.of(Page(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
             6 -> if (document.pages.size > 1) RemovePage(page.id) else null
             7 -> MovePages.toOrder(document, document.pages.map { it.id }.shuffled(random))
             8 -> SetPageFormat(page.id, 100f + random.nextInt(100), 100f + random.nextInt(100), if (random.nextBoolean()) PageBackground.Ruled() else null)

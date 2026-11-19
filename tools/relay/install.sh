@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs (or updates) the relay of DrawView on a Linux machine with systemd: the iroh-relay
+# Installs (or updates) the relay of Pageboard on a Linux machine with systemd: the iroh-relay
 # release of n0 of the version the bridge uses, checked against its SHA-256, run as the service
 # iroh-relay. Run it as root on the machine, from this directory:
 #
@@ -78,7 +78,7 @@ systemctl enable iroh-relay >/dev/null
 systemctl restart iroh-relay
 
 echo
-echo "The relay of DrawView runs (iroh-relay $VERSION). In the settings of the applications:"
+echo "The relay of Pageboard runs (iroh-relay $VERSION). In the settings of the applications:"
 echo "  address: https://$HOSTNAME_"
 echo "  token:   $(sed -n 's/^IROH_RELAY_ACCESS_TOKEN=//p' /etc/iroh-relay/token.env)"
 echo "Its log: journalctl -u iroh-relay -f"

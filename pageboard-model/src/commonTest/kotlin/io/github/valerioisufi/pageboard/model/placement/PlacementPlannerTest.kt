@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.placement
 
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -21,7 +21,7 @@ class PlacementPlannerTest {
     /** A block of [width] preferred, as high as a text of [area] mm² laid out on its width. */
     private fun block(width: Float = 90f, area: Float = 90f * 20f) = PlacementBlock(width) { w -> area / w }
 
-    private fun text(x: Float, y: Float, width: Float, height: Float) = DrawText().apply {
+    private fun text(x: Float, y: Float, width: Float, height: Float) = TextElement().apply {
         this.x = x; this.y = y; this.width = width; this.height = height; text = "Notes"
     }
 
@@ -33,7 +33,7 @@ class PlacementPlannerTest {
 
     @Test
     fun emptyPageWithoutAnchorTakesTheTopLeftAtThePreferredWidth() {
-        val occupancy = PageOccupancy.of(DrawPage())
+        val occupancy = PageOccupancy.of(Page())
         val best = planner.candidates(occupancy, block(), BesideAnchor(null)).first().rect
         assertEquals(10f, best.left)
         assertEquals(10f, best.top)
@@ -43,7 +43,7 @@ class PlacementPlannerTest {
 
     @Test
     fun theNoteGoesBelowItsAnchorAlignedWithIt() {
-        val page = DrawPage().apply { add(text(20f, 40f, 170f, 30f)) }
+        val page = Page().apply { add(text(20f, 40f, 170f, 30f)) }
         val occupancy = PageOccupancy.of(page)
         val anchor = Rect(20f, 40f, 190f, 70f)
         val best = planner.candidates(occupancy, block(), BesideAnchor(anchor)).first().rect
@@ -55,7 +55,7 @@ class PlacementPlannerTest {
     @Test
     fun theNoteGoesToTheRightOfANarrowAnchorRatherThanAbove() {
         // The writing on the left half, the page below it full
-        val page = DrawPage().apply {
+        val page = Page().apply {
             add(text(10f, 100f, 90f, 30f))
             add(text(10f, 135f, 190f, 150f))
         }
@@ -68,7 +68,7 @@ class PlacementPlannerTest {
     @Test
     fun aNarrowerBoxIsUsedWhenThePreferredWidthDoesNotFit() {
         // A free column 50 mm wide between two blocks
-        val page = DrawPage().apply {
+        val page = Page().apply {
             add(text(0f, 0f, 70f, 297f))
             add(text(130f, 0f, 80f, 297f))
         }
@@ -81,21 +81,21 @@ class PlacementPlannerTest {
 
     @Test
     fun aFullPageHasNoPlace() {
-        val page = DrawPage().apply { add(text(0f, 0f, 210f, 297f)) }
+        val page = Page().apply { add(text(0f, 0f, 210f, 297f)) }
         assertTrue(planner.candidates(PageOccupancy.of(page), block(), BesideAnchor(null)).isEmpty())
     }
 
     @Test
     fun rotatedElementsTakeTheirTurnedBox() {
-        val image = DrawImage().apply { x = 55f; y = 100f; width = 100f; height = 10f; rotation = 90f }
-        val occupancy = PageOccupancy.of(DrawPage().apply { add(image) })
+        val image = ImageElement().apply { x = 55f; y = 100f; width = 100f; height = 10f; rotation = 90f }
+        val occupancy = PageOccupancy.of(Page().apply { add(image) })
         val box = occupancy.boxes.single()
         assertTrue(box.height > 99f && box.width < 11f, "turned: $box")
     }
 
     @Test
     fun aPdfPageIsTakenByItsLinesOfTextOrWholeWithoutThem() {
-        val page = DrawPage().apply { add(DrawPdf()) }
+        val page = Page().apply { add(PdfElement()) }
         assertEquals(listOf(page.rect()), PageOccupancy.of(page).boxes)
 
         // One line of text at the top of a page of the size of the page, in points
@@ -113,14 +113,14 @@ class PlacementPlannerTest {
 
     @Test
     fun aRuledPagePutsTheTopOfABlockOnALine() {
-        val page = DrawPage(background = PageBackground.Ruled(spacingMm = 8f))
+        val page = Page(background = PageBackground.Ruled(spacingMm = 8f))
         val best = planner.candidates(PageOccupancy.of(page), block(), BesideAnchor(null)).first().rect
         assertEquals(0f, best.top % 8f, 0.01f)
     }
 
     @Test
     fun candidatesAreApartAndTheSameEveryTime() {
-        val page = DrawPage().apply { add(text(20f, 40f, 170f, 30f)) }
+        val page = Page().apply { add(text(20f, 40f, 170f, 30f)) }
         val occupancy = PageOccupancy.of(page)
         val policy = BesideAnchor(Rect(20f, 40f, 190f, 70f))
         val first = planner.candidates(occupancy, block(), policy)
@@ -134,7 +134,7 @@ class PlacementPlannerTest {
 
     @Test
     fun placeAllPutsNoBlockOverAnother() {
-        val page = DrawPage().apply { add(text(20f, 40f, 170f, 30f)) }
+        val page = Page().apply { add(text(20f, 40f, 170f, 30f)) }
         val occupancy = PageOccupancy.of(page)
         val anchor = BesideAnchor(Rect(20f, 40f, 190f, 70f))
         val placed = planner.placeAll(occupancy, List(4) { block() to anchor }).map { assertNotNull(it) }
@@ -147,14 +147,14 @@ class PlacementPlannerTest {
     @Test
     fun excludedElementsAreNotTaken() {
         val note = text(10f, 10f, 190f, 277f)
-        val occupancy = PageOccupancy.of(DrawPage().apply { add(note) }, excluded = setOf(note.id))
+        val occupancy = PageOccupancy.of(Page().apply { add(note) }, excluded = setOf(note.id))
         assertTrue(occupancy.boxes.isEmpty())
     }
 
     @Test
     fun aShortNoteGoesBesideItsAnchorInTheMargin() {
         // A line of writing on the left, the right column free
-        val page = DrawPage().apply { add(text(10f, 80f, 120f, 12f)) }
+        val page = Page().apply { add(text(10f, 80f, 120f, 12f)) }
         val occupancy = PageOccupancy.of(page)
         val anchor = Rect(10f, 80f, 130f, 92f)
         val best = planner.candidates(occupancy, block(width = 60f, area = 60f * 12f), InMargin(anchor)).first().rect
@@ -164,7 +164,7 @@ class PlacementPlannerTest {
 
     @Test
     fun anAnnouncementGoesAtTheBottomOfTheFreeSpace() {
-        val page = DrawPage().apply { add(text(10f, 10f, 190f, 100f)) }
+        val page = Page().apply { add(text(10f, 10f, 190f, 100f)) }
         val occupancy = PageOccupancy.of(page)
         val best = planner.candidates(occupancy, block(width = 190f, area = 190f * 10f), PageBottom).first().rect
         assertFreeOf(occupancy, best)

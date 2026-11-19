@@ -1,6 +1,6 @@
-# The relay of DrawView as a systemd service (installed by install.sh)
+# The relay of Pageboard as a systemd service (installed by install.sh)
 [Unit]
-Description=iroh relay of DrawView
+Description=iroh relay of Pageboard
 After=network-online.target
 Wants=network-online.target
 

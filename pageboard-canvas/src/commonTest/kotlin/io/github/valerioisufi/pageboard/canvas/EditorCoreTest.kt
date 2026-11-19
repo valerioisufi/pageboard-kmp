@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementItem
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementRequest
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot
@@ -13,10 +13,10 @@ import io.github.valerioisufi.pageboard.model.placement.PlacementBlock
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeEngineDelegate
 import io.github.valerioisufi.pageboard.model.Stamp
@@ -60,7 +60,7 @@ class EditorCoreTest {
         points = listOf(StrokePoint(left, top), StrokePoint(left + size, top + size))
     )
 
-    private fun stroke(mesh: StrokeMesh) = DrawStroke(mesh = mesh, brushConfig = BrushConfig(size = 1f))
+    private fun stroke(mesh: StrokeMesh) = StrokeElement(mesh = mesh, brushConfig = BrushConfig(size = 1f))
 
     // --- Engine ---
 
@@ -148,7 +148,7 @@ class EditorCoreTest {
 
     @Test
     fun eraseUndoRestoresTheOriginalStackingOrder() = runTest {
-        val doc = DrawDocument()
+        val doc = Document()
         val session = DocumentSession(doc)
         val page = doc.pages[0]
         val strokes = List(4) { stroke(squareMesh(it * 20f, 0f, 5f)) }
@@ -169,29 +169,29 @@ class EditorCoreTest {
     fun persistenceOperationsRunInSubmissionOrder() = runTest(UnconfinedTestDispatcher()) {
         val calls = mutableListOf<String>()
         val persistence = object : DocumentPersistence {
-            override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+            override suspend fun saveStrokes(page: Page, strokes: List<StrokeElement>) {
                 yield()
                 calls.add("save:${strokes.first().id}")
             }
 
-            override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+            override suspend fun touchDocument(document: Document, timestamp: Long) {
                 calls.add("touch")
             }
         }
         val queue = PersistenceQueue(backgroundScope, persistence)
         val s = stroke(squareMesh(0f, 0f, 1f))
-        queue.enqueue { saveStrokes(DrawPage(), listOf(s)) }
-        queue.enqueue { touchDocument(DrawDocument(), 0L) }
+        queue.enqueue { saveStrokes(Page(), listOf(s)) }
+        queue.enqueue { touchDocument(Document(), 0L) }
         queue.flush()
         assertEquals(listOf("save:${s.id}", "touch"), calls)
     }
 
     // --- Controller ---
 
-    private fun controllerWith(pages: Int, scope: kotlinx.coroutines.CoroutineScope): DrawViewController {
-        val doc = DrawDocument()
+    private fun controllerWith(pages: Int, scope: kotlinx.coroutines.CoroutineScope): PageboardController {
+        val doc = Document()
         repeat(pages - 1) { doc.addPage() }
-        val controller = DrawViewController(document = doc, coroutineScope = scope)
+        val controller = PageboardController(document = doc, coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         return controller
     }
@@ -231,14 +231,14 @@ class EditorCoreTest {
 
     @Test
     fun densityChangeAfterLayoutPreservesTargetPage() = runTest(UnconfinedTestDispatcher()) {
-        val doc = DrawDocument().apply {
+        val doc = Document().apply {
             repeat(70) { addPage() }
             for (p in pages) {
                 p.widthMm = 254f
                 p.heightMm = 143f
             }
         }
-        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = doc, coroutineScope = backgroundScope)
         controller.pageManager.jumpToPage(61)
         controller.viewport.setSize(412f, 892f)
 
@@ -250,14 +250,14 @@ class EditorCoreTest {
 
     @Test
     fun initialAnchorHonoredWhenDensityUpdatedAfterInitialSize() = runTest(UnconfinedTestDispatcher()) {
-        val doc = DrawDocument().apply {
+        val doc = Document().apply {
             repeat(70) { addPage() }
             for (p in pages) {
                 p.widthMm = 254f
                 p.heightMm = 143f
             }
         }
-        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = doc, coroutineScope = backgroundScope)
         // jumpToPage called before canvas layout
         controller.pageManager.jumpToPage(61)
         // Canvas layout happens with default density 1f
@@ -284,10 +284,10 @@ class EditorCoreTest {
 
     @Test
     fun jumpToPageBeforeInitialLayoutCentersOnRequestedPage() = runTest(UnconfinedTestDispatcher()) {
-        val doc = DrawDocument().apply {
+        val doc = Document().apply {
             repeat(4) { addPage() }
         }
-        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = doc, coroutineScope = backgroundScope)
         // Jump before any setSize call
         controller.pageManager.jumpToPage(2)
         controller.viewport.setSize(800f, 1200f)
@@ -324,7 +324,7 @@ class EditorCoreTest {
     }
 
     /** Centers the camera on the page [index], as a scroll does (not a jump). */
-    private fun DrawViewController.scrollToPage(index: Int) {
+    private fun PageboardController.scrollToPage(index: Int) {
         val r = viewport.layout.pagesRectOnWindow[index]
         viewport.camera.centerOnWorldPoint(
             worldX = r.left + r.width / 2f,
@@ -409,7 +409,7 @@ class EditorCoreTest {
         assertEquals(placement.planner.maxCandidates, spots.size)
         assertEquals(MmRect(10f, 10f, 100f, 30f), spots.first().box)
         val placed = mutableListOf<PlacementSpot>()
-        placement.start(PlacementRequest(DrawText().apply { width = 90f; height = 20f }, onPlace = { placed += it }, spots = spots))
+        placement.start(PlacementRequest(TextElement().apply { width = 90f; height = 20f }, onPlace = { placed += it }, spots = spots))
 
         // The first place is shown, then the others in turn, back to the first
         assertSame(spots[0], placement.spots.single())
@@ -443,7 +443,7 @@ class EditorCoreTest {
         val controller = controllerWith(2, backgroundScope)
         val placement = controller.placementManager
         val first = controller.document.pages[0]
-        first.add(DrawText().apply { x = 0f; y = 0f; width = 210f; height = 297f; text = "Full" })
+        first.add(TextElement().apply { x = 0f; y = 0f; width = 210f; height = 297f; text = "Full" })
         val block = PlacementBlock(90f) { 20f }
         val spot = placement.spotsFor(0, block, BesideAnchor(null)).single()
         assertTrue(spot.newPageAfter)
@@ -461,7 +461,7 @@ class EditorCoreTest {
     fun aLongPastedTextFlowsThroughTheFreeSpaceThenOntoNewPages() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(1, backgroundScope)
         val page = controller.document.pages[0]
-        page.add(DrawText().apply { x = 10f; y = 10f; width = 190f; height = 140f; text = "The student's notes" })
+        page.add(TextElement().apply { x = 10f; y = 10f; width = 190f; height = 140f; text = "The student's notes" })
         val pasted = (1..60).joinToString("\n\n") { "Paragraph $it of a text written elsewhere." }
         controller.textEditorManager.pasteText(pasted)
 
@@ -491,7 +491,7 @@ class EditorCoreTest {
 
     @Test
     fun theSectionsOfATextArePlacedNextToThePagesTheyAreAbout() = runTest(UnconfinedTestDispatcher()) {
-        val doc = DrawDocument()
+        val doc = Document()
         repeat(2) { doc.addPage() }
         val topics = io.github.valerioisufi.pageboard.canvas.controller.PageTopics { documentId, text ->
             assertEquals(doc.id, documentId)
@@ -501,9 +501,9 @@ class EditorCoreTest {
                 else -> emptyList()
             }
         }
-        val controller = DrawViewController(
+        val controller = PageboardController(
             document = doc, coroutineScope = backgroundScope,
-            engines = io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines(topics = topics)
+            engines = io.github.valerioisufi.pageboard.canvas.render.PageboardEngines(topics = topics)
         ).apply { viewport.setSize(800f, 1200f) }
         assertTrue(controller.textPlacer.canPlaceByTopic)
         val parts = controller.textPlacer.partsByTopic("## Series\nGeometric.\n\n## Limits\nOf functions.\n\n## Other\nNothing.", fallbackPage = 1)
@@ -520,7 +520,7 @@ class EditorCoreTest {
     fun severalTextsAreConfirmedTogether() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(1, backgroundScope)
         val placement = controller.placementManager
-        val items = listOf(10f, 50f).map { y -> PlacementItem(DrawText(), listOf(PlacementSpot(0, MmRect(10f, y, 100f, y + 20f)))) }
+        val items = listOf(10f, 50f).map { y -> PlacementItem(TextElement(), listOf(PlacementSpot(0, MmRect(10f, y, 100f, y + 20f)))) }
         var placed: List<PlacementSpot> = emptyList()
         placement.start(PlacementRequest(items, onPlace = { placed = it }))
         assertTrue(placement.proposals.isEmpty())
@@ -538,7 +538,7 @@ class EditorCoreTest {
         val placed = mutableListOf<Triple<Int, Float, Float>>()
         var cancelled = 0
         fun request() = PlacementRequest(
-            preview = DrawText().apply {
+            preview = TextElement().apply {
                 width = 50f
                 height = 20f
             },

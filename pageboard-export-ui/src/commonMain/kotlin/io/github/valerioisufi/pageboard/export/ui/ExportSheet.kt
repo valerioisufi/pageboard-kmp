@@ -109,8 +109,8 @@ import io.github.valerioisufi.pageboard.ui.platform.FileTarget
 import io.github.valerioisufi.pageboard.ui.platform.rememberFileSaver
 import io.github.valerioisufi.pageboard.ui.platform.rememberFileSharer
 import io.github.valerioisufi.pageboard.ui.render.ComposeTextTileAdapter
-import io.github.valerioisufi.pageboard.ui.render.LocalDrawViewEngines
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.render.LocalPageboardEngines
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.NotesFontFiles
 import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.StringResource
@@ -143,7 +143,7 @@ internal fun ExportSheet(
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     // The engines of the editor or of the library showing the sheet
-    val engines = LocalDrawViewEngines.current
+    val engines = LocalPageboardEngines.current
     val textAdapter = remember(fontFamilyResolver, notesFonts, engines) {
         ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code)
     }
@@ -181,14 +181,14 @@ internal fun ExportSheet(
             if (share != null) {
                 TextButton(onClick = { save(state.fileName(fallbackName)) }, enabled = enabled) { Text(stringResource(Res.string.export_save)) }
                 Button(onClick = primary, enabled = enabled) {
-                    Icon(DrawViewIcons.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.export_share))
                 }
             } else {
                 TextButton(onClick = onDismiss) { Text(stringResource(Res.string.export_cancel)) }
                 Button(onClick = primary, enabled = enabled) {
-                    Icon(DrawViewIcons.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.export_confirm))
                 }
@@ -337,7 +337,7 @@ internal fun ExportSheetContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(DrawViewIcons.TriangleAlert, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.TriangleAlert, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                 Text(stringResource(problem), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
             }
         }
@@ -374,9 +374,9 @@ private fun Summary(state: ExportSheetState, thumbnail: ImageBitmap?) {
                 Image(thumbnail, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().fillMaxHeight())
             } else {
                 val icon = when (state.scope) {
-                    is ExportScope.Pages -> DrawViewIcons.FileText
-                    is ExportScope.Folder -> DrawViewIcons.Folder
-                    is ExportScope.Items -> DrawViewIcons.Layers
+                    is ExportScope.Pages -> PageboardIcons.FileText
+                    is ExportScope.Folder -> PageboardIcons.Folder
+                    is ExportScope.Items -> PageboardIcons.Layers
                 }
                 Icon(icon, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(22.dp))
             }
@@ -414,12 +414,12 @@ private fun formatTexts(format: ExportFormat, pages: Int): Pair<StringResource, 
 }
 
 private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
-    ExportFormat.PDF -> DrawViewIcons.FileText
-    ExportFormat.IMAGES -> DrawViewIcons.Image
-    ExportFormat.PDF_PER_DOCUMENT -> DrawViewIcons.Layers
-    ExportFormat.COMBINED_PDF -> DrawViewIcons.BookOpen
-    ExportFormat.MARKDOWN -> DrawViewIcons.Hash
-    ExportFormat.ARCHIVE -> DrawViewIcons.Layers
+    ExportFormat.PDF -> PageboardIcons.FileText
+    ExportFormat.IMAGES -> PageboardIcons.Image
+    ExportFormat.PDF_PER_DOCUMENT -> PageboardIcons.Layers
+    ExportFormat.COMBINED_PDF -> PageboardIcons.BookOpen
+    ExportFormat.MARKDOWN -> PageboardIcons.Hash
+    ExportFormat.ARCHIVE -> PageboardIcons.Layers
 }
 
 /** The label of a group of choices. */

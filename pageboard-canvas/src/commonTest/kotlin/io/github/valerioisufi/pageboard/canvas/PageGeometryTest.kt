@@ -3,12 +3,12 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokeOutline
@@ -55,12 +55,12 @@ class PageGeometryTest {
 
     @Test
     fun theLayersArePaintedFromThePdfPagesToTheStrokes() {
-        val page = DrawPage()
-        val stroke = DrawStroke(mesh = triangle(), brushConfig = BrushConfig())
-        val text = DrawText()
-        val image = DrawImage()
-        val pdf = DrawPdf()
-        val markup = DrawTextMarkup(
+        val page = Page()
+        val stroke = StrokeElement(mesh = triangle(), brushConfig = BrushConfig())
+        val text = TextElement()
+        val image = ImageElement()
+        val pdf = PdfElement()
+        val markup = TextMarkupElement(
             resourceId = "r", pdfPageIndex = 0, pdfWidthPt = 100f, pdfHeightPt = 100f, startIndex = 0, endIndex = 1,
             text = "a", rects = listOf(Rect(0f, 0f, 1f, 1f)), kind = TextMarkupKind.HIGHLIGHT, color = 0
         )

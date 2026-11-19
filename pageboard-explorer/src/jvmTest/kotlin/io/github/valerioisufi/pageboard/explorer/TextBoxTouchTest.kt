@@ -13,7 +13,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.math.abs
 import kotlin.test.Test
@@ -39,13 +39,13 @@ class TextBoxTouchTest {
     /** Where the canvas is in the window: the field of a box not turned is at the corner of its box. */
     private var canvasInRoot = Offset.Zero
 
-    private fun DesktopComposeUiTest.findCanvas(controller: DrawViewController) {
+    private fun DesktopComposeUiTest.findCanvas(controller: PageboardController) {
         canvasInRoot = Offset.Zero
         canvasInRoot = fieldBounds().topLeft - toScreen(controller, Offset.Zero)
     }
 
     /** [point] of the layout of the field (20 px per mm) in the window: the place of the box, its rotation, the zoom. */
-    private fun toScreen(controller: DrawViewController, point: Offset): Offset {
+    private fun toScreen(controller: PageboardController, point: Offset): Offset {
         val editor = controller.textEditorManager
         val page = editor.activeTextPageIndex
         val origin = checkNotNull(controller.viewport.pageMmToScreen(page)).mapPoint(editor.boxX, editor.boxY)
@@ -55,13 +55,13 @@ class TextBoxTouchTest {
     }
 
     /** Where a finger taps the character [index] of the text (plain: shown as it is written), a little after its left edge. */
-    private fun DesktopComposeUiTest.onCharacter(controller: DrawViewController, index: Int): Offset {
+    private fun DesktopComposeUiTest.onCharacter(controller: PageboardController, index: Int): Offset {
         val box = fieldLayout().getBoundingBox(index)
         return toScreen(controller, Offset(box.left + box.width / 4f, box.center.y))
     }
 
     /** The bottom of the caret at [offset] on the screen. */
-    private fun DesktopComposeUiTest.caretBottom(controller: DrawViewController, offset: Int): Offset {
+    private fun DesktopComposeUiTest.caretBottom(controller: PageboardController, offset: Int): Offset {
         val rect = fieldLayout().getCursorRect(offset)
         return toScreen(controller, Offset(rect.left, rect.bottom))
     }

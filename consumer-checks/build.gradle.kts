@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlinJvm) apply false
 }
 
-/** The version of the libraries checked (the one of the build of DrawView). */
+/** The version of the libraries checked (the one of the build of Pageboard). */
 val pageboardVersion: String = providers.fileContents(layout.projectDirectory.file("../gradle.properties")).asText.get()
     .lines().first { it.startsWith("VERSION_NAME=") }.substringAfter('=')
 

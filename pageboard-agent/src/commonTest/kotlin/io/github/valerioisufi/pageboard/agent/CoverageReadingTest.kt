@@ -1,16 +1,16 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.FractionalIndex
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.AddResource
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.change.RemovePage
 import io.github.valerioisufi.pageboard.model.change.SetPageFormat
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -79,7 +79,7 @@ class CoverageReadingTest {
         val setup = setup(this, backgroundScope)
         val mark = setup.open.edit { session ->
             val page = session.document.pages[0]
-            val mark = DrawTextMarkup(
+            val mark = TextMarkupElement(
                 resourceId = "slides", pdfPageIndex = 0, pdfWidthPt = 595f, pdfHeightPt = 842f,
                 startIndex = 4, endIndex = 9, text = "Gauss", rects = listOf(Rect(100f, 200f, 160f, 214f)),
                 kind = TextMarkupKind.HIGHLIGHT, color = 0x80FFEB3B.toInt()
@@ -139,11 +139,11 @@ class CoverageReadingTest {
         val removed = setup.open.edit { session ->
             val document = session.document
             val second = document.pages[0].let { first ->
-                val page = DrawPage(widthMm = 148f, heightMm = 210f, orderKey = FractionalIndex.between(first.orderKey, null))
+                val page = Page(widthMm = 148f, heightMm = 210f, orderKey = FractionalIndex.between(first.orderKey, null))
                 session.submit(AddPage.of(page))
                 document.pages[1]
             }
-            val text = DrawText().apply { text = "Maxwell's equations"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+            val text = TextElement().apply { text = "Maxwell's equations"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(second, listOf(text)))
             session.submit(RemovePage(second.id))
             second.id
@@ -165,10 +165,10 @@ class CoverageReadingTest {
         val images = FakeImages(mapOf("/files/picture.png" to png, "/files/notes.txt" to "hello".encodeToByteArray()))
         val setup = setup(this, backgroundScope, images)
         val (picture, text) = setup.open.edit { session ->
-            session.submit(AddResource.of("picture", DrawResource.ResourceType.IMAGE, "/files/picture.png", ""))
-            session.submit(AddResource.of("notes", DrawResource.ResourceType.IMAGE, "/files/notes.txt", ""))
-            val picture = DrawImage().apply { resourceId = "picture"; x = 30f; y = 200f; width = 50f; height = 40f }
-            val text = DrawImage().apply { resourceId = "notes"; x = 30f; y = 100f; width = 50f; height = 40f }
+            session.submit(AddResource.of("picture", DocumentResource.ResourceType.IMAGE, "/files/picture.png", ""))
+            session.submit(AddResource.of("notes", DocumentResource.ResourceType.IMAGE, "/files/notes.txt", ""))
+            val picture = ImageElement().apply { resourceId = "picture"; x = 30f; y = 200f; width = 50f; height = 40f }
+            val text = ImageElement().apply { resourceId = "notes"; x = 30f; y = 100f; width = 50f; height = 40f }
             session.submit(AddElements.of(session.document.pages[0], listOf(picture, text)))
             picture.id to text.id
         }

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
@@ -51,12 +51,12 @@ class ExternalAgentsTest {
         return Setup(store, documents, agents, agents.access.connect("test").id, document.id, open)
     }
 
-    private fun text(content: String, y: Float = 20f) = DrawText().apply {
+    private fun text(content: String, y: Float = 20f) = TextElement().apply {
         text = content
         x = 10f; this.y = y; width = 100f; height = 10f; fontSize = 16f
     }
 
-    private suspend fun Setup.addText(content: String): DrawText = open.edit { session ->
+    private suspend fun Setup.addText(content: String): TextElement = open.edit { session ->
         val page = session.document.pages.first()
         val text = text(content)
         session.submit(AddElements.of(page, listOf(text)))
@@ -501,7 +501,7 @@ class ExternalAgentsTest {
         assertTrue(setup.agents.proposals.proposals.value.isEmpty())
     }
 
-    private suspend fun Setup.baseOf(text: DrawText): String =
+    private suspend fun Setup.baseOf(text: TextElement): String =
         page().getValue("texts").jsonArray.map { it.jsonObject }.first { it.string("id") == text.id }.string("base")
 
     @Test
@@ -915,7 +915,7 @@ class ExternalAgentsTest {
         var lastMarks: List<PageMark> = emptyList()
 
         override suspend fun renderPage(
-            resources: List<io.github.valerioisufi.pageboard.model.DrawResource>,
+            resources: List<io.github.valerioisufi.pageboard.model.DocumentResource>,
             page: io.github.valerioisufi.pageboard.model.PageContentSnapshot,
             maxSidePx: Int,
             area: io.github.valerioisufi.pageboard.model.geometry.Rect?,
@@ -958,7 +958,7 @@ class ExternalAgentsTest {
         session.submit(
             CompositeChange(
                 listOf(
-                    io.github.valerioisufi.pageboard.model.change.AddResource.of("pdf-resource", io.github.valerioisufi.pageboard.model.DrawResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
+                    io.github.valerioisufi.pageboard.model.change.AddResource.of("pdf-resource", io.github.valerioisufi.pageboard.model.DocumentResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
                     AddElements(page.id, listOf(io.github.valerioisufi.pageboard.model.change.PdfData("pdf-element", "pdf-resource", 0)))
                 )
             )
@@ -1099,7 +1099,7 @@ class ExternalAgentsTest {
                 session.submit(
                     CompositeChange(
                         listOf(
-                            io.github.valerioisufi.pageboard.model.change.AddResource.of(resourceId, io.github.valerioisufi.pageboard.model.DrawResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
+                            io.github.valerioisufi.pageboard.model.change.AddResource.of(resourceId, io.github.valerioisufi.pageboard.model.DocumentResource.ResourceType.PDF, "/nowhere/slides.pdf", ""),
                             AddElements(page.id, listOf(io.github.valerioisufi.pageboard.model.change.PdfData("pdf-element", resourceId, 0)))
                         )
                     )
@@ -1134,6 +1134,6 @@ class ExternalAgentsTest {
 
         override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? = null
 
-        override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.pageboard.model.DrawPdf): io.github.valerioisufi.pageboard.model.PdfTextLayout? = null
+        override fun pdfLayout(documentId: String, pdf: io.github.valerioisufi.pageboard.model.PdfElement): io.github.valerioisufi.pageboard.model.PdfTextLayout? = null
     }
 }

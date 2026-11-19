@@ -6,7 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -15,12 +15,12 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class TextBoxGesturesOverFieldTest {
 
-    private fun DesktopComposeUiTest.openBox(controller: DrawViewController) {
+    private fun DesktopComposeUiTest.openBox(controller: PageboardController) {
         startBox(controller, 30f, 60f, widthMm = 120f)
         type("Some lines of text\nto put the fingers on\nat the middle of a page\nof a note")
     }
 
-    private fun cornerY(controller: DrawViewController): Float {
+    private fun cornerY(controller: PageboardController): Float {
         val editor = controller.textEditorManager
         return checkNotNull(controller.viewport.pageMmToScreen(editor.activeTextPageIndex)).mapPoint(editor.boxX, editor.boxY).y
     }

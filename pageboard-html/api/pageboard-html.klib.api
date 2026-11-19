@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-html>
+// Library unique name: <pageboard-kmp:pageboard-html>
 final class io.github.valerioisufi.pageboard.html/HtmlToMarkdown { // io.github.valerioisufi.pageboard.html/HtmlToMarkdown|null[0]
     constructor <init>(kotlin/String = ...) // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.<init>|<init>(kotlin.String){}[0]
 

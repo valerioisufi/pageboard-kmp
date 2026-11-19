@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import io.github.valerioisufi.pageboard.model.shape.ShapeHead
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
@@ -9,10 +9,10 @@ import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeDash
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.encode
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -82,14 +82,14 @@ class PageReadingTest {
         }
     )
 
-    private suspend fun Setup.addStroke(x: Float, y: Float, points: Int = 20, color: Int = 0xFF1F5AA6.toInt()): DrawStroke = open.edit { session ->
+    private suspend fun Setup.addStroke(x: Float, y: Float, points: Int = 20, color: Int = 0xFF1F5AA6.toInt()): StrokeElement = open.edit { session ->
         val stroke = StrokeData(
             id = newElementId(),
             points = (0 until points).map { StrokePoint(x = x + it * 0.5f, y = y + (it % 2), pressure = 0.5f, timestampMs = it * 8L) },
             tool = StrokeTool.PRESSURE_PEN,
             size = 0.5f,
             color = color
-        ).toElement() as DrawStroke
+        ).toElement() as StrokeElement
         session.submit(AddElements.of(session.document.pages[0], listOf(stroke)))
         stroke
     }
@@ -175,7 +175,7 @@ class PageReadingTest {
     fun theBaseOfAnElementChangesWithIt() = runTest {
         val setup = setup(this, backgroundScope)
         val image = setup.open.edit { session ->
-            val image = DrawImage().apply { resourceId = "picture"; x = 30f; y = 200f; width = 50f; height = 40f }
+            val image = ImageElement().apply { resourceId = "picture"; x = 30f; y = 200f; width = 50f; height = 40f }
             session.submit(AddElements.of(session.document.pages[0], listOf(image)))
             image
         }
@@ -195,7 +195,7 @@ class PageReadingTest {
         val before = setup.readPage().string("base")
         assertEquals(before, setup.call("read_document", buildJsonObject { put("document", setup.documentId) })
             .getValue("pages").jsonArray.single().jsonObject.string("base"))
-        val text = DrawText().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+        val text = TextElement().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
         setup.open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(text))) }
         val added = setup.readPage().string("base")
         assertNotEquals(before, added)
@@ -206,7 +206,7 @@ class PageReadingTest {
     @Test
     fun aTextIsReadWithItsStyle() = runTest {
         val setup = setup(this, backgroundScope)
-        val text = DrawText().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f; color = 0x801F5AA6.toInt() }
+        val text = TextElement().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f; color = 0x801F5AA6.toInt() }
         setup.open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(text))) }
         val read = setup.readPage().getValue("texts").jsonArray.single().jsonObject
         assertEquals("#1F5AA680", read.string("color"))
@@ -217,7 +217,7 @@ class PageReadingTest {
     @Test
     fun aScannedPageIsReadAsAPdfPageWithItsBase() = runTest {
         val setup = setup(this, backgroundScope)
-        val pdf = DrawPdf(pdfPageIndex = 3).apply { resourceId = "scan" }
+        val pdf = PdfElement(pdfPageIndex = 3).apply { resourceId = "scan" }
         setup.open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(pdf))) }
         val page = setup.readPage()
         val read = page.getValue("pdfs").jsonArray.single().jsonObject
@@ -230,7 +230,7 @@ class PageReadingTest {
     @Test
     fun anElementOfAnotherKindIsReadByItsBox() = runTest {
         val setup = setup(this, backgroundScope)
-        val custom = DrawCustomElement("chart").apply { x = 10f; y = 50f; width = 80f; height = 60f }
+        val custom = CustomElement("chart").apply { x = 10f; y = 50f; width = 80f; height = 60f }
         setup.open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(custom))) }
         val read = setup.readPage().getValue("custom_elements").jsonArray.single().jsonObject
         assertEquals("chart", read.string("type"))
@@ -242,11 +242,11 @@ class PageReadingTest {
         val setup = setup(this, backgroundScope)
         val value = ShapeElement(ShapeKind.LINE, 0xFF1F5FBF.toInt(), 0.5f, ShapeDash.DASHED, startHead = ShapeHead.OPEN)
         val box = ShapeGeometry.lineBox(Point(20f, 40f), Point(80f, 40f), value)
-        val arrow = DrawCustomElement(ShapeElementType.id).apply {
+        val arrow = CustomElement(ShapeElementType.id).apply {
             payload = ShapeElementType.encode(value)
             x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
         }
-        val rectangle = DrawCustomElement(ShapeElementType.id).apply {
+        val rectangle = CustomElement(ShapeElementType.id).apply {
             payload = ShapeElementType.encode(ShapeElement(ShapeKind.RECTANGLE, 0xFF000000.toInt(), 0.5f, fill = 0x33000000))
             x = 10f; y = 60f; width = 40f; height = 20f
         }

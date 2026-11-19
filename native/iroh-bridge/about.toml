@@ -25,5 +25,5 @@ targets = [
 ignore-build-dependencies = true
 ignore-dev-dependencies = true
 
-# The crate of the bridge itself is DrawView (its LICENSE)
+# The crate of the bridge itself is Pageboard (its LICENSE)
 private = { ignore = true }

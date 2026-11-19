@@ -66,7 +66,7 @@ import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 
@@ -74,7 +74,7 @@ import org.jetbrains.compose.resources.stringResource
  * [LibraryAction] opening [SearchSettingsDialog] in the document library.
  */
 public fun ContentSearch.settingsAction(): LibraryAction = LibraryAction(
-    icon = DrawViewIcons.Search,
+    icon = PageboardIcons.Search,
     label = { stringResource(Res.string.search_settings_action) },
     content = { onDismiss -> SearchSettingsDialog(search = this, onDismiss = onDismiss) }
 )
@@ -120,7 +120,7 @@ internal fun SearchSettingsContent(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.weight(1f)
             )
-            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.search_settings_close), onDismiss)
+            DesignIconButton(PageboardIcons.Close, stringResource(Res.string.search_settings_close), onDismiss)
         }
 
         PrivacyBanner(text = stringResource(Res.string.search_settings_privacy))
@@ -202,7 +202,7 @@ private fun PrivacyBanner(text: String) {
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Icon(
-            imageVector = DrawViewIcons.Shield,
+            imageVector = PageboardIcons.Shield,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
@@ -227,7 +227,7 @@ private fun IndexingStatusCard(progress: IndexingProgress) {
     ) {
         if (!progress.isIndexing) {
             Icon(
-                imageVector = DrawViewIcons.CheckCircle,
+                imageVector = PageboardIcons.CheckCircle,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
@@ -358,13 +358,13 @@ private fun ModelCard(
                         }
                     }
                     OutlineButton(onClick = { confirmingDelete = true }) {
-                        Icon(DrawViewIcons.Trash, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(PageboardIcons.Trash, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(stringResource(Res.string.search_model_delete))
                     }
                 } else {
                     TonalButton(onClick = onDownload) {
-                        Icon(DrawViewIcons.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(PageboardIcons.Download, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(stringResource(Res.string.search_model_download, formatBytes(spec.sizeBytes)))
                     }

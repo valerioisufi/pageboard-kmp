@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-export-ui>
+// Library unique name: <pageboard-kmp:pageboard-export-ui>
 final class io.github.valerioisufi.pageboard.export.ui/DocumentExportUi { // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, kotlin/String? = ..., io.github.valerioisufi.pageboard.export/MarkdownAppendix? = ...) // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;kotlin.String?;io.github.valerioisufi.pageboard.export.MarkdownAppendix?){}[0]
 

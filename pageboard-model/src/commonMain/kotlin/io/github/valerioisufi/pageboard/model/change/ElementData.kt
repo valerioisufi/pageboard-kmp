@@ -1,15 +1,15 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
@@ -30,12 +30,12 @@ import kotlinx.serialization.Serializable
 
 /*
  * The content of a document as plain values: what the changes carry (and what is stored and
- * exchanged), while the model objects (DrawStroke, DrawText, ...) are the live, mutable state of
+ * exchanged), while the model objects (StrokeElement, TextElement, ...) are the live, mutable state of
  * an open document.
  */
 
 /**
- * An element of a page as plain values (see [DrawElement]).
+ * An element of a page as plain values (see [PageElement]).
  *
  * [order] is its stacking order on its page; `null` for a new element, which gets the order of
  * the change adding it (see [AddElements]).
@@ -49,7 +49,7 @@ public sealed interface ElementData {
      * A new model element with this content (and [order], or none yet), its stroke (if any)
      * modeled by [modeller].
      */
-    public fun toElement(modeller: StrokeModeller = KotlinStrokeModeller): DrawElement
+    public fun toElement(modeller: StrokeModeller = KotlinStrokeModeller): PageElement
 }
 
 /**
@@ -68,7 +68,7 @@ public data class StrokeData(
     override val order: ElementOrder? = null
 ) : ElementData {
     /** The stroke, modeled again from its inputs by [modeller]. */
-    override fun toElement(modeller: StrokeModeller): DrawStroke {
+    override fun toElement(modeller: StrokeModeller): StrokeElement {
         val brush = remodelingBrush(tool, size, color)
         // The inputs are kept as they are (the modeller may adjust what it records)
         val mesh = modeller.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
@@ -80,7 +80,7 @@ public data class StrokeData(
             points = points,
             inputToolType = inputToolType
         )
-        return DrawStroke(id = id, mesh = mesh, brushConfig = brush, transform = transform).withOrder(order)
+        return StrokeElement(id = id, mesh = mesh, brushConfig = brush, transform = transform).withOrder(order)
     }
 }
 
@@ -94,7 +94,7 @@ public data class TextData(
     override val id: String,
     val text: String,
     val alignment: TextAlignment = TextAlignment.START,
-    /** Whether its width follows its text (see `DrawText.autoWidth`): part of its placement. */
+    /** Whether its width follows its text (see `TextElement.autoWidth`): part of its placement. */
     val autoWidth: Boolean = false,
     val x: Float,
     val y: Float,
@@ -102,19 +102,19 @@ public data class TextData(
     val rotation: Float = 0f,
     val color: Int,
     val fontSize: Float,
-    /** The color of its fill, or `null` for none (see `DrawText.background`): part of its content. */
+    /** The color of its fill, or `null` for none (see `TextElement.background`): part of its content. */
     val background: Int? = null,
-    /** The text it goes on into (see `DrawText.next`): part of its content. */
+    /** The text it goes on into (see `TextElement.next`): part of its content. */
     val next: String? = null,
-    /** Whether its first line goes on the last line of the text before it (see `DrawText.continuesLine`). */
+    /** Whether its first line goes on the last line of the text before it (see `TextElement.continuesLine`). */
     val continuesLine: Boolean = false,
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawText =
-        DrawText(id).also { applyTo(it); it.height = estimatedHeight() }.withOrder(order)
+    override fun toElement(modeller: StrokeModeller): TextElement =
+        TextElement(id).also { applyTo(it); it.height = estimatedHeight() }.withOrder(order)
 
-    /** The height of its lines guessed without laying them out (see `DrawText.height`). */
+    /** The height of its lines guessed without laying them out (see `TextElement.height`). */
     public fun estimatedHeight(): Float = TextSizes.estimatedHeightMm(text, fontSize)
 
     /** Whether its content (the text and its format) is the one of [other]. */
@@ -123,7 +123,7 @@ public data class TextData(
             next == other.next && continuesLine == other.continuesLine
 
     /** Writes this content into [text] (its identifier and its order excepted). */
-    public fun applyTo(text: DrawText) {
+    public fun applyTo(text: TextElement) {
         text.contentVersions = versions
         text.text = this.text
         text.alignment = alignment
@@ -141,7 +141,7 @@ public data class TextData(
     }
 }
 
-/** An image ([DrawImage]) as plain values: the file of its resource, its rotated box (page millimeters). */
+/** An image ([ImageElement]) as plain values: the file of its resource, its rotated box (page millimeters). */
 @Serializable
 @SerialName("image")
 public data class ImageData(
@@ -154,7 +154,7 @@ public data class ImageData(
     val rotation: Float = 0f,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawImage = DrawImage(id).withOrder(order).also {
+    override fun toElement(modeller: StrokeModeller): ImageElement = ImageElement(id).withOrder(order).also {
         it.resourceId = resourceId
         it.x = x
         it.y = y
@@ -164,7 +164,7 @@ public data class ImageData(
     }
 }
 
-/** A page of a PDF ([DrawPdf]) as plain values: the file of its resource and the index of the page in it. */
+/** A page of a PDF ([PdfElement]) as plain values: the file of its resource and the index of the page in it. */
 @Serializable
 @SerialName("pdf")
 public data class PdfData(
@@ -173,7 +173,7 @@ public data class PdfData(
     val pdfPageIndex: Int,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawPdf = DrawPdf(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
+    override fun toElement(modeller: StrokeModeller): PdfElement = PdfElement(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
 }
 
 /**
@@ -196,7 +196,7 @@ public data class TextMarkupData(
     val color: Int,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawTextMarkup = DrawTextMarkup(
+    override fun toElement(modeller: StrokeModeller): TextMarkupElement = TextMarkupElement(
         id = id,
         resourceId = resourceId,
         pdfPageIndex = pdfPageIndex,
@@ -212,7 +212,7 @@ public data class TextMarkupData(
 }
 
 /**
- * An element of a kind added by an application (see [DrawCustomElement]): its type, the format
+ * An element of a kind added by an application (see [CustomElement]): its type, the format
  * and the bytes of its value, its box.
  */
 @Serializable
@@ -230,7 +230,7 @@ public class CustomElementData(
     public val rotation: Float = 0f,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawCustomElement = DrawCustomElement(type, id).withOrder(order).also {
+    override fun toElement(modeller: StrokeModeller): CustomElement = CustomElement(type, id).withOrder(order).also {
         it.version = version
         it.payload = payload
         it.x = x
@@ -256,14 +256,14 @@ public class CustomElementData(
     override fun toString(): String = "CustomElementData(id=$id, type=$type, version=$version, ${payload.size} bytes)"
 }
 
-private fun <T : DrawElement> T.withOrder(order: ElementOrder?): T = apply { this.order = order ?: ElementOrder.UNASSIGNED }
+private fun <T : PageElement> T.withOrder(order: ElementOrder?): T = apply { this.order = order ?: ElementOrder.UNASSIGNED }
 
 /** The order of [this] as data: `null` when it has none yet. */
-private val DrawElement.dataOrder: ElementOrder? get() = order.takeIf { it != ElementOrder.UNASSIGNED }
+private val PageElement.dataOrder: ElementOrder? get() = order.takeIf { it != ElementOrder.UNASSIGNED }
 
 /**
  * A page with its content ([background]: `null` when the page follows the default background
- * of the document; [orderKey]: its position among the pages, see [DrawPage.orderKey]).
+ * of the document; [orderKey]: its position among the pages, see [Page.orderKey]).
  */
 @Serializable
 public data class PageData(
@@ -275,8 +275,8 @@ public data class PageData(
     val elements: List<ElementData> = emptyList()
 ) {
     /** A new page of [document] with this content (the elements of every kind in this order). */
-    public fun toPage(document: DrawDocument): DrawPage {
-        val page = DrawPage(
+    public fun toPage(document: Document): Page {
+        val page = Page(
             widthMm = widthMm,
             heightMm = heightMm,
             background = background ?: document.defaultBackground,
@@ -291,14 +291,14 @@ public data class PageData(
 
 /** A file of a document (its content travels apart, see `docs/plans/collaboration.md`). */
 @Serializable
-public data class ResourceData(val id: String, val type: DrawResource.ResourceType, val hash: String = "")
+public data class ResourceData(val id: String, val type: DocumentResource.ResourceType, val hash: String = "")
 
 // ==========================================================
 // From the model
 // ==========================================================
 
 /** The values of a stroke: its inputs and brush, not its mesh (see [ElementData]). */
-public fun DrawStroke.toData(): StrokeData = StrokeData(
+public fun StrokeElement.toData(): StrokeData = StrokeData(
     id = id,
     points = baseMesh.points,
     tool = baseBrush.tool,
@@ -310,7 +310,7 @@ public fun DrawStroke.toData(): StrokeData = StrokeData(
 )
 
 /** The values of a text, with its content versions (see [ElementData]). */
-public fun DrawText.toData(): TextData = TextData(
+public fun TextElement.toData(): TextData = TextData(
     id = id,
     text = text,
     alignment = alignment,
@@ -329,13 +329,13 @@ public fun DrawText.toData(): TextData = TextData(
 )
 
 /** The values of an image (see [ElementData]). */
-public fun DrawImage.toData(): ImageData = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
+public fun ImageElement.toData(): ImageData = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
 
 /** The values of a page of a PDF (see [ElementData]). */
-public fun DrawPdf.toData(): PdfData = PdfData(id, resourceId, pdfPageIndex, dataOrder)
+public fun PdfElement.toData(): PdfData = PdfData(id, resourceId, pdfPageIndex, dataOrder)
 
 /** The values of a mark of the text of a PDF (see [ElementData]). */
-public fun DrawTextMarkup.toData(): TextMarkupData = TextMarkupData(
+public fun TextMarkupElement.toData(): TextMarkupData = TextMarkupData(
     id = id,
     resourceId = resourceId,
     pdfPageIndex = pdfPageIndex,
@@ -351,20 +351,20 @@ public fun DrawTextMarkup.toData(): TextMarkupData = TextMarkupData(
 )
 
 /** The values of an element of an application, its payload as it is (see [ElementData]). */
-public fun DrawCustomElement.toData(): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
+public fun CustomElement.toData(): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
 
 /** The values of any element, by its kind (see [ElementData]). */
-public fun DrawElement.toData(): ElementData = when (this) {
-    is DrawStroke -> toData()
-    is DrawText -> toData()
-    is DrawImage -> toData()
-    is DrawPdf -> toData()
-    is DrawTextMarkup -> toData()
-    is DrawCustomElement -> toData()
+public fun PageElement.toData(): ElementData = when (this) {
+    is StrokeElement -> toData()
+    is TextElement -> toData()
+    is ImageElement -> toData()
+    is PdfElement -> toData()
+    is TextMarkupElement -> toData()
+    is CustomElement -> toData()
 }
 
 /** The page with its content, the elements of every kind in their stacking order. */
-public fun DrawPage.toData(): PageData = PageData(
+public fun Page.toData(): PageData = PageData(
     id = id,
     orderKey = orderKey,
     widthMm = widthMm,
@@ -389,9 +389,9 @@ public fun ElementData.placement(): Placement? = when (this) {
  * Writes the content of [data] (the same element) into [element]: the text and its format, the
  * style of a mark (what never changes, e.g. the inputs of a stroke, is not written).
  */
-internal fun writeContent(element: DrawElement, data: ElementData) {
+internal fun writeContent(element: PageElement, data: ElementData) {
     when {
-        element is DrawText && data is TextData -> {
+        element is TextElement && data is TextData -> {
             element.text = data.text
             element.alignment = data.alignment
             element.color = data.color
@@ -400,11 +400,11 @@ internal fun writeContent(element: DrawElement, data: ElementData) {
             element.continuesLine = data.continuesLine
             element.markDirty()
         }
-        element is DrawTextMarkup && data is TextMarkupData -> {
+        element is TextMarkupElement && data is TextMarkupData -> {
             element.kind = data.kind
             element.color = data.color
         }
-        element is DrawCustomElement && data is CustomElementData -> {
+        element is CustomElement && data is CustomElementData -> {
             element.version = data.version
             element.payload = data.payload
         }

@@ -2,7 +2,7 @@ plugins {
     id("pageboard.compose.library")
 }
 
-description = "The DrawView editor of the documents of a store: opening a document, writing its changes and the preferences"
+description = "The Pageboard editor of the documents of a store: opening a document, writing its changes and the preferences"
 
 kotlin {
     sourceSets {

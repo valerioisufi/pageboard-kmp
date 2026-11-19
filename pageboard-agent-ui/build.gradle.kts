@@ -3,7 +3,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "The review in the DrawView editor of what external models propose, and the access of their clients"
+description = "The review in the Pageboard editor of what external models propose, and the access of their clients"
 
 kotlin {
     android {

@@ -9,12 +9,12 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -29,19 +29,19 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * Multi-touch gestures sent to a [DrawCanvas] as touch events: two-finger pan, fling, zoom deadzone,
+ * Multi-touch gestures sent to a [PageCanvas] as touch events: two-finger pan, fling, zoom deadzone,
  * and asymmetric release.
  */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 class TouchGesturesTest {
 
-    private fun withCanvas(pages: Int = 5, block: (ImageComposeScene, DrawViewController) -> Unit) {
+    private fun withCanvas(pages: Int = 5, block: (ImageComposeScene, PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val document = DrawDocument()
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+        val controller = PageboardController(document = document, coroutineScope = scope)
         val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) {
-            DrawCanvas(controller)
+            PageCanvas(controller)
         }
         try {
             scene.render()
@@ -279,7 +279,7 @@ class TouchGesturesTest {
     @Test
     fun twoFingerTouchWithEraserActiveCancelsAccidentalErasure() = withCanvas { scene, controller ->
         val page = controller.document.pages[0]
-        val stroke = DrawStroke(mesh = squareMesh(20f, 20f, 30f), brushConfig = BrushConfig(size = 1f))
+        val stroke = StrokeElement(mesh = squareMesh(20f, 20f, 30f), brushConfig = BrushConfig(size = 1f))
         controller.session.submit(AddElements.of(page, listOf(stroke)))
         assertEquals(1, page.strokes.size)
 

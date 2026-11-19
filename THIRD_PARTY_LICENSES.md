@@ -2,7 +2,7 @@
 
 DrawView-KMP incorporates and relies on open-source software libraries, components, and fonts.
 This document details the respective licenses, copyright notices, and disclaimers for each third-party component.
-The PencilNotes application (`pencilnotes/`) includes every DrawView component plus the fonts marked *PencilNotes*.
+The PencilNotes application (`pencilnotes/`) includes every Pageboard component plus the fonts marked *PencilNotes*.
 
 ---
 
@@ -68,7 +68,7 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 
 ### Lucide
 > Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
-> The icons of the interface are generated from Lucide (`DrawViewIcons`).
+> The icons of the interface are generated from Lucide (`PageboardIcons`).
 
 ### Noto Sans, Noto Sans Mono, Noto Sans Math and Noto Sans Symbols 2
 > Copyright 2018 The Noto Project Authors (https://github.com/googlei18n/noto-fonts)

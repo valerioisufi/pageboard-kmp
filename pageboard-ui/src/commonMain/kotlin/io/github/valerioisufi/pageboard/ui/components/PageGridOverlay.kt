@@ -72,10 +72,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.PageSelection
 import io.github.valerioisufi.pageboard.canvas.observeChanges
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.TrashRetention
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
@@ -92,8 +92,8 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.page_grid_days_le
 import io.github.valerioisufi.pageboard.ui.generated.resources.page_grid_deleted_pages
 import io.github.valerioisufi.pageboard.ui.generated.resources.page_grid_deleted_pages_hint
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -115,7 +115,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PageGridOverlay(
-    controller: DrawViewController,
+    controller: PageboardController,
     modifier: Modifier = Modifier,
     commands: EditorCommands? = null,
     extensionActions: List<Command> = emptyList(),
@@ -173,7 +173,7 @@ internal fun PageGridOverlay(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.page_grid_action_close), { controller.togglePageGrid() }, tint = MaterialTheme.colorScheme.onSurface)
+            DesignIconButton(PageboardIcons.Close, stringResource(Res.string.page_grid_action_close), { controller.togglePageGrid() }, tint = MaterialTheme.colorScheme.onSurface)
             // The title drags the window, as the bar of the editor
             WindowDraggable(modifier = Modifier.weight(1f)) {
                 Column {
@@ -192,14 +192,14 @@ internal fun PageGridOverlay(
                     )
                 }
             }
-            DesignIconButton(DrawViewIcons.SquareCheckBig, stringResource(Res.string.page_grid_action_select), { selection.start() }, tint = MaterialTheme.colorScheme.onSurface)
+            DesignIconButton(PageboardIcons.SquareCheckBig, stringResource(Res.string.page_grid_action_select), { selection.start() }, tint = MaterialTheme.colorScheme.onSurface)
             if (writable) {
                 val addPage: () -> Unit = { pageManager.addNewPageAfter(document.pages.lastIndex) }
                 if (currentAdaptiveInfo().window.isCompact) {
-                    DesignIconButton(DrawViewIcons.FilePlus2, stringResource(Res.string.context_menu_action_add_page), addPage, selected = true)
+                    DesignIconButton(PageboardIcons.FilePlus2, stringResource(Res.string.context_menu_action_add_page), addPage, selected = true)
                 } else {
                     TonalButton(onClick = addPage) {
-                        Icon(DrawViewIcons.FilePlus2, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(PageboardIcons.FilePlus2, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(Res.string.context_menu_action_add_page))
                     }
@@ -360,7 +360,7 @@ internal fun PageGridOverlay(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(0.8f)
-                            .then(if (isDragged) Modifier.elevation(DrawViewElevation.Level3, wellShape) else Modifier)
+                            .then(if (isDragged) Modifier.elevation(PageboardElevation.Level3, wellShape) else Modifier)
                             .clip(wellShape)
                             .background(if (isDragged) colors.surfaceContainerLowest else colors.surfaceContainer)
                             .then(
@@ -382,7 +382,7 @@ internal fun PageGridOverlay(
                         BoxWithConstraints(
                             modifier = Modifier
                                 .aspectRatio(aspectRatio)
-                                .elevation(DrawViewElevation.Level1, RoundedCornerShape(4.dp))
+                                .elevation(PageboardElevation.Level1, RoundedCornerShape(4.dp))
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(Color.White),
                             contentAlignment = Alignment.Center
@@ -405,7 +405,7 @@ internal fun PageGridOverlay(
                         }
                         if (selected) {
                             Icon(
-                                DrawViewIcons.CheckCircle,
+                                PageboardIcons.CheckCircle,
                                 contentDescription = null,
                                 tint = colors.onPrimary,
                                 modifier = Modifier
@@ -428,7 +428,7 @@ internal fun PageGridOverlay(
                         if (!controller.isReadOnly) {
                             Box {
                                 DesignIconButton(
-                                    icon = DrawViewIcons.MoreHorizontal,
+                                    icon = PageboardIcons.MoreHorizontal,
                                     label = stringResource(Res.string.page_grid_content_desc_options),
                                     onClick = { menuExpanded = true },
                                     iconSize = 20.dp
@@ -436,7 +436,7 @@ internal fun PageGridOverlay(
                                 DesignMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                                     MenuItem(
                                         text = stringResource(Res.string.context_menu_action_add_page_after),
-                                        icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                                        icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                                         onClick = {
                                             menuExpanded = false
                                             pageManager.contextMenuTargetPageIndex = index
@@ -445,7 +445,7 @@ internal fun PageGridOverlay(
                                     )
                                     MenuItem(
                                         text = stringResource(Res.string.context_menu_action_add_page_before),
-                                        icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                                        icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                                         onClick = {
                                             menuExpanded = false
                                             pageManager.contextMenuTargetPageIndex = index
@@ -454,7 +454,7 @@ internal fun PageGridOverlay(
                                     )
                                     MenuItem(
                                         text = stringResource(Res.string.context_menu_action_duplicate_page),
-                                        icon = rememberVectorPainter(DrawViewIcons.CopyPlus),
+                                        icon = rememberVectorPainter(PageboardIcons.CopyPlus),
                                         onClick = {
                                             menuExpanded = false
                                             pageManager.contextMenuTargetPageIndex = index
@@ -464,7 +464,7 @@ internal fun PageGridOverlay(
                                     if (commands != null) {
                                         MenuItem(
                                             text = stringResource(Res.string.context_menu_action_copy_page),
-                                            icon = rememberVectorPainter(DrawViewIcons.Copy),
+                                            icon = rememberVectorPainter(PageboardIcons.Copy),
                                             onClick = {
                                                 menuExpanded = false
                                                 pageManager.contextMenuTargetPageIndex = index
@@ -474,7 +474,7 @@ internal fun PageGridOverlay(
                                         if (commands.canPastePages()) {
                                             MenuItem(
                                                 text = stringResource(Res.string.context_menu_action_paste_page),
-                                                icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                                                icon = rememberVectorPainter(PageboardIcons.Clipboard),
                                                 onClick = {
                                                     menuExpanded = false
                                                     pageManager.contextMenuTargetPageIndex = index
@@ -485,7 +485,7 @@ internal fun PageGridOverlay(
                                     }
                                     MenuItem(
                                         text = stringResource(Res.string.context_menu_action_edit_background),
-                                        icon = rememberVectorPainter(DrawViewIcons.Grid),
+                                        icon = rememberVectorPainter(PageboardIcons.Grid),
                                         onClick = {
                                             menuExpanded = false
                                             editBackground(targets)
@@ -495,7 +495,7 @@ internal fun PageGridOverlay(
                                         MenuDivider()
                                         MenuItem(
                                             text = stringResource(Res.string.context_menu_action_delete_page),
-                                            icon = rememberVectorPainter(DrawViewIcons.Trash),
+                                            icon = rememberVectorPainter(PageboardIcons.Trash),
                                             destructive = true,
                                             onClick = {
                                                 menuExpanded = false
@@ -520,7 +520,7 @@ internal fun PageGridOverlay(
  * `docs/plans/trash.md`): a row telling how many, which shows them when [expanded], each faded with the
  * days it has left and Restore.
  */
-private fun LazyGridScope.deletedPages(controller: DrawViewController, deleted: List<DrawPage>, now: Long, expanded: Boolean, onToggle: () -> Unit) {
+private fun LazyGridScope.deletedPages(controller: PageboardController, deleted: List<Page>, now: Long, expanded: Boolean, onToggle: () -> Unit) {
     if (deleted.isEmpty()) return
     item(key = "deleted-pages", span = { GridItemSpan(maxLineSpan) }) {
         val colors = MaterialTheme.colorScheme
@@ -534,12 +534,12 @@ private fun LazyGridScope.deletedPages(controller: DrawViewController, deleted: 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Icon(DrawViewIcons.Trash, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Icon(PageboardIcons.Trash, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text("${stringResource(Res.string.page_grid_deleted_pages)} (${deleted.size})", style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
                 Text(stringResource(Res.string.page_grid_deleted_pages_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
-            Icon(if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown, contentDescription = null, tint = colors.onSurfaceVariant)
+            Icon(if (expanded) PageboardIcons.ChevronUp else PageboardIcons.ChevronDown, contentDescription = null, tint = colors.onSurfaceVariant)
         }
     }
     if (!expanded) return
@@ -583,7 +583,7 @@ private fun LazyGridScope.deletedPages(controller: DrawViewController, deleted: 
                     modifier = Modifier.weight(1f)
                 )
                 DesignIconButton(
-                    icon = DrawViewIcons.RotateCcw,
+                    icon = PageboardIcons.RotateCcw,
                     label = stringResource(Res.string.page_grid_action_restore),
                     onClick = { controller.pageManager.restorePages(listOf(page.id)) },
                     iconSize = 20.dp
@@ -601,7 +601,7 @@ private const val DAY_MILLIS = 24L * 60 * 60 * 1000
  * content changes.
  */
 @Composable
-private fun rememberPageThumbnail(controller: DrawViewController, page: DrawPage, widthPx: Int): ImageBitmap? {
+private fun rememberPageThumbnail(controller: PageboardController, page: Page, widthPx: Int): ImageBitmap? {
     controller.document.observeChanges()
     var thumbnail by remember(page.id) { mutableStateOf<ImageBitmap?>(null) }
     val contentVersion = page.contentVersion
@@ -624,7 +624,7 @@ private fun rememberPageThumbnail(controller: DrawViewController, page: DrawPage
  */
 @Composable
 internal fun PageThumbnailBackground(
-    page: DrawPage,
+    page: Page,
     modifier: Modifier = Modifier
 ) {
     val bg = page.background
@@ -764,7 +764,7 @@ private fun PageSelectionBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        DesignIconButton(DrawViewIcons.Check, stringResource(Res.string.page_grid_action_done), { selection.clear() }, tint = colors.onSurface)
+        DesignIconButton(PageboardIcons.Check, stringResource(Res.string.page_grid_action_done), { selection.clear() }, tint = colors.onSurface)
         WindowDraggable(modifier = Modifier.weight(1f)) {
             Text(
                 text = pluralStringResource(Res.plurals.page_grid_selected_count, count, count),
@@ -778,10 +778,10 @@ private fun PageSelectionBar(
         // In a compact window, Select all, Paste after and Background in a menu
         val compact = currentAdaptiveInfo().window.isCompact
         if (!compact) {
-            DesignIconButton(DrawViewIcons.CheckCheck, stringResource(Res.string.page_grid_action_select_all), { selection.selectAll() }, tint = colors.onSurface)
+            DesignIconButton(PageboardIcons.CheckCheck, stringResource(Res.string.page_grid_action_select_all), { selection.selectAll() }, tint = colors.onSurface)
         }
         if (onCopy != null) {
-            DesignIconButton(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), onCopy, enabled = some, tint = colors.onSurface)
+            DesignIconButton(PageboardIcons.Copy, stringResource(Res.string.common_action_copy), onCopy, enabled = some, tint = colors.onSurface)
         }
         // The actions of the extensions (e.g. "Export…"), in read-only documents too
         for (action in extensionActions) {
@@ -793,38 +793,38 @@ private fun PageSelectionBar(
             }
         }
         if (writable) {
-            DesignIconButton(DrawViewIcons.CopyPlus, stringResource(Res.string.page_grid_action_duplicate), onDuplicate, enabled = some, tint = colors.onSurface)
+            DesignIconButton(PageboardIcons.CopyPlus, stringResource(Res.string.page_grid_action_duplicate), onDuplicate, enabled = some, tint = colors.onSurface)
         }
         if (writable && !compact) {
             if (canPaste) {
-                DesignIconButton(DrawViewIcons.Clipboard, stringResource(Res.string.context_menu_action_paste_page), onPaste, enabled = some, tint = colors.onSurface)
+                DesignIconButton(PageboardIcons.Clipboard, stringResource(Res.string.context_menu_action_paste_page), onPaste, enabled = some, tint = colors.onSurface)
             }
-            DesignIconButton(DrawViewIcons.Grid, stringResource(Res.string.context_menu_action_edit_background), onEditBackground, enabled = some, tint = colors.onSurface)
+            DesignIconButton(PageboardIcons.Grid, stringResource(Res.string.context_menu_action_edit_background), onEditBackground, enabled = some, tint = colors.onSurface)
         }
         if (writable) {
-            DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), onDelete, enabled = canDelete, tint = colors.error)
+            DesignIconButton(PageboardIcons.Trash, stringResource(Res.string.common_action_delete), onDelete, enabled = canDelete, tint = colors.error)
         }
         if (compact) {
             var expanded by remember { mutableStateOf(false) }
             Box {
-                DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.common_action_more_options), { expanded = true }, tint = colors.onSurface)
+                DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.common_action_more_options), { expanded = true }, tint = colors.onSurface)
                 DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     MenuItem(
                         text = stringResource(Res.string.page_grid_action_select_all),
-                        icon = rememberVectorPainter(DrawViewIcons.CheckCheck),
+                        icon = rememberVectorPainter(PageboardIcons.CheckCheck),
                         onClick = { expanded = false; selection.selectAll() }
                     )
                     if (writable && some) {
                         if (canPaste) {
                             MenuItem(
                                 text = stringResource(Res.string.context_menu_action_paste_page),
-                                icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                                icon = rememberVectorPainter(PageboardIcons.Clipboard),
                                 onClick = { expanded = false; onPaste() }
                             )
                         }
                         MenuItem(
                             text = stringResource(Res.string.context_menu_action_edit_background),
-                            icon = rememberVectorPainter(DrawViewIcons.Grid),
+                            icon = rememberVectorPainter(PageboardIcons.Grid),
                             onClick = { expanded = false; onEditBackground() }
                         )
                     }

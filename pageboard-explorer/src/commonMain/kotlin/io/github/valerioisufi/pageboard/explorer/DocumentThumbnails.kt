@@ -10,21 +10,21 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import io.github.valerioisufi.pageboard.canvas.platform.decodeImageBitmap
 import io.github.valerioisufi.pageboard.canvas.platform.encodePng
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.ElementRenderers
 import io.github.valerioisufi.pageboard.canvas.render.ImageCache
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.dataDirectory
 import io.github.valerioisufi.pageboard.store.DocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.ui.render.ComposeTextTileAdapter
-import io.github.valerioisufi.pageboard.ui.render.LocalDrawViewEngines
+import io.github.valerioisufi.pageboard.ui.render.LocalPageboardEngines
 import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -45,9 +45,9 @@ import kotlinx.coroutines.withContext
  * @param textAdapter draws the texts of the notes (the one of the editor), or `null`.
  * @param directory where the thumbnails are kept, or `null` to keep them in memory only.
  * @param capacity the thumbnails kept in memory.
- * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
+ * @param pdfTiles creates the adapter drawing the PDF pages (see `PageboardEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
- * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
+ * @param images the pixels of the images of the documents (`PageboardEngines.images`).
  */
 @Stable
 public class DocumentThumbnails(
@@ -95,7 +95,7 @@ public class DocumentThumbnails(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("DrawView: cannot draw the thumbnail of $documentId: ${e.message}")
+                println("Pageboard: cannot draw the thumbnail of $documentId: ${e.message}")
                 null
             } finally {
                 rendering--
@@ -116,7 +116,7 @@ public class DocumentThumbnails(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot draw the page $index of $documentId: ${e.message}")
+            println("Pageboard: cannot draw the page $index of $documentId: ${e.message}")
             null
         } finally {
             rendering--
@@ -197,9 +197,9 @@ public class DocumentThumbnails(
         }
     }
 
-    private fun drawPage(page: PageContentSnapshot, resources: List<DrawResource>, widthPx: Int): ImageBitmap {
+    private fun drawPage(page: PageContentSnapshot, resources: List<DocumentResource>, widthPx: Int): ImageBitmap {
         // The renderer finds the files of the resources in a document
-        val document = DrawDocument(addInitialPage = false)
+        val document = Document(addInitialPage = false)
         resources.forEach(document::addResource)
         val pdfAdapter = pdfTiles()
         return try {
@@ -219,7 +219,7 @@ public class DocumentThumbnails(
 public fun rememberDocumentThumbnails(
     documents: OpenDocuments,
     directory: String? = null,
-    engines: DrawViewEngines = LocalDrawViewEngines.current
+    engines: PageboardEngines = LocalPageboardEngines.current
 ): DocumentThumbnails {
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()

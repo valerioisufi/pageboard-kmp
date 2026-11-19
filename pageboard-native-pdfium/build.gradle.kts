@@ -2,7 +2,7 @@ plugins {
     id("pageboard.android.native")
 }
 
-description = "PDFium of DrawView for Android (libpdfium.so and its JNI bridge libpdfium_bridge.so), used by pageboard-pdf"
+description = "PDFium of Pageboard for Android (libpdfium.so and its JNI bridge libpdfium_bridge.so), used by pageboard-pdf"
 
 android {
     defaultConfig {

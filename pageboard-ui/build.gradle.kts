@@ -4,7 +4,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "The DrawView editor: screen, bars, tool popovers, dialogs, commands, theme, editor extensions"
+description = "The Pageboard editor: screen, bars, tool popovers, dialogs, commands, theme, editor extensions"
 
 kotlin {
     android {
@@ -34,7 +34,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
-            // The files shared with the other applications (DrawViewFileProvider)
+            // The files shared with the other applications (PageboardFileProvider)
             implementation(libs.androidx.core.ktx)
         }
         jvmMain.dependencies {

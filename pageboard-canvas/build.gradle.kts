@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "The DrawView canvas: the editor of a document (controller, tools, gestures, selection), its tiled rendering, the ports of the engines"
+description = "The Pageboard canvas: the editor of a document (controller, tools, gestures, selection), its tiled rendering, the ports of the engines"
 
 // The trackpad of macOS is the only native library of the canvas
 jvmNatives {

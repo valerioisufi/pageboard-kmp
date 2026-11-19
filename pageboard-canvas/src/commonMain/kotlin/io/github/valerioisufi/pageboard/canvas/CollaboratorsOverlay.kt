@@ -19,14 +19,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 
 /**
@@ -42,7 +42,7 @@ internal class CollaboratorsOverlay {
     }
 
     /** The strokes being drawn (under the stroke in progress on this device). */
-    fun drawInk(scope: DrawScope, controller: DrawViewController, viewport: Rect) {
+    fun drawInk(scope: DrawScope, controller: PageboardController, viewport: Rect) {
         for (collaborator in controller.presence.collaborators) {
             val mesh = collaborator.ink ?: continue
             val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.inkPageId)) ?: continue
@@ -60,7 +60,7 @@ internal class CollaboratorsOverlay {
     }
 
     /** The texts being written and the elements selected or moved, in frames with the names. */
-    fun drawWork(scope: DrawScope, controller: DrawViewController, labels: TextMeasurer) {
+    fun drawWork(scope: DrawScope, controller: PageboardController, labels: TextMeasurer) {
         for (collaborator in controller.presence.collaborators) {
             collaborator.text?.let { scope.drawText(controller, collaborator, it, labels) }
             if (collaborator.selection.isNotEmpty()) scope.drawSelection(controller, collaborator, labels)
@@ -68,7 +68,7 @@ internal class CollaboratorsOverlay {
     }
 
     /** The pointers with the names (of the devices not writing a text). */
-    fun drawPointers(scope: DrawScope, controller: DrawViewController, labels: TextMeasurer) {
+    fun drawPointers(scope: DrawScope, controller: PageboardController, labels: TextMeasurer) {
         for (collaborator in controller.presence.collaborators) {
             if (collaborator.text != null) continue
             val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.pageId)) ?: continue
@@ -79,7 +79,7 @@ internal class CollaboratorsOverlay {
         }
     }
 
-    private fun DrawScope.drawText(controller: DrawViewController, collaborator: Collaborator, text: DrawText, labels: TextMeasurer) {
+    private fun DrawScope.drawText(controller: PageboardController, collaborator: Collaborator, text: TextElement, labels: TextMeasurer) {
         val pageIndex = pageIndexOf(controller, collaborator.textPageId)
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
         val adapter = controller.tileManager.tileRenderer.textAdapter
@@ -91,7 +91,7 @@ internal class CollaboratorsOverlay {
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
 
-    private fun DrawScope.drawSelection(controller: DrawViewController, collaborator: Collaborator, labels: TextMeasurer) {
+    private fun DrawScope.drawSelection(controller: PageboardController, collaborator: Collaborator, labels: TextMeasurer) {
         val pageIndex = pageIndexOf(controller, collaborator.selectionPageId)
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val pageToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
@@ -100,14 +100,14 @@ internal class CollaboratorsOverlay {
         // Moved: drawn here, hidden from the content meanwhile
         if (moved != null) {
             drawIntoCanvas { canvas ->
-                for (element in collaborator.selection.sortedWith(DrawPage.stackOrder)) {
+                for (element in collaborator.selection.sortedWith(Page.stackOrder)) {
                     when (element) {
-                        is DrawImage -> controller.tileManager.tileRenderer.imageOf(controller.document, element)?.let {
+                        is ImageElement -> controller.tileManager.tileRenderer.imageOf(controller.document, element)?.let {
                             TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint)
                         }
-                        is DrawText -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen, page.background.backgroundColor)
-                        is DrawStroke -> painter.draw(canvas, element.mesh, mmToScreen)
-                        is DrawCustomElement -> controller.tileManager.tileRenderer.elements.draw(canvas, element, mmToScreen)
+                        is TextElement -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen, page.background.backgroundColor)
+                        is StrokeElement -> painter.draw(canvas, element.mesh, mmToScreen)
+                        is CustomElement -> controller.tileManager.tileRenderer.elements.draw(canvas, element, mmToScreen)
                         else -> Unit
                     }
                 }
@@ -161,6 +161,6 @@ internal class CollaboratorsOverlay {
         drawText(label, topLeft = topLeft + Offset(padding, padding / 2))
     }
 
-    private fun pageIndexOf(controller: DrawViewController, pageId: String?): Int =
+    private fun pageIndexOf(controller: PageboardController, pageId: String?): Int =
         if (pageId == null) -1 else controller.document.pages.indexOfFirst { it.id == pageId }
 }

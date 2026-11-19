@@ -2,7 +2,7 @@ plugins {
     id("pageboard.compose.library")
 }
 
-description = "Export of DrawView documents as PDF files and images (the exporters and the use case, without their dialog)"
+description = "Export of Pageboard documents as PDF files and images (the exporters and the use case, without their dialog)"
 
 kotlin {
     sourceSets {

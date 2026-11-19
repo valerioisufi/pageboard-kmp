@@ -20,8 +20,8 @@ import io.github.valerioisufi.pageboard.agent.ExternalAgents
 import io.github.valerioisufi.pageboard.agent.ItemOutcome
 import io.github.valerioisufi.pageboard.agent.ToolResult
 import io.github.valerioisufi.pageboard.agent.UndoOutcome
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -36,7 +36,7 @@ import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.util.Locale
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -75,8 +75,8 @@ class AgentReviewEditorTest {
         val agents: ExternalAgents,
         val documentId: String,
         val connection: String,
-        val controller: DrawViewController,
-        val text: DrawText
+        val controller: PageboardController,
+        val text: TextElement
     ) {
         suspend fun call(name: String, arguments: JsonObject): JsonObject =
             assertIs<ToolResult.Value>(agents.tools.call(name, arguments, connection)).json.jsonObject
@@ -130,7 +130,7 @@ class AgentReviewEditorTest {
         }
         val viewModel = DocumentEditorViewModel(documents, sessions)
         setContent {
-            DrawViewTheme(darkTheme = false, dynamicColor = false) {
+            PageboardTheme(darkTheme = false, dynamicColor = false) {
                 AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
                     viewModel.session?.let { EditorSessionScreen(it, onClose = {}, extension = ui.editorExtension) }
                 }
@@ -141,7 +141,7 @@ class AgentReviewEditorTest {
         awaitInRealTime { viewModel.session?.controller != null }
         waitForIdle()
         val controller = viewModel.session!!.controller!!
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = "Old text"
             x = 20f; y = 20f; width = 100f; height = 10f; fontSize = 16f
         }
@@ -194,7 +194,7 @@ class AgentReviewEditorTest {
     @Test
     fun whatAProposalWouldDoIsDrawnOnThePageWhileItIsReviewed() = scene { scene ->
         // More to change: a text to remove and a stroke to move
-        val old = DrawText().apply {
+        val old = TextElement().apply {
             text = "see page 4 (old)"
             x = 20f; y = 60f; width = 100f; height = 10f; fontSize = 16f
         }

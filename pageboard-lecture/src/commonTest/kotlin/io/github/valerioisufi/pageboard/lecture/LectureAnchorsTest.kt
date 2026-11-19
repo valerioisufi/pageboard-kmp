@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.lecture
 
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -15,8 +15,8 @@ class LectureAnchorsTest {
 
     private val start = 1_000_000_000L
 
-    private fun DrawPage.write(x: Float, y: Float, width: Float, atMs: Long) = add(
-        DrawText().apply {
+    private fun Page.write(x: Float, y: Float, width: Float, atMs: Long) = add(
+        TextElement().apply {
             this.x = x; this.y = y; this.width = width; height = 8f; text = "notes"
             added = Stamp(start + atMs, 0, "tablet")
         }
@@ -24,7 +24,7 @@ class LectureAnchorsTest {
 
     @Test
     fun theBlockWrittenWhenTheNoteWasSaid() {
-        val page = DrawPage().apply {
+        val page = Page().apply {
             write(20f, 20f, 100f, atMs = 60_000)
             // Two lines of one block, written around the 10th minute
             write(20f, 100f, 120f, atMs = 595_000)
@@ -36,7 +36,7 @@ class LectureAnchorsTest {
 
     @Test
     fun withoutWritingOfThatMomentTheLastBlockOfTheLecture() {
-        val page = DrawPage().apply {
+        val page = Page().apply {
             write(20f, 20f, 100f, atMs = -3_600_000)
             write(20f, 60f, 100f, atMs = 120_000)
             write(20f, 150f, 100f, atMs = 300_000)
@@ -46,14 +46,14 @@ class LectureAnchorsTest {
 
     @Test
     fun noWritingOfTheLectureNoAnchor() {
-        val page = DrawPage().apply { write(20f, 20f, 100f, atMs = -3_600_000) }
+        val page = Page().apply { write(20f, 20f, 100f, atMs = -3_600_000) }
         assertNull(LectureAnchors.anchorOf(page, start + 600_000, start, start + 1_800_000))
     }
 
     @Test
     fun theQuoteIsFoundInTheTypedTextTheHandwritingOrTheSlide() {
-        val page = DrawPage().apply {
-            add(DrawText().apply { x = 20f; y = 30f; width = 150f; height = 10f; text = "Il limite di una funzione in un punto" })
+        val page = Page().apply {
+            add(TextElement().apply { x = 20f; y = 30f; width = 150f; height = 10f; text = "Il limite di una funzione in un punto" })
         }
         // A typed text, its words in any case and order
         assertEquals(Rect(20f, 30f, 170f, 40f), LectureAnchors.quoteAnchor(page, "limite di una FUNZIONE"))

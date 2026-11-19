@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.text.TextRoom
@@ -23,7 +23,7 @@ class TextHeightTest {
     private val adapter = ComposeTextTileAdapter(createFontFamilyResolver())
 
     /** A note of the lecture assistant: a title and two items whose next lines hang. */
-    private val note = DrawText().apply {
+    private val note = TextElement().apply {
         text = """
             **Why LST is dynamic at the level of the job**
             - **LST has a dynamic priority at the level of the job**: the priority depends on the **slack** (the time left before the deadline less the time of execution left).
@@ -36,7 +36,7 @@ class TextHeightTest {
     }
 
     /** The lowest row of pixels [text] draws at [pxPerMm], in millimeters from its top. */
-    private fun drawnBottom(text: DrawText, room: Float, pxPerMm: Float): Float {
+    private fun drawnBottom(text: TextElement, room: Float, pxPerMm: Float): Float {
         val bitmap = ImageBitmap(ceil(text.width * pxPerMm).toInt() + 2, ceil(room * pxPerMm).toInt())
         adapter.drawText(Canvas(bitmap), text, Matrix2D().postScale(pxPerMm, pxPerMm), TextTileAdapter.NO_PAPER)
         val pixels = bitmap.toPixelMap()
@@ -61,7 +61,7 @@ class TextHeightTest {
     fun aTextFollowingItsWidthIsDrawnInItsBox() {
         val pxPerMm = 4f
         for (alignment in TextAlignment.entries) {
-            val text = DrawText().apply { this.text = "A short line"; width = 150f; fontSize = 11f; autoWidth = true; this.alignment = alignment }
+            val text = TextElement().apply { this.text = "A short line"; width = 150f; fontSize = 11f; autoWidth = true; this.alignment = alignment }
             val natural = assertNotNull(adapter.measure(text)).width
             val box = TextRoom.boxWidth(natural, text.width)
             val left = TextRoom.boxLeft(box, text.width, alignment)

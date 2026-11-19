@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "The DrawView lecture assistant without its UI: recording, transcription, the models, the lectures of the documents and their sharing"
+description = "The Pageboard lecture assistant without its UI: recording, transcription, the models, the lectures of the documents and their sharing"
 
 kotlin {
     val nativeDir = rootProject.layout.projectDirectory.dir("native")

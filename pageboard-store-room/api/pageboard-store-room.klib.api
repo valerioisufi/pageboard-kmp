@@ -5,12 +5,12 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-store-room>
-abstract class io.github.valerioisufi.pageboard.store.room.db/DrawDatabase : androidx.room/RoomDatabase { // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase|null[0]
-    constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase.<init>|<init>(){}[0]
+// Library unique name: <pageboard-kmp:pageboard-store-room>
+abstract class io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase : androidx.room/RoomDatabase { // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase.<init>|<init>(){}[0]
 }
 
-final class io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl : io.github.valerioisufi.pageboard.store.room.db/DrawDatabase { // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl|null[0]
+final class io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl : io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase { // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl.<init>|<init>(){}[0]
 
     final fun createAutoMigrations(kotlin.collections/Map<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>, androidx.room.migration/AutoMigrationSpec>): kotlin.collections/List<androidx.room.migration/Migration> // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl.createAutoMigrations|createAutoMigrations(kotlin.collections.Map<kotlin.reflect.KClass<out|androidx.room.migration.AutoMigrationSpec>,androidx.room.migration.AutoMigrationSpec>){}[0]
@@ -18,7 +18,7 @@ final class io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl : i
 }
 
 final class io.github.valerioisufi.pageboard.store.room/RoomDocumentStore : io.github.valerioisufi.pageboard.store.space/SpaceStore, io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.store/PreferenceStore { // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.store.room.db/DrawDatabase, io.github.valerioisufi.pageboard.model/StrokeModeller) // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.pageboard.store.room.db.DrawDatabase;io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase, io.github.valerioisufi.pageboard.model/StrokeModeller) // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase;io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
 
     final val documents // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.documents|{}documents[0]
         final fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.store/DocumentSummary>> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.documents.<get-documents>|<get-documents>(){}[0]
@@ -37,14 +37,14 @@ final class io.github.valerioisufi.pageboard.store.room/RoomDocumentStore : io.g
     final suspend fun catalogVersionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.catalogVersionVector|catalogVersionVector(kotlin.String){}[0]
     final suspend fun compactOperations(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.compactOperations|compactOperations(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun compactedOperations(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.compactedOperations|compactedOperations(kotlin.String){}[0]
-    final suspend fun createDocument(kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/String?): io.github.valerioisufi.pageboard.model/DrawDocument // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
+    final suspend fun createDocument(kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/String?): io.github.valerioisufi.pageboard.model/Document // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
     final suspend fun createFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.createFolder|createFolder(kotlin.String;kotlin.String?){}[0]
     final suspend fun deleteDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.deleteDocument|deleteDocument(kotlin.String){}[0]
     final suspend fun deleteFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.deleteFolder|deleteFolder(kotlin.String){}[0]
-    final suspend fun insertDocument(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun insertDocument(io.github.valerioisufi.pageboard.model/Document, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.Document;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
-    final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/DrawDocument? // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     final suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
     final suspend fun loadPage(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.store/LoadedPage? // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.loadPage|loadPage(kotlin.String;kotlin.Int){}[0]
     final suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
@@ -75,5 +75,5 @@ final class io.github.valerioisufi.pageboard.store.room/RoomDocumentStore : io.g
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.versionVector|versionVector(kotlin.String){}[0]
 }
 
-final fun io.github.valerioisufi.pageboard.store.room.db/createDrawDatabase(androidx.room/RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db/DrawDatabase> = ...): io.github.valerioisufi.pageboard.store.room.db/DrawDatabase // io.github.valerioisufi.pageboard.store.room.db/createDrawDatabase|createDrawDatabase(androidx.room.RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db.DrawDatabase>){}[0]
-final fun io.github.valerioisufi.pageboard.store.room.db/getInMemoryDatabaseBuilder(): androidx.room/RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db/DrawDatabase> // io.github.valerioisufi.pageboard.store.room.db/getInMemoryDatabaseBuilder|getInMemoryDatabaseBuilder(){}[0]
+final fun io.github.valerioisufi.pageboard.store.room.db/createPageboardDatabase(androidx.room/RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase> = ...): io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase // io.github.valerioisufi.pageboard.store.room.db/createPageboardDatabase|createPageboardDatabase(androidx.room.RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase>){}[0]
+final fun io.github.valerioisufi.pageboard.store.room.db/getInMemoryDatabaseBuilder(): androidx.room/RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase> // io.github.valerioisufi.pageboard.store.room.db/getInMemoryDatabaseBuilder|getInMemoryDatabaseBuilder(){}[0]

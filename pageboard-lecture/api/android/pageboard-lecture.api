@@ -306,9 +306,9 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAnchors {
 	public static final field BEFORE_MS J
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureAnchors;
 	public static final field MIN_SHARED_WORDS D
-	public final fun anchorOf (Lio/github/valerioisufi/pageboard/model/DrawPage;JJJ)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public final fun quoteAnchor (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public static synthetic fun quoteAnchor$default (Lio/github/valerioisufi/pageboard/lecture/LectureAnchors;Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun anchorOf (Lio/github/valerioisufi/pageboard/model/Page;JJJ)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun quoteAnchor (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public static synthetic fun quoteAnchor$default (Lio/github/valerioisufi/pageboard/lecture/LectureAnchors;Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/LectureArrival {
@@ -477,7 +477,7 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labe
 
 public final class io/github/valerioisufi/pageboard/lecture/LectureModelsKt {
 	public static final fun formatLectureTime (J)Ljava/lang/String;
-	public static final fun resolvedPageIndex (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;Lio/github/valerioisufi/pageboard/model/DrawDocument;)Ljava/lang/Integer;
+	public static final fun resolvedPageIndex (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;Lio/github/valerioisufi/pageboard/model/Document;)Ljava/lang/Integer;
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/LecturePart : java/lang/Enum {

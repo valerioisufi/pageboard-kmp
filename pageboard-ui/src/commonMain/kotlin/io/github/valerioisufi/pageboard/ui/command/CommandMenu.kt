@@ -36,7 +36,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.platform.UnfocusedPopupGuard
 import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
 import io.github.valerioisufi.pageboard.ui.platform.popupTakesFocus
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlin.jvm.JvmName
 
 /**
@@ -91,7 +91,7 @@ public fun CommandMenu(
                     enabled = command.isEnabled(),
                     icon = when {
                         command.icon != null -> command.icon.invoke()
-                        checked == true -> rememberVectorPainter(DrawViewIcons.Check)
+                        checked == true -> rememberVectorPainter(PageboardIcons.Check)
                         else -> null
                     },
                     shortcut = conventions?.let { command.shortcutLabel(it) },
@@ -192,7 +192,7 @@ public fun MenuItem(
         }
         Text(text, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1, modifier = Modifier.weight(1f))
         if (shortcut != null) Text(shortcut, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
-        if (checked) Icon(DrawViewIcons.Check, contentDescription = null, tint = colors.primary, modifier = Modifier.size(18.dp))
+        if (checked) Icon(PageboardIcons.Check, contentDescription = null, tint = colors.primary, modifier = Modifier.size(18.dp))
     }
 }
 

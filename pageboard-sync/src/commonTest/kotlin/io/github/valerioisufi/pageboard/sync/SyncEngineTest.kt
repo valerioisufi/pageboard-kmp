@@ -8,12 +8,12 @@ import io.github.valerioisufi.pageboard.model.AttachmentReceiver
 import io.github.valerioisufi.pageboard.model.AttachmentSource
 import io.github.valerioisufi.pageboard.model.BrushConfig
 import io.github.valerioisufi.pageboard.model.DocumentAttachments
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeMesh
@@ -150,11 +150,11 @@ class SyncEngineTest {
 
     @Test
     fun theMessagesSurviveTheirBinaryForm() {
-        val document = DrawDocument()
+        val document = Document()
         document.pages[0].add(stroke(1f, 2f))
         document.pages[0].add(text("hello"))
         val session = DocumentSession(document, "ada")
-        session.submit(AddPage.of(DrawPage(orderKey = document.orderKeyAt(1))))
+        session.submit(AddPage.of(Page(orderKey = document.orderKeyAt(1))))
         val operation = Operation(
             OperationId("ada", 1),
             session.clock.next(),
@@ -361,7 +361,7 @@ class SyncEngineTest {
         }
     }
 
-    private fun stroke(x: Float, y: Float): DrawStroke {
+    private fun stroke(x: Float, y: Float): StrokeElement {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, y, x + 5f, y, x + 5f, y + 5f, x, y + 5f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
@@ -370,10 +370,10 @@ class SyncEngineTest {
             size = 1f,
             points = listOf(StrokePoint(x, y, 0.5f, 0L), StrokePoint(x + 5f, y + 5f, 0.5f, 16L))
         )
-        return DrawStroke(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
+        return StrokeElement(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
     }
 
-    private fun text(content: String) = DrawText().apply {
+    private fun text(content: String) = TextElement().apply {
         text = content
         x = 10f; y = 20f; width = 40f; height = 10f
         fontSize = 16f
@@ -382,7 +382,7 @@ class SyncEngineTest {
     /** A change of a random kind on a random page of [session]'s document. */
     private fun randomChange(session: DocumentSession, random: Random): DocumentChange? {
         val document = session.document
-        if (document.pages.isEmpty()) return AddPage.of(DrawPage(orderKey = document.orderKeyAt(0)))
+        if (document.pages.isEmpty()) return AddPage.of(Page(orderKey = document.orderKeyAt(0)))
         val page = document.pages[random.nextInt(document.pages.size)]
         val strokes = page.strokes.toList()
         return when (random.nextInt(8)) {
@@ -393,7 +393,7 @@ class SyncEngineTest {
                 PlaceElements(page.id, listOf(StrokePlacement(it.id, AffineTransform(tx = random.nextInt(10).toFloat()))), target.id)
             }
             4 -> page.texts.firstOrNull()?.let { UpdateTexts(page.id, listOf(it.toData().copy(text = "u${random.nextInt(100)}"))) }
-            5 -> AddPage.of(DrawPage(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
+            5 -> AddPage.of(Page(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
             6 -> if (document.pages.size > 1) RemovePage(page.id) else null
             else -> MovePages.toOrder(document, document.pages.map { it.id }.shuffled(random))
         }
@@ -489,7 +489,7 @@ class SyncEngineTest {
         assertEquals(bob.store.folders.first().single().id, received.folderId)
 
         // Live: the changes of each one reach the other
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         bob.change(document.id) { session -> RemoveElements.of(session.document.pages[0], session.document.pages[0].strokes.toList()) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob))
@@ -745,8 +745,8 @@ class SyncEngineTest {
         assertEquals(listOf("ada", "cy"), bob.engine.peers.value.map { it.name }.sorted())
 
         // Still the same document through the connection kept
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob, cy))
 
@@ -824,7 +824,7 @@ class SyncEngineTest {
 
         // Out of the network: still connected at first, both go on changing the document
         cable.cut.value = true
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         bob.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f))) }
         advanceTimeBy(500)
         assertEquals(listOf("bob"), ada.engine.peers.value.map { it.name })
@@ -850,9 +850,9 @@ class SyncEngineTest {
         val bytes = Random(1).nextBytes(600_000)
         ada.files.files["/ada/photo.jpg"] = bytes
         ada.change(document.id) { session ->
-            val image = DrawImage().apply { resourceId = "photo"; x = 10f; y = 10f; width = 50f; height = 40f }
+            val image = ImageElement().apply { resourceId = "photo"; x = 10f; y = 10f; width = 50f; height = 40f }
             CompositeChange(
-                listOf(AddResource.of("photo", DrawResource.ResourceType.IMAGE, "/ada/photo.jpg"), AddElements.of(session.document.pages[0], listOf(image)))
+                listOf(AddResource.of("photo", DocumentResource.ResourceType.IMAGE, "/ada/photo.jpg"), AddElements.of(session.document.pages[0], listOf(image)))
             )
         }
 
@@ -1079,7 +1079,7 @@ class SyncEngineTest {
 
         // The clocks of Ada and Cy are not pushed: their next changes are stamped now
         ada.change(document.id) { RenameDocument("Optics") }
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         val day = 24L * 60 * 60 * 1000
         assertTrue(ada.snapshot(document.id).titleVersion.time < currentTimeMillis() + day)
@@ -1181,7 +1181,7 @@ class SyncEngineTest {
 
         // Cy meets Bob only, then goes; Bob meets Ada later, with the proofs it kept
         cy.join(invitation, "bob")
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(bob, cy))
         listOf(bob, cy).forEach { it.disconnect() }
@@ -1358,7 +1358,7 @@ class SyncEngineTest {
         val (ada, bob) = devices
         val document = ada.store.createDocument("Notes")
         ada.change(document.id) { session ->
-            AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(1)).apply { add(stroke(5f, 5f)) })
+            AddPage.of(Page(orderKey = session.document.orderKeyAt(1)).apply { add(stroke(5f, 5f)) })
         }
         val invitation = ada.share(document.id, "Notes")
         bob.join(invitation, "ada")
@@ -1390,7 +1390,7 @@ class SyncEngineTest {
         cy.join(invitation, "ada")
         advanceUntilIdle()
         cy.disconnect()
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         val vector = ada.versionVector(document.id)
         val adaReplica = ada.store.replicaId()
@@ -1421,7 +1421,7 @@ class SyncEngineTest {
         val bytes = Random(3).nextBytes(10_000)
         val bobReplica = bob.store.replicaId()
         val sequence = (ada.versionVector(document.id)[bobReplica] ?: 0L) + 1
-        val image = AddResource(ResourceData("photo", DrawResource.ResourceType.IMAGE, Sha256.of(bytes)))
+        val image = AddResource(ResourceData("photo", DocumentResource.ResourceType.IMAGE, Sha256.of(bytes)))
 
         // Bob adds an image, then gives another file for it: not kept
         val channel = impostor(bob, ada, document.id)
@@ -1460,12 +1460,12 @@ class SyncEngineTest {
 
     /** The operations of [count] changes of every kind made on a document of its own (with their pages and elements). */
     private fun operations(count: Int, random: Random): List<Operation> {
-        val session = DocumentSession(DrawDocument(), "ada")
+        val session = DocumentSession(Document(), "ada")
         val made = mutableListOf<Operation>()
         session.addObserver(ChangeObserver { made += it.operation })
         repeat(count) { randomChange(session, random)?.let(session::submit) }
-        session.submit(CompositeChange(listOf(RenameDocument("Lab"), AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(0))))))
-        session.submit(AddResource.of("photo", DrawResource.ResourceType.IMAGE, "", "abc"))
+        session.submit(CompositeChange(listOf(RenameDocument("Lab"), AddPage.of(Page(orderKey = session.document.orderKeyAt(0))))))
+        session.submit(AddResource.of("photo", DocumentResource.ResourceType.IMAGE, "", "abc"))
         return made
     }
 
@@ -1473,7 +1473,7 @@ class SyncEngineTest {
     private fun messages(random: Random): List<SyncMessage> {
         val identity = DeviceIdentity.generate()
         val key = DocumentKey.generate()
-        val document = DrawDocument().apply { pages[0].add(stroke(1f, 2f)); pages[0].add(text("hello")) }
+        val document = Document().apply { pages[0].add(stroke(1f, 2f)); pages[0].add(text("hello")) }
         val signed = Membership("doc", identity.publicKey, members = listOf(Member(identity.publicKey, "ada", "Ada", Role.OWNER)), keyHash = key.hash).signedBy(identity)
         val sealed = operations(10, random).map { OperationSeal(key).seal(it.id.replica, it.id.sequence, OperationProof.sign(identity, "doc", it.id.replica, it.id.sequence, SyncCodec.encodeOperation(it))) }
         return listOf(
@@ -1569,7 +1569,7 @@ class SyncEngineTest {
 
         // Ada and Cy go on: the changes of Cy reach Ada, and the document is the same on both (Cy,
         // not connected to Bob, keeps what was removed: Ada drops it)
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
         advanceUntilIdle()
         assertSameShown(document.id, listOf(ada, cy))
         // And it is read again from the store of Ada as it is
@@ -1594,7 +1594,7 @@ class SyncEngineTest {
         assertTrue(isClosed(channel))
 
         // Ada goes on with Cy
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, cy))
     }
@@ -1637,7 +1637,7 @@ class SyncEngineTest {
         advanceUntilIdle()
         assertTrue(bob.store.isReadOnly(document.id))
         // Refused here
-        bob.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        bob.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         assertEquals(1, bob.snapshot(document.id).pages.size)
         // The changes of Ada reach Bob
         ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f))) }
@@ -1658,7 +1658,7 @@ class SyncEngineTest {
         val open = assertNotNull(bob.documents.open(document.id))
         open.edit { session ->
             session.isReadOnly = false
-            session.submit(AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(1))))
+            session.submit(AddPage.of(Page(orderKey = session.document.orderKeyAt(1))))
         }
         bob.documents.close(open)
         advanceUntilIdle()
@@ -1687,7 +1687,7 @@ class SyncEngineTest {
         assertEquals(listOf("bob"), ada.engine.peers.value.map { it.name })
 
         // With the old key Cy is refused, and its changes stay with it
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         cy.engine.connect(cy.transport.connect("bob"), document.id, oldKey)
         advanceUntilIdle()
         assertTrue(bob.engine.peers.value.none { it.name == "cy" })
@@ -1695,7 +1695,7 @@ class SyncEngineTest {
         // The others go on together, with the new key
         bob.disconnect()
         bob.join(invitation, "ada")
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob))
     }
@@ -1747,10 +1747,10 @@ class SyncEngineTest {
         // Bob has the same image in a document of its own
         val own = bob.store.createDocument("Mine")
         bob.files.files["/bob/photo.jpg"] = bytes
-        bob.change(own.id) { AddResource.of("own-photo", DrawResource.ResourceType.IMAGE, "/bob/photo.jpg", hash) }
+        bob.change(own.id) { AddResource.of("own-photo", DocumentResource.ResourceType.IMAGE, "/bob/photo.jpg", hash) }
         val document = ada.store.createDocument("Slides")
         ada.files.files["/ada/photo.jpg"] = bytes
-        ada.change(document.id) { AddResource.of("photo", DrawResource.ResourceType.IMAGE, "/ada/photo.jpg", hash) }
+        ada.change(document.id) { AddResource.of("photo", DocumentResource.ResourceType.IMAGE, "/ada/photo.jpg", hash) }
 
         bob.join(ada.share(document.id, "Slides"), "ada")
         advanceUntilIdle()
@@ -1809,7 +1809,7 @@ class SyncEngineTest {
         cy.join(invitation, "ada")
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob, cy))
-        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        cy.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob, cy))
     }

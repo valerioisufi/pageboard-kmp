@@ -1,14 +1,14 @@
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
 import io.github.valerioisufi.pageboard.model.change.RenameDocument
 
 /** A document changed and undone through its session, without any UI. */
 fun main() {
-    val document = DrawDocument(title = "Notes")
+    val document = Document(title = "Notes")
     val session = DocumentSession(document, "consumer")
-    val text = DrawText().apply {
+    val text = TextElement().apply {
         text = "Hello"
         width = 40f
         height = 10f

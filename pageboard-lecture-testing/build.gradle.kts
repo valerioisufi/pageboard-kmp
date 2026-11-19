@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "The test doubles of the DrawView lecture assistant: a microphone, a notebook, the secrets in memory"
+description = "The test doubles of the Pageboard lecture assistant: a microphone, a notebook, the secrets in memory"
 
 kotlin {
     sourceSets {

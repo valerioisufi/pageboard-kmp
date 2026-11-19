@@ -24,18 +24,18 @@ class PageIndexTest {
 
     @Test
     fun aPageLoadedAtOnceIsThePageBuiltElementByElement() {
-        val built = DrawPage()
+        val built = Page()
         val shown = elements()
         shown.forEach(built::add)
         val removed = elements(prefix = "gone").onEach { it.removed = Stamp(9L, 0, "ada") }
         removed.forEach(built::keepRemoved)
 
-        val loaded = DrawPage()
+        val loaded = Page()
         val shownAgain = elements()
         val removedAgain = elements(prefix = "gone").onEach { it.removed = Stamp(9L, 0, "ada") }
         loaded.load(shownAgain, removedAgain)
 
-        fun List<DrawElement>.described() = map { "${it.id} ${it.order.key}" }
+        fun List<PageElement>.described() = map { "${it.id} ${it.order.key}" }
         assertEquals(built.strokes.described(), loaded.strokes.described())
         assertEquals(built.texts.described(), loaded.texts.described())
         assertEquals(built.images.described(), loaded.images.described())
@@ -65,7 +65,7 @@ class PageIndexTest {
     @Test
     fun theElementsAreFoundWhereverTheChangesPutThem() {
         val random = Random(4)
-        val document = DrawDocument()
+        val document = Document()
         repeat(2) { document.addPage() }
         val session = DocumentSession(document, replica = "ada")
         val known = mutableSetOf<String>()
@@ -92,7 +92,7 @@ class PageIndexTest {
     }
 
     /** Every element known is found where the lists of the pages have it, and only there. */
-    private fun checkFound(document: DrawDocument, known: Set<String>, step: String) {
+    private fun checkFound(document: Document, known: Set<String>, step: String) {
         for (id in known) {
             val shownOn = document.allPages().filter { page -> page.elements().any { it.id == id } }
             val hiddenOn = document.allPages().filter { page -> page.removedElements.any { it.id == id } }
@@ -107,7 +107,7 @@ class PageIndexTest {
     }
 
     /** Elements of every kind, some without order, some with orders of the changes or of a page built. */
-    private fun elements(prefix: String = "e"): List<DrawElement> = listOf(
+    private fun elements(prefix: String = "e"): List<PageElement> = listOf(
         stroke("$prefix-s1"),
         stroke("$prefix-s2").withOrder(ElementOrder.onTop(Stamp(5L, 0, "ada"), 0)),
         stroke("$prefix-s3"),
@@ -115,16 +115,16 @@ class PageIndexTest {
         stroke("$prefix-s5"),
         text("$prefix-t1"),
         text("$prefix-t2").withOrder(ElementOrder.onTop(Stamp(4L, 0, "ada"), 1)),
-        DrawImage("$prefix-i1").apply { resourceId = "image" },
-        DrawPdf(2, "$prefix-p1").apply { resourceId = "slides" },
-        DrawTextMarkup("$prefix-m1", "slides", 2, 100f, 100f, 0, 4, "text", listOf(Rect(0f, 0f, 10f, 2f)), TextMarkupKind.HIGHLIGHT, 0x66FFFF00),
-        DrawCustomElement("formula", "$prefix-c1"),
+        ImageElement("$prefix-i1").apply { resourceId = "image" },
+        PdfElement(2, "$prefix-p1").apply { resourceId = "slides" },
+        TextMarkupElement("$prefix-m1", "slides", 2, 100f, 100f, 0, 4, "text", listOf(Rect(0f, 0f, 10f, 2f)), TextMarkupKind.HIGHLIGHT, 0x66FFFF00),
+        CustomElement("formula", "$prefix-c1"),
         stroke("$prefix-s6").withOrder(ElementOrder.onTop(Stamp(6L, 0, "ada"), 0))
     )
 
-    private fun <T : DrawElement> T.withOrder(order: ElementOrder): T = apply { this.order = order }
+    private fun <T : PageElement> T.withOrder(order: ElementOrder): T = apply { this.order = order }
 
-    private fun stroke(id: String): DrawStroke = StrokeData(
+    private fun stroke(id: String): StrokeElement = StrokeData(
         id = id,
         points = List(4) { i -> StrokePoint(10f + i, 20f, 0.5f, i * 8L) },
         tool = StrokeTool.PRESSURE_PEN,
@@ -132,7 +132,7 @@ class PageIndexTest {
         color = 0xFF000000.toInt()
     ).toElement(StrokeModeller { _, _, _ -> null })
 
-    private fun text(id: String): DrawText =
+    private fun text(id: String): TextElement =
         TextData(id, "text $id", x = 20f, y = 30f, width = 50f, color = 0xFF000000.toInt(), fontSize = 5f).toElement(StrokeModeller { _, _, _ -> null })
 
     private companion object {

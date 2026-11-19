@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.store.DocumentSummary
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -133,7 +133,7 @@ internal fun colorHex(argb: Int): String {
     return if (alpha == 0xFF) "#$rgb" else "#$rgb${alpha.toString(16).padStart(2, '0').uppercase()}"
 }
 
-internal fun DrawStroke.toEntry(): StrokeEntry {
+internal fun StrokeElement.toEntry(): StrokeEntry {
     val box = bounds
     return StrokeEntry(
         id = id,
@@ -239,7 +239,7 @@ internal data class MarkupEntry(
 )
 
 /** [markup] on [page] as a model reads it: its box in the millimeters of the page. */
-internal fun markupEntryOf(page: DrawPage, markup: DrawTextMarkup): MarkupEntry {
+internal fun markupEntryOf(page: Page, markup: TextMarkupElement): MarkupEntry {
     val matrix = markup.pointsToPageMm(page)
     val box = markup.rects.map { matrix.mapRect(it) }.reduceOrNull { all, next -> all.union(next) } ?: Rect(0f, 0f, 0f, 0f)
     return MarkupEntry(
@@ -399,7 +399,7 @@ internal data class ShapeEntry(
 )
 
 /** [value], the value of [element], as [ShapeEntry]. */
-internal fun shapeEntryOf(element: DrawCustomElement, value: ShapeElement): ShapeEntry {
+internal fun shapeEntryOf(element: CustomElement, value: ShapeElement): ShapeEntry {
     val heads = listOf(value.startHead, value.endHead).count { it != ShapeHead.NONE }
     val kind = when {
         !value.kind.isLine -> value.kind.name.lowercase()

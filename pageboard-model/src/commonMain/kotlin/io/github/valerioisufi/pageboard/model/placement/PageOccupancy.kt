@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.placement
 
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
 import io.github.valerioisufi.pageboard.model.PdfInk
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -42,8 +42,8 @@ public class PageOccupancy(
          * on the text, already taken.
          */
         public fun of(
-            page: DrawPage,
-            pdfText: (DrawPdf) -> PdfTextLayout? = { null },
+            page: Page,
+            pdfText: (PdfElement) -> PdfTextLayout? = { null },
             excluded: Set<String> = emptySet()
         ): PageOccupancy = of(page, pdfText, { null }, excluded)
 
@@ -52,15 +52,15 @@ public class PageOccupancy(
          * which the lines of its text leave out.
          */
         public fun of(
-            page: DrawPage,
-            pdfText: (DrawPdf) -> PdfTextLayout?,
-            pdfInk: (DrawPdf) -> PdfInk?,
+            page: Page,
+            pdfText: (PdfElement) -> PdfTextLayout?,
+            pdfInk: (PdfElement) -> PdfInk?,
             excluded: Set<String> = emptySet()
         ): PageOccupancy {
             val boxes = mutableListOf<Rect>()
             for (element in page.elements()) {
-                if (element.id in excluded || element is DrawTextMarkup) continue
-                if (element is DrawPdf) {
+                if (element.id in excluded || element is TextMarkupElement) continue
+                if (element is PdfElement) {
                     val ink = pdfInk(element)
                     boxes += if (ink != null) ink.boxesIn(fitPdfPage(ink.width.toDouble(), ink.height.toDouble(), page.rect())) else pdfBoxes(page, pdfText(element))
                     continue
@@ -78,7 +78,7 @@ public class PageOccupancy(
         }
 
         /** The lines of the text of a PDF page drawn on [page], or the whole page without text. */
-        private fun pdfBoxes(page: DrawPage, layout: PdfTextLayout?): List<Rect> {
+        private fun pdfBoxes(page: Page, layout: PdfTextLayout?): List<Rect> {
             if (layout == null || !layout.hasText) return listOf(page.rect())
             val fit = fitPdfPage(layout.widthPt.toDouble(), layout.heightPt.toDouble(), page.rect())
             val scale = fit.width / layout.widthPt

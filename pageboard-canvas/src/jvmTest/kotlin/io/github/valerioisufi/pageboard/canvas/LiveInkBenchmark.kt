@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.mapRect
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileKey
 import io.github.valerioisufi.pageboard.canvas.render.tile.TilePyramid
@@ -123,7 +123,7 @@ class LiveInkBenchmark {
     fun thePenUp() {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val document = SyntheticDocuments.notebook(pages = 10, strokesPerPage = 400, modeller = InkStrokeModeller)
-        val controller = DrawViewController(document = document, coroutineScope = scope, density = 2f)
+        val controller = PageboardController(document = document, coroutineScope = scope, density = 2f)
         try {
             controller.viewport.setSize(VIEWPORT.width, VIEWPORT.height)
             fillTheScreen(controller)
@@ -143,7 +143,7 @@ class LiveInkBenchmark {
     }
 
     /** Draws frames until every tile on screen is rasterized. */
-    private fun fillTheScreen(controller: DrawViewController) {
+    private fun fillTheScreen(controller: PageboardController) {
         val canvas = Canvas(ImageBitmap(64, 64))
         val start = TimeSource.Monotonic.markNow()
         while (start.elapsedNow() < TIMEOUT) {
@@ -156,7 +156,7 @@ class LiveInkBenchmark {
         error("The screen is not filled after $TIMEOUT")
     }
 
-    private fun visibleTiles(controller: DrawViewController, rects: List<Rect>, camera: Matrix2D): List<TileKey> {
+    private fun visibleTiles(controller: PageboardController, rects: List<Rect>, camera: Matrix2D): List<TileKey> {
         val screenToWorld = Matrix2D()
         check(camera.invert(screenToWorld))
         val world = screenToWorld.mapRect(VIEWPORT)

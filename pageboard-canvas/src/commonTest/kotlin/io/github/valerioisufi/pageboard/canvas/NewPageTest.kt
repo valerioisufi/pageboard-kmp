@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.CommittedChange
@@ -27,20 +27,20 @@ import kotlinx.coroutines.test.runTest
 class NewPageTest {
 
     /** A document of [pages] A4 pages on ruled paper. */
-    private fun controller(scope: CoroutineScope, pages: Int = 1): DrawViewController {
-        val document = DrawDocument(defaultBackground = PageBackground.Ruled())
+    private fun controller(scope: CoroutineScope, pages: Int = 1): PageboardController {
+        val document = Document(defaultBackground = PageBackground.Ruled())
         repeat(pages - 1) { document.addPage() }
-        return DrawViewController(document = document, coroutineScope = scope).also { it.viewport.setSize(800f, 1200f) }
+        return PageboardController(document = document, coroutineScope = scope).also { it.viewport.setSize(800f, 1200f) }
     }
 
     /** The pages the changes committed by [controller] from now on add, as they are sent. */
-    private fun addedPages(controller: DrawViewController) = mutableListOf<CommittedChange>().also { list ->
+    private fun addedPages(controller: PageboardController) = mutableListOf<CommittedChange>().also { list ->
         controller.session.addObserver { list.add(it) }
     }
 
     private fun List<CommittedChange>.sentPage() = assertIs<AddPage>(single().operation.change).page
 
-    private fun DrawPage.format() = Triple(widthMm, heightMm, background)
+    private fun Page.format() = Triple(widthMm, heightMm, background)
 
     @Test
     fun aPageAddedAfterAPageOfItsOwnFormatIsLikeIt() = runTest(UnconfinedTestDispatcher()) {
@@ -87,8 +87,8 @@ class NewPageTest {
         val controller = controller(backgroundScope)
         val document = controller.document
         // A slide, as MediaManager.importPdf makes it: on the background of the document
-        val slide = DrawPage(widthMm = 254f, heightMm = 142.875f, background = document.defaultBackground, orderKey = document.orderKeyAt(1)).apply {
-            add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "slides" })
+        val slide = Page(widthMm = 254f, heightMm = 142.875f, background = document.defaultBackground, orderKey = document.orderKeyAt(1)).apply {
+            add(PdfElement(pdfPageIndex = 0).apply { resourceId = "slides" })
         }
         controller.session.submit(AddPage.of(slide))
 

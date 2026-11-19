@@ -13,7 +13,7 @@ import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -90,7 +90,7 @@ object ShapeRenderer : ElementRenderer<Shape> {
 fun shapesExtension(): EditorExtension = EditorExtension {
     toolbarActions { context ->
         val next = remember(context) { ShapeSequence() }
-        EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(context, next.next()) })
+        EditorActionButton(PageboardIcons.Star, "Add a shape", onClick = { addShape(context, next.next()) })
     }
 }
 

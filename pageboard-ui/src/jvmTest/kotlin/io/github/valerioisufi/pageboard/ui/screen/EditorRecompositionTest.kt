@@ -11,12 +11,12 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.test.SkikoComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.RenameDocument
 import io.github.valerioisufi.pageboard.model.geometry.Point
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlin.test.BeforeTest
@@ -42,7 +42,7 @@ class EditorRecompositionTest {
 
     @Test
     fun aStrokeComposesNothingAgain() = runDesktopComposeUiTest(width = 1280, height = 800) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val counter = editor(controller)
         val page = controller.document.pages.first()
         fun stroke() = runOnIdle { controller.session.submit(AddElements.of(page, listOf(CompositionCounter.stroke()))) }
@@ -67,7 +67,7 @@ class EditorRecompositionTest {
 
     @Test
     fun theFieldOfATextFollowsAPanWithoutComposingAgain() = runDesktopComposeUiTest(width = 1280, height = 800) {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val counter = editor(controller)
         val editor = controller.textEditorManager
         runOnIdle { editor.startNewText(pageIndex = 0, xMm = 40f, yMm = 60f) }
@@ -95,11 +95,11 @@ class EditorRecompositionTest {
     }
 
     /** Composes the editor of [controller], counting what it composes again. */
-    private fun SkikoComposeUiTest.editor(controller: DrawViewController): CompositionCounter {
+    private fun SkikoComposeUiTest.editor(controller: PageboardController): CompositionCounter {
         val counter = CompositionCounter().apply { named = true }
         setContent {
-            DrawViewTheme(dynamicColor = false) {
-                counter.Observe { DrawScreen(controller, onNavigateBack = {}) }
+            PageboardTheme(dynamicColor = false) {
+                counter.Observe { DocumentScreen(controller, onNavigateBack = {}) }
             }
         }
         waitForIdle()
@@ -112,7 +112,7 @@ class EditorRecompositionTest {
     private fun SkikoComposeUiTest.px(dp: androidx.compose.ui.unit.Dp): Float = with(density) { dp.toPx() }
 
     /** Where the box of the text being written is on the canvas. */
-    private fun DrawViewController.boxOnScreen(): Point =
+    private fun PageboardController.boxOnScreen(): Point =
         viewport.pageMmToScreen(textEditorManager.activeTextPageIndex)!!.mapPoint(textEditorManager.boxX, textEditorManager.boxY)
 
     private companion object {

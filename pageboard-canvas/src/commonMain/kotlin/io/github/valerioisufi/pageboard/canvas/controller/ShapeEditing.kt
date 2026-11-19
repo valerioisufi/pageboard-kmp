@@ -3,7 +3,7 @@ package io.github.valerioisufi.pageboard.canvas.controller
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.change.BoxPlacement
 import io.github.valerioisufi.pageboard.model.change.CompositeChange
 import io.github.valerioisufi.pageboard.model.change.DocumentChange
@@ -41,14 +41,14 @@ internal sealed interface ShapeHandle {
  * guides and the anchors of [ShapeInserter]); the style and the kind of all of them changed at
  * once, which becomes the style of the shapes tool. Each edit is one step of undo.
  */
-public class ShapeEditing internal constructor(private val controller: DrawViewController) {
+public class ShapeEditing internal constructor(private val controller: PageboardController) {
 
     /** The shape being edited by a handle, as it will be, `null` when none is. */
     public var handleDraft: ShapeDraft? by mutableStateOf(null)
         private set
 
     private var handle: ShapeHandle? = null
-    private var element: DrawCustomElement? = null
+    private var element: CustomElement? = null
     private var value: ShapeElement? = null
     private var original: ShapeBox? = null
     private var pageIndex = -1
@@ -57,7 +57,7 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
      * The shapes selected, with their values, when the selection holds shapes only (and readable
      * ones); empty otherwise.
      */
-    public val selectedShapes: List<Pair<DrawCustomElement, ShapeElement>>
+    public val selectedShapes: List<Pair<CustomElement, ShapeElement>>
         get() {
             // Read by the composition: follows the changes of the selection
             controller.selectionManager.selectionVersion
@@ -72,7 +72,7 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
         }
 
     /** The shape alone in the selection, with its value, if it is one. */
-    internal fun single(): Pair<DrawCustomElement, ShapeElement>? = selectedShapes.singleOrNull()
+    internal fun single(): Pair<CustomElement, ShapeElement>? = selectedShapes.singleOrNull()
 
     /**
      * Changes every shape selected by [transform] (its style: the colors, the outline, the heads),
@@ -126,7 +126,7 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
      * as high as its width and heads need, a line made a box as high as two thirds of its length,
      * a box made a line along its middle.
      */
-    private fun boxFor(element: DrawCustomElement, before: ShapeElement, after: ShapeElement): BoxPlacement? {
+    private fun boxFor(element: CustomElement, before: ShapeElement, after: ShapeElement): BoxPlacement? {
         val height = when {
             after.kind.isLine -> ShapeGeometry.lineHeight(after)
             before.kind.isLine -> max(element.width * LINE_TO_BOX, ShapeInserter.STANDARD_SIDE_MM / 2f)
@@ -195,7 +195,7 @@ public class ShapeEditing internal constructor(private val controller: DrawViewC
         forced: Boolean,
         fromCenter: Boolean,
         free: Boolean,
-        element: DrawCustomElement
+        element: CustomElement
     ): Pair<ShapeBox, Boolean> {
         // The pointer in the box, snapped to the guides when the box is not turned
         val snapped = if (box.rotation == 0f && !free && handle is ShapeHandle.Corner) {

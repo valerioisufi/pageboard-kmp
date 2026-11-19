@@ -70,7 +70,7 @@ internal class KeyValueOperationLog(private val storage: KeyValueStorage, privat
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Throwable) {
-        println("DrawView: unreadable stored value (${e.message})")
+        println("Pageboard: unreadable stored value (${e.message})")
         null
     }
 

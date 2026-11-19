@@ -3,7 +3,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "Search in the notes of the DrawView document library, with snippets, model downloads and answers from the notes"
+description = "Search in the notes of the Pageboard document library, with snippets, model downloads and answers from the notes"
 
 kotlin {
     android {

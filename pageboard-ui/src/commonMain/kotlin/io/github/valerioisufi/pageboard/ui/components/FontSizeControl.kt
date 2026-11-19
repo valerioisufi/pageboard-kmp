@@ -41,7 +41,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.draw_toolbar_acti
 import io.github.valerioisufi.pageboard.ui.generated.resources.draw_toolbar_action_increase_font_size
 import io.github.valerioisufi.pageboard.ui.generated.resources.draw_toolbar_label_font_size
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_size_points
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 
@@ -68,7 +68,7 @@ internal fun FontSizeControl(
             enabled = fontSizePt > TextSizes.MIN,
             modifier = Modifier.size(32.dp).keepsTextFocus()
         ) {
-            Icon(DrawViewIcons.Minus, contentDescription = stringResource(Res.string.draw_toolbar_action_decrease_font_size), modifier = Modifier.size(16.dp))
+            Icon(PageboardIcons.Minus, contentDescription = stringResource(Res.string.draw_toolbar_action_decrease_font_size), modifier = Modifier.size(16.dp))
         }
 
         Box {
@@ -101,7 +101,7 @@ internal fun FontSizeControl(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.width(160.dp).padding(horizontal = 4.dp, vertical = 4.dp)
                 )
-                val check = rememberVectorPainter(DrawViewIcons.Check)
+                val check = rememberVectorPainter(PageboardIcons.Check)
                 for (preset in TextSizes.PRESETS) {
                     MenuItem(
                         text = "${formatSize(preset)} pt",
@@ -122,7 +122,7 @@ internal fun FontSizeControl(
             enabled = fontSizePt < TextSizes.MAX,
             modifier = Modifier.size(32.dp).keepsTextFocus()
         ) {
-            Icon(DrawViewIcons.Plus, contentDescription = stringResource(Res.string.draw_toolbar_action_increase_font_size), modifier = Modifier.size(16.dp))
+            Icon(PageboardIcons.Plus, contentDescription = stringResource(Res.string.draw_toolbar_action_increase_font_size), modifier = Modifier.size(16.dp))
         }
     }
 }

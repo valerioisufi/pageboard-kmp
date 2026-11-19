@@ -15,8 +15,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.latex.LatexEngine
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,7 +41,7 @@ class TextBoxSourceStripTest {
         return results.single()
     }
 
-    private fun DesktopComposeUiTest.caret(controller: DrawViewController, offset: Int) {
+    private fun DesktopComposeUiTest.caret(controller: PageboardController, offset: Int) {
         runOnIdle { controller.textEditorManager.updateValue(controller.textEditorManager.value.copy(selection = TextRange(offset))) }
         waitForIdle()
     }
@@ -51,7 +51,7 @@ class TextBoxSourceStripTest {
         waitForIdle()
     }
 
-    private fun DesktopComposeUiTest.writeText(controller: DrawViewController) {
+    private fun DesktopComposeUiTest.writeText(controller: PageboardController) {
         startBox(controller, 20f, 40f, widthMm = 120f)
         type(text)
         caret(controller, 0)
@@ -151,10 +151,10 @@ class TextBoxSourceStripTest {
     }
 
     private companion object {
-        val FORMULAS: DrawViewEngines by lazy {
+        val FORMULAS: PageboardEngines by lazy {
             val latex = LatexEngine()
             runBlocking { latex.initialize() }
-            DrawViewEngines(formulas = latex)
+            PageboardEngines(formulas = latex)
         }
     }
 }

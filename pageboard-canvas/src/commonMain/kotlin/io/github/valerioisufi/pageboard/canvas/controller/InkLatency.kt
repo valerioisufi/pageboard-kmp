@@ -6,7 +6,7 @@ import io.github.valerioisufi.pageboard.platform.syncLock
 
 /**
  * The latency of the ink over one stroke, measured by the editor while
- * [DrawViewController.isInkLatencyMeasured]: from the inputs of the pointer to the frames of the
+ * [PageboardController.isInkLatencyMeasured]: from the inputs of the pointer to the frames of the
  * editor that drew them. The time the display takes to show a frame drawn is not counted.
  */
 public class InkLatencyReport(

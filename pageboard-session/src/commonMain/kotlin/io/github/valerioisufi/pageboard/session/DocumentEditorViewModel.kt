@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.pageboard.canvas.camera.DocumentPlace
-import io.github.valerioisufi.pageboard.canvas.controller.DrawPreferences
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.EditorPreferences
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.syncLock
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -42,7 +42,7 @@ public class EditorSession internal constructor(
     internal val store: DocumentStore get() = documents.store
 
     /** `null` while the document is being loaded. */
-    public var controller: DrawViewController? by mutableStateOf(null)
+    public var controller: PageboardController? by mutableStateOf(null)
         internal set
 
     /** The document being changed (`null` while it is being loaded), shared with the synchronization. */
@@ -123,7 +123,7 @@ public class DocumentEditorViewModel(
     /** The editing sessions of the application: one per process, shared by its windows. */
     public val sessions: EditorSessions,
     /** The engines of the editors (PDF pages, formulas). */
-    public val engines: DrawViewEngines = DrawViewEngines.None,
+    public val engines: PageboardEngines = PageboardEngines.None,
     /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
     public val preferences: PreferenceStore? = documents.store as? PreferenceStore,
     /**
@@ -146,7 +146,7 @@ public class DocumentEditorViewModel(
      * Opens the document [documentId] (closing the current one); [then] is given its editor once
      * open (e.g. to jump to a page and its area).
      */
-    public fun openDocument(documentId: String, then: (DrawViewController) -> Unit) {
+    public fun openDocument(documentId: String, then: (PageboardController) -> Unit) {
         val current = session
         if (current != null && current.documentId == documentId) {
             current.controller?.let(then)
@@ -168,7 +168,7 @@ public class DocumentEditorViewModel(
      * Creates a new document (one A4 page, as in the original app) in [folderId] and opens it;
      * [then] is given its editor once open (e.g. to import the files it was made from).
      */
-    public fun createAndOpenDocument(name: String, folderId: String? = null, then: (DrawViewController) -> Unit = {}) {
+    public fun createAndOpenDocument(name: String, folderId: String? = null, then: (PageboardController) -> Unit = {}) {
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
@@ -187,7 +187,7 @@ public class DocumentEditorViewModel(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot load the document ${session.documentId}: ${e.message}")
+            println("Pageboard: cannot load the document ${session.documentId}: ${e.message}")
             null
         }
         if (open == null) {
@@ -201,12 +201,12 @@ public class DocumentEditorViewModel(
             return
         }
         store.updateLastOpened(session.documentId)
-        val kept = preferences?.preference(EDITOR_PREFERENCES)?.let(DrawPreferences::decode)
+        val kept = preferences?.preference(EDITOR_PREFERENCES)?.let(EditorPreferences::decode)
         // Where the document was left on this device (see docs/plans/last-place.md)
         val placeText = preferences?.preference(placeKey(session.documentId))
         val place = placeText?.let(DocumentPlace::decode)
         if (this.session !== session) return
-        val controller = DrawViewController(
+        val controller = PageboardController(
             document = open.document,
             coroutineScope = viewModelScope,
             persistence = store.persistence,
@@ -280,7 +280,7 @@ public class EditorSessions(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("DrawView: cannot save the document ${session.documentId}: ${e.message}")
+                println("Pageboard: cannot save the document ${session.documentId}: ${e.message}")
             } finally {
                 session.persistenceScope.cancel()
             }
@@ -310,7 +310,7 @@ public class EditorSessions(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("DrawView: cannot save the document ${session.documentId}: ${e.message}")
+                println("Pageboard: cannot save the document ${session.documentId}: ${e.message}")
             }
         }
         jobs.forEach { it.join() }

@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.sync.lan
 
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.SelectionActivity
@@ -93,7 +93,7 @@ class RemotePeerTest {
                     delay(32)
                 }
                 val mesh = assertNotNull(KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS))
-                val wave = DrawStroke(mesh = mesh, brushConfig = brush)
+                val wave = StrokeElement(mesh = mesh, brushConfig = brush)
                 open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(wave))) }
                 println("PEER drawn")
 

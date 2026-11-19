@@ -6,7 +6,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.text.TextRange
 import io.github.valerioisufi.pageboard.canvas.SelectionFrame
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import kotlin.math.abs
 import kotlin.test.Test
@@ -66,7 +66,7 @@ class TextBoxLargeTest {
         assertTrue(!editor.value.selection.collapsed, "the text selected")
     }
 
-    private fun cornerOnScreen(controller: DrawViewController): Point {
+    private fun cornerOnScreen(controller: PageboardController): Point {
         val editor = controller.textEditorManager
         return checkNotNull(controller.viewport.pageMmToScreen(editor.activeTextPageIndex)).mapPoint(editor.boxX, editor.boxY)
     }

@@ -1,14 +1,14 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
@@ -35,7 +35,7 @@ import kotlinx.serialization.Transient
  * that the devices applying the same changes in different orders end up with the same document.
  * The pieces are the presence and the values of every element, the presence, position and format
  * of every page, the defaults of the document. Nothing is destroyed: the removed pages and
- * elements are hidden (see [DrawDocument.removedPages], [DrawPage.removedElements]) and keep
+ * elements are hidden (see [Document.removedPages], [Page.removedElements]) and keep
  * receiving the changes, so that what is put back is the same on every device.
  */
 @Serializable
@@ -88,7 +88,7 @@ private fun ElementData.stamps(): Sequence<Stamp> = sequence {
  * [received]: the change was made on another device.
  */
 public class ChangeContext internal constructor(
-    internal val document: DrawDocument,
+    internal val document: Document,
     internal val effects: ChangeEffects,
     internal val stamp: Stamp,
     internal val received: Boolean = false
@@ -100,13 +100,13 @@ public class ChangeContext internal constructor(
  * the placement, the order and the content of this change, unless more recent ones.
  *
  * [lostVersions]: the copies of contents of texts lost to others (see [UpdateTexts]), made by the
- * devices as they merge their changes; they keep no removed page (see [DrawPage.isHidden]).
+ * devices as they merge their changes; they keep no removed page (see [Page.isHidden]).
  */
 @Serializable
 @SerialName("addElements")
 public data class AddElements(val pageId: String, val elements: List<ElementData>, val lostVersions: Boolean = false) : DocumentChange {
     @Transient
-    private var local: Map<String, DrawElement> = emptyMap()
+    private var local: Map<String, PageElement> = emptyMap()
 
     /** Builds its elements now (the strokes are modeled again from their inputs). */
     override fun prepare(modeller: StrokeModeller) {
@@ -124,7 +124,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
         // The elements made present (undone by removing them), the previous values of the
         // elements present already (undone by writing them again)
         val shown = mutableListOf<String>()
-        val previous = LinkedHashMap<DrawPage, MutableList<ElementData>>()
+        val previous = LinkedHashMap<Page, MutableList<ElementData>>()
         var changed = false
         for ((i, data) in elements.withIndex()) {
             val order = data.order ?: ElementOrder.onTop(stamp, i)
@@ -137,7 +137,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
                 element.placed = stamp
                 element.ordered = stamp
                 element.updated = stamp
-                if (element is DrawText && data is TextData) element.contentVersions = data.versions + stamp
+                if (element is TextElement && data is TextData) element.contentVersions = data.versions + stamp
                 page.add(element)
                 context.effects.saved(page, element)
                 shown.add(data.id)
@@ -168,7 +168,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
             }
             if (context.reorder(holder, element, order)) valuesChanged = true
             val contentChanged = when {
-                element is DrawText && data is TextData -> context.writeText(holder, element, data)
+                element is TextElement && data is TextData -> context.writeText(holder, element, data)
                 element.updated < stamp -> {
                     writeContent(element, data)
                     element.updated = stamp
@@ -197,7 +197,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
 
     public companion object {
         /** Adds the model [elements] to [page] (the objects themselves are added). */
-        public fun of(page: DrawPage, elements: List<DrawElement>): AddElements =
+        public fun of(page: Page, elements: List<PageElement>): AddElements =
             AddElements(page.id, elements.map { it.toData() }).also { change ->
                 change.local = elements.associateBy { it.id }
             }
@@ -207,7 +207,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
 /**
  * Removes the elements [ids] (of the page [pageId], or of the page another device moved them to)
  * unless added again by a more recent change: they are kept, hidden (see
- * [DrawPage.removedElements]).
+ * [Page.removedElements]).
  */
 @Serializable
 @SerialName("removeElements")
@@ -215,7 +215,7 @@ public data class RemoveElements(val pageId: String, val ids: List<String>) : Do
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val hint = document.anyPage(pageId)
-        val hidden = LinkedHashMap<DrawPage, MutableList<DrawElement>>()
+        val hidden = LinkedHashMap<Page, MutableList<PageElement>>()
         var changed = false
         for (id in ids) {
             val (page, element) = document.findAnyElement(id, hint) ?: continue
@@ -246,22 +246,22 @@ public data class RemoveElements(val pageId: String, val ids: List<String>) : Do
     }
 
     public companion object {
-        public fun of(page: DrawPage, elements: List<DrawElement>): RemoveElements = RemoveElements(page.id, elements.map { it.id })
+        public fun of(page: Page, elements: List<PageElement>): RemoveElements = RemoveElements(page.id, elements.map { it.id })
     }
 }
 
 /** The element [id], present or removed, and the page holding it (looked for in [hint] first). */
-private fun DrawDocument.findAnyElement(id: String, hint: DrawPage?): Pair<DrawPage, DrawElement>? =
+private fun Document.findAnyElement(id: String, hint: Page?): Pair<Page, PageElement>? =
     findElement(id, hint) ?: findRemovedElement(id)
 
-/** Hides the present [element] of this page (see [DrawPage.removedElements]). */
-private fun DrawPage.hide(element: DrawElement) {
+/** Hides the present [element] of this page (see [Page.removedElements]). */
+private fun Page.hide(element: PageElement) {
     remove(element)
     keepRemoved(element)
 }
 
 /** Shows the hidden [element] of this page again. */
-private fun DrawPage.show(element: DrawElement) {
+private fun Page.show(element: PageElement) {
     forgetRemoved(element)
     element.removed = null
     add(element)
@@ -270,9 +270,9 @@ private fun DrawPage.show(element: DrawElement) {
 /**
  * Notes that the change of this context changed the content of [page] (when it is an operation:
  * [inverse] not `null`, or received): a removal of the page that had not seen it hides it no more
- * (see [DrawPage.isHidden]).
+ * (see [Page.isHidden]).
  */
-private fun ChangeContext.contentChanged(page: DrawPage, inverse: DocumentChange?) {
+private fun ChangeContext.contentChanged(page: Page, inverse: DocumentChange?) {
     if (inverse == null && !received) return
     val versions = page.contentVersions + stamp
     if (versions == page.contentVersions) return
@@ -281,8 +281,8 @@ private fun ChangeContext.contentChanged(page: DrawPage, inverse: DocumentChange
     showAsRemoved(page)
 }
 
-/** Shows or hides [page] as its removal (if any) tells (see [DrawPage.isHidden]). */
-private fun ChangeContext.showAsRemoved(page: DrawPage) {
+/** Shows or hides [page] as its removal (if any) tells (see [Page.isHidden]). */
+private fun ChangeContext.showAsRemoved(page: Page) {
     val shown = document.isShown(page)
     if (page.isHidden && shown) {
         document.removeShownPage(page)
@@ -307,7 +307,7 @@ private const val LOST_VERSION_GAP_MM = 4f
  *
  * @return whether the content of [text] changed.
  */
-private fun ChangeContext.writeText(page: DrawPage, text: DrawText, data: TextData): Boolean {
+private fun ChangeContext.writeText(page: Page, text: TextElement, data: TextData): Boolean {
     val incoming = data.versions + stamp
     val current = text.contentVersions
     // Included already
@@ -331,10 +331,10 @@ private fun ChangeContext.writeText(page: DrawPage, text: DrawText, data: TextDa
 /**
  * Writes [placement] (if any) into [element] of the page [from], and moves it to the page [to]:
  * the placement of the change of this context. Its order stays (it is apart from the placement,
- * see [DrawElement.ordered]): on another page it takes its place in the stack by its order, and a
+ * see [PageElement.ordered]): on another page it takes its place in the stack by its order, and a
  * change putting it on top there goes with the move (see [ReorderElements.onTop]).
  */
-private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement: Placement?, to: DrawPage) {
+private fun ChangeContext.place(from: Page, element: PageElement, placement: Placement?, to: Page) {
     val shown = element.removed == null
     if (shown) effects.dirty(from, from.boundsOf(element))
     placement?.applyTo(element)
@@ -350,7 +350,7 @@ private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement:
  * order was changed by a more recent change; whether it did (the same order written again counts:
  * the change is the most recent one now).
  */
-private fun ChangeContext.reorder(page: DrawPage, element: DrawElement, order: ElementOrder): Boolean {
+private fun ChangeContext.reorder(page: Page, element: PageElement, order: ElementOrder): Boolean {
     if (element.ordered >= stamp) return false
     if (order != element.order) {
         if (element.removed == null) {
@@ -376,7 +376,7 @@ public sealed interface Placement {
     public val order: ElementOrder?
 
     /** Writes this placement into [element] (of the matching kind). */
-    public fun applyTo(element: DrawElement)
+    public fun applyTo(element: PageElement)
 }
 
 /** A stroke, by the transformation of the geometry it was drawn with. */
@@ -387,8 +387,8 @@ public data class StrokePlacement(
     val transform: AffineTransform,
     override val order: ElementOrder? = null
 ) : Placement {
-    override fun applyTo(element: DrawElement) {
-        if (element is DrawStroke) element.place(transform)
+    override fun applyTo(element: PageElement) {
+        if (element is StrokeElement) element.place(transform)
     }
 }
 
@@ -404,14 +404,14 @@ public data class BoxPlacement(
     val rotation: Float,
     override val order: ElementOrder? = null
 ) : Placement {
-    override fun applyTo(element: DrawElement) {
+    override fun applyTo(element: PageElement) {
         when (element) {
-            is DrawImage -> {
+            is ImageElement -> {
                 element.x = x; element.y = y
                 element.width = width; element.height = height
                 element.rotation = rotation
             }
-            is DrawCustomElement -> {
+            is CustomElement -> {
                 element.x = x; element.y = y
                 element.width = width; element.height = height
                 element.rotation = rotation
@@ -423,7 +423,7 @@ public data class BoxPlacement(
 
 /**
  * A text block, by where its lines may go: its corner, the width they wrap on, its rotation around
- * its corner (see `DrawText`), its font size and whether its width follows it. Its height is what
+ * its corner (see `TextElement`), its font size and whether its width follows it. Its height is what
  * its lines take.
  */
 @Serializable
@@ -435,12 +435,12 @@ public data class TextPlacement(
     val width: Float,
     val rotation: Float,
     val fontSize: Float,
-    /** Whether the width of the text follows its text (see `DrawText.autoWidth`). */
+    /** Whether the width of the text follows its text (see `TextElement.autoWidth`). */
     val autoWidth: Boolean,
     override val order: ElementOrder? = null
 ) : Placement {
-    override fun applyTo(element: DrawElement) {
-        if (element !is DrawText) return
+    override fun applyTo(element: PageElement) {
+        if (element !is TextElement) return
         element.x = x; element.y = y
         element.width = width
         element.rotation = rotation
@@ -451,11 +451,11 @@ public data class TextPlacement(
 }
 
 /** Where [element] is placed now (with its order), or `null` for an element not placed freely. */
-public fun placementOf(element: DrawElement): Placement? = when (element) {
-    is DrawStroke -> StrokePlacement(element.id, element.transform)
-    is DrawText -> TextPlacement(element.id, element.x, element.y, element.width, element.rotation, element.fontSize, element.autoWidth)
-    is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
-    is DrawCustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
+public fun placementOf(element: PageElement): Placement? = when (element) {
+    is StrokeElement -> StrokePlacement(element.id, element.transform)
+    is TextElement -> TextPlacement(element.id, element.x, element.y, element.width, element.rotation, element.fontSize, element.autoWidth)
+    is ImageElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
+    is CustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
     else -> null
 }
 
@@ -501,8 +501,8 @@ public data class PlaceElements(
     }
 
     private data class Target(
-        val from: DrawPage,
-        val element: DrawElement,
+        val from: Page,
+        val element: PageElement,
         val placement: Placement,
         val current: Placement
     )
@@ -527,7 +527,7 @@ public data class ReorderElements(val pageId: String, val orders: List<ElementOr
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val hint = document.anyPage(pageId)
-        val previous = LinkedHashMap<DrawPage, MutableList<ElementOrdering>>()
+        val previous = LinkedHashMap<Page, MutableList<ElementOrdering>>()
         for ((i, entry) in orders.withIndex()) {
             val (page, element) = document.findAnyElement(entry.id, hint) ?: continue
             val before = element.order
@@ -548,7 +548,7 @@ public data class ReorderElements(val pageId: String, val orders: List<ElementOr
          * as a block keeping their order among themselves: the fewest elements take a new order.
          * `null` when nothing would change (e.g. already above everything they overlap).
          */
-        public fun of(page: DrawPage, ids: Collection<String>, move: StackMove): ReorderElements? =
+        public fun of(page: Page, ids: Collection<String>, move: StackMove): ReorderElements? =
             StackMoves.of(page, ids.toSet(), move)?.let { ReorderElements(page.id, it) }
 
         /**
@@ -573,10 +573,10 @@ public data class UpdateTexts(val pageId: String, val texts: List<TextData>) : D
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
-        val previous = LinkedHashMap<DrawPage, MutableList<TextData>>()
+        val previous = LinkedHashMap<Page, MutableList<TextData>>()
         for (data in texts) {
             val (from, element) = document.findAnyElement(data.id, page) ?: continue
-            val text = element as? DrawText ?: continue
+            val text = element as? TextElement ?: continue
             val before = text.toData()
             var holder = from
             var changed = false
@@ -613,7 +613,7 @@ public data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyl
         val previous = mutableListOf<MarkupStyle>()
         for (style in styles) {
             val (page, element) = context.document.findAnyElement(style.id, hint) ?: continue
-            val markup = element as? DrawTextMarkup ?: continue
+            val markup = element as? TextMarkupElement ?: continue
             if (markup.updated >= context.stamp) continue
             previous.add(MarkupStyle(markup.id, markup.kind, markup.color))
             markup.kind = style.kind
@@ -629,7 +629,7 @@ public data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyl
 
 /**
  * Replaces the value of the element [id] of a kind added by an application (see
- * [DrawCustomElement]; of the page [pageId], or of the page another device moved it to) with
+ * [CustomElement]; of the page [pageId], or of the page another device moved it to) with
  * [payload] of format [version]: the most recent value wins on every device.
  */
 @Serializable
@@ -638,7 +638,7 @@ public class UpdateElementContent(public val pageId: String, public val id: Stri
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val hint = context.document.anyPage(pageId)
         val (page, element) = context.document.findAnyElement(id, hint) ?: return null
-        val custom = element as? DrawCustomElement ?: return null
+        val custom = element as? CustomElement ?: return null
         if (custom.updated >= context.stamp) return null
         val previous = UpdateElementContent(page.id, id, custom.version, custom.payload)
         custom.version = version
@@ -665,7 +665,7 @@ public class UpdateElementContent(public val pageId: String, public val id: Stri
 @SerialName("addPage")
 public data class AddPage(val page: PageData) : DocumentChange {
     @Transient
-    private var local: DrawPage? = null
+    private var local: Page? = null
 
     override fun stamps(): Sequence<Stamp> = page.elements.asSequence().flatMap { it.stamps() }
 
@@ -702,7 +702,7 @@ public data class AddPage(val page: PageData) : DocumentChange {
             element.placed = context.stamp
             element.ordered = context.stamp
             element.updated = context.stamp
-            if (element is DrawText) element.contentVersions += context.stamp
+            if (element is TextElement) element.contentVersions += context.stamp
         }
         document.insertPage(newPage)
         context.effects.pageInserted(newPage)
@@ -711,7 +711,7 @@ public data class AddPage(val page: PageData) : DocumentChange {
 
     public companion object {
         /** Inserts the model [page] (the object itself) where its order key puts it. */
-        public fun of(page: DrawPage): AddPage = AddPage(page.toData()).also { it.local = page }
+        public fun of(page: Page): AddPage = AddPage(page.toData()).also { it.local = page }
     }
 }
 
@@ -720,7 +720,7 @@ public data class AddPage(val page: PageData) : DocumentChange {
  * kept, hidden, and can be put back. The editor never removes the last page of a document.
  *
  * Only the content it [saw] is removed: when another device added to the page meanwhile, the page
- * stays (see [DrawPage.isHidden]). Made on this device, it saw the content of the page as it is
+ * stays (see [Page.isHidden]). Made on this device, it saw the content of the page as it is
  * when applied (written into [saw] then); `null` in a change received: all of it.
  */
 @Serializable
@@ -746,7 +746,7 @@ public data class RemovePage(val pageId: String, var saw: Versions? = null) : Do
     }
 }
 
-/** A page and its new position among the pages (see [DrawPage.orderKey]). */
+/** A page and its new position among the pages (see [Page.orderKey]). */
 @Serializable
 public data class PageMove(val pageId: String, val orderKey: String)
 
@@ -777,7 +777,7 @@ public data class MovePages(val moves: List<PageMove>) : DocumentChange {
          * The moves putting the pages of [document] in the order [pageIds] (the fewest pages
          * move), or `null` when they are in that order already.
          */
-        public fun toOrder(document: DrawDocument, pageIds: List<String>): MovePages? {
+        public fun toOrder(document: Document, pageIds: List<String>): MovePages? {
             val pages = pageIds.mapNotNull { document.pageById(it) }
             val keys = FractionalIndex.reorder(pages.map { it.orderKey })
             if (keys.isEmpty()) return null
@@ -871,7 +871,7 @@ public data class AddResource(val resource: ResourceData) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         if (document.findResource(resource.id) != null) return null
-        val added = DrawResource(resource.id, resource.type, path, resource.hash)
+        val added = DocumentResource(resource.id, resource.type, path, resource.hash)
         document.addResource(added)
         context.effects.resourceAdded(added)
         return NoChange
@@ -879,7 +879,7 @@ public data class AddResource(val resource: ResourceData) : DocumentChange {
 
     public companion object {
         /** Adds the file [path] of this device (its content of hash [hash]) as the resource [id]. */
-        public fun of(id: String, type: DrawResource.ResourceType, path: String, hash: String = ""): AddResource =
+        public fun of(id: String, type: DocumentResource.ResourceType, path: String, hash: String = ""): AddResource =
             AddResource(ResourceData(id, type, hash)).also { it.path = path }
     }
 }

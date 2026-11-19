@@ -6,7 +6,7 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_ta
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_tag_shared
 import io.github.valerioisufi.pageboard.ui.components.BadgeTone
 import io.github.valerioisufi.pageboard.ui.extension.DocumentTag
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /** The notes the library shows. */
@@ -26,7 +26,7 @@ internal fun pdfTag(documents: () -> Set<String>) = DocumentTag(
     id = "pdf",
     label = { stringResource(Res.string.explorer_tag_pdf) },
     filterLabel = { stringResource(Res.string.explorer_tag_pdfs) },
-    icon = DrawViewIcons.FileText,
+    icon = PageboardIcons.FileText,
     tone = BadgeTone.Red,
     documents = documents
 )
@@ -36,7 +36,7 @@ internal fun sharedTag(documents: () -> Set<String>) = DocumentTag(
     id = "shared",
     label = { stringResource(Res.string.explorer_tag_shared) },
     filterLabel = { stringResource(Res.string.explorer_tag_shared) },
-    icon = DrawViewIcons.Users,
+    icon = PageboardIcons.Users,
     tone = BadgeTone.Green,
     documents = documents
 )

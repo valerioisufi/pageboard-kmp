@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "Search in the notes of a DrawView library (full-text and embeddings) and answers from the passages found"
+description = "Search in the notes of a Pageboard library (full-text and embeddings) and answers from the passages found"
 
 kotlin {
     sourceSets {

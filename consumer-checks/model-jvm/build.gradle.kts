@@ -8,7 +8,7 @@ kotlin {
     jvmToolchain(21)
 }
 
-/** The version of DrawView checked (see the root build). */
+/** The version of Pageboard checked (see the root build). */
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {

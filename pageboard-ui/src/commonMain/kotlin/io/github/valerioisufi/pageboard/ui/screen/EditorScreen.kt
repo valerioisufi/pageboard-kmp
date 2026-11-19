@@ -8,7 +8,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
@@ -18,7 +18,7 @@ import io.github.valerioisufi.pageboard.ui.extension.TextSuggestions
 
 /**
  * The editor of the document of [context] with the contributions of [extension] (top bar actions,
- * panels, commands, overlays): the [DrawScreen], adapted to the window, the input and the
+ * panels, commands, overlays): the [DocumentScreen], adapted to the window, the input and the
  * platform, its commands in the shortcuts and the menu bar. [onClose] is called by the back
  * button of the editor and by the system back; [location] is shown under the title (e.g. the
  * folder of the document); [renamer] renames the document from its title (none: the title is not
@@ -49,7 +49,7 @@ public fun EditorScreen(
             val suggester = extension?.textSuggestions
             val suggestions = remember(suggester, context) { suggester?.let { TextSuggestions(it, context) } }
             CompositionLocalProvider(LocalTextSuggestions provides suggestions) {
-                DrawScreen(
+                DocumentScreen(
                     controller = controller,
                     location = location,
                     onNavigateBack = onClose,
@@ -72,7 +72,7 @@ public fun EditorScreen(
  * of the PDFs or the selection, then the document.
  */
 @Composable
-private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Unit) {
+private fun EditorBackHandler(controller: PageboardController, onClose: () -> Unit) {
     if (LocalNavigationEventDispatcherOwner.current == null) return
     val state = rememberNavigationEventState(NavigationEventInfo.None)
     NavigationBackHandler(

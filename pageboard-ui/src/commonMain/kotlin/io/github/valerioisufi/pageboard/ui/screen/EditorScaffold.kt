@@ -57,7 +57,7 @@ import io.github.valerioisufi.pageboard.ui.extension.EditorPanel
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
 import io.github.valerioisufi.pageboard.ui.platform.editorInsets
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /** Where the open panels of the editor go, by the width the editor has. */
@@ -263,7 +263,7 @@ private fun PanelFrame(panels: List<EditorPanel>) {
                 modifier = Modifier.weight(1f)
             )
             selected.actions(this)
-            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.common_action_close), selected.onClose, tint = MaterialTheme.colorScheme.onSurface)
+            DesignIconButton(PageboardIcons.Close, stringResource(Res.string.common_action_close), selected.onClose, tint = MaterialTheme.colorScheme.onSurface)
         }
         if (panels.size > 1) {
             PrimaryTabRow(selectedTabIndex = panels.indexOf(selected)) {

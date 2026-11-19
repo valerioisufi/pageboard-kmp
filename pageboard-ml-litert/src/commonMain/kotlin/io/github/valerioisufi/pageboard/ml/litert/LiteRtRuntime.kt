@@ -11,7 +11,7 @@ import io.github.valerioisufi.pageboard.ml.ModelSpec
 import io.github.valerioisufi.pageboard.platform.dataDirectory
 
 /**
- * LiteRT-LM as the [ModelRuntime] of DrawView: the `.litertlm` models (Gemma 4, EmbeddingGemma 2),
+ * LiteRT-LM as the [ModelRuntime] of Pageboard: the `.litertlm` models (Gemma 4, EmbeddingGemma 2),
  * on the GPU when it can be used, on the processor otherwise.
  *
  * On Android and on the desktop JVM of the platforms LiteRT-LM is built for (Windows x86-64, macOS

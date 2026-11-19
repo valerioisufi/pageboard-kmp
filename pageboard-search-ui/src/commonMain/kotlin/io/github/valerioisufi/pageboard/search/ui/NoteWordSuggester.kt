@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.search.ui
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.search.NoteVocabulary
 import io.github.valerioisufi.pageboard.search.WordCounts
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
@@ -36,7 +36,7 @@ internal class NoteWordSuggester(
     }
 
     /** The typed texts of [document], the one being written as [writing] says without the word being written. */
-    private fun typedTexts(document: DrawDocument, writing: TextBeingWritten, prefix: String): List<String> = buildList {
+    private fun typedTexts(document: Document, writing: TextBeingWritten, prefix: String): List<String> = buildList {
         for (page in document.pages) {
             for (text in page.texts) if (text.removed == null && text.id != writing.textId) add(text.text)
         }

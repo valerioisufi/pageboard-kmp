@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
 /**
- * A Kotlin Multiplatform library of DrawView, published: Android, desktop JVM, iOS (device and
+ * A Kotlin Multiplatform library of Pageboard, published: Android, desktop JVM, iOS (device and
  * simulator).
  *
  * The Android namespace follows the name of the module (`pageboard-sync-ui` →

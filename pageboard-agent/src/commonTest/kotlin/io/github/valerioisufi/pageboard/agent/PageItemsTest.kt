@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
@@ -98,7 +98,7 @@ class PageItemsTest {
         val page = setup.pageIds[1]
         val base = setup.pageBase(1)
         setup.open.edit { session ->
-            val text = DrawText().apply { text = "Written after"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+            val text = TextElement().apply { text = "Written after"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(session.document.pageById(page)!!, listOf(text)))
         }
         val id = setup.call(
@@ -142,7 +142,7 @@ class PageItemsTest {
         val setup = setup(this, backgroundScope)
         val (first, second, third) = setup.pageIds
         setup.open.edit { session ->
-            val text = DrawText().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+            val text = TextElement().apply { text = "Gauss"; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
             session.submit(AddElements.of(session.document.pageById(first)!!, listOf(text)))
         }
         setup.propose(item("duplicate_page") { put("page", first) })

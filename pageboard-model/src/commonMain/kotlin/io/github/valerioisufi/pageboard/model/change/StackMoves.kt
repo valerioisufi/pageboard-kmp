@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 
@@ -28,12 +28,12 @@ public enum class StackMove {
 internal object StackMoves {
 
     /** The orders of the elements [ids] of [page] moved by [move], or `null` when nothing would change. */
-    fun of(page: DrawPage, ids: Set<String>, move: StackMove): List<ElementOrdering>? {
+    fun of(page: Page, ids: Set<String>, move: StackMove): List<ElementOrdering>? {
         val stack = page.stack
         val selected = stack.filter { it.id in ids }
         if (selected.isEmpty()) return null
         val bounds = selected.mapNotNull { page.boundsOf(it) }.reduceOrNull(::union)
-        fun overlapsSelection(element: DrawElement): Boolean {
+        fun overlapsSelection(element: PageElement): Boolean {
             if (element.id in ids) return false
             val box = page.boundsOf(element) ?: return true
             return bounds == null || box.overlaps(bounds)
@@ -73,7 +73,7 @@ internal object StackMoves {
      * too long, every element of the stack of [page] gets a new short order, [selected] at
      * [insertAt] of the stack (its index before the move).
      */
-    private fun ordered(page: DrawPage, selected: List<DrawElement>, below: DrawElement?, above: DrawElement, insertAt: Int): List<ElementOrdering> {
+    private fun ordered(page: Page, selected: List<PageElement>, below: PageElement?, above: PageElement, insertAt: Int): List<ElementOrdering> {
         val orders = ElementOrder.between(below?.order, above.order, selected.size)
         if (orders.all { it.key.length <= ElementOrder.MAX_LENGTH }) return selected.zip(orders) { element, order -> ElementOrdering(element.id, order) }
         // The stack keyed again, in its new order

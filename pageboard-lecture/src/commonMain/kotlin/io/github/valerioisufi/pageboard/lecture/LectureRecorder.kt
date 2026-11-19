@@ -361,7 +361,7 @@ public class LectureRecorder internal constructor(
         try {
             speech?.close()
         } catch (e: Throwable) {
-            println("DrawView: cannot stop the transcription: ${e.message}")
+            println("Pageboard: cannot stop the transcription: ${e.message}")
         }
     }
 
@@ -388,7 +388,7 @@ public class LectureRecorder internal constructor(
         try {
             capture.stop()
         } catch (e: Throwable) {
-            println("DrawView: cannot stop the microphone: ${e.message}")
+            println("Pageboard: cannot stop the microphone: ${e.message}")
         }
         audioBlocks.close()
     }
@@ -399,7 +399,7 @@ public class LectureRecorder internal constructor(
         try {
             lecture.recording.finish()
         } catch (e: Throwable) {
-            println("DrawView: cannot finish the recording ${lecture.directory}: ${e.message}")
+            println("Pageboard: cannot finish the recording ${lecture.directory}: ${e.message}")
         }
     }
 
@@ -603,7 +603,7 @@ public class LectureRecorder internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot capture the notebook: ${e.message}")
+            println("Pageboard: cannot capture the notebook: ${e.message}")
             null
         }
     }
@@ -629,7 +629,7 @@ public class LectureRecorder internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot read the handwriting: ${e.message}")
+            println("Pageboard: cannot read the handwriting: ${e.message}")
         }
     }
 

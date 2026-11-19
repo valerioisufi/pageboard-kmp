@@ -4,7 +4,7 @@ import io.github.valerioisufi.pageboard.ml.Accelerator
 import io.github.valerioisufi.pageboard.ml.Embedder
 import io.github.valerioisufi.pageboard.ml.InstalledModel
 import io.github.valerioisufi.pageboard.ml.ModelCatalog
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import kotlin.test.Test
@@ -53,12 +53,12 @@ class SearchIndexerAndEngineTest {
         val first = document.pages.single()
         val second = document.addPage().also { store.savePage(document, it) }
         for ((page, text) in listOf(first to "Kademlia usa la metrica XOR tra i nodi.", second to "Rate monotonic assegna le priorità per periodo.")) {
-            val element = DrawText().apply { this.text = text; x = 10f; y = 10f; width = 100f; height = 20f }
+            val element = TextElement().apply { this.text = text; x = 10f; y = 10f; width = 100f; height = 20f }
             page.add(element)
             store.saveText(page, element)
         }
         val other = store.createDocument("Altro")
-        val otherText = DrawText().apply { text = "Schedulazione deadline monotonic."; width = 100f; height = 20f }
+        val otherText = TextElement().apply { text = "Schedulazione deadline monotonic."; width = 100f; height = 20f }
         other.pages.single().add(otherText)
         store.saveText(other.pages.single(), otherText)
         store.flush()
@@ -78,7 +78,7 @@ class SearchIndexerAndEngineTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val cryptoDoc = store.createDocument("Crittografia")
         val cryptoPage = cryptoDoc.pages.single()
-        val t1 = DrawText().apply {
+        val t1 = TextElement().apply {
             text = "Nella cifratura a blocchi due blocchi di testo in chiaro identici producono lo stesso testo cifrato."
             x = 10f
             y = 10f
@@ -90,7 +90,7 @@ class SearchIndexerAndEngineTest {
 
         val p2pDoc = store.createDocument("Sistemi P2P")
         val p2pPage = p2pDoc.pages.single()
-        val t2 = DrawText().apply {
+        val t2 = TextElement().apply {
             text = "Kademlia calcola la distanza tra gli identificativi con l'operazione XOR."
             x = 10f
             y = 10f

@@ -6,14 +6,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -40,7 +40,7 @@ import kotlinx.coroutines.test.runTest
  */
 class EditorChangesTest {
 
-    private fun stroke(left: Float, top: Float, size: Float = 5f): DrawStroke {
+    private fun stroke(left: Float, top: Float, size: Float = 5f): StrokeElement {
         val mesh = StrokeMesh(
             positions = floatArrayOf(left, top, left + size, top, left + size, top + size, left, top + size),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
@@ -49,19 +49,19 @@ class EditorChangesTest {
             size = 1f,
             points = listOf(StrokePoint(left, top), StrokePoint(left + size, top + size))
         )
-        return DrawStroke(mesh = mesh, brushConfig = BrushConfig(size = 1f))
+        return StrokeElement(mesh = mesh, brushConfig = BrushConfig(size = 1f))
     }
 
-    private fun controllerWith(pages: Int, scope: CoroutineScope): DrawViewController {
-        val doc = DrawDocument()
+    private fun controllerWith(pages: Int, scope: CoroutineScope): PageboardController {
+        val doc = Document()
         repeat(pages - 1) { doc.addPage() }
-        val controller = DrawViewController(document = doc, coroutineScope = scope)
+        val controller = PageboardController(document = doc, coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
     /** The changes committed by [controller] from now on. */
-    private fun committed(controller: DrawViewController) = mutableListOf<CommittedChange>().also { list ->
+    private fun committed(controller: PageboardController) = mutableListOf<CommittedChange>().also { list ->
         controller.session.addObserver { list.add(it) }
     }
 
@@ -160,7 +160,7 @@ class EditorChangesTest {
         // Selected here, then written on another device: left to it
         controller.selectionManager.selectText(0, text)
         controller.presence.collaborators = listOf(
-            Collaborator("bob", "Bob", Color.Blue, pageId = null, position = Offset.Zero, text = DrawText(text.id), textPageId = page.id)
+            Collaborator("bob", "Bob", Color.Blue, pageId = null, position = Offset.Zero, text = TextElement(text.id), textPageId = page.id)
         )
         assertNull(controller.selectionManager.currentSelection)
         // Neither opened nor selected meanwhile: the user is told who is writing it

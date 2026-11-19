@@ -14,9 +14,9 @@ import io.github.valerioisufi.pageboard.canvas.render.ImageCache
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.PdfInk
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
@@ -35,9 +35,9 @@ import kotlinx.coroutines.withContext
  *
  * @param textAdapter lays out and draws the texts (as the one of the editor), or `null`: the heights
  *   are not told, and the texts are left out of a page drawn.
- * @param pdfTiles creates the adapter reading and drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
+ * @param pdfTiles creates the adapter reading and drawing the PDF pages (see `PageboardEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
- * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
+ * @param images the pixels of the images of the documents (`PageboardEngines.images`).
  */
 public class CanvasPageEngine(
     private val textAdapter: TextTileAdapter?,
@@ -55,7 +55,7 @@ public class CanvasPageEngine(
     private val drawing = Mutex()
 
     override fun textHeight(markdown: String, widthMm: Float, fontSize: Float): Float? {
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = markdown
             width = widthMm
             this.fontSize = fontSize
@@ -136,7 +136,7 @@ public class CanvasPageEngine(
     }
 
     override suspend fun renderPage(
-        resources: List<DrawResource>,
+        resources: List<DocumentResource>,
         page: PageContentSnapshot,
         maxSidePx: Int,
         area: ModelRect?,
@@ -151,7 +151,7 @@ public class CanvasPageEngine(
             val canvas = Canvas(bitmap)
             val toCanvas = Matrix2D().postTranslate(-shown.left, -shown.top).postScale(scale, scale)
             // The renderer finds the files of the resources in a document
-            val document = DrawDocument(addInitialPage = false).apply { resources.forEach(::addResource) }
+            val document = Document(addInitialPage = false).apply { resources.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
                 TileRenderer(pdfAdapter, textAdapter, images).apply { elements = this@CanvasPageEngine.elements }
@@ -173,7 +173,7 @@ public class CanvasPageEngine(
             strokeWidth = (MARK_WIDTH_MM * scale).coerceAtLeast(1.5f)
         }
         canvas.drawRect(Rect((box.left - shown.left) * scale, (box.top - shown.top) * scale, (box.right - shown.left) * scale, (box.bottom - shown.top) * scale), outline)
-        val label = DrawText().apply {
+        val label = TextElement().apply {
             text = "**${mark.label}**"
             x = box.left + MARK_LABEL_INSET_MM
             y = box.top + MARK_LABEL_INSET_MM

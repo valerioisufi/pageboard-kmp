@@ -2,7 +2,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- * A Compose Multiplatform library of DrawView (see [KmpLibraryConventionPlugin]).
+ * A Compose Multiplatform library of Pageboard (see [KmpLibraryConventionPlugin]).
  *
  * A library never depends on `compose.desktop.currentOs`: the Skia runtime of an operating system
  * is chosen by the application (its tests may add it to `jvmTest`).

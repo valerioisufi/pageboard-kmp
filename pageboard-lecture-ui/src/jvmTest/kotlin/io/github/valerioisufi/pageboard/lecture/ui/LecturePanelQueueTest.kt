@@ -13,7 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.lecture.AssistantSettingsStore
 import io.github.valerioisufi.pageboard.lecture.ImportStep
 import io.github.valerioisufi.pageboard.lecture.LectureAssistant
@@ -27,9 +27,9 @@ import io.github.valerioisufi.pageboard.lecture.testing.MemorySecrets
 import io.github.valerioisufi.pageboard.lecture.transcription.SpeechHints
 import io.github.valerioisufi.pageboard.lecture.transcription.Transcriber
 import io.github.valerioisufi.pageboard.lecture.transcription.Transcription
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -107,11 +107,11 @@ class LecturePanelQueueTest {
 
     @Test
     fun thePanelTakesImportsAndRecordingsWhileALectureIsTranscribed() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         var shown by mutableStateOf("doc")
         runDesktopComposeUiTest(width = 428, height = 800) {
             setContent {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         key(shown) { PanelContent(assistant, shown, EditorContext(controller), LecturePanelState()) }
                     }

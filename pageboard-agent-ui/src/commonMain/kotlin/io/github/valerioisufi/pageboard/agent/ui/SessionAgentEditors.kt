@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent.ui
 
 import io.github.valerioisufi.pageboard.agent.AgentEditors
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.session.EditorSessions
 
@@ -30,7 +30,7 @@ public class SessionAgentEditors(private val sessions: EditorSessions, private v
 
     override fun textHeight(documentId: String, markdown: String, widthMm: Float, fontSize: Float): Float? {
         val controller = controllerOf(documentId) ?: return null
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = markdown
             width = widthMm
             this.fontSize = fontSize
@@ -39,7 +39,7 @@ public class SessionAgentEditors(private val sessions: EditorSessions, private v
         return controller.measureText(text)?.height
     }
 
-    override fun pdfLayout(documentId: String, pdf: DrawPdf): PdfTextLayout? {
+    override fun pdfLayout(documentId: String, pdf: PdfElement): PdfTextLayout? {
         val controller = controllerOf(documentId) ?: return null
         val index = controller.document.pages.indexOfFirst { page -> page.pdfs.any { it.id == pdf.id } }
         return if (index >= 0) controller.placementManager.pdfTextOf(index) else null

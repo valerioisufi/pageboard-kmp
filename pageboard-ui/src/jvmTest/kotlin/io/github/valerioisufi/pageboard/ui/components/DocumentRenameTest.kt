@@ -15,12 +15,12 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.change.RenameDocument
 import io.github.valerioisufi.pageboard.ui.screen.DocumentNames
 import io.github.valerioisufi.pageboard.ui.screen.DocumentRenamer
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -37,7 +37,7 @@ import kotlinx.coroutines.Dispatchers
 class DocumentRenameTest {
 
     /** A renamer of the document of [controller] that refuses the names of [taken], recording the names asked. */
-    private class Renamer(private val controller: DrawViewController, private val taken: Set<String> = emptySet()) : DocumentRenamer {
+    private class Renamer(private val controller: PageboardController, private val taken: Set<String> = emptySet()) : DocumentRenamer {
         val asked = mutableListOf<String>()
         override suspend fun rename(name: String): Boolean {
             asked += name
@@ -47,7 +47,7 @@ class DocumentRenameTest {
         }
     }
 
-    private fun controller() = DrawViewController(document = DrawDocument(title = "Notes"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+    private fun controller() = PageboardController(document = Document(title = "Notes"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
 
     private fun SemanticsNodeInteractionsProvider.field() = onNode(hasSetTextAction())
 
@@ -55,7 +55,7 @@ class DocumentRenameTest {
     fun enterTakesTheNameWrittenTrimmed() = runDesktopComposeUiTest {
         val controller = controller()
         val renamer = Renamer(controller)
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
 
         onNodeWithText("Notes").performClick()
         field().performTextReplacement("  Physics ")
@@ -73,7 +73,7 @@ class DocumentRenameTest {
     fun aNameTakenInTheFolderIsShownAndNotTaken() = runDesktopComposeUiTest {
         val controller = controller()
         val renamer = Renamer(controller, taken = setOf("Physics"))
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
 
         onNodeWithText("Notes").performClick()
         field().performTextReplacement("Physics")
@@ -89,7 +89,7 @@ class DocumentRenameTest {
     fun anInvalidNameIsNeverAsked() = runDesktopComposeUiTest {
         val controller = controller()
         val renamer = Renamer(controller)
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
 
         onNodeWithText("Notes").performClick()
         field().performTextReplacement("a/b")
@@ -108,7 +108,7 @@ class DocumentRenameTest {
     fun escapeGivesTheOldNameBack() = runDesktopComposeUiTest {
         val controller = controller()
         val renamer = Renamer(controller)
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
 
         onNodeWithText("Notes").performClick()
         field().performTextReplacement("Physics")
@@ -124,7 +124,7 @@ class DocumentRenameTest {
     fun closingThePopoverTakesAValidName() = runDesktopComposeUiTest {
         val controller = controller()
         val renamer = Renamer(controller)
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer) } }
 
         onNodeWithText("Notes").performClick()
         field().performTextReplacement("Physics")
@@ -139,7 +139,7 @@ class DocumentRenameTest {
     @Test
     fun withoutARenamerTheTitleIsOnlyShown() = runDesktopComposeUiTest {
         val controller = controller()
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document) } }
 
         onNodeWithText("Notes").performClick()
         onNodeWithText("Created").assertExists()
@@ -151,7 +151,7 @@ class DocumentRenameTest {
         val controller = controller()
         val renamer = Renamer(controller)
         var requests by mutableIntStateOf(0)
-        setContent { DrawViewTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer, renameRequests = requests) } }
+        setContent { PageboardTheme(dynamicColor = false) { DocumentInfoSelector(controller.document, renamer = renamer, renameRequests = requests) } }
 
         requests++
         waitForIdle()

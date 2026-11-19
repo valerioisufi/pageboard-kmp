@@ -32,14 +32,14 @@ import kotlin.test.assertTrue
  */
 class FutureStampTest {
 
-    private fun text(content: String) = DrawText().apply {
+    private fun text(content: String) = TextElement().apply {
         text = content
         x = 10f; y = 20f; width = 40f; height = 10f
     }
 
     @Test
     fun anOperationStampedAtTheEndOfTimeDoesNotWinForGood() {
-        val document = DrawDocument(title = "Physics")
+        val document = Document(title = "Physics")
         val session = DocumentSession(document, replica = "ada")
         // The greatest stamp there is
         runCatching { session.receive(Operation(OperationId("bob", 1), Stamp(Long.MAX_VALUE, Int.MAX_VALUE, "bob"), RenameDocument("Forever"))) }
@@ -50,7 +50,7 @@ class FutureStampTest {
 
     @Test
     fun theGreatestCounterALittleAheadDoesNotWinOverTheChangesMadeAfterIt() {
-        val document = DrawDocument(title = "Physics")
+        val document = Document(title = "Physics")
         val session = DocumentSession(document, replica = "ada")
         // A minute ahead (within any skew of the clocks), with the greatest counter
         runCatching { session.receive(Operation(OperationId("bob", 1), Stamp(currentTimeMillis() + MINUTE, Int.MAX_VALUE, "bob"), RenameDocument("Mine"))) }
@@ -61,7 +61,7 @@ class FutureStampTest {
 
     @Test
     fun anOperationStampedFarAheadDoesNotPushTheClock() {
-        val session = DocumentSession(DrawDocument(), replica = "ada")
+        val session = DocumentSession(Document(), replica = "ada")
         runCatching { session.receive(Operation(OperationId("bob", 1), Stamp(currentTimeMillis() + CENTURY, 0, "bob"), RenameDocument("Ahead"))) }
 
         assertTrue(session.clock.next().time < currentTimeMillis() + DAY)
@@ -69,7 +69,7 @@ class FutureStampTest {
 
     @Test
     fun aTextAMemberSaysItSawTheFutureOfStaysEditable() {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document, replica = "ada")
         val page = document.pages[0]
         val text = text("waves")
@@ -110,7 +110,7 @@ class FutureStampTest {
 
     @Test
     fun anOperationIsReceivedWithinTheHourOnly() {
-        val document = DrawDocument(title = "Physics")
+        val document = Document(title = "Physics")
         val session = DocumentSession(document, replica = "ada")
         val beyond = Stamp(currentTimeMillis() + HybridClock.MAX_AHEAD_MS + MINUTE, 0, "bob")
         assertFailsWith<IllegalArgumentException> { session.receive(Operation(OperationId("bob", 1), beyond, RenameDocument("Ahead"))) }
@@ -127,7 +127,7 @@ class FutureStampTest {
 
     @Test
     fun anOperationIsReceivedStampedByItsReplicaOnly() {
-        val document = DrawDocument(title = "Physics")
+        val document = Document(title = "Physics")
         val session = DocumentSession(document, replica = "ada")
         val operation = Operation(OperationId("bob", 1), Stamp(currentTimeMillis(), 0, "cy"), RenameDocument("As Cy"))
 
@@ -139,7 +139,7 @@ class FutureStampTest {
 
     @Test
     fun anOperationCarryingAStampAfterItsOwnIsRefused() {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document, replica = "ada")
         val page = document.pages[0]
         val text = text("waves")
@@ -179,7 +179,7 @@ class FutureStampTest {
     fun aDocumentLoadedWithStampsAheadOfTheWallClockKeepsItsChangesAfterThem() {
         // Stored by this device, whose clock went back since (or received from a clock ahead)
         val ahead = Stamp(currentTimeMillis() + 2 * DAY, 0, "bob")
-        val document = DrawDocument(title = "Physics")
+        val document = Document(title = "Physics")
         val text = text("waves")
         document.pages[0].add(text)
         text.placed = ahead

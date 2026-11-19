@@ -24,7 +24,7 @@ import io.github.valerioisufi.pageboard.model.shape.strokeInputs
  * grows around its pivot (the start of a line, the middle of a closed shape) as the pen moves from
  * where it was held, until the pen is lifted.
  */
-public class ShapeSnapper internal constructor(private val controller: DrawViewController) {
+public class ShapeSnapper internal constructor(private val controller: PageboardController) {
 
     /** Whether a stroke held still at its end becomes its shape (a preference of the user). */
     public var isEnabled: Boolean by mutableStateOf(true)
@@ -36,7 +36,7 @@ public class ShapeSnapper internal constructor(private val controller: DrawViewC
         controller.preferencesChanged()
     }
 
-    internal fun applyPreferences(preferences: DrawPreferences) {
+    internal fun applyPreferences(preferences: EditorPreferences) {
         isEnabled = preferences.isShapeRecognitionEnabled
     }
 

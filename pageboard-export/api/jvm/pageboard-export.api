@@ -58,8 +58,8 @@ public final class io/github/valerioisufi/pageboard/export/DocumentContent {
 }
 
 public final class io/github/valerioisufi/pageboard/export/DocumentContent$Companion {
-	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
-	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/export/DocumentContent$Companion;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/Set;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/export/DocumentContent$Companion;Lio/github/valerioisufi/pageboard/model/Document;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
 }
 
 public final class io/github/valerioisufi/pageboard/export/DocumentExport {

@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.color_picker_title
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.util.formatDecimal
 import kotlin.math.ln
 import kotlin.math.pow
@@ -171,7 +171,7 @@ internal fun ColorSwatches(colors: List<Color>, selected: Color, onSelect: (Colo
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(28.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
                 ) {
-                    Icon(DrawViewIcons.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -249,7 +249,7 @@ internal fun AddPresetCard(label: String, onClick: () -> Unit, modifier: Modifie
             .clickable(onClickLabel = label, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label }
     ) {
-        Icon(DrawViewIcons.Plus, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+        Icon(PageboardIcons.Plus, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -277,7 +277,7 @@ internal fun OptionCard(icon: ImageVector, title: String, description: String, s
             Text(title, style = MaterialTheme.typography.labelLarge, color = content)
             Text(description, style = MaterialTheme.typography.bodySmall, color = if (selected) content else colors.onSurfaceVariant)
         }
-        if (selected) Icon(DrawViewIcons.Check, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
+        if (selected) Icon(PageboardIcons.Check, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
     }
 }
 

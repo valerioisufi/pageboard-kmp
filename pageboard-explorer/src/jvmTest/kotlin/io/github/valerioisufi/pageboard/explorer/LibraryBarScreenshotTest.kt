@@ -23,8 +23,8 @@ import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.adaptive.InputHints
 import io.github.valerioisufi.pageboard.ui.components.SearchField
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 
 /**
@@ -41,11 +41,11 @@ class LibraryBarScreenshotTest {
     fun theBarOfAGrid() = listOf(600, 700, 840).forEach { width -> capture(width, withSearch = true) }
 
     private fun capture(width: Int, withSearch: Boolean) = runDesktopComposeUiTest(width = width, height = 72) {
-        val actions = listOf(DrawViewIcons.Link, DrawViewIcons.Search, DrawViewIcons.Info).map { icon ->
+        val actions = listOf(PageboardIcons.Link, PageboardIcons.Search, PageboardIcons.Info).map { icon ->
             LibraryAction(icon = icon, label = { icon.name }) { }
         }
         setContent {
-            DrawViewTheme(darkTheme = false, dynamicColor = false) {
+            PageboardTheme(darkTheme = false, dynamicColor = false) {
                 AdaptiveRoot(hints = InputHints.Touch) {
                     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(start = 16.dp, end = 8.dp, top = 8.dp)) {
                         LibraryAppBar(

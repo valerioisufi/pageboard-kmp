@@ -66,7 +66,7 @@ public object JvmNativeLibraries {
                 System.load(target.absolutePath)
                 return true
             } catch (e: Throwable) {
-                System.err.println("DrawView: failed to load bundled $fileName: ${e.message}")
+                System.err.println("Pageboard: failed to load bundled $fileName: ${e.message}")
             }
         }
 
@@ -87,12 +87,12 @@ public object JvmNativeLibraries {
                     System.load(file.absolutePath)
                     return true
                 } catch (e: Throwable) {
-                    System.err.println("DrawView: failed to load ${file.absolutePath}: ${e.message}")
+                    System.err.println("Pageboard: failed to load ${file.absolutePath}: ${e.message}")
                 }
             }
         }
 
-        System.err.println("DrawView: native library '$name' not available for $platformFolder")
+        System.err.println("Pageboard: native library '$name' not available for $platformFolder")
         return false
     }
 }

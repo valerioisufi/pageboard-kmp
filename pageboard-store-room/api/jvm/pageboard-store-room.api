@@ -1,5 +1,5 @@
 public final class io/github/valerioisufi/pageboard/store/room/RoomDocumentStore : io/github/valerioisufi/pageboard/store/DocumentStore, io/github/valerioisufi/pageboard/store/PreferenceStore, io/github/valerioisufi/pageboard/store/space/SpaceStore {
-	public fun <init> (Lio/github/valerioisufi/pageboard/store/room/db/DrawDatabase;Lio/github/valerioisufi/pageboard/model/StrokeModeller;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/room/db/PageboardDatabase;Lio/github/valerioisufi/pageboard/model/StrokeModeller;)V
 	public fun catalogItems (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun catalogOperationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun catalogProofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -17,7 +17,7 @@ public final class io/github/valerioisufi/pageboard/store/room/RoomDocumentStore
 	public fun getPersistence ()Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;
 	public fun getStrokeModeller ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
 	public fun getTrash ()Lkotlinx/coroutines/flow/Flow;
-	public fun insertDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun insertDocument (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -52,19 +52,19 @@ public final class io/github/valerioisufi/pageboard/store/room/RoomDocumentStore
 }
 
 public final class io/github/valerioisufi/pageboard/store/room/db/DatabaseBuilderKt {
-	public static final fun createDrawDatabase (Landroidx/room/RoomDatabase$Builder;)Lio/github/valerioisufi/pageboard/store/room/db/DrawDatabase;
-	public static synthetic fun createDrawDatabase$default (Landroidx/room/RoomDatabase$Builder;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/room/db/DrawDatabase;
+	public static final fun createPageboardDatabase (Landroidx/room/RoomDatabase$Builder;)Lio/github/valerioisufi/pageboard/store/room/db/PageboardDatabase;
+	public static synthetic fun createPageboardDatabase$default (Landroidx/room/RoomDatabase$Builder;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/room/db/PageboardDatabase;
 }
 
 public final class io/github/valerioisufi/pageboard/store/room/db/DatabaseBuilder_jvmKt {
 	public static final fun getInMemoryDatabaseBuilder ()Landroidx/room/RoomDatabase$Builder;
 }
 
-public abstract class io/github/valerioisufi/pageboard/store/room/db/DrawDatabase : androidx/room/RoomDatabase {
+public abstract class io/github/valerioisufi/pageboard/store/room/db/PageboardDatabase : androidx/room/RoomDatabase {
 	public fun <init> ()V
 }
 
-public final class io/github/valerioisufi/pageboard/store/room/db/DrawDatabase_Impl : io/github/valerioisufi/pageboard/store/room/db/DrawDatabase {
+public final class io/github/valerioisufi/pageboard/store/room/db/DrawDatabase_Impl : io/github/valerioisufi/pageboard/store/room/db/PageboardDatabase {
 	public fun <init> ()V
 	public fun createAutoMigrations (Ljava/util/Map;)Ljava/util/List;
 	public synthetic fun createOpenDelegate ()Landroidx/room/RoomOpenDelegateMarker;

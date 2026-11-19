@@ -35,13 +35,13 @@ internal fun plusJakartaSansFontFamily(): FontFamily {
  * regular, all in Plus Jakarta Sans.
  */
 @Composable
-internal fun drawViewTypography(): Typography {
+internal fun pageboardTypography(): Typography {
     val family = plusJakartaSansFontFamily()
-    return remember(family) { drawViewTypography(family) }
+    return remember(family) { pageboardTypography(family) }
 }
 
 /** The type scale of the design in [family]. */
-internal fun drawViewTypography(family: FontFamily): Typography {
+internal fun pageboardTypography(family: FontFamily): Typography {
     fun style(weight: FontWeight, size: Int, lineHeight: Int, tracking: Double = 0.0) = TextStyle(
         fontFamily = family,
         fontWeight = weight,

@@ -4,7 +4,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "The export of DrawView documents in an application: the dialog, \"Export\" in the library and in the editor"
+description = "The export of Pageboard documents in an application: the dialog, \"Export\" in the library and in the editor"
 
 kotlin {
     android {

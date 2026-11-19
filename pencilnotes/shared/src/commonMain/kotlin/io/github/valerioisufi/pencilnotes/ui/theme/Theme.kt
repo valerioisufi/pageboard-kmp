@@ -2,10 +2,10 @@ package io.github.valerioisufi.pencilnotes.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 
 /**
- * The theme of PencilNotes: the design of DrawView (its palette is the one of PencilNotes), the
+ * The theme of PencilNotes: the design of Pageboard (its palette is the one of PencilNotes), the
  * dynamic colors of the system on Android 12+; the brand in Cherry Bomb One ([cherryBombOneFontFamily]).
  */
 @Composable
@@ -15,5 +15,5 @@ fun PencilNotesTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    DrawViewTheme(darkTheme = darkTheme, dynamicColor = dynamicColor, content = content)
+    PageboardTheme(darkTheme = darkTheme, dynamicColor = dynamicColor, content = content)
 }

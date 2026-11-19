@@ -4,7 +4,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.execSQL
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
@@ -30,11 +30,11 @@ import kotlinx.serialization.json.putJsonObject
 /*
  * The migrations of the database from version 16, the first one holding documents to keep: every
  * new version of the schema comes with its migration, the documents are never dropped (see
- * createDrawDatabase). Each migration is tested on a database of its version (see
- * DrawDatabaseMigrationTest).
+ * createPageboardDatabase). Each migration is tested on a database of its version (see
+ * PageboardDatabaseMigrationTest).
  */
 
-/** The migrations from version 16 to [DrawDatabase]'s version. */
+/** The migrations from version 16 to [PageboardDatabase]'s version. */
 internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
     arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25)
 
@@ -55,7 +55,7 @@ internal object Migration16To17 : Migration(16, 17) {
 
 /**
  * 18: the preferences as text by key. The single row of the preferences of the editor becomes the
- * text of the key `pageboard.editor`, in the format of `DrawPreferences` (see `DocumentEditorViewModel`).
+ * text of the key `pageboard.editor`, in the format of `EditorPreferences` (see `DocumentEditorViewModel`).
  */
 internal object Migration17To18 : Migration(17, 18) {
     override fun migrate(connection: SQLiteConnection) {
@@ -82,7 +82,7 @@ internal object Migration17To18 : Migration(17, 18) {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** The preferences of [row] as `DrawPreferences` writes them (a tool without presets keeps the default ones). */
+    /** The preferences of [row] as `EditorPreferences` writes them (a tool without presets keeps the default ones). */
     private fun editorPreferences(row: SQLiteStatement): String = buildJsonObject {
         put("isStylusOnlyMode", row.getLong(0) != 0L)
         row.getText(1).takeIf { it in TOOLS }?.let { put("lastSelectedTool", it) }
@@ -147,7 +147,7 @@ internal object Migration18To19 : Migration(18, 19) {
 }
 
 /**
- * 20: the order of every element has its own register (`ordered`, see `DrawElement.ordered`): the
+ * 20: the order of every element has its own register (`ordered`, see `PageElement.ordered`): the
  * stamp of its placement, which held its order until then. The orders themselves are kept as they
  * are (an element reads them in the layer of its kind, see `ElementOrder`).
  */
@@ -257,7 +257,7 @@ internal object Migration20To21 : Migration(20, 21) {
     /** The corner of a text [width] x [height] at ([x], [y]) turned by [rotation] around its middle. */
     private fun corner(x: Float, y: Float, width: Float, height: Float, rotation: Float): Pair<Float, Float> {
         if (rotation == 0f) return x to y
-        val corner = DrawText.cornerFor(x + width / 2f, y + height / 2f, width, height, rotation)
+        val corner = TextElement.cornerFor(x + width / 2f, y + height / 2f, width, height, rotation)
         return corner.x to corner.y
     }
 
@@ -301,7 +301,7 @@ internal object Migration21To22 : Migration(21, 22) {
 }
 
 /**
- * 23: the fill of a text box (`DrawText.background`, docs/plans/text-boxes.md); no text has one. The
+ * 23: the fill of a text box (`TextElement.background`, docs/plans/text-boxes.md); no text has one. The
  * texts in the log of the operations need nothing: a text without the field has no fill.
  */
 internal object Migration22To23 : Migration(22, 23) {
@@ -311,7 +311,7 @@ internal object Migration22To23 : Migration(22, 23) {
 }
 
 /**
- * 24: the chains of text boxes across the pages (`DrawText.next`, `continuesLine`,
+ * 24: the chains of text boxes across the pages (`TextElement.next`, `continuesLine`,
  * docs/plans/text-boxes.md); no text is in one. The texts in the log of the operations need nothing: a
  * text without the fields goes on into none.
  */

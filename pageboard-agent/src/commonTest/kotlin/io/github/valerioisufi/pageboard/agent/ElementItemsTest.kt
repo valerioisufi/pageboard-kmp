@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -58,7 +58,7 @@ class ElementItemsTest {
         val documentId: String,
         val open: OpenDocument
     ) {
-        val page: DrawPage get() = open.document.pages[0]
+        val page: Page get() = open.document.pages[0]
     }
 
     private class FakeImages : AgentImages {
@@ -113,26 +113,26 @@ class ElementItemsTest {
         }
     }
 
-    private suspend fun Setup.addImage(x: Float = 30f, y: Float = 200f): DrawImage = open.edit { session ->
-        val image = DrawImage().apply { resourceId = "picture"; this.x = x; this.y = y; width = 50f; height = 40f }
+    private suspend fun Setup.addImage(x: Float = 30f, y: Float = 200f): ImageElement = open.edit { session ->
+        val image = ImageElement().apply { resourceId = "picture"; this.x = x; this.y = y; width = 50f; height = 40f }
         session.submit(AddElements.of(session.document.pages[0], listOf(image)))
         image
     }
 
-    private suspend fun Setup.addStroke(x: Float = 20f, y: Float = 120f): DrawStroke = open.edit { session ->
+    private suspend fun Setup.addStroke(x: Float = 20f, y: Float = 120f): StrokeElement = open.edit { session ->
         val stroke = StrokeData(
             id = newElementId(),
             points = (0 until 20).map { StrokePoint(x = x + it * 0.5f, y = y + (it % 2), pressure = 0.5f, timestampMs = it * 8L) },
             tool = StrokeTool.PRESSURE_PEN,
             size = 0.5f,
             color = 0xFF000000.toInt()
-        ).toElement() as DrawStroke
+        ).toElement() as StrokeElement
         session.submit(AddElements.of(session.document.pages[0], listOf(stroke)))
         stroke
     }
 
-    private suspend fun Setup.addText(content: String): DrawText = open.edit { session ->
-        val text = DrawText().apply { text = content; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
+    private suspend fun Setup.addText(content: String): TextElement = open.edit { session ->
+        val text = TextElement().apply { text = content; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f }
         session.submit(AddElements.of(session.document.pages[0], listOf(text)))
         text
     }
@@ -408,7 +408,7 @@ class ElementItemsTest {
         // What travels: the operation as it is written
         val sent = Json.decodeFromString(Operation.serializer(), Json.encodeToString(Operation.serializer(), operations.single().operation))
         assertTrue(other.receive(sent))
-        fun shown(page: DrawPage) = page.elements().filter { it.removed == null }.map { it.id to (page.boundsOf(it)?.left ?: 0f) }.sortedBy { it.first }
+        fun shown(page: Page) = page.elements().filter { it.removed == null }.map { it.id to (page.boundsOf(it)?.left ?: 0f) }.sortedBy { it.first }
         assertEquals(shown(setup.page), shown(other.document.pages[0]))
         assertFalse(other.document.pages[0].strokes.any { it.removed == null && it.id == stroke.id })
     }

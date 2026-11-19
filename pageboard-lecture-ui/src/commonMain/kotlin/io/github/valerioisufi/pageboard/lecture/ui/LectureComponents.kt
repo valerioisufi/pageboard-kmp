@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
@@ -184,7 +184,7 @@ private fun StopButton(onStop: () -> Unit) {
             contentColor = MaterialTheme.colorScheme.inverseSurface
         )
     ) {
-        Icon(DrawViewIcons.Stop, contentDescription = stringResource(Res.string.lecture_action_stop), modifier = Modifier.size(18.dp))
+        Icon(PageboardIcons.Stop, contentDescription = stringResource(Res.string.lecture_action_stop), modifier = Modifier.size(18.dp))
     }
 }
 

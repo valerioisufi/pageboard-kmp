@@ -31,7 +31,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_size
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_table
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -46,7 +46,7 @@ internal fun TableButton(target: TextFormatTarget, commands: EditorCommands) {
         FormatToggle(
             command = commands.table,
             checked = inTable,
-            icon = DrawViewIcons.Grid,
+            icon = PageboardIcons.Grid,
             description = Res.string.text_editor_action_table,
             onClick = { open = true }
         )

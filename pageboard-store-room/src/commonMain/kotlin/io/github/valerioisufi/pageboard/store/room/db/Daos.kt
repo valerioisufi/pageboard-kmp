@@ -392,7 +392,7 @@ internal interface OperationDao {
 }
 
 /**
- * Deletes for good the pages and the elements removed (see `DrawDocument.purgeHidden`).
+ * Deletes for good the pages and the elements removed (see `Document.purgeHidden`).
  */
 @Dao
 internal interface PurgeDao {

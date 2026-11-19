@@ -54,7 +54,7 @@ import io.github.valerioisufi.pageboard.ui.components.SegmentedChoice
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.render.ComposeTextTileAdapter
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -146,7 +146,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, editor: Edit
                     },
                     contentPadding = PaddingValues(start = 16.dp, end = 20.dp)
                 ) {
-                    Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.lecture_notes_insert_all, newNotes.size), maxLines = 1)
                 }
@@ -197,7 +197,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, editor: Edit
                         modifier = Modifier.weight(1f)
                     )
                     Icon(
-                        if (showHandled) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown,
+                        if (showHandled) PageboardIcons.ChevronUp else PageboardIcons.ChevronDown,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
@@ -235,7 +235,7 @@ internal fun SuggestionCard(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
             ) {
-                Icon(DrawViewIcons.Sparkles, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(16.dp))
+                Icon(PageboardIcons.Sparkles, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(16.dp))
             }
             Text(
                 kindLabel(note.kind).uppercase(),
@@ -245,7 +245,7 @@ internal fun SuggestionCard(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            if (note.importance >= 3) LabelBadge(stringResource(Res.string.lecture_importance_high), BadgeTone.Yellow, icon = DrawViewIcons.Star)
+            if (note.importance >= 3) LabelBadge(stringResource(Res.string.lecture_importance_high), BadgeTone.Yellow, icon = PageboardIcons.Star)
             TimeChip(if (note.fromFinalReview) stringResource(Res.string.lecture_note_from_review) else formatLectureTime(note.atMs))
         }
         if (note.title.isNotBlank()) {
@@ -270,7 +270,7 @@ internal fun SuggestionCard(
                 OutlineButton(onClick = onCancelPlacing) { Text(stringResource(Res.string.lecture_action_cancel)) }
             } else {
                 TonalButton(onClick = onInsert, contentPadding = PaddingValues(start = 16.dp, end = 20.dp)) {
-                    Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(
                         pageIndex?.let { stringResource(Res.string.lecture_note_insert_page, it + 1) } ?: stringResource(Res.string.lecture_note_insert),
@@ -280,10 +280,10 @@ internal fun SuggestionCard(
             }
             Spacer(Modifier.weight(1f))
             if (canListen && !note.fromFinalReview) {
-                DesignIconButton(DrawViewIcons.Volume, stringResource(Res.string.lecture_note_listen), onClick = onListen)
+                DesignIconButton(PageboardIcons.Volume, stringResource(Res.string.lecture_note_listen), onClick = onListen)
             }
-            DesignIconButton(DrawViewIcons.CheckCircle, stringResource(Res.string.lecture_note_have_it), onClick = onAlreadyNoted)
-            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.lecture_note_dismiss), onClick = onDismiss)
+            DesignIconButton(PageboardIcons.CheckCircle, stringResource(Res.string.lecture_note_have_it), onClick = onAlreadyNoted)
+            DesignIconButton(PageboardIcons.Close, stringResource(Res.string.lecture_note_dismiss), onClick = onDismiss)
         }
     }
 }
@@ -301,9 +301,9 @@ private fun HandledRow(note: NoteSuggestion, pageIndex: Int?, onRestore: () -> U
     ) {
         Icon(
             when (note.status) {
-                SuggestionStatus.INSERTED -> DrawViewIcons.CheckCircle
-                SuggestionStatus.ALREADY_NOTED -> DrawViewIcons.Check
-                else -> DrawViewIcons.Close
+                SuggestionStatus.INSERTED -> PageboardIcons.CheckCircle
+                SuggestionStatus.ALREADY_NOTED -> PageboardIcons.Check
+                else -> PageboardIcons.Close
             },
             contentDescription = null,
             tint = if (note.status == SuggestionStatus.DISMISSED) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,

@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.store.testing
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeModeller
@@ -37,9 +37,9 @@ public object SyntheticDocuments {
         title: String = "Notebook",
         seed: Int = 1,
         modeller: StrokeModeller = NoMeshes
-    ): DrawDocument {
+    ): Document {
         val random = Random(seed)
-        val document = DrawDocument(title = title, addInitialPage = false, strokeModeller = modeller)
+        val document = Document(title = title, addInitialPage = false, strokeModeller = modeller)
         repeat(pages) {
             val page = document.addPage()
             write(page, strokesPerPage, pointsPerStroke, removedFraction, random, modeller)
@@ -49,7 +49,7 @@ public object SyntheticDocuments {
     }
 
     /** The strokes of [count] words written along the lines of [page], [removedFraction] of them erased. */
-    private fun write(page: DrawPage, count: Int, points: Int, removedFraction: Float, random: Random, modeller: StrokeModeller) {
+    private fun write(page: Page, count: Int, points: Int, removedFraction: Float, random: Random, modeller: StrokeModeller) {
         val margin = 20f
         val wordWidth = 18f
         val wordsPerLine = ((page.widthMm - 2 * margin) / (wordWidth + 4f)).toInt().coerceAtLeast(1)
@@ -88,7 +88,7 @@ public object SyntheticDocuments {
         }
     }
 
-    private fun text(index: Int, random: Random): DrawText = DrawText().apply {
+    private fun text(index: Int, random: Random): TextElement = TextElement().apply {
         text = WORDS.shuffled(random).take(12).joinToString(" ")
         x = 20f
         y = 30f + index * 25f

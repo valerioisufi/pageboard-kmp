@@ -11,12 +11,12 @@ import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.DrawCanvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.PageCanvas
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,17 +30,17 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * The gestures of the text tool sent to a [DrawCanvas]: a box drawn with a mouse, a tap on another
+ * The gestures of the text tool sent to a [PageCanvas]: a box drawn with a mouse, a tap on another
  * text while one is written, the text being written dragged to another page.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class TextGesturesTest {
 
-    private fun withCanvas(block: (ImageComposeScene, DrawViewController) -> Unit) {
+    private fun withCanvas(block: (ImageComposeScene, PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) {
-            DrawCanvas(controller)
+            PageCanvas(controller)
         }
         try {
             scene.render()
@@ -96,7 +96,7 @@ class TextGesturesTest {
     @Test
     fun aTapOnAnotherTextOpensItAtOnce() = withCanvas { scene, controller ->
         val page = controller.document.pages[0]
-        val other = DrawText().apply { text = "Other"; x = 20f; y = 120f; width = 60f; height = 10f }
+        val other = TextElement().apply { text = "Other"; x = 20f; y = 120f; width = 60f; height = 10f }
         controller.session.submit(AddElements.of(page, listOf(other)))
         val editor = controller.textEditorManager
         editor.startNewText(0, 20f, 40f)

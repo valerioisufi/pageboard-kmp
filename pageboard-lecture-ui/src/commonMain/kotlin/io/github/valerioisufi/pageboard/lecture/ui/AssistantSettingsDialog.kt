@@ -74,7 +74,7 @@ import io.github.valerioisufi.pageboard.ui.components.NavigationItem
 import io.github.valerioisufi.pageboard.ui.components.SegmentedChoice
 import io.github.valerioisufi.pageboard.ui.components.SwitchRow
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.util.formatDecimal
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -84,11 +84,11 @@ import org.jetbrains.compose.resources.stringResource
 
 /** The sections of the settings, in their navigation. */
 private enum class SettingsSection(val title: StringResource, val icon: ImageVector) {
-    REQUESTS(Res.string.lecture_settings_requests, DrawViewIcons.Sparkles),
-    GEMINI(Res.string.lecture_settings_gemini_section, DrawViewIcons.Globe),
-    LOCAL(Res.string.lecture_settings_local_section, DrawViewIcons.Monitor),
-    LECTURE(Res.string.lecture_settings_lecture_section, DrawViewIcons.Mic),
-    ADVANCED(Res.string.lecture_settings_advanced, DrawViewIcons.Sliders)
+    REQUESTS(Res.string.lecture_settings_requests, PageboardIcons.Sparkles),
+    GEMINI(Res.string.lecture_settings_gemini_section, PageboardIcons.Globe),
+    LOCAL(Res.string.lecture_settings_local_section, PageboardIcons.Monitor),
+    LECTURE(Res.string.lecture_settings_lecture_section, PageboardIcons.Mic),
+    ADVANCED(Res.string.lecture_settings_advanced, PageboardIcons.Sliders)
 }
 
 /**
@@ -185,7 +185,7 @@ internal fun ColumnScope.AssistantSettingsContent(
             Column(modifier = Modifier.weight(1f).fillMaxHeight().padding(vertical = 24.dp)) {
                 Row(modifier = Modifier.padding(start = 24.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(section.title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                    DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.lecture_action_close), onClick = onDismiss)
+                    DesignIconButton(PageboardIcons.Close, stringResource(Res.string.lecture_action_close), onClick = onDismiss)
                 }
                 Column(
                     modifier = Modifier
@@ -246,7 +246,7 @@ private fun GeminiSection(draft: AssistantSettings, store: AssistantSettingsStor
             visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 DesignIconButton(
-                    icon = if (showKey) DrawViewIcons.EyeOff else DrawViewIcons.Eye,
+                    icon = if (showKey) PageboardIcons.EyeOff else PageboardIcons.Eye,
                     label = stringResource(if (showKey) Res.string.lecture_settings_hide_key else Res.string.lecture_settings_show_key),
                     onClick = { showKey = !showKey }
                 )
@@ -281,7 +281,7 @@ private fun LocalSection(draft: AssistantSettings, localModels: LocalModels, dev
                 options = LocalEngine.entries,
                 selected = draft.localEngine,
                 label = { stringResource(if (it == LocalEngine.DEVICE) Res.string.lecture_engine_device else Res.string.lecture_engine_ollama) },
-                icon = { if (it == LocalEngine.DEVICE) DrawViewIcons.Monitor else DrawViewIcons.Globe },
+                icon = { if (it == LocalEngine.DEVICE) PageboardIcons.Monitor else PageboardIcons.Globe },
                 textStyle = MaterialTheme.typography.labelMedium,
                 onSelect = { onChange(draft.copy(localEngine = it)) }
             )
@@ -421,7 +421,7 @@ private fun TaskModelRow(
                 options = ModelProvider.entries,
                 selected = model.provider,
                 label = { stringResource(if (it == ModelProvider.GEMINI) Res.string.lecture_provider_online else Res.string.lecture_provider_local) },
-                icon = { if (it == ModelProvider.GEMINI) DrawViewIcons.Globe else DrawViewIcons.Monitor },
+                icon = { if (it == ModelProvider.GEMINI) PageboardIcons.Globe else PageboardIcons.Monitor },
                 textStyle = MaterialTheme.typography.labelMedium,
                 onSelect = { onChange(settings.withTask(task, model.copy(provider = it))) }
             )
@@ -497,9 +497,9 @@ private fun InstalledModels(localModels: LocalModels) {
             ) {
                 Text(model.name, style = MaterialTheme.typography.titleSmall)
                 Text(formatSize(model.sizeBytes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (model.readsImages) LabelBadge(stringResource(Res.string.lecture_local_reads_images), BadgeTone.Blue, icon = DrawViewIcons.Image)
+                if (model.readsImages) LabelBadge(stringResource(Res.string.lecture_local_reads_images), BadgeTone.Blue, icon = PageboardIcons.Image)
                 if (model.name in recommended || model.name.removeSuffix(":latest") in recommended) {
-                    LabelBadge(stringResource(Res.string.lecture_local_recommended), BadgeTone.Green, icon = DrawViewIcons.Star)
+                    LabelBadge(stringResource(Res.string.lecture_local_recommended), BadgeTone.Green, icon = PageboardIcons.Star)
                 }
             }
         }
@@ -518,7 +518,7 @@ private fun OllamaModelPicker(selected: String, recommended: String, localModels
                 label = { Text(stringResource(Res.string.lecture_settings_ollama_model)) },
                 singleLine = true,
                 trailingIcon = {
-                    IconButton(onClick = { expanded = true }) { Icon(DrawViewIcons.ChevronDown, contentDescription = null, modifier = Modifier.size(20.dp)) }
+                    IconButton(onClick = { expanded = true }) { Icon(PageboardIcons.ChevronDown, contentDescription = null, modifier = Modifier.size(20.dp)) }
                 },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -539,7 +539,7 @@ private fun OllamaModelPicker(selected: String, recommended: String, localModels
                 if (!localModels.isInstalled(recommended)) {
                     MenuItem(
                         text = "$recommended · " + stringResource(Res.string.lecture_local_recommended_not_installed),
-                        icon = rememberVectorPainter(DrawViewIcons.Download),
+                        icon = rememberVectorPainter(PageboardIcons.Download),
                         onClick = {
                             expanded = false
                             onSelect(recommended)
@@ -729,7 +729,7 @@ private fun OllamaOnTheNetwork(url: String, localModels: LocalModels, onUrl: (St
     for (server in localModels.foundServers) {
         TextButton(onClick = { onUrl(server) }) {
             if (server == url) {
-                Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
             Text(server)
@@ -762,7 +762,7 @@ private fun <T> Choice(label: String, value: String, options: List<Pair<String, 
             label = { Text(label) },
             singleLine = true,
             trailingIcon = {
-                IconButton(onClick = { expanded = true }) { Icon(DrawViewIcons.ChevronDown, contentDescription = null, modifier = Modifier.size(20.dp)) }
+                IconButton(onClick = { expanded = true }) { Icon(PageboardIcons.ChevronDown, contentDescription = null, modifier = Modifier.size(20.dp)) }
             },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
@@ -857,7 +857,7 @@ private const val OLLAMA_DOWNLOAD_URL = "https://ollama.com/download"
 @Composable
 private fun Ready(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Icon(DrawViewIcons.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+        Icon(PageboardIcons.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
         Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }

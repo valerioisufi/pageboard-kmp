@@ -176,7 +176,7 @@ One commit per phase. The checks of `CLAUDE.md` run at the end of each phase fro
 | 2 | The guard of the serial names, before anything moves | Done: every subclass already had its `@SerialName` |
 | 3 | The modules and the build: directories, `settings.gradle.kts`, the plugins, the properties, the environment variables, the data directory, the workflows, the consumer checks | Done, compiled for the JVM; the full checks run after phase 6 |
 | 4 | The packages, the JNI symbols, the cinterop and Swift code, the Room schema directory | Done, compiled for the JVM (with the `-D` options of CMake missed by phase 3) |
-| 5 | The types, as in the table; `updateKotlinAbi` for the new names | To do |
+| 5 | The types, as in the table; `updateKotlinAbi` for the new names | Done, compiled for the JVM; the ABI dumps renamed with the code, checked after phase 6 |
 | 6 | The protocol and the stored names: ALPN, invitations, Bonjour, archives, shape type, secure store, deep links, channel; `ProtocolFormatTest` re-recorded | To do |
 | 7 | The docs, `CLAUDE.md` and the index of the plans | To do |
 | 8 | Verification: the conversion tried on a scratch directory with notes of the old build, PencilNotes on desktop opening them; two devices on the new build syncing | To do |

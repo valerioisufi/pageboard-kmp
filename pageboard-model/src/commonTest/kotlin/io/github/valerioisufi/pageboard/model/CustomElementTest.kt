@@ -46,7 +46,7 @@ class CustomElementTest {
             else null
     }
 
-    private fun shape(value: Shape, x: Float = 10f): DrawCustomElement = DrawCustomElement(ShapeType.id).apply {
+    private fun shape(value: Shape, x: Float = 10f): CustomElement = CustomElement(ShapeType.id).apply {
         version = ShapeType.version
         payload = ShapeType.encode(value)
         this.x = x
@@ -57,7 +57,7 @@ class CustomElementTest {
 
     @Test
     fun anElementOfAnApplicationIsAddedChangedAndUndone() {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document)
         val page = document.pages[0]
         val element = shape(Shape(3, RED))
@@ -82,8 +82,8 @@ class CustomElementTest {
 
     @Test
     fun theMostRecentValueWinsOnEveryDevice() {
-        val first = DrawDocument()
-        val second = DrawDocument(id = first.id, addInitialPage = false).apply { appendPage(first.pages[0].toData().toPage(this)) }
+        val first = Document()
+        val second = Document(id = first.id, addInitialPage = false).apply { appendPage(first.pages[0].toData().toPage(this)) }
         val a = DocumentSession(first, replica = "a")
         val b = DocumentSession(second, replica = "b")
         val operations = mutableListOf<Operation>()
@@ -109,10 +109,10 @@ class CustomElementTest {
 
     @Test
     fun anElementOfAnUnknownTypeIsKeptAsItIs() {
-        val document = DrawDocument()
+        val document = Document()
         val session = DocumentSession(document)
         val payload = byteArrayOf(1, 2, 3, 4)
-        val element = DrawCustomElement("org.other.unknown").apply {
+        val element = CustomElement("org.other.unknown").apply {
             version = 7
             this.payload = payload
             width = 10f
@@ -145,7 +145,7 @@ class CustomElementTest {
     @Test
     fun aValueOfAnOlderFormatIsMigratedAndANewerOneIsNotRead() {
         @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-        val older = DrawCustomElement(ShapeType.id).apply {
+        val older = CustomElement(ShapeType.id).apply {
             version = 1
             payload = kotlinx.serialization.cbor.Cbor.encodeToByteArray(ShapeType.ShapeV1.serializer(), ShapeType.ShapeV1(4))
         }

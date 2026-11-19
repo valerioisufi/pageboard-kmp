@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeDraft
 import io.github.valerioisufi.pageboard.canvas.geometry.mapRect
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
@@ -44,7 +44,7 @@ import io.github.valerioisufi.pageboard.canvas.geometry.toComposeMatrix
 import io.github.valerioisufi.pageboard.canvas.render.drawVectors
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
@@ -60,8 +60,8 @@ import kotlinx.coroutines.flow.first
  * (see [LiveInkLayer]): a change of the stroke does not draw the tiles again.
  */
 @Composable
-public fun DrawCanvas(
-    controller: DrawViewController,
+public fun PageCanvas(
+    controller: PageboardController,
     modifier: Modifier = Modifier,
     engine: InkStrokeEngine = remember { InkStrokeEngine() }
 ) {
@@ -152,7 +152,7 @@ public fun DrawCanvas(
 
 /** The committed content of the canvas and what is drawn over it but the live state. */
 private fun DrawScope.drawContent(
-    controller: DrawViewController,
+    controller: PageboardController,
     ink: LiveInkLayer,
     animationTick: Long,
     collaboratorsOverlay: CollaboratorsOverlay,
@@ -285,7 +285,7 @@ private fun DrawScope.drawContent(
  * The live state over the content: the stroke in progress (when its layer draws in Compose), the
  * cursor of the eraser and of the pens, the box of a new text.
  */
-private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveState, ink: LiveInkLayer, labels: TextMeasurer) {
+private fun DrawScope.drawLive(controller: PageboardController, live: CanvasLiveState, ink: LiveInkLayer, labels: TextMeasurer) {
     @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
     ink.draw(this, controller)
 
@@ -326,7 +326,7 @@ private fun DrawScope.drawLive(controller: DrawViewController, live: CanvasLiveS
  * The shape being drawn with the shapes tool, as it will be, the anchors of the other shapes near
  * the pointer (the one its end snapped to ringed) and its size by the pointer.
  */
-private fun DrawScope.drawShapeDraft(controller: DrawViewController, draft: ShapeDraft, labels: TextMeasurer) {
+private fun DrawScope.drawShapeDraft(controller: PageboardController, draft: ShapeDraft, labels: TextMeasurer) {
     val mmToScreen = controller.viewport.pageMmToScreen(draft.pageIndex) ?: return
     val box = draft.box
     if (box.width > 0f && box.height > 0f) {
@@ -394,8 +394,8 @@ private const val ANCHOR_RING_DP = 8f
 
 /** The text of a pending placement in [box] (page millimeters), in a dashed frame. */
 private fun DrawScope.drawPlacementPreview(
-    controller: DrawViewController,
-    preview: DrawText,
+    controller: PageboardController,
+    preview: TextElement,
     pageIndex: Int,
     box: MmRect,
     primary: Color

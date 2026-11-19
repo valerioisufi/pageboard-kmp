@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.explorer
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.explorer.FileExplorerViewModel.FileType
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.pdf.PdfiumEngine
 import io.github.valerioisufi.pageboard.platform.PAGEBOARD_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -52,7 +52,7 @@ class FileImportTest {
                 repeat(3) { writer.beginPage(842f, 595f) }
                 writer.save(pdf.path)
             }
-            val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+            val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
                 tileManager.tileRenderer.pdfAdapter = PdfiumEngine.createTileAdapter()
             }
             assertEquals(1, controller.document.pages.size)
@@ -73,7 +73,7 @@ class FileImportTest {
     }
 
     /** Waits for the import (on other threads) to give the document [count] pages. */
-    private fun awaitPages(controller: DrawViewController, count: Int) {
+    private fun awaitPages(controller: PageboardController, count: Int) {
         val end = System.currentTimeMillis() + 10_000
         while (controller.document.pages.size != count) {
             check(System.currentTimeMillis() < end) { "${controller.document.pages.size} pages, not $count" }

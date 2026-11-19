@@ -29,7 +29,7 @@ public interface TextFormatTarget {
     /** [action] on the table of the caret. */
     public fun applyTableAction(action: TableEditing.Action) {}
 
-    /** Whether the boxes take a fill (see `DrawText.background`): the texts, not the style of a new one. */
+    /** Whether the boxes take a fill (see `TextElement.background`): the texts, not the style of a new one. */
     public val takesBackground: Boolean get() = false
 
     /** The ARGB color of the fill of the box shown (that of the first text), `null` for none. */

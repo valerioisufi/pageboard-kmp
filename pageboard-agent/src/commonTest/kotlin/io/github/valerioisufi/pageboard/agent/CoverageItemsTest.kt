@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
 import io.github.valerioisufi.pageboard.agent.AgentHarness.Companion.item
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.TextAlignment
@@ -27,20 +27,20 @@ import kotlin.test.assertTrue
 /** The small items of `docs/plans/agent-coverage.md` (phase 2): rotation, another page, auto width, alignment, defaults, pages put back. */
 class CoverageItemsTest {
 
-    private suspend fun AgentHarness.addImage(x: Float = 30f, y: Float = 200f): DrawImage = open.edit { session ->
-        val image = DrawImage().apply { resourceId = "picture"; this.x = x; this.y = y; width = 50f; height = 40f }
+    private suspend fun AgentHarness.addImage(x: Float = 30f, y: Float = 200f): ImageElement = open.edit { session ->
+        val image = ImageElement().apply { resourceId = "picture"; this.x = x; this.y = y; width = 50f; height = 40f }
         session.submit(AddElements.of(session.document.pages[0], listOf(image)))
         image
     }
 
-    private suspend fun AgentHarness.addText(content: String = "Gauss"): DrawText = open.edit { session ->
-        val text = DrawText().apply { text = content; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f; alignment = TextAlignment.CENTER }
+    private suspend fun AgentHarness.addText(content: String = "Gauss"): TextElement = open.edit { session ->
+        val text = TextElement().apply { text = content; x = 10f; y = 20f; width = 100f; height = 10f; fontSize = 16f; alignment = TextAlignment.CENTER }
         session.submit(AddElements.of(session.document.pages[0], listOf(text)))
         text
     }
 
-    private suspend fun AgentHarness.addPage(widthMm: Float = 210f): DrawPage = open.edit { session ->
-        val page = DrawPage(widthMm = widthMm, heightMm = 297f, orderKey = FractionalIndex.between(session.document.pages.last().orderKey, null))
+    private suspend fun AgentHarness.addPage(widthMm: Float = 210f): Page = open.edit { session ->
+        val page = Page(widthMm = widthMm, heightMm = 297f, orderKey = FractionalIndex.between(session.document.pages.last().orderKey, null))
         session.submit(AddPage.of(page))
         session.document.pages.last()
     }

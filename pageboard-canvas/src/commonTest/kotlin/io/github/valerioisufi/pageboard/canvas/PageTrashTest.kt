@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.canvas
 
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TrashRetention
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
@@ -18,18 +18,18 @@ import kotlinx.coroutines.test.runTest
 class PageTrashTest {
 
     /** A document of [pages] pages, a text on each one naming it ("1", "2"...). */
-    private fun controller(scope: CoroutineScope, pages: Int = 4): DrawViewController {
-        val document = DrawDocument()
+    private fun controller(scope: CoroutineScope, pages: Int = 4): PageboardController {
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+        val controller = PageboardController(document = document, coroutineScope = scope)
         for ((i, page) in document.pages.withIndex()) {
-            val text = DrawText().apply { text = "${i + 1}"; x = 10f; y = 10f; width = 20f; fontSize = 16f }
+            val text = TextElement().apply { text = "${i + 1}"; x = 10f; y = 10f; width = 20f; fontSize = 16f }
             controller.session.submit(AddElements.of(page, listOf(text)))
         }
         return controller
     }
 
-    private fun DrawViewController.names() = document.pages.map { it.texts.single().text }
+    private fun PageboardController.names() = document.pages.map { it.texts.single().text }
 
     @Test
     fun thePagesDeletedArePutBackWhereTheyWereInOneStep() = runTest(UnconfinedTestDispatcher()) {

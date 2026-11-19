@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-store>
+// Library unique name: <pageboard-kmp:pageboard-store>
 final enum class io.github.valerioisufi.pageboard.store.space/CatalogItemKind : kotlin/Enum<io.github.valerioisufi.pageboard.store.space/CatalogItemKind> { // io.github.valerioisufi.pageboard.store.space/CatalogItemKind|null[0]
     enum entry DOCUMENT // io.github.valerioisufi.pageboard.store.space/CatalogItemKind.DOCUMENT|null[0]
     enum entry FOLDER // io.github.valerioisufi.pageboard.store.space/CatalogItemKind.FOLDER|null[0]
@@ -49,7 +49,7 @@ abstract interface io.github.valerioisufi.pageboard.store/DocumentCatalog { // i
     abstract val trash // io.github.valerioisufi.pageboard.store/DocumentCatalog.trash|{}trash[0]
         abstract fun <get-trash>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.store/TrashedItem>> // io.github.valerioisufi.pageboard.store/DocumentCatalog.trash.<get-trash>|<get-trash>(){}[0]
 
-    abstract suspend fun createDocument(kotlin/String, kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/PageBackground = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model/DrawDocument // io.github.valerioisufi.pageboard.store/DocumentCatalog.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
+    abstract suspend fun createDocument(kotlin/String, kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/PageBackground = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model/Document // io.github.valerioisufi.pageboard.store/DocumentCatalog.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
     abstract suspend fun createFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store/DocumentCatalog.createFolder|createFolder(kotlin.String;kotlin.String?){}[0]
     abstract suspend fun deleteDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/DocumentCatalog.deleteDocument|deleteDocument(kotlin.String){}[0]
     abstract suspend fun deleteFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/DocumentCatalog.deleteFolder|deleteFolder(kotlin.String){}[0]
@@ -70,8 +70,8 @@ abstract interface io.github.valerioisufi.pageboard.store/DocumentStore : io.git
     abstract val strokeModeller // io.github.valerioisufi.pageboard.store/DocumentStore.strokeModeller|{}strokeModeller[0]
         abstract fun <get-strokeModeller>(): io.github.valerioisufi.pageboard.model/StrokeModeller // io.github.valerioisufi.pageboard.store/DocumentStore.strokeModeller.<get-strokeModeller>|<get-strokeModeller>(){}[0]
 
-    abstract suspend fun insertDocument(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin/String? = ..., kotlin.collections/Map<kotlin/String, kotlin/Long> = ...) // io.github.valerioisufi.pageboard.store/DocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
-    abstract suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/DrawDocument? // io.github.valerioisufi.pageboard.store/DocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    abstract suspend fun insertDocument(io.github.valerioisufi.pageboard.model/Document, kotlin/String? = ..., kotlin.collections/Map<kotlin/String, kotlin/Long> = ...) // io.github.valerioisufi.pageboard.store/DocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.Document;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    abstract suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store/DocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     open fun closeDocument(kotlin/String) // io.github.valerioisufi.pageboard.store/DocumentStore.closeDocument|closeDocument(kotlin.String){}[0]
     open suspend fun flush() // io.github.valerioisufi.pageboard.store/DocumentStore.flush|flush(){}[0]
     open suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store/DocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
@@ -618,19 +618,19 @@ final class io.github.valerioisufi.pageboard.store.space/TrashItem : io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.store/DocumentOutline { // io.github.valerioisufi.pageboard.store/DocumentOutline|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageOutline>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource>) // io.github.valerioisufi.pageboard.store/DocumentOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.store.PageOutline>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawResource>){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageOutline>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource>) // io.github.valerioisufi.pageboard.store/DocumentOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.store.PageOutline>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DocumentResource>){}[0]
 
     final val id // io.github.valerioisufi.pageboard.store/DocumentOutline.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store/DocumentOutline.id.<get-id>|<get-id>(){}[0]
     final val pages // io.github.valerioisufi.pageboard.store/DocumentOutline.pages|{}pages[0]
         final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageOutline> // io.github.valerioisufi.pageboard.store/DocumentOutline.pages.<get-pages>|<get-pages>(){}[0]
     final val resources // io.github.valerioisufi.pageboard.store/DocumentOutline.resources|{}resources[0]
-        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource> // io.github.valerioisufi.pageboard.store/DocumentOutline.resources.<get-resources>|<get-resources>(){}[0]
+        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource> // io.github.valerioisufi.pageboard.store/DocumentOutline.resources.<get-resources>|<get-resources>(){}[0]
 
-    final fun findResource(kotlin/String): io.github.valerioisufi.pageboard.model/DrawResource? // io.github.valerioisufi.pageboard.store/DocumentOutline.findResource|findResource(kotlin.String){}[0]
+    final fun findResource(kotlin/String): io.github.valerioisufi.pageboard.model/DocumentResource? // io.github.valerioisufi.pageboard.store/DocumentOutline.findResource|findResource(kotlin.String){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.store/DocumentOutline.Companion|null[0]
-        final fun of(io.github.valerioisufi.pageboard.model/DrawDocument): io.github.valerioisufi.pageboard.store/DocumentOutline // io.github.valerioisufi.pageboard.store/DocumentOutline.Companion.of|of(io.github.valerioisufi.pageboard.model.DrawDocument){}[0]
+        final fun of(io.github.valerioisufi.pageboard.model/Document): io.github.valerioisufi.pageboard.store/DocumentOutline // io.github.valerioisufi.pageboard.store/DocumentOutline.Companion.of|of(io.github.valerioisufi.pageboard.model.Document){}[0]
     }
 }
 
@@ -734,23 +734,23 @@ final class io.github.valerioisufi.pageboard.store/KeyValueDocumentStore : io.gi
         final fun <get-trash>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.pageboard.store/TrashedItem>> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.trash.<get-trash>|<get-trash>(){}[0]
 
     final fun closeDocument(kotlin/String) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.closeDocument|closeDocument(kotlin.String){}[0]
-    final suspend fun appendOperation(io.github.valerioisufi.pageboard.model/DrawDocument, io.github.valerioisufi.pageboard.model.change/Operation) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.appendOperation|appendOperation(io.github.valerioisufi.pageboard.model.DrawDocument;io.github.valerioisufi.pageboard.model.change.Operation){}[0]
+    final suspend fun appendOperation(io.github.valerioisufi.pageboard.model/Document, io.github.valerioisufi.pageboard.model.change/Operation) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.appendOperation|appendOperation(io.github.valerioisufi.pageboard.model.Document;io.github.valerioisufi.pageboard.model.change.Operation){}[0]
     final suspend fun catalogItems(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogItem> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.catalogItems|catalogItems(kotlin.String){}[0]
     final suspend fun catalogOperationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogOperation> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.catalogOperationsAfter|catalogOperationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun catalogProofs(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.pageboard.model.change/OperationId>): kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.catalogProofs|catalogProofs(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.change.OperationId>){}[0]
     final suspend fun catalogVersionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.catalogVersionVector|catalogVersionVector(kotlin.String){}[0]
     final suspend fun compactOperations(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.compactOperations|compactOperations(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun compactedOperations(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.compactedOperations|compactedOperations(kotlin.String){}[0]
-    final suspend fun createDocument(kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/String?): io.github.valerioisufi.pageboard.model/DrawDocument // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
+    final suspend fun createDocument(kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/String?): io.github.valerioisufi.pageboard.model/Document // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.String?){}[0]
     final suspend fun createFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.createFolder|createFolder(kotlin.String;kotlin.String?){}[0]
     final suspend fun deleteDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.deleteDocument|deleteDocument(kotlin.String){}[0]
     final suspend fun deleteFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.deleteFolder|deleteFolder(kotlin.String){}[0]
     final suspend fun fileWithContent(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.fileWithContent|fileWithContent(kotlin.String){}[0]
     final suspend fun flush() // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.flush|flush(){}[0]
-    final suspend fun insertDocument(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun insertDocument(io.github.valerioisufi.pageboard.model/Document, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.Document;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
-    final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/DrawDocument? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     final suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
     final suspend fun loadPage(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.store/LoadedPage? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadPage|loadPage(kotlin.String;kotlin.Int){}[0]
     final suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
@@ -769,25 +769,25 @@ final class io.github.valerioisufi.pageboard.store/KeyValueDocumentStore : io.gi
     final suspend fun restore(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.restore|restore(kotlin.String){}[0]
     final suspend fun saveCatalogChange(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.pageboard.store.space/CatalogItem>, io.github.valerioisufi.pageboard.store.space/CatalogOperation) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveCatalogChange|saveCatalogChange(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.pageboard.store.space.CatalogItem>;io.github.valerioisufi.pageboard.store.space.CatalogOperation){}[0]
     final suspend fun saveCatalogProofs(kotlin/String, kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveCatalogProofs|saveCatalogProofs(kotlin.String;kotlin.collections.Map<io.github.valerioisufi.pageboard.model.change.OperationId,kotlin.ByteArray>){}[0]
-    final suspend fun saveCustomElement(io.github.valerioisufi.pageboard.model/DrawPage, io.github.valerioisufi.pageboard.model/DrawCustomElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveCustomElement|saveCustomElement(io.github.valerioisufi.pageboard.model.DrawPage;io.github.valerioisufi.pageboard.model.DrawCustomElement){}[0]
-    final suspend fun saveImage(io.github.valerioisufi.pageboard.model/DrawPage, io.github.valerioisufi.pageboard.model/DrawImage) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveImage|saveImage(io.github.valerioisufi.pageboard.model.DrawPage;io.github.valerioisufi.pageboard.model.DrawImage){}[0]
-    final suspend fun savePage(io.github.valerioisufi.pageboard.model/DrawDocument, io.github.valerioisufi.pageboard.model/DrawPage) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.savePage|savePage(io.github.valerioisufi.pageboard.model.DrawDocument;io.github.valerioisufi.pageboard.model.DrawPage){}[0]
-    final suspend fun savePdf(io.github.valerioisufi.pageboard.model/DrawPage, io.github.valerioisufi.pageboard.model/DrawPdf) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.savePdf|savePdf(io.github.valerioisufi.pageboard.model.DrawPage;io.github.valerioisufi.pageboard.model.DrawPdf){}[0]
+    final suspend fun saveCustomElement(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/CustomElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveCustomElement|saveCustomElement(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.CustomElement){}[0]
+    final suspend fun saveImage(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/ImageElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveImage|saveImage(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.ImageElement){}[0]
+    final suspend fun savePage(io.github.valerioisufi.pageboard.model/Document, io.github.valerioisufi.pageboard.model/Page) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.savePage|savePage(io.github.valerioisufi.pageboard.model.Document;io.github.valerioisufi.pageboard.model.Page){}[0]
+    final suspend fun savePdf(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/PdfElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.savePdf|savePdf(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.PdfElement){}[0]
     final suspend fun saveProofs(kotlin/String, kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveProofs|saveProofs(kotlin.String;kotlin.collections.Map<io.github.valerioisufi.pageboard.model.change.OperationId,kotlin.ByteArray>){}[0]
-    final suspend fun saveResource(io.github.valerioisufi.pageboard.model/DrawDocument, io.github.valerioisufi.pageboard.model/DrawResource) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveResource|saveResource(io.github.valerioisufi.pageboard.model.DrawDocument;io.github.valerioisufi.pageboard.model.DrawResource){}[0]
+    final suspend fun saveResource(io.github.valerioisufi.pageboard.model/Document, io.github.valerioisufi.pageboard.model/DocumentResource) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveResource|saveResource(io.github.valerioisufi.pageboard.model.Document;io.github.valerioisufi.pageboard.model.DocumentResource){}[0]
     final suspend fun saveSpace(io.github.valerioisufi.pageboard.store.space/StoredSpace) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveSpace|saveSpace(io.github.valerioisufi.pageboard.store.space.StoredSpace){}[0]
-    final suspend fun saveStrokes(io.github.valerioisufi.pageboard.model/DrawPage, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawStroke>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveStrokes|saveStrokes(io.github.valerioisufi.pageboard.model.DrawPage;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawStroke>){}[0]
-    final suspend fun saveText(io.github.valerioisufi.pageboard.model/DrawPage, io.github.valerioisufi.pageboard.model/DrawText) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveText|saveText(io.github.valerioisufi.pageboard.model.DrawPage;io.github.valerioisufi.pageboard.model.DrawText){}[0]
-    final suspend fun saveTextMarkup(io.github.valerioisufi.pageboard.model/DrawPage, io.github.valerioisufi.pageboard.model/DrawTextMarkup) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveTextMarkup|saveTextMarkup(io.github.valerioisufi.pageboard.model.DrawPage;io.github.valerioisufi.pageboard.model.DrawTextMarkup){}[0]
+    final suspend fun saveStrokes(io.github.valerioisufi.pageboard.model/Page, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveStrokes|saveStrokes(io.github.valerioisufi.pageboard.model.Page;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>){}[0]
+    final suspend fun saveText(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/TextElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveText|saveText(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.TextElement){}[0]
+    final suspend fun saveTextMarkup(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/TextMarkupElement) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.saveTextMarkup|saveTextMarkup(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.TextMarkupElement){}[0]
     final suspend fun setPreference(kotlin/String, kotlin/String?) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.setPreference|setPreference(kotlin.String;kotlin.String?){}[0]
     final suspend fun setSharingSecret(kotlin/String, kotlin/String?, kotlin/Boolean) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.setSharingSecret|setSharingSecret(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
     final suspend fun sharingSecrets(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.sharingSecrets|sharingSecrets(){}[0]
     final suspend fun spaces(): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/StoredSpace> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.spaces|spaces(){}[0]
-    final suspend fun touchDocument(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin/Long) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.touchDocument|touchDocument(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.Long){}[0]
+    final suspend fun touchDocument(io.github.valerioisufi.pageboard.model/Document, kotlin/Long) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.touchDocument|touchDocument(io.github.valerioisufi.pageboard.model.Document;kotlin.Long){}[0]
     final suspend fun trashDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.trashDocument|trashDocument(kotlin.String){}[0]
     final suspend fun trashFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.trashFolder|trashFolder(kotlin.String){}[0]
-    final suspend fun updateDocumentDefaults(io.github.valerioisufi.pageboard.model/DrawDocument) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.updateDocumentDefaults|updateDocumentDefaults(io.github.valerioisufi.pageboard.model.DrawDocument){}[0]
-    final suspend fun updateDocumentTitle(io.github.valerioisufi.pageboard.model/DrawDocument) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.updateDocumentTitle|updateDocumentTitle(io.github.valerioisufi.pageboard.model.DrawDocument){}[0]
+    final suspend fun updateDocumentDefaults(io.github.valerioisufi.pageboard.model/Document) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.updateDocumentDefaults|updateDocumentDefaults(io.github.valerioisufi.pageboard.model.Document){}[0]
+    final suspend fun updateDocumentTitle(io.github.valerioisufi.pageboard.model/Document) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.updateDocumentTitle|updateDocumentTitle(io.github.valerioisufi.pageboard.model.Document){}[0]
     final suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.updateLastOpened|updateLastOpened(kotlin.String){}[0]
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.versionVector|versionVector(kotlin.String){}[0]
 
@@ -835,23 +835,23 @@ final class io.github.valerioisufi.pageboard.store/LibraryTrash { // io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.store/LoadedPage { // io.github.valerioisufi.pageboard.store/LoadedPage|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource>) // io.github.valerioisufi.pageboard.store/LoadedPage.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawResource>){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model/PageContentSnapshot, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource>) // io.github.valerioisufi.pageboard.store/LoadedPage.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.PageContentSnapshot;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DocumentResource>){}[0]
 
     final val content // io.github.valerioisufi.pageboard.store/LoadedPage.content|{}content[0]
         final fun <get-content>(): io.github.valerioisufi.pageboard.model/PageContentSnapshot // io.github.valerioisufi.pageboard.store/LoadedPage.content.<get-content>|<get-content>(){}[0]
     final val id // io.github.valerioisufi.pageboard.store/LoadedPage.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store/LoadedPage.id.<get-id>|<get-id>(){}[0]
     final val resources // io.github.valerioisufi.pageboard.store/LoadedPage.resources|{}resources[0]
-        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawResource> // io.github.valerioisufi.pageboard.store/LoadedPage.resources.<get-resources>|<get-resources>(){}[0]
+        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource> // io.github.valerioisufi.pageboard.store/LoadedPage.resources.<get-resources>|<get-resources>(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store/OpenDocument { // io.github.valerioisufi.pageboard.store/OpenDocument|null[0]
     final val dispatcher // io.github.valerioisufi.pageboard.store/OpenDocument.dispatcher|{}dispatcher[0]
         final fun <get-dispatcher>(): kotlinx.coroutines/CoroutineDispatcher // io.github.valerioisufi.pageboard.store/OpenDocument.dispatcher.<get-dispatcher>|<get-dispatcher>(){}[0]
     final val document // io.github.valerioisufi.pageboard.store/OpenDocument.document|{}document[0]
-        final fun <get-document>(): io.github.valerioisufi.pageboard.model/DrawDocument // io.github.valerioisufi.pageboard.store/OpenDocument.document.<get-document>|<get-document>(){}[0]
+        final fun <get-document>(): io.github.valerioisufi.pageboard.model/Document // io.github.valerioisufi.pageboard.store/OpenDocument.document.<get-document>|<get-document>(){}[0]
     final val resourcesReceived // io.github.valerioisufi.pageboard.store/OpenDocument.resourcesReceived|{}resourcesReceived[0]
-        final fun <get-resourcesReceived>(): kotlinx.coroutines.flow/SharedFlow<io.github.valerioisufi.pageboard.model/DrawResource> // io.github.valerioisufi.pageboard.store/OpenDocument.resourcesReceived.<get-resourcesReceived>|<get-resourcesReceived>(){}[0]
+        final fun <get-resourcesReceived>(): kotlinx.coroutines.flow/SharedFlow<io.github.valerioisufi.pageboard.model/DocumentResource> // io.github.valerioisufi.pageboard.store/OpenDocument.resourcesReceived.<get-resourcesReceived>|<get-resourcesReceived>(){}[0]
     final val session // io.github.valerioisufi.pageboard.store/OpenDocument.session|{}session[0]
         final fun <get-session>(): io.github.valerioisufi.pageboard.model.change/DocumentSession // io.github.valerioisufi.pageboard.store/OpenDocument.session.<get-session>|<get-session>(){}[0]
 
@@ -877,7 +877,7 @@ final class io.github.valerioisufi.pageboard.store/OpenDocuments { // io.github.
 
     final suspend fun close(io.github.valerioisufi.pageboard.store/OpenDocument) // io.github.valerioisufi.pageboard.store/OpenDocuments.close|close(io.github.valerioisufi.pageboard.store.OpenDocument){}[0]
     final suspend fun fileWithContent(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store/OpenDocuments.fileWithContent|fileWithContent(kotlin.String){}[0]
-    final suspend fun insert(io.github.valerioisufi.pageboard.model/DrawDocument, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long> = ...): io.github.valerioisufi.pageboard.store/OpenDocument // io.github.valerioisufi.pageboard.store/OpenDocuments.insert|insert(io.github.valerioisufi.pageboard.model.DrawDocument;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun insert(io.github.valerioisufi.pageboard.model/Document, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long> = ...): io.github.valerioisufi.pageboard.store/OpenDocument // io.github.valerioisufi.pageboard.store/OpenDocuments.insert|insert(io.github.valerioisufi.pageboard.model.Document;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun open(kotlin/String): io.github.valerioisufi.pageboard.store/OpenDocument? // io.github.valerioisufi.pageboard.store/OpenDocuments.open|open(kotlin.String){}[0]
     final suspend fun rename(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/OpenDocuments.rename|rename(kotlin.String;kotlin.String){}[0]
     final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.pageboard.store/OpenDocuments.replicaId|replicaId(){}[0]
@@ -885,16 +885,16 @@ final class io.github.valerioisufi.pageboard.store/OpenDocuments { // io.github.
 }
 
 final class io.github.valerioisufi.pageboard.store/PageOutline { // io.github.valerioisufi.pageboard.store/PageOutline|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawText>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawCustomElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawPdf>) // io.github.valerioisufi.pageboard.store/PageOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawText>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawCustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DrawPdf>){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement>) // io.github.valerioisufi.pageboard.store/PageOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.CustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PdfElement>){}[0]
 
     final val customElements // io.github.valerioisufi.pageboard.store/PageOutline.customElements|{}customElements[0]
-        final fun <get-customElements>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawCustomElement> // io.github.valerioisufi.pageboard.store/PageOutline.customElements.<get-customElements>|<get-customElements>(){}[0]
+        final fun <get-customElements>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> // io.github.valerioisufi.pageboard.store/PageOutline.customElements.<get-customElements>|<get-customElements>(){}[0]
     final val id // io.github.valerioisufi.pageboard.store/PageOutline.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store/PageOutline.id.<get-id>|<get-id>(){}[0]
     final val pdfs // io.github.valerioisufi.pageboard.store/PageOutline.pdfs|{}pdfs[0]
-        final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawPdf> // io.github.valerioisufi.pageboard.store/PageOutline.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
+        final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement> // io.github.valerioisufi.pageboard.store/PageOutline.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
     final val texts // io.github.valerioisufi.pageboard.store/PageOutline.texts|{}texts[0]
-        final fun <get-texts>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/DrawText> // io.github.valerioisufi.pageboard.store/PageOutline.texts.<get-texts>|<get-texts>(){}[0]
+        final fun <get-texts>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement> // io.github.valerioisufi.pageboard.store/PageOutline.texts.<get-texts>|<get-texts>(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store/TrashedItem { // io.github.valerioisufi.pageboard.store/TrashedItem|null[0]

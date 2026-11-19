@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.canvas.controller
 
 /**
  * A text brought into the notebook (a file chosen or dropped, a long text pasted) waiting for the
- * student to say where it goes ([DrawViewController.pendingTextImport]; see `docs/plans/text-import.md`).
+ * student to say where it goes ([PageboardController.pendingTextImport]; see `docs/plans/text-import.md`).
  *
  * @param text its content as it came.
  * @param pageIndex the page it was brought on (the page shown, the page pasted on), if any.

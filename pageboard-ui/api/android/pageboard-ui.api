@@ -351,7 +351,7 @@ public final class io/github/valerioisufi/pageboard/ui/extension/DocumentTag {
 
 public final class io/github/valerioisufi/pageboard/ui/extension/EditorContext {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;)V
 	public final fun getDocument ()Lio/github/valerioisufi/pageboard/canvas/port/EditorDocument;
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun getEdits ()Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;
@@ -795,13 +795,13 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getTool_shapes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider : androidx/core/content/FileProvider {
+public final class io/github/valerioisufi/pageboard/ui/platform/PageboardFileProvider : androidx/core/content/FileProvider {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/platform/PageboardFileProvider$Companion;
 	public fun <init> ()V
 }
 
-public final class io/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider$Companion {
+public final class io/github/valerioisufi/pageboard/ui/platform/PageboardFileProvider$Companion {
 	public final fun authority (Landroid/content/Context;)Ljava/lang/String;
 }
 
@@ -891,17 +891,17 @@ public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAda
 	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;)V
 	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clearCaches ()V
-	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawText;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
-	public fun layout (Lio/github/valerioisufi/pageboard/model/DrawText;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
+	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
+	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
-	public fun measure (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
+	public fun measure (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAdapter$Companion {
 }
 
-public final class io/github/valerioisufi/pageboard/ui/render/LocalDrawViewEnginesKt {
-	public static final fun getLocalDrawViewEngines ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+public final class io/github/valerioisufi/pageboard/ui/render/LocalPageboardEnginesKt {
+	public static final fun getLocalPageboardEngines ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/screen/DocumentNames {
@@ -947,19 +947,19 @@ public final class io/github/valerioisufi/pageboard/ui/theme/ColorKt {
 	public static final fun getSeed ()J
 }
 
-public final class io/github/valerioisufi/pageboard/ui/theme/DrawViewElevation : java/lang/Enum {
-	public static final field Level1 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
-	public static final field Level2 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
-	public static final field Level3 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
-	public static final field Paper Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+public final class io/github/valerioisufi/pageboard/ui/theme/PageboardElevation : java/lang/Enum {
+	public static final field Level1 Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
+	public static final field Level2 Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
+	public static final field Level3 Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
+	public static final field Paper Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
-	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
 }
 
-public final class io/github/valerioisufi/pageboard/ui/theme/DrawViewIcons {
+public final class io/github/valerioisufi/pageboard/ui/theme/PageboardIcons {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/DrawViewIcons;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/PageboardIcons;
 	public final fun getArrowLeft ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUp ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUpDown ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -1040,7 +1040,7 @@ public final class io/github/valerioisufi/pageboard/ui/theme/DrawViewIcons {
 }
 
 public final class io/github/valerioisufi/pageboard/ui/theme/ElevationKt {
-	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
+	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/theme/InkPalette {
@@ -1084,7 +1084,7 @@ public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontsKt {
 }
 
 public final class io/github/valerioisufi/pageboard/ui/theme/ThemeKt {
-	public static final fun DrawViewTheme (ZZLandroidx/compose/material3/ColorScheme;Landroidx/compose/material3/ColorScheme;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun PageboardTheme (ZZLandroidx/compose/material3/ColorScheme;Landroidx/compose/material3/ColorScheme;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/valerioisufi/pageboard/ui/util/FormattingKt {

@@ -7,7 +7,7 @@ import io.github.valerioisufi.pageboard.store.LibraryTrash
 import io.github.valerioisufi.pageboard.store.TrashedItem
 import io.github.valerioisufi.pageboard.store.room.db.DocumentEntity
 import io.github.valerioisufi.pageboard.store.room.db.DocumentWithContent
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.FolderEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -16,10 +16,10 @@ import kotlinx.coroutines.withContext
 
 /**
  * The document library: folders, and the documents as items of the folders (their content is
- * handled by [DrawDocumentRepository]).
+ * handled by [DocumentRepository]).
  */
 internal class FileRepository(
-    val database: DrawDatabase
+    val database: PageboardDatabase
 ) {
     private val folderDao = database.folderDao()
     private val documentDao = database.documentDao()

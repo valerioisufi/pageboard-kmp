@@ -29,6 +29,6 @@ SINCRONIZZA E CONDIVIDI
 • Tieni sincronizzati i tuoi dispositivi sulla stessa rete Wi-Fi o via internet: direttamente quando possono, altrimenti attraverso un relay che non può leggere i tuoi appunti.
 • Condividi un quaderno con un compagno di corso tramite un link.
 
-Open source: PencilNotes è costruita su DrawView, un insieme di librerie Kotlin Multiplatform rilasciate con licenza MIT. Il codice è su GitHub: https://github.com/valerioisufi/DrawView-KMP
+Open source: PencilNotes è costruita su Pageboard, un insieme di librerie Kotlin Multiplatform rilasciate con licenza MIT. Il codice è su GitHub: https://github.com/valerioisufi/DrawView-KMP
 
 Informativa sulla privacy: https://valerioisufi.github.io/pencilnotes/privacy

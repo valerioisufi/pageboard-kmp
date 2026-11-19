@@ -8,11 +8,11 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.ui.adaptive.PlatformConventions
@@ -96,7 +96,7 @@ class CommandTest {
 
     @Test
     fun theEditorCommandsRunThroughTheirExperts() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val host = CommandHost().apply { register(commands.all) }
 
@@ -120,7 +120,7 @@ class CommandTest {
 
     @Test
     fun theFormatCommandsWorkOnTheTextWrittenAndOnTheTextsSelected() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val host = CommandHost().apply { register(commands.all) }
         val editor = controller.textEditorManager
@@ -153,7 +153,7 @@ class CommandTest {
 
     @Test
     fun copiedTextsReachTheOtherApplicationsAndTheirTextComesBack() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val clipboard = FakeClipboard()
         val commands = editorCommands(controller, clipboard)
         val page = controller.document.pages[0]
@@ -179,7 +179,7 @@ class CommandTest {
     fun theLastCopyWinsAcrossTheDocumentsAndTheOtherApplications() {
         val shared = EditorClipboard()
         val clipboard = FakeClipboard()
-        fun editor() = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined), clipboard = shared)
+        fun editor() = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined), clipboard = shared)
         val first = editor()
         val second = editor()
         first.textEditorManager.startNewText(0, 20f, 20f)
@@ -211,7 +211,7 @@ class CommandTest {
 
     @Test
     fun theGesturesOfThePencilSwitchTheTools() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         assertEquals(Tool.INK_PEN, controller.selectedTool)
 
@@ -247,7 +247,7 @@ class CommandTest {
 
     @Test
     fun everyKeyOfTheCommandsHasAName() {
-        val commands = editorCommands(DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)))
+        val commands = editorCommands(PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)))
         for (command in commands.all) {
             for (shortcut in command.shortcuts) {
                 for (conventions in listOf(apple, others)) {
@@ -262,12 +262,12 @@ class CommandTest {
 
     @Test
     fun theArrangeCommandsMoveTheSelectionInTheStackOfItsPage() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val host = CommandHost().apply { register(commands.all) }
         val page = controller.document.pages[0]
         val (under, over) = List(2) { i ->
-            DrawText().apply {
+            TextElement().apply {
                 text = "wave $i"
                 x = i * 5f; y = 0f; width = 20f; height = 20f
             }
@@ -302,7 +302,7 @@ class CommandTest {
 
     @Test
     fun listCommandsToggleListsOnTheEditedText() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val editor = controller.textEditorManager
         editor.startNewText(0, 10f, 10f)
@@ -331,7 +331,7 @@ class CommandTest {
 
     @Test
     fun theBlockOfCodeIsToggledByItsShortcutAndStopsTheFormats() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val host = CommandHost().apply { register(commands.all) }
         val editor = controller.textEditorManager
@@ -360,7 +360,7 @@ class CommandTest {
         override fun getText(): AnnotatedString? = text?.let(::AnnotatedString)
     }
 
-    private fun editorCommands(controller: DrawViewController, clipboard: ClipboardManager = FakeClipboard()) = EditorCommands(
+    private fun editorCommands(controller: PageboardController, clipboard: ClipboardManager = FakeClipboard()) = EditorCommands(
         controller = controller,
         clipboard = clipboard,
         actions = EditorScreenActions(close = {}, importPdf = {}, importImage = {}, importText = {}, editDocumentBackground = {}, showAbout = {})
@@ -368,7 +368,7 @@ class CommandTest {
 
     @Test
     fun theLineNumbersOfTheBlockAreToggledByTheirShortcut() {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
         val host = CommandHost().apply { register(commands.all) }
         val editor = controller.textEditorManager

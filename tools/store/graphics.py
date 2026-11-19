@@ -138,7 +138,7 @@ def social_preview():
     canvas = Image.new("RGBA", (w, h), CREAM + (255,))
     d = ImageDraw.Draw(canvas)
     d.ellipse((700, -300, 1700, 800), fill=LIGHT + (255,))
-    d.text((64, 150), "DrawView", font=font(BOLD, 78), fill=INK)
+    d.text((64, 150), "Pageboard", font=font(BOLD, 78), fill=INK)
     d.text((66, 250), "Kotlin Multiplatform libraries for", font=font(MEDIUM, 32), fill=INK)
     d.text((66, 292), "drawing, handwriting and notes", font=font(MEDIUM, 32), fill=INK)
     icon = Image.open(ICON).convert("RGB").resize((64, 64), Image.LANCZOS)

@@ -16,8 +16,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.text.code.BuiltInCodeHighlighter
 import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.adaptive.platformConventions
@@ -151,7 +151,7 @@ class EditorCodeTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun typingADelimiterInTheFieldSurroundsTheSelectionAndIsUndoneInOneStep() = runDesktopComposeUiTest {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val editor = controller.textEditorManager
         editor.startNewText(0, 10f, 10f)
         setContent {

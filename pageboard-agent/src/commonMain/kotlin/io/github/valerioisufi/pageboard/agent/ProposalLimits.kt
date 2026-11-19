@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.placement.FreeSpace
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
@@ -335,7 +335,7 @@ internal class ProposalLimits(
 }
 
 /** The text [item] replaces or removes; fails when what it refers to is not in this document. */
-internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
+internal fun Document.beforeOf(item: ProposalItem): String? {
     fun missing(what: String): Nothing = throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no $what in this document: read it again.")
     return when (item) {
         is ProposalItem.ReplaceText -> (findText(item.text) ?: missing("text \"${item.text.take(64)}\"")).second.text
@@ -367,7 +367,7 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
         }
         is ProposalItem.PlaceElements -> {
             val (page, elements) = elementsOf(item.page, item.elements, ::missing)
-            if (elements.any { it is DrawPdf || it is DrawTextMarkup }) {
+            if (elements.any { it is PdfElement || it is TextMarkupElement }) {
                 throw AgentToolException(AgentErrorCode.REFUSED, "A PDF page or a mark of its text is not placed: it goes with its page.")
             }
             val target = item.toPage?.let { pageById(it) ?: missing("page \"${it.take(64)}\"") } ?: page
@@ -508,14 +508,14 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
 }
 
 /** Refuses a box or points outside [page]: the ends of a line may be at its edge, its box past it by the room of its heads. */
-private fun checkInside(page: DrawPage, box: Rect?, vararg points: List<Float>?) {
+private fun checkInside(page: Page, box: Rect?, vararg points: List<Float>?) {
     val outside = points.filterNotNull().any { (x, y) -> x < 0f || y < 0f || x > page.widthMm || y > page.heightMm } ||
         (points.all { it == null } && box != null && (box.left < 0f || box.top < 0f || box.right > page.widthMm || box.bottom > page.heightMm))
     if (outside) throw AgentToolException(AgentErrorCode.REFUSED, "It would go outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
 }
 
 /** The index of the page [item] is on, for an item on a page or its elements. */
-internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
+internal fun Document.pageIndexOf(item: ProposalItem): Int? {
     val id = when (item) {
         is ProposalItem.RemoveElements -> item.page
         is ProposalItem.PlaceElements -> item.page
@@ -548,14 +548,14 @@ internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
 }
 
 /** The page [pageId] and its elements [refs]; fails when one is not there. */
-internal fun DrawDocument.elementsOf(pageId: String, refs: List<ElementRef>, missing: (String) -> Nothing): Pair<DrawPage, List<DrawElement>> {
+internal fun Document.elementsOf(pageId: String, refs: List<ElementRef>, missing: (String) -> Nothing): Pair<Page, List<PageElement>> {
     val page = pageById(pageId) ?: missing("page \"${pageId.take(64)}\"")
     val shown = page.elements().filter { it.removed == null }.associateBy { it.id }
     return page to refs.map { shown[it.id] ?: missing("element \"${it.id.take(64)}\" on this page") }
 }
 
 /** The page named by the arguments of a tool: by its id, by its index, or the first one. */
-internal fun DrawDocument.pageOf(arguments: JsonObject): DrawPage {
+internal fun Document.pageOf(arguments: JsonObject): Page {
     val id = arguments.string("page")
     val index = arguments.int("index")
     val page = when {

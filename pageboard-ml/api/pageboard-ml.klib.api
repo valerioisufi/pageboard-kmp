@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-ml>
+// Library unique name: <pageboard-kmp:pageboard-ml>
 final enum class io.github.valerioisufi.pageboard.ml/Accelerator : kotlin/Enum<io.github.valerioisufi.pageboard.ml/Accelerator> { // io.github.valerioisufi.pageboard.ml/Accelerator|null[0]
     enum entry CPU // io.github.valerioisufi.pageboard.ml/Accelerator.CPU|null[0]
     enum entry GPU // io.github.valerioisufi.pageboard.ml/Accelerator.GPU|null[0]

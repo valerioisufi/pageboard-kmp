@@ -3,7 +3,7 @@ package io.github.valerioisufi.pageboard.session
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.session.EditorSessions
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -45,11 +45,11 @@ class TextWrittenSurvivesTest {
     fun tearDown() = Dispatchers.resetMain()
 
     /** The editor of the document [documentId] of [documents], open. */
-    private fun TestScope.editorOf(documents: OpenDocuments, documentId: String): DrawViewController =
+    private fun TestScope.editorOf(documents: OpenDocuments, documentId: String): PageboardController =
         editorOf(DocumentEditorViewModel(documents, EditorSessions()), documentId)
 
     /** The editor of [viewModel] open on the document [documentId]. */
-    private fun TestScope.editorOf(viewModel: DocumentEditorViewModel, documentId: String): DrawViewController {
+    private fun TestScope.editorOf(viewModel: DocumentEditorViewModel, documentId: String): PageboardController {
         viewModel.openDocument(documentId)
         advanceUntilIdle()
         val controller = assertNotNull(viewModel.session?.controller)
@@ -63,7 +63,7 @@ class TextWrittenSurvivesTest {
         return document.pages.single().texts.filter { it.removed == null }.map { it.text }
     }
 
-    private fun DrawViewController.write(text: String) {
+    private fun PageboardController.write(text: String) {
         textEditorManager.startDrawnText(0, Rect(20f, 30f, 120f, 40f))
         textEditorManager.updateValue(TextFieldValue(text, TextRange(text.length)))
     }

@@ -51,7 +51,7 @@ import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.components.MarkdownText
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -82,10 +82,10 @@ internal fun ReviewTab(
         val elsewhere = lecture.generatingElsewhere(now)
         // Without the transcript, the audio is transcribed first; not while another device writes them
         val canRegenerate = lecture.canGenerateReview && (lecture.transcript.isNotEmpty() || lecture.hasAudio) && elsewhere == null
-        elsewhere?.let { LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_generating_elsewhere, it.name), NoticeTone.Info) }
+        elsewhere?.let { LectureNotice(PageboardIcons.Users, stringResource(Res.string.lecture_generating_elsewhere, it.name), NoticeTone.Info) }
         when {
             lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> LectureNotice(
-                DrawViewIcons.Sparkles,
+                PageboardIcons.Sparkles,
                 if (lecture.reviewProvider == ModelProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
                     stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
                 } else {
@@ -94,7 +94,7 @@ internal fun ReviewTab(
                 NoticeTone.Neutral
             )
             lecture.reviewStatus == ReviewStatus.FAILED -> {
-                LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_review_failed), NoticeTone.Error)
+                LectureNotice(PageboardIcons.TriangleAlert, stringResource(Res.string.lecture_review_failed), NoticeTone.Error)
                 if (canRegenerate) RegenerateReviewButton(assistant, lecture)
             }
             review != null -> {
@@ -121,11 +121,11 @@ internal fun ReviewTab(
                 }
             }
             // Written by a device with the models
-            !lecture.generates -> LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_review_elsewhere), NoticeTone.Info)
+            !lecture.generates -> LectureNotice(PageboardIcons.Monitor, stringResource(Res.string.lecture_review_elsewhere), NoticeTone.Info)
             lecture.status == LectureStatus.FINISHED -> {
                 // Recorded where the models are not, written on request, or interrupted before its review (e.g. the application was closed)
                 if (lecture.recordedElsewhere && lecture.transcript.isEmpty()) {
-                    LectureNotice(DrawViewIcons.Upload, stringResource(Res.string.lecture_review_received, lecture.recordedOn), NoticeTone.Info)
+                    LectureNotice(PageboardIcons.Upload, stringResource(Res.string.lecture_review_received, lecture.recordedOn), NoticeTone.Info)
                 } else {
                     BodyText(stringResource(Res.string.lecture_review_pending))
                 }
@@ -150,14 +150,14 @@ private fun RegenerateReviewButton(
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }) {
-            Icon(DrawViewIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(PageboardIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(label))
         }
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             MenuItem(
                 text = stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini),
-                icon = rememberVectorPainter(DrawViewIcons.Globe),
+                icon = rememberVectorPainter(PageboardIcons.Globe),
                 onClick = {
                     expanded = false
                     assistant.generate(lecture, ModelProvider.GEMINI)
@@ -165,7 +165,7 @@ private fun RegenerateReviewButton(
             )
             MenuItem(
                 text = stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local),
-                icon = rememberVectorPainter(DrawViewIcons.Monitor),
+                icon = rememberVectorPainter(PageboardIcons.Monitor),
                 onClick = {
                     expanded = false
                     assistant.generate(lecture, ModelProvider.LOCAL)
@@ -261,7 +261,7 @@ private fun InsertPagesCard(editor: EditorContext, byTopic: Boolean, onInsert: (
         InsertChoice(stringResource(Res.string.lecture_review_insert_end), selected = place == ReviewPlace.END) { choice = ReviewPlace.END }
         Spacer(Modifier.height(8.dp))
         Button(onClick = { onInsert(place, page) }) {
-            Icon(DrawViewIcons.FilePlus, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(PageboardIcons.FilePlus, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.lecture_note_insert))
         }
@@ -306,18 +306,18 @@ internal fun AudioElsewhere(assistant: LectureAssistant, lecture: Lecture) {
     val progress = arriving[lecture.directory]
     val sharing = assistant.sharingOf(lecture.documentId)
     when {
-        lecture.hasAudio -> LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_recorded_on, lecture.recordedOn), NoticeTone.Info)
-        !lecture.audioShared -> LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_audio_not_shared, lecture.recordedOn), NoticeTone.Neutral)
+        lecture.hasAudio -> LectureNotice(PageboardIcons.Users, stringResource(Res.string.lecture_recorded_on, lecture.recordedOn), NoticeTone.Info)
+        !lecture.audioShared -> LectureNotice(PageboardIcons.Users, stringResource(Res.string.lecture_audio_not_shared, lecture.recordedOn), NoticeTone.Neutral)
         progress != null -> {
-            LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_audio_progress, lecture.recordedOn, (progress * 100).toInt()), NoticeTone.Info)
+            LectureNotice(PageboardIcons.Download, stringResource(Res.string.lecture_audio_progress, lecture.recordedOn, (progress * 100).toInt()), NoticeTone.Info)
             LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), gapSize = 0.dp, drawStopIndicator = {})
         }
         sharing.downloadAudio == AudioDownload.ON_REQUEST && lecture.id !in sharing.requestedAudio -> LectureNotice(
-            DrawViewIcons.Download,
+            PageboardIcons.Download,
             stringResource(Res.string.lecture_recorded_on, lecture.recordedOn),
             NoticeTone.Info,
             action = stringResource(Res.string.lecture_audio_download) to { assistant.requestAudio(lecture) }
         )
-        else -> LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn), NoticeTone.Info)
+        else -> LectureNotice(PageboardIcons.Download, stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn), NoticeTone.Info)
     }
 }

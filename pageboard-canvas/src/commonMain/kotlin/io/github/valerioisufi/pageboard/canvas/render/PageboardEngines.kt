@@ -28,7 +28,7 @@ import io.github.valerioisufi.pageboard.model.text.code.CodeHighlighter
  *   these engines (the editors, the thumbnails, the export): an application whose windows build
  *   their own engines gives them one cache.
  */
-public class DrawViewEngines(
+public class PageboardEngines(
     public val pdfTiles: () -> PdfTileAdapter? = { null },
     public val formulas: FormulaRenderer? = null,
     public val elements: ElementRenderers = ElementRenderers.None,
@@ -42,6 +42,6 @@ public class DrawViewEngines(
          * [BuiltInCodeHighlighter], which needs none. A new instance at each read, with a cache
          * of images of its own.
          */
-        public val None: DrawViewEngines get() = DrawViewEngines()
+        public val None: PageboardEngines get() = PageboardEngines()
     }
 }

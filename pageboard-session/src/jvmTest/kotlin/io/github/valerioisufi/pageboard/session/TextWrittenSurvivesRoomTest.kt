@@ -10,8 +10,8 @@ import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.session.EditorSessions
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -47,7 +47,7 @@ class TextWrittenSurvivesRoomTest {
     fun tearDown() = Dispatchers.resetMain()
 
     /** The database of the file [file], as the applications open theirs. */
-    private fun database(file: File): DrawDatabase = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(name = file.absolutePath))
+    private fun database(file: File): PageboardDatabase = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(name = file.absolutePath))
 
     @Test
     fun aTextBeingWrittenIsInTheDatabaseWhenTheProcessIsKilled() = runTest(main) {

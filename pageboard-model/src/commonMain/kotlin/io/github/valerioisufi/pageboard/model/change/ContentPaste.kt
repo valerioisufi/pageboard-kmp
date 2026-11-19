@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.Versions
@@ -29,7 +29,7 @@ public fun isFileHere(path: String): Boolean = path.isNotEmpty() && PlatformFile
  */
 public class PastedElements(
     public val change: DocumentChange?,
-    public val elements: List<DrawElement>,
+    public val elements: List<PageElement>,
     public val bounds: Rect,
     public val baseRotation: Float,
     public val leftOut: Int
@@ -41,7 +41,7 @@ public class PastedElements(
  */
 public class PastedPages(
     public val change: DocumentChange?,
-    public val pages: List<DrawPage>,
+    public val pages: List<Page>,
     public val leftOut: Int
 )
 
@@ -50,8 +50,8 @@ public class PastedPages(
  * of its stack in their order. An element whose file is not here ([fileIsHere]) is left out.
  */
 public fun CopiedElements.pasteInto(
-    document: DrawDocument,
-    page: DrawPage,
+    document: Document,
+    page: Page,
     dx: Float,
     dy: Float,
     fileIsHere: (String) -> Boolean = ::isFileHere
@@ -69,7 +69,7 @@ public fun CopiedElements.pasteInto(
  * ([fileIsHere]) is left out, its page kept.
  */
 public fun CopiedPages.pasteInto(
-    document: DrawDocument,
+    document: Document,
     index: Int,
     fileIsHere: (String) -> Boolean = ::isFileHere
 ): PastedPages {
@@ -82,7 +82,7 @@ public fun CopiedPages.pasteInto(
         // Their stack as it was, under what is put on top later; the PDF pages and their marks
         // outside of the stack
         val orders = ElementOrder.spread(elements.count { it.second.isStacked }).iterator()
-        DrawPage(
+        Page(
             widthMm = data.widthMm,
             heightMm = data.heightMm,
             background = data.background ?: document.defaultBackground,
@@ -101,15 +101,15 @@ public fun CopiedPages.pasteInto(
  * The model element of [copy], pasted from [source]: a stroke with the mesh it was copied with
  * (see [CopiedContent.strokeMeshes]), not modeled again; the others made from their values.
  */
-private fun CopiedContent.modelOf(source: ElementData, copy: ElementData, document: DrawDocument): DrawElement {
+private fun CopiedContent.modelOf(source: ElementData, copy: ElementData, document: Document): PageElement {
     val mesh = strokeMeshes[source.id]
     if (copy !is StrokeData || mesh == null) return copy.toElement(document.strokeModeller)
-    return DrawStroke(id = copy.id, mesh = mesh, brushConfig = remodelingBrush(copy.tool, copy.size, copy.color), transform = copy.transform)
+    return StrokeElement(id = copy.id, mesh = mesh, brushConfig = remodelingBrush(copy.tool, copy.size, copy.color), transform = copy.transform)
         .also { stroke -> copy.order?.let { stroke.order = it } }
 }
 
-/** [count] increasing order keys for pages inserted at [index] of [document] (see [DrawDocument.orderKeyAt]). */
-private fun orderKeys(document: DrawDocument, index: Int, count: Int): List<String> {
+/** [count] increasing order keys for pages inserted at [index] of [document] (see [Document.orderKeyAt]). */
+private fun orderKeys(document: Document, index: Int, count: Int): List<String> {
     val before = document.pages.getOrNull(index - 1)?.orderKey
     // Pages of equal keys: after all of them
     val after = document.pages.drop(index).firstOrNull { before == null || it.orderKey > before }?.orderKey
@@ -142,7 +142,7 @@ private fun ElementData.withOrder(order: ElementOrder): ElementData = when (this
  * is here; none when it is not.
  */
 private class ResourceMapping(
-    private val document: DrawDocument,
+    private val document: Document,
     private val copied: List<CopiedResource>,
     private val fileIsHere: (String) -> Boolean
 ) {

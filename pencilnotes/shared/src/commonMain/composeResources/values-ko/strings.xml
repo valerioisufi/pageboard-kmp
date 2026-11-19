@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_version">버전 3.0</string>
-    <string name="about_description">스타일러스 입력을 위해 설계된 노트 앱으로, DrawView를 기반으로 합니다.</string>
+    <string name="about_description">스타일러스 입력을 위해 설계된 노트 앱으로, Pageboard를 기반으로 합니다.</string>
 </resources>

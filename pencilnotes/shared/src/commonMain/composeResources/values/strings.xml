@@ -2,5 +2,5 @@
 <resources>
     <string name="app_name" translatable="false">PencilNotes</string>
     <string name="about_version">Version 3.0</string>
-    <string name="about_description">Note-taking app designed for stylus input, powered by DrawView.</string>
+    <string name="about_description">Note-taking app designed for stylus input, powered by Pageboard.</string>
 </resources>

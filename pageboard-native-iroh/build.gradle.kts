@@ -2,7 +2,7 @@ plugins {
     id("pageboard.android.rust")
 }
 
-description = "The iroh bridge of DrawView for Android (libiroh_bridge.so, Rust), used by pageboard-sync-iroh"
+description = "The iroh bridge of Pageboard for Android (libiroh_bridge.so, Rust), used by pageboard-sync-iroh"
 
 androidRust {
     crate.set(rootProject.layout.projectDirectory.dir("native/iroh-bridge"))

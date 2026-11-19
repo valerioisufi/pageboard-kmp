@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.androidxRoom)
 }
 
-description = "The Room (SQLite) store of DrawView documents, folders, operations and preferences"
+description = "The Room (SQLite) store of Pageboard documents, folders, operations and preferences"
 
 kotlin {
     sourceSets {

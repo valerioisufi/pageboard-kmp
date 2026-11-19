@@ -9,7 +9,7 @@ import io.github.valerioisufi.pageboard.canvas.render.ImageCache
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -24,9 +24,9 @@ import kotlinx.coroutines.withContext
  * (200 dpi by default, at most 8192 pixels a side).
  *
  * @param textAdapter draws the texts (the one of the editor), or `null` to leave them out.
- * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
+ * @param pdfTiles creates the adapter drawing the PDF pages (see `PageboardEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
- * @param images the pixels of the images of the documents (`DrawViewEngines.images`).
+ * @param images the pixels of the images of the documents (`PageboardEngines.images`).
  */
 public class PageImageExporter(
     private val textAdapter: TextTileAdapter?,
@@ -47,7 +47,7 @@ public class PageImageExporter(
             val height = ceil(page.heightMm * scale).toInt().coerceAtLeast(1)
             val bitmap = ImageBitmap(width, height)
             // The renderer finds the files of the resources in a document
-            val document = DrawDocument(title = content.title, addInitialPage = false).apply { content.resources.values.forEach(::addResource) }
+            val document = Document(title = content.title, addInitialPage = false).apply { content.resources.values.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
                 TileRenderer(pdfAdapter, textAdapter, images).apply { this.elements = this@PageImageExporter.elements }.renderPageContent(

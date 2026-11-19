@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextImport
 import io.github.valerioisufi.pageboard.canvas.controller.TextImportPlace
 import io.github.valerioisufi.pageboard.model.text.TextCleanup
@@ -44,13 +44,13 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The identifier of the command an extension gives to turn the pending text import into notes
- * with a model ([DrawViewController.pendingTextImport]): the sheet of the import offers it when the
+ * with a model ([PageboardController.pendingTextImport]): the sheet of the import offers it when the
  * extension gives it (see `docs/plans/text-import.md`).
  */
 public const val TEXT_TO_NOTES_COMMAND_ID: String = "text-import.as-notes"
 
 /**
- * The sheet of a text brought into the notebook ([DrawViewController.pendingTextImport]): where it
+ * The sheet of a text brought into the notebook ([PageboardController.pendingTextImport]): where it
  * goes (by topic, from its page, at the end), whether its formatting is cleaned, a preview of its
  * first lines as they will be; then its placement (see
  * [io.github.valerioisufi.pageboard.canvas.controller.TextPlacer.startImport]), or the notes of an
@@ -59,7 +59,7 @@ public const val TEXT_TO_NOTES_COMMAND_ID: String = "text-import.as-notes"
  * @param asNotes the command of an extension turning the text into notes, if any.
  */
 @Composable
-internal fun TextImportSheet(controller: DrawViewController, asNotes: Command?) {
+internal fun TextImportSheet(controller: PageboardController, asNotes: Command?) {
     val import = controller.pendingTextImport ?: return
     val scope = rememberCoroutineScope()
     val byTopic = controller.textPlacer.canPlaceByTopic

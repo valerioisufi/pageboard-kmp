@@ -5,9 +5,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.change.AddElements
@@ -16,7 +16,7 @@ import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.screen.EditorScreen
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -91,7 +91,7 @@ class TranscriptionWindowBenchmark {
         val ways = (System.getProperty("pageboard.bench.ways") ?: "gpu:4,gpu:2,gpu:1,cpu:4").split(",").map { Way(it.trim()) }
         val samples = readWav(File(audio))
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(title = "Benchmark"), coroutineScope = scope)
+        val controller = PageboardController(document = Document(title = "Benchmark"), coroutineScope = scope)
         writeNotes(controller)
         val intervals = Collections.synchronizedList(mutableListOf<Long>())
         lateinit var window: ComposeWindow
@@ -100,7 +100,7 @@ class TranscriptionWindowBenchmark {
                 title = "Transcription window benchmark"
                 setSize(1200, 900)
                 setContent {
-                    DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                    PageboardTheme(darkTheme = false, dynamicColor = false) {
                         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
                             EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize())
                         }
@@ -207,11 +207,11 @@ class TranscriptionWindowBenchmark {
     }
 
     /** A page of notes in the document of [controller]: texts and strokes all over it, so that a frame of a pan has something to draw. */
-    private fun writeNotes(controller: DrawViewController) {
+    private fun writeNotes(controller: PageboardController) {
         val page = controller.document.pages.first()
         val random = Random(7)
         val texts = List(30) { index ->
-            DrawText().apply {
+            TextElement().apply {
                 text = "**Theorem ${index + 1}.** Every bounded sequence of real numbers has a convergent subsequence, and its limit lies between the bounds."
                 x = 15f; y = 12f + index * 9.2f; width = 180f; height = 8f; fontSize = 11f
             }

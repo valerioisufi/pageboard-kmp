@@ -6,13 +6,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toPixelMap
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.render.tile.Tile
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileKey
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TilePyramid
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileState
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.math.round
 import kotlin.test.Test
@@ -27,8 +27,8 @@ class TileSharpnessTest {
 
     @Test
     fun pagesAndCameraStayOnWholePixels() = runTest(UnconfinedTestDispatcher()) {
-        val document = DrawDocument().apply { repeat(2) { addPage() } }
-        val viewport = DrawViewController(document = document, coroutineScope = backgroundScope).viewport
+        val document = Document().apply { repeat(2) { addPage() } }
+        val viewport = PageboardController(document = document, coroutineScope = backgroundScope).viewport
         // An odd width centers the pages on half a pixel, the pages after the first follow a page
         // of a fractional height, a trackpad scrolls by fractions of a pixel
         viewport.setSize(1001f, 777f)
@@ -59,7 +59,7 @@ class TileSharpnessTest {
     @Test
     fun aZoomBetweenTwoLodsShowsTheTilesOfTheLodAbove() {
         val manager = TileManager()
-        val document = DrawDocument("doc", "Doc")
+        val document = Document("doc", "Doc")
         val page = document.pages[0]
         val pageRect = Rect(0f, 0f, 400f, 400f)
         // Every tile of the page at LOD 0 red, at LOD 1 blue: nothing is rasterized meanwhile

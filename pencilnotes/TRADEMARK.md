@@ -12,5 +12,5 @@ published by someone else, in a store or anywhere else:
 * has an application id and a bundle id of its own (not `com.studiomath.pencilnotes` or
   `io.github.valerioisufi.pencilnotes`).
 
-Saying that it is based on PencilNotes or on DrawView is welcome. The libraries (`pageboard-*`) have
+Saying that it is based on PencilNotes or on Pageboard is welcome. The libraries (`pageboard-*`) have
 no such restriction: their names are the names of the modules.

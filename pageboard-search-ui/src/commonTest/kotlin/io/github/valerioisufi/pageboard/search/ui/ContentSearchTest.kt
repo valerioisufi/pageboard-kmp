@@ -2,13 +2,13 @@ package io.github.valerioisufi.pageboard.search.ui
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.pageboard.explorer.DocumentOpener
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.change.StrokeData
@@ -38,7 +38,7 @@ class ContentSearchTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val analisiDoc = store.createDocument("Analisi 1")
         val analisiPage = analisiDoc.pages.single()
-        val t1 = DrawText().apply {
+        val t1 = TextElement().apply {
             text = "Il teorema di Weierstrass garantisce massimo e minimo assoluti su un compatto."
             x = 10f
             y = 20f
@@ -50,7 +50,7 @@ class ContentSearchTest {
 
         val algebraDoc = store.createDocument("Algebra Lineare")
         val algebraPage = algebraDoc.pages.single()
-        val t2 = DrawText().apply {
+        val t2 = TextElement().apply {
             text = "Gli autovettori associati ad autovalori distinti sono linearmente indipendenti."
             x = 10f
             y = 20f
@@ -102,7 +102,7 @@ class ContentSearchTest {
         val doc = store.createDocument("Limits")
         val page = doc.pages.single()
         val filler = "The limit of the sine divided by the angle, as the angle goes to zero, is found by squeezing it between two functions. "
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = filler + "**Squeeze:** \$\\cos x \\le \\frac{\\sin x}{x} \\le 1\$ near zero."
             x = 10f
             y = 20f
@@ -135,12 +135,12 @@ class ContentSearchTest {
     @Test
     fun opensPageAndLectureAnchorsAtTheirExactPlaces() = runTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
-        val doc = DrawDocument(id = "doc-1", title = "Analisi 2").apply {
+        val doc = Document(id = "doc-1", title = "Analisi 2").apply {
             addPage()
             addPage()
         }
         val targetPage = doc.pages[2]
-        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = doc, coroutineScope = backgroundScope)
 
         SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
             val indexer = SearchIndexer(catalog = store, index = index, sources = emptyList(), quietMillis = 0L)
@@ -191,18 +191,18 @@ class ContentSearchTest {
     fun pdfSearchSourceIndexesPdfPagesThroughPdfPort() = runTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val doc = store.createDocument("Sistemi Operativi")
-        val resource = DrawResource("res-pdf-1", DrawResource.ResourceType.PDF, "/fake/slides.pdf", "hash1")
+        val resource = DocumentResource("res-pdf-1", DocumentResource.ResourceType.PDF, "/fake/slides.pdf", "hash1")
         doc.addResource(resource)
         store.saveResource(doc, resource)
 
         val page1 = doc.pages.single()
-        val pdf1 = DrawPdf(0).apply { resourceId = resource.id }
+        val pdf1 = PdfElement(0).apply { resourceId = resource.id }
         page1.add(pdf1)
         store.savePdf(page1, pdf1)
 
         val page2 = doc.addPage()
         store.savePage(doc, page2)
-        val pdf2 = DrawPdf(1).apply { resourceId = resource.id }
+        val pdf2 = PdfElement(1).apply { resourceId = resource.id }
         page2.add(pdf2)
         store.savePdf(page2, pdf2)
         store.flush()
@@ -244,7 +244,7 @@ class ContentSearchTest {
         assertEquals(version, pdfSource.version(store.documents.value.single()), "a stroke does not change the PDF pages")
         val page3 = doc.addPage()
         store.savePage(doc, page3)
-        val pdf3 = DrawPdf(1).apply { resourceId = resource.id }
+        val pdf3 = PdfElement(1).apply { resourceId = resource.id }
         page3.add(pdf3)
         store.savePdf(page3, pdf3)
         store.flush()
@@ -257,7 +257,7 @@ class ContentSearchTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val doc = store.createDocument("Analisi 1")
         val page = doc.pages.single()
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = "Il teorema di Weierstrass richiede un dominio compatto."
             x = 10f
             y = 10f

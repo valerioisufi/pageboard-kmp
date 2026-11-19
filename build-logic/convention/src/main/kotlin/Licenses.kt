@@ -14,8 +14,8 @@ import org.gradle.api.tasks.TaskProvider
 import javax.inject.Inject
 
 /**
- * The licenses every artifact of DrawView carries (`META-INF/pageboard/<module>/`): the license of
- * DrawView and the notices of the third-party code and fonts (`THIRD_PARTY_LICENSES.md`, a
+ * The licenses every artifact of Pageboard carries (`META-INF/pageboard/<module>/`): the license of
+ * Pageboard and the notices of the third-party code and fonts (`THIRD_PARTY_LICENSES.md`, a
  * superset of what each artifact contains), as resources of its JVM and Android parts.
  */
 abstract class LicensesTask : DefaultTask() {

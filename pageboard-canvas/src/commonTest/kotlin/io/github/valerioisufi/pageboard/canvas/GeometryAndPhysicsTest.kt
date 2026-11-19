@@ -85,7 +85,7 @@ class GeometryAndPhysicsTest {
     @Test
     fun testCalcPageLayoutAndVisibility() {
         val calcPage = CalcPage(density = 1f)
-        val doc = DrawDocument()
+        val doc = Document()
         doc.addPage() // page 1
         doc.addPage() // page 2
 
@@ -188,7 +188,7 @@ class GeometryAndPhysicsTest {
 
     @Test
     fun testHistoryManagerUndoRedo() {
-        val doc = DrawDocument()
+        val doc = Document()
         val session = DocumentSession(doc)
         val history = HistoryManager(session, maxHistorySize = 10)
 
@@ -199,7 +199,7 @@ class GeometryAndPhysicsTest {
             tool = StrokeTool.PRESSURE_PEN,
             size = 5f
         )
-        val stroke = DrawStroke(mesh = dummyMesh, brushConfig = BrushConfig())
+        val stroke = StrokeElement(mesh = dummyMesh, brushConfig = BrushConfig())
 
         // Add stroke
         session.submit(AddElements.of(doc.pages[0], listOf(stroke)))

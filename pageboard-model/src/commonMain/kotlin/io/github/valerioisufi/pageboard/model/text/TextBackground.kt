@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.model.text
 
 /**
- * The fill of a text box (`DrawText.background`): a color under its lines, around its box by an
+ * The fill of a text box (`TextElement.background`): a color under its lines, around its box by an
  * inner margin, its corners rounded, both proportional to the size of its font. The fill is out of
  * the box, so that adding it does not move the text; the bounds of the text take it.
  */

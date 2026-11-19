@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.sync.lan
 
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.DocumentChange
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
@@ -144,10 +144,10 @@ class LanSyncTest {
         // Without an address: found on the network
         bob.lan.join(invitation)
         cy.lan.join(invitation)
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         cy.awaitSame(document.id, ada)
         bob.awaitSame(document.id, ada)
-        bob.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        bob.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
         cy.awaitSame(document.id, bob)
         assertEquals(3, assertNotNull(ada.snapshot(document.id)).pages.size)
 
@@ -167,8 +167,8 @@ class LanSyncTest {
 
         // Bob goes away (another port when back); both go on working on the document
         bob.goOffline()
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
-        bob.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
+        bob.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
         bob.goOnline()
         bob.awaitSame(document.id, ada)
         assertEquals(3, assertNotNull(ada.snapshot(document.id)).pages.size)
@@ -191,7 +191,7 @@ class LanSyncTest {
         // Bob starts again on the same port (held by the connections just closed), but this time
         // its announcement and the ones of the others get lost: Ada connects to where it was
         bob.goOffline()
-        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
         bob.goOnline(port, found = false)
         assertEquals(port, bob.transport.boundPort)
         bob.awaitSame(document.id, ada)

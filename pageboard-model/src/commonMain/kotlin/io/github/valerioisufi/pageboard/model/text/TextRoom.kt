@@ -5,7 +5,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * The room of a text whose width follows it (`DrawText.autoWidth`): its lines may go from the side
+ * The room of a text whose width follows it (`TextElement.autoWidth`): its lines may go from the side
  * of its alignment to the margin of its page, and its box is the part they take, with a little
  * room for the caret. The document keeps the room; the box is laid out (docs/plans/text-heights.md).
  */

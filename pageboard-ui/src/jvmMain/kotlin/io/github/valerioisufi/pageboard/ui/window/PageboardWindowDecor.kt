@@ -65,7 +65,7 @@ internal object WindowsDwmHelper {
  * @param content the window content composable.
  */
 @Composable
-public fun FrameWindowScope.DrawViewWindowDecor(
+public fun FrameWindowScope.PageboardWindowDecor(
     state: WindowState,
     isDark: Boolean = false,
     content: @Composable () -> Unit

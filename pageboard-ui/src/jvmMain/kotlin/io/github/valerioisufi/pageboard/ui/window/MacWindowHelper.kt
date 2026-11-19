@@ -37,7 +37,7 @@ internal object MacWindowHelper {
                 if (!ObjC.isKindOf(window, "NSWindow") || !ObjC.respondsTo(window, "setToolbarStyle:")) {
                     return@onMainThread
                 }
-                val toolbar = ObjC.send(ObjC.send(ObjC.cls("NSToolbar"), "alloc"), "initWithIdentifier:", ObjC.string("DrawViewWindow"))
+                val toolbar = ObjC.send(ObjC.send(ObjC.cls("NSToolbar"), "alloc"), "initWithIdentifier:", ObjC.string("PageboardWindow"))
                 ObjC.sendVoid(window, "setToolbar:", toolbar)
                 // The window keeps its toolbar
                 ObjC.sendVoid(toolbar, "release")

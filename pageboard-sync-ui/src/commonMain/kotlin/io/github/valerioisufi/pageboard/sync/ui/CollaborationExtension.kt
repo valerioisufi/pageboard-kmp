@@ -47,7 +47,7 @@ import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -66,7 +66,7 @@ public fun Collaboration.editorExtension(): EditorExtension {
         label = { stringResource(Res.string.sync_share) },
         group = CommandGroup.FILE,
         section = 1,
-        icon = { rememberVectorPainter(DrawViewIcons.UserPlus) }
+        icon = { rememberVectorPainter(PageboardIcons.UserPlus) }
     ) { sharing.documentId = documentId }
     return EditorExtension {
         toolbarActions { context ->
@@ -124,7 +124,7 @@ private fun BoxScope.WritingElsewhereNotice(presence: CollaboratorPresence) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(DrawViewIcons.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.inverseOnSurface, modifier = Modifier.size(16.dp))
+        Icon(PageboardIcons.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.inverseOnSurface, modifier = Modifier.size(16.dp))
         Text(
             text = stringResource(Res.string.sync_writing_elsewhere, shown.name),
             color = MaterialTheme.colorScheme.inverseOnSurface,
@@ -156,7 +156,7 @@ private fun ShareAction(collaboration: Collaboration, documentId: String, share:
             }
         }
         Box {
-            EditorActionButton(DrawViewIcons.UserPlus, stringResource(Res.string.sync_share), onClick = share.perform)
+            EditorActionButton(PageboardIcons.UserPlus, stringResource(Res.string.sync_share), onClick = share.perform)
             if (others.isNotEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -318,7 +318,7 @@ private fun StopSharingDialog(isOwner: Boolean, onConfirm: () -> Unit, onDismiss
     val label = stringResource(if (isOwner) Res.string.sync_end_sharing else Res.string.sync_leave)
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(DrawViewIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+        icon = { Icon(PageboardIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(label, textAlign = TextAlign.Center) },
         text = {
             Text(

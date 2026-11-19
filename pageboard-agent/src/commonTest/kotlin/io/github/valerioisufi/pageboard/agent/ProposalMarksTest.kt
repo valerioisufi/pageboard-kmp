@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -54,8 +54,8 @@ class ProposalMarksTest {
         assertIs<ToolResult.Value>(agents.tools.call("propose", arguments, agents.access.connect("test").id))
     }
 
-    private suspend fun Setup.addText(content: String, x: Float = 20f, y: Float = 40f, width: Float = 100f): DrawText = open.edit { session ->
-        val text = DrawText().apply {
+    private suspend fun Setup.addText(content: String, x: Float = 20f, y: Float = 40f, width: Float = 100f): TextElement = open.edit { session ->
+        val text = TextElement().apply {
             text = content
             this.x = x; this.y = y; this.width = width; height = 10f; fontSize = 16f
         }
@@ -63,7 +63,7 @@ class ProposalMarksTest {
         text
     }
 
-    private suspend fun Setup.addStroke(): DrawStroke = open.edit { session ->
+    private suspend fun Setup.addStroke(): StrokeElement = open.edit { session ->
         val page = session.document.pages[0]
         val data = StrokeData(
             id = newElementId(),

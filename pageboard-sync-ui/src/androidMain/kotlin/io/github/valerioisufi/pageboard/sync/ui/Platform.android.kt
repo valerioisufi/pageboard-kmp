@@ -15,12 +15,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
 import io.github.valerioisufi.pageboard.sync.lan.NsdLanDiscovery
 import kotlinx.coroutines.CompletableDeferred
 
-internal actual fun createLanDiscovery(): LanDiscovery = NsdLanDiscovery(DrawViewAndroid.context)
+internal actual fun createLanDiscovery(): LanDiscovery = NsdLanDiscovery(PageboardAndroid.context)
 
 /** The permission of the local network, from Android 17. */
 private const val ACCESS_LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK"
@@ -55,13 +55,13 @@ internal actual fun rememberLocalNetworkAccess(): suspend () -> Boolean {
  */
 internal actual object BackgroundSync {
     actual fun update(active: Boolean, documents: Int) {
-        val context = DrawViewAndroid.context
+        val context = PageboardAndroid.context
         val intent = Intent(context, SyncService::class.java).putExtra(SyncService.DOCUMENTS, documents)
         try {
             if (active) context.startForegroundService(intent) else context.stopService(intent)
         } catch (e: IllegalStateException) {
             // Not allowed from the background: the connections go on while the system lets them
-            println("DrawView: cannot keep the synchronization in the background: ${e.message}")
+            println("Pageboard: cannot keep the synchronization in the background: ${e.message}")
         }
     }
 }

@@ -11,7 +11,7 @@ import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.db.DRAW_DATABASE_MIGRATIONS
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import java.io.File
 import kotlin.test.AfterTest
@@ -35,7 +35,7 @@ import kotlinx.coroutines.runBlocking
 class StoreBenchmark {
     private lateinit var file: File
     private lateinit var driver: CountingSQLiteDriver
-    private lateinit var database: DrawDatabase
+    private lateinit var database: PageboardDatabase
     private lateinit var store: RoomDocumentStore
 
     @BeforeTest
@@ -43,7 +43,7 @@ class StoreBenchmark {
         file = File(checkNotNull(System.getProperty("pageboard.dataDir")), "benchmarks/${newElementId()}.db")
         file.parentFile.mkdirs()
         driver = CountingSQLiteDriver(BundledSQLiteDriver())
-        database = Room.databaseBuilder<DrawDatabase>(name = file.absolutePath)
+        database = Room.databaseBuilder<PageboardDatabase>(name = file.absolutePath)
             .addMigrations(*DRAW_DATABASE_MIGRATIONS)
             .setDriver(driver)
             .setQueryCoroutineContext(Dispatchers.IO)

@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-pdf>
+// Library unique name: <pageboard-kmp:pageboard-pdf>
 final enum class io.github.valerioisufi.pageboard.pdf/PdfMarkupKind : kotlin/Enum<io.github.valerioisufi.pageboard.pdf/PdfMarkupKind> { // io.github.valerioisufi.pageboard.pdf/PdfMarkupKind|null[0]
     enum entry HIGHLIGHT // io.github.valerioisufi.pageboard.pdf/PdfMarkupKind.HIGHLIGHT|null[0]
     enum entry STRIKEOUT // io.github.valerioisufi.pageboard.pdf/PdfMarkupKind.STRIKEOUT|null[0]

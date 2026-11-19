@@ -1,8 +1,8 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -451,7 +451,7 @@ public data class Proposal(
  * What a model read of this text, to tell later whether it changed: the versions of its content and a
  * hash of its text (a text written before the versions has none). Opaque to the client.
  */
-internal fun DrawText.base(): String = "${contentVersions}#${fnv1a(text).toString(16)}"
+internal fun TextElement.base(): String = "${contentVersions}#${fnv1a(text).toString(16)}"
 
 /** The FNV-1a hash of [text]: to notice a change, not against someone making one on purpose. */
 internal fun fnv1a(text: String): ULong {
@@ -464,7 +464,7 @@ internal fun fnv1a(text: String): ULong {
 }
 
 /** The text box [id] shown in this document and its page, or `null`. */
-internal fun DrawDocument.findText(id: String): Pair<DrawPage, DrawText>? {
+internal fun Document.findText(id: String): Pair<Page, TextElement>? {
     for (page in pages) {
         val text = page.texts.firstOrNull { it.id == id && it.removed == null }
         if (text != null) return page to text

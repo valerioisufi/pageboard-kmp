@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import kotlin.math.max
@@ -29,7 +29,7 @@ public data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text:
  * What the assistant knows of a page of the notebook: the same description for every provider,
  * in text (the images of the visible pages are added to it, see [NotebookSnapshot.pageImages]).
  *
- * @param pageId identifier of the page ([io.github.valerioisufi.pageboard.model.DrawPage.id]),
+ * @param pageId identifier of the page ([io.github.valerioisufi.pageboard.model.Page.id]),
  *   stable when the pages are reordered (empty when not known).
  * @param slide the PDF page of its background, if any.
  * @param typedTexts typed text blocks of the student.

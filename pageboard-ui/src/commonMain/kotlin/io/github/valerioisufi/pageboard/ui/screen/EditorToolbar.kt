@@ -50,7 +50,7 @@ import androidx.compose.ui.zIndex
 import io.github.valerioisufi.pageboard.ui.components.fadingHorizontalScroll
 import io.github.valerioisufi.pageboard.ui.components.ScrolledContent
 import io.github.valerioisufi.pageboard.ui.components.peekingHorizontalScroll
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.observe
 import io.github.valerioisufi.pageboard.ui.adaptive.HeightClass
 import io.github.valerioisufi.pageboard.ui.adaptive.WindowLayout
@@ -64,8 +64,8 @@ import io.github.valerioisufi.pageboard.ui.components.IconButtonStyle
 import io.github.valerioisufi.pageboard.ui.components.LocalToolSizes
 import io.github.valerioisufi.pageboard.ui.components.ToolSizes
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
 import io.github.valerioisufi.pageboard.ui.window.WindowDraggable
@@ -188,7 +188,7 @@ internal object ToolbarLayout {
  */
 @Composable
 internal fun EditorTopBar(
-    controller: DrawViewController,
+    controller: PageboardController,
     commands: EditorCommands,
     isLoading: Boolean,
     arrangement: ToolbarArrangement,
@@ -217,9 +217,9 @@ internal fun EditorTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(if (compact) 0.dp else 4.dp)
     ) {
-        BarButton(commands.close, DrawViewIcons.ArrowLeft, label = stringResource(Res.string.common_action_back))
+        BarButton(commands.close, PageboardIcons.ArrowLeft, label = stringResource(Res.string.common_action_back))
         if (showPageGrid) {
-            BarButton(commands.pageGrid, DrawViewIcons.LayoutGrid, selected = controller.isPageGridVisible)
+            BarButton(commands.pageGrid, PageboardIcons.LayoutGrid, selected = controller.isPageGridVisible)
         }
 
         val subtitle = documentSubtitle(controller, location)
@@ -279,7 +279,7 @@ private fun ExtensionsButton(toolbarActions: @Composable RowScope.() -> Unit, on
     var expanded by remember { mutableStateOf(false) }
     Box {
         DesignIconButton(
-            icon = DrawViewIcons.Zap,
+            icon = PageboardIcons.Zap,
             label = stringResource(Res.string.editor_action_extensions),
             onClick = { expanded = true },
             selected = expanded,
@@ -309,7 +309,7 @@ private fun ExtensionsButton(toolbarActions: @Composable RowScope.() -> Unit, on
  * at is said by the indicator over the canvas.
  */
 @Composable
-private fun documentSubtitle(controller: DrawViewController, location: String?): String {
+private fun documentSubtitle(controller: PageboardController, location: String?): String {
     val total by controller.document.observe { pages.size }
     return listOfNotNull(location, pluralStringResource(Res.plurals.editor_pages_count, total, total)).joinToString(" · ")
 }
@@ -370,14 +370,14 @@ internal fun ReadOnlyBadge(note: String?, floating: Boolean, modifier: Modifier 
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         modifier = modifier
-            .then(if (floating) Modifier.elevation(DrawViewElevation.Level2, shape) else Modifier)
+            .then(if (floating) Modifier.elevation(PageboardElevation.Level2, shape) else Modifier)
             .background(if (floating) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainer, shape)
             .height(if (floating) 44.dp else 48.dp)
             .padding(start = 14.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(DrawViewIcons.Eye, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+        Icon(PageboardIcons.Eye, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
         Text(stringResource(Res.string.draw_read_only), style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1)
         if (note != null) {
             Box(modifier = Modifier.width(1.dp).height(20.dp).background(MaterialTheme.colorScheme.outlineVariant))
@@ -405,7 +405,7 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
     val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS
     Box {
         DesignIconButton(
-            icon = DrawViewIcons.MoreHorizontal,
+            icon = PageboardIcons.MoreHorizontal,
             label = stringResource(Res.string.common_action_more_options),
             onClick = { expanded = true },
             tint = MaterialTheme.colorScheme.onSurface
@@ -429,11 +429,11 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
  * menu.
  */
 @Composable
-internal fun FloatingTools(controller: DrawViewController, commands: EditorCommands, modifier: Modifier = Modifier) {
+internal fun FloatingTools(controller: PageboardController, commands: EditorCommands, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(28.dp)
     Row(
         modifier = modifier
-            .elevation(DrawViewElevation.Level2, shape)
+            .elevation(PageboardElevation.Level2, shape)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(ToolbarLayout.FloatingHeight)
@@ -460,7 +460,7 @@ internal fun FloatingTools(controller: DrawViewController, commands: EditorComma
 
 /** Where the tools of a phone end: the page and the zoom, "3 / 12 · 100%", on the inverse surface. */
 @Composable
-internal fun PageIndicator(controller: DrawViewController, withZoom: Boolean, modifier: Modifier = Modifier) {
+internal fun PageIndicator(controller: PageboardController, withZoom: Boolean, modifier: Modifier = Modifier) {
     val state by remember(controller) {
         androidx.compose.runtime.derivedStateOf {
             controller.viewport.camera.moveCount
@@ -474,7 +474,7 @@ internal fun PageIndicator(controller: DrawViewController, withZoom: Boolean, mo
     val shape = CircleShape
     Row(
         modifier = modifier
-            .elevation(DrawViewElevation.Level2, shape)
+            .elevation(PageboardElevation.Level2, shape)
             .background(MaterialTheme.colorScheme.inverseSurface, shape)
             .padding(horizontal = if (withZoom) 16.dp else 14.dp, vertical = if (withZoom) 8.dp else 6.dp),
         verticalAlignment = Alignment.CenterVertically,

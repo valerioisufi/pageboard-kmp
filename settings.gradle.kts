@@ -88,7 +88,7 @@ include(":pageboard-sync-ui")
 include(":pageboard-export")
 include(":pageboard-export-ui")
 
-// Sample application: how to build an application with the DrawView modules
+// Sample application: how to build an application with the Pageboard modules
 include(":sample-shared")
 include(":sample-desktop")
 project(":sample-shared").projectDir = file("sample/shared")
@@ -98,7 +98,7 @@ if (hasAndroidSdk) {
     project(":sample-android").projectDir = file("sample/androidApp")
 }
 
-// PencilNotes: the note-taking application built on DrawView
+// PencilNotes: the note-taking application built on Pageboard
 include(":pencilnotes-shared")
 include(":pencilnotes-desktop")
 project(":pencilnotes-shared").projectDir = file("pencilnotes/shared")

@@ -17,7 +17,7 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -45,13 +45,13 @@ class TextBoxCodeBlockTest {
         waitForIdle()
     }
 
-    private fun DesktopComposeUiTest.caret(controller: DrawViewController, offset: Int) {
+    private fun DesktopComposeUiTest.caret(controller: PageboardController, offset: Int) {
         runOnIdle { controller.textEditorManager.updateValue(controller.textEditorManager.value.copy(selection = TextRange(offset))) }
         waitForIdle()
     }
 
     /** The offsets the caret goes through, [presses] presses of [key] from [from]; nothing of the text moving. */
-    private fun DesktopComposeUiTest.walk(controller: DrawViewController, from: Int, key: Key, presses: Int): List<Int> {
+    private fun DesktopComposeUiTest.walk(controller: PageboardController, from: Int, key: Key, presses: Int): List<Int> {
         caret(controller, from)
         val shown = fieldLayout().layoutInput.text.text
         val height = fieldBounds().height
@@ -68,7 +68,7 @@ class TextBoxCodeBlockTest {
         return offsets
     }
 
-    private fun DesktopComposeUiTest.writeText(controller: DrawViewController) {
+    private fun DesktopComposeUiTest.writeText(controller: PageboardController) {
         startBox(controller, 30f, 30f, widthMm = 120f)
         type(text)
     }

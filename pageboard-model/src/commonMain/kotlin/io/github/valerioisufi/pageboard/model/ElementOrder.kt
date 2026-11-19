@@ -11,7 +11,7 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * The position of an element in the stack of its page: a [key] compared as text, the greater on
  * top, the same on every device (ties are broken by the identifier of the element, see
- * [DrawPage.stack]). A key can always be made between two others ([between]), so that an element
+ * [Page.stack]). A key can always be made between two others ([between]), so that an element
  * is put anywhere in the stack without changing the keys of the others.
  *
  * The keys are of printable ASCII (`!` to `~`), at most [MAX_LENGTH] characters, never ending
@@ -123,18 +123,18 @@ public class ElementOrder private constructor(
         }
 
         /** The layer of the kind of [element] (see [inLayer]). */
-        internal fun layerOf(element: DrawElement): Char = when (element) {
-            is DrawPdf -> PDF_LAYER
-            is DrawTextMarkup -> MARKUP_LAYER
-            is DrawImage -> IMAGE_LAYER
-            is DrawCustomElement -> CUSTOM_LAYER
-            is DrawText -> TEXT_LAYER
-            is DrawStroke -> STROKE_LAYER
+        internal fun layerOf(element: PageElement): Char = when (element) {
+            is PdfElement -> PDF_LAYER
+            is TextMarkupElement -> MARKUP_LAYER
+            is ImageElement -> IMAGE_LAYER
+            is CustomElement -> CUSTOM_LAYER
+            is TextElement -> TEXT_LAYER
+            is StrokeElement -> STROKE_LAYER
         }
 
         /**
          * The order of the element [index] among the elements of the layer [layer] of a page built
-         * outside of the changes (see [DrawPage.add]): the order such a page has always had.
+         * outside of the changes (see [Page.add]): the order such a page has always had.
          */
         internal fun built(layer: Char, index: Int): ElementOrder = ElementOrder(layer + legacyText(Stamp.ZERO, index))
 

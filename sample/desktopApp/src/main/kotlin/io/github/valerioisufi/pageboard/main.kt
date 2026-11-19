@@ -8,14 +8,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
-import io.github.valerioisufi.pageboard.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.pageboard.ui.command.PageboardMenuBar
 import io.github.valerioisufi.pageboard.ui.window.DesktopAppIcon
-import io.github.valerioisufi.pageboard.ui.window.DrawViewWindowDecor
+import io.github.valerioisufi.pageboard.ui.window.PageboardWindowDecor
 import io.github.valerioisufi.pageboard.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.pageboard.ui.window.WindowMinimumSize
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopIcon
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopWindowManager
-import io.github.valerioisufi.pageboard.ui.window.rememberDrawViewWindowState
+import io.github.valerioisufi.pageboard.ui.window.rememberPageboardWindowState
 import kotlinx.coroutines.runBlocking
 
 fun main() {
@@ -35,7 +35,7 @@ fun main() {
         // The primary library window
         if (windowManager.isLibraryOpen) {
             val libraryCommands = remember { CommandHost() }
-            val libraryWindowState = rememberDrawViewWindowState("library")
+            val libraryWindowState = rememberPageboardWindowState("library")
             Window(
                 onCloseRequest = {
                     windowManager.closeLibrary()
@@ -46,12 +46,12 @@ fun main() {
                     }
                 },
                 state = libraryWindowState,
-                title = "DrawView",
+                title = "Pageboard",
                 icon = appIcon,
                 onKeyEvent = { libraryCommands.dispatch(it) }
             ) {
-                DrawViewWindowDecor(state = libraryWindowState) {
-                    DrawViewMenuBar(libraryCommands)
+                PageboardWindowDecor(state = libraryWindowState) {
+                    PageboardMenuBar(libraryCommands)
                     WindowMinimumSize()
                     App(
                         commandHost = libraryCommands,
@@ -65,8 +65,8 @@ fun main() {
         for (documentId in windowManager.openDocumentIds) {
             key(documentId) {
                 val docCommands = remember { CommandHost() }
-                val docWindowState = rememberDrawViewWindowState("doc-$documentId")
-                var docTitle by remember { mutableStateOf("DrawView") }
+                val docWindowState = rememberPageboardWindowState("doc-$documentId")
+                var docTitle by remember { mutableStateOf("Pageboard") }
                 var docModified by remember { mutableStateOf(false) }
 
                 Window(
@@ -83,9 +83,9 @@ fun main() {
                     icon = appIcon,
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
-                    DrawViewWindowDecor(state = docWindowState) {
+                    PageboardWindowDecor(state = docWindowState) {
                         SetWindowDocumentModified(docModified)
-                        DrawViewMenuBar(docCommands)
+                        PageboardMenuBar(docCommands)
                         WindowMinimumSize()
                         SampleDocumentWindow(
                             documentId = documentId,
@@ -98,7 +98,7 @@ fun main() {
                                 }
                             },
                             commandHost = docCommands,
-                            onTitleChange = { docTitle = "$it — DrawView" },
+                            onTitleChange = { docTitle = "$it — Pageboard" },
                             onModifiedChange = { docModified = it }
                         )
                     }

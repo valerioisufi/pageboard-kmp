@@ -1,6 +1,6 @@
 # Module pageboard-ml
 
-The local models of DrawView, without the runtime that runs them: the models an application
+The local models of Pageboard, without the runtime that runs them: the models an application
 offers (`ModelCatalog`, `ModelSpec`: Gemma 4 and EmbeddingGemma 2 by default), the ones on the
 device (`InstalledModels`, `models/` of the data directory), their downloads, resumed and verified
 by SHA-256 (`ModelDownloads`), and the models in memory (`LoadedModels`), loaded by their first

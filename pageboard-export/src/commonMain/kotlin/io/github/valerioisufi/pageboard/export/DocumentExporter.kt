@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.export
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 
 /**
@@ -61,7 +61,7 @@ public class FolderDocumentItem(
 public class DocumentContent(
     public val title: String,
     public val pages: List<PageContentSnapshot>,
-    public val resources: Map<String, DrawResource>,
+    public val resources: Map<String, DocumentResource>,
     public val createdAt: Long? = null,
     public val modifiedAt: Long? = null
 ) {
@@ -70,14 +70,14 @@ public class DocumentContent(
          * The content of [document]: the pages [pageIds] and at [pageIndices] (all of them when
          * `null`) in their order. Called on the thread of the document (see `OpenDocument.edit`).
          */
-        public fun of(document: DrawDocument, pageIds: Set<String>? = null, pageIndices: Set<Int>? = null): DocumentContent {
+        public fun of(document: Document, pageIds: Set<String>? = null, pageIndices: Set<Int>? = null): DocumentContent {
             val pages = document.pages.filterIndexed { index, page ->
                 (pageIds == null || page.id in pageIds) && (pageIndices == null || index in pageIndices)
             }
             return DocumentContent(
                 title = document.title,
                 pages = pages.map { it.snapshotContent().detached() },
-                resources = document.resources.associate { it.id to DrawResource(it.id, it.type, it.path, it.hash) }
+                resources = document.resources.associate { it.id to DocumentResource(it.id, it.type, it.path, it.hash) }
             )
         }
     }

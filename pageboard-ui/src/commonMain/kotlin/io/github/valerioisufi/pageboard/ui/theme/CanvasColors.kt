@@ -21,7 +21,7 @@ public data class CanvasColors(val desk: Color) {
     }
 }
 
-/** The [CanvasColors] of the theme (given by `DrawViewTheme`). */
+/** The [CanvasColors] of the theme (given by `PageboardTheme`). */
 public val LocalCanvasColors: ProvidableCompositionLocal<CanvasColors> = staticCompositionLocalOf { CanvasColors(desk = Color(0xFFDADAD3)) }
 
 /**

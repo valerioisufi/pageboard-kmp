@@ -3,10 +3,10 @@ package io.github.valerioisufi.pageboard.ui.components
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.change.RenameDocument
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,9 +20,9 @@ class DocumentObservationTest {
 
     @Test
     fun thePageGridShowsThePagesAndTheTitleAsTheyChange() = runDesktopComposeUiTest {
-        val controller = DrawViewController(document = DrawDocument(title = "Notes"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(title = "Notes"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         setContent {
-            DrawViewTheme(dynamicColor = false) {
+            PageboardTheme(dynamicColor = false) {
                 PageGridOverlay(controller)
             }
         }

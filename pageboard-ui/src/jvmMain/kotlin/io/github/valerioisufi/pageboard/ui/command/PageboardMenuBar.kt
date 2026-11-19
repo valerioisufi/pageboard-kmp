@@ -17,7 +17,7 @@ import org.jetbrains.compose.resources.stringResource
  * handles is consumed, so that the menu does not run the command a second time.
  */
 @Composable
-public fun FrameWindowScope.DrawViewMenuBar(host: CommandHost) {
+public fun FrameWindowScope.PageboardMenuBar(host: CommandHost) {
     val commands = host.commands
     MenuBar {
         for (group in CommandGroup.entries) {

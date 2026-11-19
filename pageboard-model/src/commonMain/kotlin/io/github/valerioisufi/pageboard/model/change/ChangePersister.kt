@@ -1,13 +1,13 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 
 /**
  * Writes the effects of the changes of a document through [persist] (a [PersistenceQueue]):
@@ -58,17 +58,17 @@ public class ChangePersister(
         }
     }
 
-    private suspend fun DocumentPersistence.saveElements(page: DrawPage, elements: List<DrawElement>) {
-        val strokes = elements.filterIsInstance<DrawStroke>()
+    private suspend fun DocumentPersistence.saveElements(page: Page, elements: List<PageElement>) {
+        val strokes = elements.filterIsInstance<StrokeElement>()
         if (strokes.isNotEmpty()) saveStrokes(page, strokes)
         for (element in elements) {
             when (element) {
-                is DrawStroke -> {}
-                is DrawText -> saveText(page, element)
-                is DrawImage -> saveImage(page, element)
-                is DrawPdf -> savePdf(page, element)
-                is DrawTextMarkup -> saveTextMarkup(page, element)
-                is DrawCustomElement -> saveCustomElement(page, element)
+                is StrokeElement -> {}
+                is TextElement -> saveText(page, element)
+                is ImageElement -> saveImage(page, element)
+                is PdfElement -> savePdf(page, element)
+                is TextMarkupElement -> saveTextMarkup(page, element)
+                is CustomElement -> saveCustomElement(page, element)
             }
         }
     }

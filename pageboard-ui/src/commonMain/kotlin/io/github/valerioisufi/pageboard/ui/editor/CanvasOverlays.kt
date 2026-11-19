@@ -29,7 +29,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.CommandMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuDivider
@@ -40,8 +40,8 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.shape_style
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
 import io.github.valerioisufi.pageboard.ui.screen.SelectedShapesTarget
 import io.github.valerioisufi.pageboard.ui.screen.ShapeSettings
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import org.jetbrains.compose.resources.stringResource
 
@@ -54,7 +54,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 internal fun SelectionActionBar(
-    controller: DrawViewController,
+    controller: PageboardController,
     modifier: Modifier = Modifier,
     commands: EditorCommands? = null
 ) {
@@ -76,12 +76,12 @@ internal fun SelectionActionBar(
 
         ActionBar(modifier = Modifier.padding(top = 16.dp)) {
             if (hasTexts && isSingleText) {
-                BarAction(DrawViewIcons.Pencil, stringResource(Res.string.draw_toolbar_action_edit_text), { controller.textEditorManager.startEditingSelectedText() })
+                BarAction(PageboardIcons.Pencil, stringResource(Res.string.draw_toolbar_action_edit_text), { controller.textEditorManager.startEditingSelectedText() })
                 BarDivider()
             }
-            BarAction(DrawViewIcons.Scissors, stringResource(Res.string.common_action_cut), { selectionManager.cutSelection() }, command = commands?.cut)
-            BarAction(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), { selectionManager.copySelection() }, command = commands?.copy)
-            BarAction(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), { selectionManager.deleteSelection() }, command = commands?.delete, tint = MaterialTheme.colorScheme.error)
+            BarAction(PageboardIcons.Scissors, stringResource(Res.string.common_action_cut), { selectionManager.cutSelection() }, command = commands?.cut)
+            BarAction(PageboardIcons.Copy, stringResource(Res.string.common_action_copy), { selectionManager.copySelection() }, command = commands?.copy)
+            BarAction(PageboardIcons.Trash, stringResource(Res.string.common_action_delete), { selectionManager.deleteSelection() }, command = commands?.delete, tint = MaterialTheme.colorScheme.error)
             if (commands != null) {
                 BarDivider()
                 ArrangeAction(commands)
@@ -106,12 +106,12 @@ internal fun SelectionActionBar(
  * shapes tool, applied to them): the shape it draws, its color and its outline.
  */
 @Composable
-private fun ShapeStyleAction(controller: DrawViewController) {
+private fun ShapeStyleAction(controller: PageboardController) {
     var expanded by remember { mutableStateOf(false) }
     val target = remember(controller) { SelectedShapesTarget(controller) }
     val label = stringResource(Res.string.shape_style)
     Box {
-        BarAction(DrawViewIcons.Shapes, label, { expanded = true })
+        BarAction(PageboardIcons.Shapes, label, { expanded = true })
         ToolPopover(expanded = expanded, onDismissRequest = { expanded = false }) {
             ShapeSettings(target, label, withHint = false)
         }
@@ -126,7 +126,7 @@ private fun ShapeStyleAction(controller: DrawViewController) {
 private fun ArrangeAction(commands: EditorCommands) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        BarAction(DrawViewIcons.Layers, stringResource(Res.string.menu_arrange), { expanded = true })
+        BarAction(PageboardIcons.Layers, stringResource(Res.string.menu_arrange), { expanded = true })
         CommandMenu(commands.arrangements, expanded = expanded, onDismissRequest = { expanded = false })
     }
 }
@@ -141,7 +141,7 @@ private fun ArrangeAction(commands: EditorCommands) {
  */
 @Composable
 internal fun CanvasContextMenu(
-    controller: DrawViewController,
+    controller: PageboardController,
     commands: EditorCommands,
     onEditPageBackground: () -> Unit
 ) {
@@ -172,7 +172,7 @@ internal fun CanvasContextMenu(
                 .onSizeChanged { size -> menuSize = size }
                 .offset { IntOffset(safeX, safeY) }
                 .width(IntrinsicSize.Max)
-                .elevation(DrawViewElevation.Level3, shape)
+                .elevation(PageboardElevation.Level3, shape)
                 .background(MaterialTheme.colorScheme.surfaceContainer, shape)
                 .padding(8.dp)
         ) {
@@ -186,7 +186,7 @@ internal fun CanvasContextMenu(
                 val pastesPages = remember(position) { commands.pastesPages() }
                 MenuItem(
                     text = stringResource(if (pastesPages) Res.string.context_menu_action_paste_page else Res.string.common_action_paste),
-                    icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                    icon = rememberVectorPainter(PageboardIcons.Clipboard),
                     shortcut = commands.paste.shortcutLabel(currentAdaptiveInfo().conventions).takeIf { currentAdaptiveInfo().input.hasKeyboard },
                     onClick = {
                         controller.contextMenuPosition = null
@@ -197,7 +197,7 @@ internal fun CanvasContextMenu(
             }
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_add_page_after),
-                icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                 onClick = {
                     controller.contextMenuPosition = null
                     pageManager.addNewPageAfter(pageManager.contextMenuTargetPageIndex)
@@ -205,7 +205,7 @@ internal fun CanvasContextMenu(
             )
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_add_page_before),
-                icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                 onClick = {
                     controller.contextMenuPosition = null
                     pageManager.addNewPageBefore(pageManager.contextMenuTargetPageIndex)
@@ -213,7 +213,7 @@ internal fun CanvasContextMenu(
             )
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_duplicate_page),
-                icon = rememberVectorPainter(DrawViewIcons.CopyPlus),
+                icon = rememberVectorPainter(PageboardIcons.CopyPlus),
                 onClick = {
                     controller.contextMenuPosition = null
                     controller.document.pages.getOrNull(pageManager.contextMenuTargetPageIndex)?.let { commands.duplicatePages(listOf(it.id)) }
@@ -221,7 +221,7 @@ internal fun CanvasContextMenu(
             )
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_copy_page),
-                icon = rememberVectorPainter(DrawViewIcons.Copy),
+                icon = rememberVectorPainter(PageboardIcons.Copy),
                 onClick = {
                     controller.contextMenuPosition = null
                     commands.copyPage(pageManager.contextMenuTargetPageIndex)
@@ -229,7 +229,7 @@ internal fun CanvasContextMenu(
             )
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_reorder_page),
-                icon = rememberVectorPainter(DrawViewIcons.Grip),
+                icon = rememberVectorPainter(PageboardIcons.Grip),
                 onClick = {
                     controller.contextMenuPosition = null
                     pageManager.startPageReorderMode()
@@ -237,7 +237,7 @@ internal fun CanvasContextMenu(
             )
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_delete_page),
-                icon = rememberVectorPainter(DrawViewIcons.Trash),
+                icon = rememberVectorPainter(PageboardIcons.Trash),
                 destructive = true,
                 onClick = {
                     controller.contextMenuPosition = null
@@ -247,7 +247,7 @@ internal fun CanvasContextMenu(
             MenuDivider()
             MenuItem(
                 text = stringResource(Res.string.context_menu_action_edit_background),
-                icon = rememberVectorPainter(DrawViewIcons.Grid),
+                icon = rememberVectorPainter(PageboardIcons.Grid),
                 onClick = {
                     controller.contextMenuPosition = null
                     onEditPageBackground()
@@ -259,7 +259,7 @@ internal fun CanvasContextMenu(
 
 /** The items of the context menu of a selection: cut, copy, delete, then the stack. */
 @Composable
-private fun SelectionMenuItems(controller: DrawViewController, commands: EditorCommands) {
+private fun SelectionMenuItems(controller: PageboardController, commands: EditorCommands) {
     val adaptive = currentAdaptiveInfo()
     val conventions = adaptive.conventions.takeIf { adaptive.input.hasKeyboard }
     for ((index, section) in listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements).withIndex()) {

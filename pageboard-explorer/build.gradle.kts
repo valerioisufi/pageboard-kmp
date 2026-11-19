@@ -4,7 +4,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "The DrawView library of documents and folders, with thumbnails and the editor"
+description = "The Pageboard library of documents and folders, with thumbnails and the editor"
 
 kotlin {
     android {

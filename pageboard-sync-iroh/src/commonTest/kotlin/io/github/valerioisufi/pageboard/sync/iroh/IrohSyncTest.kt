@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.sync.iroh
 
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.DocumentChange
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
@@ -101,10 +101,10 @@ internal suspend fun threeDevicesKeepTheDocumentTheSame(
         device.engine.join(invitation)
         device.connectTo(reach(ada), document.id)
     }
-    ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+    ada.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(1))) }
     bob.awaitSame(document.id, ada)
     cy.awaitSame(document.id, ada)
-    bob.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+    bob.change(document.id) { AddPage.of(Page(orderKey = it.document.orderKeyAt(0))) }
     cy.awaitSame(document.id, bob)
     assertEquals(3, assertNotNull(ada.snapshot(document.id)).pages.size)
     listOf(ada, bob, cy).forEach { it.goOffline() }

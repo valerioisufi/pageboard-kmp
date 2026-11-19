@@ -11,7 +11,7 @@ plugins {
 dependencies {
     implementation(project(":pencilnotes-shared"))
     implementation(project(":pageboard-ui"))
-    // Every pending change written before the application exits (DrawViewSessions)
+    // Every pending change written before the application exits (PageboardSessions)
     implementation(project(":pageboard-session"))
     implementation(project(":pageboard-lecture-ui"))
 

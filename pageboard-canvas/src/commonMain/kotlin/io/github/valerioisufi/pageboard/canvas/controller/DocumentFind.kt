@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -27,7 +27,7 @@ import kotlinx.coroutines.yield
  * The search runs on the thread of the controller, a page at a time; a new query, or [refresh]
  * after a change of the document, starts it again.
  */
-public class DocumentFind internal constructor(private val controller: DrawViewController) {
+public class DocumentFind internal constructor(private val controller: PageboardController) {
 
     /** What a place found is in: a text of the page or the text of a PDF page. */
     public enum class Source { TEXT, PDF }
@@ -174,7 +174,7 @@ public class DocumentFind internal constructor(private val controller: DrawViewC
     }
 
     /** The places of [wanted] (folded) on [page], at [pageIndex]: its texts, then its PDF pages. */
-    private fun matchesOn(page: DrawPage, pageIndex: Int, wanted: String): List<Match> {
+    private fun matchesOn(page: Page, pageIndex: Int, wanted: String): List<Match> {
         val found = ArrayList<Match>()
         val adapter = controller.tileManager.tileRenderer.textAdapter
         if (adapter != null) {
@@ -195,7 +195,7 @@ public class DocumentFind internal constructor(private val controller: DrawViewC
         return found
     }
 
-    private fun textMatches(page: DrawPage, pageIndex: Int, text: DrawText, layout: TextBlockLayout, wanted: String): List<Match> {
+    private fun textMatches(page: Page, pageIndex: Int, text: TextElement, layout: TextBlockLayout, wanted: String): List<Match> {
         val shown = ShownWords.of(layout)
         val blockToPage = Matrix2D().postRotate(text.rotation).postTranslate(text.x, text.y)
         return occurrences(fold(shown.text), wanted).map { (start, end) ->
@@ -203,7 +203,7 @@ public class DocumentFind internal constructor(private val controller: DrawViewC
         }
     }
 
-    private fun pdfMatches(page: DrawPage, pageIndex: Int, pdfId: String, layout: PdfTextLayout, wanted: String): List<Match> {
+    private fun pdfMatches(page: Page, pageIndex: Int, pdfId: String, layout: PdfTextLayout, wanted: String): List<Match> {
         val chars = StringBuilder()
         // The index of the character of the layout each character of the text stands for
         val indices = ArrayList<Int>()

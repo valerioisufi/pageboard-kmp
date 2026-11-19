@@ -9,7 +9,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
@@ -34,9 +34,9 @@ class LiveInkFrameBenchmark {
     fun aFrameWhileDrawing() {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val document = SyntheticDocuments.notebook(pages = 3, strokesPerPage = 400, modeller = InkStrokeModeller)
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+        val controller = PageboardController(document = document, coroutineScope = scope)
         controller.selectTool(Tool.INK_PEN)
-        val scene = ImageComposeScene(width = 1600, height = 1000, density = Density(1f)) { DrawCanvas(controller) }
+        val scene = ImageComposeScene(width = 1600, height = 1000, density = Density(1f)) { PageCanvas(controller) }
         try {
             // The tiles of the screen rasterized
             repeat(120) {

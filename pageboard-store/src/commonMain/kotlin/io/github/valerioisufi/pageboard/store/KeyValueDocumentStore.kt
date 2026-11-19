@@ -1,14 +1,14 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
@@ -108,7 +108,7 @@ public class KeyValueDocumentStore(
     private val spaceValues = KeyValueSpaces(storage, json)
 
     private var index: StoredIndex = readIndex()
-    private val openDocuments = mutableMapOf<String, DrawDocument>()
+    private val openDocuments = mutableMapOf<String, Document>()
     private val dirtyDocuments = mutableSetOf<String>()
     private var saveJob: Job? = null
 
@@ -133,10 +133,10 @@ public class KeyValueDocumentStore(
         heightMm: Float,
         background: PageBackground,
         folderId: String?
-    ): DrawDocument {
+    ): Document {
         val now = clock()
         val document = syncLock(lock) {
-            val document = DrawDocument(
+            val document = Document(
                 title = name,
                 defaultWidthMm = widthMm,
                 defaultHeightMm = heightMm,
@@ -167,7 +167,7 @@ public class KeyValueDocumentStore(
         return document
     }
 
-    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>) {
+    override suspend fun insertDocument(document: Document, folderId: String?, versionVector: Map<String, Long>) {
         val now = clock()
         syncLock(lock) {
             if (versionVector.isNotEmpty()) index = index.copy(operationBases = index.operationBases + (document.id to versionVector))
@@ -190,7 +190,7 @@ public class KeyValueDocumentStore(
         publishSummaries()
     }
 
-    override suspend fun loadDocument(documentId: String): DrawDocument? = syncLock(lock) {
+    override suspend fun loadDocument(documentId: String): Document? = syncLock(lock) {
         readDocumentLocked(documentId)?.also { openDocuments[documentId] = it }
     }
 
@@ -209,12 +209,12 @@ public class KeyValueDocumentStore(
         readDocumentLocked(documentId)?.let { LoadedPage.of(it, index) }
     }
 
-    private fun readDocumentLocked(documentId: String): DrawDocument? {
+    private fun readDocumentLocked(documentId: String): Document? {
         val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
         // Loaded again while open: with its last changes
         if (dirtyDocuments.remove(documentId)) openDocuments[documentId]?.let { writeDocumentLocked(it) }
         val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
-        val document = DrawDocument(
+        val document = Document(
             id = documentId,
             title = summary.name,
             defaultWidthMm = summary.defaultWidth,
@@ -228,10 +228,10 @@ public class KeyValueDocumentStore(
         document.lastOpenedAt = summary.lastOpenedAt
 
         stored?.resources?.forEach { resource ->
-            val type = DrawResource.ResourceType.entries.firstOrNull { it.name == resource.type }
-                ?: DrawResource.ResourceType.IMAGE
+            val type = DocumentResource.ResourceType.entries.firstOrNull { it.name == resource.type }
+                ?: DocumentResource.ResourceType.IMAGE
             restoreResourceFile(resource.uri)
-            document.addResource(DrawResource(resource.id, type, resource.uri, resource.hash))
+            document.addResource(DocumentResource(resource.id, type, resource.uri, resource.hash))
         }
         document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
         document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
@@ -247,7 +247,7 @@ public class KeyValueDocumentStore(
         index.documents.none { it.id != documentId && it.folderId == summary.folderId && it.name == name && trash.isDocumentLive(it.id) }
     }
 
-    override suspend fun updateDocumentTitle(document: DrawDocument) {
+    override suspend fun updateDocumentTitle(document: Document) {
         syncLock(lock) {
             updateSummaryLocked(document.id) { it.copy(name = document.title) }
             writeIndexLocked()
@@ -441,33 +441,33 @@ public class KeyValueDocumentStore(
     // DocumentPersistence: every change rewrites the owning document
     // ==========================================================
 
-    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>): Unit = markPageModified(page)
+    override suspend fun saveStrokes(page: Page, strokes: List<StrokeElement>): Unit = markPageModified(page)
 
-    override suspend fun saveText(page: DrawPage, text: DrawText): Unit = markPageModified(page)
+    override suspend fun saveText(page: Page, text: TextElement): Unit = markPageModified(page)
 
-    override suspend fun saveImage(page: DrawPage, image: DrawImage): Unit = markPageModified(page)
+    override suspend fun saveImage(page: Page, image: ImageElement): Unit = markPageModified(page)
 
-    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf): Unit = markPageModified(page)
+    override suspend fun savePdf(page: Page, pdf: PdfElement): Unit = markPageModified(page)
 
-    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup): Unit = markPageModified(page)
+    override suspend fun saveTextMarkup(page: Page, markup: TextMarkupElement): Unit = markPageModified(page)
 
-    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement): Unit = markPageModified(page)
+    override suspend fun saveCustomElement(page: Page, element: CustomElement): Unit = markPageModified(page)
 
     @OptIn(ExperimentalEncodingApi::class)
-    override suspend fun saveResource(document: DrawDocument, resource: DrawResource) {
+    override suspend fun saveResource(document: Document, resource: DocumentResource) {
         syncLock(lock) {
             PlatformFiles.readBytes(resource.path)?.let { bytes ->
                 if (!storage.set(resourceKey(resource.path), Base64.encode(bytes))) {
-                    println("DrawView: the storage quota does not allow saving the resource ${resource.path}")
+                    println("Pageboard: the storage quota does not allow saving the resource ${resource.path}")
                 }
             }
         }
         markDocumentModified(document)
     }
 
-    override suspend fun savePage(document: DrawDocument, page: DrawPage): Unit = markDocumentModified(document)
+    override suspend fun savePage(document: Document, page: Page): Unit = markDocumentModified(document)
 
-    override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
+    override suspend fun appendOperation(document: Document, operation: Operation) {
         syncLock(lock) {
             val operations = log.operationsOf(document.id)
             if (operations.none { it.id == operation.id }) {
@@ -559,7 +559,7 @@ public class KeyValueDocumentStore(
         }
     }
 
-    override suspend fun updateDocumentDefaults(document: DrawDocument) {
+    override suspend fun updateDocumentDefaults(document: Document) {
         syncLock(lock) {
             updateSummaryLocked(document.id) {
                 it.copy(
@@ -573,7 +573,7 @@ public class KeyValueDocumentStore(
         publishSummaries()
     }
 
-    override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+    override suspend fun touchDocument(document: Document, timestamp: Long) {
         syncLock(lock) { updateSummaryLocked(document.id) { it.copy(modifiedAt = timestamp) } }
         markDocumentModified(document)
         publishSummaries()
@@ -676,7 +676,7 @@ public class KeyValueDocumentStore(
     // Internals
     // ==========================================================
 
-    private fun markPageModified(page: DrawPage) {
+    private fun markPageModified(page: Page) {
         val owner = syncLock(lock) {
             openDocuments.values.firstOrNull { doc -> doc.pages.any { it === page } }
         }
@@ -688,7 +688,7 @@ public class KeyValueDocumentStore(
         scheduleSave()
     }
 
-    private fun markDocumentModified(document: DrawDocument) {
+    private fun markDocumentModified(document: Document) {
         syncLock(lock) {
             // Documents of other stores (e.g. kept in memory) are not written
             if (index.documents.none { it.id == document.id }) return
@@ -776,14 +776,14 @@ public class KeyValueDocumentStore(
         storage.set(INDEX_KEY, json.encodeToString(StoredIndex.serializer(), index))
     }
 
-    private fun writeDocumentLocked(document: DrawDocument) {
+    private fun writeDocumentLocked(document: Document) {
         val stored = document.toStored()
         val pageCount = document.pages.size
         val hasPdf = document.pages.any { it.pdfs.isNotEmpty() }
         // What the library tells of the content (published with the next summaries)
         updateSummaryLocked(document.id) { it.copy(pageCount = pageCount, hasPdf = hasPdf) }
         val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))
-        if (!written) println("DrawView: the storage quota does not allow saving the document ${document.id}")
+        if (!written) println("Pageboard: the storage quota does not allow saving the document ${document.id}")
     }
 
     @OptIn(ExperimentalEncodingApi::class)
@@ -793,7 +793,7 @@ public class KeyValueDocumentStore(
         try {
             PlatformFiles.writeBytes(path, Base64.decode(encoded))
         } catch (e: Throwable) {
-            println("DrawView: cannot restore the resource $path: ${e.message}")
+            println("Pageboard: cannot restore the resource $path: ${e.message}")
         }
     }
 
@@ -804,7 +804,7 @@ public class KeyValueDocumentStore(
     private inline fun <reified T> decodeOrNull(value: String): T? = try {
         json.decodeFromString<T>(value)
     } catch (e: Throwable) {
-        println("DrawView: unreadable stored value (${e.message})")
+        println("Pageboard: unreadable stored value (${e.message})")
         null
     }
 

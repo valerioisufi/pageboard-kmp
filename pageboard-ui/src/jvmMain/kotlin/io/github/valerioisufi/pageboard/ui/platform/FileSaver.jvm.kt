@@ -48,9 +48,9 @@ private val DesktopFileReveal = FileReveal(
                     Desktop.getDesktop().browseFileDirectory(File(path))
                 else -> Desktop.getDesktop().open(File(path).parentFile)
             }
-        }.onFailure { println("DrawView: cannot show $path: ${it.message}") }
+        }.onFailure { println("Pageboard: cannot show $path: ${it.message}") }
     },
     open = { path ->
-        runCatching { Desktop.getDesktop().open(File(path)) }.onFailure { println("DrawView: cannot open $path: ${it.message}") }
+        runCatching { Desktop.getDesktop().open(File(path)) }.onFailure { println("Pageboard: cannot open $path: ${it.message}") }
     }
 )

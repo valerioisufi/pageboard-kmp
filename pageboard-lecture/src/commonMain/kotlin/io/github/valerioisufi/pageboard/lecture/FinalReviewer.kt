@@ -64,7 +64,7 @@ internal class FinalReviewer(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("DrawView: cannot read the handwriting: ${e.message}")
+            println("Pageboard: cannot read the handwriting: ${e.message}")
         }
     }
 }

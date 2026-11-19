@@ -72,7 +72,7 @@ internal object MediaCodecAudio : AudioCodec {
             }
             total
         } catch (e: Exception) {
-            println("DrawView: cannot decode $input: ${e.message}")
+            println("Pageboard: cannot decode $input: ${e.message}")
             -1
         } finally {
             try {

@@ -8,7 +8,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.pageboard.canvas.FrameStyle
 import io.github.valerioisufi.pageboard.canvas.SelectionFrame
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
@@ -16,8 +16,8 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
@@ -45,9 +45,9 @@ class TextEditingTest {
 
     /** Lines 0.5 mm per point high; a character [wide] mm per point wide, wrapped on the width. */
     private class FakeTextAdapter(private val wide: Float = 0.5f) : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
 
-        override fun measure(text: DrawText): TextBlockSize {
+        override fun measure(text: TextElement): TextBlockSize {
             val charWidth = text.fontSize * wide
             val lines = ceil(text.text.length * charWidth / text.width).coerceAtLeast(1f)
             return TextBlockSize(minOf(text.width, text.text.length * charWidth), lines * text.fontSize * 0.5f)
@@ -56,8 +56,8 @@ class TextEditingTest {
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(fontSize * 0.5f, fontSize * 0.4f)
     }
 
-    private fun controller(scope: CoroutineScope): DrawViewController {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+    private fun controller(scope: CoroutineScope): PageboardController {
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = FakeTextAdapter()
         return controller
@@ -67,13 +67,13 @@ class TextEditingTest {
 
     @Test
     fun theTextsAreAsHighAsTheirLinesWithoutAChange() = runTest(UnconfinedTestDispatcher()) {
-        val document = DrawDocument()
+        val document = Document()
         // At 20 points a line is 10 mm high: one box lower than its line, one higher
-        val low = DrawText().apply { text = "Code:\n```\nval a = 1\n```"; width = 400f; height = 3f; fontSize = 20f }
-        val high = DrawText().apply { text = "plain"; width = 400f; height = 30f; fontSize = 20f }
+        val low = TextElement().apply { text = "Code:\n```\nval a = 1\n```"; width = 400f; height = 3f; fontSize = 20f }
+        val high = TextElement().apply { text = "plain"; width = 400f; height = 30f; fontSize = 20f }
         document.pages[0].add(low)
         document.pages[0].add(high)
-        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        val controller = PageboardController(document = document, coroutineScope = backgroundScope)
         var changes = 0
         controller.session.addObserver(ChangeObserver { changes++ })
         controller.textBoxes.dispatcher = UnconfinedTestDispatcher(testScheduler)
@@ -90,7 +90,7 @@ class TextEditingTest {
     fun aChangedTextIsAsHighAsItsNewLines() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]
-        val text = DrawText().apply { text = "one line"; width = 100f; height = 10f; fontSize = 20f }
+        val text = TextElement().apply { text = "one line"; width = 100f; height = 10f; fontSize = 20f }
         page.add(text)
 
         // Three lines of 100 mm (10 mm a character), the height it carries left behind
@@ -118,7 +118,7 @@ class TextEditingTest {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
         val ending = "Above\n```\nval a = 1\n```"
-        editor.startEditing(DrawText().apply { x = 10f; y = 20f; width = 60f; height = 30f; text = ending }, 0)
+        editor.startEditing(TextElement().apply { x = 10f; y = 20f; width = 60f; height = 30f; text = ending }, 0)
         editor.reportLayoutHeight(30f)
         // Within the width, 5 mm below: a line after the block, the caret on it
         assertTrue(editor.lineBesideBlockAt(40f, 55f, reachMm = 8f))
@@ -145,7 +145,7 @@ class TextEditingTest {
     fun anOpenedTextPutsTheCaretWhereItIsTouched() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
-        val text = DrawText().apply { x = 10f; y = 20f; width = 40f; height = 10f; this.text = "Hello" }
+        val text = TextElement().apply { x = 10f; y = 20f; width = 40f; height = 10f; this.text = "Hello" }
 
         editor.startEditing(text, 0, caretAt = text.toLocal(25f, 24f).toCompose())
         assertEquals("Hello", editor.value.text)
@@ -155,7 +155,7 @@ class TextEditingTest {
 
     @Test
     fun aPointOfARotatedTextIsTakenBeforeItsRotation() {
-        val text = DrawText().apply { x = 0f; y = 0f; width = 40f; height = 10f; rotation = 90f }
+        val text = TextElement().apply { x = 0f; y = 0f; width = 40f; height = 10f; rotation = 90f }
         // Turned around its top-left corner (0, 0): its lines go down, their bottom on the left
         val corner = text.toLocal(0f, 0f)
         assertEquals(0f, corner.x, 1e-3f)
@@ -170,7 +170,7 @@ class TextEditingTest {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]
         // One line of 10 mm at 20 points, turned by a quarter around its corner (80, 50)
-        val text = DrawText().apply { this.text = "abc"; x = 80f; y = 50f; width = 60f; height = 10f; fontSize = 20f; rotation = 90f }
+        val text = TextElement().apply { this.text = "abc"; x = 80f; y = 50f; width = 60f; height = 10f; fontSize = 20f; rotation = 90f }
         page.add(text)
         val centerX = text.centerX
         val centerY = text.centerY
@@ -525,7 +525,7 @@ class TextEditingTest {
 
     @Test
     fun theBoxOfATextFollowingItsWidthIsOnTheSideOfItsAlignment() {
-        fun text(alignment: TextAlignment) = DrawText().apply {
+        fun text(alignment: TextAlignment) = TextElement().apply {
             x = 10f; y = 20f; width = 100f; height = 10f; autoWidth = true; naturalWidth = 29f; this.alignment = alignment
         }
         assertEquals(10f, text(TextAlignment.START).getRotatedBounds().left)

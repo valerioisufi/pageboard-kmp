@@ -44,7 +44,7 @@ import io.github.valerioisufi.pageboard.lecture.LectureStatus
 import io.github.valerioisufi.pageboard.lecture.formatLectureTime
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.components.MarkdownText
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 // The transcript, the outline and the course context of a lecture
@@ -166,7 +166,7 @@ private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
     var draft by remember(documentId) { mutableStateOf("") }
     PanelCard(outlined = true) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Icon(DrawViewIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+            Icon(PageboardIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
             Text(stringResource(Res.string.lecture_context_title), style = MaterialTheme.typography.titleSmall)
         }
         Spacer(Modifier.height(10.dp))
@@ -203,13 +203,13 @@ private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
                     draft = context?.text.orEmpty()
                     editing = true
                 }) {
-                    Icon(DrawViewIcons.Pencil, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.Pencil, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.lecture_context_edit))
                 }
                 if (assistant.canWriteContext(documentId)) {
                     TextButton(onClick = { assistant.writeContext(documentId) }) {
-                        Icon(DrawViewIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(PageboardIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(Res.string.lecture_context_write))
                     }

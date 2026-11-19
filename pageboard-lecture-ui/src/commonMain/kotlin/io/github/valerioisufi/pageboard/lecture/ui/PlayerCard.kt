@@ -28,7 +28,7 @@ import io.github.valerioisufi.pageboard.lecture.formatLectureTime
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.DesignSlider
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -78,15 +78,15 @@ internal fun PlayerCard(lecture: Lecture) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DesignIconButton(DrawViewIcons.RotateCcw, stringResource(Res.string.lecture_player_back), onClick = { player.skip(-SKIP_MS) }, tint = MaterialTheme.colorScheme.onSurface)
+                DesignIconButton(PageboardIcons.RotateCcw, stringResource(Res.string.lecture_player_back), onClick = { player.skip(-SKIP_MS) }, tint = MaterialTheme.colorScheme.onSurface)
                 FilledIconButton(onClick = { player.toggle() }, modifier = Modifier.size(52.dp)) {
                     Icon(
-                        if (player.isPlaying) DrawViewIcons.Pause else DrawViewIcons.Play,
+                        if (player.isPlaying) PageboardIcons.Pause else PageboardIcons.Play,
                         contentDescription = stringResource(if (player.isPlaying) Res.string.lecture_player_pause else Res.string.lecture_player_play),
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                DesignIconButton(DrawViewIcons.RotateCw, stringResource(Res.string.lecture_player_forward), onClick = { player.skip(SKIP_MS) }, tint = MaterialTheme.colorScheme.onSurface)
+                DesignIconButton(PageboardIcons.RotateCw, stringResource(Res.string.lecture_player_forward), onClick = { player.skip(SKIP_MS) }, tint = MaterialTheme.colorScheme.onSurface)
             }
         }
     }

@@ -1,13 +1,13 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.TextAlignment
@@ -59,20 +59,20 @@ internal object ElementItems {
     fun parseAlignment(text: String): TextAlignment? = TextAlignment.entries.firstOrNull { it.name.lowercase() == text }
 
     /** The elements [refs] shown on [page], or `null` when one is not there. */
-    fun elementsOf(page: DrawPage, refs: List<ElementRef>): List<DrawElement>? {
+    fun elementsOf(page: Page, refs: List<ElementRef>): List<PageElement>? {
         val shown = page.elements().filter { it.removed == null }.associateBy { it.id }
         return refs.map { shown[it.id] ?: return null }
     }
 
     /** Whether one of [refs] changed since it was read, or is gone. */
-    fun isStale(page: DrawPage?, refs: List<ElementRef>): Boolean {
+    fun isStale(page: Page?, refs: List<ElementRef>): Boolean {
         page ?: return true
         val elements = elementsOf(page, refs) ?: return true
         return elements.zip(refs).any { (element, ref) -> element.elementBase() != ref.base }
     }
 
     /** The stroke [id] shown in [document] and its page, or `null`. */
-    fun findStroke(document: DrawDocument, id: String): Pair<DrawPage, DrawStroke>? {
+    fun findStroke(document: Document, id: String): Pair<Page, StrokeElement>? {
         for (page in document.pages) {
             val stroke = page.strokes.firstOrNull { it.id == id && it.removed == null }
             if (stroke != null) return page to stroke
@@ -84,7 +84,7 @@ internal object ElementItems {
      * The moves of [item] as a matrix: scaled around the corner of what it moves, turned around the
      * center of what is scaled, then moved.
      */
-    fun matrixOf(page: DrawPage, elements: List<DrawElement>, item: ProposalItem.PlaceElements): Matrix2D? {
+    fun matrixOf(page: Page, elements: List<PageElement>, item: ProposalItem.PlaceElements): Matrix2D? {
         val box = elements.mapNotNull { page.boundsOf(it) }.reduceOrNull { all, next -> all.union(next) } ?: return null
         val matrix = Matrix2D().postScale(item.scale, item.scale, box.left, box.top)
         if (item.rotation != 0f) matrix.postRotate(item.rotation, box.left + box.width * item.scale / 2f, box.top + box.height * item.scale / 2f)
@@ -92,7 +92,7 @@ internal object ElementItems {
     }
 
     /** Where the elements of [item] would be: the box holding them all, or `null`. */
-    fun placedBox(page: DrawPage, elements: List<DrawElement>, item: ProposalItem.PlaceElements): Rect? {
+    fun placedBox(page: Page, elements: List<PageElement>, item: ProposalItem.PlaceElements): Rect? {
         val matrix = matrixOf(page, elements, item) ?: return null
         return elements.mapNotNull { page.boundsOf(it) }.map { matrix.mapRect(it) }.reduceOrNull { all, next -> all.union(next) }
     }
@@ -101,19 +101,19 @@ internal object ElementItems {
      * The placements of [elements] moved by [matrix], as the editor places a selection it moves;
      * [rotation]: the degrees [matrix] turns them by, added to the rotation of each box.
      */
-    fun placements(elements: List<DrawElement>, matrix: Matrix2D, rotation: Float = 0f): List<Placement> {
+    fun placements(elements: List<PageElement>, matrix: Matrix2D, rotation: Float = 0f): List<Placement> {
         val scale = matrix.scaleFactor
         return elements.mapNotNull { element ->
             when (element) {
-                is DrawStroke -> StrokePlacement(element.id, element.transform.then(matrix))
-                is DrawText -> {
+                is StrokeElement -> StrokePlacement(element.id, element.transform.then(matrix))
+                is TextElement -> {
                     val c = matrix.mapPoint(element.centerX, element.centerY)
                     val turned = normalized(element.rotation + rotation)
-                    val corner = DrawText.cornerFor(c.x, c.y, element.boxWidth * scale, element.height * scale, turned, element.boxLeft * scale)
+                    val corner = TextElement.cornerFor(c.x, c.y, element.boxWidth * scale, element.height * scale, turned, element.boxLeft * scale)
                     TextPlacement(element.id, corner.x, corner.y, element.width * scale, turned, element.fontSize * scale, element.autoWidth)
                 }
-                is DrawImage -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
-                is DrawCustomElement -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
+                is ImageElement -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
+                is CustomElement -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
                 else -> null
             }
         }
@@ -136,7 +136,7 @@ internal object ElementItems {
     }
 
     /** The changes of an item on elements, applied to [document] as it is now (not stale). */
-    fun changesOf(document: DrawDocument, item: ProposalItem): List<DocumentChange> = when (item) {
+    fun changesOf(document: Document, item: ProposalItem): List<DocumentChange> = when (item) {
         is ProposalItem.RemoveElements -> listOf(RemoveChange(item.page, item.elements.map { it.id }))
         is ProposalItem.PlaceElements -> {
             val page = document.pageById(item.page)!!
@@ -185,7 +185,7 @@ internal object ElementItems {
             val pageId = item.page ?: document.pages.last().id
             val resourceId = newElementId()
             listOf(
-                AddResource.of(resourceId, DrawResource.ResourceType.IMAGE, item.path, item.hash),
+                AddResource.of(resourceId, DocumentResource.ResourceType.IMAGE, item.path, item.hash),
                 AddElements(pageId, listOf(ImageData(newElementId(), resourceId, box.left, box.top, box.width, box.height)))
             )
         }
@@ -193,7 +193,7 @@ internal object ElementItems {
     }
 
     /** [text] with the style of [item]. */
-    fun restyled(text: DrawText, item: ProposalItem.RestyleText): TextData {
+    fun restyled(text: TextElement, item: ProposalItem.RestyleText): TextData {
         val data = text.toData()
         return data.copy(
             color = item.color?.let { parseColor(it) } ?: data.color,
@@ -203,7 +203,7 @@ internal object ElementItems {
     }
 
     /** [text] as [item] leaves it: a width given is the one its lines wrap on, whatever its text. */
-    fun updated(text: DrawText, item: ProposalItem.UpdateText): TextData {
+    fun updated(text: TextElement, item: ProposalItem.UpdateText): TextData {
         val data = text.toData()
         return data.copy(
             text = item.markdown ?: data.text,

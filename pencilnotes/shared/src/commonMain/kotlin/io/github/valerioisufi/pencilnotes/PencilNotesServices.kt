@@ -2,7 +2,7 @@ package io.github.valerioisufi.pencilnotes
 
 import androidx.compose.runtime.snapshotFlow
 import io.github.valerioisufi.pageboard.canvas.controller.PageTopics
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.ImageCache
 import io.github.valerioisufi.pageboard.export.ui.DocumentExportUi
 import io.github.valerioisufi.pageboard.latex.LatexEngine
@@ -100,7 +100,7 @@ object PencilNotesServices {
      * window, and a text placed next to the pages it is about (the review of a lecture, a text
      * imported) by the search.
      */
-    val engines: DrawViewEngines = DrawViewEngines(
+    val engines: PageboardEngines = PageboardEngines(
         pdfTiles = PdfiumEngine::createTileAdapter,
         formulas = LatexEngine(),
         topics = PageTopics { documentId, text -> search.engine.pagesAbout(documentId, text) },

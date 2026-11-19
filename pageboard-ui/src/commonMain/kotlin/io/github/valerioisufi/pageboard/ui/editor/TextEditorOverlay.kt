@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.canvas.SelectionFrame
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
@@ -47,14 +47,14 @@ import kotlin.math.roundToInt
  * outside saves the text).
  */
 @Composable
-internal fun TextEditorOverlay(controller: DrawViewController, commands: EditorCommands) {
+internal fun TextEditorOverlay(controller: PageboardController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     if (!editor.isEditing || !controller.isDrawingMode) return
     TextEditorSession(controller, commands)
 }
 
 @Composable
-private fun TextEditorSession(controller: DrawViewController, commands: EditorCommands) {
+private fun TextEditorSession(controller: PageboardController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     val density = LocalDensity.current
     val imeBottom = WindowInsets.ime.getBottom(density)
@@ -137,7 +137,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
  * Places the element by the frame of the text being written: centered on it, above it, or below
  * it when there is no room above; always inside the canvas.
  */
-private fun Modifier.besideEditedText(controller: DrawViewController): Modifier = layout { measurable, constraints ->
+private fun Modifier.besideEditedText(controller: PageboardController): Modifier = layout { measurable, constraints ->
     // At most the width of the canvas less a gap on each side
     val narrowest = if (constraints.hasBoundedWidth) (constraints.maxWidth - 2 * BAR_GAP.roundToPx()).coerceAtLeast(0) else constraints.maxWidth
     val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0, maxWidth = narrowest))

@@ -4,7 +4,7 @@ import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
 import io.github.valerioisufi.pageboard.session.EditorSessions
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 
 /**
  * The notes of PencilNotes in this process (`docs/plans/instances.md`): the database of the platform,
@@ -14,7 +14,7 @@ import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
  */
 object PencilNotesData {
     /** The store of the notes, their strokes modeled as the editor draws them. */
-    val store: RoomDocumentStore by lazy { RoomDocumentStore(createDrawDatabase(), InkStrokeModeller) }
+    val store: RoomDocumentStore by lazy { RoomDocumentStore(createPageboardDatabase(), InkStrokeModeller) }
 
     /**
      * The documents of [store] being changed (see [OpenDocuments]), on the main thread: shared by

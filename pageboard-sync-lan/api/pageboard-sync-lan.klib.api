@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-sync-lan>
+// Library unique name: <pageboard-kmp:pageboard-sync-lan>
 abstract interface io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery|null[0]
     abstract val services // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services|{}services[0]
         abstract fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/LanService>> // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services.<get-services>|<get-services>(){}[0]

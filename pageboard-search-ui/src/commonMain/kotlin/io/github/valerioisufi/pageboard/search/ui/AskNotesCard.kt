@@ -51,7 +51,7 @@ import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_ask
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_indexing_status
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_searching
 import io.github.valerioisufi.pageboard.ui.components.MarkdownText
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 
@@ -128,7 +128,7 @@ public fun AskNotesCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = DrawViewIcons.Sparkles,
+                    imageVector = PageboardIcons.Sparkles,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
@@ -165,7 +165,7 @@ public fun AskNotesCard(
                                 )
                             ) {
                                 Icon(
-                                    imageVector = DrawViewIcons.Globe,
+                                    imageVector = PageboardIcons.Globe,
                                     contentDescription = null,
                                     modifier = Modifier.size(14.dp).padding(end = 4.dp)
                                 )
@@ -201,7 +201,7 @@ public fun AskNotesCard(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = DrawViewIcons.Info,
+                        imageVector = PageboardIcons.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)

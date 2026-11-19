@@ -8,12 +8,12 @@ import io.github.valerioisufi.pageboard.canvas.controller.PageSelection
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementRequest
 import io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot
 import io.github.valerioisufi.pageboard.canvas.controller.TextImport
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
@@ -29,7 +29,7 @@ import io.github.valerioisufi.pageboard.model.placement.PlacementPolicy
 /**
  * What the editor of one document offers to the code added to it (the extensions of the UI): the
  * document and its changes, the pages and the view, the edits, the placement, the rendering and
- * the presence of the others. Given by the controller (`DrawViewController.ports`); the editor
+ * the presence of the others. Given by the controller (`PageboardController.ports`); the editor
  * implements the ports, so a member added to them breaks no one.
  */
 public class EditorPorts(
@@ -44,7 +44,7 @@ public class EditorPorts(
 /** The document of an editor and its changes. */
 public interface EditorDocument {
     /** The document shown. */
-    public val document: DrawDocument
+    public val document: Document
 
     /** Whether the document cannot be changed here (a reader of a shared note). */
     public val isReadOnly: Boolean
@@ -92,10 +92,10 @@ public interface EditorPages {
 /** What the user does in the editor, done by code. */
 public interface EditorEdits {
     /** Adds an element of [type] holding [value] in [box] (millimeters) of the page [pageIndex], selected when [select]. */
-    public fun <T : Any> addCustomElement(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement?
+    public fun <T : Any> addCustomElement(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): CustomElement?
 
     /** Selects [text], on the page [pageIndex]. */
-    public fun selectText(pageIndex: Int, text: DrawText)
+    public fun selectText(pageIndex: Int, text: TextElement)
 
     /** Clears the selection of elements. */
     public fun clearSelection()
@@ -122,7 +122,7 @@ public interface EditorPlacement {
     public fun spotsFor(pageIndex: Int, block: PlacementBlock, policy: PlacementPolicy): List<PlacementSpot>
 
     /** The pages of [spots], the new ones added (from [template]); `null` for a page that cannot be added. */
-    public fun pagesFor(spots: List<PlacementSpot>, template: (DrawPage) -> DrawPage? = { it }): List<DrawPage?>
+    public fun pagesFor(spots: List<PlacementSpot>, template: (Page) -> Page? = { it }): List<Page?>
 
     /** What is on the page [pageIndex], as the placement sees it, without the elements [excluded]. */
     public fun occupancyOf(pageIndex: Int, excluded: Set<String> = emptySet()): PageOccupancy
@@ -144,7 +144,7 @@ public interface EditorPlacement {
         parts: List<Pair<Int?, String>>,
         color: Int,
         label: String,
-        measure: ((DrawText) -> TextBlockSize?)? = null,
+        measure: ((TextElement) -> TextBlockSize?)? = null,
         onInserted: () -> Unit = {}
     ): Boolean
 
@@ -152,22 +152,22 @@ public interface EditorPlacement {
     public suspend fun partsByTopic(markdown: String, fallbackPage: Int?): List<Pair<Int?, String>>
 
     /** The size (points) of a text placed on [page]. */
-    public fun sizeOfPage(page: DrawPage): Float
+    public fun sizeOfPage(page: Page): Float
 }
 
 /** How an editor draws: its engines, its measures, its pictures of pages. */
 public interface EditorRendering {
     /** The engines of the editor (PDF, formulas, code, topics). */
-    public val engines: DrawViewEngines
+    public val engines: PageboardEngines
 
     /** The size of [text] laid out, `null` before the text engine is given. */
-    public fun measureText(text: DrawText): TextBlockSize?
+    public fun measureText(text: TextElement): TextBlockSize?
 
     /** [content] of a page of [document] drawn [widthPx] wide (on any thread). */
-    public fun renderThumbnail(document: DrawDocument, content: PageContentSnapshot, widthPx: Int): ImageBitmap
+    public fun renderThumbnail(document: Document, content: PageContentSnapshot, widthPx: Int): ImageBitmap
 
     /** [content] of a page of [document] drawn on [canvas] by [mmToCanvas], within [clipBounds]. */
-    public fun renderPageContent(canvas: Canvas, document: DrawDocument, content: PageContentSnapshot, mmToCanvas: Matrix2D, clipBounds: ComposeRect)
+    public fun renderPageContent(canvas: Canvas, document: Document, content: PageContentSnapshot, mmToCanvas: Matrix2D, clipBounds: ComposeRect)
 
     /** The text of the page [pdfPageIndex] of the PDF file [resourcePath], when the PDF engine reads it. */
     public fun pdfPageText(resourcePath: String, pdfPageIndex: Int): String?

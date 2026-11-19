@@ -35,7 +35,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.components.fadingHorizontalScroll
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.pageboard.canvas.tool.LassoMode
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
@@ -63,7 +63,7 @@ import io.github.valerioisufi.pageboard.ui.components.TextMarkupSample
 import io.github.valerioisufi.pageboard.ui.components.textMarkupKindLabel
 import io.github.valerioisufi.pageboard.ui.editor.TextAlignmentButtons
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import io.github.valerioisufi.pageboard.ui.util.formatDecimal
 import org.jetbrains.compose.resources.stringResource
@@ -75,7 +75,7 @@ import org.jetbrains.compose.resources.stringResource
  * one, "+" to add one), the inks of [swatches] and the color wheel; they change the preset chosen.
  */
 @Composable
-internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool, title: String, swatches: List<Color>, scale: HybridScale) {
+internal fun ColumnScope.InkSettings(controller: PageboardController, tool: Tool, title: String, swatches: List<Color>, scale: HybridScale) {
     val toolManager = controller.toolManager
     val presets = toolManager.presetsOf(tool)
     val index = toolManager.selectedPresetIndex(tool)
@@ -100,7 +100,7 @@ internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool,
                 SettingLabel(stringResource(Res.string.tool_settings_presets), modifier = Modifier.weight(1f))
                 if (presets.size > 1) {
                     DesignIconButton(
-                        icon = DrawViewIcons.Trash,
+                        icon = PageboardIcons.Trash,
                         label = stringResource(Res.string.tool_settings_delete_preset),
                         onClick = { toolManager.removePreset(tool, index) },
                         iconSize = 18.dp
@@ -162,7 +162,7 @@ internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool,
 
 /** The settings of the eraser: its size (in millimeters) and what it erases. */
 @Composable
-internal fun ColumnScope.EraserSettings(controller: DrawViewController) {
+internal fun ColumnScope.EraserSettings(controller: PageboardController) {
     val toolManager = controller.toolManager
     val index = toolManager.selectedPresetIndex(Tool.ERASER)
     val preset = toolManager.activePreset(Tool.ERASER)
@@ -184,18 +184,18 @@ internal fun ColumnScope.EraserSettings(controller: DrawViewController) {
 
 /** The settings of the lasso: what it selects. */
 @Composable
-internal fun ColumnScope.LassoSettings(controller: DrawViewController) {
+internal fun ColumnScope.LassoSettings(controller: PageboardController) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(vertical = 8.dp)) {
         PopoverTitle(stringResource(Res.string.draw_toolbar_title_lasso_mode))
         OptionCard(
-            icon = DrawViewIcons.Lasso,
+            icon = PageboardIcons.Lasso,
             title = stringResource(Res.string.draw_toolbar_option_select_all),
             description = stringResource(Res.string.tool_settings_lasso_all_hint),
             selected = controller.lassoMode == LassoMode.ALL,
             onClick = { controller.lassoMode = LassoMode.ALL }
         )
         OptionCard(
-            icon = DrawViewIcons.Image,
+            icon = PageboardIcons.Image,
             title = stringResource(Res.string.draw_toolbar_option_images_only),
             description = stringResource(Res.string.tool_settings_lasso_images_hint),
             selected = controller.lassoMode == LassoMode.IMAGES_ONLY,
@@ -209,7 +209,7 @@ internal fun ColumnScope.LassoSettings(controller: DrawViewController) {
  * controls of the formatting bar.
  */
 @Composable
-internal fun ColumnScope.TextToolSettings(controller: DrawViewController) {
+internal fun ColumnScope.TextToolSettings(controller: PageboardController) {
     val defaults = remember(controller) { TextDefaultsTarget(controller) }
     var wheelOpen by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
@@ -243,7 +243,7 @@ internal fun ColumnScope.TextToolSettings(controller: DrawViewController) {
 }
 
 /** The style of a new text, as a target of the formatting controls. */
-private class TextDefaultsTarget(private val controller: DrawViewController) : TextFormatTarget {
+private class TextDefaultsTarget(private val controller: PageboardController) : TextFormatTarget {
     override val fontSize: Float get() = controller.textDefaults.fontSize
     override val color: Int get() = controller.textDefaults.color
     override val alignment: TextAlignment get() = controller.textDefaults.alignment
@@ -257,7 +257,7 @@ private class TextDefaultsTarget(private val controller: DrawViewController) : T
  * add one), the kind and the color of the one chosen.
  */
 @Composable
-internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
+internal fun ColumnScope.MarkupSettings(controller: PageboardController) {
     val toolManager = controller.toolManager
     val tool = Tool.TEXT_MARKUP
     val presets = toolManager.presetsOf(tool)
@@ -270,7 +270,7 @@ internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
         PopoverTitle(stringResource(Res.string.draw_toolbar_action_text_markup)) {
             if (presets.size > 1) {
                 DesignIconButton(
-                    icon = DrawViewIcons.Trash,
+                    icon = PageboardIcons.Trash,
                     label = stringResource(Res.string.tool_settings_delete_preset),
                     onClick = { toolManager.removePreset(tool, index) },
                     iconSize = 18.dp
@@ -292,7 +292,7 @@ internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
                     .clickable(role = Role.Button) { controller.selectTool(tool, toolManager.addPreset(tool, active.copy())) }
                     .semantics { contentDescription = add }
             ) {
-                Icon(DrawViewIcons.Plus, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.Plus, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
             }
         }
         Surface(
@@ -325,7 +325,7 @@ internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
                             color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
-                        if (selected) Icon(DrawViewIcons.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
+                        if (selected) Icon(PageboardIcons.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
                     }
                 }
                 ColorSwatches(

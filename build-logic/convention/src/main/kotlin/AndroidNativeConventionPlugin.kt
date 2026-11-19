@@ -6,7 +6,7 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
 /**
- * An Android library holding the shared library of one native engine of DrawView, built by the
+ * An Android library holding the shared library of one native engine of Pageboard, built by the
  * NDK from `native/CMakeLists.txt` (the Kotlin Multiplatform Android library plugin cannot build
  * native code): the module sets the CMake target it builds and the arguments it needs.
  *
@@ -51,7 +51,7 @@ class AndroidNativeConventionPlugin : Plugin<Project> {
             }
         }
 
-        // The licenses of the engine (and of DrawView) in the library: its Java resources
+        // The licenses of the engine (and of Pageboard) in the library: its Java resources
         val licenses = licensesTask()
         extensions.configure<LibraryAndroidComponentsExtension> {
             onVariants { variant ->

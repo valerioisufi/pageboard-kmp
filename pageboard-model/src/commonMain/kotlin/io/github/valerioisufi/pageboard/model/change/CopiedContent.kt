@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.change
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 
@@ -64,7 +64,7 @@ private val ElementData.namedResource: String?
     }
 
 /** The resources of [this] document named by [elements], with their files. */
-private fun DrawDocument.resourcesOf(elements: List<ElementData>): List<CopiedResource> =
+private fun Document.resourcesOf(elements: List<ElementData>): List<CopiedResource> =
     elements.mapNotNull { it.namedResource }.distinct().mapNotNull { id ->
         findResource(id)?.let { CopiedResource(ResourceData(it.id, it.type, it.hash), it.path) }
     }
@@ -73,19 +73,19 @@ private fun DrawDocument.resourcesOf(elements: List<ElementData>): List<CopiedRe
  * Copies [elements] of [page] of this document, in their stacking order, filling [bounds] (page
  * millimeters) in a frame of rotation [baseRotation].
  */
-public fun DrawDocument.copyElements(page: DrawPage, elements: List<DrawElement>, bounds: Rect, baseRotation: Float = 0f): CopiedElements {
-    val values = elements.sortedWith(DrawPage.stackOrder).map { it.toData() }
+public fun Document.copyElements(page: Page, elements: List<PageElement>, bounds: Rect, baseRotation: Float = 0f): CopiedElements {
+    val values = elements.sortedWith(Page.stackOrder).map { it.toData() }
     return CopiedElements(id, page.id, values, bounds, baseRotation, resourcesOf(values)).also { it.strokeMeshes = meshesOf(elements) }
 }
 
-private fun meshesOf(elements: List<DrawElement>): Map<String, StrokeMesh> =
-    elements.filterIsInstance<DrawStroke>().associate { it.id to it.baseMesh }
+private fun meshesOf(elements: List<PageElement>): Map<String, StrokeMesh> =
+    elements.filterIsInstance<StrokeElement>().associate { it.id to it.baseMesh }
 
 /**
  * Copies [pages] of this document with all their content, each with the background it shows
  * (made its own when it follows the document, see `docs/plans/cross-document-paste.md`).
  */
-public fun DrawDocument.copyPages(pages: List<DrawPage>): CopiedPages {
+public fun Document.copyPages(pages: List<Page>): CopiedPages {
     val values = pages.map { page ->
         // The stack in its order, then the PDF pages and their marks (outside of the stack)
         val stack = page.stack

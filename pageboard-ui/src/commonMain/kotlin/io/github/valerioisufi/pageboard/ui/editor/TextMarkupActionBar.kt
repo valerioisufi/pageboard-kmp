@@ -24,11 +24,11 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.ui.components.TextMarkupPresetButton
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -38,7 +38,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 internal fun TextMarkupActionBar(
-    controller: DrawViewController,
+    controller: PageboardController,
     modifier: Modifier = Modifier
 ) {
     val manager = controller.textMarkupManager
@@ -68,7 +68,7 @@ internal fun TextMarkupActionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(DrawViewIcons.Copy, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.Copy, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Text(copy, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
             }
             BarDivider()
@@ -89,7 +89,7 @@ internal fun TextMarkupActionBar(
             }
             if (selectedMarkup != null) {
                 BarDivider()
-                BarAction(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), { manager.deleteSelectedMarkup() }, tint = MaterialTheme.colorScheme.error)
+                BarAction(PageboardIcons.Trash, stringResource(Res.string.common_action_delete), { manager.deleteSelectedMarkup() }, tint = MaterialTheme.colorScheme.error)
             }
         }
     }

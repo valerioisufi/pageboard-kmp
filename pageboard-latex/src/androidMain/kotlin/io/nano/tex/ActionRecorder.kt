@@ -40,8 +40,8 @@ internal class ActionRecorder {
             ACT_SCALE -> if (a != null && a.size >= 2) FormulaOp.Scale(a[0], a[1]) else null
             ACT_ROTATE -> if (a != null && a.size >= 3) FormulaOp.Rotate(a[0], a[1], a[2]) else null
             ACT_RESET -> FormulaOp.Reset
-            ACT_DRAW_CHAR -> if (a != null && a.size >= 3) FormulaOp.DrawText(a[0].toInt().toChar().toString(), a[1], a[2]) else null
-            ACT_DRAW_TEXT -> if (a != null && a.size >= 2) FormulaOp.DrawText(act.arg as? String ?: "", a[0], a[1]) else null
+            ACT_DRAW_CHAR -> if (a != null && a.size >= 3) FormulaOp.TextElement(a[0].toInt().toChar().toString(), a[1], a[2]) else null
+            ACT_DRAW_TEXT -> if (a != null && a.size >= 2) FormulaOp.TextElement(act.arg as? String ?: "", a[0], a[1]) else null
             ACT_DRAW_LINE -> if (a != null && a.size >= 4) FormulaOp.DrawLine(a[0], a[1], a[2], a[3]) else null
             ACT_DRAW_RECT -> if (a != null && a.size >= 4) FormulaOp.DrawRect(a[0], a[1], a[2], a[3], fill = false) else null
             ACT_FILL_RECT -> if (a != null && a.size >= 4) FormulaOp.DrawRect(a[0], a[1], a[2], a[3], fill = true) else null

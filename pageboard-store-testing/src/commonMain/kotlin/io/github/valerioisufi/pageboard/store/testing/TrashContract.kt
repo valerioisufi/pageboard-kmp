@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.first
 
 /**
  * The trash every [DocumentStore] must keep (see `DocumentCatalog.trash`): run by the tests of each
- * store, of DrawView or of an application, on an empty store.
+ * store, of Pageboard or of an application, on an empty store.
  */
 public suspend fun checkTrash(store: DocumentStore) {
     suspend fun documentIds() = store.documents.first().map { it.id }.toSet()

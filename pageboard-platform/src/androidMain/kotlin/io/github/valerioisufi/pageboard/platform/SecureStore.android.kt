@@ -15,7 +15,7 @@ public actual object SecureStore {
     private const val ALIAS = "pageboard-secure-store"
     private const val PREFERENCES = "pageboard_secure_store"
 
-    private val preferences get() = DrawViewAndroid.context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+    private val preferences get() = PageboardAndroid.context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
     public actual fun read(name: String): String? = try {
         preferences.getString(name, null)?.let { stored ->

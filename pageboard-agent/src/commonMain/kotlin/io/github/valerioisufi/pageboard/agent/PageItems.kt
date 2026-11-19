@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.TrashRetention
 import io.github.valerioisufi.pageboard.model.change.AddPage
@@ -26,7 +26,7 @@ internal object PageItems {
     val BACKGROUNDS: Set<String> = setOf("plain", "ruled", "grid", "dotted", "document")
 
     /** Whether [item] would not be applied to [document] as it is now. */
-    fun isStale(document: DrawDocument, item: ProposalItem): Boolean = when (item) {
+    fun isStale(document: Document, item: ProposalItem): Boolean = when (item) {
         is ProposalItem.RemovePage -> document.pageById(item.page)?.pageBase() != item.base
         is ProposalItem.MovePage -> document.pageById(item.page) == null || (item.after != null && document.pageById(item.after) == null)
         is ProposalItem.DuplicatePage -> document.pageById(item.page) == null || (item.after != null && document.pageById(item.after) == null)
@@ -36,11 +36,11 @@ internal object PageItems {
     }
 
     /** The page [id] of the trash of the pages of [document], still kept there, or `null`. */
-    fun restorable(document: DrawDocument, id: String, now: Long = currentTimeMillis()): DrawPage? =
+    fun restorable(document: Document, id: String, now: Long = currentTimeMillis()): Page? =
         document.removedPages[id]?.takeIf { page -> page.removed.let { it != null && it.time >= TrashRetention.expiredBefore(now) } }
 
     /** The changes of [item], applied to [document] as it is now (not stale). */
-    fun changesOf(document: DrawDocument, item: ProposalItem): List<DocumentChange> = when (item) {
+    fun changesOf(document: Document, item: ProposalItem): List<DocumentChange> = when (item) {
         is ProposalItem.RemovePage -> listOf(RemovePageChange(item.page))
         is ProposalItem.MovePage -> {
             val others = document.pages.map { it.id }.filter { it != item.page }
@@ -70,7 +70,7 @@ internal object PageItems {
     }
 
     /** The background [item] gives [page]: `null` for the one of the document. */
-    private fun backgroundOf(page: DrawPage, item: ProposalItem.SetPageFormat): PageBackground? {
+    private fun backgroundOf(page: Page, item: ProposalItem.SetPageFormat): PageBackground? {
         val current = if (page.hasCustomBackground) page.background else null
         if (item.background == null && item.spacingMm == null && item.backgroundColor == null) return current
         if (item.background == "document") return null

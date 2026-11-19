@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">DrawView</string>
+    <string name="app_name" translatable="false">Pageboard</string>
     <string name="common_state_loading">Loading…</string>
     <string name="common_label_not_available">N/A</string>
     <string name="document_info_action_expand">Expand info</string>

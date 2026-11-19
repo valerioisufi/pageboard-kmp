@@ -1,6 +1,6 @@
 # Third-party notices of the iroh bridge
 
-The Rust crates inside the iroh bridge of DrawView (`libiroh_bridge`, built from
+The Rust crates inside the iroh bridge of Pageboard (`libiroh_bridge`, built from
 `native/iroh-bridge`), with their licenses. Written by cargo-about from `Cargo.lock`:
 
     cargo about generate about.hbs -o THIRD_PARTY_NOTICES.md

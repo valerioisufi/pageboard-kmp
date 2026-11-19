@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toPixelMap
 import io.github.valerioisufi.pageboard.canvas.render.ElementRenderer
 import io.github.valerioisufi.pageboard.canvas.render.ElementRenderers
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.encode
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -50,7 +50,7 @@ class ElementRenderersTest {
 
     private val renderers = ElementRenderers(listOf(FillRenderer))
 
-    private fun element(type: String, payload: ByteArray) = DrawCustomElement(type).apply {
+    private fun element(type: String, payload: ByteArray) = CustomElement(type).apply {
         this.payload = payload
         x = 10f
         y = 10f
@@ -59,7 +59,7 @@ class ElementRenderersTest {
     }
 
     /** [element] drawn on a 40 mm square, a pixel per millimeter. */
-    private fun draw(element: DrawCustomElement): ImageBitmap =
+    private fun draw(element: CustomElement): ImageBitmap =
         ImageBitmap(40, 40).also { renderers.draw(Canvas(it), element, Matrix2D()) }
 
     @Test

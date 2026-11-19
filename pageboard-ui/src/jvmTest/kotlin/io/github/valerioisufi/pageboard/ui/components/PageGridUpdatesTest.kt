@@ -5,13 +5,13 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.change.DocumentChange
 import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.change.RemovePage
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +25,12 @@ import kotlinx.coroutines.Dispatchers
 class PageGridUpdatesTest {
 
     /** A document of four pages, shown in the grid. */
-    private fun ComposeUiTest.grid(): DrawViewController {
-        val document = DrawDocument(title = "Notes").apply { repeat(3) { addPage() } }
-        val controller = DrawViewController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+    private fun ComposeUiTest.grid(): PageboardController {
+        val document = Document(title = "Notes").apply { repeat(3) { addPage() } }
+        val controller = PageboardController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         controller.isPageGridVisible = true
         setContent {
-            DrawViewTheme(dynamicColor = false) {
+            PageboardTheme(dynamicColor = false) {
                 PageGridOverlay(controller)
             }
         }
@@ -42,7 +42,7 @@ class PageGridUpdatesTest {
         (1..10).filter { onAllNodesWithContentDescription("Page $it").fetchSemanticsNodes().isNotEmpty() }
 
     /** The operation of another device making [change] on the document of [controller]. */
-    private fun otherDevice(controller: DrawViewController, change: DocumentChange) =
+    private fun otherDevice(controller: PageboardController, change: DocumentChange) =
         Operation(OperationId("other", 1), controller.session.clock.next().copy(replica = "other"), change)
 
     @Test

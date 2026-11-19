@@ -36,7 +36,7 @@ import platform.Security.kSecMatchLimitOne
 import platform.Security.kSecReturnData
 import platform.Security.kSecValueData
 
-/** The secrets in the Keychain (generic passwords of the service of DrawView, on this device only). */
+/** The secrets in the Keychain (generic passwords of the service of Pageboard, on this device only). */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 public actual object SecureStore {
     private const val SERVICE = "io.github.valerioisufi.pageboard"

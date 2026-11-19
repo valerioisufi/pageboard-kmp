@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.ui.extension
 
 import io.github.valerioisufi.pageboard.canvas.controller.CollaboratorPresence
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.port.EditorDocument
 import io.github.valerioisufi.pageboard.canvas.port.EditorEdits
 import io.github.valerioisufi.pageboard.canvas.port.EditorPages
@@ -14,9 +14,9 @@ import io.github.valerioisufi.pageboard.canvas.port.EditorRendering
  * extension can remember what it makes of it. Built by the host of the editor from its
  * controller.
  */
-public class EditorContext(controller: DrawViewController) {
+public class EditorContext(controller: PageboardController) {
     /** The editor itself, for the editor of this module only: the extensions go through the ports. */
-    internal val controller: DrawViewController = controller
+    internal val controller: PageboardController = controller
 
     /**
      * The document shown, by its identifier (the same on every device): what an extension keeps

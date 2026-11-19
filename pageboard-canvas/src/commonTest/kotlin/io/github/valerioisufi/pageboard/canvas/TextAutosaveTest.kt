@@ -4,13 +4,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.CommittedChange
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
 import io.github.valerioisufi.pageboard.model.change.toData
@@ -29,15 +29,15 @@ class TextAutosaveTest {
 
     /** Every line of the source 10 mm high (a line never wraps). */
     private class LinesAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
-        override fun measure(text: DrawText): TextBlockSize = TextBlockSize(text.width, text.text.split('\n').size * 10f)
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun measure(text: TextElement): TextBlockSize = TextBlockSize(text.width, text.text.split('\n').size * 10f)
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(10f, 8f)
     }
 
-    private fun controller(scope: CoroutineScope, pages: Int = 1): DrawViewController {
-        val document = DrawDocument()
+    private fun controller(scope: CoroutineScope, pages: Int = 1): PageboardController {
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        val controller = DrawViewController(document = document, coroutineScope = scope)
+        val controller = PageboardController(document = document, coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = LinesAdapter()
         return controller
@@ -46,13 +46,13 @@ class TextAutosaveTest {
     private fun TextEditorManager.type(text: String) = updateValue(TextFieldValue(text, TextRange(text.length)))
 
     /** The changes committed by [controller] from now on. */
-    private fun committed(controller: DrawViewController) = mutableListOf<CommittedChange>().also { list ->
+    private fun committed(controller: PageboardController) = mutableListOf<CommittedChange>().also { list ->
         controller.session.addObserver { list.add(it) }
     }
 
     /** A text [content] on the first page of [controller], as one written before. */
-    private fun existingText(controller: DrawViewController, content: String): DrawText {
-        val text = DrawText().apply {
+    private fun existingText(controller: PageboardController, content: String): TextElement {
+        val text = TextElement().apply {
             text = content
             x = 20f
             y = 30f
@@ -62,7 +62,7 @@ class TextAutosaveTest {
         return text
     }
 
-    private fun DrawViewController.startDrawn() = textEditorManager.startDrawnText(0, Rect(20f, 30f, 120f, 40f))
+    private fun PageboardController.startDrawn() = textEditorManager.startDrawnText(0, Rect(20f, 30f, 120f, 40f))
 
     @Test
     fun aNewTextIsSavedWithTheEditorOpen() = runTest(UnconfinedTestDispatcher()) {

@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "Storage of DrawView documents, headless: the store ports, the open documents, a key-value store"
+description = "Storage of Pageboard documents, headless: the store ports, the open documents, a key-value store"
 
 kotlin {
     sourceSets {

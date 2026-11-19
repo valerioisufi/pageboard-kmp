@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.placement.PageOccupancy
@@ -36,7 +36,7 @@ public class PlacementSpot(
  * A text to place and the places proposed for it, the best first (empty: the student chooses the
  * place with a tap).
  */
-public class PlacementItem(public val preview: DrawText, public val spots: List<PlacementSpot> = emptyList())
+public class PlacementItem(public val preview: TextElement, public val spots: List<PlacementSpot> = emptyList())
 
 /**
  * Texts prepared by the application (e.g. the notes of an assistant) waiting to be placed by the
@@ -44,7 +44,7 @@ public class PlacementItem(public val preview: DrawText, public val spots: List<
  * places of a single text, drags any of them, or taps a page to put a single text there, then
  * confirms.
  *
- * @param items the texts: their content and size ([DrawText.width], [DrawText.height] in page
+ * @param items the texts: their content and size ([TextElement.width], [TextElement.height] in page
  *   millimeters) are drawn where they would go.
  * @param onPlace called on confirmation with the place of every item, in their order.
  * @param onCancel called when the placement is cancelled (Escape, another request).
@@ -58,7 +58,7 @@ public class PlacementRequest(
 ) {
     /** A single text [preview], proposed at [spots], placed by [onPlace]. */
     public constructor(
-        preview: DrawText,
+        preview: TextElement,
         onPlace: (PlacementSpot) -> Unit,
         onCancel: () -> Unit = {},
         spots: List<PlacementSpot> = emptyList(),
@@ -66,7 +66,7 @@ public class PlacementRequest(
     ) : this(listOf(PlacementItem(preview, spots)), { onPlace(it.single()) }, onCancel, label)
 
     /** The text of a single item, `null` for several. */
-    public val preview: DrawText? get() = items.singleOrNull()?.preview
+    public val preview: TextElement? get() = items.singleOrNull()?.preview
 }
 
 /**
@@ -76,7 +76,7 @@ public class PlacementRequest(
  * that any page can be reached. A single text without places proposed is drawn under the pointer
  * (mouse or stylus hover).
  */
-public class PlacementManager internal constructor(private val controller: DrawViewController) {
+public class PlacementManager internal constructor(private val controller: PageboardController) {
 
     public var request: PlacementRequest? by mutableStateOf(null)
         private set
@@ -213,7 +213,7 @@ public class PlacementManager internal constructor(private val controller: DrawV
     }
 
     /** The top of a new page after [page] (of its format) for [block], or `null` when it does not fit even there. */
-    public fun newPageSpot(page: DrawPage, block: PlacementBlock): PlacementSpot? {
+    public fun newPageSpot(page: Page, block: PlacementBlock): PlacementSpot? {
         val empty = PageOccupancy(page.widthMm, page.heightMm, emptyList(), PageOccupancy.lineSpacingOf(page.background))
         return planner.candidates(empty, block, ReadingOrder).firstOrNull()?.let { PlacementSpot(page.index, it.rect, newPageAfter = true) }
     }
@@ -224,9 +224,9 @@ public class PlacementManager internal constructor(private val controller: DrawV
      * the spots naming the same new page on one page. Call it in a group of the history with the
      * content added, so that they are undone together.
      */
-    public fun pagesFor(spots: List<PlacementSpot>, template: (DrawPage) -> DrawPage? = { it }): List<DrawPage?> {
+    public fun pagesFor(spots: List<PlacementSpot>, template: (Page) -> Page? = { it }): List<Page?> {
         val pages = controller.document.pages.toList()
-        val created = mutableMapOf<Pair<Int, Int>, DrawPage>()
+        val created = mutableMapOf<Pair<Int, Int>, Page>()
         // From the last page back, so that the pages added do not move the ones before them
         val newPages = spots.filter { it.newPageAfter }.groupBy { it.pageIndex }.mapValues { (_, it) -> it.maxOf { spot -> spot.newPage } }
         for ((after, count) in newPages.entries.sortedByDescending { it.key }) {

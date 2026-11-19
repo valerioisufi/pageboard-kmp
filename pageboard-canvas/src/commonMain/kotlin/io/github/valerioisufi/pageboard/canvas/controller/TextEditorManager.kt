@@ -15,8 +15,8 @@ import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
 import io.github.valerioisufi.pageboard.canvas.text.TableEditing
 import io.github.valerioisufi.pageboard.canvas.text.SeenDeletion
 import io.github.valerioisufi.pageboard.canvas.text.SelectionInput
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.text.TextRoom
 import io.github.valerioisufi.pageboard.model.change.DocumentChange
@@ -53,10 +53,10 @@ import kotlin.math.abs
  * while the canvas is panned and zoomed. The editor of the interface shows [value] and reports
  * what the user types ([updateValue]) and the height it lays the text out ([reportLayoutHeight]).
  */
-public class TextEditorManager internal constructor(private val controller: DrawViewController) : TextFormatTarget {
+public class TextEditorManager internal constructor(private val controller: PageboardController) : TextFormatTarget {
 
     /** The text being changed, `null` for a new one. */
-    internal var activeTextItem: DrawText? by mutableStateOf(null)
+    internal var activeTextItem: TextElement? by mutableStateOf(null)
         private set
 
     /** The id of the text being changed, `null` for a new one. */
@@ -111,7 +111,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
 
     override val takesBackground: Boolean get() = true
 
-    /** The text the one written goes on into, and whether it goes on the line of the one before (see `DrawText.next`). */
+    /** The text the one written goes on into, and whether it goes on the line of the one before (see `TextElement.next`). */
     private var chainNext: String? = null
     private var chainContinuesLine: Boolean = false
 
@@ -125,7 +125,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
     public var chainComesFrom: Boolean = false
         private set
 
-    /** The ARGB color of the fill of the box, or `null` for none (see `DrawText.background`). */
+    /** The ARGB color of the fill of the box, or `null` for none (see `TextElement.background`). */
     override var background: Int? by mutableStateOf(null)
         private set
 
@@ -287,7 +287,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      *   its box before its rotation (see `RotatableItem.toLocal`): the caret goes on the character
      *   there; at the end of the text when `null`.
      */
-    public fun startEditing(item: DrawText, pageIndex: Int, caretAt: Offset? = null) {
+    public fun startEditing(item: TextElement, pageIndex: Int, caretAt: Offset? = null) {
         controller.presence.writerOf(item)?.let { writer ->
             controller.presence.refuseEdit(writer)
             return
@@ -296,7 +296,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
         open(item, pageIndex, item.boxX, item.boxY, item.boxWidth, caretAt, item.autoWidth)
     }
 
-    private fun open(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?, autoWidth: Boolean) {
+    private fun open(item: TextElement?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?, autoWidth: Boolean) {
         if (isEditing) finishEditing()
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
@@ -466,7 +466,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      * The draft placed by its room on [page], or the text as it was when only the rounding of its
      * box differs.
      */
-    private fun placedDraft(page: DrawPage): TextData {
+    private fun placedDraft(page: Page): TextData {
         val placed = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page)
         val from = editedFrom
         return if (from != null && placed.copy(x = from.x, y = from.y, width = from.width) == from &&
@@ -985,7 +985,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      * [box], the box of the text written, placed by its room when its width follows it (see
      * [TextRoom]): the room of the box on [page], its corner moved along its lines.
      */
-    private fun inItsRoom(box: TextData, page: DrawPage): TextData {
+    private fun inItsRoom(box: TextData, page: Page): TextData {
         if (!box.autoWidth) return box
         val (left, width) = TextRoom.of(box.x, box.x + box.width, box.alignment, page.widthMm)
         val corner = Matrix2D().postRotate(box.rotation).mapPoint(left - box.x, 0f)
@@ -1001,11 +1001,11 @@ public class TextEditorManager internal constructor(private val controller: Draw
         get() = activeTextItem?.let { TextChains.of(controller.document).isChained(it.id) } == true
 
     /** Where the room of a box of a chain ends on [page]: its bottom margin. */
-    private fun roomBottom(page: DrawPage): Float = page.heightMm - CHAIN_MARGIN_MM
+    private fun roomBottom(page: Page): Float = page.heightMm - CHAIN_MARGIN_MM
 
     /** The height of [text] in the style of the text written, laid out on [widthMm]. */
     private fun heightOf(text: String, widthMm: Float): Float {
-        val probe = DrawText().also {
+        val probe = TextElement().also {
             it.text = text
             it.width = widthMm
             it.fontSize = fontSize
@@ -1015,7 +1015,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
     }
 
     /** The boxes after [item] in its chain. */
-    private fun followingInChain(item: DrawText): List<DrawText> {
+    private fun followingInChain(item: TextElement): List<TextElement> {
         val chain = TextChains.of(controller.document).chainOf(item.id)
         return chain.drop(chain.indexOfFirst { it.id == item.id } + 1)
     }
@@ -1024,7 +1024,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      * The change removing the box [existing] of [page], emptied, with the empty boxes [after] it: the
      * box before it no longer goes on into it, and the pages they leave blank go too.
      */
-    private fun emptiedChange(existing: DrawText, page: DrawPage, after: List<DrawText>): DocumentChange {
+    private fun emptiedChange(existing: TextElement, page: Page, after: List<TextElement>): DocumentChange {
         val previous = TextChains.of(controller.document).previous(existing.id)
         val changes = mutableListOf<DocumentChange>()
         if (previous != null) {
@@ -1043,7 +1043,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
      * with nothing else on them, and the paper of the document. They go to the trash, and one undo
      * brings them back.
      */
-    private fun removedBoxes(boxes: List<DrawText>): List<DocumentChange> {
+    private fun removedBoxes(boxes: List<TextElement>): List<DocumentChange> {
         val pages = controller.document.pages
         val changes = mutableListOf<DocumentChange>()
         var remaining = pages.size
@@ -1116,7 +1116,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
         // A box emptied leaves no line of its own before the text coming back to it
         val tail = (value.text + following.joinToString("") { (if (it.continuesLine) "" else "\n") + it.text })
             .let { if (value.text.isBlank()) it.substring(value.text.length).removePrefix("\n") else it }
-        val pageOf = { text: DrawText -> pages[chains.pageOf(text.id)] }
+        val pageOf = { text: TextElement -> pages[chains.pageOf(text.id)] }
         val lastPageIndex = following.lastOrNull()?.let { chains.pageOf(it.id) } ?: pageIndex
         val rooms = listOf(ChainFlow.Room(base.width, roomBottom(page) - base.y)) +
             following.map { ChainFlow.Room(it.width, roomBottom(pageOf(it)) - it.y) }
@@ -1218,7 +1218,7 @@ public class TextEditorManager internal constructor(private val controller: Draw
 
     /**
      * Backspace at the start of a box that goes on from another one: the line break between them
-     * taken away (the box goes on the last line of the one before, see `DrawText.continuesLine`),
+     * taken away (the box goes on the last line of the one before, see `TextElement.continuesLine`),
      * or the last character of the box before when there is none; the caret at the end of that box.
      * Returns `true` when it did.
      */

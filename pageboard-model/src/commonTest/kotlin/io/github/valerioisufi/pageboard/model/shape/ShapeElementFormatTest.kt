@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.model.shape
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.encode
 import kotlin.random.Random
@@ -32,7 +32,7 @@ class ShapeElementFormatTest {
         RECORDED_5, RECORDED_6, RECORDED_7, RECORDED_8, RECORDED_9,
     )
 
-    private fun element(payload: ByteArray, version: Int = 1) = DrawCustomElement(ShapeElementType.id).also {
+    private fun element(payload: ByteArray, version: Int = 1) = CustomElement(ShapeElementType.id).also {
         it.payload = payload
         it.version = version
     }

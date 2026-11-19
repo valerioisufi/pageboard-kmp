@@ -23,7 +23,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import java.util.Locale
@@ -48,7 +48,7 @@ class SharingScreenshotTest {
     private fun capture(name: String, width: Int, height: Int, dark: Boolean = false, content: @Composable () -> Unit) =
         runDesktopComposeUiTest(width = width, height = height) {
             setContent {
-                DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                PageboardTheme(darkTheme = dark, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) { content() }
                 }
             }

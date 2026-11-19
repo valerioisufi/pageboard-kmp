@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.PathEffect
 import io.github.valerioisufi.pageboard.canvas.geometry.toComposeMatrix
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -50,7 +50,7 @@ public interface ElementRenderer<T : Any> {
  * The element types an application draws (see [ElementRenderer]), with the ones of the libraries
  * (the shapes, [ShapeElementRenderer]): the elements of the other types (another application, a
  * newer version) are drawn as a placeholder in their box. Given to the editors, the thumbnails and
- * the export by [DrawViewEngines.elements].
+ * the export by [PageboardEngines.elements].
  */
 public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     private val byType: Map<String, ElementRenderer<*>> = (BUILT_IN + renderers).associateBy { it.type.id }
@@ -68,7 +68,7 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
      * The value of [element] as its type reads it, or `null` when its type is not known here or
      * its value cannot be read (another format).
      */
-    internal fun valueOf(element: DrawCustomElement): Any? {
+    internal fun valueOf(element: CustomElement): Any? {
         val renderer = byType[element.type] ?: return null
         val payload = element.payload
         syncLock(lock) {
@@ -86,7 +86,7 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     /** Draws [element] on [canvas], its page mapped to the canvas by [mmToCanvas]. */
-    public fun draw(canvas: Canvas, element: DrawCustomElement, mmToCanvas: Matrix2D) {
+    public fun draw(canvas: Canvas, element: CustomElement, mmToCanvas: Matrix2D) {
         if (element.width <= 0f || element.height <= 0f) return
         val boxToCanvas = Matrix2D()
             .postRotate(element.rotation, element.width / 2f, element.height / 2f)
@@ -108,7 +108,7 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     /** Whether the point ([xMm], [yMm]) of the page hits [element] (its box when its type is not known). */
-    public fun hits(element: DrawCustomElement, xMm: Float, yMm: Float): Boolean {
+    public fun hits(element: CustomElement, xMm: Float, yMm: Float): Boolean {
         if (!element.containsPoint(xMm, yMm)) return false
         val renderer = byType[element.type] ?: return true
         val value = valueOf(element) ?: return true
@@ -117,7 +117,7 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     /** [element] as vectors in its box (see [ElementRenderer.vectors]), or `null` when it is drawn as an image. */
-    public fun vectorsOf(element: DrawCustomElement): VectorDrawing? {
+    public fun vectorsOf(element: CustomElement): VectorDrawing? {
         if (element.width <= 0f || element.height <= 0f) return null
         val renderer = byType[element.type] ?: return null
         val value = valueOf(element) ?: return null
@@ -128,7 +128,7 @@ public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
      * Whether the eraser, a capsule of [radiusMm] around the segment [from] - [to] of the page,
      * erases [element] (see [ElementRenderer.erasedBy]); never an element of a type not known.
      */
-    public fun erasedBy(element: DrawCustomElement, from: Point, to: Point, radiusMm: Float): Boolean {
+    public fun erasedBy(element: CustomElement, from: Point, to: Point, radiusMm: Float): Boolean {
         val renderer = byType[element.type] ?: return false
         val value = valueOf(element) ?: return false
         return renderer.erasedByValue(value, element.toLocal(from.x, from.y), element.toLocal(to.x, to.y), radiusMm, element.width, element.height)

@@ -3,8 +3,8 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.Document
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -22,8 +22,8 @@ class TileHandOffTest {
     @Test
     fun aCellWaitingForItsFirstTileIsNotDrawn() {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
-        val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) { DrawCanvas(controller) }
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
+        val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) { PageCanvas(controller) }
         val center = Rect(300f, 500f, 500f, 700f)
         try {
             scene.render()

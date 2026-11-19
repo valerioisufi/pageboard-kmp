@@ -30,7 +30,7 @@ class ElementOrderTest {
         return stamp
     }
 
-    private fun stroke(x: Float = 0f): DrawStroke {
+    private fun stroke(x: Float = 0f): StrokeElement {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, 0f, x + 5f, 0f, x + 5f, 5f),
             indices = shortArrayOf(0, 1, 2),
@@ -39,10 +39,10 @@ class ElementOrderTest {
             size = 1f,
             points = listOf(StrokePoint(x, 0f), StrokePoint(x + 5f, 5f))
         )
-        return DrawStroke(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
+        return StrokeElement(mesh = mesh, brushConfig = BrushConfig(tool = StrokeTool.MARKER, size = 1f))
     }
 
-    private fun markup() = DrawTextMarkup(
+    private fun markup() = TextMarkupElement(
         resourceId = "pdf", pdfPageIndex = 0, pdfWidthPt = 595f, pdfHeightPt = 842f, startIndex = 0, endIndex = 4,
         text = "wave", rects = listOf(Rect(0f, 0f, 10f, 10f)), kind = TextMarkupKind.HIGHLIGHT, color = 0
     )
@@ -52,13 +52,13 @@ class ElementOrderTest {
         // Stamps mixing the kinds: the newest is a PDF page, the oldest a stroke
         val stroke = stroke().apply { order = before(100, 0) }
         val newerStroke = stroke().apply { order = before(200, 0) }
-        val text = DrawText().apply { order = before(400, 0) }
-        val image = DrawImage().apply { order = before(500, 1) }
-        val lowerImage = DrawImage().apply { order = before(500, 0) }
-        val custom = DrawCustomElement("com.example.shape").apply { order = before(300, 0) }
-        val pdf = DrawPdf().apply { order = before(600, 0) }
+        val text = TextElement().apply { order = before(400, 0) }
+        val image = ImageElement().apply { order = before(500, 1) }
+        val lowerImage = ImageElement().apply { order = before(500, 0) }
+        val custom = CustomElement("com.example.shape").apply { order = before(300, 0) }
+        val pdf = PdfElement().apply { order = before(600, 0) }
         val markup = markup().apply { order = before(50, 0) }
-        val page = DrawPage()
+        val page = Page()
         listOf(stroke, newerStroke, text, image, lowerImage, custom, pdf, markup).shuffled(Random(3)).forEach(page::add)
 
         assertEquals(listOf(pdf, markup, lowerImage, image, custom, text, stroke, newerStroke), page.snapshotContent().paintOrder)
@@ -69,10 +69,10 @@ class ElementOrderTest {
 
     @Test
     fun aPageBuiltOutsideOfTheChangesKeepsTheLayersOfItsKinds() {
-        val page = DrawPage()
+        val page = Page()
         val strokes = List(3) { stroke(it * 10f) }
-        val image = DrawImage()
-        val text = DrawText()
+        val image = ImageElement()
+        val text = TextElement()
         strokes.forEach(page::add)
         page.add(image)
         page.add(text)
@@ -82,12 +82,12 @@ class ElementOrderTest {
 
     @Test
     fun aNewElementIsOnTopOfEverything() {
-        val document = DrawDocument()
+        val document = Document()
         val page = document.pages[0]
         val stroke = stroke().apply { order = before(100, 0) }
         page.add(stroke)
         val session = DocumentSession(document, replica = "ada")
-        val image = DrawImage().apply { width = 10f; height = 10f }
+        val image = ImageElement().apply { width = 10f; height = 10f }
 
         session.submit(AddElements.of(page, listOf(image)))
 

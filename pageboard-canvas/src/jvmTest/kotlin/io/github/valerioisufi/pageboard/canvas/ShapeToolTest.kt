@@ -9,11 +9,11 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -34,7 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
-/** The shapes in the editor, sent to a [DrawCanvas] as pointer events. */
+/** The shapes in the editor, sent to a [PageCanvas] as pointer events. */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 class ShapeToolTest {
 
@@ -297,7 +297,7 @@ class ShapeToolTest {
         )
     }
 
-    private fun DrawViewController.screen(xMm: Float, yMm: Float): Offset =
+    private fun PageboardController.screen(xMm: Float, yMm: Float): Offset =
         viewport.pageMmToScreen(0)!!.mapPoint(xMm, yMm).let { Offset(it.x, it.y) }
 
     private fun ImageComposeScene.drag(from: Offset, to: Offset) {
@@ -322,14 +322,14 @@ class ShapeToolTest {
         )
     }
 
-    private fun shapes(controller: DrawViewController): List<DrawCustomElement> =
+    private fun shapes(controller: PageboardController): List<CustomElement> =
         controller.document.pages.flatMap { it.customElements }.filter { it.type == ShapeElementType.id }
 
-    private fun withCanvas(block: (ImageComposeScene, DrawViewController) -> Unit) {
+    private fun withCanvas(block: (ImageComposeScene, PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) {
-            DrawCanvas(controller)
+            PageCanvas(controller)
         }
         try {
             scene.render()

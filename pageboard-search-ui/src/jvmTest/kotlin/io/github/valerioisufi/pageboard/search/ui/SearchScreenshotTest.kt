@@ -43,7 +43,7 @@ import io.github.valerioisufi.pageboard.search.SearchSource
 import io.github.valerioisufi.pageboard.store.DocumentSummary
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import java.io.File
 import java.nio.file.Files
@@ -83,7 +83,7 @@ class SearchScreenshotTest {
         content: @Composable () -> Unit
     ) = runDesktopComposeUiTest(width = width, height = height) {
         setContent {
-            DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+            PageboardTheme(darkTheme = dark, dynamicColor = false) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -188,7 +188,7 @@ class SearchScreenshotTest {
             for (dark in listOf(false, true)) {
                 runDesktopComposeUiTest(width = 628, height = 840) {
                     setContent {
-                        DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                        PageboardTheme(darkTheme = dark, dynamicColor = false) {
                             Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
                             SearchSettingsDialog(search = search, onDismiss = {})
                         }

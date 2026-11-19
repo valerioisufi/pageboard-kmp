@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.store
 
 /**
  * The preferences of an application, as text by key (e.g. those of the editor, written by
- * `DrawPreferences.encode`): the store keeps them without reading them.
+ * `EditorPreferences.encode`): the store keeps them without reading them.
  */
 public interface PreferenceStore {
     /** The preference [key], or `null` when none is kept. */

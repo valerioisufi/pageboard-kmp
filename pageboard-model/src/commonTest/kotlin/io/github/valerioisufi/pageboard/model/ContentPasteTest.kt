@@ -28,7 +28,7 @@ import kotlin.test.assertTrue
 class ContentPasteTest {
 
     /** A device working on a document: its session and the operations it made. */
-    private class Device(val session: DocumentSession = DocumentSession(DrawDocument())) {
+    private class Device(val session: DocumentSession = DocumentSession(Document())) {
         val sent = mutableListOf<Operation>()
         val document get() = session.document
         val page get() = document.pages[0]
@@ -46,22 +46,22 @@ class ContentPasteTest {
         color = 0xFF0000FF.toInt()
     ).toElement()
 
-    private fun text() = DrawText().apply {
+    private fun text() = TextElement().apply {
         text = "Hello"; x = 20f; y = 30f; width = 40f; fontSize = 16f
     }
 
-    private fun image(resourceId: String) = DrawImage().apply {
+    private fun image(resourceId: String) = ImageElement().apply {
         this.resourceId = resourceId; x = 50f; y = 60f; width = 20f; height = 10f
     }
 
-    private fun custom() = DrawCustomElement("table").apply {
+    private fun custom() = CustomElement("table").apply {
         payload = byteArrayOf(1, 2, 3); x = 70f; y = 80f; width = 10f; height = 10f
     }
 
     /** A document with a stroke, a text, an image of the file `/files/a.png` and an element of an application. */
     private fun source(): Device {
         val device = Device()
-        device.session.submit(AddResource.of("r", DrawResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
+        device.session.submit(AddResource.of("r", DocumentResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
         val page = device.page
         device.session.submit(AddElements.of(page, listOf(image("r"), stroke(0f), text(), custom())))
         return device
@@ -70,9 +70,9 @@ class ContentPasteTest {
     @Test
     fun theChangeUndoingAResourceChangesNothing() {
         val device = Device()
-        val undo = device.session.submit(AddResource.of("r", DrawResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
+        val undo = device.session.submit(AddResource.of("r", DocumentResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
         assertTrue(assertNotNull(undo).changesNothing)
-        assertFalse(AddResource.of("s", DrawResource.ResourceType.IMAGE, "/files/b.png", "hash-b").changesNothing)
+        assertFalse(AddResource.of("s", DocumentResource.ResourceType.IMAGE, "/files/b.png", "hash-b").changesNothing)
     }
 
     @Test
@@ -91,7 +91,7 @@ class ContentPasteTest {
         assertEquals(Rect(5f, 16f, 85f, 96f), pasted.bounds)
 
         // The image on a new resource of the target, on the same file
-        val image = stack.filterIsInstance<DrawImage>().single()
+        val image = stack.filterIsInstance<ImageElement>().single()
         val resource = assertNotNull(target.document.findResource(image.resourceId))
         assertFalse(image.resourceId == "r")
         assertEquals("/files/a.png", resource.path)
@@ -99,13 +99,13 @@ class ContentPasteTest {
         assertEquals(55f, image.x)
         assertEquals(66f, image.y)
 
-        val text = stack.filterIsInstance<DrawText>().single()
+        val text = stack.filterIsInstance<TextElement>().single()
         assertEquals("Hello", text.text)
         assertEquals(25f, text.x)
-        val stroke = stack.filterIsInstance<DrawStroke>().single()
+        val stroke = stack.filterIsInstance<StrokeElement>().single()
         assertEquals(5f, stroke.transform.tx)
         assertEquals(6f, stroke.transform.ty)
-        val custom = stack.filterIsInstance<DrawCustomElement>().single()
+        val custom = stack.filterIsInstance<CustomElement>().single()
         assertContentEquals(byteArrayOf(1, 2, 3), custom.payload)
         assertEquals(75f, custom.x)
 
@@ -119,9 +119,9 @@ class ContentPasteTest {
         val source = source()
         val copied = source.document.copyElements(source.page, source.page.stack, Rect(0f, 0f, 1f, 1f))
         val target = Device()
-        val other = Device(DocumentSession(DrawDocument(target.document.id), replica = "bob"))
+        val other = Device(DocumentSession(Document(target.document.id), replica = "bob"))
         // A page both devices have
-        val page = DrawPage(orderKey = target.document.orderKeyAt(1))
+        val page = Page(orderKey = target.document.orderKeyAt(1))
         target.session.submit(AddPage.of(page))
         target.session.submit(assertNotNull(copied.pasteInto(target.document, page, 0f, 0f) { true }.change))
 
@@ -141,7 +141,7 @@ class ContentPasteTest {
         val source = source()
         val copied = source.document.copyElements(source.page, source.page.images, Rect(50f, 60f, 70f, 70f))
         val target = Device()
-        target.session.submit(AddResource.of("mine", DrawResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
+        target.session.submit(AddResource.of("mine", DocumentResource.ResourceType.IMAGE, "/files/a.png", "hash-a"))
         target.session.submit(assertNotNull(copied.pasteInto(target.document, target.page, 0f, 0f) { true }.change))
 
         assertEquals(listOf("mine"), target.document.resources.map { it.id })
@@ -159,7 +159,7 @@ class ContentPasteTest {
         assertEquals(listOf("r", "r"), page.images.map { it.resourceId })
         assertEquals(2, page.images.map { it.id }.distinct().size)
         // On top of the stack
-        assertEquals(60f, page.stack.last().let { it as DrawImage }.x)
+        assertEquals(60f, page.stack.last().let { it as ImageElement }.x)
     }
 
     @Test
@@ -192,17 +192,17 @@ class ContentPasteTest {
 
     /** A PDF page of the PDF `/files/b.pdf` with a mark, a stroke under a text, on the paper of the document. */
     private fun pdfSource(): Device {
-        val device = Device(DocumentSession(DrawDocument().apply { defaultBackground = PageBackground.Grid() }))
-        device.session.submit(AddResource.of("pdf", DrawResource.ResourceType.PDF, "/files/b.pdf", "hash-b"))
+        val device = Device(DocumentSession(Document().apply { defaultBackground = PageBackground.Grid() }))
+        device.session.submit(AddResource.of("pdf", DocumentResource.ResourceType.PDF, "/files/b.pdf", "hash-b"))
         val page = device.page
-        val markup = DrawTextMarkup(
+        val markup = TextMarkupElement(
             resourceId = "pdf", pdfPageIndex = 2, pdfWidthPt = 595f, pdfHeightPt = 842f, startIndex = 0, endIndex = 5,
             text = "words", rects = listOf(Rect(1f, 2f, 3f, 4f)), kind = TextMarkupKind.HIGHLIGHT, color = 0xFFFFFF00.toInt()
         )
         val text = text()
         val stroke = stroke(0f)
         // The text over the stroke (the layers of the kinds before the one stack had them the other way)
-        device.session.submit(AddElements.of(page, listOf(DrawPdf(pdfPageIndex = 2).apply { resourceId = "pdf" }, markup, stroke, text)))
+        device.session.submit(AddElements.of(page, listOf(PdfElement(pdfPageIndex = 2).apply { resourceId = "pdf" }, markup, stroke, text)))
         return device
     }
 
@@ -211,8 +211,8 @@ class ContentPasteTest {
         val source = pdfSource()
         val page = source.page
         val copied = source.document.copyPages(listOf(page))
-        val target = Device(DocumentSession(DrawDocument().apply { defaultBackground = PageBackground.Dotted() }))
-        target.session.submit(AddPage.of(DrawPage(orderKey = target.document.orderKeyAt(1))))
+        val target = Device(DocumentSession(Document().apply { defaultBackground = PageBackground.Dotted() }))
+        target.session.submit(AddPage.of(Page(orderKey = target.document.orderKeyAt(1))))
         val (first, last) = target.document.pages
         val pasted = copied.pasteInto(target.document, 1) { true }
         val inverse = target.session.submit(assertNotNull(pasted.change))
@@ -235,7 +235,7 @@ class ContentPasteTest {
         assertEquals(pdf.resourceId, markup.resourceId)
         assertEquals("/files/b.pdf", assertNotNull(target.document.findResource(pdf.resourceId)).path)
         assertEquals("words", markup.text)
-        assertEquals(listOf(DrawStroke::class, DrawText::class), copy.stack.map { it::class }, "the stack as it was")
+        assertEquals(listOf(StrokeElement::class, TextElement::class), copy.stack.map { it::class }, "the stack as it was")
         assertSame(page.strokes.single().baseMesh, copy.strokes.single().baseMesh, "not modeled again")
 
         // Undone in one step

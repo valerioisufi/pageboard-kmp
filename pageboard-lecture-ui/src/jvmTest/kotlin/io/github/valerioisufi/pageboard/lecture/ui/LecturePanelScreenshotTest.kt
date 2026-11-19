@@ -21,7 +21,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.lecture.AssistantSettingsStore
 import io.github.valerioisufi.pageboard.lecture.CourseContext
 import io.github.valerioisufi.pageboard.lecture.DeviceModels
@@ -42,10 +42,10 @@ import io.github.valerioisufi.pageboard.lecture.testing.FakeMicrophone
 import io.github.valerioisufi.pageboard.lecture.testing.FakeNotebook
 import io.github.valerioisufi.pageboard.lecture.testing.MemorySecrets
 import io.github.valerioisufi.pageboard.lecture.writeLectureRecord
-import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.pageboard.ml.Embedder
 import io.github.valerioisufi.pageboard.ml.EmbedderOptions
@@ -109,7 +109,7 @@ class LecturePanelScreenshotTest {
             CourseContext("Calculus I · Prof. Rossi. Topics: limits, continuity, derivatives, integrals. Terms: epsilon-delta, one-sided limit, removable discontinuity.")
         )
         val assistant = assistant(library)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         runDesktopComposeUiTest(width = 428, height = 920) {
             setContent { Panel { PanelContent(assistant, "doc", EditorContext(controller), LecturePanelState()) } }
             assistant.onEditorShown("doc", FakeNotebook())
@@ -130,7 +130,7 @@ class LecturePanelScreenshotTest {
     @Test
     fun idle() {
         val assistant = assistant(LectureLibrary(File(root, "empty").absolutePath))
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         runDesktopComposeUiTest(width = 428, height = 600) {
             setContent { Panel { PanelContent(assistant, "doc", EditorContext(controller), LecturePanelState()) } }
             waitForIdle()
@@ -142,7 +142,7 @@ class LecturePanelScreenshotTest {
     @Test
     fun recordingAndNotices() = runDesktopComposeUiTest(width = 820, height = 720) {
         setContent {
-            DrawViewTheme(darkTheme = false, dynamicColor = false) {
+            PageboardTheme(darkTheme = false, dynamicColor = false) {
                 Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(modifier = Modifier.width(340.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -153,11 +153,11 @@ class LecturePanelScreenshotTest {
                             ImportCard("Waiting for its turn…", duration = "48:05", progress = 0f, remove = "Remove from the queue")
                         }
                         Column(modifier = Modifier.width(360.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            LectureNotice(DrawViewIcons.Key, "Set the Gemini API key in the settings.", NoticeTone.Error, action = "Settings" to {})
-                            LectureNotice(DrawViewIcons.Mic, "The system is using the microphone (a call, Siri): the recording goes on as soon as it gives it back.", NoticeTone.Warning)
-                            LectureNotice(DrawViewIcons.Users, "Being recorded on Marta’s iPad · 12:30", NoticeTone.Info)
-                            LectureNotice(DrawViewIcons.Upload, "2 other recordings are in the queue of the transcriptions", NoticeTone.Neutral)
-                            LectureNotice(DrawViewIcons.Sparkles, "gemma4:12b is reviewing the lecture on this computer: 2140 tokens written.", NoticeTone.Neutral)
+                            LectureNotice(PageboardIcons.Key, "Set the Gemini API key in the settings.", NoticeTone.Error, action = "Settings" to {})
+                            LectureNotice(PageboardIcons.Mic, "The system is using the microphone (a call, Siri): the recording goes on as soon as it gives it back.", NoticeTone.Warning)
+                            LectureNotice(PageboardIcons.Users, "Being recorded on Marta’s iPad · 12:30", NoticeTone.Info)
+                            LectureNotice(PageboardIcons.Upload, "2 other recordings are in the queue of the transcriptions", NoticeTone.Neutral)
+                            LectureNotice(PageboardIcons.Sparkles, "gemma4:12b is reviewing the lecture on this computer: 2140 tokens written.", NoticeTone.Neutral)
                         }
                     }
                 }
@@ -174,7 +174,7 @@ class LecturePanelScreenshotTest {
         val assistant = assistant(LectureLibrary(File(root, "empty").absolutePath))
         runDesktopComposeUiTest(width = 1000, height = 900) {
             setContent {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
                     AssistantSettingsDialog(store, assistant.localModels, onDismiss = {})
                 }
@@ -218,7 +218,7 @@ class LecturePanelScreenshotTest {
         )
         runDesktopComposeUiTest(width = 1000, height = 1100) {
             setContent {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
                     AssistantSettingsDialog(store, assistant.localModels, onDismiss = {}, deviceModels = assistant.deviceModels)
                 }
@@ -265,7 +265,7 @@ class LecturePanelScreenshotTest {
             model.writeBytes(ByteArray(1))
             runDesktopComposeUiTest(width = 1000, height = 900) {
                 setContent {
-                    DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                    PageboardTheme(darkTheme = false, dynamicColor = false) {
                         Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
                         AssistantSettingsDialog(store, models, onDismiss = {})
                     }
@@ -291,7 +291,7 @@ class LecturePanelScreenshotTest {
     /** The panel beside the canvas: the low container, its header. */
     @Composable
     private fun Panel(content: @Composable () -> Unit) {
-        DrawViewTheme(darkTheme = false, dynamicColor = false) {
+        PageboardTheme(darkTheme = false, dynamicColor = false) {
             Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) {
                 Column(
                     modifier = Modifier

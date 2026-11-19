@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 
 /**
- * An Android library holding the shared library of a Rust crate of DrawView, built by cargo with
+ * An Android library holding the shared library of a Rust crate of Pageboard, built by cargo with
  * the NDK of the module for each ABI ([CargoBuild]): the module names the crate and its library
  * ([AndroidRustExtension]).
  *
@@ -40,7 +40,7 @@ class AndroidRustConventionPlugin : Plugin<Project> {
         }
 
         val components = extensions.getByType<LibraryAndroidComponentsExtension>()
-        // The licenses of the crate (and of DrawView) in the library: its Java resources
+        // The licenses of the crate (and of Pageboard) in the library: its Java resources
         val licenses = licensesTask()
         val debugAbis = debugAbis()
         components.onVariants { variant ->

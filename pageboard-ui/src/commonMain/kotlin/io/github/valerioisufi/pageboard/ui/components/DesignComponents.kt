@@ -58,8 +58,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.command.HoverTooltip
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 
 /** The colors of a badge: the containers of the palette. */
@@ -163,7 +163,7 @@ public fun DesignFilterChip(label: String, selected: Boolean, onClick: () -> Uni
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (selected) Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+            if (selected) Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
         }
     }
@@ -224,7 +224,7 @@ public fun SearchField(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(DrawViewIcons.Search, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(PageboardIcons.Search, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                     if (query.isEmpty()) {
                         Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -233,7 +233,7 @@ public fun SearchField(
                 }
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { onQueryChange("") }) {
-                        Icon(DrawViewIcons.Close, contentDescription = clearLabel, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                        Icon(PageboardIcons.Close, contentDescription = clearLabel, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     }
                 } else if (shortcut != null) {
                     Text(
@@ -339,7 +339,7 @@ public fun <T> SegmentedChoice(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .then(if (chosen) Modifier.elevation(DrawViewElevation.Level1, CircleShape) else Modifier)
+                    .then(if (chosen) Modifier.elevation(PageboardElevation.Level1, CircleShape) else Modifier)
                     .clip(CircleShape)
                     .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent)
                     .clickable(enabled = possible, role = Role.RadioButton) { onSelect(option) }
@@ -419,7 +419,7 @@ public fun SwitchRow(text: String, hint: String?, checked: Boolean, onCheckedCha
             checked = checked,
             onCheckedChange = null,
             thumbContent = if (checked) {
-                { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+                { Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
             } else null
         )
     }

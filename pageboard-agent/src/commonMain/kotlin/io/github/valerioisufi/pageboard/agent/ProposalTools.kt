@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.store.OpenDocument
 import io.github.valerioisufi.pageboard.store.OpenDocuments
@@ -164,7 +164,7 @@ internal class ProposalTools(
     }
 
     /** Where an image of [image]'s proportions goes on [page]: fitted in [area], or in its largest free area. */
-    private fun imageBox(document: DrawDocument, page: DrawPage, image: AgentImage, area: AgentArea?): Rect {
+    private fun imageBox(document: Document, page: Page, image: AgentImage, area: AgentArea?): Rect {
         val ratio = if (image.widthPx > 0 && image.heightPx > 0) image.heightPx.toFloat() / image.widthPx else 1f
         if (area != null) {
             if (!area.isInside(page.widthMm, page.heightMm)) {
@@ -185,7 +185,7 @@ internal class ProposalTools(
     }
 
     /** Fails when a passage to mark is not in the PDF text of its page. */
-    private fun checkQuotes(document: DrawDocument, items: List<ProposalItem>) {
+    private fun checkQuotes(document: Document, items: List<ProposalItem>) {
         for (item in items.filterIsInstance<ProposalItem.AddMarkup>()) {
             val page = document.pageById(item.page) ?: continue
             if (MarkupItems.find(document, page, item.quote, item.occurrence, engines) == null) {

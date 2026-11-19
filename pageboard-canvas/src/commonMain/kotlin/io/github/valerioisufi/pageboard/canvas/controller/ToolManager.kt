@@ -31,11 +31,11 @@ public data class ToolPreset(
 )
 
 /**
- * The preferences of the user the editor keeps (see [DrawViewController.preferences]): written as
+ * The preferences of the user the editor keeps (see [PageboardController.preferences]): written as
  * text ([encode]) by whoever stores them.
  */
 @Serializable
-public data class DrawPreferences(
+public data class EditorPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: Tool = Tool.INK_PEN,
     val textDefaults: TextDefaults = TextDefaults(),
@@ -56,7 +56,7 @@ public data class DrawPreferences(
         private val json = Json { ignoreUnknownKeys = true }
 
         /** The preferences written by [encode], or `null` when [text] cannot be read. */
-        public fun decode(text: String): DrawPreferences? = try {
+        public fun decode(text: String): EditorPreferences? = try {
             json.decodeFromString(serializer(), text)
         } catch (_: Exception) {
             null
@@ -140,7 +140,7 @@ public class ToolManager internal constructor(
     /**
      * Applies the persisted preferences (without echoing them back to the persistence layer).
      */
-    public fun applyPreferences(preferences: DrawPreferences) {
+    public fun applyPreferences(preferences: EditorPreferences) {
         for (tool in PRESET_TOOLS) {
             val list = presets.getValue(tool)
             val stored = preferences.presets[tool].orEmpty().ifEmpty { defaultPresets().getValue(tool) }

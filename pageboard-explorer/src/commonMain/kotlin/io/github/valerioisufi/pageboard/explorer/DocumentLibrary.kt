@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.controller.MediaManager
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.pageboard.explorer.ui.aboutLibraryAction
@@ -29,13 +29,13 @@ import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
 import io.github.valerioisufi.pageboard.ui.platform.PickedFile
 import io.github.valerioisufi.pageboard.ui.platform.PickerType
 import io.github.valerioisufi.pageboard.ui.platform.rememberFilePicker
-import io.github.valerioisufi.pageboard.ui.render.LocalDrawViewEngines
+import io.github.valerioisufi.pageboard.ui.render.LocalPageboardEngines
 import io.github.valerioisufi.pageboard.ui.theme.NotesFontFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * A complete note-taking application: the document library ([ExplorerScreen]) and the DrawView
+ * A complete note-taking application: the document library ([ExplorerScreen]) and the Pageboard
  * editor of the open document ([EditorSessionScreen]). The theme is the one of the caller.
  *
  * @param title the brand of the application (its mark and its name, or its name), at the top of
@@ -58,7 +58,7 @@ import kotlinx.coroutines.withContext
  *   badges and the filters of the library.
  * @param engines the engines drawing the PDF pages and the formulas (e.g. `PdfiumEngine` and
  *   `LatexEngine` of `pageboard-pdf` and `pageboard-latex`), in the editor, the thumbnails and what
- *   the application composes in the library ([LocalDrawViewEngines]); the formula renderer is
+ *   the application composes in the library ([LocalPageboardEngines]); the formula renderer is
  *   prepared with the fonts of the notes.
  * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
  *   window): in memory by default; [DocumentThumbnails.defaultDirectory] keeps those of a store
@@ -79,7 +79,7 @@ public fun DocumentLibrary(
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
     itemsActions: List<LibraryItemsAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
-    engines: DrawViewEngines = DrawViewEngines.None,
+    engines: PageboardEngines = PageboardEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
     search: LibrarySearch? = null,
     onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
@@ -106,7 +106,7 @@ public fun DocumentLibrary(
     val gridState = rememberLibraryGridState(fileExplorerViewModel)
     // The library and the editor adapt to the window, the input and the platform; their commands
     // reach the shortcuts and the menu bar of the application (see CommandRoot)
-    CompositionLocalProvider(LocalDrawViewEngines provides engines) {
+    CompositionLocalProvider(LocalPageboardEngines provides engines) {
         AdaptiveRoot(modifier = modifier) {
             CommandRoot {
                 if (session == null) {

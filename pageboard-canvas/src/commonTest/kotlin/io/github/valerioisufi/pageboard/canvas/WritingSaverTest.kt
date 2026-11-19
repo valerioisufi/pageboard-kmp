@@ -3,10 +3,10 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.CommittedChange
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,19 +21,19 @@ import kotlinx.coroutines.test.runTest
 /** When the text being written is saved by itself (see `WritingSaver`). */
 class WritingSaverTest {
 
-    private fun controller(scope: CoroutineScope): DrawViewController {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+    private fun controller(scope: CoroutineScope): PageboardController {
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
     private fun TextEditorManager.type(text: String) = updateValue(TextFieldValue(text, TextRange(text.length)))
 
-    private fun committed(controller: DrawViewController) = mutableListOf<CommittedChange>().also { list ->
+    private fun committed(controller: PageboardController) = mutableListOf<CommittedChange>().also { list ->
         controller.session.addObserver { list.add(it) }
     }
 
-    private val DrawViewController.savedTexts: List<String> get() = document.pages[0].texts.map { it.text }
+    private val PageboardController.savedTexts: List<String> get() = document.pages[0].texts.map { it.text }
 
     private fun TestScope.wait(ms: Long) {
         advanceTimeBy(ms)
@@ -80,7 +80,7 @@ class WritingSaverTest {
     fun nothingIsSavedOnceTheWritingEndsOrWhenNothingChanged() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             text = "stored"
             x = 20f
             y = 30f

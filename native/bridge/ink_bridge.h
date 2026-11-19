@@ -59,7 +59,7 @@ InkStrokeBuilderHandle ink_stroke_builder_create(void);
  * Starts a new stroke with the specified brush.
  * @param stroke_unit_length_cm Physical length (in centimeters) of one stroke unit, or a value
  *        <= 0 if the relationship between stroke space and physical space is unknown.
- *        DrawView feeds strokes in page millimeters, so it passes 0.1.
+ *        Pageboard feeds strokes in page millimeters, so it passes 0.1.
  */
 void ink_stroke_builder_start(
     InkStrokeBuilderHandle handle,

@@ -14,7 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.observe
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.geometry.pt
@@ -23,7 +23,7 @@ import io.github.valerioisufi.pageboard.ui.components.HybridScale
 import io.github.valerioisufi.pageboard.ui.components.LocalToolSizes
 import io.github.valerioisufi.pageboard.ui.components.ToolButton
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import org.jetbrains.compose.resources.stringResource
 
@@ -35,7 +35,7 @@ import org.jetbrains.compose.resources.stringResource
  * again, or by a long press), the imports when [withImports].
  */
 @Composable
-internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean, withHistory: Boolean = true) {
+internal fun RowScope.EditorTools(controller: PageboardController, commands: EditorCommands, withImports: Boolean, withHistory: Boolean = true) {
     // Whether the document has PDF pages, as it changes (not at every change of the document)
     val hasPdfPages by controller.document.observe { hasPdfPages() }
     val pdfImportAvailable = controller.tileManager.tileRenderer.pdfAdapter != null
@@ -48,32 +48,32 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
         ToolDivider()
     }
 
-    ToolWithSettings(controller, Tool.INK_PEN, commands.pen, DrawViewIcons.Pen, openSettings, { openSettings = it }) {
+    ToolWithSettings(controller, Tool.INK_PEN, commands.pen, PageboardIcons.Pen, openSettings, { openSettings = it }) {
         InkSettings(controller, Tool.INK_PEN, stringResource(Res.string.tool_pen), InkPalette.inks, HybridScale(0.1f..15f, linearThreshold = 3f, linearProportion = 0.5f))
     }
-    ToolWithSettings(controller, Tool.INK_HIGHLIGHTER, commands.highlighter, DrawViewIcons.Highlighter, openSettings, { openSettings = it }) {
+    ToolWithSettings(controller, Tool.INK_HIGHLIGHTER, commands.highlighter, PageboardIcons.Highlighter, openSettings, { openSettings = it }) {
         // Much wider range for the highlighters, linear only up to 8 pt
         InkSettings(controller, Tool.INK_HIGHLIGHTER, stringResource(Res.string.tool_highlighter), InkPalette.highlights, HybridScale(1f..30f, linearThreshold = 8f, linearProportion = 0.3f))
     }
     val shapeTarget = remember(controller) { ShapeToolTarget(controller) }
     ToolWithSettings(
-        controller, Tool.SHAPES, commands.shapeTool, DrawViewIcons.Shapes, openSettings, { openSettings = it },
+        controller, Tool.SHAPES, commands.shapeTool, PageboardIcons.Shapes, openSettings, { openSettings = it },
         iconContent = { ShapeToolIcon(controller.shapeInserter.style) }
     ) {
         ShapeSettings(shapeTarget, shapesTitle(), withHint = true)
     }
     if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
-        ToolWithSettings(controller, Tool.TEXT_MARKUP, commands.textMarkup, DrawViewIcons.TextMarkup, openSettings, { openSettings = it }) {
+        ToolWithSettings(controller, Tool.TEXT_MARKUP, commands.textMarkup, PageboardIcons.TextMarkup, openSettings, { openSettings = it }) {
             MarkupSettings(controller)
         }
     }
-    ToolWithSettings(controller, Tool.ERASER, commands.eraser, DrawViewIcons.Eraser, openSettings, { openSettings = it }) {
+    ToolWithSettings(controller, Tool.ERASER, commands.eraser, PageboardIcons.Eraser, openSettings, { openSettings = it }) {
         EraserSettings(controller)
     }
-    ToolWithSettings(controller, Tool.TEXT, commands.text, DrawViewIcons.Text, openSettings, { openSettings = it }) {
+    ToolWithSettings(controller, Tool.TEXT, commands.text, PageboardIcons.Text, openSettings, { openSettings = it }) {
         TextToolSettings(controller)
     }
-    ToolWithSettings(controller, Tool.LAZO, commands.lasso, DrawViewIcons.Lasso, openSettings, { openSettings = it }) {
+    ToolWithSettings(controller, Tool.LAZO, commands.lasso, PageboardIcons.Lasso, openSettings, { openSettings = it }) {
         LassoSettings(controller)
     }
     ToolButton(
@@ -84,13 +84,13 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
         selected = controller.selectedTool == Tool.PAN,
         command = commands.pan
     ) {
-        Icon(DrawViewIcons.Pan, contentDescription = stringResource(Res.string.draw_toolbar_action_pan))
+        Icon(PageboardIcons.Pan, contentDescription = stringResource(Res.string.draw_toolbar_action_pan))
     }
 
     if (withImports) {
         ToolDivider()
-        if (pdfImportAvailable) BarButton(commands.importPdf, DrawViewIcons.FileText, iconSize = barIcon)
-        BarButton(commands.importImage, DrawViewIcons.Image, iconSize = barIcon)
+        if (pdfImportAvailable) BarButton(commands.importPdf, PageboardIcons.FileText, iconSize = barIcon)
+        BarButton(commands.importImage, PageboardIcons.Image, iconSize = barIcon)
     }
 
     // The palette asked by a gesture of the stylus: the settings of the tool chosen (not the
@@ -107,8 +107,8 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
 @Composable
 internal fun EditorHistory(commands: EditorCommands) {
     val barIcon = LocalToolSizes.current.barIcon
-    BarButton(commands.undo, DrawViewIcons.Undo, iconSize = barIcon)
-    BarButton(commands.redo, DrawViewIcons.Redo, iconSize = barIcon)
+    BarButton(commands.undo, PageboardIcons.Undo, iconSize = barIcon)
+    BarButton(commands.redo, PageboardIcons.Redo, iconSize = barIcon)
 }
 
 /**
@@ -117,7 +117,7 @@ internal fun EditorHistory(commands: EditorCommands) {
  */
 @Composable
 private fun ToolWithSettings(
-    controller: DrawViewController,
+    controller: PageboardController,
     tool: Tool,
     command: Command,
     icon: ImageVector,

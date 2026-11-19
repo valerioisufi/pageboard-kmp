@@ -4,7 +4,7 @@ plugins {
     id("pageboard.jvm.natives")
 }
 
-description = "Synchronization of DrawView documents over the internet: iroh connections by device key, direct or through a relay"
+description = "Synchronization of Pageboard documents over the internet: iroh connections by device key, direct or through a relay"
 
 val irohBridge = rootProject.layout.projectDirectory.dir("native/iroh-bridge")
 val bridgeSources = fileTree(irohBridge) { exclude("target/**") }
@@ -85,7 +85,7 @@ tasks.named<LicensesTask>("pageboardLicenses") {
     licenses.from(rootProject.file("native/iroh-bridge/THIRD_PARTY_NOTICES.md"))
 }
 
-// The sync of DrawView is experimental for its users; the modules of the repository use it freely
+// The sync of Pageboard is experimental for its users; the modules of the repository use it freely
 kotlin {
     sourceSets.all {
         languageSettings.optIn("io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi")

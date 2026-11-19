@@ -9,7 +9,7 @@ import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.getInMemoryDatabaseBuilder
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import java.io.File
@@ -27,7 +27,7 @@ class IndexerBenchmark {
 
     @Test
     fun aPassAfterAStroke() = runBlocking {
-        val database = createDrawDatabase(getInMemoryDatabaseBuilder())
+        val database = createPageboardDatabase(getInMemoryDatabaseBuilder())
         val store = RoomDocumentStore(database, InkStrokeModeller)
         repeat(LIBRARY_SIZE) {
             store.insertDocument(SyntheticDocuments.notebook(pages = 4, strokesPerPage = 150, textsPerPage = 3, title = "Note $it", seed = it))

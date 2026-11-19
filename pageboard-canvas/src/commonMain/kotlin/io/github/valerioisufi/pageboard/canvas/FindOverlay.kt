@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 
 /**
@@ -17,7 +17,7 @@ internal object FindOverlay {
     private val CURRENT = Color(0xFFFFB74D)
     private val OUTLINE = Color(0xFFE65100)
 
-    fun draw(scope: DrawScope, controller: DrawViewController) = with(scope) {
+    fun draw(scope: DrawScope, controller: PageboardController) = with(scope) {
         val find = controller.find
         if (!find.isOpen || find.matches.isEmpty()) return@with
         val pages = controller.viewport.visiblePages().mapTo(HashSet()) { it.index }

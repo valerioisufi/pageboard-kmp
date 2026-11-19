@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.canvas.controller
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
+import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.UpdateElementContent
@@ -12,16 +12,16 @@ import io.github.valerioisufi.pageboard.model.geometry.Rect
  * document: added, then their value replaced (each one undone by undo, stored and sent to the
  * other devices). The editor places, selects, moves, rotates, resizes, copies and removes them
  * like the images, through their box; they are drawn by the renderers of
- * `DrawViewEngines.elements`.
+ * `PageboardEngines.elements`.
  */
-public class CustomElementManager internal constructor(private val controller: DrawViewController) {
+public class CustomElementManager internal constructor(private val controller: PageboardController) {
 
     /**
      * Adds an element of [type] of value [value] to the page [pageIndex], in [box] (page
      * millimeters), on top of the others, and selects it; `null` when the page does not exist or
      * the document may only be read.
      */
-    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement? =
+    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): CustomElement? =
         add(type, value, pageIndex, box, rotation = 0f, select = select)
 
     /**
@@ -29,10 +29,10 @@ public class CustomElementManager internal constructor(private val controller: D
      * millimeters) turned by [rotation] degrees around its center, on top of the others, and
      * selects it; `null` when the page does not exist or the document may only be read.
      */
-    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, rotation: Float, select: Boolean = true): DrawCustomElement? {
+    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, rotation: Float, select: Boolean = true): CustomElement? {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         if (box.isEmpty) return null
-        val element = DrawCustomElement(type.id).apply {
+        val element = CustomElement(type.id).apply {
             version = type.version
             payload = type.encode(value)
             x = box.left
@@ -50,7 +50,7 @@ public class CustomElementManager internal constructor(private val controller: D
      * Replaces the value of [element] (of [type]) with [value]; `false` when the element is no
      * longer in the document or the document may only be read.
      */
-    public fun <T : Any> update(element: DrawCustomElement, type: ElementType<T>, value: T): Boolean {
+    public fun <T : Any> update(element: CustomElement, type: ElementType<T>, value: T): Boolean {
         require(element.type == type.id) { "${element.type} is not of the type ${type.id}" }
         val (page, _) = controller.document.findElement(element.id) ?: return false
         return controller.session.submit(UpdateElementContent(page.id, element.id, type.version, type.encode(value))) != null

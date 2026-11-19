@@ -1,4 +1,4 @@
-// Convention plugins of the DrawView modules: how a library is built, checked and published
+// Convention plugins of the Pageboard modules: how a library is built, checked and published
 dependencyResolutionManagement {
     repositories {
         google {

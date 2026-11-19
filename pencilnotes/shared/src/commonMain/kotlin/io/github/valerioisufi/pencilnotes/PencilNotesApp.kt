@@ -31,7 +31,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.observe
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import io.github.valerioisufi.pageboard.agent.ui.CanvasPageEngine
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.pageboard.export.ExportWriters
 import io.github.valerioisufi.pageboard.export.PageImageExporter
@@ -77,7 +77,7 @@ import org.jetbrains.compose.resources.stringResource
 private val editorClipboard = EditorClipboard()
 
 /**
- * PencilNotes: the DrawView document library with the PencilNotes identity.
+ * PencilNotes: the Pageboard document library with the PencilNotes identity.
  *
  * @param commandHost the commands of the screen shown, for the menu bar and the shortcuts of the
  *   window of the desktop.
@@ -278,7 +278,7 @@ fun PencilNotesDocumentWindow(
  * fonts of this window, as an editor would (see `docs/plans/agent-ergonomics.md`).
  */
 @Composable
-private fun AgentPages(agents: PencilNotesAgents?, engines: DrawViewEngines) {
+private fun AgentPages(agents: PencilNotesAgents?, engines: PageboardEngines) {
     agents ?: return
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()

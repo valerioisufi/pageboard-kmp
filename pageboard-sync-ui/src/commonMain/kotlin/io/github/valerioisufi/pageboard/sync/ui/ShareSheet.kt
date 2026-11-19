@@ -56,7 +56,7 @@ import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.SegmentedChoice
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import kotlin.math.abs
 import org.jetbrains.compose.resources.StringResource
@@ -227,7 +227,7 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Bool
                 )
             }
         }
-        if (!compact) DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.sync_close), onClick = onClose)
+        if (!compact) DesignIconButton(PageboardIcons.Close, stringResource(Res.string.sync_close), onClick = onClose)
     }
 }
 
@@ -236,19 +236,19 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Bool
 private fun Notices(state: SharingState) {
     if (state.refused) {
         Notice(
-            DrawViewIcons.TriangleAlert,
+            PageboardIcons.TriangleAlert,
             stringResource(if (state.kind == InvitationKind.LIBRARY) Res.string.sync_share_library_refused else Res.string.sync_share_folder_refused),
             error = true
         )
     }
     if (state.shared && !state.isOwner) {
-        Notice(DrawViewIcons.Info, stringResource(Res.string.sync_invite_owner_only, state.owner))
+        Notice(PageboardIcons.Info, stringResource(Res.string.sync_invite_owner_only, state.owner))
     }
     if (state.shared && state.offline) {
-        Notice(DrawViewIcons.WifiOff, stringResource(Res.string.sync_no_network))
+        Notice(PageboardIcons.WifiOff, stringResource(Res.string.sync_no_network))
     }
     if (state.otherVersion) {
-        Notice(DrawViewIcons.TriangleAlert, stringResource(Res.string.sync_other_version), error = true)
+        Notice(PageboardIcons.TriangleAlert, stringResource(Res.string.sync_other_version), error = true)
     }
 }
 
@@ -319,7 +319,7 @@ private fun InvitationCard(
                 options = listOf(Role.EDITOR, Role.READER),
                 selected = invitation?.role ?: role,
                 label = { stringResource(roleLabel(it)) },
-                icon = { if (it == Role.READER) DrawViewIcons.Eye else DrawViewIcons.Pencil },
+                icon = { if (it == Role.READER) PageboardIcons.Eye else PageboardIcons.Pencil },
                 onSelect = { if (invitation != null) actions.invite(it, invitation.approval) else onRole(it) }
             )
         }
@@ -337,7 +337,7 @@ private fun InvitationCard(
                     clipboard.setText(AnnotatedString(invitation.link))
                     copied = true
                 }) {
-                    Icon(if (copied) DrawViewIcons.Check else DrawViewIcons.Copy, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(if (copied) PageboardIcons.Check else PageboardIcons.Copy, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(if (copied) Res.string.sync_link_copied else Res.string.sync_copy_link))
                 }
@@ -345,7 +345,7 @@ private fun InvitationCard(
             }
         } else if (state.shared) {
             TonalButton(onClick = { actions.invite(role, approval) }) {
-                Icon(DrawViewIcons.QrCode, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.QrCode, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(Res.string.sync_new_invitation))
             }
@@ -368,7 +368,7 @@ private fun LinkField(link: String) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(link, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-        DesignIconButton(DrawViewIcons.Copy, stringResource(Res.string.sync_copy_link), onClick = { clipboard.setText(AnnotatedString(link)) })
+        DesignIconButton(PageboardIcons.Copy, stringResource(Res.string.sync_copy_link), onClick = { clipboard.setText(AnnotatedString(link)) })
     }
 }
 
@@ -388,7 +388,7 @@ private fun ApprovalSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit)
             checked = checked,
             onCheckedChange = null,
             thumbContent = if (checked) {
-                { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+                { Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
             } else null
         )
     }
@@ -445,7 +445,7 @@ private fun InternetSection(settings: InternetSettings, onChange: (InternetSetti
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(DrawViewIcons.Globe, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Icon(PageboardIcons.Globe, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(stringResource(Res.string.sync_internet), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                 Text(stringResource(Res.string.sync_internet_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -454,7 +454,7 @@ private fun InternetSection(settings: InternetSettings, onChange: (InternetSetti
                 checked = settings.enabled,
                 onCheckedChange = null,
                 thumbContent = if (settings.enabled) {
-                    { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+                    { Icon(PageboardIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
                 } else null
             )
         }
@@ -545,7 +545,7 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
         }
         when {
             member.role == Role.OWNER -> Icon(
-                DrawViewIcons.Crown,
+                PageboardIcons.Crown,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(end = 8.dp).size(18.dp)
@@ -560,12 +560,12 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
 private fun MemberMenu(member: SharingPerson, actions: SharingActions) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        DesignIconButton(DrawViewIcons.MoreHorizontal, member.name, onClick = { expanded = true }, selected = expanded)
+        DesignIconButton(PageboardIcons.MoreHorizontal, member.name, onClick = { expanded = true }, selected = expanded)
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             val other = if (member.role == Role.READER) Role.EDITOR else Role.READER
             MenuItem(
                 text = stringResource(if (other == Role.READER) Res.string.sync_make_reader else Res.string.sync_make_editor),
-                icon = rememberVectorPainter(if (other == Role.READER) DrawViewIcons.Eye else DrawViewIcons.Pencil),
+                icon = rememberVectorPainter(if (other == Role.READER) PageboardIcons.Eye else PageboardIcons.Pencil),
                 onClick = {
                     expanded = false
                     actions.setRole(member.device, other)
@@ -573,7 +573,7 @@ private fun MemberMenu(member: SharingPerson, actions: SharingActions) {
             )
             MenuItem(
                 text = stringResource(Res.string.sync_remove),
-                icon = rememberVectorPainter(DrawViewIcons.LogOut),
+                icon = rememberVectorPainter(PageboardIcons.LogOut),
                 destructive = true,
                 onClick = {
                     expanded = false
@@ -598,7 +598,7 @@ private fun ShareFooter(state: SharingState, actions: SharingActions, compact: B
         if (!state.shared) {
             TextButton(onClick = actions::close) { Text(stringResource(Res.string.sync_cancel)) }
             Button(onClick = onShare) {
-                Icon(DrawViewIcons.UserPlus, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.UserPlus, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(Res.string.sync_share))
             }
@@ -607,13 +607,13 @@ private fun ShareFooter(state: SharingState, actions: SharingActions, compact: B
         val stop = stringResource(if (state.isOwner) Res.string.sync_end_sharing else Res.string.sync_leave)
         if (compact) {
             OutlineButton(onClick = actions::stop, contentColor = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f)) {
-                Icon(DrawViewIcons.LogOut, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.LogOut, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stop, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         } else {
             TextButton(onClick = actions::stop) {
-                Icon(DrawViewIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stop, color = MaterialTheme.colorScheme.error)
             }

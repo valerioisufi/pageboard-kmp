@@ -1,4 +1,4 @@
-# DrawView
+# Pageboard
 
 **Kotlin Multiplatform libraries for drawing, handwriting and note-taking** on Android, iOS and the
 desktop (JVM), and **PencilNotes**, the note-taking application built on them.
@@ -50,13 +50,13 @@ A minimal application is a theme around `DocumentLibrary`:
 
 ```kotlin
 object MyNotes {
-    val documents by lazy { OpenDocuments(RoomDocumentStore(createDrawDatabase(), InkStrokeModeller)) }
+    val documents by lazy { OpenDocuments(RoomDocumentStore(createPageboardDatabase(), InkStrokeModeller)) }
     val sessions = EditorSessions()
 }
 
 @Composable
 fun App() {
-    DrawViewTheme {
+    PageboardTheme {
         DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
@@ -103,7 +103,7 @@ The code is under the [MIT License](LICENSE). The name **PencilNotes** and its i
 
 ### Third-party libraries
 
-DrawView builds on these open-source projects:
+Pageboard builds on these open-source projects:
 * **[Google Ink](https://github.com/google/ink)** ([Apache 2.0](./native/ink/LICENSE)) - Freehand stroke generation and geometry modeling.
 * **[Abseil C++](https://github.com/abseil/abseil-cpp)** ([Apache 2.0](./native/external/abseil-cpp/LICENSE)) - C++ standard library extensions used by Google Ink.
 * **[libtess2](https://github.com/memononen/libtess2)** ([SGI Free Software License B](./native/external/libtess2/LICENSE.txt)) - Polygon tessellation used by Google Ink.

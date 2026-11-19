@@ -54,7 +54,7 @@ import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.EditorPanel
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res as UiRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
@@ -92,11 +92,11 @@ internal fun lecturePanel(
     title = { stringResource(Res.string.lecture_title) },
     isOpen = { assistant.isPanelOpen },
     onClose = { assistant.isPanelOpen = false },
-    icon = DrawViewIcons.Sparkles,
+    icon = PageboardIcons.Sparkles,
     actions = {
         // The settings of the models, where they are
         DesignIconButton(
-            icon = DrawViewIcons.Sliders,
+            icon = PageboardIcons.Sliders,
             label = stringResource(Res.string.lecture_action_settings),
             onClick = { state.settingsShown = true },
             tint = MaterialTheme.colorScheme.onSurface
@@ -177,7 +177,7 @@ internal fun PanelContent(assistant: LectureAssistant, documentId: String, edito
 @Composable
 private fun IdleSection(assistant: LectureAssistant, documentId: String, onStart: () -> Unit, onImport: () -> Unit) {
     if (!assistant.isRecordingSupported) {
-        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_unsupported), NoticeTone.Neutral)
+        LectureNotice(PageboardIcons.Mic, stringResource(Res.string.lecture_unsupported), NoticeTone.Neutral)
         return
     }
     // A recording at a time; an import is always taken, and waits its turn to be transcribed
@@ -189,13 +189,13 @@ private fun IdleSection(assistant: LectureAssistant, documentId: String, onStart
     )
     if (assistant.canGenerate) PrivacyNote(privacyNote(assistant.settingsStore.settings))
     Button(onClick = onStart, enabled = canRecord, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-        Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(22.dp))
+        Icon(PageboardIcons.Mic, contentDescription = null, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(10.dp))
         Text(stringResource(Res.string.lecture_action_record), style = MaterialTheme.typography.titleMedium)
     }
     if (assistant.canImportAndExport) {
         OutlineButton(onClick = onImport, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-            Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(PageboardIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.lecture_action_import))
         }
@@ -215,7 +215,7 @@ internal fun PrivacyNote(text: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Icon(DrawViewIcons.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Icon(PageboardIcons.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
         Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -280,7 +280,7 @@ private fun LectureRow(summary: LectureSummary, onClick: () -> Unit, onDelete: (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        IconTile(DrawViewIcons.Mic, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+        IconTile(PageboardIcons.Mic, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
         Column(modifier = Modifier.weight(1f)) {
             Text(lectureDate(summary.startedAt), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
@@ -297,11 +297,11 @@ private fun LectureRow(summary: LectureSummary, onClick: () -> Unit, onDelete: (
         }
         if (onDelete != null) {
             Box {
-                DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.lecture_delete), onClick = { menu = true }, selected = menu)
+                DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.lecture_delete), onClick = { menu = true }, selected = menu)
                 DesignMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     MenuItem(
                         text = stringResource(Res.string.lecture_delete),
-                        icon = rememberVectorPainter(DrawViewIcons.Trash),
+                        icon = rememberVectorPainter(PageboardIcons.Trash),
                         destructive = true,
                         onClick = {
                             menu = false
@@ -323,7 +323,7 @@ internal fun lectureDate(epochMs: Long): String = formatShortDateTime(epochMs, s
 internal fun DeleteLectureDialog(summary: LectureSummary, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(DrawViewIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+        icon = { Icon(PageboardIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(stringResource(Res.string.lecture_delete_title), textAlign = TextAlign.Center) },
         text = {
             Text(

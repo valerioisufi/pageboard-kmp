@@ -9,10 +9,10 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.scene.ComposeScenePointer
 import androidx.compose.ui.unit.Density
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +23,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
 /**
- * A stroke held still at its end becomes its shape, sent to a [DrawCanvas] as pointer events: a
+ * A stroke held still at its end becomes its shape, sent to a [PageCanvas] as pointer events: a
  * stroke lifted at once, or looking like no shape, stays as drawn.
  */
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
@@ -145,14 +145,14 @@ class ShapeGesturesTest {
         )
     }
 
-    private fun strokes(controller: DrawViewController): List<DrawStroke> = controller.document.pages.flatMap { it.strokes }
+    private fun strokes(controller: PageboardController): List<StrokeElement> = controller.document.pages.flatMap { it.strokes }
 
-    private fun withCanvas(block: (ImageComposeScene, DrawViewController) -> Unit) {
+    private fun withCanvas(block: (ImageComposeScene, PageboardController) -> Unit) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.selectTool(Tool.INK_PEN)
         val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) {
-            DrawCanvas(controller)
+            PageCanvas(controller)
         }
         try {
             scene.render()

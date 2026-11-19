@@ -33,7 +33,7 @@ import io.github.valerioisufi.pageboard.export.FolderDocumentItem
 import io.github.valerioisufi.pageboard.export.PdfExporter
 import io.github.valerioisufi.pageboard.ui.platform.FileReveal
 import io.github.valerioisufi.pageboard.store.DocumentSummary
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
 import java.util.Locale
 import kotlin.test.BeforeTest
@@ -71,7 +71,7 @@ class ExportScreenshotTest {
     fun states() = listOf(false, true).forEach { dark ->
         runDesktopComposeUiTest(width = 1440, height = 1320) {
             setContent {
-                DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                PageboardTheme(darkTheme = dark, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) {
                         Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                             Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
@@ -103,7 +103,7 @@ class ExportScreenshotTest {
         runDesktopComposeUiTest(width = 520, height = 900) {
             val reveal = FileReveal(show = {}, open = {})
             setContent {
-                DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                PageboardTheme(darkTheme = dark, dynamicColor = false) {
                     Column(
                         modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)

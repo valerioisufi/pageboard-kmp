@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.change.AddElements
@@ -38,15 +38,15 @@ import kotlinx.coroutines.launch
  * - A long press on a mark, or a tap with the tool, selects it: its text can be copied, its
  *   style changed ([restyleSelectedMarkup]) and the mark deleted ([deleteSelectedMarkup]).
  */
-public class TextMarkupManager internal constructor(private val controller: DrawViewController) {
+public class TextMarkupManager internal constructor(private val controller: PageboardController) {
 
     /**
      * The characters of the text of [pdf] (shown on [page]) from [anchor] to [focus], both
      * included: [anchor] stays where the selection started, [focus] follows the pointer.
      */
     public class TextRange(
-        public val page: DrawPage,
-        public val pdf: DrawPdf,
+        public val page: Page,
+        public val pdf: PdfElement,
         public val layout: PdfTextLayout,
         public val anchor: Int,
         public val focus: Int
@@ -74,7 +74,7 @@ public class TextMarkupManager internal constructor(private val controller: Draw
     public class Marking(public val range: TextRange, public val kind: TextMarkupKind, public val color: Int, public val isShown: Boolean)
 
     /** A mark of [page] selected to be copied, restyled or deleted. */
-    public class SelectedMarkup(public val page: DrawPage, public val markup: DrawTextMarkup)
+    public class SelectedMarkup(public val page: Page, public val markup: TextMarkupElement)
 
     public enum class Handle { START, END }
 
@@ -112,10 +112,10 @@ public class TextMarkupManager internal constructor(private val controller: Draw
      * Text layout of the PDF page shown by [pdf], read once (and kept for the last pages used),
      * or `null` when PDFs are not supported or the page cannot be read.
      */
-    internal fun layoutOf(pdf: DrawPdf): PdfTextLayout? {
+    internal fun layoutOf(pdf: PdfElement): PdfTextLayout? {
         val adapter = controller.tileManager.tileRenderer.pdfAdapter ?: return null
         val resource = controller.document.findResource(pdf.resourceId) ?: return null
-        if (resource.type != DrawResource.ResourceType.PDF) return null
+        if (resource.type != DocumentResource.ResourceType.PDF) return null
         val key = resource.path + "#" + pdf.pdfPageIndex
         syncLock(layoutsLock) {
             if (layouts.containsKey(key)) {
@@ -163,7 +163,7 @@ public class TextMarkupManager internal constructor(private val controller: Draw
         val preset = controller.toolManager.activePreset(Tool.TEXT_MARKUP) ?: return false
         val hit = textAt(screen, tolerancePx)
         if (hit == null) {
-            if (isPdfWithoutTextAt(screen)) controller.emitMessage(DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT)
+            if (isPdfWithoutTextAt(screen)) controller.emitMessage(PageboardController.Message.PDF_PAGE_WITHOUT_TEXT)
             return false
         }
         clearSelection()
@@ -181,7 +181,7 @@ public class TextMarkupManager internal constructor(private val controller: Draw
     }
 
     /** Marks the passage swept by the tool (nothing when the pointer has not moved). */
-    internal fun finishMarking(): DrawTextMarkup? {
+    internal fun finishMarking(): TextMarkupElement? {
         val current = marking ?: return null
         marking = null
         if (!current.isShown) return null
@@ -298,7 +298,7 @@ public class TextMarkupManager internal constructor(private val controller: Draw
     }
 
     /** Marks the selected text as [kind] with [color], and drops the selection. */
-    public fun markSelection(kind: TextMarkupKind, color: Int): DrawTextMarkup? {
+    public fun markSelection(kind: TextMarkupKind, color: Int): TextMarkupElement? {
         val selection = textSelection ?: return null
         textSelection = null
         return addMarkup(selection, kind, color)
@@ -329,7 +329,7 @@ public class TextMarkupManager internal constructor(private val controller: Draw
      * Transformation from the points of a PDF page to the screen, through [pointsToPageMm] (its
      * points to the millimeters of [page]), or `null` when the page is not laid out.
      */
-    internal fun pointsToScreen(page: DrawPage, pointsToPageMm: Matrix2D): Matrix2D? {
+    internal fun pointsToScreen(page: Page, pointsToPageMm: Matrix2D): Matrix2D? {
         val pageIndex = controller.document.pages.indexOf(page)
         if (pageIndex < 0) return null
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return null
@@ -377,12 +377,12 @@ public class TextMarkupManager internal constructor(private val controller: Draw
         return range.layout.charIndexForSelection(point.x, point.y).takeIf { it >= 0 }
     }
 
-    private fun addMarkup(range: TextRange, kind: TextMarkupKind, color: Int): DrawTextMarkup? {
+    private fun addMarkup(range: TextRange, kind: TextMarkupKind, color: Int): TextMarkupElement? {
         val page = range.page
         val pageIndex = controller.document.pages.indexOf(page)
         val rects = range.rects
         if (pageIndex < 0 || rects.isEmpty()) return null
-        val markup = DrawTextMarkup(
+        val markup = TextMarkupElement(
             resourceId = range.pdf.resourceId,
             pdfPageIndex = range.pdf.pdfPageIndex,
             pdfWidthPt = range.layout.widthPt,

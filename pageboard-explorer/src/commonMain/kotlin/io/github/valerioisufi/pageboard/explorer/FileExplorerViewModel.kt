@@ -16,7 +16,7 @@ import io.github.valerioisufi.pageboard.store.FolderSummary
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.TrashedItem
 import io.github.valerioisufi.pageboard.ui.extension.DocumentTag
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.name_error_exists
 import io.github.valerioisufi.pageboard.ui.screen.DocumentNames
 import kotlinx.coroutines.launch
@@ -490,7 +490,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         } else {
             existNameInDirectory(name)
         }
-        return if (taken) DrawViewRes.string.name_error_exists else null
+        return if (taken) PageboardRes.string.name_error_exists else null
     }
 
     fun existNameInDirectory(name: String, except: FileItem? = null): Boolean = existNameInFolder(name, currentFolderId, except)
@@ -540,7 +540,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** The error of [name] for a new note in [folderId] (`null`: the root), `null` when valid. */
     fun validateNoteName(name: String, folderId: String?): StringResource? {
         DocumentNames.syntaxError(name)?.let { return it }
-        if (documents.any { it.folderId == folderId && it.name == name }) return DrawViewRes.string.name_error_exists
+        if (documents.any { it.folderId == folderId && it.name == name }) return PageboardRes.string.name_error_exists
         return null
     }
 

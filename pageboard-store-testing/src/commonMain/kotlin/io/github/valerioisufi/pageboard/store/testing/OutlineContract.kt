@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pageboard.store.testing
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.DocumentOutline
@@ -17,19 +17,19 @@ import kotlin.test.assertNull
 /**
  * What every [DocumentStore] reads of a document without its strokes ([DocumentStore.loadOutline]):
  * the outline of the document it loads whole, its pages shown and their elements shown in their
- * order. Run by the tests of each store, of DrawView or of an application, on an empty store.
+ * order. Run by the tests of each store, of Pageboard or of an application, on an empty store.
  */
 public suspend fun checkOutline(store: DocumentStore) {
     assertNull(store.loadOutline("missing"), "no document")
 
     val document = SyntheticDocuments.notebook(pages = 3, strokesPerPage = 20, textsPerPage = 2, removedFraction = 0.2f, title = "Outline")
-    val pdf = DrawResource(newElementId(), DrawResource.ResourceType.PDF, "outline-slides.pdf", "hash-of-the-slides")
+    val pdf = DocumentResource(newElementId(), DocumentResource.ResourceType.PDF, "outline-slides.pdf", "hash-of-the-slides")
     document.addResource(pdf)
     val (first, second, third) = document.pages
-    first.add(DrawPdf(pdfPageIndex = 4).apply { resourceId = pdf.id })
-    first.add(DrawCustomElement("formula").apply { payload = "x^2".encodeToByteArray(); x = 30f; y = 40f; width = 20f; height = 8f })
+    first.add(PdfElement(pdfPageIndex = 4).apply { resourceId = pdf.id })
+    first.add(CustomElement("formula").apply { payload = "x^2".encodeToByteArray(); x = 30f; y = 40f; width = 20f; height = 8f })
     // A text erased: kept, hidden
-    val erased = DrawText().apply { text = "erased"; x = 10f; y = 10f }
+    val erased = TextElement().apply { text = "erased"; x = 10f; y = 10f }
     second.add(erased)
     second.remove(erased)
     erased.removed = Stamp(2L, 0, "outline")

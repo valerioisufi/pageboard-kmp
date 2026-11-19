@@ -58,14 +58,14 @@ import io.github.valerioisufi.pageboard.ui.components.BadgeTone
 import io.github.valerioisufi.pageboard.ui.extension.DocumentTag
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The lecture assistant in the DrawView editor: a button of the top bar (the recording time while
+ * The lecture assistant in the Pageboard editor: a button of the top bar (the recording time while
  * recording), the assistant panel (placed by the editor beside the canvas or rising from the
  * bottom over it; also shown and hidden from the menus), its settings and the hints over the
  * canvas. Closing the editor does not stop the recording (see [LectureRecordingIndicator]).
@@ -77,7 +77,7 @@ public fun LectureAssistant.editorExtension(): EditorExtension {
         label = { stringResource(Res.string.lecture_title) },
         group = CommandGroup.VIEW,
         section = 2,
-        icon = { rememberVectorPainter(DrawViewIcons.Sparkles) },
+        icon = { rememberVectorPainter(PageboardIcons.Sparkles) },
         isChecked = { isPanelOpen }
     ) { isPanelOpen = !isPanelOpen }
     val panelState = LecturePanelState()
@@ -209,7 +209,7 @@ public fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument
         color = MaterialTheme.colorScheme.inverseSurface,
         contentColor = MaterialTheme.colorScheme.inverseOnSurface,
         shape = shape,
-        modifier = modifier.elevation(DrawViewElevation.Level2, shape)
+        modifier = modifier.elevation(PageboardElevation.Level2, shape)
     ) {
         Row(
             modifier = Modifier.height(52.dp).padding(start = 16.dp, end = 8.dp),
@@ -246,7 +246,7 @@ public fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument
                         .background(MaterialTheme.colorScheme.inverseOnSurface)
                         .clickable(onClickLabel = stop) { recorder.stop() }
                 ) {
-                    Icon(DrawViewIcons.Stop, contentDescription = stop, tint = MaterialTheme.colorScheme.inverseSurface, modifier = Modifier.size(16.dp))
+                    Icon(PageboardIcons.Stop, contentDescription = stop, tint = MaterialTheme.colorScheme.inverseSurface, modifier = Modifier.size(16.dp))
                 }
             } else {
                 Spacer(Modifier.width(8.dp))
@@ -260,7 +260,7 @@ public fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
     id = "lecture",
     label = { stringResource(Res.string.lecture_tag) },
     filterLabel = { stringResource(Res.string.lecture_tag_filter) },
-    icon = DrawViewIcons.Mic,
+    icon = PageboardIcons.Mic,
     tone = BadgeTone.Blue,
     documents = { documentsWithLectures }
 )
@@ -325,7 +325,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
     } else {
         Box(modifier = Modifier.zIndex(1f)) {
             EditorActionButton(
-                icon = DrawViewIcons.Sparkles,
+                icon = PageboardIcons.Sparkles,
                 label = panel.label(),
                 onClick = togglePanel,
                 active = true,

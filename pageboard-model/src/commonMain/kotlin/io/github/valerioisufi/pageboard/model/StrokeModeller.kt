@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.model
 
 /**
  * Models a whole stroke from its inputs: the triangles drawn and therefore the bounds of the
- * stroke. A document models with its [DrawDocument.strokeModeller] the strokes it receives as
+ * stroke. A document models with its [Document.strokeModeller] the strokes it receives as
  * data (loaded, from another device, put back by undo).
  *
  * The meshes are local: the inputs are what is stored and synchronized, so two devices modeling

@@ -31,7 +31,7 @@ import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.pageboard.ui.extension.LibrarySelection
 import io.github.valerioisufi.pageboard.ui.screen.EditorActionButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -87,7 +87,7 @@ public class DocumentExportUi(
         label = { stringResource(Res.string.export_action) },
         group = CommandGroup.FILE,
         section = 1,
-        icon = { rememberVectorPainter(DrawViewIcons.Share) },
+        icon = { rememberVectorPainter(PageboardIcons.Share) },
         shortcuts = listOf(Shortcut(Key.E, primary = true, shift = true))
     ) { showSheet(context) }
 
@@ -96,7 +96,7 @@ public class DocumentExportUi(
         id = "export-pages",
         label = { stringResource(Res.string.export_action) },
         group = CommandGroup.FILE,
-        icon = { rememberVectorPainter(DrawViewIcons.Share) },
+        icon = { rememberVectorPainter(PageboardIcons.Share) },
         isEnabled = { context.pages.selection.count > 0 }
     ) { showSheet(context) }
 
@@ -105,7 +105,7 @@ public class DocumentExportUi(
      * on the folder shown (see `DocumentLibrary.itemsActions`), ⇧⌘E as in the editor.
      */
     public val libraryAction: LibraryItemsAction = LibraryItemsAction(
-        icon = DrawViewIcons.Share,
+        icon = PageboardIcons.Share,
         label = { stringResource(Res.string.export_action) },
         folderLabel = { home -> stringResource(if (home) Res.string.export_all_action else Res.string.export_folder_action) },
         shortcut = Shortcut(Key.E, primary = true, shift = true),
@@ -131,7 +131,7 @@ public class DocumentExportUi(
     public val editorExtension: EditorExtension = EditorExtension {
         toolbarActions { context ->
             val command = remember(context) { exportCommand(context) }
-            EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
+            EditorActionButton(PageboardIcons.Share, command.label(), onClick = command.perform)
         }
         canvasOverlay { context ->
             ExportStatusHost(
@@ -155,7 +155,7 @@ public class DocumentExportUi(
      * the format Archive) added as new notes, in a new folder named after the file.
      */
     public val importAction: LibraryAction = LibraryAction(
-        icon = DrawViewIcons.Download,
+        icon = PageboardIcons.Download,
         label = { stringResource(Res.string.import_archive_action) },
         content = { onDone -> ImportArchiveDialog(importer, onDone) }
     )

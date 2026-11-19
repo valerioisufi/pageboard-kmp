@@ -65,10 +65,10 @@ import io.github.valerioisufi.pageboard.ui.components.IconButtonStyle
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
 import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.util.formatDate
 import io.github.valerioisufi.pageboard.ui.util.formatDateTime
 import org.jetbrains.compose.resources.pluralStringResource
@@ -101,7 +101,7 @@ internal fun LibraryDetailsPane(actions: ItemActions, commands: LibraryCommands,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                DesignIconButton(DrawViewIcons.Close, stringResource(DrawViewRes.string.common_action_close), onClose)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onClose)
             }
             Spacer(modifier = Modifier.height(18.dp))
             val itemCommands = remember(commands, item) { commands.forItem(item) }
@@ -143,7 +143,7 @@ internal fun ColumnScope.ItemDetails(item: FileItem, actions: ItemActions, previ
         }
     }
     Spacer(modifier = Modifier.height(18.dp))
-    val monthNames = stringArrayResource(DrawViewRes.array.date_months_short)
+    val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
     DetailRow(stringResource(Res.string.explorer_details_modified), remember(item.modifiedAt, monthNames) { formatDateTime(item.modifiedAt, monthNames).trimStart('0') })
     DetailRow(stringResource(Res.string.explorer_details_created), remember(item.createdAt, monthNames) { formatDate(item.createdAt, monthNames) })
     if (item.type == FileType.FILE) {
@@ -182,7 +182,7 @@ private fun PaneActions(item: FileItem, itemCommands: List<Command>) {
                 contentPadding = ButtonDefaults.ContentPadding,
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) {
-                Icon(if (item.type == FileType.FILE) DrawViewIcons.Pencil else DrawViewIcons.FolderOpen, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(if (item.type == FileType.FILE) PageboardIcons.Pencil else PageboardIcons.FolderOpen, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     stringResource(if (item.type == FileType.FILE) Res.string.explorer_open_note else Res.string.explorer_open_folder),
@@ -210,7 +210,7 @@ internal fun MoreCommandsButton(commands: List<Command>) {
     if (commands.isEmpty()) return
     var expanded by remember { mutableStateOf(false) }
     Box {
-        DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)
+        DesignIconButton(PageboardIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)
         CommandMenu(commands = commands, expanded = expanded, onDismissRequest = { expanded = false })
     }
 }
@@ -265,7 +265,7 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
                 }
             }
             TonalButton(onClick = { commands.move.performIfEnabled() }, modifier = Modifier.fillMaxWidth()) {
-                Icon(DrawViewIcons.FolderInput, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.FolderInput, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(commands.move.label())
             }
@@ -275,7 +275,7 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
                 borderColor = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(DrawViewIcons.Trash, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(PageboardIcons.Trash, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(commands.delete.label())
             }
@@ -306,7 +306,7 @@ internal fun ItemSheet(item: FileItem, itemCommands: List<Command>, actions: Ite
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                val monthNames = stringArrayResource(DrawViewRes.array.date_months_short)
+                val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
                 Text(
                     stringResource(Res.string.explorer_label_last_modified, remember(item.modifiedAt, monthNames) { formatDateTime(item.modifiedAt, monthNames).trimStart('0') }),
                     style = MaterialTheme.typography.bodySmall,
@@ -322,7 +322,7 @@ internal fun ItemSheet(item: FileItem, itemCommands: List<Command>, actions: Ite
                     command.performIfEnabled()
                 }
                 if (command.id == OpenCommand) {
-                    SheetCommand(rememberVectorPainter(DrawViewIcons.Info), stringResource(Res.string.explorer_action_details), false) { details = true }
+                    SheetCommand(rememberVectorPainter(PageboardIcons.Info), stringResource(Res.string.explorer_action_details), false) { details = true }
                 }
             }
         }
@@ -350,7 +350,7 @@ private fun ColumnScope.DetailsSheetContent(item: FileItem, itemCommands: List<C
                 },
                 modifier = Modifier.weight(1f).height(52.dp)
             ) {
-                Icon(DrawViewIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(PageboardIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     stringResource(if (item.type == FileType.FILE) Res.string.explorer_open_note else Res.string.explorer_open_folder),

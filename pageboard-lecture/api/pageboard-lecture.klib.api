@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-lecture>
+// Library unique name: <pageboard-kmp:pageboard-lecture>
 final enum class io.github.valerioisufi.pageboard.lecture.audio/CaptureEvent : kotlin/Enum<io.github.valerioisufi.pageboard.lecture.audio/CaptureEvent> { // io.github.valerioisufi.pageboard.lecture.audio/CaptureEvent|null[0]
     enum entry DEVICE_CHANGED // io.github.valerioisufi.pageboard.lecture.audio/CaptureEvent.DEVICE_CHANGED|null[0]
     enum entry INTERRUPTED // io.github.valerioisufi.pageboard.lecture.audio/CaptureEvent.INTERRUPTED|null[0]
@@ -1664,8 +1664,8 @@ final object io.github.valerioisufi.pageboard.lecture/LectureAnchors { // io.git
     final const val MIN_SHARED_WORDS // io.github.valerioisufi.pageboard.lecture/LectureAnchors.MIN_SHARED_WORDS|{}MIN_SHARED_WORDS[0]
         final fun <get-MIN_SHARED_WORDS>(): kotlin/Double // io.github.valerioisufi.pageboard.lecture/LectureAnchors.MIN_SHARED_WORDS.<get-MIN_SHARED_WORDS>|<get-MIN_SHARED_WORDS>(){}[0]
 
-    final fun anchorOf(io.github.valerioisufi.pageboard.model/DrawPage, kotlin/Long, kotlin/Long, kotlin/Long): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.lecture/LectureAnchors.anchorOf|anchorOf(io.github.valerioisufi.pageboard.model.DrawPage;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
-    final fun quoteAnchor(io.github.valerioisufi.pageboard.model/DrawPage, kotlin/String, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model.geometry/Rect, kotlin/String>> = ..., io.github.valerioisufi.pageboard.model/PdfTextLayout? = ...): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.lecture/LectureAnchors.quoteAnchor|quoteAnchor(io.github.valerioisufi.pageboard.model.DrawPage;kotlin.String;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.pageboard.model.geometry.Rect,kotlin.String>>;io.github.valerioisufi.pageboard.model.PdfTextLayout?){}[0]
+    final fun anchorOf(io.github.valerioisufi.pageboard.model/Page, kotlin/Long, kotlin/Long, kotlin/Long): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.lecture/LectureAnchors.anchorOf|anchorOf(io.github.valerioisufi.pageboard.model.Page;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+    final fun quoteAnchor(io.github.valerioisufi.pageboard.model/Page, kotlin/String, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model.geometry/Rect, kotlin/String>> = ..., io.github.valerioisufi.pageboard.model/PdfTextLayout? = ...): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.lecture/LectureAnchors.quoteAnchor|quoteAnchor(io.github.valerioisufi.pageboard.model.Page;kotlin.String;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.pageboard.model.geometry.Rect,kotlin.String>>;io.github.valerioisufi.pageboard.model.PdfTextLayout?){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.lecture/LectureMarkdown { // io.github.valerioisufi.pageboard.lecture/LectureMarkdown|null[0]
@@ -1824,7 +1824,7 @@ final val io.github.valerioisufi.pageboard.lecture/io_github_valerioisufi_pagebo
 final val io.github.valerioisufi.pageboard.lecture/io_github_valerioisufi_pageboard_lecture_TranscriptSegment$stableprop // io.github.valerioisufi.pageboard.lecture/io_github_valerioisufi_pageboard_lecture_TranscriptSegment$stableprop|#static{}io_github_valerioisufi_pageboard_lecture_TranscriptSegment$stableprop[0]
 final val io.github.valerioisufi.pageboard.lecture/io_github_valerioisufi_pageboard_lecture_TranscriptSegment_$serializer$stableprop // io.github.valerioisufi.pageboard.lecture/io_github_valerioisufi_pageboard_lecture_TranscriptSegment_$serializer$stableprop|#static{}io_github_valerioisufi_pageboard_lecture_TranscriptSegment_$serializer$stableprop[0]
 
-final fun (io.github.valerioisufi.pageboard.lecture/NoteSuggestion).io.github.valerioisufi.pageboard.lecture/resolvedPageIndex(io.github.valerioisufi.pageboard.model/DrawDocument): kotlin/Int? // io.github.valerioisufi.pageboard.lecture/resolvedPageIndex|resolvedPageIndex@io.github.valerioisufi.pageboard.lecture.NoteSuggestion(io.github.valerioisufi.pageboard.model.DrawDocument){}[0]
+final fun (io.github.valerioisufi.pageboard.lecture/NoteSuggestion).io.github.valerioisufi.pageboard.lecture/resolvedPageIndex(io.github.valerioisufi.pageboard.model/Document): kotlin/Int? // io.github.valerioisufi.pageboard.lecture/resolvedPageIndex|resolvedPageIndex@io.github.valerioisufi.pageboard.lecture.NoteSuggestion(io.github.valerioisufi.pageboard.model.Document){}[0]
 final fun io.github.valerioisufi.pageboard.lecture.audio/importableExtensions(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.lecture.audio/importableExtensions|importableExtensions(){}[0]
 final fun io.github.valerioisufi.pageboard.lecture.audio/io_github_valerioisufi_pageboard_lecture_audio_AudioChunk$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.lecture.audio/io_github_valerioisufi_pageboard_lecture_audio_AudioChunk$stableprop_getter|io_github_valerioisufi_pageboard_lecture_audio_AudioChunk$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.pageboard.lecture.audio/io_github_valerioisufi_pageboard_lecture_audio_RecordingPlayer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.lecture.audio/io_github_valerioisufi_pageboard_lecture_audio_RecordingPlayer$stableprop_getter|io_github_valerioisufi_pageboard_lecture_audio_RecordingPlayer$stableprop_getter(){}[0]

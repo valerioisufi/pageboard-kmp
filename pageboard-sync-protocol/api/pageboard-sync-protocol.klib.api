@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <DrawView-KMP:pageboard-sync-protocol>
+// Library unique name: <pageboard-kmp:pageboard-sync-protocol>
 open annotation class io.github.valerioisufi.pageboard.sync.protocol/ExperimentalSyncApi : kotlin/Annotation { // io.github.valerioisufi.pageboard.sync.protocol/ExperimentalSyncApi|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.sync.protocol/ExperimentalSyncApi.<init>|<init>(){}[0]
 }

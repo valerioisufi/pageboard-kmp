@@ -63,7 +63,7 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_se
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_section_folders
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_section_notes
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import org.jetbrains.compose.resources.stringResource
 
@@ -199,7 +199,7 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
     val filter = viewModel.filter
     when {
         query.isNotEmpty() -> EmptyState(
-            icon = DrawViewIcons.Search,
+            icon = PageboardIcons.Search,
             title = stringResource(Res.string.explorer_no_results_title, query),
             body = stringResource(Res.string.explorer_no_results_body),
             modifier = modifier,
@@ -220,22 +220,22 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
                 is LibraryFilter.Tagged -> viewModel.allTags.firstOrNull { it.id == filter.tagId }?.filterLabel?.invoke().orEmpty()
                 LibraryFilter.All -> ""
             }
-            EmptyState(icon = DrawViewIcons.Search, title = stringResource(Res.string.explorer_no_results_title, label), body = null, modifier = modifier)
+            EmptyState(icon = PageboardIcons.Search, title = stringResource(Res.string.explorer_no_results_title, label), body = null, modifier = modifier)
         }
         viewModel.section == Section.RECENT -> EmptyState(
-            icon = DrawViewIcons.Clock,
+            icon = PageboardIcons.Clock,
             title = stringResource(Res.string.explorer_empty_recent_title),
             body = stringResource(Res.string.explorer_empty_recent_body),
             modifier = modifier
         )
         viewModel.section == Section.SHARED -> EmptyState(
-            icon = DrawViewIcons.Users,
+            icon = PageboardIcons.Users,
             title = stringResource(Res.string.explorer_empty_shared_title),
             body = stringResource(Res.string.explorer_empty_shared_body),
             modifier = modifier
         )
         viewModel.currentFolder != null -> EmptyState(
-            icon = DrawViewIcons.Folder,
+            icon = PageboardIcons.Folder,
             title = stringResource(Res.string.explorer_empty_folder_title),
             body = stringResource(Res.string.explorer_empty_folder_body),
             modifier = modifier
@@ -262,14 +262,14 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(onClick = onNewNote, modifier = Modifier.height(52.dp)) {
-                Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(PageboardIcons.Plus, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(stringResource(Res.string.explorer_dialog_new_note), style = MaterialTheme.typography.titleMedium)
             }
             if (onImportPdf != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlineButton(onClick = onImportPdf) {
-                    Icon(DrawViewIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(PageboardIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.explorer_import_pdf))
                 }
@@ -326,7 +326,7 @@ private fun NotesIllustration() {
             repeat(5) { Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFC9CCF2))) }
         }
         Icon(
-            DrawViewIcons.Spline,
+            PageboardIcons.Spline,
             contentDescription = null,
             tint = InkPalette.Blue,
             modifier = Modifier.offset(x = 46.dp, y = 6.dp).size(22.dp)
@@ -339,7 +339,7 @@ private fun NotesIllustration() {
                 .size(44.dp)
                 .background(colors.secondaryContainer, RoundedCornerShape(14.dp))
         ) {
-            Icon(DrawViewIcons.Pencil, contentDescription = null, tint = colors.onSecondaryContainer, modifier = Modifier.size(22.dp))
+            Icon(PageboardIcons.Pencil, contentDescription = null, tint = colors.onSecondaryContainer, modifier = Modifier.size(22.dp))
         }
     }
 }

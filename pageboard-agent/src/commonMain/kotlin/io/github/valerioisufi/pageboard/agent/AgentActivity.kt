@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.AddPage
@@ -141,8 +141,8 @@ public class AgentActivity(
  * batch left it: no stamp of what it touches is after [stamp]. A kind of change it cannot tell about
  * counts as changed.
  */
-internal fun unchangedSince(document: DrawDocument, change: DocumentChange, stamp: Stamp): Boolean {
-    fun page(id: String): DrawPage? = document.pageById(id) ?: document.removedPages[id]
+internal fun unchangedSince(document: Document, change: DocumentChange, stamp: Stamp): Boolean {
+    fun page(id: String): Page? = document.pageById(id) ?: document.removedPages[id]
     fun pageUnchanged(id: String): Boolean {
         val page = page(id) ?: return true
         return page.stamps().all { it <= stamp }
@@ -175,12 +175,12 @@ internal fun unchangedSince(document: DrawDocument, change: DocumentChange, stam
 }
 
 /** Every stamp of this element: its presence, place, order, content. */
-private fun DrawElement.stamps(): Sequence<Stamp> =
+private fun PageElement.stamps(): Sequence<Stamp> =
     sequenceOf(added, removed ?: Stamp.ZERO, placed, ordered, updated) +
-        ((this as? DrawText)?.contentVersions?.stamps?.values?.asSequence() ?: emptySequence())
+        ((this as? TextElement)?.contentVersions?.stamps?.values?.asSequence() ?: emptySequence())
 
 /** Every stamp of this page: its presence, position, format and what is on it. */
-private fun DrawPage.stamps(): Sequence<Stamp> =
+private fun Page.stamps(): Sequence<Stamp> =
     sequenceOf(added, removed ?: Stamp.ZERO, orderVersion, formatVersion) +
         contentVersions.stamps.values.asSequence() +
         (elements() + removedElements).asSequence().flatMap { it.stamps() }

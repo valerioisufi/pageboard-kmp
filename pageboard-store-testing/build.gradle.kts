@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "The contract tests every DrawView document store must pass, and documents for the benchmarks"
+description = "The contract tests every Pageboard document store must pass, and documents for the benchmarks"
 
 kotlin {
     sourceSets {

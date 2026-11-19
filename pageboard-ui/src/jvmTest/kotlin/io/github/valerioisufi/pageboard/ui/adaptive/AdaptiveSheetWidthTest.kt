@@ -17,7 +17,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,7 +36,7 @@ class AdaptiveSheetWidthTest {
         var bounds = DpRect(0.dp, 0.dp, 0.dp, 0.dp)
         runDesktopComposeUiTest(width = windowWidth, height = 800) {
             setContent {
-                DrawViewTheme(dynamicColor = false) {
+                PageboardTheme(dynamicColor = false) {
                     AdaptiveSheet(onDismissRequest = {}, maxWidth = maxWidth) { content() }
                 }
             }

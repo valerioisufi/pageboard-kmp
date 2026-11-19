@@ -3,13 +3,13 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.test.Test
@@ -28,17 +28,17 @@ class TextEditorPagesTest {
 
     /** Lines 0.5 mm per point high, characters 0.5 mm per point wide. */
     private class FakeTextAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
 
-        override fun measure(text: DrawText): TextBlockSize =
+        override fun measure(text: TextElement): TextBlockSize =
             TextBlockSize(minOf(text.width, text.text.length * text.fontSize * 0.5f), text.fontSize * 0.5f)
 
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(fontSize * 0.5f, fontSize * 0.4f)
     }
 
     /** A controller on a document of two pages, one under the other. */
-    private fun controller(scope: CoroutineScope): DrawViewController {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+    private fun controller(scope: CoroutineScope): PageboardController {
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.pageManager.addNewPageAtBottom()
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = FakeTextAdapter()
@@ -48,7 +48,7 @@ class TextEditorPagesTest {
     private fun TextEditorManager.type(text: String) = updateValue(TextFieldValue(text, TextRange(text.length)))
 
     /** The point ([x], [y]) of the first page in the millimeters of the second one. */
-    private fun DrawViewController.onSecondPage(x: Float, y: Float): Pair<Float, Float> {
+    private fun PageboardController.onSecondPage(x: Float, y: Float): Pair<Float, Float> {
         val world = viewport.pageMmToWorld(0)!!.mapPoint(x, y)
         val toSecond = Matrix2D()
         assertTrue(viewport.pageMmToWorld(1)!!.invert(toSecond))

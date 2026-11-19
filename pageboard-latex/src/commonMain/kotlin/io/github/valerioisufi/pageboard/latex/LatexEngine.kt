@@ -35,7 +35,7 @@ internal expect fun texResourcesDirectory(): String
 /**
  * The formula renderer of MicroTeX (JNI on Android and on the desktop, cinterop on iOS): it parses,
  * sanitizes and renders the LaTeX formulas of the texts, for the editors, the thumbnails and the
- * export. The application creates one and gives it to `DrawViewEngines` (`formulas`).
+ * export. The application creates one and gives it to `PageboardEngines` (`formulas`).
  *
  * MicroTeX is one native engine per process, loaded and initialized once: the instances share it,
  * and the fonts of the text of the formulas are those of the last [prepare].

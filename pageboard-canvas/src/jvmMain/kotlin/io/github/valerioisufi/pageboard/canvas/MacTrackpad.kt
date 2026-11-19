@@ -32,7 +32,7 @@ internal object MacTrackpad {
                 nativeInstall()
                 true
             } catch (e: LinkageError) {
-                System.err.println("DrawView: trackpad gestures not available: $e")
+                System.err.println("Pageboard: trackpad gestures not available: $e")
                 false
             }
     }

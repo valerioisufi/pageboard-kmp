@@ -83,7 +83,7 @@ class CanvasPageEngineTest {
 
     @Test
     fun aPartOfAPageIsDrawnAtTheSizeAskedWithItsMarks() = kotlinx.coroutines.runBlocking {
-        val page = io.github.valerioisufi.pageboard.model.DrawPage(widthMm = 200f, heightMm = 100f).snapshotContent()
+        val page = io.github.valerioisufi.pageboard.model.Page(widthMm = 200f, heightMm = 100f).snapshotContent()
         val engine = CanvasPageEngine(null)
         fun decode(png: ByteArray) = javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(png))
 

@@ -1,17 +1,17 @@
 public final class io/github/valerioisufi/pageboard/canvas/CanvasGesturesOverFieldKt {
-	public static final fun canvasGesturesOverField (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;)Landroidx/compose/ui/Modifier;
+	public static final fun canvasGesturesOverField (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;)Landroidx/compose/ui/Modifier;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/DocumentObservationKt {
-	public static final fun observe (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
-	public static final fun observeChanges (Lio/github/valerioisufi/pageboard/model/DrawDocument;Landroidx/compose/runtime/Composer;I)J
+	public static final fun observe (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
+	public static final fun observeChanges (Lio/github/valerioisufi/pageboard/model/Document;Landroidx/compose/runtime/Composer;I)J
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/DrawCanvasKt {
-	public static final fun DrawCanvas (Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ink/InkStrokeEngine;Landroidx/compose/runtime/Composer;II)V
+	public static final fun PageCanvas (Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ink/InkStrokeEngine;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/DrawThemeColors {
+public final class io/github/valerioisufi/pageboard/canvas/PageboardColors {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (IIII)V
@@ -20,8 +20,8 @@ public final class io/github/valerioisufi/pageboard/canvas/DrawThemeColors {
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()I
-	public final fun copy (IIII)Lio/github/valerioisufi/pageboard/canvas/DrawThemeColors;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/DrawThemeColors;IIIIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/DrawThemeColors;
+	public final fun copy (IIII)Lio/github/valerioisufi/pageboard/canvas/PageboardColors;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/PageboardColors;IIIIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/PageboardColors;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBackgroundColor ()I
 	public final fun getOnSurfaceColor ()I
@@ -50,7 +50,7 @@ public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame {
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame$Companion {
-	public final fun ofEditedText (Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;)Lio/github/valerioisufi/pageboard/canvas/SelectionFrame;
+	public final fun ofEditedText (Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;)Lio/github/valerioisufi/pageboard/canvas/SelectionFrame;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle : java/lang/Enum {
@@ -181,8 +181,8 @@ public final class io/github/valerioisufi/pageboard/canvas/camera/Viewport {
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/Collaborator {
 	public static final field $stable I
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/TextElement;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/TextElement;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component11 ()Ljava/util/List;
@@ -195,9 +195,9 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/Collaborat
 	public final fun component6 ()Lio/github/valerioisufi/pageboard/model/StrokeMesh;
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()F
-	public final fun component9 ()Lio/github/valerioisufi/pageboard/model/DrawText;
-	public final fun copy-RnqHgFc (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;)Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;
-	public static synthetic fun copy-RnqHgFc$default (Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;
+	public final fun component9 ()Lio/github/valerioisufi/pageboard/model/TextElement;
+	public final fun copy-RnqHgFc (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/TextElement;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;)Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;
+	public static synthetic fun copy-RnqHgFc$default (Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/pageboard/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/TextElement;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/Collaborator;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getColor-0d7_KjU ()J
 	public final fun getId ()Ljava/lang/String;
@@ -210,7 +210,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/Collaborat
 	public final fun getSelection ()Ljava/util/List;
 	public final fun getSelectionPageId ()Ljava/lang/String;
 	public final fun getSelectionTransform ()Lio/github/valerioisufi/pageboard/model/geometry/AffineTransform;
-	public final fun getText ()Lio/github/valerioisufi/pageboard/model/DrawText;
+	public final fun getText ()Lio/github/valerioisufi/pageboard/model/TextElement;
 	public final fun getTextPageId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -226,11 +226,11 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/Collaborat
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/CustomElementManager {
 	public static final field $stable I
-	public final fun add (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;FZ)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public final fun add (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;Z)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public static synthetic fun add$default (Lio/github/valerioisufi/pageboard/canvas/controller/CustomElementManager;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;FZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public static synthetic fun add$default (Lio/github/valerioisufi/pageboard/canvas/controller/CustomElementManager;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public final fun update (Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;)Z
+	public final fun add (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;FZ)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun add (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;Z)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public static synthetic fun add$default (Lio/github/valerioisufi/pageboard/canvas/controller/CustomElementManager;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;FZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public static synthetic fun add$default (Lio/github/valerioisufi/pageboard/canvas/controller/CustomElementManager;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun update (Lio/github/valerioisufi/pageboard/model/CustomElement;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;)Z
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/DocumentFind {
@@ -271,9 +271,9 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DocumentFi
 	public static fun values ()[Lio/github/valerioisufi/pageboard/canvas/controller/DocumentFind$Source;
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/controller/DrawPreferences {
+public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPreferences {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$Companion;
 	public fun <init> ()V
 	public fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;Z)V
 	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -285,8 +285,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawPrefer
 	public final fun component6 ()Z
 	public final fun component7 ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;
 	public final fun component8 ()Z
-	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;Z)Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;
+	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;Z)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAreTextSuggestionsEnabled ()Z
@@ -301,28 +301,28 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawPrefer
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/pageboard/canvas/controller/DrawPreferences$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/controller/DrawPreferences$Companion {
-	public final fun decode (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;
+public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$Companion {
+	public final fun decode (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewController {
+public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardController {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun applyPreferences (Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun applyPreferences (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;)V
 	public final fun clearSelection ()V
 	public final fun dispose ()V
 	public final fun flushPersistence (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -333,8 +333,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewCo
 	public final fun getContextMenuPosition-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
 	public final fun getCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
 	public final fun getCustomElementManager ()Lio/github/valerioisufi/pageboard/canvas/controller/CustomElementManager;
-	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/DrawDocument;
-	public final fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;
+	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/Document;
+	public final fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;
 	public final fun getFind ()Lio/github/valerioisufi/pageboard/canvas/controller/DocumentFind;
 	public final fun getHistoryManager ()Lio/github/valerioisufi/pageboard/canvas/history/HistoryManager;
 	public final fun getInkLatency ()Lkotlinx/coroutines/flow/StateFlow;
@@ -361,7 +361,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewCo
 	public final fun getTextFormatTarget ()Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;
 	public final fun getTextMarkupManager ()Lio/github/valerioisufi/pageboard/canvas/controller/TextMarkupManager;
 	public final fun getTextPlacer ()Lio/github/valerioisufi/pageboard/canvas/controller/TextPlacer;
-	public final fun getThemeColors ()Lio/github/valerioisufi/pageboard/canvas/DrawThemeColors;
+	public final fun getThemeColors ()Lio/github/valerioisufi/pageboard/canvas/PageboardColors;
 	public final fun getTileManager ()Lio/github/valerioisufi/pageboard/canvas/render/tile/TileManager;
 	public final fun getToolManager ()Lio/github/valerioisufi/pageboard/canvas/controller/ToolManager;
 	public final fun getVersion ()I
@@ -371,21 +371,21 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewCo
 	public final fun isPageGridVisible ()Z
 	public final fun isReadOnly ()Z
 	public final fun isStylusOnlyMode ()Z
-	public final fun measureText (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
-	public final fun onResourceAvailable (Lio/github/valerioisufi/pageboard/model/DrawResource;)V
+	public final fun measureText (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
+	public final fun onResourceAvailable (Lio/github/valerioisufi/pageboard/model/DocumentResource;)V
 	public final fun persist (Lkotlin/jvm/functions/Function2;)V
 	public final fun redo ()V
 	public final fun renderPageImage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun requestRedraw ()V
 	public final fun selectTool (Lio/github/valerioisufi/pageboard/canvas/tool/Tool;Ljava/lang/Integer;)V
-	public static synthetic fun selectTool$default (Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;Lio/github/valerioisufi/pageboard/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V
+	public static synthetic fun selectTool$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController;Lio/github/valerioisufi/pageboard/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V
 	public final fun setContextMenuPosition-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
 	public final fun setInkLatencyMeasured (Z)V
 	public final fun setLassoMode (Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;)V
 	public final fun setPageGridVisible (Z)V
 	public final fun setPendingTextImport (Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;)V
 	public final fun setTextAdapter (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;)V
-	public final fun setThemeColors (Lio/github/valerioisufi/pageboard/canvas/DrawThemeColors;)V
+	public final fun setThemeColors (Lio/github/valerioisufi/pageboard/canvas/PageboardColors;)V
 	public final fun toggleDrawingMode ()V
 	public final fun togglePageGrid ()V
 	public final fun undo ()V
@@ -394,16 +394,16 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewCo
 	public final fun updateTextSuggestionsEnabled (Z)V
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message : java/lang/Enum {
-	public static final field IMPORT_IMAGE_FAILED Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static final field IMPORT_PDF_FAILED Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static final field PASTED_WITHOUT_MISSING_FILES Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static final field PDF_NOT_SUPPORTED Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static final field PDF_PAGE_WITHOUT_TEXT Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static final field STYLUS_MODE_ACTIVATED Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
+public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message : java/lang/Enum {
+	public static final field IMPORT_IMAGE_FAILED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field IMPORT_PDF_FAILED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field PASTED_WITHOUT_MISSING_FILES Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field PDF_NOT_SUPPORTED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field PDF_PAGE_WITHOUT_TEXT Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field STYLUS_MODE_ACTIVATED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
-	public static fun values ()[Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController$Message;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/EditorActivity {
@@ -480,12 +480,12 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/MediaManag
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/PageManager {
 	public static final field $stable I
-	public final fun addNewPageAfter (ILio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public static synthetic fun addNewPageAfter$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;ILio/github/valerioisufi/pageboard/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public final fun addNewPageAtBottom (Lio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public static synthetic fun addNewPageAtBottom$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;Lio/github/valerioisufi/pageboard/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public final fun addNewPageBefore (ILio/github/valerioisufi/pageboard/model/DrawPage;)Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public static synthetic fun addNewPageBefore$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;ILio/github/valerioisufi/pageboard/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawPage;
+	public final fun addNewPageAfter (ILio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/Page;
+	public static synthetic fun addNewPageAfter$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;ILio/github/valerioisufi/pageboard/model/Page;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Page;
+	public final fun addNewPageAtBottom (Lio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/Page;
+	public static synthetic fun addNewPageAtBottom$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;Lio/github/valerioisufi/pageboard/model/Page;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Page;
+	public final fun addNewPageBefore (ILio/github/valerioisufi/pageboard/model/Page;)Lio/github/valerioisufi/pageboard/model/Page;
+	public static synthetic fun addNewPageBefore$default (Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;ILio/github/valerioisufi/pageboard/model/Page;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/Page;
 	public final fun applyDocumentTemplateChange (Lio/github/valerioisufi/pageboard/model/geometry/Dimension;Lio/github/valerioisufi/pageboard/model/PageBackground;Z)V
 	public final fun canDeletePages (Ljava/util/Collection;)Z
 	public final fun canPastePages ()Z
@@ -536,9 +536,9 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementItem {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawText;Ljava/util/List;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/DrawText;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getPreview ()Lio/github/valerioisufi/pageboard/model/DrawText;
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/TextElement;Ljava/util/List;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/TextElement;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPreview ()Lio/github/valerioisufi/pageboard/model/TextElement;
 	public final fun getSpots ()Ljava/util/List;
 }
 
@@ -554,7 +554,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementM
 	public final fun getSpotIndex ()I
 	public final fun getSpots ()Ljava/util/List;
 	public final fun isActive ()Z
-	public final fun newPageSpot (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/placement/PlacementBlock;)Lio/github/valerioisufi/pageboard/canvas/controller/PlacementSpot;
+	public final fun newPageSpot (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/placement/PlacementBlock;)Lio/github/valerioisufi/pageboard/canvas/controller/PlacementSpot;
 	public final fun next ()V
 	public final fun occupancyOf (ILjava/util/Set;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
 	public static synthetic fun occupancyOf$default (Lio/github/valerioisufi/pageboard/canvas/controller/PlacementManager;ILjava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/placement/PageOccupancy;
@@ -568,15 +568,15 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementM
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementRequest {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getItems ()Ljava/util/List;
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getOnCancel ()Lkotlin/jvm/functions/Function0;
 	public final fun getOnPlace ()Lkotlin/jvm/functions/Function1;
-	public final fun getPreview ()Lio/github/valerioisufi/pageboard/model/DrawText;
+	public final fun getPreview ()Lio/github/valerioisufi/pageboard/model/TextElement;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementSpot {
@@ -629,7 +629,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/SelectionM
 	public final fun pasteSelection-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteSelection-_kEHs6E$default (Lio/github/valerioisufi/pageboard/canvas/controller/SelectionManager;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun rotateBy (F)V
-	public final fun selectText (ILio/github/valerioisufi/pageboard/model/DrawText;)V
+	public final fun selectText (ILio/github/valerioisufi/pageboard/model/TextElement;)V
 	public final fun setLassoMode (Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;)V
 }
 
@@ -663,8 +663,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeInser
 	public static final field $stable I
 	public final fun getDraft ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeDraft;
 	public final fun getStyle ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolStyle;
-	public final fun insertAt (ILio/github/valerioisufi/pageboard/model/geometry/Point;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public final fun insertInView ()Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
+	public final fun insertAt (ILio/github/valerioisufi/pageboard/model/geometry/Point;)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun insertInView ()Lio/github/valerioisufi/pageboard/model/CustomElement;
 	public final fun updateStyle (Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolStyle;)V
 }
 
@@ -823,8 +823,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun setHeading (I)V
 	public fun setNumbering (Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
-	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/pageboard/model/DrawText;ILandroidx/compose/ui/geometry/Offset;)V
-	public static synthetic fun startEditing-b0fnrdo$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextEditorManager;Lio/github/valerioisufi/pageboard/model/DrawText;ILandroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
+	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/pageboard/model/TextElement;ILandroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun startEditing-b0fnrdo$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextEditorManager;Lio/github/valerioisufi/pageboard/model/TextElement;ILandroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun startEditingSelectedText ()Z
 	public final fun startNewText (IFFZ)V
 	public static synthetic fun startNewText$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextEditorManager;IFFZILjava/lang/Object;)V
@@ -949,7 +949,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextMarkup
 	public final fun getSelectedMarkup ()Lio/github/valerioisufi/pageboard/canvas/controller/TextMarkupManager$SelectedMarkup;
 	public final fun getSelectedText ()Ljava/lang/String;
 	public final fun getTextSelection ()Lio/github/valerioisufi/pageboard/canvas/controller/TextMarkupManager$TextRange;
-	public final fun markSelection (Lio/github/valerioisufi/pageboard/model/TextMarkupKind;I)Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;
+	public final fun markSelection (Lio/github/valerioisufi/pageboard/model/TextMarkupKind;I)Lio/github/valerioisufi/pageboard/model/TextMarkupElement;
 	public final fun restyleSelectedMarkup (Lio/github/valerioisufi/pageboard/model/TextMarkupKind;I)V
 }
 
@@ -972,20 +972,20 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextMarkup
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/TextMarkupManager$SelectedMarkup {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;)V
-	public final fun getMarkup ()Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;
-	public final fun getPage ()Lio/github/valerioisufi/pageboard/model/DrawPage;
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/TextMarkupElement;)V
+	public final fun getMarkup ()Lio/github/valerioisufi/pageboard/model/TextMarkupElement;
+	public final fun getPage ()Lio/github/valerioisufi/pageboard/model/Page;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/TextMarkupManager$TextRange {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawPdf;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;II)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PdfElement;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;II)V
 	public final fun getAnchor ()I
 	public final fun getEnd ()I
 	public final fun getFocus ()I
 	public final fun getLayout ()Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
-	public final fun getPage ()Lio/github/valerioisufi/pageboard/model/DrawPage;
-	public final fun getPdf ()Lio/github/valerioisufi/pageboard/model/DrawPdf;
+	public final fun getPage ()Lio/github/valerioisufi/pageboard/model/Page;
+	public final fun getPdf ()Lio/github/valerioisufi/pageboard/model/PdfElement;
 	public final fun getRects ()Ljava/util/List;
 	public final fun getStart ()I
 	public final fun getText ()Ljava/lang/String;
@@ -996,7 +996,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextPlacer
 	public static final field $stable I
 	public final fun getCanPlaceByTopic ()Z
 	public final fun partsByTopic (Ljava/lang/String;Ljava/lang/Integer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun sizeOfPage (Lio/github/valerioisufi/pageboard/model/DrawPage;)F
+	public final fun sizeOfPage (Lio/github/valerioisufi/pageboard/model/Page;)F
 	public final fun start (Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Z
 	public static synthetic fun start$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextPlacer;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
 	public final fun startImport (Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;Lio/github/valerioisufi/pageboard/canvas/controller/TextImportPlace;ZLjava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1009,7 +1009,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/ToolManage
 	public final fun activePreset (Lio/github/valerioisufi/pageboard/canvas/tool/Tool;)Lio/github/valerioisufi/pageboard/canvas/controller/ToolPreset;
 	public static synthetic fun activePreset$default (Lio/github/valerioisufi/pageboard/canvas/controller/ToolManager;Lio/github/valerioisufi/pageboard/canvas/tool/Tool;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/ToolPreset;
 	public final fun addPreset (Lio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/canvas/controller/ToolPreset;)I
-	public final fun applyPreferences (Lio/github/valerioisufi/pageboard/canvas/controller/DrawPreferences;)V
+	public final fun applyPreferences (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;)V
 	public final fun getPreviousTool ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
 	public final fun getSelectedTool ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
 	public final fun presetsOf (Lio/github/valerioisufi/pageboard/canvas/tool/Tool;)Ljava/util/List;
@@ -1097,7 +1097,7 @@ public final class io/github/valerioisufi/pageboard/canvas/platform/ImageOrienta
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/port/EditorDocument {
 	public abstract fun addObserver (Lio/github/valerioisufi/pageboard/model/change/ChangeObserver;)V
-	public abstract fun getDocument ()Lio/github/valerioisufi/pageboard/model/DrawDocument;
+	public abstract fun getDocument ()Lio/github/valerioisufi/pageboard/model/Document;
 	public abstract fun group (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public abstract fun isReadOnly ()Z
 	public abstract fun removeObserver (Lio/github/valerioisufi/pageboard/model/change/ChangeObserver;)V
@@ -1105,18 +1105,18 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/port/Edi
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/port/EditorEdits {
-	public abstract fun addCustomElement (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;Z)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
-	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
+	public abstract fun addCustomElement (Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;Z)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/CustomElement;
 	public abstract fun clearSelection ()V
 	public abstract fun finishEditingText ()V
 	public abstract fun getPendingTextImport ()Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;
 	public abstract fun isEditingText ()Z
-	public abstract fun selectText (ILio/github/valerioisufi/pageboard/model/DrawText;)V
+	public abstract fun selectText (ILio/github/valerioisufi/pageboard/model/TextElement;)V
 	public abstract fun setPendingTextImport (Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/port/EditorEdits$DefaultImpls {
-	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/DrawCustomElement;
+	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/CustomElement;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/port/EditorPages {
@@ -1146,7 +1146,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/port/Edi
 	public abstract fun pdfTextOf (I)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
 	public abstract fun placeTexts (Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Z
 	public static synthetic fun placeTexts$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorPlacement;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
-	public abstract fun sizeOfPage (Lio/github/valerioisufi/pageboard/model/DrawPage;)F
+	public abstract fun sizeOfPage (Lio/github/valerioisufi/pageboard/model/Page;)F
 	public abstract fun spotsFor (ILio/github/valerioisufi/pageboard/model/placement/PlacementBlock;Lio/github/valerioisufi/pageboard/model/placement/PlacementPolicy;)Ljava/util/List;
 	public abstract fun start (Lio/github/valerioisufi/pageboard/canvas/controller/PlacementRequest;)V
 }
@@ -1169,16 +1169,16 @@ public final class io/github/valerioisufi/pageboard/canvas/port/EditorPorts {
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/port/EditorRendering {
-	public abstract fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;
-	public abstract fun measureText (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
+	public abstract fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;
+	public abstract fun measureText (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 	public abstract fun pdfPageText (Ljava/lang/String;I)Ljava/lang/String;
-	public abstract fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
-	public abstract fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public abstract fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
+	public abstract fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/render/DrawViewEngines {
+public final class io/github/valerioisufi/pageboard/canvas/render/PageboardEngines {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines$Companion;
 	public fun <init> ()V
 	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;Lio/github/valerioisufi/pageboard/canvas/controller/PageTopics;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;)V
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;Lio/github/valerioisufi/pageboard/canvas/controller/PageTopics;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -1190,8 +1190,8 @@ public final class io/github/valerioisufi/pageboard/canvas/render/DrawViewEngine
 	public final fun getTopics ()Lio/github/valerioisufi/pageboard/canvas/controller/PageTopics;
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/render/DrawViewEngines$Companion {
-	public final fun getNone ()Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;
+public final class io/github/valerioisufi/pageboard/canvas/render/PageboardEngines$Companion {
+	public final fun getNone ()Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/render/ElementRenderer {
@@ -1212,11 +1212,11 @@ public final class io/github/valerioisufi/pageboard/canvas/render/ElementRendere
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers$Companion;
 	public fun <init> (Ljava/util/Collection;)V
-	public final fun draw (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)V
-	public final fun erasedBy (Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lio/github/valerioisufi/pageboard/model/geometry/Point;Lio/github/valerioisufi/pageboard/model/geometry/Point;F)Z
+	public final fun draw (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/CustomElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)V
+	public final fun erasedBy (Lio/github/valerioisufi/pageboard/model/CustomElement;Lio/github/valerioisufi/pageboard/model/geometry/Point;Lio/github/valerioisufi/pageboard/model/geometry/Point;F)Z
 	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderer;
-	public final fun hits (Lio/github/valerioisufi/pageboard/model/DrawCustomElement;FF)Z
-	public final fun vectorsOf (Lio/github/valerioisufi/pageboard/model/DrawCustomElement;)Lio/github/valerioisufi/pageboard/model/geometry/VectorDrawing;
+	public final fun hits (Lio/github/valerioisufi/pageboard/model/CustomElement;FF)Z
+	public final fun vectorsOf (Lio/github/valerioisufi/pageboard/model/CustomElement;)Lio/github/valerioisufi/pageboard/model/geometry/VectorDrawing;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/ElementRenderers$Companion {
@@ -1321,7 +1321,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/FormulaOp
 	public final fun getY ()F
 }
 
-public final class io/github/valerioisufi/pageboard/canvas/render/tile/FormulaOp$DrawText : io/github/valerioisufi/pageboard/canvas/render/tile/FormulaOp {
+public final class io/github/valerioisufi/pageboard/canvas/render/tile/FormulaOp$TextElement : io/github/valerioisufi/pageboard/canvas/render/tile/FormulaOp {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;FF)V
 	public final fun getText ()Ljava/lang/String;
@@ -1476,10 +1476,10 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/render/t
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$Companion;
 	public static final field NO_PAPER I
 	public fun clearCaches ()V
-	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawText;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
-	public fun layout (Lio/github/valerioisufi/pageboard/model/DrawText;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
+	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
+	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
-	public fun measure (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
+	public fun measure (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$Companion {
@@ -1488,9 +1488,9 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileA
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$DefaultImpls {
 	public static fun clearCaches (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;)V
-	public static fun layout (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/DrawText;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
+	public static fun layout (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public static fun lineMetrics (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
-	public static fun measure (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
+	public static fun measure (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextWord {
@@ -1559,7 +1559,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileManag
 	public final fun getScope ()Lkotlinx/coroutines/CoroutineScope;
 	public final fun getTileRenderer ()Lio/github/valerioisufi/pageboard/canvas/render/tile/TileRenderer;
 	public final fun isRasterizing ()Z
-	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;I)Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileRenderer {
@@ -1573,9 +1573,9 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileRende
 	public final fun getPdfAdapter ()Lio/github/valerioisufi/pageboard/canvas/render/tile/PdfTileAdapter;
 	public final fun getTextAdapter ()Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;
 	public final fun isHidden ()Lkotlin/jvm/functions/Function1;
-	public final fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
-	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;I)Landroidx/compose/ui/graphics/ImageBitmap;
-	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
+	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
 	public final fun setElements (Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;)V
 	public final fun setHidden (Lkotlin/jvm/functions/Function1;)V
 	public final fun setPdfAdapter (Lio/github/valerioisufi/pageboard/canvas/render/tile/PdfTileAdapter;)V
@@ -1583,7 +1583,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileRende
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileRenderer$Companion {
-	public final fun drawImage (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawImage;Landroidx/compose/ui/graphics/ImageBitmap;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/graphics/Paint;)V
+	public final fun drawImage (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/ImageElement;Landroidx/compose/ui/graphics/ImageBitmap;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/graphics/Paint;)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TileState : java/lang/Enum {

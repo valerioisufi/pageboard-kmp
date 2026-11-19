@@ -38,7 +38,7 @@ fun cargoSearchPath(cargo: String): String =
     listOfNotNull(File(cargo).parentFile?.path, System.getenv("PATH")).joinToString(File.pathSeparator)
 
 /**
- * Where the Rust crates of DrawView build, whatever module asks: `rust.targetDir` in
+ * Where the Rust crates of Pageboard build, whatever module asks: `rust.targetDir` in
  * `local.properties` (one directory for the checkouts of this machine), else `native/build/rust`.
  */
 val Project.rustTargetDirectory: File

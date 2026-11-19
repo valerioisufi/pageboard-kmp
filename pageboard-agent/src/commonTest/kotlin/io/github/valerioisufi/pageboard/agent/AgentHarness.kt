@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.model.change.ChangeOrigin
@@ -41,7 +41,7 @@ internal class AgentHarness private constructor(
     val documentId: String,
     val open: OpenDocument
 ) {
-    val page: DrawPage get() = open.document.pages[0]
+    val page: Page get() = open.document.pages[0]
 
     suspend fun call(name: String, arguments: JsonObject = JsonObject(emptyMap())): JsonObject =
         assertIs<ToolResult.Value>(agents.tools.call(name, arguments, connection)).json.jsonObject

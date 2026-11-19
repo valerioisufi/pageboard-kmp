@@ -7,7 +7,7 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import java.io.File
@@ -93,4 +93,4 @@ internal actual object LatexPlatformEngine {
 }
 
 internal actual fun texResourcesDirectory(): String =
-    File(DrawViewAndroid.context.filesDir, "tex").apply { mkdirs() }.absolutePath
+    File(PageboardAndroid.context.filesDir, "tex").apply { mkdirs() }.absolutePath

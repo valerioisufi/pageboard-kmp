@@ -20,7 +20,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_save
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -43,19 +43,19 @@ internal fun TextFormatBar(
 ) {
     val controls: @Composable RowScope.() -> Unit = {
         if (target.formatsCharacters) {
-            FormatButton(commands.bold, DrawViewIcons.Bold)
-            FormatButton(commands.italic, DrawViewIcons.Italic)
-            FormatButton(commands.strikethrough, DrawViewIcons.Strikethrough)
-            FormatButton(commands.code, DrawViewIcons.Code)
-            FormatButton(commands.codeBlock, DrawViewIcons.SquareCode)
-            if (target.inCodeBlock) FormatButton(commands.lineNumbers, DrawViewIcons.Hash)
+            FormatButton(commands.bold, PageboardIcons.Bold)
+            FormatButton(commands.italic, PageboardIcons.Italic)
+            FormatButton(commands.strikethrough, PageboardIcons.Strikethrough)
+            FormatButton(commands.code, PageboardIcons.Code)
+            FormatButton(commands.codeBlock, PageboardIcons.SquareCode)
+            if (target.inCodeBlock) FormatButton(commands.lineNumbers, PageboardIcons.Hash)
             HeadingButton(commands)
-            FormatButton(commands.bulletList, DrawViewIcons.List)
+            FormatButton(commands.bulletList, PageboardIcons.List)
             NumberedListButton(target, commands)
-            FormatButton(commands.checklist, DrawViewIcons.ListChecks)
-            FormatButton(commands.quote, DrawViewIcons.Quote)
+            FormatButton(commands.checklist, PageboardIcons.ListChecks)
+            FormatButton(commands.quote, PageboardIcons.Quote)
             TableButton(target, commands)
-            FormatButton(commands.formula, DrawViewIcons.Sigma)
+            FormatButton(commands.formula, PageboardIcons.Sigma)
             BarDivider()
         }
         TextStyleControls(target, commands)
@@ -72,7 +72,7 @@ internal fun TextFormatBar(
                 )
                 if (onDone != null) {
                     BarDivider()
-                    DoneAction(stringResource(Res.string.text_editor_action_save), onDone, DrawViewIcons.Check)
+                    DoneAction(stringResource(Res.string.text_editor_action_save), onDone, PageboardIcons.Check)
                 }
             }
         }
@@ -87,7 +87,7 @@ internal fun TextFormatBar(
             )
             if (onDone != null) {
                 BarDivider()
-                DoneAction(stringResource(Res.string.text_editor_action_save), onDone, DrawViewIcons.Check)
+                DoneAction(stringResource(Res.string.text_editor_action_save), onDone, PageboardIcons.Check)
             }
         }
     }

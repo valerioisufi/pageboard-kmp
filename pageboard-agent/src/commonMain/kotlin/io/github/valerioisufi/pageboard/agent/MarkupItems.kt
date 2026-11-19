@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.agent
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.change.AddElements
@@ -15,7 +15,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Rect
 /**
  * The items of a proposal on the highlights, underlines and strikeouts of the text of a PDF page
  * (Information Expert): a passage a model quotes, found in the text of the page as the editor reads it
- * ([AgentEngines.pdfLayout]), turned into a [DrawTextMarkup] as the editor makes one when the user
+ * ([AgentEngines.pdfLayout]), turned into a [TextMarkupElement] as the editor makes one when the user
  * selects that passage. A model never gives the indices of the text layer (see
  * `docs/plans/agent-coverage.md`).
  */
@@ -28,7 +28,7 @@ internal object MarkupItems {
     const val HIGHLIGHT_COLOR: Int = 0x80FFEB3B.toInt()
 
     /** A passage found: the PDF page it is on, its layout, its characters from [start] until [end]. */
-    class Passage(val pdf: DrawPdf, val layout: PdfTextLayout, val start: Int, val end: Int) {
+    class Passage(val pdf: PdfElement, val layout: PdfTextLayout, val start: Int, val end: Int) {
         val text: String get() = layout.text(start, end)
         val rects: List<Rect> get() = layout.lineRects(start, end)
     }
@@ -37,7 +37,7 @@ internal object MarkupItems {
      * The passage [quote] of the text of the PDF pages of [page], its [occurrence]-th one (from 1), or
      * `null`. Spaces and line breaks count as one space, on either side; the letters must be the same.
      */
-    fun find(document: DrawDocument, page: DrawPage, quote: String, occurrence: Int, engines: AgentEngines): Passage? {
+    fun find(document: Document, page: Page, quote: String, occurrence: Int, engines: AgentEngines): Passage? {
         val wanted = collapse(quote)
         if (wanted.isEmpty()) return null
         var left = occurrence
@@ -76,10 +76,10 @@ internal object MarkupItems {
     private fun collapse(text: String): String = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString(" ")
 
     /** The mark [item] makes of [passage], on [page]. */
-    fun markOf(item: ProposalItem.AddMarkup, passage: Passage): DrawTextMarkup {
+    fun markOf(item: ProposalItem.AddMarkup, passage: Passage): TextMarkupElement {
         val kind = KINDS.getValue(item.kind)
         val color = item.color?.let { ElementItems.parseColor(it) } ?: if (kind == TextMarkupKind.HIGHLIGHT) HIGHLIGHT_COLOR else AGENT_TEXT_COLOR
-        return DrawTextMarkup(
+        return TextMarkupElement(
             resourceId = passage.pdf.resourceId,
             pdfPageIndex = passage.pdf.pdfPageIndex,
             pdfWidthPt = passage.layout.widthPt,
@@ -94,8 +94,8 @@ internal object MarkupItems {
     }
 
     /** The box of [passage] on [page], in millimeters. */
-    fun boxOf(page: DrawPage, passage: Passage): Rect {
-        val mark = DrawTextMarkup(
+    fun boxOf(page: Page, passage: Passage): Rect {
+        val mark = TextMarkupElement(
             resourceId = passage.pdf.resourceId, pdfPageIndex = passage.pdf.pdfPageIndex, pdfWidthPt = passage.layout.widthPt,
             pdfHeightPt = passage.layout.heightPt, startIndex = passage.start, endIndex = passage.end, text = "", rects = passage.rects,
             kind = TextMarkupKind.HIGHLIGHT, color = 0
@@ -105,13 +105,13 @@ internal object MarkupItems {
     }
 
     /** The marks [refs] of [page], or `null` when one is not a mark there. */
-    fun marksOf(page: DrawPage, refs: List<ElementRef>): List<DrawTextMarkup>? {
+    fun marksOf(page: Page, refs: List<ElementRef>): List<TextMarkupElement>? {
         val shown = page.markups.filter { it.removed == null }.associateBy { it.id }
         return refs.map { shown[it.id] ?: return null }
     }
 
     /** The changes of [item], applied to [document] as it is now (not stale). */
-    fun changesOf(document: DrawDocument, item: ProposalItem, engines: AgentEngines): List<DocumentChange> = when (item) {
+    fun changesOf(document: Document, item: ProposalItem, engines: AgentEngines): List<DocumentChange> = when (item) {
         is ProposalItem.AddMarkup -> {
             val page = document.pageById(item.page)!!
             val passage = find(document, page, item.quote, item.occurrence, engines)!!

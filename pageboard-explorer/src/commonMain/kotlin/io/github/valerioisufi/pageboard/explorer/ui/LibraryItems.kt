@@ -54,10 +54,10 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_ta
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewElevation
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import io.github.valerioisufi.pageboard.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.pluralStringResource
@@ -215,7 +215,7 @@ internal fun FolderTile(folderId: String, size: Dp = 44.dp, shared: Boolean = fa
             .size(size)
             .background(container, RoundedCornerShape(size * 14 / 44))
     ) {
-        Icon(DrawViewIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(size / 2))
+        Icon(PageboardIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(size / 2))
         if (shared) {
             val badge = size * 9 / 22
             Box(
@@ -227,7 +227,7 @@ internal fun FolderTile(folderId: String, size: Dp = 44.dp, shared: Boolean = fa
                     .background(colors.primary, CircleShape)
                     .border(1.5.dp, colors.surface, CircleShape)
             ) {
-                Icon(DrawViewIcons.Users, contentDescription = stringResource(Res.string.explorer_tag_shared), tint = colors.onPrimary, modifier = Modifier.size(badge * 3 / 5))
+                Icon(PageboardIcons.Users, contentDescription = stringResource(Res.string.explorer_tag_shared), tint = colors.onPrimary, modifier = Modifier.size(badge * 3 / 5))
             }
         }
     }
@@ -377,7 +377,7 @@ private fun SearchMatchesList(
 @Composable
 internal fun itemSubtitle(item: FileItem): String {
     if (item.type == FileType.FOLDER) return pluralStringResource(Res.plurals.explorer_notes_count, item.noteCount, item.noteCount)
-    val monthNames = stringArrayResource(DrawViewRes.array.date_months_short)
+    val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
     return remember(item.modifiedAt, monthNames) { formatShortDateTime(item.modifiedAt, monthNames) }
 }
 
@@ -391,7 +391,7 @@ internal fun SelectedCheck(modifier: Modifier = Modifier) {
             .background(MaterialTheme.colorScheme.primary, CircleShape)
             .border(2.dp, MaterialTheme.colorScheme.surfaceContainerLowest, CircleShape)
     ) {
-        Icon(DrawViewIcons.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
+        Icon(PageboardIcons.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
     }
 }
 
@@ -403,7 +403,7 @@ internal fun SelectedCheck(modifier: Modifier = Modifier) {
 internal fun ItemMoreButton(item: FileItem, itemCommands: List<Command>, actions: ItemActions) {
     var sheet by remember { mutableStateOf(false) }
     DesignIconButton(
-        icon = DrawViewIcons.MoreHorizontal,
+        icon = PageboardIcons.MoreHorizontal,
         label = stringResource(Res.string.explorer_action_details),
         onClick = { actions.onShowDetails?.invoke(item) ?: run { sheet = true } },
         iconSize = 20.dp
@@ -430,7 +430,7 @@ internal fun DocumentThumbnail(item: FileItem, thumbnails: DocumentThumbnails?, 
         val fitted = if (maxWidth / maxHeight > ratio) Modifier.height(maxHeight).aspectRatio(ratio) else Modifier.width(maxWidth).aspectRatio(ratio)
         Box(
             modifier = fitted
-                .elevation(DrawViewElevation.Level1, PaperShape)
+                .elevation(PageboardElevation.Level1, PaperShape)
                 .clip(PaperShape)
                 .background(Color.White)
         ) {

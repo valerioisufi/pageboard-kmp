@@ -1,4 +1,4 @@
-// The libraries of DrawView as another developer uses them: resolved from mavenLocal()
+// The libraries of Pageboard as another developer uses them: resolved from mavenLocal()
 // (./consumer-checks/check.sh publishes them first), with only what each check declares.
 pluginManagement {
     repositories {

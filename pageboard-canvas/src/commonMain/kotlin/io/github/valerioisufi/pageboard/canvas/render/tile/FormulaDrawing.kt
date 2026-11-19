@@ -38,7 +38,7 @@ public sealed interface FormulaOp {
     public data object Reset : FormulaOp
 
     /** [text] in the current font, from ([x], [y]) on its baseline. */
-    public class DrawText(public val text: String, public val x: Float, public val y: Float) : FormulaOp
+    public class TextElement(public val text: String, public val x: Float, public val y: Float) : FormulaOp
     public class DrawLine(public val x1: Float, public val y1: Float, public val x2: Float, public val y2: Float) : FormulaOp
     public class DrawRect(public val x: Float, public val y: Float, public val width: Float, public val height: Float, public val fill: Boolean) : FormulaOp
     public class DrawRoundRect(

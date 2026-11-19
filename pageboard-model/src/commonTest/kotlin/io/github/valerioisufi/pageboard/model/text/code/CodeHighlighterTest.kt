@@ -191,7 +191,7 @@ class CodeHighlighterTest {
 
     @Test
     fun yaml() {
-        val code = "# config\nname: DrawView\nitems:\n  - id: 1\n    tag: !custom value\n  - &anchor \"quoted\": yes\nurl: http://x.y"
+        val code = "# config\nname: Pageboard\nitems:\n  - id: 1\n    tag: !custom value\n  - &anchor \"quoted\": yes\nurl: http://x.y"
         assertEquals(
             listOf(
                 COMMENT to "# config", PROPERTY to "name", PROPERTY to "items", PROPERTY to "id", NUMBER to "1",

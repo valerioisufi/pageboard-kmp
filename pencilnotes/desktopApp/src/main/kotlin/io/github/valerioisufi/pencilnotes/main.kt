@@ -12,14 +12,14 @@ import io.github.valerioisufi.pageboard.lecture.ui.LectureExitDialog
 import io.github.valerioisufi.pageboard.platform.PAGEBOARD_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.pageboard.platform.checkDataDirectoryProperty
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
-import io.github.valerioisufi.pageboard.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.pageboard.ui.command.PageboardMenuBar
 import io.github.valerioisufi.pageboard.ui.window.DesktopAppIcon
-import io.github.valerioisufi.pageboard.ui.window.DrawViewWindowDecor
+import io.github.valerioisufi.pageboard.ui.window.PageboardWindowDecor
 import io.github.valerioisufi.pageboard.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.pageboard.ui.window.WindowMinimumSize
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopIcon
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopWindowManager
-import io.github.valerioisufi.pageboard.ui.window.rememberDrawViewWindowState
+import io.github.valerioisufi.pageboard.ui.window.rememberPageboardWindowState
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import java.io.File
 import javax.swing.JOptionPane
@@ -27,7 +27,7 @@ import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) {
-    // PencilNotes keeps its notes apart from the other DrawView applications (~/.pencilnotes),
+    // PencilNotes keeps its notes apart from the other Pageboard applications (~/.pencilnotes),
     // unless another directory is given with -Dpageboard.dataDir=...
     checkDataDirectoryProperty()
     if (System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
@@ -106,7 +106,7 @@ private fun runApplication(agents: PencilNotesAgents) {
         // 1. Primary Library Window
         if (windowManager.isLibraryOpen) {
             val commands = remember { CommandHost() }
-            val windowState = rememberDrawViewWindowState("library")
+            val windowState = rememberPageboardWindowState("library")
             Window(
                 onCloseRequest = {
                     if (windowManager.openDocumentIds.isNotEmpty()) {
@@ -122,8 +122,8 @@ private fun runApplication(agents: PencilNotesAgents) {
                 icon = appIcon,
                 onKeyEvent = { commands.dispatch(it) }
             ) {
-                DrawViewWindowDecor(state = windowState) {
-                    DrawViewMenuBar(commands)
+                PageboardWindowDecor(state = windowState) {
+                    PageboardMenuBar(commands)
                     WindowMinimumSize()
                     PencilNotesApp(
                         commandHost = commands,
@@ -145,7 +145,7 @@ private fun runApplication(agents: PencilNotesAgents) {
         for (documentId in windowManager.openDocumentIds) {
             key(documentId) {
                 val docCommands = remember { CommandHost() }
-                val docWindowState = rememberDrawViewWindowState("doc-$documentId")
+                val docWindowState = rememberPageboardWindowState("doc-$documentId")
                 var docTitle by remember { mutableStateOf("PencilNotes") }
                 var docModified by remember { mutableStateOf(false) }
 
@@ -161,9 +161,9 @@ private fun runApplication(agents: PencilNotesAgents) {
                     icon = appIcon,
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
-                    DrawViewWindowDecor(state = docWindowState) {
+                    PageboardWindowDecor(state = docWindowState) {
                         SetWindowDocumentModified(docModified)
-                        DrawViewMenuBar(docCommands)
+                        PageboardMenuBar(docCommands)
                         WindowMinimumSize()
                         PencilNotesDocumentWindow(
                             documentId = documentId,

@@ -1,12 +1,12 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawElement
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPdf
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.PageElement
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.PdfElement
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
 import io.github.valerioisufi.pageboard.platform.Sha256
 
@@ -18,11 +18,11 @@ import io.github.valerioisufi.pageboard.platform.Sha256
 public class LoadedPage(
     public val id: String,
     public val content: PageContentSnapshot,
-    public val resources: List<DrawResource>
+    public val resources: List<DocumentResource>
 ) {
     internal companion object {
         /** The page at [index] of [document] (among its pages shown), or `null`. */
-        fun of(document: DrawDocument, index: Int): LoadedPage? = document.pages.getOrNull(index)?.let { page ->
+        fun of(document: Document, index: Int): LoadedPage? = document.pages.getOrNull(index)?.let { page ->
             LoadedPage(page.id, page.snapshotContent(), document.resources.toList())
         }
     }
@@ -33,7 +33,7 @@ public class LoadedPage(
  * the hash of its identifier, format and background, of the identifier and the stamps of every
  * element shown on it, and of the files of the resources they show.
  */
-internal fun DrawDocument.pageFingerprint(index: Int): String? {
+internal fun Document.pageFingerprint(index: Int): String? {
     val page = pages.getOrNull(index) ?: return null
     val text = StringBuilder()
     text.append(page.id).append('|').append(page.widthMm).append('|').append(page.heightMm).append('|').append(page.background).append('\n')
@@ -41,7 +41,7 @@ internal fun DrawDocument.pageFingerprint(index: Int): String? {
     for (element in page.elements().sortedBy { it.id }) {
         text.append(element.id).append('|').append(element.added).append('|').append(element.placed).append('|')
             .append(element.ordered).append('|').append(element.updated)
-        if (element is DrawText) text.append('|').append(element.contentVersions)
+        if (element is TextElement) text.append('|').append(element.contentVersions)
         text.append('\n')
         resourceIdOf(element)?.let { resourceIds.add(it) }
     }
@@ -52,9 +52,9 @@ internal fun DrawDocument.pageFingerprint(index: Int): String? {
     return Sha256.of(text.toString().encodeToByteArray())
 }
 
-private fun resourceIdOf(element: DrawElement): String? = when (element) {
-    is DrawImage -> element.resourceId
-    is DrawPdf -> element.resourceId
-    is DrawTextMarkup -> element.resourceId
+private fun resourceIdOf(element: PageElement): String? = when (element) {
+    is ImageElement -> element.resourceId
+    is PdfElement -> element.resourceId
+    is TextMarkupElement -> element.resourceId
     else -> null
 }

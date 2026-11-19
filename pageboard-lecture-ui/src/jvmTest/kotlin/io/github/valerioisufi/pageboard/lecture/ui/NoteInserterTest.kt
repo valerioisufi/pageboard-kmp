@@ -1,12 +1,12 @@
 package io.github.valerioisufi.pageboard.lecture.ui
 
 import androidx.compose.ui.graphics.Canvas
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.lecture.NoteKind
 import io.github.valerioisufi.pageboard.lecture.NoteSuggestion
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.geometry.Dimension
@@ -30,7 +30,7 @@ class NoteInserterTest {
 
     /** Lays nothing out: the heights are estimated from the lines. */
     private object NoLayout : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
     }
 
     private val start = 1_000_000_000L
@@ -39,14 +39,14 @@ class NoteInserterTest {
     private fun note(id: String, atMs: Long, pageIndex: Int = 0) =
         NoteSuggestion(id = id, kind = NoteKind.DEFINITION, title = "Note $id", content = "What the lecturer said.", pageIndex = pageIndex, atMs = atMs)
 
-    private fun controller(scope: kotlinx.coroutines.CoroutineScope, pages: Int = 1): DrawViewController {
-        val document = DrawDocument()
+    private fun controller(scope: kotlinx.coroutines.CoroutineScope, pages: Int = 1): PageboardController {
+        val document = Document()
         repeat(pages - 1) { document.addPage() }
-        return DrawViewController(document = document, coroutineScope = scope).apply { viewport.setSize(800f, 1200f) }
+        return PageboardController(document = document, coroutineScope = scope).apply { viewport.setSize(800f, 1200f) }
     }
 
     /** A typed line of the student at [y], written [atMs] after the start of the lecture. */
-    private fun DrawViewController.write(y: Float, atMs: Long, pageIndex: Int = 0) = DrawText().apply {
+    private fun PageboardController.write(y: Float, atMs: Long, pageIndex: Int = 0) = TextElement().apply {
         x = 20f; this.y = y; width = 170f; height = 10f; text = "The student's notes"
         added = Stamp(start + atMs, 0, "tablet")
     }.also { document.pages[pageIndex].add(it) }
@@ -123,7 +123,7 @@ class NoteInserterTest {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]
         fun typed(x: Float, y: Float, width: Float, height: Float) =
-            DrawText().apply { this.x = x; this.y = y; this.width = width; this.height = height; fontSize = 14f; text = "Notes of the student at fourteen points" }.also { page.add(it) }
+            TextElement().apply { this.x = x; this.y = y; this.width = width; this.height = height; fontSize = 14f; text = "Notes of the student at fourteen points" }.also { page.add(it) }
         val anchor = typed(20f, 100f, 110f, 10f)
         // The column on the right free from 100 to 128 mm only: 28 mm, a note of five lines is 29.6 mm at 14 points
         typed(135f, 10f, 65f, 86f)
@@ -141,7 +141,7 @@ class NoteInserterTest {
         val controller = controller(backgroundScope, pages = 2)
         controller.write(30f, atMs = 60_000)
         // The second page is full: its notes go on a new page after it
-        controller.document.pages[1].add(DrawText().apply { width = 210f; height = 297f; text = "Full" })
+        controller.document.pages[1].add(TextElement().apply { width = 210f; height = 297f; text = "Full" })
         val notes = listOf(note("a", 60_000), note("b", 70_000), note("c", 80_000), note("d", 90_000, pageIndex = 1))
         var inserted = emptyList<NoteSuggestion>()
         assertTrue(NoteInserter(NoLayout).startPlacementAll(EditorContext(controller), notes, lecture, "4 notes", onInserted = { inserted = it }, onCancel = {}))
@@ -178,8 +178,8 @@ class NoteInserterTest {
 
     @Test
     fun theReviewAfterAPageOfAnotherFormatTakesTheFormatOfTheDocument() = runTest(UnconfinedTestDispatcher()) {
-        val document = DrawDocument(defaultBackground = PageBackground.Ruled())
-        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        val document = Document(defaultBackground = PageBackground.Ruled())
+        val controller = PageboardController(document = document, coroutineScope = backgroundScope)
         // A slide-sized page of its own background, the one on screen
         controller.pageManager.changeSinglePageTemplate(0, Dimension(254f.mm, 142.875f.mm), PageBackground.Solid())
         // Paragraphs enough for more than one page

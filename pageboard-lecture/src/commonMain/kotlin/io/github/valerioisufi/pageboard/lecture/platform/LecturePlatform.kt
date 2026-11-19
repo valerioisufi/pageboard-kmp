@@ -13,7 +13,7 @@ internal expect fun restrictToOwner(path: String)
 
 /**
  * Directory of the lecture recordings and of the assistant settings: `lectures`, next to the
- * resources directory of the DrawView data.
+ * resources directory of the Pageboard data.
  */
 internal fun lectureDataDirectory(): String = dataDirectory() + "/lectures"
 

@@ -12,7 +12,7 @@ import io.github.valerioisufi.pageboard.store.space.StoredSpace
 import io.github.valerioisufi.pageboard.store.room.db.CatalogItemEntity
 import io.github.valerioisufi.pageboard.store.room.db.CatalogOperationEntity
 import io.github.valerioisufi.pageboard.store.room.db.CatalogProofEntity
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.FolderEntity
 import io.github.valerioisufi.pageboard.store.room.db.SpaceEntity
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 /** The shared folders in the database (see [SpaceStore]): the spaces, their catalogs, logs and proofs. */
-internal class SpaceRepository(private val database: DrawDatabase) : SpaceStore {
+internal class SpaceRepository(private val database: PageboardDatabase) : SpaceStore {
     private val spaceDao = database.spaceDao()
     private val folderDao = database.folderDao()
     private val documentDao = database.documentDao()
@@ -109,7 +109,7 @@ internal class SpaceRepository(private val database: DrawDatabase) : SpaceStore 
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Exception) {
-        println("DrawView: unreadable stored change of a space (${e.message})")
+        println("Pageboard: unreadable stored change of a space (${e.message})")
         null
     }
 

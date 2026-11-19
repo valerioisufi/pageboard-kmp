@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.canvas.controller
 
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.change.BoxPlacement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
@@ -21,7 +21,7 @@ internal object ShapeConnectors {
     const val JOINED_MM: Float = 0.3f
 
     /** A shape of a page with its value and its box. */
-    class Placed(val element: DrawCustomElement, val value: ShapeElement) {
+    class Placed(val element: CustomElement, val value: ShapeElement) {
         val box: ShapeBox get() = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
     }
 
@@ -30,7 +30,7 @@ internal object ShapeConnectors {
      * of [moved], that end taken where [move] takes the anchor (a point of the page to its new
      * place); [values] reads the value of a shape.
      */
-    fun follow(page: DrawPage, moved: Collection<DrawCustomElement>, values: (DrawCustomElement) -> ShapeElement?, move: (DrawCustomElement, Point) -> Point): List<BoxPlacement> {
+    fun follow(page: Page, moved: Collection<CustomElement>, values: (CustomElement) -> ShapeElement?, move: (CustomElement, Point) -> Point): List<BoxPlacement> {
         val movedIds = moved.mapTo(HashSet()) { it.id }
         val boxes = moved.mapNotNull { element -> values(element)?.takeIf { !it.kind.isLine }?.let { Placed(element, it) } }
         if (boxes.isEmpty()) return emptyList()
@@ -55,11 +55,11 @@ internal object ShapeConnectors {
     }
 
     /** [follow] for shapes all moved by [transform] (page millimeters to page millimeters). */
-    fun follow(page: DrawPage, moved: Collection<DrawCustomElement>, values: (DrawCustomElement) -> ShapeElement?, transform: Matrix2D): List<BoxPlacement> =
+    fun follow(page: Page, moved: Collection<CustomElement>, values: (CustomElement) -> ShapeElement?, transform: Matrix2D): List<BoxPlacement> =
         follow(page, moved, values) { _, anchor -> transform.mapPoint(anchor.x, anchor.y).let { Point(it.x, it.y) } }
 
     /** [follow] for the shape [element] going from [before] to the box [after] (its handles dragged). */
-    fun follow(page: DrawPage, element: DrawCustomElement, values: (DrawCustomElement) -> ShapeElement?, before: ShapeBox, after: ShapeBox): List<BoxPlacement> =
+    fun follow(page: Page, element: CustomElement, values: (CustomElement) -> ShapeElement?, before: ShapeBox, after: ShapeBox): List<BoxPlacement> =
         follow(page, listOf(element), values) { _, anchor ->
             val local = before.toLocal(anchor)
             val x = if (before.width > 0f) local.x / before.width * after.width else 0f

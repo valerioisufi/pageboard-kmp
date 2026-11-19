@@ -3,14 +3,14 @@ package io.github.valerioisufi.pageboard.store.room
 import io.github.valerioisufi.pageboard.ink.InkStrokeEngine
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawCustomElement
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawImage
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawResource
-import io.github.valerioisufi.pageboard.model.DrawStroke
-import io.github.valerioisufi.pageboard.model.DrawText
-import io.github.valerioisufi.pageboard.model.DrawTextMarkup
+import io.github.valerioisufi.pageboard.model.CustomElement
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.ImageElement
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.TextElement
+import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.InputToolType
@@ -36,7 +36,7 @@ import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.room.db.*
-import io.github.valerioisufi.pageboard.store.room.repository.DrawDocumentRepository
+import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
 import io.github.valerioisufi.pageboard.store.room.repository.FileRepository
 import io.github.valerioisufi.pageboard.store.testing.checkFolderOperations
 import io.github.valerioisufi.pageboard.store.testing.checkOperationProofs
@@ -49,15 +49,15 @@ import kotlin.test.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 
-class DrawDatabaseTest {
+class PageboardDatabaseTest {
 
-    private lateinit var database: DrawDatabase
-    private lateinit var repository: DrawDocumentRepository
+    private lateinit var database: PageboardDatabase
+    private lateinit var repository: DocumentRepository
 
     @BeforeTest
     fun setup() {
-        database = createDrawDatabase(getInMemoryDatabaseBuilder())
-        repository = DrawDocumentRepository(database, InkStrokeModeller)
+        database = createPageboardDatabase(getInMemoryDatabaseBuilder())
+        repository = DocumentRepository(database, InkStrokeModeller)
     }
 
     @AfterTest
@@ -190,11 +190,11 @@ class DrawDatabaseTest {
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
         // Placed by a transformation (moved and scaled with the lasso)
         val transform = AffineTransform(a = 2f, d = 2f, tx = 5f, ty = -3f)
-        val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform)
+        val stroke = StrokeElement(mesh = mesh, brushConfig = brush, transform = transform)
         repository.saveStrokes(page, listOf(stroke))
 
         // Text
-        val text = DrawText().apply {
+        val text = TextElement().apply {
             this.text = "**Hello** $\\frac{a}{b}$"
             x = 12f; y = 30f; width = 80f; height = 14f
             alignment = TextAlignment.CENTER
@@ -207,15 +207,15 @@ class DrawDatabaseTest {
 
         // Image referencing a document resource
         val resourceId = newElementId()
-        repository.saveResource(doc, DrawResource(resourceId, DrawResource.ResourceType.IMAGE, "/tmp/image.png"))
-        val image = DrawImage().apply {
+        repository.saveResource(doc, DocumentResource(resourceId, DocumentResource.ResourceType.IMAGE, "/tmp/image.png"))
+        val image = ImageElement().apply {
             this.resourceId = resourceId
             x = 5f; y = 6f; width = 50f; height = 40f; rotation = 15f
         }
         repository.saveImage(page, image)
 
         // A second page with a custom background, then soft-deleted
-        val second = DrawPage(index = 1, widthMm = 148f, heightMm = 210f, background = PageBackground.Grid()).apply {
+        val second = Page(index = 1, widthMm = 148f, heightMm = 210f, background = PageBackground.Grid()).apply {
             hasCustomBackground = true
         }
         second.orderKey = doc.orderKeyAt(1)
@@ -287,23 +287,23 @@ class DrawDatabaseTest {
     @Test
     fun aDocumentReceivedIsStoredWhole() = runTest {
         // Changed by a session: stamps, removed elements and a removed page
-        val document = DrawDocument(title = "Received")
+        val document = Document(title = "Received")
         val session = DocumentSession(document, "other-device")
         val strokes = List(3) { i ->
             val points = (0 until 6).map { StrokePoint(10f + i * 20f + it, 20f + it, 0.5f, it * 8L) }
             val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = 0xFF000000.toInt())
-            DrawStroke(mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)), brushConfig = brush)
+            StrokeElement(mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)), brushConfig = brush)
         }
         val page = document.pages[0]
         session.submit(AddElements.of(page, strokes))
         session.submit(RemoveElements.of(page, listOf(strokes[1])))
-        val second = DrawPage(orderKey = document.orderKeyAt(1))
+        val second = Page(orderKey = document.orderKeyAt(1))
         session.submit(AddPage.of(second))
         session.submit(RemovePage(second.id))
         // A text changed, on a page removed by a device that had not seen it: the page stays
-        val third = DrawPage(orderKey = document.orderKeyAt(1))
+        val third = Page(orderKey = document.orderKeyAt(1))
         session.submit(AddPage.of(third))
-        val text = DrawText().apply { this.text = "written"; x = 10f; y = 10f; width = 40f; height = 8f }
+        val text = TextElement().apply { this.text = "written"; x = 10f; y = 10f; width = 40f; height = 8f }
         session.submit(AddElements.of(third, listOf(text)))
         session.submit(UpdateTexts(third.id, listOf(text.toData().copy(text = "changed"))))
         val removal = Stamp(session.clock.next().time + 1, 0, "another-device")
@@ -322,7 +322,7 @@ class DrawDatabaseTest {
     fun testTextMarkupPersistence() = runTest {
         val doc = repository.createDocument("Slides", 210f, 297f, PageBackground.Solid())
         val page = doc.pages[0]
-        val markup = DrawTextMarkup(
+        val markup = TextMarkupElement(
             resourceId = "7",
             pdfPageIndex = 2,
             pdfWidthPt = 595f,
@@ -455,7 +455,7 @@ class DrawDatabaseTest {
 
     @Test
     fun aFolderIsSharedBetweenTwoDevices() = runTest {
-        val other = createDrawDatabase(getInMemoryDatabaseBuilder())
+        val other = createPageboardDatabase(getInMemoryDatabaseBuilder())
         try {
             checkSharedFolders(RoomDocumentStore(database, InkStrokeModeller), RoomDocumentStore(other, InkStrokeModeller), backgroundScope)
         } finally {
@@ -467,7 +467,7 @@ class DrawDatabaseTest {
     fun anElementOfAnApplicationIsStoredWithItsBytes() = runTest {
         val doc = repository.createDocument("Shapes", 210f, 297f, PageBackground.Solid())
         val page = doc.pages[0]
-        val element = DrawCustomElement("com.example.shape").apply {
+        val element = CustomElement("com.example.shape").apply {
             version = 2
             payload = byteArrayOf(9, 8, 7)
             x = 10f

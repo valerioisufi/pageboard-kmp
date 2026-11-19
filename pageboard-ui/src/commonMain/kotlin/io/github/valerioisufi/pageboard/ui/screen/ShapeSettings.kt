@@ -35,7 +35,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeToolStyle
 import io.github.valerioisufi.pageboard.canvas.render.drawVectors
 import io.github.valerioisufi.pageboard.model.geometry.Point
@@ -149,7 +149,7 @@ internal interface ShapeStyleTarget {
 }
 
 /** The style of the shapes tool: what it draws next. */
-internal class ShapeToolTarget(private val controller: DrawViewController) : ShapeStyleTarget {
+internal class ShapeToolTarget(private val controller: PageboardController) : ShapeStyleTarget {
     override val style: ShapeToolStyle get() = controller.shapeInserter.style
 
     override fun choose(choice: ShapeChoice) = controller.shapeInserter.updateStyle(style.copy(kind = choice.kind, heads = choice.heads))
@@ -158,7 +158,7 @@ internal class ShapeToolTarget(private val controller: DrawViewController) : Sha
 }
 
 /** The shapes selected: each keeps its kind, takes the change of style. */
-internal class SelectedShapesTarget(private val controller: DrawViewController) : ShapeStyleTarget {
+internal class SelectedShapesTarget(private val controller: PageboardController) : ShapeStyleTarget {
     override val style: ShapeToolStyle
         get() {
             val first = controller.shapeEditing.selectedShapes.firstOrNull()?.second

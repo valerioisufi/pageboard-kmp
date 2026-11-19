@@ -46,13 +46,13 @@ class StackMoveTest {
         fun stack(): List<String> = page.stack.map { it.id }
     }
 
-    private fun image(id: String, x: Float) = DrawImage(id).apply {
+    private fun image(id: String, x: Float) = ImageElement(id).apply {
         this.x = x; y = 0f; width = 20f; height = 20f
     }
 
     /** A page of four images overlapping and a stroke far from them, added one on the other. */
     private fun device(replica: String = "ada"): Device {
-        val device = Device(DocumentSession(DrawDocument(), replica = replica))
+        val device = Device(DocumentSession(Document(), replica = replica))
         for (element in listOf(image("a", 0f), image("e", 150f), image("b", 5f), image("c", 10f), image("d", 15f))) {
             device.session.submit(AddElements.of(device.page, listOf(element)))
         }
@@ -161,14 +161,14 @@ class StackMoveTest {
     fun aMoveAndAReorderMadeApartBothStay() {
         val ada = device("ada")
         val bob = Device(DocumentSession(ada.document.snapshot().toDocument(), replica = "bob"))
-        val image = ada.page.find("a") as DrawImage
+        val image = ada.page.find("a") as ImageElement
         ada.session.submit(PlaceElements(ada.page.id, listOf(BoxPlacement("a", 40f, 40f, image.width, image.height, 0f))))
         bob.arrange(setOf("a"), StackMove.FRONT)
 
         ada.receiveFrom(bob)
         bob.receiveFrom(ada)
         for (device in listOf(ada, bob)) {
-            assertEquals(40f, (device.page.find("a") as DrawImage).x)
+            assertEquals(40f, (device.page.find("a") as ImageElement).x)
             assertEquals("a", device.stack().last())
         }
     }
@@ -179,19 +179,19 @@ class StackMoveTest {
         val bob = Device(DocumentSession(ada.document.snapshot().toDocument(), replica = "bob"))
         val undo = assertNotNull(ada.arrange(setOf("a"), StackMove.FRONT))
         bob.receiveFrom(ada)
-        val image = bob.page.find("a") as DrawImage
+        val image = bob.page.find("a") as ImageElement
         bob.session.submit(PlaceElements(bob.page.id, listOf(BoxPlacement("a", 40f, 40f, image.width, image.height, 0f))))
         ada.receiveFrom(bob)
 
         ada.session.submit(undo)
         assertEquals("a", ada.stack().first())
-        assertEquals(40f, (ada.page.find("a") as DrawImage).x)
+        assertEquals(40f, (ada.page.find("a") as ImageElement).x)
     }
 
     @Test
     fun anEditOfATextKeepsItsOrder() {
         val device = device()
-        val text = DrawText("t").apply { x = 0f; y = 0f; width = 20f; height = 10f; this.text = "waves" }
+        val text = TextElement("t").apply { x = 0f; y = 0f; width = 20f; height = 10f; this.text = "waves" }
         device.session.submit(AddElements.of(device.page, listOf(text)))
         device.arrange(setOf("t"), StackMove.BACK)
         device.session.submit(UpdateTexts(device.page.id, listOf(text.toData().copy(text = "particles", order = null))))

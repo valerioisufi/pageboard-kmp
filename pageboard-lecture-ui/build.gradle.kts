@@ -4,7 +4,7 @@ plugins {
     id("pageboard.screenshots")
 }
 
-description = "The DrawView lecture assistant in an application: its panel, its settings, the recording in the editor and in the library"
+description = "The Pageboard lecture assistant in an application: its panel, its settings, the recording in the editor and in the library"
 
 kotlin {
     applyDefaultHierarchyTemplate {

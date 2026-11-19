@@ -25,7 +25,7 @@ public enum class TextMarkupKind {
 
 /**
  * A highlight, underline or strikeout of a passage of the text of a PDF page shown on a page
- * (see [DrawPdf]).
+ * (see [PdfElement]).
  *
  * The passage is the characters from [startIndex] until [endIndex] (exclusive) of the text layer
  * of page [pdfPageIndex] of the PDF [resourceId] ([text] is their text). Its [rects], one per
@@ -33,7 +33,7 @@ public enum class TextMarkupKind {
  * PDF where the page draws it (fitted in the page, see [fitPdfPage]), even when the format of
  * the page changes. [id] identifies the mark on every device (see [newElementId]).
  */
-public class DrawTextMarkup(
+public class TextMarkupElement(
     override val id: String = newElementId(),
     public val resourceId: String,
     public val pdfPageIndex: Int,
@@ -45,7 +45,7 @@ public class DrawTextMarkup(
     public val rects: List<Rect>,
     kind: TextMarkupKind,
     color: Int
-) : DrawElement {
+) : PageElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
         set(value) {
             field = value.inLayer(ElementOrder.MARKUP_LAYER)
@@ -64,7 +64,7 @@ public class DrawTextMarkup(
     public var color: Int = color
 
     /** Transformation from the points of the PDF page to the millimeters of [page]. */
-    public fun pointsToPageMm(page: DrawPage): Matrix2D = pointsToPageMm(page.widthMm, page.heightMm)
+    public fun pointsToPageMm(page: Page): Matrix2D = pointsToPageMm(page.widthMm, page.heightMm)
 
     /** Transformation from the points of the PDF page to the millimeters of a [widthMm] x [heightMm] page. */
     public fun pointsToPageMm(widthMm: Float, heightMm: Float): Matrix2D =
@@ -78,10 +78,10 @@ public class DrawTextMarkup(
     /** Bounds of the lines in the millimeters of a [widthMm] x [heightMm] page. */
     public fun boundsMm(widthMm: Float, heightMm: Float): Rect = pointsToPageMm(widthMm, heightMm).mapRect(boundsPoints)
 
-    public fun boundsMm(page: DrawPage): Rect = boundsMm(page.widthMm, page.heightMm)
+    public fun boundsMm(page: Page): Rect = boundsMm(page.widthMm, page.heightMm)
 
     /** Whether [pointMm] (millimeters of [page]) is on a line of the passage, or at most [toleranceMm] away. */
-    public fun containsPoint(page: DrawPage, pointMm: Point, toleranceMm: Float = 0f): Boolean {
+    public fun containsPoint(page: Page, pointMm: Point, toleranceMm: Float = 0f): Boolean {
         val toPage = pointsToPageMm(page)
         return rects.any { toPage.mapRect(it).inflate(toleranceMm).contains(pointMm) }
     }

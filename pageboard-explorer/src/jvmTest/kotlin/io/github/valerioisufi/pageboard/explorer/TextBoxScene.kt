@@ -18,8 +18,8 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
-import io.github.valerioisufi.pageboard.canvas.render.DrawViewEngines
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
@@ -31,7 +31,7 @@ import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
 import io.github.valerioisufi.pageboard.ui.screen.EditorScreen
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewTheme
+import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import java.awt.datatransfer.StringSelection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,9 +73,9 @@ private class CopiedHtml(private val html: String) : Transferable {
 @OptIn(ExperimentalTestApi::class)
 internal fun textBoxScene(
     clipboard: TextBoxClipboard = TextBoxClipboard(),
-    engines: DrawViewEngines = DrawViewEngines.None,
+    engines: PageboardEngines = PageboardEngines.None,
     extension: EditorExtension? = null,
-    block: DesktopComposeUiTest.(DrawViewController) -> Unit
+    block: DesktopComposeUiTest.(PageboardController) -> Unit
 ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
@@ -84,11 +84,11 @@ internal fun textBoxScene(
         val id = store.createDocument("Text boxes", background = PageBackground.Ruled()).id
         checkNotNull(documents.open(id))
     }
-    val controller = DrawViewController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session, engines = engines)
+    val controller = PageboardController(document = open.document, coroutineScope = scope, persistence = store.persistence, sharedSession = open.session, engines = engines)
     runDesktopComposeUiTest(width = 1200, height = 900) {
         setContent {
             CompositionLocalProvider(LocalClipboard provides clipboard, LocalClipboardManager provides clipboard.manager) {
-                DrawViewTheme(darkTheme = false, dynamicColor = false) {
+                PageboardTheme(darkTheme = false, dynamicColor = false) {
                     AdaptiveRoot(conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
                         EditorScreen(context = EditorContext(controller), onClose = {}, modifier = Modifier.fillMaxSize(), extension = extension)
                     }
@@ -108,7 +108,7 @@ internal fun textBoxScene(
 
 /** Zooms by [factor] and starts a text in the box drawn at the corner ([xMm], [yMm]) of the first page, [widthMm] wide. */
 @OptIn(ExperimentalTestApi::class)
-internal fun DesktopComposeUiTest.startBox(controller: DrawViewController, xMm: Float, yMm: Float, widthMm: Float, factor: Float = 1f) {
+internal fun DesktopComposeUiTest.startBox(controller: PageboardController, xMm: Float, yMm: Float, widthMm: Float, factor: Float = 1f) {
     runOnIdle {
         controller.selectTool(Tool.TEXT)
         if (factor != 1f) controller.viewport.camera.onDrag(0f, 0f, factor, 600f, 450f)
@@ -126,7 +126,7 @@ internal fun DesktopComposeUiTest.type(text: String) {
 
 /** Brings the corner of the box written to ([x], [y]) of the canvas. */
 @OptIn(ExperimentalTestApi::class)
-internal fun DesktopComposeUiTest.bringBoxTo(controller: DrawViewController, x: Float, y: Float) {
+internal fun DesktopComposeUiTest.bringBoxTo(controller: PageboardController, x: Float, y: Float) {
     runOnIdle {
         val editor = controller.textEditorManager
         val corner = checkNotNull(controller.viewport.pageMmToScreen(editor.activeTextPageIndex)).mapPoint(editor.boxX, editor.boxY)

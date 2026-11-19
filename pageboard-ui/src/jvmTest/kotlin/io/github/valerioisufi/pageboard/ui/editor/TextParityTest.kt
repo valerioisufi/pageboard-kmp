@@ -20,7 +20,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaImage
 import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.pageboard.model.text.code.BuiltInCodeHighlighter
@@ -69,7 +69,7 @@ class TextParityTest {
     }
     private val adapter = ComposeTextTileAdapter(createFontFamilyResolver(), fonts, renderer)
 
-    private fun text(content: String, alignment: TextAlignment) = DrawText().apply {
+    private fun text(content: String, alignment: TextAlignment) = TextElement().apply {
         text = content
         this.alignment = alignment
         width = WIDTH_MM
@@ -83,7 +83,7 @@ class TextParityTest {
     private data class Line(val top: Float, val baseline: Float, val bottom: Float, val left: Float)
 
     /** [text] as the canvas draws it. */
-    private fun page(text: DrawText): Drawn {
+    private fun page(text: TextElement): Drawn {
         val layout = adapter.layout(text, TextTileAdapter.NO_PAPER) ?: fail("nothing laid out")
         val boxes = layout.boxes.map { Rect(it.left, it.top, it.left + it.width, it.top + it.height).px() }
         val blocks = boxes.filter { it.width > WIDTH_MM * PX_PER_MM / 2f }
@@ -102,7 +102,7 @@ class TextParityTest {
      * [text] laid out by the field of the editor with the caret at [caret] (`null`: revealing
      * nothing), at the zoom where the screen is the canvas (see `TextBoxEditor`).
      */
-    private fun field(text: DrawText, caret: Int? = null): Pair<TextLayoutResult, PresentedText<ImageBitmap>> {
+    private fun field(text: TextElement, caret: Int? = null): Pair<TextLayoutResult, PresentedText<ImageBitmap>> {
         val fontSizePx = text.fontSize * PT_TO_MM * PX_PER_MM
         val widthPx = (text.width * PX_PER_MM).toInt()
         val images = FormulaImages(renderer, maxSize = 32)
@@ -126,7 +126,7 @@ class TextParityTest {
     }
 
     /** [text] as the field of the editor shows it, revealing nothing. */
-    private fun editor(text: DrawText): Drawn {
+    private fun editor(text: TextElement): Drawn {
         val (layout, shown) = field(text)
         val chars = shown.text.text
         val lines = (0 until layout.lineCount).mapNotNull { line ->

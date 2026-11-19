@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.explorer
 
 import androidx.room.Room
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
-import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
@@ -11,8 +11,8 @@ import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
-import io.github.valerioisufi.pageboard.store.room.db.DrawDatabase
-import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
+import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import java.io.File
 import kotlin.test.Test
@@ -36,7 +36,7 @@ class ThumbnailBenchmark {
     fun theThumbnailOfANoteChanged() = runBlocking {
         val root = File(checkNotNull(System.getProperty("pageboard.dataDir")), "benchmarks/${newElementId()}")
         root.mkdirs()
-        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(name = File(root, "notes.db").absolutePath))
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(name = File(root, "notes.db").absolutePath))
         val store = RoomDocumentStore(database, InkStrokeModeller)
         val notebook = SyntheticDocuments.notebook(pages = 50, strokesPerPage = 600, textsPerPage = 2, removedFraction = 0.1f)
         store.insertDocument(notebook)
@@ -61,7 +61,7 @@ class ThumbnailBenchmark {
     }
 
     /** Writes a stroke on the page of the note [documentId] that [page] picks, then closes it. */
-    private suspend fun write(documents: OpenDocuments, documentId: String, page: (List<DrawPage>) -> DrawPage) {
+    private suspend fun write(documents: OpenDocuments, documentId: String, page: (List<Page>) -> Page) {
         // A date of change after the last one
         delay(5)
         val open = assertNotNull(documents.open(documentId))

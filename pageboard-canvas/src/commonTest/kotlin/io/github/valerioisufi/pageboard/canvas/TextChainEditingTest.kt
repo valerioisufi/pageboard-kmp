@@ -4,13 +4,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.valerioisufi.pageboard.canvas.controller.DrawViewController
+import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.text.TextChains
@@ -28,13 +28,13 @@ class TextChainEditingTest {
 
     /** Every line of the source 10 mm high (a line never wraps). */
     private class LinesAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
-        override fun measure(text: DrawText): TextBlockSize = TextBlockSize(text.width, text.text.split('\n').size * 10f)
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {}
+        override fun measure(text: TextElement): TextBlockSize = TextBlockSize(text.width, text.text.split('\n').size * 10f)
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(10f, 8f)
     }
 
-    private fun controller(scope: CoroutineScope): DrawViewController {
-        val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
+    private fun controller(scope: CoroutineScope): PageboardController {
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
         controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = LinesAdapter()
         return controller
@@ -45,7 +45,7 @@ class TextChainEditingTest {
     private fun lines(from: Int, to: Int) = (from..to).joinToString("\n") { "line $it" }
 
     /** A box 100 mm wide starting 245 mm down the first page (297 mm high, 5 mm of margin): room for 4 lines. */
-    private fun DrawViewController.startLow() = textEditorManager.startDrawnText(0, Rect(20f, 245f, 120f, 255f))
+    private fun PageboardController.startLow() = textEditorManager.startDrawnText(0, Rect(20f, 245f, 120f, 255f))
 
     @Test
     fun aTextGoingBelowItsPageGoesOnIntoABoxOnANewPage() = runTest(UnconfinedTestDispatcher()) {
@@ -158,7 +158,7 @@ class TextChainEditingTest {
         editor.type(lines(1, 6))
         editor.finishEditing()
         val page = controller.document.pages[1]
-        controller.session.submit(AddElements.of(page, listOf(DrawText().also { it.text = "Mine"; it.x = 20f; it.y = 200f })))
+        controller.session.submit(AddElements.of(page, listOf(TextElement().also { it.text = "Mine"; it.x = 20f; it.y = 200f })))
         val second = page.texts.first { it.text != "Mine" }
         editor.startEditing(second, 1)
         editor.type("")

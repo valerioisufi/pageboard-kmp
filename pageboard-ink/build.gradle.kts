@@ -4,7 +4,7 @@ plugins {
     id("pageboard.jvm.natives")
 }
 
-description = "Google Ink stroke modeller of DrawView: the strokes as the editor draws them, native on every platform"
+description = "Google Ink stroke modeller of Pageboard: the strokes as the editor draws them, native on every platform"
 
 kotlin {
     applyDefaultHierarchyTemplate {

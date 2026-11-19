@@ -9,7 +9,7 @@ import androidx.compose.runtime.tooling.CompositionObserver
 import androidx.compose.runtime.tooling.ObservableComposition
 import androidx.compose.runtime.tooling.setObserver
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokeTool
 
@@ -123,7 +123,7 @@ internal class CompositionCounter {
         private const val PROJECT = "io.github.valerioisufi"
 
         /** A stroke of one triangle: what is measured is the editor following it, not its mesh. */
-        fun stroke(): DrawStroke = DrawStroke(
+        fun stroke(): StrokeElement = StrokeElement(
             mesh = StrokeMesh(
                 positions = floatArrayOf(10f, 10f, 20f, 10f, 10f, 20f),
                 indices = shortArrayOf(0, 1, 2),

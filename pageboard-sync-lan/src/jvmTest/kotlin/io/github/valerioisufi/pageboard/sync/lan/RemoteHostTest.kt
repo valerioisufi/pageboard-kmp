@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.sync.lan
 
 import io.github.valerioisufi.pageboard.model.BrushConfig
-import io.github.valerioisufi.pageboard.model.DrawStroke
+import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -54,7 +54,7 @@ class RemoteHostTest {
                 val points = (0..60).map { i -> StrokePoint(30f + i * 2.5f, 100f + 25f * cos(i / 5f), 0.6f, i * 8L) }
                 val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.2f, color = 0xFFE53935.toInt())
                 val mesh = assertNotNull(KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS))
-                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(DrawStroke(mesh = mesh, brushConfig = brush)))) }
+                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(StrokeElement(mesh = mesh, brushConfig = brush)))) }
                 documents.close(open)
 
                 val invitation = engine.invite(document.id, document.title, addresses = mapOf(LanTransport.NAME to "127.0.0.1:$port"))!!

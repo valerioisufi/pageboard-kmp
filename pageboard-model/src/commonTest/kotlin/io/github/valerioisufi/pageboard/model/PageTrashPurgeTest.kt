@@ -12,7 +12,7 @@ class PageTrashPurgeTest {
 
     @Test
     fun aPageRemovedIsDroppedForGoodOnlyOnceOutOfTheTrash() {
-        val document = DrawDocument()
+        val document = Document()
         document.addPage()
         val session = DocumentSession(document, replica = "ada")
         val page = document.pages[1]

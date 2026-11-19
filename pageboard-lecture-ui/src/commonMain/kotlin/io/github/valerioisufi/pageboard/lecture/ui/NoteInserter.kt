@@ -9,8 +9,8 @@ import io.github.valerioisufi.pageboard.lecture.NoteKind
 import io.github.valerioisufi.pageboard.lecture.NotePlacement
 import io.github.valerioisufi.pageboard.lecture.NoteSuggestion
 import io.github.valerioisufi.pageboard.lecture.resolvedPageIndex
-import io.github.valerioisufi.pageboard.model.DrawPage
-import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.placement.InMargin
@@ -167,11 +167,11 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * A note of [kind] and [content] to place on [page] next to [anchor]: as wide as its kind wants,
      * its height laid out on its width at [fontSize].
      */
-    private fun noteBlock(content: String, page: DrawPage, kind: NoteKind, anchor: MmRect?, fontSize: Float) =
+    private fun noteBlock(content: String, page: Page, kind: NoteKind, anchor: MmRect?, fontSize: Float) =
         PlacementBlock(NotePlacement.widthOf(kind, anchor, page.widthMm)) { width -> measureHeightMm(content, fontSize, width) }
 
     /** The size of a note on [page]: like the texts typed there, the slide, the handwriting, or a new text (see [TextSizePolicy]). */
-    private fun sizeOf(editor: EditorContext, page: DrawPage): Float = editor.placement.sizeOfPage(page)
+    private fun sizeOf(editor: EditorContext, page: Page): Float = editor.placement.sizeOfPage(page)
 
     /**
      * The places [placesAt] finds for a note at [size]; for a note in the margin ([InMargin]) whose
@@ -194,7 +194,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * What [suggestion] is about on [page]: the words it quotes (typed, handwritten as read in
      * [handwriting], or of the slide), else the writing of the moment it was said during [lecture].
      */
-    private fun anchorOf(editor: EditorContext, page: DrawPage, suggestion: NoteSuggestion, lecture: LongRange?, handwriting: Map<String, String>): MmRect? {
+    private fun anchorOf(editor: EditorContext, page: Page, suggestion: NoteSuggestion, lecture: LongRange?, handwriting: Map<String, String>): MmRect? {
         if (suggestion.anchor.isNotBlank()) {
             val blocks = inkBlocksOf(page.index, page.id, page.strokes).mapNotNull { block -> handwriting[block.key]?.takeIf { it.isNotBlank() }?.let { block.bounds to it } }
             LectureAnchors.quoteAnchor(page, suggestion.anchor, blocks, editor.placement.pdfTextOf(page.index))?.let { return it }
@@ -204,7 +204,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     }
 
     /** Adds [note] to [page] in the box of [spot], its height laid out again on its width. */
-    private fun place(editor: EditorContext, page: DrawPage, note: DrawText, spot: PlacementSpot) {
+    private fun place(editor: EditorContext, page: Page, note: TextElement, spot: PlacementSpot) {
         note.width = min(spot.box.width, page.widthMm)
         note.height = measureHeightMm(note.text, note.fontSize, note.width)
         note.x = spot.box.left.coerceIn(0f, max(0f, page.widthMm - note.width))
@@ -232,7 +232,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     fun startReviewPlacement(editor: EditorContext, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean =
         editor.placement.placeTexts(parts, ASSISTANT_TEXT_COLOR, label, measure = { textAdapter.measure(it) }, onInserted = onInserted)
 
-    private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = DrawText().apply {
+    private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = TextElement().apply {
         text = content
         width = widthMm
         height = heightMm
@@ -241,7 +241,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         markDirty()
     }
 
-    private fun addText(editor: EditorContext, page: DrawPage, item: DrawText) {
+    private fun addText(editor: EditorContext, page: Page, item: TextElement) {
         editor.document.submit(AddElements.of(page, listOf(item)))
     }
 

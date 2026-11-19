@@ -44,7 +44,7 @@ public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (
 
 /**
  * The share sheet of the system: the file is written in the cache (where the files shared before
- * are deleted first) and given to the application chosen through [DrawViewFileProvider].
+ * are deleted first) and given to the application chosen through [PageboardFileProvider].
  */
 @Composable
 public actual fun rememberFileSharer(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): ((suggestedName: String) -> Unit)? {
@@ -64,7 +64,7 @@ public actual fun rememberFileSharer(title: String, mimeType: String, onTarget: 
 }
 
 private fun share(context: Context, file: File, title: String, mimeType: String) {
-    val uri = FileProvider.getUriForFile(context, DrawViewFileProvider.authority(context), file)
+    val uri = FileProvider.getUriForFile(context, PageboardFileProvider.authority(context), file)
     val send = Intent(Intent.ACTION_SEND)
         .setType(mimeType)
         .putExtra(Intent.EXTRA_STREAM, uri)

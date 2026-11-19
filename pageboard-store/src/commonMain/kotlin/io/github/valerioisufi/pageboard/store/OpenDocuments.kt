@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.store
 
-import io.github.valerioisufi.pageboard.model.DrawDocument
-import io.github.valerioisufi.pageboard.model.DrawResource
+import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.StrokeModeller
 import io.github.valerioisufi.pageboard.model.TrashRetention
 import io.github.valerioisufi.pageboard.model.change.ChangePersister
@@ -78,7 +78,7 @@ public class OpenDocuments(
      * Stores [document] (received from another device, with the changes of the operations
      * [versionVector]) in [folderId] and opens it (see [DocumentStore.insertDocument]).
      */
-    public suspend fun insert(document: DrawDocument, folderId: String?, versionVector: Map<String, Long> = emptyMap()): OpenDocument {
+    public suspend fun insert(document: Document, folderId: String?, versionVector: Map<String, Long> = emptyMap()): OpenDocument {
         store.insertDocument(document, folderId, versionVector)
         return checkNotNull(open(document.id))
     }
@@ -117,12 +117,12 @@ public class OpenDocument internal constructor(
     private val clock: () -> Long = ::currentTimeMillis
 ) {
     internal var users = 1
-    private val received = MutableSharedFlow<DrawResource>(extraBufferCapacity = 64)
+    private val received = MutableSharedFlow<DocumentResource>(extraBufferCapacity = 64)
 
-    public val document: DrawDocument get() = session.document
+    public val document: Document get() = session.document
 
     /** The resources whose file arrived from another device (to be drawn again). */
-    public val resourcesReceived: SharedFlow<DrawResource> = received
+    public val resourcesReceived: SharedFlow<DocumentResource> = received
 
     init {
         session.addObserver(ChangePersister(queue::enqueue))

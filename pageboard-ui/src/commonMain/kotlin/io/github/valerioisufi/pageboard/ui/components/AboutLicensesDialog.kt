@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
-import io.github.valerioisufi.pageboard.ui.theme.DrawViewIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -57,7 +57,7 @@ public data class ThirdPartyLicense(
 
 /**
  * The application described by [AboutLicensesDialog], with the third-party components it adds
- * to the ones of DrawView.
+ * to the ones of Pageboard.
  */
 public data class AboutAppInfo(
     val name: String,
@@ -70,7 +70,7 @@ public data class AboutAppInfo(
     val nameFontFamily: FontFamily? = null
 )
 
-/** Application shown by [AboutLicensesDialog]: DrawView itself when not provided. */
+/** Application shown by [AboutLicensesDialog]: Pageboard itself when not provided. */
 public val LocalAboutAppInfo: ProvidableCompositionLocal<AboutAppInfo?> = staticCompositionLocalOf { null }
 
 private val THIRD_PARTY_LIBRARIES = listOf(
@@ -170,7 +170,7 @@ public fun AboutLicensesDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.about_dialog_close), onDismiss)
+                    DesignIconButton(PageboardIcons.Close, stringResource(Res.string.about_dialog_close), onDismiss)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -231,7 +231,7 @@ private fun LicenseRow(item: ThirdPartyLicense) {
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             )
             Icon(
-                imageVector = if (expanded) DrawViewIcons.ChevronDown else DrawViewIcons.ChevronRight,
+                imageVector = if (expanded) PageboardIcons.ChevronDown else PageboardIcons.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)

@@ -2,7 +2,7 @@ plugins {
     id("pageboard.kmp.library")
 }
 
-description = "Synchronization of DrawView documents on the local network: TCP transport, mDNS discovery"
+description = "Synchronization of Pageboard documents on the local network: TCP transport, mDNS discovery"
 
 kotlin {
     sourceSets {
@@ -21,7 +21,7 @@ kotlin {
     }
 }
 
-// The sync of DrawView is experimental for its users; the modules of the repository use it freely
+// The sync of Pageboard is experimental for its users; the modules of the repository use it freely
 kotlin {
     sourceSets.all {
         languageSettings.optIn("io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi")
