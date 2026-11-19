@@ -131,14 +131,14 @@ Variations).
 ### Protocol (version 2)
 
 The version went back to 1 later, with these formats and the signed operations of
-[untrusted-members.md](untrusted-members.md): the decision of the user, the applications being on
+[untrusted-members.md](untrusted-members.md): the decision of the maintainer, the applications being on
 two devices of theirs only.
 
 * Changes: `Hello.addresses`, the message `DeviceAddresses`, the addresses of the invitation (the
   link repeats `a.<transport>=<address>`), the ALPN on iroh.
 * `PROTOCOL_VERSION` goes from 1 to 2, and `ProtocolFormatTest` records the format of version 2.
   A device of version 1 is refused at the first frame and told (`otherVersionMet`). The devices of
-  version 1 need not be compatible (the decision of the user, 2026-10-22), and the new kind of
+  version 1 need not be compatible (the decision of the maintainer, 2026-10-22), and the new kind of
   message would close their connections anyway, in the middle of a session: the version makes
   the refusal clean.
 * The version is authenticated with every frame and every sealed operation. Nothing is stored
@@ -219,21 +219,11 @@ two devices of theirs only.
 
   Access is by a shared token (`access.shared_token`), which the applications receive with the
   address. The configuration and the service unit live in `tools/relay/`, with a guide.
-* Where it runs: an Always Free machine of Oracle Cloud, `VM.Standard.E2.1.Micro` (AMD; the
-  Ampere machines have no capacity for the user). The free tiers looked at first:
-  * the e2-micro of Google Cloud runs in the United States only (`us-west1`, `us-central1`,
-    `us-east1`) with 1 GB of outbound traffic a month: enough for coordinating and keeping the
-    connections alive, since most connections go direct, but tight for traffic through the
-    relay (the audio of a lecture is about 11 MB an hour, plus the presence while drawing);
-  * an AWS account opened after 15 July 2025 gets credits for a free plan of six months, then
-    pays, and a public IPv4 address is billed by the hour.
-
-  The machine of Oracle is free with no end, in the home region of the account (in Europe, near
-  the users), with its public address and 10 TB of outbound traffic a month. It is small (1/8 of
-  an OCPU, 1 GB of memory, 50 Mbps), which is plenty for the relay. Oracle stops an Always Free
-  machine idle for 7 days (CPU and network under 20 %), as a relay of a few devices is, unless
-  the account is upgraded to Pay As You Go: the guide says so, with a budget alert. Its images
-  close the ports in the machine too (iptables), so `install.sh` opens them there.
+* Where it runs: a small Linux machine with a public IPv4 address, near the users. A fraction of
+  a CPU and 1 GB of memory are plenty for the relay; what matters is the outbound traffic, since
+  what cannot go direct goes through it (the audio of a lecture is about 11 MB an hour, plus the
+  presence while drawing). Some cloud images close the ports in the machine too (iptables), so
+  `install.sh` opens them there.
 * Until then the development uses the public relays of n0 (rate-limited). The tests use a relay on
   the loopback over plain HTTP, as `iroh-relay --dev` does: `dev_relay`, a binary of the crate
   (feature `dev-relay`, never in the libraries), built by `:drawview-sync-iroh:buildIrohDevRelay`.
@@ -241,7 +231,7 @@ two devices of theirs only.
 
 ### Limits before authentication
 
-Asked by the user on 2026-10-22, after a review of what a public application would need. The
+Asked by the maintainer on 2026-10-22, after a review of what a public application would need. The
 starting point:
 
 * Anyone who knows the identifier of a device can open an iroh connection to it and streams on
@@ -296,7 +286,7 @@ tools/relay             configuration of the relay, guide
 | 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | done |
-| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an Always Free machine of Oracle Cloud. The user creates the machine | done (the machine: to do, by the user) |
+| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for a cloud machine. The maintainer runs one | done (the machine: to do, by the maintainer) |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | done |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
 | 8. Limits before authentication | `SyncChannel.receive(maxSize)` and the limits of each stage (see [Limits before authentication](#limits-before-authentication)); the frames read in parts by `TcpChannel` and the bridge; the bridge holding back a frame larger than allowed; the first frame within a time; 16 devices not known at once; 32 incoming iroh connections, 4 MiB in flight each. Tests: the limits of each stage, a frame too large failing the channel unread, the silent channels, the devices not known refused, the iroh connections closed | done |
@@ -486,13 +476,11 @@ ones of n0 (the nearest one, in Frankfurt).
     on GitHub: nothing is built on the machine).
   * It makes the access token once, in `token.env`, never in the configuration.
   * It prints the address and the token for the applications.
-* `tools/relay/README.md`: the guide for an Always Free machine of Oracle Cloud (the account and
-  the stops of idle machines, the machine, the security list, the DNS name, the install, the
-  traffic to watch, updates). It was first written for an e2-micro of Google Cloud; the user
-  chose Oracle afterwards, and `install.sh` learnt to open the ports in the firewall of the
-  machine (iptables, before the REJECT of the images of Oracle, saved with
-  `netfilter-persistent`). Checked in a container of Ubuntu 24.04 (amd64) with those rules: the
-  install, the ports before the REJECT, nothing added when run again.
+* `tools/relay/README.md`: the guide for a cloud machine (the machine, the firewall of the
+  provider, the DNS name, the install, the traffic to watch, updates). `install.sh` opens the ports
+  in the firewall of the machine when its image closes them (iptables, before a REJECT, saved
+  with `netfilter-persistent`). Checked in a container of Ubuntu 24.04 (amd64) with such rules:
+  the install, the ports before the REJECT, nothing added when run again.
 * Checked on this Mac with `iroh-relay` 1.4.1 built from its crate:
   * the configuration is read;
   * with the token, two endpoints of the bridge meet through the relay by identifier and relay
@@ -586,13 +574,12 @@ ones of n0 (the nearest one, in Frankfurt).
 
 ## Decisions
 
-### Taken by the user (2026-10-22)
+### Taken by the maintainer (2026-10-22)
 
 * iroh rather than libp2p. When the hole punching fails, the relay of iroh carries all of the
   traffic, while the relay (v2) of rust-libp2p has limits of 128 KiB and 2 minutes per circuit by
   default. iroh has fewer pieces to put together and its API is stable since 1.0.
-* The relay runs on an Always Free machine of Oracle Cloud, AMD (`VM.Standard.E2.1.Micro`), in
-  place of the free tiers of AWS or Google Cloud.
+* The relay runs on a small cloud machine of the maintainer.
 * No compatibility with the devices of protocol version 1.
 * Store and forward comes later, in a plan of its own.
 
@@ -615,13 +602,11 @@ ones of n0 (the nearest one, in Frankfurt).
   `drawview-store-room` and `drawview-ml-litert`.
 * The `iroh-relay` server of n0 rather than one of ours: the store and forward will need a service
   of its own anyway.
-* The guide advises Pay As You Go with a budget alert, so that Oracle does not stop the relay
-  as idle. The choice is the user's: without it the machine is started again from the console.
 * `install.sh` opens the ports in the firewall of the machine when it finds a REJECT in INPUT,
   rather than leaving it to the guide: the rule has to go before the REJECT, which is easy to get
   wrong by hand.
 * The relay installed from the releases of n0, checked against their SHA-256, rather than built on
-  the machine: it has 1 GB of memory and 1/8 of an OCPU.
+  the machine: a small one has 1 GB of memory and a fraction of a CPU.
 * The local network stays on `drawview-sync-lan`: it works without the internet, and the local
   discovery of iroh would need the multicast entitlement on iOS.
 * The build through Gradle tasks running cargo, without Corrosion or cargo-ndk (see Native bridge).
@@ -684,7 +669,6 @@ ones of n0 (the nearest one, in Frankfurt).
   measured in phase 0, split by ABI in the app bundle.
 * The build on Windows (MSVC) and on Linux arm64 in the CI.
 * The background on iOS suspends the connections, as on the local network (`BackgroundSync`).
-* The free machine stopped by Oracle as idle, on an account not upgraded to Pay As You Go; and
-  the free tier itself, whose terms Oracle can change.
+* A free machine stopped by its provider as idle, or a free tier whose terms change.
 * A single project (n0) behind the engine. Mitigated: it is open source, the relay is our own,
   and the bridge sits behind `SyncTransport`, so another engine would be another module.

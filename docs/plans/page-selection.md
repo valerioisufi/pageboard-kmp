@@ -181,12 +181,12 @@ The functions of one page stay and call these (`deletePage(index)` → `deletePa
   and iOS compilations, the two Android applications, the consumer checks. PencilNotes desktop run
   on a scratch directory (`-Ddrawview.dataDir`): it starts, its database at version 21, no error.
   Its window was not driven by hand: the tests of the grid drive its taps and its drag; trying it
-  with ⌘/Ctrl+click and Shift+click on the user's devices is left to the user (the clicks with
+  with ⌘/Ctrl+click and Shift+click on the maintainer's devices is left to the maintainer (the clicks with
   modifiers are not driven by the tests).
 
 ## Decisions
 
-Proposed on 2026-10-25 and approved by the user the same day ("implementa tutte le fasi"); every
+Proposed on 2026-10-25 and approved by the maintainer the same day ("implementa tutte le fasi"); every
 one revertible:
 
 1. **The selection lives in the grid**: closing the grid clears it; the canvas does not select

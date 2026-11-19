@@ -135,11 +135,11 @@ explorer and lecture-ui).
   (`verifyRoborazziJvm`), the consumer checks. The desktop application run on a scratch directory
   (`-Ddrawview.dataDir`): it starts, makes its database at version 20, no error. Its window was not
   driven by hand: the tests above go through the same `PageManager` calls as the menus; trying
-  them on the user's devices is left to the user.
+  them on the maintainer's devices is left to the maintainer.
 
 ## Decisions
 
-Proposed on 2026-10-25 and approved by the user the same day ("implement phase 1"), every one
+Proposed on 2026-10-25 and approved by the maintainer the same day ("implement phase 1"), every one
 revertible:
 
 1. **The page it follows.** The new page is like the page it is put after, everywhere: the button

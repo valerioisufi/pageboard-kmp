@@ -63,9 +63,9 @@ Variations).
 5. `LectureAssistant` keeps its role and public API (but for the answers of the search), its state
    split into internal classes by responsibility, the behaviour unchanged (the tests and the
    screenshots as they are).
-6. **No stored format changes in this plan without the user**: `assistant-settings.json`, the
+6. **No stored format changes in this plan without the maintainer**: `assistant-settings.json`, the
    lecture records and what travels stay as they are; `PROTOCOL_VERSION` stays 1. Choosing the
-   models of the device needs a new setting, so it waits for the user (see "Left to the user").
+   models of the device needs a new setting, so it waits for the maintainer (see "Left to the maintainer").
 7. No paid request: the tests answer with mock engines.
 
 ## Design
@@ -162,7 +162,7 @@ Taken alone, revertible:
 * **The names** `AssistantLectures`, `AssistantWork`, `AssistantModels`, `TaskBackend`,
   `ModelLimits`, `ModelUse`, `PromptCache`.
 
-## Taken by the user
+## Taken by the maintainer
 
 * **Phase 4, a change of `assistant-settings.json`** (2026-11-14): the settings take `version` (2),
   `localEngine` (`DEVICE` or `OLLAMA`) and `TaskModel.device`, an id of the catalog of

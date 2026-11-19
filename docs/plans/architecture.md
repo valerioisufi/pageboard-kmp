@@ -50,7 +50,7 @@ Variations).
    with different constants); `codePointAt` and `SwitchRow` copied across modules;
    `drawview-agent-ui`, `drawview-search-ui` and `drawview-lecture-ui` translated in English (and
    Italian) only.
-10. **To agree with the user**: `LanSync` and `IrohSync` stop and choose between two connections
+10. **To agree with the maintainer**: `LanSync` and `IrohSync` stop and choose between two connections
     differently (protocol behaviour); `SecureStore` is in clear on the JVM (a stored format);
     `windows-aarch64` is not packaged.
 
@@ -65,7 +65,7 @@ Variations).
 4. Each file of the seven has one responsibility per class, with the same behaviour, proved by the
    tests of today (no test rewritten to pass).
 5. Nothing stored by the user changes without a tested migration; nothing that travels changes
-   without the user's agreement and a re-recorded `ProtocolFormatTest`.
+   without the maintainer's agreement and a re-recorded `ProtocolFormatTest`.
 6. Every phase keeps the checks of `CLAUDE.md` green, and records each change of the ABI on purpose.
 
 ## Design
@@ -143,7 +143,7 @@ Variations).
 
 * One drawing of the page backgrounds: a public `drawPageBackground` of `drawview-canvas` used by
   the renderer, the page grid and the template picker (the thumbnails change look: screenshots
-  recorded again, shown to the user first).
+  recorded again, shown to the maintainer first).
 * `codePointAt` in `drawview-model` (text), `SwitchRow` in the design components of `drawview-ui`.
 * The translations of the three modules in the languages of `drawview-ui` (de, es, fr, ja, ko).
 
@@ -165,7 +165,7 @@ Variations).
 | 12 | E. Page backgrounds, cross-module duplicates, translations | – | duplicates and Italian done; backgrounds and other languages later (`docs/plans/small-cleanups.md`) |
 
 Each phase is one branch (`feat/<name>`) from main, its own plan first, one commit per step of that
-plan, merged by fast-forward when the user says so. Phases without a dependency between them can
+plan, merged by fast-forward when the maintainer says so. Phases without a dependency between them can
 run at the same time, each in its own worktree; 6, 7 and 9 touch different modules.
 
 ## Decisions
@@ -186,13 +186,13 @@ Taken alone, revertible:
   module is where the libraries find it; only the reads move into the instances.
 * **The splits keep the public API** of their module, so they can be reviewed on behaviour alone.
 
-## Left to the user
+## Left to the maintainer
 
 * **`LanSync` / `IrohSync`**: the same stop and the same choice between two connections. It is
-  protocol behaviour between the user's devices (`PROTOCOL_VERSION` 1): a decision of the user,
+  protocol behaviour between the maintainer's devices (`PROTOCOL_VERSION` 1): a decision of the maintainer,
   then a plan of its own with `ProtocolFormatTest`.
 * **`SecureStore` encrypted on the desktop** (the Keychain on macOS, the Credential Manager on
   Windows, libsecret on Linux): a stored format with its migration.
 * **`windows-aarch64`** packaged by CI: a runner of its own.
-* **The phases of `feat/handwriting`** (0: the user's handwriting set, 4: the formula model) and
+* **The phases of `feat/handwriting`** (0: the maintainer's handwriting set, 4: the formula model) and
   `feat/lecture-eval` on the Windows PC, outside this plan.

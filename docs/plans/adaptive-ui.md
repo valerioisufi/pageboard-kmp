@@ -433,7 +433,7 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
 
 ### Decisions
 
-Taken with the user on 2026-10-08:
+Taken with the maintainer on 2026-10-08:
 
 * **Size classes**: computed by `WindowLayout` from `LocalWindowInfo`, without dependency; the
   library may adopt the scaffolds of `material3-adaptive` behind `LibraryLayout`.

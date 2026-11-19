@@ -1,6 +1,6 @@
 # Text boxes: lists, tables, backgrounds, boxes across pages
 
-Four improvements to the text boxes asked by the user on 2026-10-31: better lists (their bullets,
+Four improvements to the text boxes asked by the maintainer on 2026-10-31: better lists (their bullets,
 nested numbered lists, Shift+Enter staying in the item), tables, a background for a box, and a
 text that goes on from one page to the next. This document starts from the code as it is (main at
 797897e2, 2026-10-31), then gives the requirements, the design and the plan.
@@ -99,7 +99,7 @@ Variations).
 18. **The notes of the user are kept**: every stored change is a Room migration tested with
     `MigrationTestHelper`; no destructive fallback.
 19. **The protocol changes** (the background and the link travel in `TextData`): said, the
-    format test re-recorded, the version agreed with the user.
+    format test re-recorded, the version agreed with the maintainer.
 
 ## Design
 
@@ -125,7 +125,7 @@ The search (`SearchText`) and the assistant read the source, so they are unchang
 | The commands and the table bar shown with the caret in a table | `EditorCommands` (`insertTable`, `addRowAbove`, …) on `TextFormatTarget`; `TableBar` | Controller |
 | Keep a table whole when a long text is flowed | `TextFlow.blocksOf` | Information Expert |
 
-A table is chosen as notation inside the text (decided by the user): no new element, no change
+A table is chosen as notation inside the text (decided by the maintainer): no new element, no change
 of what is stored or sent. A cell holds inline notation only (no line breaks, no lists, in
 GitHub's notation as well); the source keeps one line per row.
 
@@ -346,7 +346,7 @@ above goes from what needs no stored change to what needs the most.
 
 ## Decisions
 
-Taken by the user on 2026-10-31:
+Taken by the maintainer on 2026-10-31:
 
 1. Tables are notation inside a text (GitHub), shown as a grid also while written; not a new
    element.
@@ -380,8 +380,8 @@ Taken alone, revertible:
     does not move the text.
 14. **The two stored changes are two Room versions** (23 for the background, 24 for the chain),
     one per stage, each with its migration.
-15. **The protocol stays 1** for both, as on `feat/untrusted-members`, the two devices of the user
-    updated together (the plan approved by the user on 2026-10-31 said so; to raise it, change
+15. **The protocol stays 1** for both, as on `feat/untrusted-members`, the two devices of the maintainer
+    updated together (the plan approved by the maintainer on 2026-10-31 said so; to raise it, change
     `PROTOCOL_VERSION` and record the format under the new number).
 16. **A long text imported is chained where it goes on onto a new page**; its pieces in the free
     space of a page with content stay texts of their own (their room would cover what is below).

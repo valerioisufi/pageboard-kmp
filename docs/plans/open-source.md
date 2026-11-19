@@ -22,7 +22,7 @@ Variations).
   link to the applications and no Gradle snippet.
 * **`docs/`** holds about ninety plans of features beside the few pages a user of the libraries
   reads.
-* **CLAUDE.md** speaks of the devices of the user and of the relay on Oracle Cloud.
+* **CLAUDE.md** speaks of the devices of the maintainer and of where the relay runs.
 * **No** `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, issue templates or `FUNDING.yml`.
 * **The release of the libraries** (`.github/workflows/release.yml`) runs on every tag `v*`; it has
   never run. `VERSION_NAME` is `0.1.0-SNAPSHOT`, one version for every library.
@@ -31,7 +31,7 @@ Variations).
 ## Requirements
 
 1. Nothing private becomes public: no secret in the history or on the branches pushed, nothing about
-   the devices or the infrastructure of the user in the files.
+   the devices or the infrastructure of the maintainer in the files.
 2. Whoever arrives understands in a minute what the project is: the libraries for developers,
    PencilNotes for the users, each with its links.
 3. The code is MIT; the name "PencilNotes" and its icon are not, so that nobody publishes the
@@ -67,12 +67,12 @@ minor version may break.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the user) | Done here (the branches on GitHub left to the user) |
-| 2 | CLAUDE.md without the devices and the infrastructure of the user; `docs/plans/` with the links updated | Done |
+| 1 | Checks of the history and of the branches: gitleaks on every commit; the four branches on GitHub merged or deleted there (with the maintainer) | Done here (the branches on GitHub left to the maintainer) |
+| 2 | CLAUDE.md without the devices and the infrastructure of the maintainer; `docs/plans/` with the links updated | Done |
 | 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | Done |
 | 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | Done |
-| 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning (the user's) | To do |
-| 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the user's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
+| 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning (the maintainer's) | To do |
+| 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the maintainer's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
 
 Open Collective and `FUNDING.yml` come after phase 5, on their own.
 
@@ -86,9 +86,9 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
   history when the repository becomes public (phase 5).
 * No key store, `local.properties`, `Local.xcconfig`, `.env` or `google-services.json` was ever
   committed.
-* No address of the relay or of a machine of the user: the addresses in the code are of the
+* No address of the relay or of a machine of the maintainer: the addresses in the code are of the
   documentation ranges (`192.0.2.1`, `relay.example.com`) and of the tests.
-* Left to the user: the four branches on GitHub (`feat/ci-time`, `feat/lecture-eval`,
+* Left to the maintainer: the four branches on GitHub (`feat/ci-time`, `feat/lecture-eval`,
   `feat/local-models`, `feat/native-ci-desktop-build`), merged or deleted there.
 
 ### Phase 2 results
@@ -98,8 +98,8 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
   themselves) points there. `docs/` keeps the privacy policy, and the reference of the modules
   from phase 3.
 * CLAUDE.md speaks of the people who keep notes and of the maintainer; what is of the machine of
-  the user (the language of the conversation, the two devices on the same version of the
-  protocol, the relay on Oracle Cloud) is in `CLAUDE.local.md`, not versioned (`.gitignore`).
+  the maintainer (the language of the conversation, the two devices on the same version of the
+  protocol, where the relay runs) is in `CLAUDE.local.md`, not versioned (`.gitignore`).
 * The plans keep what they recorded (the tablet a check ran on, the kind of machine of the relay):
   no address, key or account in them (alone, revertible).
 
@@ -135,11 +135,11 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
 
 ## Decisions
 
-* **PencilNotes stays in this repository** (with the user, 2026-11-15): it is the first user of the
+* **PencilNotes stays in this repository** (with the maintainer, 2026-11-15): it is the first user of the
   libraries, and a change of both lands in one commit. It moves to a repository of its own (with its
   history, `git filter-repo`) when the libraries reach 1.0 and change slowly, or if it needs another
   license.
-* **The history is published whole**, the email of the author included (with the user, 2026-11-15:
+* **The history is published whole**, the email of the author included (with the maintainer, 2026-11-15:
   it is already public through other repositories). Rewriting it would change every hash.
 * **The tags are `drawview-vX.Y.Z` and `pencilnotes-vX.Y.Z`** (alone, revertible).
 * **The repository becomes public before the first release on Maven**: the POM points to it.

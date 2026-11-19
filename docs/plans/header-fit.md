@@ -75,7 +75,7 @@ Variations).
     4 dp above and below: about 56 dp high, 12 buttons and 2 dividers ≈ 620 dp wide.
 11. **On a tablet with a low density bucket** (many Android tablets report 600–800 dp on their
     short side for 8–10 inches) a dp is larger than on a phone, and these sizes, made for a thumb,
-    look big. To check on the tablet of the user (`adb shell wm size`, `wm density`) before
+    look big. To check on a real tablet (`adb shell wm size`, `wm density`) before
     deciding.
 
 ## Requirements
@@ -144,7 +144,7 @@ theme), as in the library.
 | The size of the tools: for a thumb (the floating tools of a phone, the bars without touch: 44 dp drawn, 24 dp icons, as today), for a pen (the bars where there is touch, a tablet: 40 dp drawn, 20 dp icons, 44 dp targets) | `ToolSizes` (`Thumb`, `Pen`), given by `ToolGroup` through `LocalToolSizes` and `LocalMinimumInteractiveComponentSize` | Pure Fabrication, Information Expert |
 | Using it | `ToolButton`, `BarButton`; `ToolbarLayout.arrange` and `titleMaxWidth` count the tools at their target (`toolButton`) | Information Expert |
 
-The numbers are to be confirmed on the tablet of the user, with a screenshot of the bar before and
+The numbers are to be confirmed on a real tablet, with a screenshot of the bar before and
 after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 
 ## Plan
@@ -154,7 +154,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 | 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
 | 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | done |
 | 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions on a phone and a tablet in split screen | done |
-| 4. Tools on a tablet | `ToolSizes`; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | done, to confirm on the tablet of the user |
+| 4. Tools on a tablet | `ToolSizes`; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | done, to confirm on a real tablet |
 
 ### Phase 1 results
 
@@ -165,7 +165,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 * Pixel 9 emulator (Android 17, a punch hole on the top edge): in portrait the status bar stays in
   the editor, the navigation bar is hidden; in landscape both are hidden; the "more" menu opened and
   closed leaves them so; back in the library both are shown.
-* Android 10 (the old flags, the focus listener) is checked on the tablet of the user: no API 29
+* Android 10 (the old flags, the focus listener) is checked on a real tablet: no API 29
   emulator here.
 * iOS, checked after the phase on the simulators (iPhone 17, iPad Air 11-inch, iOS 27), with two
   fixes:
@@ -180,7 +180,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
     `persistentSystemOverlays`, which an override on the root would undo.
   - The iPhone keeps its status bar beside the Dynamic Island in the editor; the iPad hides it in
     the editor and shows it again in the library.
-* **Android 10, the menus.** On the tablet of the user (Huawei MatePad 10.4, Android 10, density
+* **Android 10, the menus.** On a 10.4-inch tablet (Android 10, density
   320 for 224 ppi) and on an emulator of Android 10 at the same size and density, with main
   (cbff78ed): a menu shows the status bar, the bars of the editor go down by its height, and it
   stays after the menu. So it is Android 10, not the tablet. Three causes, three fixes:
@@ -233,7 +233,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 
 ### Phase 4 results
 
-* The Huawei MatePad 10.4 of the user: 2000 × 1200 pixels, 224 ppi, Android 10, read later with
+* The 10.4-inch tablet of the checks: 2000 × 1200 pixels, 224 ppi, Android 10, read later with
   `adb`: its density is 320, so it is 600 × 1000 dp and a dp is 1.43 times its nominal size. All
   of the interface is that much larger on it, not only the tools; the group of the tools is
   11.8 mm high there. Checked on it: one bar in landscape, two in portrait.
@@ -256,7 +256,7 @@ Revertible, taken alone:
   (36 dp, as some apps for the iPad) are a change of two numbers in `ToolSizes.Pen`.
 * **The navigation bar stays hidden** where the status bar is kept: it gives room on every device
   with buttons, and comes back with a swipe.
-* **Android 10 is checked on the tablet of the user**, not on an emulator (a system image of about
+* **Android 10 is checked on a real tablet**, not on an emulator (a system image of about
   1 GB to download).
 
 ## Left for later

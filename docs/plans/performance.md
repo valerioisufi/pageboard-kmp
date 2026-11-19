@@ -101,7 +101,7 @@ not a cost.
    of their text).
 2. **Nothing sent changes**: the protocol as it is, `ProtocolFormatTest` unchanged.
 3. **What is drawn stays the same**: the screenshots of `verifyRoborazziJvm` unchanged. A stroke
-   modeled from its inputs at once has the shape of the one modeled input by input; the user
+   modeled from its inputs at once has the shape of the one modeled input by input; the maintainer
    accepted that its edges may move by a few hundredths of a millimeter (phase 6, decision 12).
 4. **Measured**: every phase gives its numbers before and after (phase 0), written in this
    document; a change that gains nothing is not kept.
@@ -359,7 +359,7 @@ rounding, on a grid of 0.01 mm the same shape. The pressure pen and the dashed l
 behaviors, and Ink simplifies their outline in another way when it has every input at once: for
 the strokes as written the edges of the pen move by 1% of its size at most (0.005 mm for a pen of
 0.3 mm, 0.03 mm for 2 mm, 0.07 mm for 8 mm), 3.5% in a random scribble; the dashes of the dashed
-line (the lasso, never stored) move along it, up to 14% of its size in a scribble. The user
+line (the lasso, never stored) move along it, up to 14% of its size in a scribble. The maintainer
 accepted it (decision 12). The inputs are what is stored and synchronized, so nothing stored or
 sent changes: a stroke just drawn keeps its mesh, and it may move by that much once the document
 is opened again, put back by undo, or received by another device.
@@ -526,7 +526,7 @@ Taken alone, revertible:
     on the desktop (0.44 to 1.4 ms, on the desktop only) and the texts drawn outside of the lock of
     the caches (not measured) are left for later.
 
-Decided by the user:
+Decided by the maintainer:
 
 12. **A stroke loaded may differ from the one drawn** (2026-10-31, phase 6): its edges move by a
     few hundredths of a millimeter (above), for an opening 38 times faster (M5: 71.9 s, 15.8 s
@@ -535,7 +535,7 @@ Decided by the user:
 
 ## Left for later
 
-These change or delete stored data, or need a plan of their own; they are for the user to decide.
+These change or delete stored data, or need a plan of their own; they are for the maintainer to decide.
 
 1. **The log of the operations in CBOR**: today JSON (about 70 bytes a point of a stroke, against
    20 in its row), every stroke stored twice. A new stored format, with a migration of every row

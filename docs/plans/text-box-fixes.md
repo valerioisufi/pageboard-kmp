@@ -84,7 +84,7 @@ Android or iOS. "Read" means read in the code only.
 * Its figure 1 ("the line and the caret are off the screen") shows both on the screen: the text had
   flowed to page 3. Its zoomed screenshots show no text: the box is above the screen.
 * Its proposed flow only on closing goes against requirement 14 of `docs/plans/text-boxes.md`, approved by
-  the user ("typing at the end of a page goes on in the next box"): see decision 1.
+  the maintainer ("typing at the end of a page goes on in the next box"): see decision 1.
 * Its line references are correct. Its tests (`UserReportedIssuesScreenshotTest`,
   `TextBoxToolDeepTest`, untracked) write to a directory of another tool and are not meant to be
   committed: each phase here adds its own tests.
@@ -201,7 +201,7 @@ application on a scratch directory. Stages are independent: large boxes (1-3), p
 
 ## Decisions
 
-To be taken by the user:
+To be taken by the maintainer:
 
 1. **When a text flows.** Proposed: **while written, without interruptions** (requirements 8 and 9), as
    the approved `docs/plans/text-boxes.md` asks, and fixing what makes it uncomfortable. The alternative is

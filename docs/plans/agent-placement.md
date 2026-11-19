@@ -212,11 +212,11 @@ the ones that matter most, and each phase can be left out of the ones after it.
 | 2 | `preview_proposal`, the plan in the answer of `propose` and the places in `proposal_status`; the warnings, with the check of `replace_text`; `pencilnotes preview`. Tests: a preview changes nothing and opens nothing, what a preview says is what `apply` does on the same page, each warning, a closed document answering `measured: false`, the largest proposal measured; the commands against the application on a scratch directory | done |
 | 3 | The geometry in `read_page`, `FreeSpace.largestAreas`. Tests: empty, full, PDF and scanned pages, texts at their measured height | done |
 | 4 | The warnings in the review panel. Tests: screenshots (`verifyRoborazziJvm`), a real editor | done |
-| 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, confirmed, applied where it was, undone at once; cancelled, nothing changes; a place chosen is the one applied), a piece moved off a new page adds no page. The drag itself is the one of `PlacementManager`, tested in the canvas. The clicks in the window of the application are left to the user | done |
+| 5 | The text shown on the page from the review, its place chosen by the user, `decide` with the places. Tests: a real editor (shown, confirmed, applied where it was, undone at once; cancelled, nothing changes; a place chosen is the one applied), a piece moved off a new page adds no page. The drag itself is the one of `PlacementManager`, tested in the canvas. The clicks in the window of the application are left to the maintainer | done |
 
 ## Decisions
 
-Those marked *revertible* were taken without the user.
+Those marked *revertible* were taken without the maintainer.
 
 1. **The application places, the model refers.** No coordinates from a model. This is what the user
    approved in discussing it.

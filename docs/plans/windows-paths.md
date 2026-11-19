@@ -1,7 +1,7 @@
 # Paths on Windows
 
 The paths of the platform are split by the platform, never on `/` alone. This document starts
-from the checks of 2026-10-18 on the Windows machine of the user, where the lecture evaluation
+from the checks of 2026-10-18 on the Windows machine of the maintainer, where the lecture evaluation
 tool (`tools/lecture-eval`, branch `feat/lecture-eval`) and five tests of `drawview-lecture`
 failed because a path listed by Windows has backslashes.
 

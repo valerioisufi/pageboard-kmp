@@ -192,7 +192,7 @@ The model, its stores and the format of what travels change together: a phase st
 the register it adds, so that its checks pass.
 
 The format of what travels changes (keys, `reorderElements`, `ElementVersions.ordered`): it is a
-change of the protocol, recorded again under version 1 as agreed (the two devices of the user
+change of the protocol, recorded again under version 1 as agreed (the two devices of the maintainer
 updated together, after a last synchronization).
 
 ### Phase 1 results
@@ -297,12 +297,12 @@ updated together, after a last synchronization).
   button. ABI of `drawview-ui` recorded again on purpose (`CommandGroup.ARRANGE`, the strings).
 * The desktop application run on a scratch directory (`-Ddrawview.dataDir`): it starts, makes its
   database at version 20, no error. Its window was not driven by hand: the screenshots and the
-  tests above show the menus and the commands; trying them on the user's devices is left to the
+  tests above show the menus and the commands; trying them on the maintainer's devices is left to the
   user.
 
 ## Decisions
 
-Proposed on 2026-10-24 and taken by the user on 2026-10-25 ("one stack", and "write the plan and
+Proposed on 2026-10-24 and taken by the maintainer on 2026-10-25 ("one stack", and "write the plan and
 implement it"), every one revertible:
 
 1. One stack for the content; the PDF pages and their marks fixed under it.

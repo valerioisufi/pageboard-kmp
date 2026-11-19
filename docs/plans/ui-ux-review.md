@@ -45,7 +45,7 @@ The design of [ui-design.md](ui-design.md) is in place (its eight phases are don
 11. **The search settings close out of sight.** Found while checking: "Close" was the last line of
     a dialog that scrolls (`SearchSettingsDialog`), below its edge as soon as the models fill it,
     where the other dialogs close with the × of their title.
-12. **The actions of the application are icons without names.** Reported by the user: at the
+12. **The actions of the application are icons without names.** Reported by the maintainer: at the
     bottom of the navigation pane (`LibraryNavigationPane`) the actions that are not prominent
     were a row of icons, and two were the same sparkles (the search models, the external models):
     on a tablet, without a tooltip, nothing told them apart.

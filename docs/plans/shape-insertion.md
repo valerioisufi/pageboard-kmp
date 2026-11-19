@@ -146,7 +146,7 @@ The shape is a `DrawCustomElement` of the type `drawview.shape`, declared by the
   as the built-in ones), so the shapes prove it.
 
 What travels gains a new kind of payload in the operations that already exist: the frames, the
-messages and the operations keep their format. The devices of the user are updated together; an
+messages and the operations keep their format. The devices of the maintainer are updated together; an
 older version shows the shapes as placeholders until it is updated.
 
 ### The value
@@ -230,7 +230,7 @@ edges.
 | 2 | `ShapeRenderer` always in `ElementRenderers`; the vectors in the PDF (`VectorElement`); the eraser erasing the elements a type says it hits; screenshot tests of every kind and style; a PDF export test (vector paths, no image) | Done |
 | 3 | `Tool.SHAPES`, `Mode.SHAPE` and `ShapeInserter`: the drag, the tap, the constraints (Shift, Alt, a second finger, the thresholds), the guides and the anchors, the preview with its label, the commit selected, undo in one step; gesture tests | Done |
 | 4 | Editing: `Handle.START`/`END` for a line alone, the frame for the other shapes, the snaps while dragging them, the hit by outline when it has no fill; `ShapeEditing.restyle` and the change of kind; tests | Done |
-| 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/plans/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Done, the drawing by hand left to the user |
+| 5 | The UI: the Shapes button with the icon of its kind and its dot, `ShapeSettings` (grid, color, width, outline, fill, heads, preview), the controls of the action bar, the commands (`S`, menu Insert ▸ Shape), the strings in the seven languages, the icons; `ShapeToolState` in `DrawPreferences` with a test reading the preferences written before it; the toolbar width (`ToolbarLayout`) with one more tool, checked at the widths of `docs/plans/header-fit.md`; screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory | Done, the drawing by hand left to the maintainer |
 | 6 | The agent tools: `read_page` lists the shapes (kind, style, box); proposing shapes is left for later | Done |
 
 ### Phase 1 results
@@ -372,7 +372,7 @@ edges.
   scroll one more button); the others of ui, sync-ui, lecture-ui and export-ui unchanged. ABI of
   `drawview-ui` recorded again (its strings).
 * The desktop application starts on a scratch directory with the branch; drawing the shapes by
-  hand in it, moving them, exporting them to PDF and syncing them is left to the user.
+  hand in it, moving them, exporting them to PDF and syncing them is left to the maintainer.
 
 ### Phase 6 results
 

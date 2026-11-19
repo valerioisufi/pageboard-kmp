@@ -142,7 +142,7 @@ noise, and strokes recorded by hand in the tests' resources).
 |---|---|---|
 | 1 | `Shape` and `ShapeRecognizer` in `drawview-model` (`model/shape/`): line, arrow, broken line, ellipse, circle, triangle, rectangle, square, polygon, the regularization, the points of each shape; tests on synthetic strokes with noise and on strokes that are no shape (handwriting, spirals, scribbles) that must give nothing; a test that the Ink mesh of a rectangle and a triangle keeps its corners; ABI of `drawview-model` recorded on purpose | Done |
 | 2 | The hold at the end of a stroke in `CanvasGestureHandler` and `ShapeSnapper` in `drawview-canvas`: the live mesh replaced by the shape, committed on the up, undone in one step; `DrawPreferences.isShapeRecognitionEnabled` (default on) with a test reading the preferences written before it; tests of the gesture (held: a shape; lifted: the stroke; held on a scribble: the stroke) | Done |
-| 3 | The switch in the settings of the pen and of the highlighter (`drawview-ui`), its screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory, the shapes drawn with the mouse and checked after a restart and in the PDF export | Done, the drawing by hand left to the user |
+| 3 | The switch in the settings of the pen and of the highlighter (`drawview-ui`), its screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory, the shapes drawn with the mouse and checked after a restart and in the PDF export | Done, the drawing by hand left to the maintainer |
 
 ### Phase 1 results
 
@@ -200,7 +200,7 @@ noise, and strokes recorded by hand in the tests' resources).
   export-ui unchanged. The consumer checks pass.
 * The desktop application starts on a scratch directory with the branch. The shapes were not drawn
   in it by hand from the session (no control of the mouse there): drawing them, reopening the
-  document and exporting it to PDF is left to the user. The stored strokes and the export are the
+  document and exporting it to PDF is left to the maintainer. The stored strokes and the export are the
   ones of any stroke (requirement 4).
 
 ## Decisions

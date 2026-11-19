@@ -119,7 +119,7 @@ screen, and multiplying the camera scale by the density (a commit dropped from
 
 ## Decisions
 
-Taken by the user on 2026-10-17:
+Taken by the maintainer on 2026-10-17:
 
 1. One rule for every screen: the tiles are never magnified, on the dense screens too, at the cost
    of twice the tiles. It replaces the two regimes of phase 2 (the nearest LOD at 2x and more,

@@ -80,7 +80,7 @@ once under the load of the whole build, and passes alone.
    and the screenshots stay green, and no stored format or protocol changes.
 3. Merge the duplicates into one owner.
 4. Remove the couplings that need no redesign.
-5. The public API with no caller is removed only with the user's yes, list by list, recorded with
+5. The public API with no caller is removed only with the maintainer's yes, list by list, recorded with
    `updateKotlinAbi`.
 6. Nothing stored by the user changes: no Room schema, no document, preference or lecture format,
    nothing that travels.
@@ -114,7 +114,7 @@ once under the load of the whole build, and passes alone.
 | 3 | Dead resources and build: drawables, strings, MicroTeX leftovers, the unused table of the search index, catalog, unused dependencies/plugins/source sets, PDFium of every desktop in the released jar | done |
 | 4 | Duplicates: common and `jvmAndAndroid` twins, constants, `writeLine`, the formats of an export scope | done |
 | 5 | The directories of the data found by their paths | done |
-| 6 | Public API judged on its merit (the user asked for it whatever its callers): the leftovers removed, the rest kept | done |
+| 6 | Public API judged on its merit (the maintainer asked for it whatever its callers): the leftovers removed, the rest kept | done |
 
 Each phase is one commit on `feat/cleanup`, after the checks of `CLAUDE.md` (`jvmTest
 checkKotlinAbi`, the Android/iOS compilations and the two apps, `verifyRoborazziJvm` when the UI
@@ -155,7 +155,7 @@ Checked again when removing them, they stay:
 * `PdfSearchSource.version` opening an adapter: it asks whether the PDF engine works now (its
   native library may be missing), not whether it is given.
 * `windows-aarch64`: the native scripts can build it by hand; packaging it needs a runner of its
-  own in CI, a choice of the user.
+  own in CI, a choice of the maintainer.
 * The PDFium linker flags of every library's iOS tests: every library whose tests link
   `drawview-pdf`, even through another module, needs them.
 * `api(project(":drawview-sync-lan"))` in `drawview-sync-ui`: `Collaboration` takes a
@@ -185,7 +185,7 @@ Checked again when removing them, they stay:
 
 ## The public API (phase 6)
 
-The user asked to judge each candidate on whether it makes sense as API, called or not.
+The maintainer asked to judge each candidate on whether it makes sense as API, called or not.
 
 **Removed** (recorded with `updateKotlinAbi`):
 
@@ -237,7 +237,7 @@ Each needs a plan of its own:
 * **`drawview-export` without `drawview-latex` and `drawview-pdf`**: vector formulas through
   `FormulaRenderer`.
 * **`SyncNetwork` made symmetric** (`LanSync` / `IrohSync` stop and tie-breaker): protocol
-  behaviour, to agree with the user.
+  behaviour, to agree with the maintainer.
 * **`SecureStore` encrypted on the JVM**: a stored format, with its migration.
 * **The resource downloads streamed to disk** like the attachments, instead of `Download.bytes`.
 * **The secondary PencilNotes window** without the lecture assistant and the collaboration.

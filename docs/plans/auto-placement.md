@@ -219,7 +219,7 @@ nothing stored tells them apart (see "Left for later").
 | 4 | `TextFlow`: the review (`NoteInserter.startReviewPlacement`) and long pasted texts (`TextEditorManager.pasteText`, 600 characters and more of several paragraphs) through the free space and onto new pages after them, with the preview; `PlacementSpot.newPage` names the n-th new page | done |
 | 5 | The pages a section of the review is about (`TopicFinder` of `drawview-lecture`, given by the application from `SearchEngine.pagesAbout`; `TextFlow.sectionsOf`), each section flowed from its page, degrading to the page shown | done |
 
-### Stage 2: what the model and the stored formats add (each decided with the user first)
+### Stage 2: what the model and the stored formats add (each decided with the maintainer first)
 
 | Phase | What | Status |
 |---|---|---|
@@ -259,7 +259,7 @@ Taken alone, revertible:
 
 13. **The anchor is a quote**, not a name given to the blocks in the prompt (see "The anchor named
     by the model").
-14. **The form by kind** is a policy and a width, and the assistant keeps its blue (the user left
+14. **The form by kind** is a policy and a width, and the assistant keeps its blue (the maintainer left
     it to me, 2026-10-29). No `EndOfSection`: the review already flows by topic.
 15. **The review goes by topic by default** when the search is there.
 

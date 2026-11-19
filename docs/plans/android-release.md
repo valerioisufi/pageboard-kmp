@@ -14,10 +14,10 @@ Variations).
 * **Google Play has the original app**, `com.studiomath.pencilnotes`: version 2.1 (versionCode 3) in
   production since 2026-04-01, in one country, with no active installations (versions 1.0 and 2.0
   are no longer active). Its account has access to production. Its upload key is a PKCS12 keystore
-  of the user (alias `pencilnotes`), outside the repository; its SHA-1 is the upload certificate of
-  the Play Console (checked by the user on 2026-11-15).
+  of the maintainer (alias `pencilnotes`), outside the repository; its SHA-1 is the upload certificate of
+  the Play Console (checked by the maintainer on 2026-11-15).
 * **The application of today** is `io.github.valerioisufi.pencilnotes` (namespace and
-  applicationId), versionCode 4, versionName 3.0. The tablets of the user run its debug build, with
+  applicationId), versionCode 4, versionName 3.0. Debug builds run, with
   their real notes.
 * **The 2.1 keeps its notes** in the Room database `draw_database` (version 1, schema not exported);
   the 1.0 kept them in XML. The 3.0 opens `drawview.db` only: an update leaves `draw_database` on the
@@ -46,7 +46,7 @@ Variations).
 ## Requirements
 
 1. The release is `com.studiomath.pencilnotes`, versionCode above 3, signed with the upload key of
-   the user; the key and its passwords never enter the repository.
+   the maintainer; the key and its passwords never enter the repository.
 2. The debug build stays `io.github.valerioisufi.pencilnotes`, so that the tablets keep updating the
    application with their notes (`adb install -r`).
 3. A machine or a CI without the key still builds the release (unsigned), so the checks stay as
@@ -94,13 +94,13 @@ PDF, so that a missing rule fails before the application does.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the user, unsigned in the CI | Done |
+| 1 | `applicationId` `com.studiomath.pencilnotes` on the release, the debug kept on `io.github.valerioisufi.pencilnotes`; `drawview.android.signing`; the release built signed on the machine of the maintainer, unsigned in the CI | Done |
 | 2 | R8 and resource shrinking on the release; the `consumer-rules.pro` of the five libraries; the rules of the application; `-keepattributes SourceFile,LineNumberTable` and the mapping file kept with the bundle; the release of the sample run with R8 | Done |
 | 3 | The backup rules; the case of a restored device (test and decision, see Decisions); `allowBackup` as decided | Done |
 | 4 | `docs/privacy.md` (English and Italian), `docs/plans/play-console.md` (Data safety, the foreground services and their video, content rating, audience, non-trader status, countries); where the policy is published | Done |
 | 5 | `bundleRelease`; its size per ABI; installed over 2.1 on the tablet (from the Play Store, then the bundle with `bundletool`); the list of the release: library, pen and eraser, text, formula, PDF import and marks, export PDF and archive, lecture recorded with the screen off, LAN sync with the desktop, search with the local models | Done on emulators (the tablet left: see the results) |
 
-The upload to the Play Console (internal testing, then production) is the user's.
+The upload to the Play Console (internal testing, then production) is the maintainer's.
 
 ### Phase 1 results
 
@@ -116,7 +116,7 @@ The upload to the Play Console (internal testing, then production) is the user's
 * `:pencilnotes-android:assembleDebug`, `:sample-android:assembleDebug` and
   `:pencilnotes-android:testDebugUnitTest` pass. No library changed, so the JVM tests and the ABI
   were not run again.
-* For the user: four lines in `local.properties`, the passwords never in the repository:
+* For the maintainer: four lines in `local.properties`, the passwords never in the repository:
 
   ```properties
   pencilnotes.signing.storeFile=D:/path/to/keyStore.jks
@@ -151,16 +151,16 @@ The upload to the Play Console (internal testing, then production) is the user's
 
 ## Decisions
 
-* **An update of the original app, not a new one** (with the user, 2026-11-15): the account keeps
+* **An update of the original app, not a new one** (with the maintainer, 2026-11-15): the account keeps
   its access to production, without a new closed test of 12 testers for 14 days, and the listing
   keeps its history. An applicationId is a name, not a domain: owning `studiomath.com` is not needed.
-* **No import of the notes of 2.1 and 1.0** (with the user, 2026-11-15; revertible): no active
-  installation, and the user has no notes there. The update does not delete `draw_database`, so an
+* **No import of the notes of 2.1 and 1.0** (with the maintainer, 2026-11-15; revertible): no active
+  installation, and the maintainer has no notes there. The update does not delete `draw_database`, so an
   import added later finds the notes as they were.
 * **The key outside the repository** and its passwords in `local.properties` (not versioned) or in the
   environment; Play App Signing keeps the key of the application, so a lost upload key can be reset.
   (Alone, revertible: a keystore of the system or a password manager in its place.)
-* **The restored device** (to decide in phase 3, with the user). The options seen:
+* **The restored device** (to decide in phase 3, with the maintainer). The options seen:
   1. back up only what has no identity: exclude the database too (`allowBackup` kept for the
      preferences only), and leave the backups to the archive;
   2. back up the notes and, at the start, recognize a database written by another identity: its
@@ -171,7 +171,7 @@ The upload to the Play Console (internal testing, then production) is the user's
   simplest. Whatever is chosen, the 25 MB of Auto Backup leave out a library with PDFs or lectures,
   so the archive stays the backup to suggest.
 
-  **Decided** (with the user, 2026-11-15): nothing of the notes in the backups of the system. The
+  **Decided** (with the maintainer, 2026-11-15): nothing of the notes in the backups of the system. The
   25 MB of the cloud backup would keep the database without its PDFs, images and lectures (a
   restore that looks complete and is not), and the tablets without Google services have no such
   backup at all. The preferences are in the same database (the store is the `PreferenceStore`), so
@@ -197,7 +197,7 @@ The upload to the Play Console (internal testing, then production) is the user's
   the sync (mDNS and direct connections on the local network; over the internet, off by default,
   direct or through the relays of n0 or the user's, end-to-end encrypted; the iroh endpoint is the
   `Minimal` preset, with no discovery service). No analytics, no crash reporting, no server of the
-  developer. The contact address is pencilnotes@proton.me (the user's, 2026-11-15).
+  developer. The contact address is pencilnotes@proton.me (the maintainer's, 2026-11-15).
 * `docs/plans/play-console.md`: the listing, the forms of App content, Data safety (the requests to
   Gemini declared as collected and optional; the sync exempt as end-to-end encrypted), the two
   foreground services with their videos, the other declarations and the steps of the upload. The

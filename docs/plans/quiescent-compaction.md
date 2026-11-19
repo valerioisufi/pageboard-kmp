@@ -9,7 +9,7 @@ Variations).
 
 ## Starting point
 
-Asked by the user on 2026-10-24, from phase 5 of [untrusted-members.md](untrusted-members.md):
+Asked by the maintainer on 2026-10-24, from phase 5 of [untrusted-members.md](untrusted-members.md):
 the check added before the operations are applied changed the order of the steps of
 `devicesChangingADocumentThroughEachOtherConverge`, and the devices ended with different hidden
 content (removed pages and elements). The test now compares the document shown
@@ -127,7 +127,7 @@ simulator.
 
 ## Decisions
 
-### Taken by the user (2026-10-24)
+### Taken by the maintainer (2026-10-24)
 
 * The plan as it is, with its choices.
 * `QUIET_MS`: 2 seconds. Less would compact sooner and send more; more the other way round.

@@ -268,7 +268,7 @@ restart; 5 and 6 make the answers true on any document; 7 and 8 are comfort.
 
 ## Decisions
 
-Taken with the user (2026-11-11), as recommended:
+Taken with the maintainer (2026-11-11), as recommended:
 
 1. **A model may ask for a place** (`where: "inside"`, `x` and `y` of `update_text`), checked and
    warned about, against "no coordinates from a model" of `docs/plans/agent-placement.md`. `place_elements`

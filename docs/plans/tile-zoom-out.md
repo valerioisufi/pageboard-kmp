@@ -13,7 +13,7 @@ device that shows a cost: this is that device.
 
 ### Measures
 
-A temporary probe, not committed, on the MatePad 10.4 (2000 x 1200, 60 Hz): a debug build of the
+A temporary probe, not committed, on a 10.4-inch Android tablet (2000 x 1200, 60 Hz): a debug build of the
 sample, an in-memory synthetic document of 8 A4 pages (nothing stored), and a camera driven by a
 script from scale 1 to 16 in 1.5 s and back. A: back at once. B: 4 pans across the pages at scale 16
 first, as reading a document zoomed in. A frame counts as blank for the area of its cells with no
@@ -82,18 +82,18 @@ fingers.
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | The overviews: `OVERVIEW_LOD`, their budget in `TileCache`, the fallback of a cell; tests (an overview survives a cache full of level 4, a cell without its tile draws it, a stale one too); measured on the MatePad | Done |
-| 2 | `TileQueue`: priorities, what a frame stops wanting dropped; `isRasterizing` keeps its meaning; tests of the order and of the drop; `TileBenchmark` gets the zoom out; measured on the MatePad | Done |
+| 1 | The overviews: `OVERVIEW_LOD`, their budget in `TileCache`, the fallback of a cell; tests (an overview survives a cache full of level 4, a cell without its tile draws it, a stale one too); measured on the tablet | Done |
+| 2 | `TileQueue`: priorities, what a frame stops wanting dropped; `isRasterizing` keeps its meaning; tests of the order and of the drop; `TileBenchmark` gets the zoom out; measured on the tablet | Done |
 | 3 | Only if the measures show a gain: 3 workers instead of 2, measured with the frames on the UI thread | Done: measured, no gain, 2 workers kept |
 
-The target, on the MatePad with the same script: no blank area once a page has its overview, the
+The target, on the tablet with the same script: no blank area once a page has its overview, the
 screen filled about as fast as its own tiles take (about 300 ms in the run of 926 ms), and the jobs
 for levels no longer shown down to the ones already running.
 
 ## Decisions (revertible)
 
 1. **Level -2 and one tile a page**, for its cost: 1 MB a page, one tile to rasterize. A page of 1168
-   px (the MatePad) shows 4 times magnified from 292 px at scale 1, for the moments before its tiles come. Level -1
+   px (the tablet) shows 4 times magnified from 292 px at scale 1, for the moments before its tiles come. Level -1
    would be half as blurred, at 4 MB and 4 tiles a page.
 2. **A budget of 16 MB for the overviews**, on top of the 64 MB: at most 25% more memory.
 3. **Priority by groups, the center first within the cells on screen**, instead of a finer cost.
@@ -107,7 +107,7 @@ for levels no longer shown down to the ones already running.
 
 ## Results
 
-Same probe and script, on the MatePad. "Own tiles" is the time after the end of the gesture until
+Same probe and script, on the tablet. "Own tiles" is the time after the end of the gesture until
 every cell on screen has its own tile.
 
 | Run | Before: blank, own tiles | Phase 1: blank, own tiles | Phase 2: blank, own tiles | Jobs for levels no longer shown, before and after phase 2 |
@@ -132,7 +132,7 @@ The number of workers, own tiles after the gesture at 1,500 strokes (3 runs each
 
 No clear gain: the workers stay 2.
 
-Also on the MatePad, a new note of the sample written by `adb`: the strokes show, nothing fails. Not
+Also on the tablet, a new note of the sample written by `adb`: the strokes show, nothing fails. Not
 covered: a pinch of real fingers, real notes and PDF pages. These are left to a test by hand.
 
 ## Left for later

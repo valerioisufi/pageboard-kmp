@@ -120,7 +120,7 @@ into another library only, where identifiers never meet.
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible until a
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible until a
 version of the format is published:
 
 1. **The snapshot of the synchronization as the note**: one description of a whole note, tested by

@@ -68,7 +68,7 @@ public fun addNewPageBefore(pageIndex: Int, template: DrawPage? = pageBefore(pag
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **Duplicate puts the copies after the last page chosen**, together, rather than each copy after
    its page: as Paste after the selection.

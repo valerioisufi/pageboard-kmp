@@ -56,7 +56,7 @@ Variations).
 4. **Spending:** at most $6 of Gemini in all, the grader and the runs stopping at that cap and saying
    what they spent. A phase says its estimate first. Only the text of the slides, the notes and the
    transcript go to Gemini, as the assistant sends them already: no audio.
-5. **The data of the user:** the workspace and the answers of the bench stay out of the repository, in
+5. **The data of the maintainer:** the workspace and the answers of the bench stay out of the repository, in
    `~/lecture-eval-2` and `~/drawview-bench`. The bench reads the copy in the workspace, never a data
    directory of PencilNotes.
 6. Nothing about the exam: no check, cue or measure about it.
@@ -143,10 +143,10 @@ that fails its check stops the plan there, with what was learned.
 
 | Phase | Content | Check | Status |
 |---|---|---|---|
-| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the user chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
+| 1 | The tools, no paid request: `NotesBench` on several lectures, `BenchLecture` from the workspace, `grade_notes.py` with its arguments, UTF-8, verdicts kept, estimate, cap and sums; tests on a small lecture; on this PC, E4B and EmbeddingGemma 2 downloaded (about 3.8 GB) into `~/drawview-bench`, and one lecture timed | A request within 100 s, or the plan moves the runs to the Mac | Tools done; the check failed (171 s on average, 214 s the longest, on the processor): the maintainer chose to go on here, and the threshold, unchanged, is judged on the Mac at the end |
 | 2 | The baseline on the 4 dev lectures: Gemini and `e4b-text`, each run and graded twice | The lecture of 2026-10-15 close to the figures of the Starting point, and the noise written down | Done; the check holds, except that E4B writes more notes (67 against 53) |
 | 3 | The rules: `NoteChecks`, `RepeatCheck`, the threshold from the stable verdicts | Measured against the baseline | Done: closer on the notes that add and per hour, no change on the wrong ones, too much lost on one lecture |
-| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | No candidate passes, so the verdict is written; the user chose not to run 12B |
+| 4 | The words said, then the model as a judge, then the cap if needed; the choice | One candidate passes the thresholds on dev, or the verdict is written. If none does, one run of Gemma 4 12B on 2 lectures, to tell the limit of the model from the limit of the checks | No candidate passes, so the verdict is written; the maintainer chose not to run 12B |
 | 5 | The test, once: the choice and Gemini on the 5 test lectures; the verdict in [docs/plans/local-models.md](./local-models.md) | The thresholds on test. They are not tuned on it: a miss is the verdict | Not run: no choice to test, and the 5 test lectures stay unseen |
 
 ### Phase 1 results (2026-11-04)
@@ -167,7 +167,7 @@ that fails its check stops the plan there, with what was learned.
   They count as failed in the runs of phase 2 as well.
 * **What it means for the runs.** The time does not change the notes, only how long they take: about
   43 minutes a lecture here, so about 6 hours for the 4 dev lectures twice.
-* **The choice of the user:** the quality is measured here, on the processor, and the time, with its
+* **The choice of the maintainer:** the quality is measured here, on the processor, and the time, with its
   threshold unchanged, on the Mac at the end.
 
 ### Phase 2 results (2026-11-05)
@@ -273,7 +273,7 @@ phase 4 of [docs/plans/local-models.md](./local-models.md) does not move them on
 
 * **On what it rests:** the 4 dev lectures, Gemma 4 E4B on the processor of the PC, graded by Gemini. The
   best candidate reaches 34% of notes that add and 10% wrong, against 50% and 5%.
-* **What was not measured:** Gemma 4 12B, which the user chose not to run (it needs the Mac); E2B; the 5
+* **What was not measured:** Gemma 4 12B, which the maintainer chose not to run (it needs the Mac); E2B; the 5
   test lectures, still unseen, so a later plan can use them; the time on the Mac, which has no
   candidate to time. So this is the limit of E4B with these checks, not of every local model.
 * **What it does not decide:** the handwriting, the catch-up and the review of phase 4 were not measured here.
@@ -303,13 +303,13 @@ Taken alone, revertible (R):
   one, and they carry over to any model.
 * **The thresholds above** (R): proposed from the only figures there are, and fixed before the runs.
 
-Taken by the user:
+Taken by the maintainer:
 
 * **The verdict now, without the run of 12B** (2026-11-05).
 * **The runs on this PC, the time on the Mac at the end** (2026-11-04). With no candidate left, the
   time was not measured on the Mac.
 
-Left to the user, with the approval of this plan:
+Left to the maintainer, with the approval of this plan:
 
 * **The spending** of requirement 4.
 * **Where the runs go:** this PC with a `GEMINI_API_KEY` given for this plan, which replaces the rule

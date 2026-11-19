@@ -1,7 +1,7 @@
 # Text fidelity: written as the page draws it
 
 A text being written should look exactly as the page will draw it, and nothing should move while
-the caret walks through it. The user reported on 2026-11-05:
+the caret walks through it. The maintainer reported on 2026-11-05:
 
 1. the box being written and the box saved differ, also with no notation shown, and a box of many
    lines visibly shifts when the editor opens or closes;
@@ -102,7 +102,7 @@ The presentation of the editor depends on the caret (`RichTextPresenter.present(
 US International, the key first composes: the composed character replaces the selection, then
 it is committed over a collapsed caret, and nothing is surrounded. Given to the editor as a dead key
 gives them, `una parola qui` with `parola` selected becomes ``una ` qui``; typed directly,
-``una `parola` qui``. The user types it on macOS with ⌥9 (decision 4).
+``una `parola` qui``. The maintainer types it on macOS with ⌥9 (decision 4).
 
 ### 5. The formatting bar on a selection (measured)
 
@@ -319,7 +319,7 @@ rule for a focus lost.
 | 4 | The inline notation never revealed: the presenter without `reveal` for delimiters, headings and escapes (the links in phase 5, with their address in the strip), `CaretStops`, `SeenDeletion`; tests: every arrow press over every hidden part moves the caret, the deletions keep the formats, the presented text the same with the caret at every offset | Done |
 | 5 | The source strip: formulas always drawn, their source in the strip, the last image of an invalid formula, Backspace after a formula, the addresses of the links, the cells of the tables; tests and screenshots | Done |
 | 6 | Blocks of code as objects: the caret and the selection in the block, `TextNavigation`, the fence in the strip; the walks of the starting point as tests (no jump, ↑ through the code); screenshots | Done |
-| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows and on the tablet (six fixes); the Mac and a real pen left to the user |
+| 7 | Checks: the screenshots recorded again on the Mac, the desktop application on a scratch directory, the tablet with the pen, a finger and a keyboard | Done on Windows and on the tablet (six fixes); the Mac and a real pen left to the maintainer |
 
 Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 needs 4; 6 needs 4 and
 5 (the fence in the strip). Each phase is one commit with its status here, after the checks of
@@ -336,7 +336,7 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   the selection (`TextBoxFormatBarTest`: code, bold, formula, in the editor with the mouse of the
   test).
 * Not tried on macOS: the values of a dead key are those the field gives (a composition, then its
-  commit, the text the same or replaced); ⌥9 on the Mac of the user is to be tried.
+  commit, the text the same or replaced); ⌥9 on the Mac of the maintainer is to be tried.
 
 ### Phase 2 results
 
@@ -474,7 +474,7 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
   the top of its frame, is so in the reference too).
 * PencilNotes desktop started twice on a scratch directory (after phase 2 and at the end), without
   errors; not driven by hand.
-* **On the tablet** (a Huawei MatePad, Android 10, SwiftKey), on a note made for it, driven over
+* **On the tablet** (Android 10, SwiftKey), on a note made for it, driven over
   adb: the touches by `input` and by `monkey` scripts (a double tap, a long press, a handle
   dragged), the keys by a keyboard made with `hid` (Ctrl+= and Ctrl+−, the arrows, the text).
   * The lines written and saved at 100%: 12 pixels of about 11 800 differ; at 125% the lines at the
@@ -505,7 +505,7 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
     another one, in every field of Compose (the search of the library too); Ctrl+Home and Ctrl+End
     do nothing in a field on Android; the text of a box being written is lost when the application
     is killed (an install over it here).
-* Left to the user:
+* Left to the maintainer:
   * **On the Mac:** ⌥9 over a selection (phase 1), and `./gradlew verifyRoborazziJvm` of explorer,
     ui, sync-ui, lecture-ui and export-ui: the screenshots of the texts written change (the field
     at the exact place of the box, the caret of the editor, the strip, the blocks of code with the
@@ -516,7 +516,7 @@ Phases 1 and 2 stand alone; 3 needs 2; 4 needs 3 (a tap on a hidden part); 5 nee
 
 ## Decisions
 
-Approved by the user on 2026-11-05 ("approvo il piano"), with the plan:
+Approved by the maintainer on 2026-11-05 ("approvo il piano"), with the plan:
 
 1. **The delimiters are never shown while writing** (proposed): bold is bold, the bar shows which
    formats are on at the caret, Backspace deletes what is seen. The alternative keeps them visible
@@ -529,7 +529,7 @@ Approved by the user on 2026-11-05 ("approvo il piano"), with the plan:
    ↑ and ↓ leaving it; as today, without anything moving. The alternative steps over a formula as
    one character, a tap or Enter editing it: faster across a line full of formulas, one more way
    of editing to learn.
-4. **The keyboard of the backtick**: macOS, ⌥9 (said by the user).
+4. **The keyboard of the backtick**: macOS, ⌥9 (said by the maintainer).
 
 Taken alone, revertible:
 
@@ -554,7 +554,7 @@ Taken alone, revertible:
 14. **The arrows out of a block of code at an end of the text add the line** that is not there
     (phase 7), as Typora does: → or ↓ out of a block ending the text, ← or ↑ out of one starting it.
 15. **A tap just past a box being written by such a block adds the line too** (phase 7, asked by
-    the user: "Sì, aggiungilo"), as a tap below the last block in Notion: within 40 dp below a box
+    the maintainer: "Sì, aggiungilo"), as a tap below the last block in Notion: within 40 dp below a box
     ending with a closed block, or above one starting with it, and within its width; further away
     the tap ends the writing as before. Not Enter twice at the end of the code, which would take the
     empty lines written between the parts of a code. Above a box the formatting bar may be there

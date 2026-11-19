@@ -1,6 +1,6 @@
 # Review of the codebase, November 2026
 
-A review of `main` on 2026-11-15 (`d9176cf5`), on the Windows machine of the user: `jvmTest`,
+A review of `main` on 2026-11-15 (`d9176cf5`), on the Windows machine of the maintainer: `jvmTest`,
 `checkKotlinAbi`, and a reading of what another device sends, of the stores and of the paths.
 What it found, what was fixed, and what is left.
 

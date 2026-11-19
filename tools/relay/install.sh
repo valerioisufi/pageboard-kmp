@@ -53,7 +53,7 @@ fi
 chown root:iroh-relay /etc/iroh-relay/token.env
 chmod 0640 /etc/iroh-relay/token.env
 
-# The firewall of the machine: the images of Oracle Cloud close every port but SSH with a REJECT
+# The firewall of the machine: some cloud images close every port but SSH with a REJECT
 # at the end of INPUT, kept in /etc/iptables/rules.{v4,v6}. The ports of the relay go before it.
 # The firewall of the provider (a security list, firewall rules) is opened apart.
 for TABLES in iptables ip6tables; do

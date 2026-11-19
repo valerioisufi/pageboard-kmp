@@ -227,7 +227,7 @@ struts fall back to the character of the text font scaled as today: both sides s
 
 ## Decisions
 
-Approved by the user on 2026-10-25 ("Va bene per il momento quello che ha deciso tu"), who asked for the whole plan to be implemented in a worktree:
+Approved by the maintainer on 2026-10-25 ("Va bene per il momento quello che ha deciso tu"), who asked for the whole plan to be implemented in a worktree:
 
 1. The presentation of the page is the reference: the editor follows it, and the page changes only
    where it was approximated (the indent of the list items, the height of a line with a block of

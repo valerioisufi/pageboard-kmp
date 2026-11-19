@@ -1,7 +1,7 @@
 # PencilNotes on Google Play: the answers of the Play Console
 
 What the Play Console asks for the release of PencilNotes 3.0 (`com.studiomath.pencilnotes`), with
-the answers drawn from the code as it is (2026-11-15, `docs/privacy.md`). The forms are the user's;
+the answers drawn from the code as it is (2026-11-15, `docs/privacy.md`). The forms are the maintainer's;
 their wording changes, so each answer says what it rests on. Check the help of each form before
 sending it.
 

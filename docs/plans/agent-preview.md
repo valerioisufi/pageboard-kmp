@@ -1,6 +1,6 @@
 # What a model proposes, shown on the page
 
-The review of what an external model proposes (CLI, MCP) is a list in a panel. The user asked for the
+The review of what an external model proposes (CLI, MCP) is a list in a panel. The maintainer asked for the
 changes to be shown on the page itself before accepting them (2026-11-12). This document gives the
 starting point, the requirements, the design and the plan. It continues `docs/plans/agent-tools.md`,
 `docs/plans/agent-placement.md`, `docs/plans/agent-full-access.md` and `docs/plans/agent-ergonomics.md`, and starts from
@@ -114,7 +114,7 @@ One commit per phase on `feat/agent-preview`, with the checks of `CLAUDE.md`.
 | 1 | `PlannedMark` and `PlannedItem.marks` for every item (`ProposalMarks`), with the ABI of `drawview-agent` re-recorded. Tests (`ProposalMarksTest`): the marks of each kind of item, a text changed in place and one given another place, an item after one that removes, a stale item where what it was about still is and none when it is gone. A box outside its page is clipped when drawn (phase 2) | Done |
 | 2 | `ProposalMarksLayer` in the overlay of the review: frames, veils, arrows, the strokes added and the pages with their label; `ReviewSelection`, an item chosen in the list bringing the page to it and standing out, one left out drawn faint; the plans made with the places the user chose. Tests: `ProposalMarksLayerTest` (which marks are drawn and how strongly), `AgentReviewEditorTest` in a real editor (nothing drawn before a proposal, its marks while it is reviewed, nothing applied by looking, a wheel on a mark still panning the canvas, an item chosen bringing the page back, nothing left once decided), the screenshot `agent_marks` (`verifyRoborazziJvm`) | Done |
 | 3 | The words of the texts added and changed drawn as the page would draw them (`MarkdownText`), at the corner of their box, on the paper of their page, laid out once and placed by the camera where they are drawn; only those of the pages on the screen are composed. Tests: `AgentReviewEditorTest` (the words of the text changed and of the text added are on the page, a wheel on them still pans the canvas), the screenshot `agent_marks` re-recorded | Done |
-| 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`): the review is opened and looked at by clicks in its window | Left to the user |
+| 4 | The desktop application on a scratch directory with a real client (`pencilnotes propose`): the review is opened and looked at by clicks in its window | Left to the maintainer |
 
 ## Decisions
 
@@ -125,7 +125,7 @@ Taken alone, revertible.
 2. **The marks are not sent to a client**: `preview_proposal` keeps its answer.
 3. **A page added is not drawn**: it would move every page after it on the canvas before anything is
    accepted. It stays in the list.
-4. **No miniatures before and after in the panel** (the user chose the page).
+4. **No miniatures before and after in the panel** (the maintainer chose the page).
 5. **A mark takes no pointer**: clicking one does not select its item. The layer only draws, so that
    a pen, a finger and a wheel on a mark reach the canvas as always (requirement 5); a mark taking
    clicks would take strokes from the page under it. The list chooses, the page shows.

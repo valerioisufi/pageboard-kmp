@@ -67,7 +67,7 @@ Variations).
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **Joined by geometry, not by a stored link**: no field, no migration, nothing new travels; the
    lines drawn before this work join their boxes too. The cost: two shapes whose anchors meet by
@@ -75,13 +75,13 @@ Taken alone on 2026-11-14 (the user asked to go on without asking), every one re
    drop (the preview shows the box alone).
 2. **A text inside a shape is left for later**: it needs the label in the value of the shape (a new
    field of `ShapeElement`, its version 2), which changes what travels between the devices; CLAUDE.md
-   asks to agree on it with the user first.
+   asks to agree on it with the maintainer first.
 3. **The pivot of a closed shape is its middle**: it grows evenly; the corner held follows the pen
    only in its distance and its direction from the middle.
 
 ## Left for later
 
 * A text inside a shape (a label in a box), with the version 2 of `ShapeElement` and its migration,
-  agreed with the user (it changes the shapes that travel).
+  agreed with the maintainer (it changes the shapes that travel).
 * The lines following the box while it is dragged (the preview of the move).
 * A stored link from a line to its box, if the joins by geometry prove ambiguous.

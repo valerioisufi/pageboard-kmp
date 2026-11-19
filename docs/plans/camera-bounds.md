@@ -62,7 +62,7 @@ the canvas pushed as far as it goes to the left and to the right):
 5. **A scroll of a wheel or of a trackpad follows the axis it started on** (the predominant axis,
    as `NSScrollView` does by default on macOS): a vertical scroll of a zoomed page does not drift
    sideways, its fling neither. A scroll that goes on across its axis breaks free of it easily
-   (phase 3: tried by the user on a MacBook, a free scroll was hard to start).
+   (phase 3: tried by the maintainer on a MacBook, a free scroll was hard to start).
 6. **Touch and stylus are free**, as in the note-taking applications of the iPad: the lock is for
    the wheel and the trackpads only.
 7. **Nothing else changes**: the vertical bounds, the zoom limits, the rubber band, the fling and
@@ -139,7 +139,7 @@ the canvas pushed as far as it goes to the left and to the right):
 |---|---|---|
 | 1 | Bounds from the pages: `contentRect` from the pages and their margin; `updateDynamicBoundaries` with the origin of the content, locked at the center when the content fits (within a pixel), else its edges; `horizontalPaddingPx` removed; tests (`CameraBoundsTest`: a wide window at 1×, 1.25×, 1.5× keeping the page centered after a pan to each side, at 2× and 3× stopping at the edges with their margin, a phone at 1× without wobble, a zoom across the width without jump, mixed page widths, a pinch springing back to the center); the screenshots checked unchanged; the desktop application on a scratch directory | Done |
 | 2 | Predominant axis: `ScrollAxisLock`; `CanvasGestureHandler` feeding it for the macOS trackpad (phases), the trackpads of Android and iOS (`Pan*` events) and the wheel without phases (pause), the fling from the filtered deltas; tests (`ScrollAxisLockTest`: vertical, horizontal, diagonal, deltas held back, a short scroll; `TrackpadGesturesTest`: a mostly vertical scroll of a zoomed page and its fling moving vertically only, a new gesture choosing again, a wheel after a pause, the touch pan left free); the desktop application on a scratch directory | Done |
-| 3 | A free scroll easy to start (the user, on the trackpad of a MacBook): `ScrollAxisLock` choosing the axis on the first delta and breaking free on the move across, read with its sign on the last part of the gesture; nothing held back; tests (`ScrollAxisLockTest`: no delta held back, the shake of a vertical scroll never breaking it, a diagonal in separate events breaking free after a short move, a turn later in the gesture; `TrackpadGesturesTest`: a diagonal scroll of a macOS trackpad in separate events) | Done |
+| 3 | A free scroll easy to start (the maintainer, on the trackpad of a MacBook): `ScrollAxisLock` choosing the axis on the first delta and breaking free on the move across, read with its sign on the last part of the gesture; nothing held back; tests (`ScrollAxisLockTest`: no delta held back, the shake of a vertical scroll never breaking it, a diagonal in separate events breaking free after a short move, a turn later in the gesture; `TrackpadGesturesTest`: a diagonal scroll of a macOS trackpad in separate events) | Done |
 
 Each phase is one commit on `feat/camera-bounds`, with the checks of `CLAUDE.md` (`jvmTest`,
 `checkKotlinAbi`, the Android and iOS builds, `verifyRoborazziJvm`). The ABI is not expected to
@@ -165,7 +165,7 @@ change.
   ABI is unchanged.
 * The desktop application ran on a scratch directory (`-Ddrawview.dataDir`): it starts, makes its
   database, no error. Its window was not driven by hand; trying the zoom and the scroll on the
-  user's devices is left to the user.
+  user's devices is left to the maintainer.
 
 ### Phase 2 results
 
@@ -195,12 +195,12 @@ change.
   does not depend on the canvas) failed once in the first build of the worktree and once in three
   runs after it: it depends on timing, apart from this work.
 * The desktop application ran on a scratch directory: it starts, makes its database, no error.
-  Its window was not driven by hand; trying the scroll on the trackpad of the user is left to the
+  Its window was not driven by hand; trying the scroll on the trackpad of the maintainer is left to the
   user.
 
 ### Phase 3 results
 
-* Tried by the user on the trackpad of a MacBook: a free scroll, off the axes, was hard to start.
+* Tried by the maintainer on the trackpad of a MacBook: a free scroll, off the axes, was hard to start.
   The cause: AWT gives the vertical and the horizontal part of a trackpad scroll in separate
   events, and one event (a unit is 20 px on a Retina screen) passed the slop of 8 dp, so the axis
   was chosen on a single event, of one axis: locked, almost always.
@@ -219,7 +219,7 @@ change.
 
 ## Decisions
 
-Proposed on 2026-10-25 and taken by the user on 2026-10-25 ("write the plan with the two phases"),
+Proposed on 2026-10-25 and taken by the maintainer on 2026-10-25 ("write the plan with the two phases"),
 every one revertible:
 
 1. The bounds come from the pages, the widest one for the whole document.
@@ -233,7 +233,7 @@ Taken alone while writing the plan, revertible:
    bounds jump when the zoom crosses the width of the canvas.
 4. A gesture goes on the axis of its first delta and breaks free when the move across, on its last
    64 dp, passes 12 dp and 0.4 of the move along (about 22° off the axis). Phase 3 replaced the
-   choice made at the start within about 27° of an axis, after the user found a free scroll hard
+   choice made at the start within about 27° of an axis, after the maintainer found a free scroll hard
    to start.
 5. Nothing is held back at the start of a gesture (phase 3; phase 2 held back 8 dp, the 18 dp of
    the desktop being too much).

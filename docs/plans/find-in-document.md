@@ -73,7 +73,7 @@ Variations).
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **The words shown, not the source**: what the user reads is what is found; the formulas are not
    searched (their source is hidden on the page).

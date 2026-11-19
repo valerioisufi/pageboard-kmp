@@ -1,7 +1,7 @@
 # Test data
 
 The tests of the JVM never read or write the data of the user. This document starts from the
-checks of 2026-10-18 on the Windows machine of the user, where the tests of the JVM wrote into
+checks of 2026-10-18 on the Windows machine of the maintainer, where the tests of the JVM wrote into
 `~/.drawview`.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Pure
@@ -30,7 +30,7 @@ Fabrication, Protected Variations).
 3. `SecureStoreTest` passes on Windows: it checks the POSIX permissions only where the file
    system has them, and it deletes its secret even when an assertion fails.
 4. Nothing in `~/.drawview` or `~/.pencilnotes` is read, listed, written or deleted, the
-   `test-secret-*` left there by the old test included: the user decides about it.
+   `test-secret-*` left there by the old test included: the maintainer decides about it.
 
 ## Design
 
@@ -80,4 +80,4 @@ Fabrication, Protected Variations).
 ## Left for later
 
 * The `test-secret-*` file the old `SecureStoreTest` left in `~/.drawview/secure` on Windows:
-  the user deletes it, if they want.
+  the maintainer deletes it, if they want.

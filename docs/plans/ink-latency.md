@@ -5,7 +5,7 @@ through the same frames as the rest of the canvas: the input waits for the next 
 the whole canvas is drawn again, and the frame waits in the queue of the compositor before it
 shows; nothing predicts where the pen is going. This document starts from the code as it is
 (main at 8f620a64, 2026-11-01): the path of an input, what it costs, then the design and the
-plan, approved by the user on 2026-11-01. As in `docs/plans/performance.md`, every change is measured
+plan, approved by the maintainer on 2026-11-01. As in `docs/plans/performance.md`, every change is measured
 before and after, and kept only when it gains.
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
@@ -60,11 +60,11 @@ On the Mac the work of an input is small: the latency is in the structure, not i
 
 1. **The ink waits for the frames.** An input waits for the next frame (up to one frame, half on
    average), the frame is drawn (UI thread, then the RenderThread or Metal), and the buffer waits
-   for the compositor (one or two more vsyncs). On a 60 Hz display such as the MatePad 10.4 of the
+   for the compositor (one or two more vsyncs). On a 60 Hz display such as the one of the
    user, that is typically two to three frames, 35 to 50 ms, before the digitizer is counted.
    Only drawing the ink outside these frames (a front buffer) or predicting it hides this.
 2. **The whole canvas is drawn for each change of the stroke**: tiles and overlays are recorded
-   again though only the stroke changed. Small on the Mac; to be measured on the MatePad, where a
+   again though only the stroke changed. Small on the Mac; to be measured on the test tablet, where a
    frame that misses its vsync adds a whole frame.
 3. **The stroke in progress is drawn whole at every frame**: its outline rebuilt as a path and
    filled, which grows with the stroke (0.75 ms on the Mac after 4 s, several times that on a
@@ -80,7 +80,7 @@ On the Mac the work of an input is small: the latency is in the structure, not i
 ## Requirements
 
 1. **Measured, on every platform**: the latency from an input to the frame that shows it,
-   in-app (median and 95th percentile over a stroke); on the MatePad also from the pen to the
+   in-app (median and 95th percentile over a stroke); on the test tablet also from the pen to the
    photons, by a slow-motion video (the only true measure). Every phase gives its numbers before
    and after; a change that does not gain is not kept.
 2. **The ink drawn live is the ink committed**: the same engine, the same brush, no jump or flash
@@ -119,7 +119,7 @@ median and the 95th percentile of the stroke (`InkLatencyReport`). The clocks ar
 platform: on Android the `uptimeMillis` of the events and the frame time of the Choreographer
 share their base; on the desktop and iOS phase 0 checks the bases and matches them once per stroke
 where they differ; on Android the time to the display is added from `FrameMetrics` of the
-window. The sample shows the reports over the canvas. On the MatePad the user films the pen moving
+window. The sample shows the reports over the canvas. On the test tablet the maintainer films the pen moving
 at a steady speed at 240 fps: the gap between the nib and the end of the ink over the speed of the
 pen is the latency from the pen to the photons.
 
@@ -153,7 +153,7 @@ a stop: the hold that makes a shape and the end of a stroke show no tail beyond 
   better exists.
 * `MotionEventInkPredictor` (Android): `androidx.input:input-motionprediction` (Apache 2.0) fed by
   the `MotionEvent`s the canvas already spies; it uses the predictor of the system, tuned for each
-  device, on Android 14 and later, and a Kalman filter like ours before. The MatePad (Android 10)
+  device, on Android 14 and later, and a Kalman filter like ours before. The test tablet (Android 10)
   gains nothing from it over ours.
 * iOS: the predicted touches of UIKit (`UIEvent.predictedTouches(for:)`), read by a gesture
   recognizer on the view of the composition that never recognizes and cancels nothing, the same
@@ -163,13 +163,13 @@ a stop: the hold that makes a shape and the end of a stroke show no tail beyond 
 ### Front-buffered ink on Android
 
 `FrontBufferedLiveInkLayer` draws the stroke in progress with `CanvasFrontBufferedRenderer` of
-`androidx.graphics:graphics-core` (Apache 2.0, Android 10 and later: the MatePad is Android 10) in a
+`androidx.graphics:graphics-core` (Apache 2.0, Android 10 and later: the test tablet is Android 10) in a
 `SurfaceView` over the canvas. At each event, not each frame, the layer renders the change of the
 stroke into the front buffer: the region Ink updated (`GetUpdatedRegion`, plus the old and the new
 predicted tail) is cleared and the whole stroke is filled again clipped to it, so a translucent
 stroke stays painted once. The frame of Compose, the RenderThread and the queue of SurfaceFlinger
 are skipped; where the device has no front buffer the library still presents the layer with
-transactions of its own, outside the frames of the application. How much each gains on the MatePad
+transactions of its own, outside the frames of the application. How much each gains on the test tablet
 is what the phase measures.
 
 The camera does not move while a stroke is drawn (a finger landing is a palm under the stylus and
@@ -194,16 +194,16 @@ rest of the session.
 
 ## Plan
 
-Order by the gain expected on the MatePad: 0, 1, 2, 4, 6, then 3 and 5 (they need an Android 14
+Order by the gain expected on the test tablet: 0, 1, 2, 4, 6, then 3 and 5 (they need an Android 14
 device and an iPad with a Pencil to be measured).
 
 | Phase | Content | Status |
 |---|---|---|
-| 0 | The measures: `InkLatencyMeter` and `DrawViewController.inkLatency` (ABI recorded on purpose), shown in the sample; `LiveInkBenchmark` (M1, the work of an input), the pen up on the UI thread (M2); in-app latency on the desktop, the Android emulator and the iOS simulator (M3), and on the MatePad with the video (M4, by the user); whether Compose gives the coalesced touches of the Pencil (M5, from its sources or an iPad) | Done; M3 on the desktop and M4 left to the user |
+| 0 | The measures: `InkLatencyMeter` and `DrawViewController.inkLatency` (ABI recorded on purpose), shown in the sample; `LiveInkBenchmark` (M1, the work of an input), the pen up on the UI thread (M2); in-app latency on the desktop, the Android emulator and the iOS simulator (M3), and on the test tablet with the video (M4, by the maintainer); whether Compose gives the coalesced touches of the Pencil (M5, from its sources or an iPad) | Done; M3 on the desktop and M4 left to the maintainer |
 | 1 | `LiveInkLayer` and `ComposeLiveInkLayer`: the stroke and the cursors in a canvas of their own, the outline taken once per frame, the activity reported once per frame; tests of the gestures as they are, screenshots | Done |
 | 2 | Prediction: the predicted batch in the bridge (JNI and cinterop), `InkStrokeEngine.predict` (ABI of `drawview-ink` recorded on purpose), `InkPredictor` and `KalmanInkPredictor`; tests: nothing predicted is committed or sent, no tail on a hold, the shapes and the lasso as they are | Done |
-| 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | Left for later: nothing to measure it on (the MatePad is Android 10) |
-| 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the MatePad (in-app and video) and on an emulator | Done; by hand with the M-Pencil left to the user |
+| 3 | Android: `MotionEventInkPredictor` (`androidx.input`), kept if it beats the Kalman filter on an Android 14 device or emulator | Left for later: nothing to measure it on (the test tablet is Android 10) |
+| 4 | Android: `FrontBufferedLiveInkLayer` (`graphics-core`), the hand-off at the pen up, the fallback; measured on the test tablet (in-app and video) and on an emulator | Done; by hand with its pen left to the maintainer |
 | 5 | iOS: the predicted (and, after M5, coalesced) touches of the Pencil from a gesture recognizer; measured on an iPad | Left for later: nothing to measure it on (no iPad with a Pencil); the Kalman filter of phase 2 predicts there |
 | 6 | The pen up: only the level of detail on screen baked on the UI thread, the others on the workers, if M2 shows a cost | Not needed: 0.14 to 0.43 ms (M2) |
 
@@ -225,7 +225,7 @@ device and an iPad with a Pencil to be measured).
 * **M2** (Mac, a screen of tiles of 400 strokes a page): the pen up takes 0.14 ms for a stroke of
   60 inputs, 0.43 ms for one of 480. Far from the 100 to 300 ms between two strokes of handwriting:
   phase 6 is not needed (decision below).
-* **M3**, Android emulator `MatePad_API29` (Android 10, 1200 × 2000, 320 dpi, 60 Hz), five strokes of
+* **M3**, Android emulator `Tablet_API29` (Android 10, 1200 × 2000, 320 dpi, 60 Hz), five strokes of
   0.7 s injected as a stylus (`adb shell input stylus swipe`, about 70 events a second): from an
   input to the frame that draws it 12 to 16 ms (95th percentile 18 to 24 ms), tip age 9 to 10 ms
   (95th percentile 12 to 24 ms). The measure stops where the UI thread draws the frame: the
@@ -233,10 +233,10 @@ device and an iPad with a Pencil to be measured).
 * **M3**, iOS simulator (iPad Pro 11-inch M5, iOS 27.2), two strokes dragged by the simulator at 60
   and 120 Hz: from an input to the frame that draws it 12 to 13 ms (95th percentile 36 to 48 ms),
   tip age 12 ms (95th percentile 16 to 36 ms).
-* **M3 on the desktop** needs a hand on the mouse or the trackpad: left to the user, with the
+* **M3 on the desktop** needs a hand on the mouse or the trackpad: left to the maintainer, with the
   sample.
-* **M4**, left to the user: film the MatePad at 240 fps (slow motion of a phone) while drawing a long
-  line at a steady speed with the M-Pencil; the gap between the nib and the end of the ink, over the
+* **M4**, left to the maintainer: film the test tablet at 240 fps (slow motion of a phone) while drawing a long
+  line at a steady speed with its pen; the gap between the nib and the end of the ink, over the
   speed of the pen (the distance of two frames of the video), is the latency from the pen to the
   photons. Before phase 2, after phase 2 and after phase 4.
 * **M5**: Compose 1.12.1 gives the coalesced touches of UIKit as the historical changes of a move
@@ -262,7 +262,7 @@ device and an iPad with a Pencil to be measured).
 * **M6** (Mac, `LiveInkFrameBenchmark`, a frame while drawing over a page of 400 strokes, recorded
   and rasterized by Skia on the CPU): 1.80 ms before, 1.77 ms after. The raster of the tiles, which
   both pay, dominates.
-* **M3 on the MatePad** (the tablet of the user, connected, two rounds of five strokes each, after a
+* **M3 on the test tablet** (connected, two rounds of five strokes each, after a
   warm-up): from an input to the frame that draws it 15 to 17 ms before and after (95th percentile
   21 to 25, then 20 to 23 ms), tip age 12 to 14 ms before and after; the frames of the window
   (`dumpsys gfxinfo`) 14 to 15 ms at the median before, 13 to 14 after, 17 to 22 ms at the 90th
@@ -291,7 +291,7 @@ device and an iPad with a Pencil to be measured).
   starting and stopping smoothly 0.9 to 1.1 against 8.1 to 8.7. A pen that stops is not drawn beyond
   where it stays.
 * **M7** (Mac): an event costs 0.25 µs for the filter and 9.5 µs for Ink modeling the tail.
-* **M3**, emulator `MatePad_API29`, two rounds of five strokes each: tip age 8 to 10 ms before, -5 to
+* **M3**, emulator `Tablet_API29`, two rounds of five strokes each: tip age 8 to 10 ms before, -5 to
   -7 ms after (95th percentile 10 to 22 ms before, -4 to 2 ms after), with 16 ms predicted; from an
   input to its frame 12 to 15 ms before and after. The tip drawn stands for a moment 5 to 7 ms after
   the frame: the display still shows it later, by the time the RenderThread and the compositor take.
@@ -311,20 +311,20 @@ device and an iPad with a Pencil to be measured).
   renderer or an outline: `rememberLiveInkLayer` gives `ComposeLiveInkLayer` on iOS and the desktop.
 * The hand-off: at the pen up the last shape, without the prediction, is drawn in the buffer, which is
   hidden once the tiles are known to show the stroke, not after a fixed count of frames (the first
-  version waited 4, and the user saw strokes disappear for a few frames at the pen up, sometimes in
+  version waited 4, and the maintainer saw strokes disappear for a few frames at the pen up, sometimes in
   some tiles only). The frame must have recorded the tiles with no cell of the stroke waiting for its
   first tile (`TileManager.isScreenRegionDrawn`), the renderer must have submitted it
   (`registerFrameCommitCallback`), and 3 frames must have passed for the compositor; after 30 frames
-  it is hidden anyway. On the MatePad, 45 strokes by `adb`: tiles recorded in 14 ms (max 21), frame
+  it is hidden anyway. On the test tablet, 45 strokes by `adb`: tiles recorded in 14 ms (max 21), frame
   submitted in 32 ms (max 36), buffer hidden in 91 ms (max 95). Those strokes never showed a late
   frame, so the cause seen by hand is not reproduced that way. A stroke given up, or the lasso, hides
   it at once. A stroke that starts meanwhile
   keeps it. Recorded on the emulator at 60 fps (six strokes): a finished stroke never disappears; for 3
   frames its edges are antialiased twice (about 11% more dark pixels), then as they stay.
 * On Android 10 the library has no `USAGE_FRONT_BUFFER`, and hwui draws at most once per vsync (17 ms
-  between passes on the MatePad); the buffer is ready 6.2 ms after the pass is recorded (90th percentile
+  between passes on the test tablet); the buffer is ready 6.2 ms after the pass is recorded (90th percentile
   7.8 ms).
-* **M8, the lead on the screen, on the MatePad** (the measure that shows the compositor, which the meter
+* **M8, the lead on the screen, on the test tablet** (the measure that shows the compositor, which the meter
   does not): Compose draws a marker where the last input is, while the ink is drawn as it will be
   shipped; a screenshot during a line at 1.29 px/ms (10 screenshots each, composited output, not the
   scan-out of the panel) gives how far the tip of the ink is ahead of the marker. A temporary build, not
@@ -339,10 +339,10 @@ device and an iPad with a Pencil to be measured).
 
   At the constant speed of a straight line, which favors the prediction. The -8 px are the modeler of
   Ink, about 6 ms behind the input.
-* **M3 on the MatePad**: tip age 12 to 14 ms (phase 1), -3 to -6 ms now, with 16 ms predicted; the frames
+* **M3 on the test tablet**: tip age 12 to 14 ms (phase 1), -3 to -6 ms now, with 16 ms predicted; the frames
   of the window drop out of it.
-* Checked on the MatePad by adb: the ink shows during a stroke (a screenshot at its middle), the
-  highlighter, the eraser, the lasso; a finger swipe behaves as at phase 0. Not checked: the M-Pencil by
+* Checked on the test tablet by adb: the ink shows during a stroke (a screenshot at its middle), the
+  highlighter, the eraser, the lasso; a finger swipe behaves as at phase 0. Not checked: the pen by
   hand, its hovering, two fingers, the hold that makes a shape on the device (tested on the JVM).
 
 ## Decisions
@@ -362,7 +362,7 @@ device and an iPad with a Pencil to be measured).
 * **A translucent stroke stays in the frames of Compose** (revertible): the hand-off cannot be atomic
   before Android 13, and a translucent stroke shown twice would flash darker.
 * **Phases 3 and 5 left for later** (revertible): the plan keeps what is measured to gain, and no device
-  of the user runs them; the Kalman filter already predicts on iOS and on Android 14.
+  of the maintainer runs them; the Kalman filter already predicts on iOS and on Android 14.
 * **No phase 6** (revertible): the pen up costs 0.14 to 0.43 ms on the Mac (M2); a device that shows
   more can bring it back.
 
@@ -374,4 +374,4 @@ device and an iPad with a Pencil to be measured).
   (`HistoricalChange` has no pressure), so the samples of an event take the pressure of the last
   one. The `MotionEvent`s spied in phase 3 have it.
 * Unbuffered events for the finger when it draws (today the stylus only).
-* Displays faster than 60 Hz (`Surface.setFrameRate`, ProMotion): nothing of the user's yet.
+* Displays faster than 60 Hz (`Surface.setFrameRate`, ProMotion): nothing of the maintainer's yet.

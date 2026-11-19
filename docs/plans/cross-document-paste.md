@@ -286,12 +286,12 @@ public class EditorClipboard {
   and iOS compilations, the two Android applications, the consumer checks. PencilNotes desktop run
   on a scratch directory (`-Ddrawview.dataDir`): it starts, its database at version 21, no error
   in its output. Its windows were not driven by hand: the copy between two windows goes through
-  the same `EditorClipboard` the tests share between two editors; trying it on the user's devices
-  is left to the user.
+  the same `EditorClipboard` the tests share between two editors; trying it on the maintainer's devices
+  is left to the maintainer.
 
 ## Decisions
 
-Proposed on 2026-10-25 and approved by the user the same day ("implement phase 1"); every one
+Proposed on 2026-10-25 and approved by the maintainer the same day ("implement phase 1"); every one
 revertible:
 
 1. **A clipboard of the application, not of the system.** What is copied stays in the memory of

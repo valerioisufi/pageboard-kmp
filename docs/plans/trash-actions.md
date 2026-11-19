@@ -57,7 +57,7 @@ Variations).
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **The preview draws the pages as images**, from the store, rather than opening the document in
    the editor read only: a document in the trash is never opened in a session, so nothing (an

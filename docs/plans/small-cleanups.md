@@ -30,6 +30,6 @@ The responsibilities are assigned following the GRASP principles.
 Taken alone, revertible:
 
 * **Italian first**: the other languages of `drawview-ui` are for other users, when the
-  applications are published; Italian is what the user sees today.
+  applications are published; Italian is what the maintainer sees today.
 * **The backgrounds later**: one drawing changes the look of the thumbnails and of the template
-  picker, to be looked at by the user, not only by the screenshots.
+  picker, to be looked at by the maintainer, not only by the screenshots.

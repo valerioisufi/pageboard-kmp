@@ -174,7 +174,7 @@ Variations).
 
 ### Stage 2: the paper, the line numbers, the lists, the panel
 
-Four of the things left for later after phase 5, asked by the user on 2026-10-24.
+Four of the things left for later after phase 5, asked by the maintainer on 2026-10-24.
 
 **Where they start.**
 
@@ -186,7 +186,7 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
   PNG exports.
 * The information after the fence gives the language only; there are no line numbers.
 * A fence counts with up to 3 spaces before it, so a block under a nested list item (4 spaces and
-  more) is text; a block under a first-level item (`  ```c`, five of the seven texts of the user)
+  more) is text; a block under a first-level item (`  ```c`, five of the seven texts of the maintainer)
   is drawn at the left edge and as wide as the box, not with its item. A list item is one line for
   the parser.
 * The panel of the lecture assistant shows the Markdown of its notes with a composable of its own
@@ -226,13 +226,13 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
 |---|---|---|
 | — | Before phase 1, on its own branch: the parsing of `RichTextParser` made linear, its rules and tests unchanged ([linear-parsing.md](./linear-parsing.md)) | Done |
 | 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, long code in linear time); ABI of `drawview-model` | Done |
-| 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
+| 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the maintainer (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
 | 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | Done |
-| 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | Done |
+| 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the maintainer measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | Done |
 | 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | Done |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
@@ -297,7 +297,7 @@ schema stay as they are.
   and the lecture assistant pass it to their adapters.
 * `PdfExporter` fills the backgrounds as rectangles with rounded corners (cubic curves) under the
   words: the code stays text, searchable, in its colors.
-* Counted on a copy of the database of the user (the original untouched): 517 texts, 7 with blocks
+* Counted on a copy of the database of the maintainer (the original untouched): 517 texts, 7 with blocks
   of code (in C, five of them indented by two spaces under a list item, drawn at the top level as
   decided), 53 with a backtick. So `DrawViewController` measures again the texts with fences when
   it is given its text adapter: a height other than the stored one is corrected, one `UpdateTexts`
@@ -463,7 +463,7 @@ schema stay as they are.
   `listPrefixWidthPx`, the approximation of the lists for their wrapped lines, put the blocks
   about 1 mm to the right of the text of their item. The wrapped lines of the items keep it, so
   that the texts already written keep their lines.
-* The five texts of the user with a block under an item are drawn narrower, so higher: measured
+* The five texts of the maintainer with a block under an item are drawn narrower, so higher: measured
   again when their document opens (phase 2).
 * Tests: a block under an item, under a nested item and under a numbered one, a line less indented
   ending it, the fences out of the lists (`CodeBlocksTest`); lists and fences at 1 MiB in linear
@@ -498,7 +498,7 @@ schema stay as they are.
 
 ## Decisions
 
-Proposed with the plan and approved by the user on 2026-10-22, every one revertible:
+Proposed with the plan and approved by the maintainer on 2026-10-22, every one revertible:
 
 1. Fences of backticks or tildes only; no block indented by 4 spaces (it would take the nested
    list items).
@@ -526,7 +526,7 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
 13. The texts whose fences are drawn as blocks are measured again when their document opens, with
     a change of their height only, if the count on the copy of the database finds any.
 
-Proposed with stage 2 and approved by the user on 2026-10-24, every one revertible:
+Proposed with stage 2 and approved by the maintainer on 2026-10-24, every one revertible:
 
 14. The paper comes with the text to the adapter (`drawText`, `layout`): the background of the
     code is opaque on its paper; without a paper (0) it stays translucent. What is under a block is
@@ -563,7 +563,7 @@ Proposed with stage 2 and approved by the user on 2026-10-24, every one revertib
 * **The lists in the parser** (stage 2): the items open at each line are followed while the
   verbatim parts are scanned, every line read once; the bounds tests take nested lists and fences
   at every indentation.
-* **The texts already written** with a block under an item (five of the user) get narrower and
+* **The texts already written** with a block under an item (five of the maintainer) get narrower and
   higher: measured again on load as in phase 2.
 
 ## Left for later

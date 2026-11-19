@@ -178,7 +178,7 @@ Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulato
 
 ## Decisions
 
-### Taken by the user (2026-10-22)
+### Taken by the maintainer (2026-10-22)
 
 * The plan as it is, with phase 2 on the same branch.
 

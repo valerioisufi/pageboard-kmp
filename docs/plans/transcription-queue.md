@@ -39,7 +39,7 @@ Read in the code. What phase 0 then measured is in "The window", under the desig
   whisper.cpp inside `Dispatchers.IO` (`WhisperTranscriber.transcribe`), and the state of the lecture
   is set on `stateContext` a piece at a time.
 * whisper.cpp is loaded with `useGpu = true` and decodes on 4 threads (`DEFAULT_THREADS`). The Mac of
-  the user has 4 performance cores and 6 efficiency ones, and Compose draws the window with the same
+  the maintainer has 4 performance cores and 6 efficiency ones, and Compose draws the window with the same
   GPU (Metal). Two suspects, to be measured: the encoder holding the GPU while a frame waits, and the
   four decoder threads taking the four performance cores.
 * On the thread of the interface, at every piece: `Lecture.persist` builds the whole record
@@ -142,7 +142,7 @@ how many seconds of audio are transcribed in a second:
 * The Metal backend of whisper.cpp 1.9.4 splits a graph into 9 command buffers at most, and does not
   let a caller choose how many: making the work of the GPU finer would mean patching it.
 
-Proposed from this, and turned down by the user (2026-11-13): the speech model on the processor
+Proposed from this, and turned down by the maintainer (2026-11-13): the speech model on the processor
 while the window of the application is in front, on the GPU otherwise. It was written and taken out
 again; nothing of it is in the code.
 
@@ -156,7 +156,7 @@ large-v3-turbo, 163,083,239 for small, 37,922,638 for base. The decoder stays wh
 or the processor).
 
 Measured the same way (2026-11-13), with the bridge built with Core ML, the encoder downloaded into a
-scratch directory, and the model of the user read through a link:
+scratch directory, and the model of the maintainer read through a link:
 
 | What transcribes | Frames a second | Median | 99% | Longest | Frames over 50 ms | Speed |
 |---|---|---|---|---|---|---|
@@ -182,7 +182,7 @@ scratch directory, and the model of the user read through a link:
 
 ### Design of phase 4 onwards
 
-Approved by the user, 2026-11-13.
+Approved by the maintainer, 2026-11-13.
 
 * **The build** (`native/CMakeLists.txt`): on macOS, whisper.cpp with `WHISPER_COREML` and
   `WHISPER_COREML_ALLOW_FALLBACK`. Without the encoder file, or with one Core ML cannot load,
@@ -226,7 +226,7 @@ Taken alone, revertible, unless they say otherwise.
 1. **The queue is in memory.** After the application quits, a lecture that was waiting is a finished
    lecture with its audio and no transcript, transcribed on request, as an interrupted import today.
    Keeping the queue would add a stored format.
-2. **A recording pauses the transcription and does not run beside it** (decided by the user).
+2. **A recording pauses the transcription and does not run beside it** (decided by the maintainer).
 3. **A lecture followed live from another device does not pause the queue**: as today. It is
    uncommon, and pausing would leave an import waiting for a lecture that lasts hours.
 4. **One recording here at a time**, as today: `recorder` is one.

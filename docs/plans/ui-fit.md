@@ -30,7 +30,7 @@ Variations).
    | Page format and document configurators (`DrawScreen`) | `drawview-ui` | 760 dp | to check |
    | Settings of the search (`SearchSettingsDialog`) | `drawview-search-ui` | 580 dp | 20 dp narrower |
 
-4. **The fix proposed by the user** (`fillMaxWidth()` on the `Row` of the settings) makes the row
+4. **The fix proposed by the maintainer** (`fillMaxWidth()` on the `Row` of the settings) makes the row
    as wide as the dialog lets it, 560 dp, not 940: it is not enough. The weight of the column on
    the right already fills a bounded row.
 5. **The screenshot tests do not see it**: `LecturePanelScreenshotTest`, `SharingScreenshotTest`,

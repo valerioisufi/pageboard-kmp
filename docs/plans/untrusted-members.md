@@ -11,7 +11,7 @@ Variations).
 
 ## Starting point
 
-Asked by the user on 2026-10-22, the third point of a review of what publishing the applications
+Asked by the maintainer on 2026-10-22, the third point of a review of what publishing the applications
 to other users needs (the second, the limits before authentication, is phase 8 of
 [internet-sync.md](internet-sync.md)). It starts from `feat/internet-sync` (protocol 2), on the
 branch `feat/untrusted-members`.
@@ -150,7 +150,7 @@ made without seeing its own (offline, or before it arrived), not over the later 
 | `KnownVersions` | relayed, recorded for every device | recorded for the device that sends it only (the same message) |
 
 `PROTOCOL_VERSION` goes back to 1, with these formats and those of `feat/internet-sync`
-(addresses, limits): the user decided so, the applications being on two devices of theirs only,
+(addresses, limits): the maintainer decided so, the applications being on two devices of theirs only,
 updated together. `ProtocolFormatTest` records format 1 again. A device on a build of before with
 the same number does not meet the "other version" message: it is to be updated with the other.
 
@@ -202,11 +202,11 @@ The operations already in the logs:
   operation made before by a clock that was right is in the past; and the rules on the replica and
   on the stamps a change carries hold for every operation the applications made, before this
   change too. Checked on the operations the random changes of `ConvergenceTest` exchange, and on
-  a copy of the database of the user (every operation of its log admitted at the time of the
+  a copy of the database of the maintainer (every operation of its log admitted at the time of the
   check, no stamp of its documents ahead of it), the original untouched.
 * An operation stored that does not pass (made before this change by a clock far ahead, or by a
   member) stays as it is, never rewritten: the devices it is given to close the connection that
-  carries it. If the check finds one, the user decides what to do with it.
+  carries it. If the check finds one, the maintainer decides what to do with it.
 
 When a document is loaded:
 
@@ -226,7 +226,7 @@ joining only, whose changes the others then refuse.
 
 What travels does not change: the frames, the messages, the sealed operations, the stamps as they
 are written. `ProtocolFormatTest` stays as it is, and `PROTOCOL_VERSION` stays 1 (to be agreed with
-the user). What changes is what a device takes: an operation stamped ahead, or carrying stamps
+the maintainer). What changes is what a device takes: an operation stamped ahead, or carrying stamps
 after its own, is taken by the builds of before and refused by this one. No operation of the
 applications is among them, so the devices on the two builds sync as before. The rule is written
 in the protocol of `docs/plans/collaboration.md`, and "a clock far ahead wins" there becomes "a clock
@@ -240,7 +240,7 @@ up to an hour ahead".
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | done |
 | 4. Stamps bounded in the model | `HybridClock.admits`, `MAX_AHEAD_MS`, `next` without overflow; `DocumentChange.stamps()`; `DocumentSession.admits`, `receive` refusing; `latestStamp()` with the title; the ABI of `drawview-model` recorded again (additions), the consumer checks; the operations of the tests of the engine stamped now (`forged`, 35 000 years ahead until now: refused from this phase). Tests (`FutureStampTest`): the end of time, the greatest counter a minute ahead, a century ahead, a text said to include the future, an order, a version and a removal after the stamp of their operation, in a composite change too, the stamp of another replica, at the bound and a millisecond past it, negative parts, a document loaded with stamps ahead of the wall clock; every operation `ConvergenceTest` exchanges admitted | done |
-| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/plans/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | done |
+| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/plans/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the maintainer | done |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
@@ -263,7 +263,7 @@ tests of the sync modules on the iOS simulator.
   validated against 19.
 * The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
   again: additions only.
-* Checked on a copy of the database of PencilNotes of the user (schema 18: 12 documents, 588
+* Checked on a copy of the database of PencilNotes of the maintainer (schema 18: 12 documents, 588
   pages of which 88 removed, 2131 operations), the original untouched: migrated to 19, every
   document read with its 500 pages and its operations, a proof kept and read.
 
@@ -399,7 +399,7 @@ tests of the sync modules on the iOS simulator.
   when a connection starts), so the ones that did not connect again after every member had
   everything keep it (see Left for later). Before, the order of the steps of the test happened to
   make them drop the same.
-* Checked on a copy of the database of PencilNotes of the user (2026-10-25, the original
+* Checked on a copy of the database of PencilNotes of the maintainer (2026-10-25, the original
   untouched; 12 documents, 588 pages): the 2199 operations of its log, decoded as the store does
   and given to `DocumentSession.admits`, all admitted (every stamp of its replica, none ahead,
   none carried after the stamp of its operation); the 13 095 stamps of its tables none negative
@@ -407,10 +407,10 @@ tests of the sync modules on the iOS simulator.
 
 ## Decisions
 
-### Taken by the user (2026-10-22)
+### Taken by the maintainer (2026-10-22)
 
 * The plan as it is, with its choices.
-* `PROTOCOL_VERSION` back to 1: the applications are on two devices of the user only.
+* `PROTOCOL_VERSION` back to 1: the applications are on two devices of the maintainer only.
 
 ### Taken by me (revertible)
 
@@ -434,7 +434,7 @@ tests of the sync modules on the iOS simulator.
 * 200 levels at most: far more than the changes of the applications, far less than the stack of a
   thread decoding them.
 
-### Taken by the user (2026-10-24)
+### Taken by the maintainer (2026-10-24)
 
 * Phases 4 and 5 as they are, with their choices.
 * The bound: an hour. Less (ten minutes) would give a member less advantage over the changes made

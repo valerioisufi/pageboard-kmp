@@ -455,7 +455,7 @@ work against the user, and text can be lost.
 
 ## Decisions
 
-Taken by the user on 2026-10-08, who authorized doing the phases in order with commits:
+Taken by the maintainer on 2026-10-08, who authorized doing the phases in order with commits:
 
 1. `isMarkdownEnabled` is removed: the escapes and the stricter rules write a literal `*` or `$`
    (phase 2).

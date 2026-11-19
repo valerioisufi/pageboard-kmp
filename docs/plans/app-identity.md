@@ -55,13 +55,13 @@ store images.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. The identity | The directions as drafts, chosen with the user: the P, underlined | Done |
+| 1. The identity | The directions as drafts, chosen with the maintainer: the P, underlined | Done |
 | 2. The icon everywhere | The script, the icons of Android, iOS and desktop, the mark in the application, the store images | Done |
 | 3. Checks | The Android debug build, the desktop application on a scratch data directory | Done |
 
 ## Decisions
 
-- **The P and its underline**, chosen by the user among the drafts (A1, the underline straight).
+- **The P and its underline**, chosen by the maintainer among the drafts (A1, the underline straight).
 - **The palette stays as it is**: dark green, lime, yellow, cream; no new colors.
 - **The mark in the application keeps the colors of the brand** whatever the theme or the dynamic
   colors of Android, as a launcher shows the icon (revertible: it took `primary` and

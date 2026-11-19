@@ -173,7 +173,7 @@ Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with 
   PDF, `TextParityTest` (the editor and the page draw quotes, levels, styles and symbols the same),
   and the screenshots of the symbols, the levels, the quotes on the page and written, the button.
 * **Not by hand**: the Android and iOS apps were compiled, not run; the keyboard of a phone and the pen
-  on a tablet are left to the user.
+  on a tablet are left to the maintainer.
 * `verifyRoborazziJvm` fails on three screenshots, none from this work: `text-saved-code` already on
   d79f6482 (a scroll of 48 px); `text-chain-written` and `library-search`, when they fail, differ by
   one column of pixels, the caret blinking.
@@ -196,10 +196,10 @@ Phases 1 and 2 stand alone; 4 needs 3, and 5 needs 4. Each one is a commit with 
 
 ## Not in this plan
 
-- **The colors of `__asm__` and `__volatile__` in C**: excluded by the user. Adding the words one case
+- **The colors of `__asm__` and `__volatile__` in C**: excluded by the maintainer. Adding the words one case
   at a time neither extends nor works well; the highlighting needs its own thinking, if ever.
 - **The two narrower boxes on page 7 of the note**, not linked to each other: a state of that note,
-  to be looked at by the user, not a defect of the application as far as known.
+  to be looked at by the maintainer, not a defect of the application as far as known.
 
 ## Left for later
 

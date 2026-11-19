@@ -6,7 +6,7 @@ a text may go, never the size it took. This document starts from the behavior re
 shows all its lines at one zoom and loses its last lines at another, cut in the middle of a line)
 and from the code as it is (main at 1a6e0240, 2026-10-25).
 
-A first plan corrected the stored heights when a document opens. The user asked instead for a
+A first plan corrected the stored heights when a document opens. The maintainer asked instead for a
 document that does not depend on the layout of the version that wrote it: the application is not
 published yet, the documents of the user are kept, and the code is not to keep layers for the
 versions of its early development. This plan replaces it.
@@ -67,7 +67,7 @@ Fabrication, Low Coupling, Polymorphism, Protected Variations).
 
 ### What a text keeps
 
-* **Kept** (decided by the user): its content and its format, its alignment, its font size, its
+* **Kept** (decided by the maintainer): its content and its format, its alignment, its font size, its
   color, its rotation, and **where it may go**: the corner it starts from (`x`, `y`) and the width
   its lines wrap on (`width`).
 * **Laid out** (the result): the height of its lines, and for a text whose width follows it, the
@@ -125,7 +125,7 @@ The documents of the user are rewritten once, so that they look as they do:
   their texts keep the height, ignored on decoding (the CBOR of the synchronization ignores
   unknown keys), and a turned text in one of them would be placed by its middle as a corner. Only
   an operation of the other device not yet received by this one is still given on from a proof:
-  the two devices of the user are synchronized before updating (see [Left for later](#left-for-later)).
+  the two devices of the maintainer are synchronized before updating (see [Left for later](#left-for-later)).
 * Tested with `MigrationTestHelper` on schema 20: a text, a turned text, a text whose width follows
   it in each alignment, operations of each kind carrying texts and placements; its result drawn
   as before (same corner of every line).
@@ -160,7 +160,7 @@ The commits of the first plan that corrected the stored heights (on opening, whe
 dropped from the branch: phase 1 is the commit that remains. Each phase is one commit on
 `fix/text-overflow`, with the checks of `CLAUDE.md`: `jvmTest`, `checkKotlinAbi`, the Android
 and iOS builds, the sync modules on the iOS simulator (phase 3), the screenshots, the desktop
-application on a scratch directory and on a copy of the database of the user (phase 3, asked
+application on a scratch directory and on a copy of the database of the maintainer (phase 3, asked
 first, the original untouched).
 
 ### Phase 2 results
@@ -219,7 +219,7 @@ first, the original untouched).
   text following its width drawn in its box, in each alignment);
   `DrawDatabaseMigrationTest` (the room of a box in each alignment).
 
-### The migration on a copy of the database of the user
+### The migration on a copy of the database of the maintainer
 
 Asked first, on 2026-10-25, the original untouched (`~/.pencilnotes`, PencilNotes closed; copied
 without its keys, and the application not started on the copy, which would reach the network):
@@ -230,13 +230,13 @@ without its keys, and the application not started on the copy, which would reach
   text shown at its corner of before; the 348 of a width set kept it, the 169 following their width
   got the room to the margin of their page. The 2201 operations decoded; none keeps a height in a
   text nor a placement of a text as a box.
-* The note of the screenshots (24.3 mm wide, 4 pt, scaled down by the user): its lines laid out
+* The note of the screenshots (24.3 mm wide, 4 pt, scaled down by the maintainer): its lines laid out
   with the fonts of the notes take 26.6 mm (14 lines of 1.9 mm); its stored height was 22.8 mm,
   the 12 lines of before 2026-10-20.
 
 ## Decisions
 
-To be approved by the user:
+To be approved by the maintainer:
 
 1. **The pivot of a turned text is its top-left corner** (recommended). The alternative keeps the
    middle: no positions migrated, but a turned text moves by half the change of its height along
@@ -244,7 +244,7 @@ To be approved by the user:
 2. **A width that follows the text is laid out too** (phase 4, recommended now): the format and the
    protocol change once instead of twice. The alternative keeps the width it took, and a font
    laying out wider wraps its longest line again.
-3. **The version of the protocol stays 1**, the two devices of the user updated together and
+3. **The version of the protocol stays 1**, the two devices of the maintainer updated together and
    synchronized before (as on `feat/internet-sync` and `feat/untrusted-members`); or 2.
 
 Taken alone, revertible:

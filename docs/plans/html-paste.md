@@ -108,7 +108,7 @@ schema, to a stored format or to the sync protocol.
 | 2 | The real sources: fixtures of HTML in the forms that Chrome, Firefox, Google Docs, Word and a chat assistant copy, `WordHtml`, `HtmlFormula`; lists, tables, blocks of code, formulas; limits of size and depth; the fallback on plain text | done |
 | 3 | `htmlIn` per platform, `ClipboardText`, the paste on the canvas and the sheet of a long text, "Paste as plain text" on the canvas | done |
 | 4 | The field (`FormattedPasteClipboard`, `TextEditorManager.formattedPaste`, `PastedText.placed`), "Paste as plain text" in the field | done |
-| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari. On Windows: the checks, Android builds, consumer checks, and real copies from Chrome (Wikipedia, MDN, GitHub, Stack Overflow, Math Stack Exchange, KaTeX, arXiv, the docs of Python and Kotlin) and from Word, driven by scripts. Left to the user: real copies on the other devices and browsers, the iOS sources and the klib dump of `drawview-canvas` on the Mac | in progress |
+| 5 | On the devices: desktop on a scratch data directory, the Android tablet, iOS; the pasteboard types of Safari. On Windows: the checks, Android builds, consumer checks, and real copies from Chrome (Wikipedia, MDN, GitHub, Stack Overflow, Math Stack Exchange, KaTeX, arXiv, the docs of Python and Kotlin) and from Word, driven by scripts. Left to the maintainer: real copies on the other devices and browsers, the iOS sources and the klib dump of `drawview-canvas` on the Mac | in progress |
 
 ## Decisions
 
@@ -134,7 +134,7 @@ Taken alone, revertible:
    Google Docs needs none, since `style` winning over the tag covers its outer `<b>`.
 10. **An equation of Word is a formula** (`OmmlToLatex`): Word copies an image, with its OMML in a
     comment. What cannot be written (an unknown element, too deep) becomes a visible placeholder, never
-    a formula with a piece missing. Asked by the user after a real copy, 2026-11-05.
+    a formula with a piece missing. Asked by the maintainer after a real copy, 2026-11-05.
 11. **A formula copied as text between dollars is a formula**, when the notation reads it as one and it
     looks like one (a sign of a formula, or at most 3 characters): Gemini copies its formulas so, as a
     real copy from Chrome showed (2026-11-05). Any other `$` stays a character.

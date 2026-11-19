@@ -72,7 +72,7 @@ Variations).
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **One Markdown file for the note and its lectures**, rather than a file of the lectures alone:
    the text the student wrote and what the lecture added belong together.

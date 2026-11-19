@@ -168,7 +168,7 @@ in the commit. Nothing changes in the stored formats or in the protocol: no migr
 
 ## Decisions
 
-To be taken by the user:
+To be taken by the maintainer:
 
 1. **Where the text is saved.** Proposed: **in the document**, as the changes the editor already
    makes (this design). The alternative is a **draft kept apart**, on this device only (a preference

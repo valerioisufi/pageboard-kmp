@@ -78,7 +78,7 @@ Variations).
 
 ## Decisions
 
-Taken alone on 2026-11-14 (the user asked to go on without asking), every one revertible:
+Taken alone on 2026-11-14 (the maintainer asked to go on without asking), every one revertible:
 
 1. **The notation of GitHub**, not a new field: the texts stay Markdown, readable by the agents and
    by any other viewer, and nothing stored or sent changes. A note with `- [ ] ` in it already

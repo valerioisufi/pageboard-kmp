@@ -12,7 +12,7 @@ Variations).
 
 ## Starting point
 
-Asked by the user on 2026-11-14.
+Asked by the maintainer on 2026-11-14.
 
 * A document is shared on its own ([collaboration.md](collaboration.md)): its key
   (`SharingState.keys`, a new one at each removal), its owner and its membership signed by the
@@ -53,7 +53,7 @@ Asked by the user on 2026-11-14.
    formats change with tested migrations (Room with `MigrationTestHelper`, the key-value store).
 7. The documents shared with this device by others (owned by others) stay in their own sharing and
    out of the shared library: they reach the other devices of the user only if those join them
-   (decided by the user, 2026-11-14).
+   (decided by the maintainer, 2026-11-14).
 8. The documents shared on their own keep working as today, and so do the devices that share
    documents only.
 9. The rules of the libraries: headless modules without Compose, explicit API recorded, no global
@@ -182,20 +182,20 @@ a build of before meeting a space closes the connection (a message it does not k
     under the root of one (a document shared on its own aside).
 * `KeyValueDocumentStore`: a value per space (`drawview.space.<id>`, format 1) and its log; a store
   of before has none and reads as before.
-* Checked on a copy of the database of PencilNotes of the user, the original untouched.
+* Checked on a copy of the database of PencilNotes of the maintainer, the original untouched.
 
 ## Plan
 
 | Phase | Content | Status |
 |---|---|---|
 | 1. The catalog | `CatalogChange`, `SpaceCatalog`, `CatalogSession` (stamps, admission, cycles, trash, hidden items); convergence tests on random changes and delivery orders, as `ConvergenceTest` | done |
-| 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the user's database | done (the copy of the user's database: to do) |
+| 2. Storage | `SpaceStore`, Room schema 25 with `Migration24To25` (`MigrationTestHelper`), the key-value store; `SpaceLibrary` turning the changes of the library into changes of the space and back. Tests: both stores, a store of before read, the copy of the maintainer's database | done (the copy of the maintainer's database: to do) |
 | 3. Keys and members | `SpaceSharing`, derived keys and tags, the membership of the space read by `DocumentSharing`, epochs; a document from the device that brought it or the owner. Tests of members not trusted: a reader moving a folder, a member bringing a document as another, a key of a member, a removed member | done (the engine checks them in phase 4) |
 | 4. Synchronization | The connections about a space (the handshake of the documents, the sharing of the space), its catalog (`CatalogOperations`, sealed and signed), the documents of a space synchronized as the others with the keys and membership of the space, from the owner or the device that brought them; `ProtocolFormatTest`. Tests: two devices sharing a folder (both ways, live, the trash, a member removed), the library joined into the library, a reader, a rule removed failing them, random catalog changes to the decoder | done |
 | 4b. Fewer connections | `DocumentHeads`: a document's connection only while it differs or is open, closed when idle; `LanSync` and `IrohSync` announcing and connecting by space only. Tests: a library of 200 documents (connections opened only for what changed), a device away and back | done |
 | 5. Invitations and joining | The invitation of a space (`s=` and its kind in the link), the approval as for a document, joining into a new folder, a folder, or the library itself (`SpaceRoot`) | done (in the engine; the choice in the interface is phase 6) |
 | 6. Interface | Share a folder (explorer), share the library (settings), the badge of a shared folder, members and roles, stop sharing, leave; a folder read only for a reader; strings in the 7 languages; Roborazzi of explorer and sync-ui, the desktop on a scratch directory | done (the screenshots recorded on the Mac: to do) |
-| 7. Real devices | The user's tablet, computer and iPad: a library shared, changes made apart and met again | in progress (the computer and a phone on the local network: done, 2026-11-15; the tablet, the iPad, the internet: left to the user) |
+| 7. Real devices | A tablet, a computer and an iPad: a library shared, changes made apart and met again | in progress (the computer and a phone on the local network: done, 2026-11-15; the tablet, the iPad, the internet: left to the maintainer) |
 
 Every phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
 simulator; a commit per phase on `feat/shared-folders`, the status updated with it.
@@ -270,7 +270,7 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
     migrations from 16 now validated against 25.
 * The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
   again: additions only, the stores implementing `SpaceStore`.
-* Still to do: the check on a copy of the database of PencilNotes of the user (made by the user,
+* Still to do: the check on a copy of the database of PencilNotes of the maintainer (made by the maintainer,
   the original untouched).
 
 ### Phase 3 results
@@ -429,7 +429,7 @@ simulator; a commit per phase on `feat/shared-folders`, the status updated with 
 
 ### Phase 7 results (first run)
 
-The desktop application of the computer (Windows, on a scratch directory) and the phone of the user
+The desktop application of the computer (Windows, on a scratch directory) and the phone of the maintainer
 (Android 10), on the same Wi-Fi, 2026-11-15, on `fix/lan-interface`:
 
 * A folder shared by the desktop and joined by the phone: its documents come with their content;
@@ -454,18 +454,18 @@ The desktop application of the computer (Windows, on a scratch directory) and th
   * An invitation opened again by a member waited for the owner forever; it is in at once.
   * The join dialog said "Join a shared document" for a folder or a library; sharing a folder in a
     shared folder, or the library holding one, did nothing on Share: told in the dialog.
-* Left to the user, besides the tablet and the iPad: the firewall of the computer (an inbound rule
+* Left to the maintainer, besides the tablet and the iPad: the firewall of the computer (an inbound rule
   for the Java of the application on private networks, or the devices do not meet), the
   synchronization over the internet between real networks.
 
 ## Decisions
 
-### Taken by the user (2026-11-14)
+### Taken by the maintainer (2026-11-14)
 
 * One model for the devices of the user and for other people: a space with members and roles.
 * The documents owned by others stay out of the shared library (requirement 7).
 * The plan as it is, with its choices.
-* `PROTOCOL_VERSION` stays 1: the applications are on the devices of the user only, updated
+* `PROTOCOL_VERSION` stays 1: the applications are on the devices of the maintainer only, updated
   together, as for `feat/untrusted-members`. `ProtocolFormatTest` records format 1 again.
 * A shared library is joined into a folder or into the library itself (both libraries become
   one), as the user chooses when joining.
@@ -501,7 +501,7 @@ The desktop application of the computer (Windows, on a scratch directory) and th
   space, rather than a protocol of its own: the trust rules are written once.
 * The invitation and the joining of a space in phase 4, before the interface: the engine needs them
   to be tested between devices.
-* The interface (phase 6) before fewer connections (phase 4b): the library of the user holds tens
+* The interface (phase 6) before fewer connections (phase 4b): the library of the maintainer holds tens
   of documents, which the connections per document serve.
 * Heads by document over the connection of a space, rather than one connection per document kept
   open: a library of hundreds of documents costs what changed.

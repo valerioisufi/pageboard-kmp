@@ -161,8 +161,8 @@ No screenshot should change (`verifyRoborazziJvm` of ui, explorer).
   `drawview-ui` (string resources of another change), as on main at 308c5132: no change of this
   work. The desktop application run on a scratch directory (`-Ddrawview.dataDir`): it starts,
   makes its database, no error; its window was not driven by hand, the tests going through the
-  same calls. Trying it on the user's devices (close a document on a page, reopen it) is left to
-  the user.
+  same calls. Trying it on the maintainer's devices (close a document on a page, reopen it) is left to
+  the maintainer.
 * Nothing sent changed; the Room schema did not change (a row of the `preferences` table per
   document opened). The public API of `drawview-session` did not change.
 
