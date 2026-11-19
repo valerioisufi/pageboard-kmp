@@ -15,11 +15,12 @@ jobs:
   natives:
     strategy:
       matrix:
+        # macos-26, not older: the clang of Xcode 15.4 (macos-14) finds brush_paint.cc of Ink ambiguous
         include:
           - platform: darwin-aarch64
-            runner: macos-14
+            runner: macos-26
           - platform: darwin-x86_64
-            runner: macos-14
+            runner: macos-26
           - platform: linux-x86_64
             runner: ubuntu-24.04
           - platform: linux-aarch64
@@ -46,7 +47,7 @@ jobs:
 
   publish:
     needs: natives
-    runs-on: macos-14
+    runs-on: macos-26
     permissions:
       # The release of GitHub with the PDFium of the iOS applications
       contents: write
