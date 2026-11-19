@@ -1,0 +1,21 @@
+# The reference environment of the screenshot tests (docs/plans/ci-screenshots.md): the fonts of the
+# system, the JDK and Gradle of the Linux runner. tools/screenshots/Dockerfile is the same environment
+# in a container: a change here goes there too, and the references are recorded again.
+name: Screenshots environment
+description: The fonts, the JDK and Gradle with which the reference screenshots are recorded and verified
+
+runs:
+  using: composite
+  steps:
+    - name: Fonts and build tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends fonts-dejavu-core fontconfig cmake xvfb
+        # The families that FontFamily.Default, Monospace and Serif resolve to, for the log
+        fc-match sans-serif; fc-match monospace; fc-match serif
+    - uses: actions/setup-java@v5
+      with:
+        distribution: zulu
+        java-version: 21
+    - uses: gradle/actions/setup-gradle@v5

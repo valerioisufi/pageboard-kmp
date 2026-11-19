@@ -1,0 +1,118 @@
+# The screenshot tests in their reference environment (docs/plans/ci-screenshots.md): Ubuntu 24.04
+# on x86_64, the fonts and the JDK of .github/actions/screenshots-environment. The references of the
+# modules (*/screenshots) are recorded here only.
+#
+# - verify: every pull request and every push on main. When screenshots differ it uploads
+#   screenshots-diff (the _compare.png, to look at) and screenshots-new (the images of the run at
+#   their paths, to unzip at the root of a checkout and commit when the change is meant).
+# - record: on demand, for a branch of this repository (not main), by the label record-screenshots
+#   on its pull request (removed when done, to be added again) or by
+#   gh workflow run screenshots.yml -f branch=<branch>   (once this file is on main)
+#   It records, verifies what it recorded and commits the changed references on the branch. A push
+#   of GITHUB_TOKEN starts no workflow: run the checks of the pull request again afterwards.
+#   The branch of a fork cannot be pushed to: its author takes screenshots-new instead.
+name: Screenshots
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths-ignore: ['docs/**', '**/*.md']
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**/*.md']
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: The branch whose reference screenshots are recorded (not main)
+        required: true
+
+concurrency:
+  group: screenshots-${{ github.event.action == 'labeled' && 'record' || github.event_name }}-${{ inputs.branch || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Marks the reference environment for drawview.screenshots (ScreenshotsConventionPlugin)
+  DRAWVIEW_SCREENSHOTS: reference
+
+jobs:
+  verify:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'labeled')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/screenshots-environment
+
+      - name: Verify the screenshots
+        run: tools/screenshots/gradle.sh verify
+
+      - name: Collect the differences
+        if: failure()
+        run: tools/screenshots/collect.sh build/screenshots
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots-diff
+          path: build/screenshots/diff
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots-new
+          path: build/screenshots/new
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots-test-reports
+          path: '*/build/reports/tests/jvmTest'
+          if-no-files-found: ignore
+
+  record:
+    # A label on the pull request of a branch of this repository, or the branch given by hand
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'record-screenshots' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: ${{ inputs.branch || github.head_ref }}
+    steps:
+      - name: Not on main
+        if: env.BRANCH == 'main' || env.BRANCH == github.event.repository.default_branch
+        run: |
+          echo "::error::main takes the references of a branch by fast-forward: record on the branch"
+          exit 1
+      - name: The label can be added again
+        if: github.event.action == 'labeled'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" --remove-label record-screenshots
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.BRANCH }}
+      - uses: ./.github/actions/screenshots-environment
+
+      - name: Record the screenshots
+        run: tools/screenshots/gradle.sh record
+      - name: Verify what was recorded
+        run: tools/screenshots/gradle.sh verify
+
+      - name: Commit the references
+        run: |
+          git add -A -- '*/screenshots/*.png'
+          if git diff --cached --quiet; then
+            echo "The references of $BRANCH are already those of the runner"
+            exit 0
+          fi
+          git diff --cached --stat
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build(screenshots): the references recorded on the ci runner"
+          git push origin "HEAD:refs/heads/$BRANCH"

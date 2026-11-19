@@ -87,8 +87,10 @@ much as a change of a UI module, so there is no filter on the modules.
 1. Installs the fonts, sets up the JDK and Gradle (`gradle/actions/setup-gradle`, whose cache keeps
    the JNI libraries when their sources are the same; the caches of `feat/ci-time` when it is
    merged).
-2. Runs `./gradlew verifyRoborazziJvm --continue` on the seven modules.
-3. On a failure uploads two artifacts:
+2. Runs `tools/screenshots/gradle.sh verify`: `verifyRoborazziJvm --continue` on every module that
+   applies `drawview.screenshots`, under `xvfb-run` (some tests of these modules open AWT windows).
+3. On a failure `tools/screenshots/collect.sh` gathers, and the job uploads, two artifacts (and the
+   test reports):
    * `screenshots-diff`: the `_compare.png` of every differing screenshot, to look at;
    * `screenshots-new`: the images rendered by the run, laid out at their paths in the repository
      (`drawview-ui/screenshots/…`), to unzip at the root of a checkout and commit when the change
@@ -99,11 +101,17 @@ macOS, and it does not touch the files `feat/ci-time` changes (Low Coupling).
 
 ### Recording
 
-* **A branch of the repository**: `workflow_dispatch` of `screenshots.yml` with the branch as input
-  (`gh workflow run screenshots.yml -f branch=feat/x`). The `record` job runs `recordRoborazziJvm`,
+* **A branch of the repository**: the label `record-screenshots` on its pull request, or
+  `workflow_dispatch` of `screenshots.yml` with the branch as input
+  (`gh workflow run screenshots.yml -f branch=feat/x`; GitHub offers it only once the workflow is on
+  `main`, so the label is also what records on the branches before that). The job removes the
+  label, so that adding it again records again. Only who can write in the repository adds a label,
+  and the job runs only when the branch of the pull request is of this repository. The `record`
+  job runs `recordRoborazziJvm`,
   then `verifyRoborazziJvm` on what it recorded, and commits the changed images on that branch,
   `build(screenshots): the references recorded on the ci runner`, as `github-actions[bot]`, with
-  `contents: write` for that job only. A push made with `GITHUB_TOKEN` starts no workflow, so the
+  `contents: write` (and `pull-requests: write`, for the label) for that job only. It refuses
+  `main`. A push made with `GITHUB_TOKEN` starts no workflow, so the
   checks of the pull request are run again by hand, or by the next push.
 * **A branch of a fork**: `GITHUB_TOKEN` cannot push there, and a workflow that ran the code of a
   fork with a token that writes (`pull_request_target`) would let any fork write in the repository.
@@ -144,7 +152,7 @@ workflow, one run each).
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The convention plugin `drawview.screenshots`: the plugin, `outputDir`, the test JVM, the notice of verify and the guard of record; the seven modules use it. The defaults of the comparison of Roborazzi 1.76 checked | Done: `SimpleImageComparator(maxDistance = 0.007)` and `ThresholdValidator(0)`; record refused and verify noticed on Windows |
-| 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on `workflow_dispatch`. Tried on the branch: one verify that fails (the references of the Mac) and one record on a scratch branch | Planned |
+| 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on the label `record-screenshots` and on `workflow_dispatch`; `tools/screenshots/gradle.sh` and `collect.sh`; `.github/actions/screenshots-environment`. Tried on the branch: one verify that fails (the references of the Mac) and one record | Written; record refused and collect tried on Windows; not run on Actions yet |
 | 3 | The migration: every reference recorded on the runner, in one commit; a verify of the next run passes | Planned |
 | 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Planned |
 | 5 | Optional: a Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, the same JDK and fonts, cmake and cargo for the JNI libraries) and a script that records and verifies in it | Planned (approved 2026-11-19) |
@@ -177,8 +185,8 @@ repository is private.
   runner, but it changes what the tests draw compared with the applications.
 * **The arm64 runner** (`ubuntu-24.04-arm`) as the reference, if Docker on Apple silicon matters
   more than the x86_64 laptops: it would make phase 5 native on the Macs.
-* **A label or a comment that records** on a pull request of the repository, once the workflow
-  is used often.
+* **References of tests that no longer exist**: recording does not delete them; they are removed
+  by hand with the test.
 * **Measuring whether two runs on different machines of the runner give the same images** (the
   raster of Skia picks its code by the features of the CPU): phase 2 records twice and compares; if
   they differ, a per-pixel distance just above those differences, decided then.
