@@ -27,6 +27,8 @@
     <string name="agent_item_duplicate_page">Duplicate a page</string>
     <string name="agent_item_set_page_format">Change the format of a page</string>
     <string name="agent_item_rename_document">Rename the document</string>
+    <string name="agent_item_set_document_defaults">Change the format of new pages</string>
+    <string name="agent_item_restore_pages">Put back removed pages</string>
     <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
     <string name="agent_item_stale_other">This changed after the model read it, or is gone: it will not be touched.</string>
     <string name="agent_outcome_accepted">Applied</string>

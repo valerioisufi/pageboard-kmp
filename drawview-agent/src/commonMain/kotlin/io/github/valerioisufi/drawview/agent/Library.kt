@@ -21,15 +21,26 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public sealed interface LibraryItem {
-    /** Creates a document of one page named [title] in the folder [folder] (`null`: the root). */
+    /**
+     * Creates a document of one page named [title] in the folder [folder] (`null`: the root), its pages
+     * of [widthMm] by [heightMm] on the [background] given (`plain`, `ruled`, `grid` or `dotted`, with
+     * [spacingMm] and [backgroundColor]).
+     */
     @Serializable
     @SerialName("create_document")
     public data class CreateDocument(
         val title: String,
         val folder: String? = null,
         @SerialName("width_mm") val widthMm: Float = 210f,
-        @SerialName("height_mm") val heightMm: Float = 297f
-    ) : LibraryItem
+        @SerialName("height_mm") val heightMm: Float = 297f,
+        val background: String? = null,
+        @SerialName("spacing_mm") val spacingMm: Float? = null,
+        @SerialName("background_color") val backgroundColor: String? = null
+    ) : LibraryItem {
+        /** The background of its pages. */
+        internal val pageBackground: PageBackground
+            get() = PageItems.backgroundFrom(PageBackground.Solid(), background, spacingMm, backgroundColor)
+    }
 
     /** Moves the document [document] into the folder [folder] (`null`: the root). */
     @Serializable
@@ -252,7 +263,7 @@ internal class LibraryApplier {
             if (item.folder != null && catalog.folder(item.folder) == null) null
             else if (catalog.documents.first().any { it.folderId == item.folder && it.name == item.title }) null
             else {
-                val id = catalog.createDocument(item.title, item.widthMm, item.heightMm, PageBackground.Solid(), item.folder).id
+                val id = catalog.createDocument(item.title, item.widthMm, item.heightMm, item.pageBackground, item.folder).id
                 created += id
                 LibraryUndo.CreatedDocument(id, documents.versionsOf(id))
             }

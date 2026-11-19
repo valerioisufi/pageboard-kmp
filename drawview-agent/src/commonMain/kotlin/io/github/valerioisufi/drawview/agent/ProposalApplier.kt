@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.agent
 
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
@@ -75,6 +76,9 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                 }
                 is ProposalItem.InsertText -> {
                     changes += planned.newPages
+                    val alignment = item.alignment?.let { ElementItems.parseAlignment(it) }
+                        ?: item.styleFrom?.let { document.findText(it)?.second?.alignment }
+                        ?: TextAlignment.START
                     for (piece in planned.pieces) {
                         val data = TextData(
                             id = piece.textId,
@@ -84,14 +88,16 @@ public class ProposalApplier(engines: AgentEngines = AgentEngines()) {
                             width = piece.box.width,
                             color = piece.color,
                             fontSize = piece.fontSize,
-                            next = piece.next
+                            next = piece.next,
+                            alignment = alignment
                         )
                         changes += AddElements(piece.pageId, listOf(data))
                     }
                 }
                 is ProposalItem.AddPage -> changes += planned.newPages
                 is ProposalItem.RemovePage, is ProposalItem.MovePage, is ProposalItem.DuplicatePage,
-                is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> changes += PageItems.changesOf(document, item)
+                is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument, is ProposalItem.SetDocumentDefaults,
+                is ProposalItem.RestorePages -> changes += PageItems.changesOf(document, item)
                 else -> changes += ElementItems.changesOf(document, item)
             }
             touched += changes.subList(from, changes.size).flatMap { it.elementsLeft() }.distinct()

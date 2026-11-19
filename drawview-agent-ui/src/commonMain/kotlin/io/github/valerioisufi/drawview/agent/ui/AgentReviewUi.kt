@@ -93,6 +93,8 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_r
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_remove_page
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_rename_document
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_set_document_defaults
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restore_pages
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_replace
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
@@ -589,6 +591,8 @@ private fun itemLabel(item: ProposalItem): String = stringResource(
         is ProposalItem.DuplicatePage -> Res.string.agent_item_duplicate_page
         is ProposalItem.SetPageFormat -> Res.string.agent_item_set_page_format
         is ProposalItem.RenameDocument -> Res.string.agent_item_rename_document
+        is ProposalItem.SetDocumentDefaults -> Res.string.agent_item_set_document_defaults
+        is ProposalItem.RestorePages -> Res.string.agent_item_restore_pages
     }
 )
 

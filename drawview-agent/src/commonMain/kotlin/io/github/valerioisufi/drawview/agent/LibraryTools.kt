@@ -55,7 +55,7 @@ internal class LibraryTools(
                 put("description", "What to do, in order.")
                 putJsonObject("items") {
                     put("type", "object")
-                    put("description", "kind \"create_document\" (title, folder?, width_mm?, height_mm?). kind \"move_document\" (document, folder?: none for the root). kind \"trash_document\" (document). kind \"create_folder\" (name, parent?). kind \"rename_folder\" (folder, name). kind \"move_folder\" (folder, parent?). kind \"trash_folder\" (folder): with all it holds. kind \"restore\" (item): an item of list_trash, back where it was. Folders need the user to have allowed all the documents.")
+                    put("description", "kind \"create_document\" (title, folder?, width_mm?, height_mm?, background?: plain, ruled, grid or dotted, spacing_mm?, background_color?: #RRGGBB). kind \"move_document\" (document, folder?: none for the root). kind \"trash_document\" (document). kind \"create_folder\" (name, parent?). kind \"rename_folder\" (folder, name). kind \"move_folder\" (folder, parent?). kind \"trash_folder\" (folder): with all it holds. kind \"restore\" (item): an item of list_trash, back where it was. Folders need the user to have allowed all the documents.")
                     putJsonObject("properties") {
                         putJsonObject("kind") {
                             put("type", "string")

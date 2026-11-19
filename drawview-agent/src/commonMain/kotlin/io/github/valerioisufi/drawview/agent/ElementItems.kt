@@ -80,10 +80,15 @@ internal object ElementItems {
         return null
     }
 
-    /** The moves of [item] as a matrix: scaled around the corner of what it moves, then moved. */
+    /**
+     * The moves of [item] as a matrix: scaled around the corner of what it moves, turned around the
+     * center of what is scaled, then moved.
+     */
     fun matrixOf(page: DrawPage, elements: List<DrawElement>, item: ProposalItem.PlaceElements): Matrix2D? {
         val box = elements.mapNotNull { page.boundsOf(it) }.reduceOrNull { all, next -> all.union(next) } ?: return null
-        return Matrix2D().postScale(item.scale, item.scale, box.left, box.top).postTranslate(item.dx, item.dy)
+        val matrix = Matrix2D().postScale(item.scale, item.scale, box.left, box.top)
+        if (item.rotation != 0f) matrix.postRotate(item.rotation, box.left + box.width * item.scale / 2f, box.top + box.height * item.scale / 2f)
+        return matrix.postTranslate(item.dx, item.dy)
     }
 
     /** Where the elements of [item] would be: the box holding them all, or `null`. */
@@ -92,21 +97,35 @@ internal object ElementItems {
         return elements.mapNotNull { page.boundsOf(it) }.map { matrix.mapRect(it) }.reduceOrNull { all, next -> all.union(next) }
     }
 
-    /** The placements of [elements] moved by [matrix], as the editor places a selection it moves. */
-    fun placements(elements: List<DrawElement>, matrix: Matrix2D): List<Placement> {
+    /**
+     * The placements of [elements] moved by [matrix], as the editor places a selection it moves;
+     * [rotation]: the degrees [matrix] turns them by, added to the rotation of each box.
+     */
+    fun placements(elements: List<DrawElement>, matrix: Matrix2D, rotation: Float = 0f): List<Placement> {
         val scale = matrix.scaleFactor
         return elements.mapNotNull { element ->
             when (element) {
                 is DrawStroke -> StrokePlacement(element.id, element.transform.then(matrix))
                 is DrawText -> {
                     val c = matrix.mapPoint(element.centerX, element.centerY)
-                    val corner = DrawText.cornerFor(c.x, c.y, element.boxWidth * scale, element.height * scale, element.rotation, element.boxLeft * scale)
-                    TextPlacement(element.id, corner.x, corner.y, element.width * scale, element.rotation, element.fontSize * scale, element.autoWidth)
+                    val turned = normalized(element.rotation + rotation)
+                    val corner = DrawText.cornerFor(c.x, c.y, element.boxWidth * scale, element.height * scale, turned, element.boxLeft * scale)
+                    TextPlacement(element.id, corner.x, corner.y, element.width * scale, turned, element.fontSize * scale, element.autoWidth)
                 }
-                is DrawImage -> box(element.id, element.centerX, element.centerY, element.width, element.height, element.rotation, matrix)
-                is DrawCustomElement -> box(element.id, element.centerX, element.centerY, element.width, element.height, element.rotation, matrix)
+                is DrawImage -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
+                is DrawCustomElement -> box(element.id, element.centerX, element.centerY, element.width, element.height, normalized(element.rotation + rotation), matrix)
                 else -> null
             }
+        }
+    }
+
+    /** [degrees] between -180 (excluded) and 180. */
+    fun normalized(degrees: Float): Float {
+        val turned = degrees % 360f
+        return when {
+            turned > 180f -> turned - 360f
+            turned <= -180f -> turned + 360f
+            else -> turned
         }
     }
 
@@ -123,7 +142,7 @@ internal object ElementItems {
             val page = document.pageById(item.page)!!
             val elements = elementsOf(page, item.elements)!!
             val matrix = matrixOf(page, elements, item)
-            if (matrix == null) emptyList() else listOf(PlaceChange(page.id, placements(elements, matrix)))
+            if (matrix == null) emptyList() else listOf(PlaceChange(page.id, placements(elements, matrix, item.rotation), item.toPage ?: page.id))
         }
         is ProposalItem.ReorderElements -> {
             val page = document.pageById(item.page)!!
@@ -192,9 +211,10 @@ internal object ElementItems {
             fontSize = item.fontSize ?: data.fontSize,
             alignment = item.alignment?.let { parseAlignment(it) } ?: data.alignment,
             width = item.width ?: data.width,
-            autoWidth = if (item.width != null) false else data.autoWidth,
+            autoWidth = if (item.width != null) false else item.autoWidth ?: data.autoWidth,
             x = item.x ?: data.x,
-            y = item.y ?: data.y
+            y = item.y ?: data.y,
+            rotation = item.rotation?.let { normalized(it) } ?: data.rotation
         )
     }
 

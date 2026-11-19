@@ -118,12 +118,18 @@ abstract interface io.github.valerioisufi.drawview.agent/PageEngine { // io.gith
 
 sealed interface io.github.valerioisufi.drawview.agent/LibraryItem { // io.github.valerioisufi.drawview.agent/LibraryItem|null[0]
     final class CreateDocument : io.github.valerioisufi.drawview.agent/LibraryItem { // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument|null[0]
-        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/Float = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Float;kotlin.Float){}[0]
+        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Float;kotlin.Float;kotlin.String?;kotlin.Float?;kotlin.String?){}[0]
 
+        final val background // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.background|{}background[0]
+            final fun <get-background>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.background.<get-background>|<get-background>(){}[0]
+        final val backgroundColor // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.backgroundColor|{}backgroundColor[0]
+            final fun <get-backgroundColor>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.backgroundColor.<get-backgroundColor>|<get-backgroundColor>(){}[0]
         final val folder // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.folder|{}folder[0]
             final fun <get-folder>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.folder.<get-folder>|<get-folder>(){}[0]
         final val heightMm // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.heightMm|{}heightMm[0]
             final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+        final val spacingMm // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.spacingMm|{}spacingMm[0]
+            final fun <get-spacingMm>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.spacingMm.<get-spacingMm>|<get-spacingMm>(){}[0]
         final val title // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.title|{}title[0]
             final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.title.<get-title>|<get-title>(){}[0]
         final val widthMm // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.widthMm|{}widthMm[0]
@@ -133,7 +139,10 @@ sealed interface io.github.valerioisufi.drawview.agent/LibraryItem { // io.githu
         final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component2|component2(){}[0]
         final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component3|component3(){}[0]
         final fun component4(): kotlin/Float // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component4|component4(){}[0]
-        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.copy|copy(kotlin.String;kotlin.String?;kotlin.Float;kotlin.Float){}[0]
+        final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component5|component5(){}[0]
+        final fun component6(): kotlin/Float? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component6|component6(){}[0]
+        final fun component7(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.component7|component7(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.copy|copy(kotlin.String;kotlin.String?;kotlin.Float;kotlin.Float;kotlin.String?;kotlin.Float?;kotlin.String?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.CreateDocument.toString|toString(){}[0]
@@ -596,8 +605,10 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
     }
 
     final class InsertText : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText|null[0]
-        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., io.github.valerioisufi.drawview.agent/InsertPlace? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;io.github.valerioisufi.drawview.agent.InsertPlace?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?){}[0]
+        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., io.github.valerioisufi.drawview.agent/InsertPlace? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.<init>|<init>(kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;io.github.valerioisufi.drawview.agent.InsertPlace?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;kotlin.String?){}[0]
 
+        final val alignment // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.alignment|{}alignment[0]
+            final fun <get-alignment>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.alignment.<get-alignment>|<get-alignment>(){}[0]
         final val area // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.area|{}area[0]
             final fun <get-area>(): io.github.valerioisufi.drawview.agent/AgentArea? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.area.<get-area>|<get-area>(){}[0]
         final val color // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.color|{}color[0]
@@ -624,6 +635,7 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component1|component1(){}[0]
         final fun component10(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component10|component10(){}[0]
         final fun component11(): io.github.valerioisufi.drawview.agent/AgentArea? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component11|component11(){}[0]
+        final fun component12(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component12|component12(){}[0]
         final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component2|component2(){}[0]
         final fun component3(): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component3|component3(){}[0]
         final fun component4(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component4|component4(){}[0]
@@ -632,7 +644,7 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         final fun component7(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component7|component7(){}[0]
         final fun component8(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component8|component8(){}[0]
         final fun component9(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.component9|component9(){}[0]
-        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., io.github.valerioisufi.drawview.agent/InsertPlace? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.InsertText // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.copy|copy(kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;io.github.valerioisufi.drawview.agent.InsertPlace?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., io.github.valerioisufi.drawview.agent/InsertPlace? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., io.github.valerioisufi.drawview.agent/AgentArea? = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.InsertText // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.copy|copy(kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;io.github.valerioisufi.drawview.agent.InsertPlace?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?;io.github.valerioisufi.drawview.agent.AgentArea?;kotlin.String?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.InsertText.toString|toString(){}[0]
@@ -683,7 +695,7 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
     }
 
     final class PlaceElements : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements|null[0]
-        constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>, kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+        constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>, kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.String?){}[0]
 
         final val dx // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.dx|{}dx[0]
             final fun <get-dx>(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.dx.<get-dx>|<get-dx>(){}[0]
@@ -693,15 +705,21 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
             final fun <get-elements>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.elements.<get-elements>|<get-elements>(){}[0]
         final val page // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.page|{}page[0]
             final fun <get-page>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.page.<get-page>|<get-page>(){}[0]
+        final val rotation // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.rotation|{}rotation[0]
+            final fun <get-rotation>(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.rotation.<get-rotation>|<get-rotation>(){}[0]
         final val scale // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.scale|{}scale[0]
             final fun <get-scale>(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.scale.<get-scale>|<get-scale>(){}[0]
+        final val toPage // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.toPage|{}toPage[0]
+            final fun <get-toPage>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.toPage.<get-toPage>|<get-toPage>(){}[0]
 
         final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component1|component1(){}[0]
         final fun component2(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component2|component2(){}[0]
         final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component3|component3(){}[0]
         final fun component4(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component4|component4(){}[0]
         final fun component5(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component5|component5(){}[0]
-        final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+        final fun component6(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component6|component6(){}[0]
+        final fun component7(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.component7|component7(){}[0]
+        final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.String?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.PlaceElements.toString|toString(){}[0]
@@ -903,6 +921,34 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         }
     }
 
+    final class RestorePages : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages|null[0]
+        constructor <init>(kotlin.collections/List<kotlin/String>) // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.<init>|<init>(kotlin.collections.List<kotlin.String>){}[0]
+
+        final val pages // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.pages|{}pages[0]
+            final fun <get-pages>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.pages.<get-pages>|<get-pages>(){}[0]
+
+        final fun component1(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.component1|component1(){}[0]
+        final fun copy(kotlin.collections/List<kotlin/String> = ...): io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.copy|copy(kotlin.collections.List<kotlin.String>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages> { // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages) // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.RestorePages){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.Companion|null[0]
+            final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages> // io.github.valerioisufi.drawview.agent/ProposalItem.RestorePages.Companion.serializer|serializer(){}[0]
+        }
+    }
+
     final class RestyleStroke : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleStroke|null[0]
         constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Float? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.RestyleStroke.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Float?){}[0]
 
@@ -976,6 +1022,44 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         }
     }
 
+    final class SetDocumentDefaults : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults|null[0]
+        constructor <init>(kotlin/Float? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.<init>|<init>(kotlin.Float?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?){}[0]
+
+        final val background // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.background|{}background[0]
+            final fun <get-background>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.background.<get-background>|<get-background>(){}[0]
+        final val backgroundColor // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.backgroundColor|{}backgroundColor[0]
+            final fun <get-backgroundColor>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.backgroundColor.<get-backgroundColor>|<get-backgroundColor>(){}[0]
+        final val heightMm // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.heightMm|{}heightMm[0]
+            final fun <get-heightMm>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+        final val spacingMm // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.spacingMm|{}spacingMm[0]
+            final fun <get-spacingMm>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.spacingMm.<get-spacingMm>|<get-spacingMm>(){}[0]
+        final val widthMm // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.widthMm|{}widthMm[0]
+            final fun <get-widthMm>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+
+        final fun component1(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.component1|component1(){}[0]
+        final fun component2(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.component2|component2(){}[0]
+        final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.component3|component3(){}[0]
+        final fun component4(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.component4|component4(){}[0]
+        final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.component5|component5(){}[0]
+        final fun copy(kotlin/Float? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.copy|copy(kotlin.Float?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults> { // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults) // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.SetDocumentDefaults){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults> // io.github.valerioisufi.drawview.agent/ProposalItem.SetDocumentDefaults.Companion.serializer|serializer(){}[0]
+        }
+    }
+
     final class SetPageFormat : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.SetPageFormat|null[0]
         constructor <init>(kotlin/String, kotlin/String, kotlin/Float? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.SetPageFormat.<init>|<init>(kotlin.String;kotlin.String;kotlin.Float?;kotlin.Float?;kotlin.String?;kotlin.Float?;kotlin.String?){}[0]
 
@@ -1021,10 +1105,12 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
     }
 
     final class UpdateText : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText|null[0]
-        constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Float?;kotlin.String?;kotlin.String?;kotlin.Float?;kotlin.Float?;kotlin.Float?){}[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Boolean? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Float?;kotlin.String?;kotlin.String?;kotlin.Float?;kotlin.Float?;kotlin.Float?;kotlin.Float?;kotlin.Boolean?){}[0]
 
         final val alignment // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.alignment|{}alignment[0]
             final fun <get-alignment>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.alignment.<get-alignment>|<get-alignment>(){}[0]
+        final val autoWidth // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.autoWidth|{}autoWidth[0]
+            final fun <get-autoWidth>(): kotlin/Boolean? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.autoWidth.<get-autoWidth>|<get-autoWidth>(){}[0]
         final val base // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.base|{}base[0]
             final fun <get-base>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.base.<get-base>|<get-base>(){}[0]
         final val color // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.color|{}color[0]
@@ -1033,6 +1119,8 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
             final fun <get-fontSize>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.fontSize.<get-fontSize>|<get-fontSize>(){}[0]
         final val markdown // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.markdown|{}markdown[0]
             final fun <get-markdown>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.markdown.<get-markdown>|<get-markdown>(){}[0]
+        final val rotation // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.rotation|{}rotation[0]
+            final fun <get-rotation>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.rotation.<get-rotation>|<get-rotation>(){}[0]
         final val text // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.text|{}text[0]
             final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.text.<get-text>|<get-text>(){}[0]
         final val width // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.width|{}width[0]
@@ -1043,6 +1131,8 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
             final fun <get-y>(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.y.<get-y>|<get-y>(){}[0]
 
         final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component1|component1(){}[0]
+        final fun component10(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component10|component10(){}[0]
+        final fun component11(): kotlin/Boolean? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component11|component11(){}[0]
         final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component2|component2(){}[0]
         final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component3|component3(){}[0]
         final fun component4(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component4|component4(){}[0]
@@ -1051,7 +1141,7 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         final fun component7(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component7|component7(){}[0]
         final fun component8(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component8|component8(){}[0]
         final fun component9(): kotlin/Float? // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.component9|component9(){}[0]
-        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Float?;kotlin.String?;kotlin.String?;kotlin.Float?;kotlin.Float?;kotlin.Float?){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Boolean? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Float?;kotlin.String?;kotlin.String?;kotlin.Float?;kotlin.Float?;kotlin.Float?;kotlin.Float?;kotlin.Boolean?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.UpdateText.toString|toString(){}[0]

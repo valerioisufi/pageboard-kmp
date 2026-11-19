@@ -68,6 +68,9 @@ internal class ProposalLimits(
                     if (listOf(item.widthMm, item.heightMm).any { !it.isFinite() || it < PageItems.MIN_PAGE_SIDE_MM || it > PageItems.MAX_PAGE_SIDE_MM }) {
                         refuse("A side of a page is between ${PageItems.MIN_PAGE_SIDE_MM} and ${PageItems.MAX_PAGE_SIDE_MM} millimeters.")
                     }
+                    if (item.background != null && item.background !in PageItems.BACKGROUNDS - "document") refuse("background is plain, ruled, grid or dotted.")
+                    if (item.backgroundColor != null && ElementItems.parseColor(item.backgroundColor) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
+                    spacing(item.spacingMm)
                 }
                 is LibraryItem.CreateFolder -> name(item.name)
                 is LibraryItem.RenameFolder -> name(item.name)
@@ -124,6 +127,7 @@ internal class ProposalLimits(
                 if (!item.scale.isFinite() || item.scale !in ElementItems.MIN_SCALE..ElementItems.MAX_SCALE) {
                     refuse("scale is between ${ElementItems.MIN_SCALE} and ${ElementItems.MAX_SCALE}.")
                 }
+                rotation(item.rotation)
             }
             is ProposalItem.ReorderElements -> refs(item.elements)
             is ProposalItem.RestyleText -> {
@@ -145,7 +149,9 @@ internal class ProposalLimits(
                     refuse("width is at least $MIN_TEXT_WIDTH_MM millimeters, and fits its page.")
                 }
                 if (listOf(item.x, item.y).any { it != null && !it.isFinite() }) refuse("x and y are millimeters.")
-                if (listOf(item.markdown, item.fontSize, item.color, item.alignment, item.width, item.x, item.y).all { it == null }) {
+                item.rotation?.let { rotation(it) }
+                if (item.autoWidth == true && item.width != null) refuse("auto_width goes without width: the box takes the width of its longest line.")
+                if (listOf(item.markdown, item.fontSize, item.color, item.alignment, item.width, item.x, item.y, item.rotation, item.autoWidth).all { it == null }) {
                     refuse("update_text needs something to change.")
                 }
             }
@@ -163,16 +169,11 @@ internal class ProposalLimits(
             }
             is ProposalItem.AddImage -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of an image file.")
             is ProposalItem.SetPageFormat -> {
-                fun side(value: Float?) {
-                    if (value != null && (!value.isFinite() || value < PageItems.MIN_PAGE_SIDE_MM || value > PageItems.MAX_PAGE_SIDE_MM)) {
-                        refuse("A side of a page is between ${PageItems.MIN_PAGE_SIDE_MM} and ${PageItems.MAX_PAGE_SIDE_MM} millimeters.")
-                    }
-                }
                 side(item.widthMm)
                 side(item.heightMm)
                 color(item.backgroundColor)
                 if (item.background != null && item.background !in PageItems.BACKGROUNDS) refuse("background is plain, ruled, grid, dotted or document.")
-                if (item.spacingMm != null && (!item.spacingMm.isFinite() || item.spacingMm < 1f || item.spacingMm > 100f)) refuse("spacing_mm is between 1 and 100.")
+                spacing(item.spacingMm)
                 if (listOf(item.widthMm, item.heightMm, item.background, item.spacingMm, item.backgroundColor).all { it == null }) {
                     refuse("set_page_format needs a size or a background.")
                 }
@@ -181,8 +182,37 @@ internal class ProposalLimits(
                 if (item.title.isBlank() || item.title.length > PageItems.MAX_TITLE_LENGTH) refuse("A title of at most ${PageItems.MAX_TITLE_LENGTH} characters is needed.")
                 if (items.count { it is ProposalItem.RenameDocument } > 1) refuse("A document is renamed by one item of a proposal only.")
             }
+            is ProposalItem.SetDocumentDefaults -> {
+                side(item.widthMm)
+                side(item.heightMm)
+                color(item.backgroundColor)
+                if (item.background != null && item.background !in PageItems.BACKGROUNDS - "document") refuse("background is plain, ruled, grid or dotted.")
+                spacing(item.spacingMm)
+                if (listOf(item.widthMm, item.heightMm, item.background, item.spacingMm, item.backgroundColor).all { it == null }) {
+                    refuse("set_document_defaults needs a size or a background.")
+                }
+                if (items.count { it is ProposalItem.SetDocumentDefaults } > 1) refuse("The format of a document is changed by one item of a proposal only.")
+            }
+            is ProposalItem.RestorePages -> {
+                if (item.pages.isEmpty() || item.pages.size > maxElements) refuse("restore_pages puts back from 1 to $maxElements pages.")
+                if (item.pages.toSet().size != item.pages.size) refuse("A page is put back once.")
+            }
             else -> {}
         }
+    }
+
+    private fun side(value: Float?) {
+        if (value != null && (!value.isFinite() || value < PageItems.MIN_PAGE_SIDE_MM || value > PageItems.MAX_PAGE_SIDE_MM)) {
+            refuse("A side of a page is between ${PageItems.MIN_PAGE_SIDE_MM} and ${PageItems.MAX_PAGE_SIDE_MM} millimeters.")
+        }
+    }
+
+    private fun spacing(value: Float?) {
+        if (value != null && (!value.isFinite() || value < 1f || value > 100f)) refuse("spacing_mm is between 1 and 100.")
+    }
+
+    private fun rotation(degrees: Float) {
+        if (!degrees.isFinite() || degrees < -360f || degrees > 360f) refuse("rotation is in degrees, between -360 and 360.")
     }
 
     private fun width(width: Float?) {
@@ -196,6 +226,7 @@ internal class ProposalLimits(
             refuse("font_size is between ${TextSizePolicy.MIN} and ${ElementItems.MAX_FONT_SIZE}.")
         }
         if (item.color != null && ElementItems.parseColor(item.color) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
+        if (item.alignment != null && ElementItems.parseAlignment(item.alignment) == null) refuse("alignment is start, center or end.")
         if (item.width != null && (!item.width.isFinite() || item.width < MIN_TEXT_WIDTH_MM || item.width > PageItems.MAX_PAGE_SIDE_MM)) {
             refuse("width is at least $MIN_TEXT_WIDTH_MM millimeters, and fits its page.")
         }
@@ -254,10 +285,16 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
             if (elements.any { it is DrawPdf || it is DrawTextMarkup }) {
                 throw AgentToolException(AgentErrorCode.REFUSED, "A PDF page or a mark of its text is not placed: it goes with its page.")
             }
+            val target = item.toPage?.let { pageById(it) ?: missing("page \"${it.take(64)}\"") } ?: page
             val box = ElementItems.placedBox(page, elements, item)
-            if (box != null && (box.left < 0f || box.top < 0f || box.right > page.widthMm || box.bottom > page.heightMm)) {
-                throw AgentToolException(AgentErrorCode.REFUSED, "They would go outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
+            if (box != null && (box.left < 0f || box.top < 0f || box.right > target.widthMm || box.bottom > target.heightMm)) {
+                throw AgentToolException(AgentErrorCode.REFUSED, "They would go outside the page, which is ${target.widthMm} by ${target.heightMm} millimeters.")
             }
+            null
+        }
+        is ProposalItem.SetDocumentDefaults -> null
+        is ProposalItem.RestorePages -> {
+            for (id in item.pages) PageItems.restorable(this, id) ?: missing("page \"${id.take(64)}\" in the trash of its pages")
             null
         }
         is ProposalItem.ReorderElements -> {

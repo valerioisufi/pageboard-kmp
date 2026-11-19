@@ -74,6 +74,8 @@ internal val ProposalItem.wireKind: String
         is ProposalItem.DuplicatePage -> "duplicate_page"
         is ProposalItem.SetPageFormat -> "set_page_format"
         is ProposalItem.RenameDocument -> "rename_document"
+        is ProposalItem.SetDocumentDefaults -> "set_document_defaults"
+        is ProposalItem.RestorePages -> "restore_pages"
     }
 
 /**

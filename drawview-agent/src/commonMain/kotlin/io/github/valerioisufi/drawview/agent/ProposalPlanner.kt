@@ -182,7 +182,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                     PlannedItem(false, emptyList(), 0, emptyList())
                 }
                 is ProposalItem.DuplicatePage -> PlannedItem(false, emptyList(), 1, emptyList())
-                is ProposalItem.MovePage, is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.MovePage, is ProposalItem.SetPageFormat, is ProposalItem.RenameDocument,
+                is ProposalItem.SetDocumentDefaults -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.RestorePages -> PlannedItem(false, emptyList(), item.pages.distinct().size, emptyList())
             }
         }
         // What each item does on the pages, for the review: from the document as it is and from its plan
@@ -215,7 +217,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         }
         is ProposalItem.AddPage -> pages.anchorOf(item.after) == null
         is ProposalItem.RemoveElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
-        is ProposalItem.PlaceElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
+        is ProposalItem.PlaceElements -> ElementItems.isStale(document.pageById(item.page), item.elements) ||
+            (item.toPage != null && document.pageById(item.toPage) == null)
         is ProposalItem.ReorderElements -> ElementItems.isStale(document.pageById(item.page), item.elements)
         is ProposalItem.RestyleText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.UpdateText -> document.findText(item.text)?.second?.base() != item.base
@@ -224,8 +227,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.AddImage -> item.area == null || pages.anchorOf(item.page)?.let { pages[it].model } == null
         // A document keeps one page at least
         is ProposalItem.RemovePage -> PageItems.isStale(document, item) || pages.none { it.id == item.page } || pages.size <= 1
-        is ProposalItem.MovePage, is ProposalItem.DuplicatePage, is ProposalItem.SetPageFormat -> PageItems.isStale(document, item)
-        is ProposalItem.RenameDocument -> false
+        is ProposalItem.MovePage, is ProposalItem.DuplicatePage, is ProposalItem.SetPageFormat,
+        is ProposalItem.RestorePages -> PageItems.isStale(document, item)
+        is ProposalItem.RenameDocument, is ProposalItem.SetDocumentDefaults -> false
     }
 
     private fun planReplace(
@@ -277,22 +281,28 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         val page = document.pageById(item.page)!!
         val elements = ElementItems.elementsOf(page, item.elements)!!
         val matrix = ElementItems.matrixOf(page, elements, item) ?: return PlannedItem(false, emptyList(), 0, emptyList())
-        val placements = ElementItems.placements(elements, matrix).associateBy { it.id }
+        val placements = ElementItems.placements(elements, matrix, item.rotation).associateBy { it.id }
         val moved = elements.mapNotNull { element ->
             if (element is DrawText) {
                 val placement = placements[element.id] as? TextPlacement ?: return@mapNotNull null
-                val data = element.toData().copy(x = placement.x, y = placement.y, width = placement.width, fontSize = placement.fontSize)
+                val data = element.toData().copy(x = placement.x, y = placement.y, width = placement.width, fontSize = placement.fontSize, rotation = placement.rotation)
                 moved(element, data, measure).let { Moved(it.element, it.before, it.after, it.markdown, it.fontSize) }
             } else {
                 page.boundsOf(element)?.let { Moved(element, it, matrix.mapRect(it)) }
             }
         }
-        return planMoved(document, pages, page, moved, measure, grown, chains)
+        val target = item.toPage?.let { document.pageById(it) }?.takeIf { it.id != page.id }
+            ?: return planMoved(document, pages, page, moved, measure, grown, chains)
+        // Gone from their page, they come onto the other one: what they cover there is all new
+        pages.first { it.id == page.id }.excluded += moved.map { it.element.id }
+        return planMoved(document, pages, target, moved.map { Moved(it.element, Rect(0f, 0f, 0f, 0f), it.after, it.markdown, it.fontSize, it.grows) }, measure, grown, chains, fresh = true)
     }
 
     /**
      * The elements [moved] of [page] where an item would leave them: what they would newly cover, and
      * whether they would leave the page. The items after see them there.
+     *
+     * @param fresh they come from another page: nothing of what they cover was covered before.
      */
     private fun planMoved(
         document: DrawDocument,
@@ -301,7 +311,8 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         moved: List<Moved>,
         measure: TextMeasure,
         grown: MutableMap<String, Rect>,
-        chains: TextChains
+        chains: TextChains,
+        fresh: Boolean = false
     ): PlannedItem {
         val planned = pages.first { it.id == page.id }
         val ids = moved.mapTo(mutableSetOf()) { it.element.id }
@@ -311,9 +322,9 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         var chained = false
         var outside = false
         for (one in moved) {
-            if (one.after != one.before) covered += coveredBy(document, planned, ids, one.after, one.before, measure)
+            if (fresh || one.after != one.before) covered += coveredBy(document, planned, ids, one.after, one.before.takeIf { !fresh }, measure)
             if (one.after.left < -EDGE_MM || one.after.top < -EDGE_MM || one.after.right > page.widthMm + EDGE_MM) outside = true
-            if (one.after.bottom > limit && one.after.bottom > one.before.bottom) {
+            if (one.after.bottom > limit && (fresh || one.after.bottom > one.before.bottom)) {
                 past = max(past, one.after.bottom - limit)
                 if (one.grows && chains.isChained(one.element.id)) chained = true
             }

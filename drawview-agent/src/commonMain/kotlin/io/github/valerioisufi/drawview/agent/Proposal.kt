@@ -37,6 +37,7 @@ public sealed interface ProposalItem {
      * @param styleFrom a text box whose size and color it takes.
      * @param area the area of [page] it goes in, with [InsertPlace.INSIDE]: at its top-left corner, as
      *   wide as it at most.
+     * @param alignment `start`, `center` or `end`; `null`: the one of [styleFrom], or `start`.
      */
     @Serializable
     @SerialName("insert_text")
@@ -51,7 +52,8 @@ public sealed interface ProposalItem {
         val color: String? = null,
         val width: Float? = null,
         @SerialName("style_from") val styleFrom: String? = null,
-        val area: AgentArea? = null
+        val area: AgentArea? = null,
+        val alignment: String? = null
     ) : ProposalItem
 
     /** Adds a page after the page [after] (`null`: the last one), of its format. */
@@ -65,8 +67,9 @@ public sealed interface ProposalItem {
     public data class RemoveElements(val page: String, val elements: List<ElementRef>) : ProposalItem
 
     /**
-     * Moves [elements] of the page [page] by [dx] and [dy] millimeters, and scales them by [scale]
-     * around the top-left corner of the box holding them all.
+     * Moves [elements] of the page [page] by [dx] and [dy] millimeters, scales them by [scale] around
+     * the top-left corner of the box holding them all, and turns them by [rotation] degrees (clockwise)
+     * around its center; [toPage]: onto that page, at the same place on it.
      */
     @Serializable
     @SerialName("place_elements")
@@ -75,7 +78,9 @@ public sealed interface ProposalItem {
         val elements: List<ElementRef>,
         val dx: Float = 0f,
         val dy: Float = 0f,
-        val scale: Float = 1f
+        val scale: Float = 1f,
+        val rotation: Float = 0f,
+        @SerialName("to_page") val toPage: String? = null
     ) : ProposalItem
 
     /** Puts [elements] of the page [page] on top of the others, or under them. */
@@ -102,10 +107,12 @@ public sealed interface ProposalItem {
     /**
      * Changes the text box [text], as it was when read ([base]), in any way at once: its words
      * ([markdown]), its style, its corner ([x], [y], in millimeters from the top-left corner of its
-     * page) and the width its lines wrap on. What is `null` stays as it is.
+     * page), the width its lines wrap on and its rotation. What is `null` stays as it is.
      *
      * @param color `#RRGGBB` or `#RRGGBBAA`.
      * @param alignment `start`, `center` or `end`.
+     * @param rotation in degrees, clockwise, around its center.
+     * @param autoWidth `true`: its box is as wide as its longest line again (not with [width]).
      */
     @Serializable
     @SerialName("update_text")
@@ -118,7 +125,9 @@ public sealed interface ProposalItem {
         val alignment: String? = null,
         val width: Float? = null,
         val x: Float? = null,
-        val y: Float? = null
+        val y: Float? = null,
+        val rotation: Float? = null,
+        @SerialName("auto_width") val autoWidth: Boolean? = null
     ) : ProposalItem
 
     /**
@@ -206,6 +215,29 @@ public sealed interface ProposalItem {
     @Serializable
     @SerialName("rename_document")
     public data class RenameDocument(val title: String) : ProposalItem
+
+    /**
+     * Changes the format a new page of the document takes, and the background of its pages that have
+     * the one of the document; what is not given stays as it is.
+     *
+     * @param background `plain`, `ruled`, `grid` or `dotted`.
+     * @param spacingMm the distance between the lines or the dots of the background.
+     * @param backgroundColor `#RRGGBB` or `#RRGGBBAA`.
+     */
+    @Serializable
+    @SerialName("set_document_defaults")
+    public data class SetDocumentDefaults(
+        @SerialName("width_mm") val widthMm: Float? = null,
+        @SerialName("height_mm") val heightMm: Float? = null,
+        val background: String? = null,
+        @SerialName("spacing_mm") val spacingMm: Float? = null,
+        @SerialName("background_color") val backgroundColor: String? = null
+    ) : ProposalItem
+
+    /** Puts the pages [pages] of the trash of the pages back where they were. */
+    @Serializable
+    @SerialName("restore_pages")
+    public data class RestorePages(val pages: List<String>) : ProposalItem
 }
 
 /** An element of a page, as it was when read ([base]). */

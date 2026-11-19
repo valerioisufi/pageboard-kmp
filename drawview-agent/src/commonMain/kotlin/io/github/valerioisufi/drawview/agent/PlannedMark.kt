@@ -98,7 +98,8 @@ internal object ProposalMarks {
             is ProposalItem.MovePage -> pageMark(document, item.page, PlannedMark.Kind.PAGE_CHANGED)
             is ProposalItem.DuplicatePage -> pageMark(document, item.page, PlannedMark.Kind.PAGE_CHANGED)
             is ProposalItem.SetPageFormat -> pageMark(document, item.page, PlannedMark.Kind.PAGE_CHANGED)
-            is ProposalItem.AddPage, is ProposalItem.RenameDocument -> emptyList()
+            is ProposalItem.AddPage, is ProposalItem.RenameDocument, is ProposalItem.SetDocumentDefaults,
+            is ProposalItem.RestorePages -> emptyList()
         }
     }
 
