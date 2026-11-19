@@ -264,6 +264,31 @@ class SearchScreenshotTest {
                     }
                 }
             }
+
+            // An answer that cites nothing: the passages searched, quieter than citations
+            search.currentAnswer = NotesAnswer(
+                question = "Chi ha dimostrato il teorema di Weierstrass?",
+                text = "Gli appunti non dicono chi abbia dimostrato il teorema.",
+                citations = emptyList(),
+                passages = listOf(hit1, hit2),
+                modelName = ModelCatalog.GEMMA_4_E2B.name
+            )
+            for (dark in listOf(false, true)) {
+                capture(
+                    name = "search-ask-uncited-${if (dark) "dark" else "light"}",
+                    width = 620,
+                    height = 240,
+                    dark = dark
+                ) {
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        AskNotesCard(
+                            search = search,
+                            query = "Chi ha dimostrato il teorema di Weierstrass?",
+                            openDocument = DocumentOpener { _, _ -> }
+                        )
+                    }
+                }
+            }
         }
     }
 }

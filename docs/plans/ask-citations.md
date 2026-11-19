@@ -53,6 +53,7 @@ The responsibilities are assigned following the GRASP principles.
 | 2 | Parsing of the citation forms, math skipped, unit tests in `drawview-search` | done |
 | 3 | `AskNotesCard`: chips only for the cited passages | done |
 | 4 | Review: passages searched, formulas by `RichTextParser`, intervals | done |
+| 5 | Screenshot of the answer without citations (references to record on the Mac) | done |
 
 ## Decisions
 
@@ -81,3 +82,7 @@ The responsibilities are assigned following the GRASP principles.
   word interval / intervals / intervallo / intervalli. Prepositions (on, in, su, tra) are not
   used: "based on [1, 2]" is a citation. Known limit: "on [1, 2]" with at least two passages is
   still read as two citations.
+- **Screenshot.** `SearchScreenshotTest.askYourNotesCard` also captures the answer without
+  citations (`search-ask-uncited-light/dark`). Its references are not recorded yet: they are
+  recorded on the Mac (`recordRoborazziJvm`), since the text of Windows differs from theirs; until
+  then `verifyRoborazziJvm` of `drawview-search-ui` lacks them.
