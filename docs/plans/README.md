@@ -22,6 +22,7 @@ who uses the applications or the libraries.
 | Plan | Title |
 |---|---|
 | [adaptive-ui](adaptive-ui.md) | Adaptive interface |
+| [agent-coverage](agent-coverage.md) | What the application does and the models cannot yet |
 | [agent-ergonomics](agent-ergonomics.md) | The tools of external models, after a real session |
 | [agent-full-access](agent-full-access.md) | Full access for external models |
 | [agent-placement](agent-placement.md) | Where the text of a model goes |

@@ -190,7 +190,7 @@ ABI of `drawview-agent` on purpose; the command line reaches the new tools with 
 | 3 | Shapes: `add_shape`, `update_shape`. Tests: every kind, a line by its ends, refused values, a style kept by `withKind`, undo, the review marks | 1 | done |
 | 4 | Marks: `add_markup`, `restyle_markups`, their removal. Tests: a quote found once, at an occurrence, not found, a scanned page, the rects on a page of another format, undo | 2 | done |
 | 5 | Copies and the library: `copy_elements`, `copy_pages`, `duplicate_document`, `import_pdf` (`AgentPdfs`), `import_archive`. Tests: both documents allowed or refused, images and PDF pages carried, the undo of each, the bounds of the files | 4, 5, 15, 16 | done |
-| 6 | Files and the editor: `export` (`AgentExports`, every format), `show_page`. Tests: a new file never over another, a folder exported, a closed document; the export through the desktop application on a scratch directory is left to the user | 14, 18 | done |
+| 6 | Files and the editor: `export` (`AgentExports`, every format), `show_page`. Tests: a new file never over another, a folder exported, a closed document; the export through the desktop application on a scratch directory is left to the maintainer | 14, 18 | done |
 | 7 | Handwriting and lectures: `LectureAssistant.handwritingByPage` and `courseContext` in `drawview-lecture` (read only), the handwriting of `handwriting.json` in `read_page`, `list_lectures`, `read_lecture`, the lecture hits of `search` and its filters. Tests: a page transcribed and one not, a lecture read by parts, the bounds, no model started | 20, 21, 23 | done |
 | 8 | Sharing read: the members and roles in `read_document`. Tests: a shared document and one not, nothing of the keys answered | 25 | done |
 
