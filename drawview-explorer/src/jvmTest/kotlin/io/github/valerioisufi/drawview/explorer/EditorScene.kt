@@ -32,6 +32,7 @@ import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -71,6 +72,9 @@ import kotlinx.coroutines.cancel
  * @param macWindow a window of macOS: the insets of its traffic lights ([LocalWindowDecorInsets],
  * as `DrawViewWindowDecor` gives them), the lights drawn over the window where macOS puts them,
  * recorded as `<screen>-mac-<window>-<theme>.png`.
+ * @param caretInSight the caret of the text being written is in sight: its blink is started again
+ * right before the capture (see [restartCaretBlink]). `false` for a caret out of sight, which
+ * putting back would bring into sight.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun capture(
@@ -84,6 +88,7 @@ internal fun capture(
     libraryActions: List<LibraryAction>? = null,
     /** Run once the pages and the thumbnails are drawn, right before the capture. */
     beforeCapture: DesktopComposeUiTest.() -> Unit = {},
+    caretInSight: Boolean = true,
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
 ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
     val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -136,6 +141,7 @@ internal fun capture(
     actions(viewModels)
     awaitPagesDrawn(viewModels, thumbnails.value)
     beforeCapture()
+    if (caretInSight) restartCaretBlink(viewModels)
 
     val theme = if (dark) "dark" else "light"
     val mac = if (macWindow) "-mac" else ""
@@ -212,6 +218,32 @@ private fun DesktopComposeUiTest.awaitPagesDrawn(viewModels: ViewModelStoreOwner
         quietFrames >= 10
     }
     waitForIdle()
+}
+
+/**
+ * Starts the blink of the caret of the text being written again, shown. The frames of
+ * [awaitPagesDrawn] follow the real time the tiles take to draw, so the caret would be caught
+ * shown or hidden at random; moved and put back, it is shown for the next half second of the
+ * clock of the test, the same at every run.
+ *
+ * It is moved to a selection, which the editor does not follow (a drag selecting), and put back.
+ * Putting back a caret out of sight would bring it into sight: the test fails then, to be captured
+ * with `caretInSight = false`.
+ */
+@OptIn(ExperimentalTestApi::class)
+private fun DesktopComposeUiTest.restartCaretBlink(viewModels: ViewModelStoreOwner) {
+    val controller = viewModels.editor()?.session?.controller ?: return
+    val editor = controller.textEditorManager
+    val value = runOnIdle { editor.value.takeIf { editor.isEditing && it.text.isNotEmpty() } } ?: return
+    val origin = { controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(0f, 0f) }
+    val before = runOnIdle { origin() }
+    val selected = if (value.selection == TextRange(0, 1)) TextRange(0, value.text.length) else TextRange(0, 1)
+    runOnIdle { editor.updateValue(value.copy(selection = selected), smartNewline = false) }
+    mainClock.advanceTimeByFrame()
+    runOnIdle { editor.updateValue(value, smartNewline = false) }
+    waitForIdle()
+    val after = runOnIdle { origin() }
+    check(before == after) { "The caret was out of sight, and putting it back moved the view: capture with caretInSight = false" }
 }
 
 /**

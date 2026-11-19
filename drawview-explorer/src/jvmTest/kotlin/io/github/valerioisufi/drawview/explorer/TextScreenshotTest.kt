@@ -275,7 +275,13 @@ class TextScreenshotTest {
 
     /** A box larger than the window at a high zoom: its lines where the page has them, its text filling the frame. */
     @Test
-    fun textLargerThanWindow() = capture("text-larger-than-window", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+    fun textLargerThanWindow() = capture(
+        "text-larger-than-window",
+        ReferenceWindow.DESKTOP,
+        dark = false,
+        // The caret at the end of the text, below the window
+        caretInSight = false
+    ) { viewModels ->
         openNote(viewModels)
         runOnIdle { viewModels.controller().viewport.camera.onDrag(0f, 0f, 2.5f, 600f, 450f) }
         write(viewModels, 15f, 20f, (1..12).joinToString("\n") { "Line $it of a text wider than the window at this zoom, wrapped as on the page." }, drawnWidthMm = 180f)
