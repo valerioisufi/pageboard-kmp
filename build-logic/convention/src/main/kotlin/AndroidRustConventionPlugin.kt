@@ -27,7 +27,7 @@ class AndroidRustConventionPlugin : Plugin<Project> {
         val engine = name.removePrefix("pageboard-native-")
         val minSdk = libs.version("android-minSdk").toInt()
         extensions.configure<LibraryExtension> {
-            namespace = "io.github.valerioisufi.drawview.nativelibs.$engine"
+            namespace = "io.github.valerioisufi.pageboard.nativelibs.$engine"
             compileSdk = libs.version("android-compileSdk").toInt()
             ndkVersion = libs.version("android-ndk")
             defaultConfig {

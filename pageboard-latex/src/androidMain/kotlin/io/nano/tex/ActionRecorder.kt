@@ -1,7 +1,7 @@
 package io.nano.tex
 
-import io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp
-import io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing
+import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaOp
+import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing
 
 /**
  * Records the drawing operations emitted by the native engine (through JNI) and replays them
@@ -28,7 +28,7 @@ internal class ActionRecorder {
         actions.add(Action(action, arg, args))
     }
 
-    /** The operations recorded, for a [FormulaDrawing][io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing]. */
+    /** The operations recorded, for a [FormulaDrawing][io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing]. */
     fun toOps(): List<FormulaOp> = actions.mapNotNull { act ->
         val a = act.args
         when (act.action) {

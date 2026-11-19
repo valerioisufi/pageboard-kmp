@@ -397,7 +397,7 @@ the sample running, and the modules it touches published to `mavenLocal()`.
   `pageboard-sync-protocol`, `pageboard-lecture-ui`, `pageboard-export-ui`) and the rename of
   `pageboard-core`: "core" depending on Compose is what made the modules look independent while
   they were not.
-* Packages follow the modules (`io.github.valerioisufi.drawview.model...`): no package split
+* Packages follow the modules (`io.github.valerioisufi.pageboard.model...`): no package split
   across two artifacts.
 * The engine modules implement the ports of the canvas (they depend on it): one module per
   engine, at the price of not being a PDF or TeX library usable without DrawView.

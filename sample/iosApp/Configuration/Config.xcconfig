@@ -4,7 +4,7 @@ TEAM_ID=
 #include? "Local.xcconfig"
 
 PRODUCT_NAME=DrawView-KMP
-PRODUCT_BUNDLE_IDENTIFIER=io.github.valerioisufi.drawview.DrawView-KMP$(TEAM_ID)
+PRODUCT_BUNDLE_IDENTIFIER=io.github.valerioisufi.pageboard.DrawView-KMP$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0

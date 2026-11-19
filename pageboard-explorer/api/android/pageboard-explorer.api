@@ -1,35 +1,35 @@
-public final class io/github/valerioisufi/drawview/explorer/DocumentLibraryKt {
-	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
+public final class io/github/valerioisufi/pageboard/explorer/DocumentLibraryKt {
+	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/session/EditorSessions;Ljava/util/List;ZLio/github/valerioisufi/pageboard/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
 
-public abstract interface class io/github/valerioisufi/drawview/explorer/DocumentOpener {
+public abstract interface class io/github/valerioisufi/pageboard/explorer/DocumentOpener {
 	public fun open (Ljava/lang/String;)V
 	public abstract fun open (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class io/github/valerioisufi/drawview/explorer/DocumentOpener$DefaultImpls {
-	public static fun open (Lio/github/valerioisufi/drawview/explorer/DocumentOpener;Ljava/lang/String;)V
+public final class io/github/valerioisufi/pageboard/explorer/DocumentOpener$DefaultImpls {
+	public static fun open (Lio/github/valerioisufi/pageboard/explorer/DocumentOpener;Ljava/lang/String;)V
 }
 
-public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails {
+public final class io/github/valerioisufi/pageboard/explorer/DocumentThumbnails {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Ljava/lang/String;ILkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getRendering ()I
 	public final fun of (Ljava/lang/String;JILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun page (Ljava/lang/String;IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails$Companion {
+public final class io/github/valerioisufi/pageboard/explorer/DocumentThumbnails$Companion {
 	public final fun defaultDirectory ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnailsKt {
-	public static final fun rememberDocumentThumbnails (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;
+public final class io/github/valerioisufi/pageboard/explorer/DocumentThumbnailsKt {
+	public static final fun rememberDocumentThumbnails (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/canvas/render/DrawViewEngines;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/pageboard/explorer/DocumentThumbnails;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/explorer/LibrarySearch {
+public abstract interface class io/github/valerioisufi/pageboard/explorer/LibrarySearch {
 	public fun getHeaderContent ()Lkotlin/jvm/functions/Function4;
 	public abstract fun getMatchedDocumentIds ()Ljava/util/List;
 	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
@@ -37,13 +37,13 @@ public abstract interface class io/github/valerioisufi/drawview/explorer/Library
 	public fun onScopeChange (Ljava/util/Set;)V
 }
 
-public final class io/github/valerioisufi/drawview/explorer/LibrarySearch$DefaultImpls {
-	public static fun getHeaderContent (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;)Lkotlin/jvm/functions/Function4;
-	public static fun matchesOf (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Ljava/lang/String;)Ljava/util/List;
-	public static fun onScopeChange (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Ljava/util/Set;)V
+public final class io/github/valerioisufi/pageboard/explorer/LibrarySearch$DefaultImpls {
+	public static fun getHeaderContent (Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;)Lkotlin/jvm/functions/Function4;
+	public static fun matchesOf (Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;Ljava/lang/String;)Ljava/util/List;
+	public static fun onScopeChange (Lio/github/valerioisufi/pageboard/explorer/LibrarySearch;Ljava/util/Set;)V
 }
 
-public final class io/github/valerioisufi/drawview/explorer/LibrarySearchMatch {
+public final class io/github/valerioisufi/pageboard/explorer/LibrarySearchMatch {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -51,8 +51,8 @@ public final class io/github/valerioisufi/drawview/explorer/LibrarySearchMatch {
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun component4 ()Lkotlin/jvm/functions/Function1;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/explorer/LibrarySearchMatch;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/explorer/LibrarySearchMatch;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/explorer/LibrarySearchMatch;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLocation ()Ljava/lang/String;
@@ -62,173 +62,173 @@ public final class io/github/valerioisufi/drawview/explorer/LibrarySearchMatch {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/ActualResourceCollectorsKt {
-	public static final fun getAllDrawableResources (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllFontResources (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllPluralStringResources (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllStringArrayResources (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllStringResources (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;)Ljava/util/Map;
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/ActualResourceCollectorsKt {
+	public static final fun getAllDrawableResources (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllFontResources (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllPluralStringResources (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringArrayResources (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringResources (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;)Ljava/util/Map;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Plurals0_commonMainKt {
-	public static final fun getExplorer_folders_count (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_items_count (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_notes_count (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_selection_summary (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_trash_days_left (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_trash_delete_forever_many (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_trash_empty_description (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getExplorer_trash_moved_many (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Plurals0_commonMainKt {
+	public static final fun getExplorer_folders_count (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_items_count (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_notes_count (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_selection_summary (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_trash_days_left (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_trash_delete_forever_many (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_trash_empty_description (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getExplorer_trash_moved_many (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res;
 	public final fun getUri (Ljava/lang/String;)Ljava/lang/String;
 	public final fun readBytes (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res$array {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res$array {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$array;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$array;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res$drawable {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res$drawable {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$drawable;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$drawable;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res$font {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res$font {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$font;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$font;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$plurals;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$plurals;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/Res$string {
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/Res$string {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/String0_commonMainKt {
-	public static final fun getExplorer_action_back (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_cancel (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_clear_selection (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_confirm (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_delete (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_details (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_move_to (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_open (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_open_in_new_window (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_rename (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_action_select_all (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_command_search (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_command_sort_by (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_command_undo_trash (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_create_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_delete_confirm (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_delete_shared (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_created (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_modified (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_notes (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_pages (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_details_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_dialog_new_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_dialog_new_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_drag_move_to (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_folder_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_folder_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_library_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_library_subtitle (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_library_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_recent_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_recent_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_shared_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_empty_shared_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_error_create_failed (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_fab_item_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_fab_item_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_fab_state_collapsed (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_fab_state_expanded (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_fab_toggle_menu (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_filter_all (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_filter_notes (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_import_image (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_import_pdf (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_import_pdf_short (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_input_name (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_input_name_short (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_label_last_modified (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_more_actions (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_move_empty_state (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_move_here (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_move_subtitle (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_new_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_new_note_paper (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_no_results_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_no_results_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_open_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_open_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_paper_blank (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_paper_dotted (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_paper_grid (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_paper_lined (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_root_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_search_clear (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_search_placeholder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_search_results_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_search_scope_here (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_search_scope_library (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_section_folders (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_section_notes (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_section_recent (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_section_shared (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_section_trash (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_selected_count (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_selection_hint (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_by (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_date_created (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_folders_on_top (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_invert (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_last_modified (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_last_opened (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sort_name (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sorted_by_date_created (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sorted_by_last_modified (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sorted_by_last_opened (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_sorted_by_name (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_tag_pdf (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_tag_pdfs (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_tag_shared (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_cannot_undo (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_delete_forever (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_delete_forever_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty_state (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty_state_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_empty_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_from (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_moved_one (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/String0_commonMainKt {
+	public static final fun getExplorer_action_back (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_cancel (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_clear_selection (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_confirm (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_delete (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_details (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_move_to (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_open (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_open_in_new_window (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_rename (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_action_select_all (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_command_search (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_command_sort_by (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_command_undo_trash (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_create_note (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_delete_confirm (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_delete_shared (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_created (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_modified (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_notes (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_pages (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_details_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_dialog_new_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_dialog_new_note (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_drag_move_to (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_folder_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_folder_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_library_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_library_subtitle (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_library_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_recent_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_recent_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_shared_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_empty_shared_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_error_create_failed (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_fab_item_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_fab_item_note (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_fab_state_collapsed (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_fab_state_expanded (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_fab_toggle_menu (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_filter_all (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_filter_notes (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_import_image (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_import_pdf (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_import_pdf_short (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_input_name (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_input_name_short (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_label_last_modified (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_more_actions (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_move_empty_state (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_move_here (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_move_subtitle (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_new_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_new_note_paper (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_no_results_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_no_results_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_open_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_open_note (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_paper_blank (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_paper_dotted (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_paper_grid (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_paper_lined (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_root_folder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_clear (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_placeholder (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_results_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_scope_here (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_search_scope_library (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_section_folders (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_section_notes (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_section_recent (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_section_shared (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_section_trash (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_selected_count (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_selection_hint (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_by (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_date_created (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_folders_on_top (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_invert (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_last_modified (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_last_opened (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sort_name (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sorted_by_date_created (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sorted_by_last_modified (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sorted_by_last_opened (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_sorted_by_name (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_tag_pdf (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_tag_pdfs (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_tag_shared (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_cannot_undo (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_delete_forever (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_delete_forever_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty_state (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty_state_body (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_empty_title (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_from (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_moved_one (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/String1_commonMainKt {
-	public static final fun getExplorer_trash_open (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_preview (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_read_only (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_restore (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_retention (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_trash_undo (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_untitled_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_view_grid (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_view_list (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+public final class io/github/valerioisufi/pageboard/explorer/generated/resources/String1_commonMainKt {
+	public static final fun getExplorer_trash_open (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_preview (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_read_only (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_restore (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_retention (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_trash_undo (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_untitled_note (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_view_grid (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getExplorer_view_list (Lio/github/valerioisufi/pageboard/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/drawview/explorer/ui/ExplorerScreenKt {
-	public static final fun aboutLibraryAction (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/extension/LibraryAction;
+public final class io/github/valerioisufi/pageboard/explorer/ui/ExplorerScreenKt {
+	public static final fun aboutLibraryAction (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/extension/LibraryAction;
 }
 

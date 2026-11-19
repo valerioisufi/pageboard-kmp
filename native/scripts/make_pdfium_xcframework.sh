@@ -36,7 +36,7 @@ for PACKAGE in "$@"; do
     <key>CFBundleExecutable</key>
     <string>PDFium</string>
     <key>CFBundleIdentifier</key>
-    <string>io.github.valerioisufi.drawview.pdfium</string>
+    <string>io.github.valerioisufi.pageboard.pdfium</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

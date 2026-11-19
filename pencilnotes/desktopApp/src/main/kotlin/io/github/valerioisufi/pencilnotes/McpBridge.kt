@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pencilnotes
 
-import io.github.valerioisufi.drawview.agent.AgentEndpoint
+import io.github.valerioisufi.pageboard.agent.AgentEndpoint
 import java.io.IOException
 import java.io.InputStream
 import java.io.PrintStream

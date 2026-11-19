@@ -1,23 +1,23 @@
-public final class io/github/valerioisufi/drawview/latex/LatexEngine : io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer {
+public final class io/github/valerioisufi/pageboard/latex/LatexEngine : io/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaDrawing;
+	public fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaDrawing;
 	public final fun initialize (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun prepare (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun render (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaImage;
+	public fun render (Ljava/lang/String;FI)Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaImage;
 	public fun sanitize (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/latex/LatexResult {
+public final class io/github/valerioisufi/pageboard/latex/LatexResult {
 	public static final field $stable I
 	public fun <init> (Landroidx/compose/ui/graphics/ImageBitmap;FII)V
 	public final fun component1 ()Landroidx/compose/ui/graphics/ImageBitmap;
 	public final fun component2 ()F
 	public final fun component3 ()I
 	public final fun component4 ()I
-	public final fun copy (Landroidx/compose/ui/graphics/ImageBitmap;FII)Lio/github/valerioisufi/drawview/latex/LatexResult;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/latex/LatexResult;Landroidx/compose/ui/graphics/ImageBitmap;FIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public final fun copy (Landroidx/compose/ui/graphics/ImageBitmap;FII)Lio/github/valerioisufi/pageboard/latex/LatexResult;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/latex/LatexResult;Landroidx/compose/ui/graphics/ImageBitmap;FIIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/latex/LatexResult;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBaselineRatio ()F
 	public final fun getBitmap ()Landroidx/compose/ui/graphics/ImageBitmap;
@@ -37,7 +37,7 @@ public final class io/nano/tex/Font {
 	public final fun getSize ()F
 	public final fun getStyle ()I
 	public final fun getTypeface ()Landroid/graphics/Typeface;
-	public final fun toTexFont ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaFont;
+	public final fun toTexFont ()Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaFont;
 }
 
 public final class io/nano/tex/Font$Companion {

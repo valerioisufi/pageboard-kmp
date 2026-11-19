@@ -6,72 +6,72 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:pageboard-sync-lan>
-abstract interface io.github.valerioisufi.drawview.sync.lan/LanDiscovery { // io.github.valerioisufi.drawview.sync.lan/LanDiscovery|null[0]
-    abstract val services // io.github.valerioisufi.drawview.sync.lan/LanDiscovery.services|{}services[0]
-        abstract fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.sync.lan/LanService>> // io.github.valerioisufi.drawview.sync.lan/LanDiscovery.services.<get-services>|<get-services>(){}[0]
+abstract interface io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery|null[0]
+    abstract val services // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services|{}services[0]
+        abstract fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/LanService>> // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services.<get-services>|<get-services>(){}[0]
 
-    abstract fun close() // io.github.valerioisufi.drawview.sync.lan/LanDiscovery.close|close(){}[0]
-    abstract suspend fun advertise(kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.drawview.sync.lan/LanDiscovery.advertise|advertise(kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    abstract fun close() // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.close|close(){}[0]
+    abstract suspend fun advertise(kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.advertise|advertise(kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
 
-    final object Companion // io.github.valerioisufi.drawview.sync.lan/LanDiscovery.Companion|null[0]
+    final object Companion // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.Companion|null[0]
 }
 
-final class io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery : io.github.valerioisufi.drawview.sync.lan/LanDiscovery { // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery|null[0]
-    constructor <init>() // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery.<init>|<init>(){}[0]
+final class io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery : io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.<init>|<init>(){}[0]
 
-    final val services // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery.services|{}services[0]
-        final fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.sync.lan/LanService>> // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery.services.<get-services>|<get-services>(){}[0]
+    final val services // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.services|{}services[0]
+        final fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/LanService>> // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.services.<get-services>|<get-services>(){}[0]
 
-    final fun close() // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery.close|close(){}[0]
-    final suspend fun advertise(kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.drawview.sync.lan/BonjourLanDiscovery.advertise|advertise(kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    final fun close() // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.close|close(){}[0]
+    final suspend fun advertise(kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.advertise|advertise(kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
 }
 
-final class io.github.valerioisufi.drawview.sync.lan/LanService { // io.github.valerioisufi.drawview.sync.lan/LanService|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.drawview.sync.lan/LanService.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+final class io.github.valerioisufi.pageboard.sync.lan/LanService { // io.github.valerioisufi.pageboard.sync.lan/LanService|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.pageboard.sync.lan/LanService.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
 
-    final val address // io.github.valerioisufi.drawview.sync.lan/LanService.address|{}address[0]
-        final fun <get-address>(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.address.<get-address>|<get-address>(){}[0]
-    final val attributes // io.github.valerioisufi.drawview.sync.lan/LanService.attributes|{}attributes[0]
-        final fun <get-attributes>(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.sync.lan/LanService.attributes.<get-attributes>|<get-attributes>(){}[0]
-    final val host // io.github.valerioisufi.drawview.sync.lan/LanService.host|{}host[0]
-        final fun <get-host>(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.host.<get-host>|<get-host>(){}[0]
-    final val name // io.github.valerioisufi.drawview.sync.lan/LanService.name|{}name[0]
-        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.name.<get-name>|<get-name>(){}[0]
-    final val port // io.github.valerioisufi.drawview.sync.lan/LanService.port|{}port[0]
-        final fun <get-port>(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanService.port.<get-port>|<get-port>(){}[0]
+    final val address // io.github.valerioisufi.pageboard.sync.lan/LanService.address|{}address[0]
+        final fun <get-address>(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.address.<get-address>|<get-address>(){}[0]
+    final val attributes // io.github.valerioisufi.pageboard.sync.lan/LanService.attributes|{}attributes[0]
+        final fun <get-attributes>(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.sync.lan/LanService.attributes.<get-attributes>|<get-attributes>(){}[0]
+    final val host // io.github.valerioisufi.pageboard.sync.lan/LanService.host|{}host[0]
+        final fun <get-host>(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.host.<get-host>|<get-host>(){}[0]
+    final val name // io.github.valerioisufi.pageboard.sync.lan/LanService.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.name.<get-name>|<get-name>(){}[0]
+    final val port // io.github.valerioisufi.pageboard.sync.lan/LanService.port|{}port[0]
+        final fun <get-port>(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/LanService.port.<get-port>|<get-port>(){}[0]
 
-    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.component1|component1(){}[0]
-    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.component2|component2(){}[0]
-    final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanService.component3|component3(){}[0]
-    final fun component4(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.sync.lan/LanService.component4|component4(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin.collections/Map<kotlin/String, kotlin/String> = ...): io.github.valerioisufi.drawview.sync.lan/LanService // io.github.valerioisufi.drawview.sync.lan/LanService.copy|copy(kotlin.String;kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.lan/LanService.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanService.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanService.toString|toString(){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/LanService.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.sync.lan/LanService.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin.collections/Map<kotlin/String, kotlin/String> = ...): io.github.valerioisufi.pageboard.sync.lan/LanService // io.github.valerioisufi.pageboard.sync.lan/LanService.copy|copy(kotlin.String;kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/LanService.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/LanService.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanService.toString|toString(){}[0]
 }
 
-final class io.github.valerioisufi.drawview.sync.lan/LanSync : io.github.valerioisufi.drawview.sync/SyncNetwork { // io.github.valerioisufi.drawview.sync.lan/LanSync|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.sync/SyncEngine, io.github.valerioisufi.drawview.sync.lan/LanDiscovery, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/Function0<kotlin/String>, io.github.valerioisufi.drawview.sync.lan/LanTransport = ..., kotlin/Long = ..., kotlin/Long = ...) // io.github.valerioisufi.drawview.sync.lan/LanSync.<init>|<init>(io.github.valerioisufi.drawview.sync.SyncEngine;io.github.valerioisufi.drawview.sync.lan.LanDiscovery;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.Function0<kotlin.String>;io.github.valerioisufi.drawview.sync.lan.LanTransport;kotlin.Long;kotlin.Long){}[0]
+final class io.github.valerioisufi.pageboard.sync.lan/LanSync : io.github.valerioisufi.pageboard.sync/SyncNetwork { // io.github.valerioisufi.pageboard.sync.lan/LanSync|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.sync/SyncEngine, io.github.valerioisufi.pageboard.sync.lan/LanDiscovery, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/Function0<kotlin/String>, io.github.valerioisufi.pageboard.sync.lan/LanTransport = ..., kotlin/Long = ..., kotlin/Long = ...) // io.github.valerioisufi.pageboard.sync.lan/LanSync.<init>|<init>(io.github.valerioisufi.pageboard.sync.SyncEngine;io.github.valerioisufi.pageboard.sync.lan.LanDiscovery;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.Function0<kotlin.String>;io.github.valerioisufi.pageboard.sync.lan.LanTransport;kotlin.Long;kotlin.Long){}[0]
 
-    final suspend fun announce() // io.github.valerioisufi.drawview.sync.lan/LanSync.announce|announce(){}[0]
-    final suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync.lan/LanSync.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
-    final suspend fun refresh(kotlin/Boolean) // io.github.valerioisufi.drawview.sync.lan/LanSync.refresh|refresh(kotlin.Boolean){}[0]
-    final suspend fun start() // io.github.valerioisufi.drawview.sync.lan/LanSync.start|start(){}[0]
-    final suspend fun stop() // io.github.valerioisufi.drawview.sync.lan/LanSync.stop|stop(){}[0]
+    final suspend fun announce() // io.github.valerioisufi.pageboard.sync.lan/LanSync.announce|announce(){}[0]
+    final suspend fun join(io.github.valerioisufi.pageboard.sync.protocol/Invitation) // io.github.valerioisufi.pageboard.sync.lan/LanSync.join|join(io.github.valerioisufi.pageboard.sync.protocol.Invitation){}[0]
+    final suspend fun refresh(kotlin/Boolean) // io.github.valerioisufi.pageboard.sync.lan/LanSync.refresh|refresh(kotlin.Boolean){}[0]
+    final suspend fun start() // io.github.valerioisufi.pageboard.sync.lan/LanSync.start|start(){}[0]
+    final suspend fun stop() // io.github.valerioisufi.pageboard.sync.lan/LanSync.stop|stop(){}[0]
 }
 
-final class io.github.valerioisufi.drawview.sync.lan/LanTransport : io.github.valerioisufi.drawview.sync.protocol/SyncTransport { // io.github.valerioisufi.drawview.sync.lan/LanTransport|null[0]
-    constructor <init>(kotlinx.coroutines/CoroutineScope, kotlin/Int = ...) // io.github.valerioisufi.drawview.sync.lan/LanTransport.<init>|<init>(kotlinx.coroutines.CoroutineScope;kotlin.Int){}[0]
+final class io.github.valerioisufi.pageboard.sync.lan/LanTransport : io.github.valerioisufi.pageboard.sync.protocol/SyncTransport { // io.github.valerioisufi.pageboard.sync.lan/LanTransport|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineScope, kotlin/Int = ...) // io.github.valerioisufi.pageboard.sync.lan/LanTransport.<init>|<init>(kotlinx.coroutines.CoroutineScope;kotlin.Int){}[0]
 
-    final val incoming // io.github.valerioisufi.drawview.sync.lan/LanTransport.incoming|{}incoming[0]
-        final fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.drawview.sync.protocol/SyncChannel> // io.github.valerioisufi.drawview.sync.lan/LanTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
+    final val incoming // io.github.valerioisufi.pageboard.sync.lan/LanTransport.incoming|{}incoming[0]
+        final fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.pageboard.sync.protocol/SyncChannel> // io.github.valerioisufi.pageboard.sync.lan/LanTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
 
-    final fun close() // io.github.valerioisufi.drawview.sync.lan/LanTransport.close|close(){}[0]
-    final suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/SyncChannel // io.github.valerioisufi.drawview.sync.lan/LanTransport.connect|connect(kotlin.String){}[0]
-    final suspend fun start(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanTransport.start|start(){}[0]
+    final fun close() // io.github.valerioisufi.pageboard.sync.lan/LanTransport.close|close(){}[0]
+    final suspend fun connect(kotlin/String): io.github.valerioisufi.pageboard.sync.protocol/SyncChannel // io.github.valerioisufi.pageboard.sync.lan/LanTransport.connect|connect(kotlin.String){}[0]
+    final suspend fun start(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/LanTransport.start|start(){}[0]
 
-    final object Companion { // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion|null[0]
-        final const val NAME // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion.NAME|{}NAME[0]
-            final fun <get-NAME>(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion.NAME.<get-NAME>|<get-NAME>(){}[0]
+    final object Companion { // io.github.valerioisufi.pageboard.sync.lan/LanTransport.Companion|null[0]
+        final const val NAME // io.github.valerioisufi.pageboard.sync.lan/LanTransport.Companion.NAME|{}NAME[0]
+            final fun <get-NAME>(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/LanTransport.Companion.NAME.<get-NAME>|<get-NAME>(){}[0]
     }
 }

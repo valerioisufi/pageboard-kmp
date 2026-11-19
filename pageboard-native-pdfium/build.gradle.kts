@@ -10,7 +10,7 @@ android {
             cmake {
                 // The prebuilt packages of pdfium-binaries, one per ABI (libpdfium.so is packaged
                 // with the bridge linked to it)
-                arguments += "-DDRAWVIEW_PDFIUM_ROOT=${rootProject.layout.buildDirectory.dir("pdfium").get().asFile.absolutePath}"
+                arguments += "-DPAGEBOARD_PDFIUM_ROOT=${rootProject.layout.buildDirectory.dir("pdfium").get().asFile.absolutePath}"
                 targets += "pdfium_bridge"
             }
         }

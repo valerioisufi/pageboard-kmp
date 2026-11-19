@@ -1,21 +1,21 @@
-public abstract interface class io/github/valerioisufi/drawview/sync/lan/LanDiscovery {
-	public static final field Companion Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery$Companion;
+public abstract interface class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery {
+	public static final field Companion Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery$Companion;
 	public abstract fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun close ()V
 	public abstract fun getServices ()Lkotlinx/coroutines/flow/Flow;
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanDiscovery$Companion {
+public final class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanService {
+public final class io/github/valerioisufi/pageboard/sync/lan/LanService {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()I
 	public final fun component4 ()Ljava/util/Map;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;)Lio/github/valerioisufi/drawview/sync/lan/LanService;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/lan/LanService;Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/lan/LanService;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;)Lio/github/valerioisufi/pageboard/sync/lan/LanService;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/lan/LanService;Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/lan/LanService;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAddress ()Ljava/lang/String;
 	public final fun getAttributes ()Ljava/util/Map;
@@ -26,18 +26,18 @@ public final class io/github/valerioisufi/drawview/sync/lan/LanService {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanSync : io/github/valerioisufi/drawview/sync/SyncNetwork {
-	public fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/lan/LanTransport;JJ)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/lan/LanTransport;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/sync/lan/LanSync : io/github/valerioisufi/pageboard/sync/SyncNetwork {
+	public fun <init> (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/sync/lan/LanTransport;JJ)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/sync/lan/LanTransport;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun announce (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun join (Lio/github/valerioisufi/pageboard/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
-	public static final field Companion Lio/github/valerioisufi/drawview/sync/lan/LanTransport$Companion;
+public final class io/github/valerioisufi/pageboard/sync/lan/LanTransport : io/github/valerioisufi/pageboard/sync/protocol/SyncTransport {
+	public static final field Companion Lio/github/valerioisufi/pageboard/sync/lan/LanTransport$Companion;
 	public static final field NAME Ljava/lang/String;
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;I)V
 	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -47,10 +47,10 @@ public final class io/github/valerioisufi/drawview/sync/lan/LanTransport : io/gi
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanTransport$Companion {
+public final class io/github/valerioisufi/pageboard/sync/lan/LanTransport$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/NsdLanDiscovery : io/github/valerioisufi/drawview/sync/lan/LanDiscovery {
+public final class io/github/valerioisufi/pageboard/sync/lan/NsdLanDiscovery : io/github/valerioisufi/pageboard/sync/lan/LanDiscovery {
 	public fun <init> (Landroid/content/Context;)V
 	public fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun close ()V

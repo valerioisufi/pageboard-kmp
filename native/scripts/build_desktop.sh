@@ -85,9 +85,9 @@ if [[ -z "$OPUS_DIR" || -z "$AAC_DIR" ]]; then
 fi
 
 BUILD_DIR="$NATIVE_DIR/build/desktop-$PLATFORM"
-cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DDRAWVIEW_BUILD_JNI=ON \
-    -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" -DDRAWVIEW_WHISPER_DIR="$WHISPER_DIR" \
-    -DDRAWVIEW_OPUS_DIR="$OPUS_DIR" -DDRAWVIEW_AAC_DIR="$AAC_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
+cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DPAGEBOARD_BUILD_JNI=ON \
+    -DPAGEBOARD_PDFIUM_DIR="$PDFIUM_DIR" -DPAGEBOARD_WHISPER_DIR="$WHISPER_DIR" \
+    -DPAGEBOARD_OPUS_DIR="$OPUS_DIR" -DPAGEBOARD_AAC_DIR="$AAC_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
 TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge audio_bridge)
 if [[ "$PLATFORM" == darwin-* ]]; then
     TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad

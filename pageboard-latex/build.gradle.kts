@@ -72,6 +72,6 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "io.github.valerioisufi.drawview.latex.generated.resources"
+    packageOfResClass = "io.github.valerioisufi.pageboard.latex.generated.resources"
     publicResClass = false
 }

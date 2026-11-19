@@ -1,9 +1,9 @@
 package io.nano.tex
 
 import android.graphics.Typeface
-import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
-import io.github.valerioisufi.drawview.latex.TexTextFonts
-import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaFont
+import io.github.valerioisufi.pageboard.latex.TexTextFonts
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
 
 /**
  * Font used by the TeX engine (created and derived from native code through JNI).
@@ -22,7 +22,7 @@ public class Font private constructor(
         return Font(Typeface.create(typeface, style), size, style, file)
     }
 
-    /** This font for a [io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing][io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing]. */
+    /** This font for a [io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing][io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing]. */
     public fun toTexFont(): FormulaFont {
         val bold = style and FormulaFont.BOLD != 0
         val italic = style and FormulaFont.ITALIC != 0

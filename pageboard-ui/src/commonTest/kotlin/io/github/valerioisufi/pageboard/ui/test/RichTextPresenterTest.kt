@@ -1,0 +1,321 @@
+package io.github.valerioisufi.pageboard.ui.test
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.pageboard.ui.editor.FontRoom
+import io.github.valerioisufi.pageboard.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.pageboard.ui.editor.Presentation
+import io.github.valerioisufi.pageboard.ui.editor.PresentedText
+import io.github.valerioisufi.pageboard.ui.editor.RichTextPresenter
+import io.github.valerioisufi.pageboard.ui.editor.Struts
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/**
+ * The presentation of the texts, the same for the canvas and the editor: what is shown of the
+ * source, the offsets both ways, the objects and their struts, the paragraphs, what the caret
+ * reveals.
+ */
+class RichTextPresenterTest {
+
+    /** A font whose lines go 0.8 above and 0.2 below the baseline, its object character 0.5 wide (per pixel of size). */
+    private val room = FontRoom(ascent = 0.8f, descent = 0.2f, advance = 0.5f)
+    private val approximated = Struts(null, null, FontFamily.SansSerif, room)
+    private val exact = Struts(FontFamily.Serif, FontFamily.Cursive, FontFamily.SansSerif, room)
+
+    private fun present(
+        text: String,
+        reveal: TextRange? = null,
+        struts: Struts = approximated,
+        lineWidthPx: Float? = 300f,
+        density: Float = 1f,
+        formula: MarkdownTextUtil.RenderedFormula<String>? = MarkdownTextUtil.RenderedFormula("x", 40f, 30f, 0.8f)
+    ): PresentedText<String> = RichTextPresenter.present(
+        text,
+        Presentation(fontSizePx = 20f, color = Color.Black, struts = struts, density = density, lineWidthPx = lineWidthPx) { _, _ -> formula },
+        reveal
+    )
+
+    private val PresentedText<*>.shown get() = text.text
+
+    @Test
+    fun theMarkerOfAQuoteIsHiddenAndItsLinesIndented() {
+        val text = "before\n> **one**\n> two\nafter"
+        val presented = present(text)
+        assertEquals("before\u200Bone\u200Btwo\u200Bafter", presented.shown)
+        assertEquals("one\u200Btwo", presented.quotes.single().let { presented.shown.substring(it.first, it.last + 1) })
+        val indents = presented.text.paragraphStyles.map { it.item.textIndent?.restLine?.value ?: 0f }
+        assertEquals(listOf(0f, 18f, 18f, 0f), indents, "0.9 of a size of 20")
+        assertEquals("> two".length, text.substring(text.indexOf("> two")).substringBefore('\n').length)
+        assertEquals(presented.shown.indexOf("two"), presented.mapping.originalToTransformed(text.indexOf("> two")), "the marker stands at its text")
+        assertEquals(present(text, TextRange(text.indexOf("two"))).shown, presented.shown, "hidden under the caret too")
+    }
+
+    @Test
+    fun aMarkerBeingTypedStaysAsTyped() {
+        assertEquals(">", present(">", TextRange(1)).shown, "it may be the start of >=")
+        assertEquals(emptyList(), present(">", TextRange(1)).quotes)
+        assertEquals("", present("> ", TextRange(2)).shown.filterNot { RichTextPresenter.isInvisible(it) }, "with its space it is one")
+        assertEquals("", present(">").shown.filterNot { RichTextPresenter.isInvisible(it) }, "with the caret elsewhere it is one")
+        assertEquals(1, present("> ", TextRange(2)).quotes.size)
+    }
+
+    @Test
+    fun aListInAQuoteShowsItsLabels() {
+        val presented = present("> 1. one\n>    more\n> 2. two\n>\n> - three")
+        val shown = presented.shown.filterNot { RichTextPresenter.isInvisible(it) }
+        assertEquals("1.onemore2.two\u2022three", shown)
+    }
+
+    @Test
+    fun aQuoteInACellStaysAsItIsWritten() {
+        val presented = RichTextPresenter.present("> x", Presentation<String>(fontSizePx = 20f, color = Color.Black, struts = approximated, quotes = false) { _, _ -> null })
+        assertEquals("> x", presented.shown)
+        assertEquals(emptyList(), presented.quotes)
+    }
+
+    @Test
+    fun theSymbolsAreInTheirFont() {
+        val symbols = FontFamily.Cursive
+        fun inFont(text: String): String {
+            val presented = RichTextPresenter.present(
+                text,
+                Presentation<String>(fontSizePx = 20f, color = Color.Black, struts = approximated, lineWidthPx = 300f, symbols = symbols) { _, _ -> null }
+            )
+            return presented.text.spanStyles.filter { it.item.fontFamily == symbols }.joinToString("") { presented.text.text.substring(it.start, it.end) }
+        }
+        assertEquals("→↔✔", inFont("a → b ↔ c ✔"))
+        assertEquals("", inFont("`a → b` e\n```\n→\n```"), "the code has its own font")
+        assertEquals("→", inFont("**a →** ↔\uFE0F"), "an emoji asked for stays one")
+        assertEquals("", inFont("plain text – dash × é"), "what the text font has")
+    }
+
+    @Test
+    fun theDelimitersAndTheEscapesAreHidden() {
+        val presented = present("**bold *both* too** costs \\\$5 and \\*not italic\\*")
+        assertEquals("bold both too costs \$5 and *not italic*", presented.shown)
+        val both = presented.shown.indexOf("both")
+        val styles = presented.text.spanStyles.filter { both >= it.start && both < it.end }.map { it.item }
+        assertTrue(styles.any { it.fontWeight == FontWeight.Bold } && styles.any { it.fontStyle == FontStyle.Italic }, "bold and italic")
+        assertEquals("Subtitle", present("## Subtitle").shown, "every hash")
+    }
+
+    @Test
+    fun everyLineIsAParagraphEndedByAZeroWidthSpace() {
+        val presented = present("one\n\ntwo\n")
+        assertEquals("one​​two\n", presented.shown, "the last line break stays one, for the empty line after it")
+        assertEquals(listOf(0 until 4, 4 until 5, 5 until 9), presented.text.paragraphStyles.map { it.start until it.end })
+        // One character for one: the caret before a line break at the end of its line, after it at the start of the next
+        assertEquals((0..9).toList(), (0..9).map(presented.mapping::originalToTransformed))
+    }
+
+    @Test
+    fun aFormulaIsAnObjectOfThreeCharacters() {
+        val presented = present("a \$x+1\$ b")
+        assertEquals("a ￼⁠￼ b", presented.shown)
+        val formula = presented.formulas.single()
+        assertEquals(2, formula.offset)
+        assertEquals(40f, formula.widthPx)
+        assertNull(presented.hiddenAtCaret)
+        val mapping = presented.mapping
+        assertEquals(listOf(0, 1, 2, 2, 2, 2, 2, 5, 6, 7), (0..9).map(mapping::originalToTransformed))
+        assertEquals(listOf(0, 1, 2, 7, 7, 7, 8, 9), (0..7).map(mapping::transformedToOriginal), "a tap after the middle of a formula goes after it")
+    }
+
+    @Test
+    fun withoutTheStrutFontsTheRoomIsTheLargerOfBothNeeds() {
+        // 24 px above the baseline need a size of 30 px, 6 px below one of 30 px; 40 px wide
+        val style = present("a \$x\$ b").text.spanStyles.last { it.start == 2 }.item
+        assertEquals(30f, style.fontSize.value, 0.01f)
+        assertEquals(40f - 30f * 0.5f, style.letterSpacing.value, 0.01f)
+        assertEquals(Color.Transparent, style.color)
+    }
+
+    @Test
+    fun withTheStrutFontsTheRoomIsExact() {
+        val presented = present("a \$x\$ b", struts = exact, density = 2f)
+        val above = presented.text.spanStyles.last { it.start == 2 }.item
+        val below = presented.text.spanStyles.last { it.start == 4 }.item
+        // 24 px above, 6 px below, in sp of a screen of 2 pixels per sp
+        assertEquals(FontFamily.Serif, above.fontFamily)
+        assertEquals(12f, above.fontSize.value, 0.01f)
+        assertEquals((40f - 24f) / 2f, above.letterSpacing.value, 0.01f, "as wide as the formula")
+        assertEquals(FontFamily.Cursive, below.fontFamily)
+        assertEquals(3f, below.fontSize.value, 0.01f)
+        assertEquals(-3f, below.letterSpacing.value, 0.01f, "no width")
+    }
+
+    @Test
+    fun aFormulaAloneOnItsLinesTakesTheLine() {
+        val presented = present("Before\n  \$\$\\frac{1}{2}\$\$  \nAfter \$\$x\$\$")
+        assertEquals("Before​￼⁠￼​After ￼⁠￼", presented.shown, "the spaces around it go")
+        val (block, inLine) = presented.formulas
+        assertTrue(block.block)
+        assertEquals("\\displaystyle \\frac{1}{2}", block.latex)
+        val style = presented.text.spanStyles.last { it.start == block.offset }.item
+        assertEquals(300f * 0.999f - style.fontSize.value * 0.5f, style.letterSpacing.value, 0.01f, "the whole line wide")
+        assertTrue(!inLine.block)
+    }
+
+    @Test
+    fun aBlockFormulaWiderThanTheLineIsMadeSmaller() {
+        val presented = present("\$\$x\$\$", lineWidthPx = 100f, formula = MarkdownTextUtil.RenderedFormula("x", 400f, 80f, 0.75f))
+        assertEquals(100f, presented.formulas.single().widthPx, 0.01f)
+        assertEquals(20f, presented.formulas.single().heightPx, 0.01f)
+    }
+
+    @Test
+    fun theFormulaUnderTheCaretStaysDrawnItsSourceForTheStrip() {
+        val text = "a \$x+1\$ b"
+        val presented = present(text, reveal = TextRange(4))
+        assertEquals(present(text).shown, presented.shown, "the same text shown: the line does not move")
+        assertEquals(2, presented.formulas.single().offset)
+        val hidden = presented.hiddenAtCaret!!
+        assertEquals("x+1", text.substring(hidden.source.first, hidden.source.last + 1))
+        assertTrue(hidden.caretIn)
+        // At its ends the caret is out of it
+        assertNull(present(text, reveal = TextRange(2)).hiddenAtCaret)
+        assertNull(present(text, reveal = TextRange(7)).hiddenAtCaret)
+    }
+
+    @Test
+    fun aFormulaThatCannotBeReadIsRedSource() {
+        val presented = present("a \$x+1\$ b", formula = null)
+        assertEquals("a \$x+1\$ b", presented.shown)
+        assertTrue(presented.text.spanStyles.any { it.start == 2 && it.end == 7 && it.item.fontStyle == FontStyle.Italic && it.item.color != Color.Transparent })
+    }
+
+    @Test
+    fun theCodeInTheLineIsToldInTheOffsetsShown() {
+        val presented = present("Run `make`\n# The `main` file")
+        assertEquals("Run make​The main file", presented.shown)
+        val (make, main) = presented.inlineCode
+        assertEquals("make", presented.shown.substring(make.start, make.end))
+        assertEquals(20f, make.fontSizePx)
+        assertEquals("main", presented.shown.substring(main.start, main.end))
+        assertEquals(28f, main.fontSizePx, 0.01f, "the size of its heading")
+    }
+
+    @Test
+    fun withoutALayoutABlockOfCodeIsCodeInTheLine() {
+        val presented = present("a\n```kotlin\nval x = 1\n```\nb")
+        assertEquals("a\u200Bval x = 1\u200Bb", presented.shown, "its fences hidden")
+        assertTrue(presented.codeBlocks.isEmpty())
+        assertTrue(presented.text.spanStyles.any { it.item.fontFamily == FontFamily.Monospace && presented.shown.substring(it.start, it.end) == "val x = 1" })
+    }
+
+    @Test
+    fun theSizesOfTheStylesAreInSpWhereTheTextIsShown() {
+        // 20 px on a screen of 2 pixels per sp: a heading of 1.4 times 10 sp
+        val presented = present("# Title", density = 2f)
+        assertEquals(14f, presented.text.spanStyles.first { it.item.fontSize.isSp }.item.fontSize.value, 0.01f)
+    }
+
+    /** [shown] without the struts of the objects. */
+    private fun visible(shown: String) = shown.filterNot { it == '\uFFFC' || it == '\u2060' }
+
+    @Test
+    fun aListItemShowsItsLabelInItsColumnAndHangsItsLines() {
+        val presented = present("- Item 1\n  * Item 2\n1. Numbered")
+        assertEquals("•Item 1\u200B◦Item 2\u200B1.Numbered", visible(presented.shown))
+        val (first, nested, numbered) = presented.text.paragraphStyles.map { it.item.textIndent!! }
+        assertEquals(0.sp, first.firstLine)
+        assertTrue(first.restLine.value > 0f)
+        assertTrue(nested.restLine.value > first.restLine.value, "a nested item hangs further")
+        assertTrue(numbered.restLine.value > 0f)
+        // The marker is not a place of the caret: its offsets go to the text of the item
+        val mapping = presented.mapping
+        val text = presented.shown.indexOf("Item 1")
+        assertEquals(listOf(text, text, text), (0..2).map(mapping::originalToTransformed))
+        assertEquals(2, mapping.transformedToOriginal(0))
+        // The bullets in the monospace font
+        val bullet = presented.shown.indexOf('•')
+        assertTrue(presented.text.spanStyles.any { it.start <= bullet && it.end > bullet && it.item.fontFamily == FontFamily.Monospace })
+    }
+
+    @Test
+    fun aNestedItemStartsAtTheTextOfItsParent() {
+        val presented = present("- a\n  - b\n    - c")
+        val indents = presented.text.paragraphStyles.map { it.item.textIndent!!.restLine.value }
+        assertTrue(indents[1] > indents[0] && indents[2] > indents[1])
+        // Each level by the width of the column of its parent and the gap: the same step twice
+        assertEquals(indents[1] - indents[0], indents[2] - indents[1], 0.01f)
+    }
+
+    @Test
+    fun theNumbersFollowThePlaceOfTheItemsAndTheirLevel() {
+        val presented = present("1. a\n1. b\n   1. c\n   1. d\n      1. e\n1. f")
+        assertEquals("1.a\u200B2.b\u200Ba.c\u200Bb.d\u200Bi.e\u200B3.f", visible(presented.shown))
+        assertEquals("•x\u200B1.y\u200B▪z", visible(present("- x\n  1. y\n    - z").shown), "a numbered list under a bullet is in numbers, the bullets by their depth")
+    }
+
+    @Test
+    fun theLinesOfAnItemAreAtItsText() {
+        val presented = present("- first\n  more of it\nafter")
+        assertEquals("•first\u200Bmore of it\u200Bafter", visible(presented.shown))
+        val (item, line, after) = presented.text.paragraphStyles.map { it.item.textIndent }
+        assertEquals(item!!.restLine, line!!.firstLine, "the line break in the item at its text")
+        assertEquals(item.restLine, line.restLine)
+        assertTrue(after == null || after.firstLine.value == 0f, "the next paragraph out of the list")
+    }
+
+    @Test
+    fun boldInAListItem() {
+        val presented = present("- Item with **bold** text")
+        assertEquals("•Item with bold text", visible(presented.shown))
+        val bold = presented.shown.indexOf("bold")
+        assertTrue(presented.text.spanStyles.any { bold >= it.start && bold + 4 <= it.end && it.item.fontWeight == FontWeight.Bold })
+    }
+
+    @Test
+    fun theCaretRevealsNoDelimiter() {
+        // The layout of a text does not depend on the caret (docs/plans/text-fidelity.md)
+        for (text in listOf("a **b** c", "a *b* c", "a ~~b~~ c", "a `b` c", "a \\* c", "## Title\nnext")) {
+            val still = present(text)
+            for (caret in 0..text.length) assertEquals(still.shown, present(text, reveal = TextRange(caret)).shown, "\"$text\" with the caret at $caret")
+        }
+    }
+
+    @Test
+    fun theCaretStandsNeitherInAMarkerNorInAnEscape() {
+        val heading = present("## Title")
+        assertTrue(!heading.mapping.caretMayStand(0) && !heading.mapping.caretMayStand(2) && heading.mapping.caretMayStand(3))
+        val item = present("- item")
+        assertTrue(!item.mapping.caretMayStand(1) && item.mapping.caretMayStand(2))
+        val escape = present("a \\* b")
+        assertTrue(escape.mapping.caretMayStand(2) && !escape.mapping.caretMayStand(3))
+    }
+
+    @Test
+    fun theCaretInAFormulaLeavesItAnObject() {
+        val presented = present("a \$x\$ b", reveal = TextRange(3), struts = exact)
+        assertEquals("a ￼⁠￼ b", presented.shown, "no source in the line")
+        assertTrue(presented.mapping.insideObject(3), "the caret in its source keeps its own moves")
+    }
+
+    @Test
+    fun aLinkUnderlinesItsTextAndHidesItsAddressWithTheCaretToo() {
+        val text = "Read [the guide](https://example.com) now"
+        val hidden = present(text)
+        assertEquals("Read the guide now", hidden.shown)
+        val guide = hidden.shown.indexOf("the guide")
+        assertTrue(hidden.text.spanStyles.any { guide >= it.start && guide + 9 <= it.end && it.item.textDecoration?.contains(TextDecoration.Underline) == true })
+
+        // The caret in its text: the address for the strip, the caret not in it
+        val inText = present(text, reveal = TextRange(8))
+        assertEquals("Read the guide now", inText.shown)
+        val address = inText.hiddenAtCaret!!
+        assertEquals("https://example.com", text.substring(address.source.first, address.source.last + 1))
+        assertTrue(!address.caretIn)
+        // The caret in its address
+        assertTrue(present(text, reveal = TextRange(text.indexOf("example"))).hiddenAtCaret!!.caretIn)
+        assertTrue(inText.mapping.insideObject(text.indexOf("example")), "the address keeps the caret's own moves")
+    }
+}

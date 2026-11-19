@@ -1,4 +1,4 @@
-// JNI entry points of io.github.valerioisufi.drawview.lecture.transcription.WhisperNative (desktop
+// JNI entry points of io.github.valerioisufi.pageboard.lecture.transcription.WhisperNative (desktop
 // JVM): the speech recognition of whisper.cpp (linked statically), for the lecture assistant.
 #include "whisper.h"
 #include <jni.h>
@@ -58,7 +58,7 @@ bool starts_with_continuation_byte(const std::string& text) {
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_lecture_transcription_WhisperNative_nInit(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_lecture_transcription_WhisperNative_nInit(
     JNIEnv* env, jclass, jstring model_path, jboolean use_gpu) {
     whisper_log_set(quiet_log, nullptr);
     whisper_context_params params = whisper_context_default_params();
@@ -71,7 +71,7 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_lecture_transcripti
 
 // The segments of [samples] (mono, 16 kHz, -1..1) as JSON, {"segments":[{"start":s,"end":s,"text":...}]}
 // (UTF-8 bytes), or null when the transcription failed or was aborted.
-JNIEXPORT jbyteArray JNICALL Java_io_github_valerioisufi_drawview_lecture_transcription_WhisperNative_nTranscribe(
+JNIEXPORT jbyteArray JNICALL Java_io_github_valerioisufi_pageboard_lecture_transcription_WhisperNative_nTranscribe(
     JNIEnv* env, jclass, jlong handle, jfloatArray samples, jstring language, jstring prompt, jint threads) {
     auto* context = reinterpret_cast<Context*>(handle);
     if (!context) return nullptr;
@@ -134,13 +134,13 @@ JNIEXPORT jbyteArray JNICALL Java_io_github_valerioisufi_drawview_lecture_transc
 }
 
 // Stops the transcription in progress (from another thread): it returns null.
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_lecture_transcription_WhisperNative_nAbort(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_lecture_transcription_WhisperNative_nAbort(
     JNIEnv*, jclass, jlong handle) {
     auto* context = reinterpret_cast<Context*>(handle);
     if (context) context->abort = true;
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_lecture_transcription_WhisperNative_nFree(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_lecture_transcription_WhisperNative_nFree(
     JNIEnv*, jclass, jlong handle) {
     auto* context = reinterpret_cast<Context*>(handle);
     if (!context) return;

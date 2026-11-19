@@ -17,11 +17,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "io.github.valerioisufi.drawview.MainKt"
+        mainClass = "io.github.valerioisufi.pageboard.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.valerioisufi.drawview"
+            packageName = "io.github.valerioisufi.pageboard"
             packageVersion = "1.0.0"
 
             macOS {

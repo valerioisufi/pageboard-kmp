@@ -44,12 +44,12 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "io.github.valerioisufi.drawview.sync.ui.generated.resources"
+    packageOfResClass = "io.github.valerioisufi.pageboard.sync.ui.generated.resources"
 }
 
 // The sync of DrawView is experimental for its users; the modules of the repository use it freely
 kotlin {
     sourceSets.all {
-        languageSettings.optIn("io.github.valerioisufi.drawview.sync.protocol.ExperimentalSyncApi")
+        languageSettings.optIn("io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi")
     }
 }

@@ -1,4 +1,4 @@
-package = io.github.valerioisufi.drawview.pdf.cinterop
+package = io.github.valerioisufi.pageboard.pdf.cinterop
 headers = pdfium_bridge.h
 headerFilter = pdfium_bridge.h
 staticLibraries = libpageboard_pdf.a

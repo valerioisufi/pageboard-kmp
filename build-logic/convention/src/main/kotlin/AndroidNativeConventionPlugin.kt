@@ -21,7 +21,7 @@ class AndroidNativeConventionPlugin : Plugin<Project> {
 
         val engine = name.removePrefix("pageboard-native-")
         extensions.configure<LibraryExtension> {
-            namespace = "io.github.valerioisufi.drawview.nativelibs.$engine"
+            namespace = "io.github.valerioisufi.pageboard.nativelibs.$engine"
             compileSdk = libs.version("android-compileSdk").toInt()
             ndkVersion = libs.version("android-ndk")
 
@@ -29,7 +29,7 @@ class AndroidNativeConventionPlugin : Plugin<Project> {
                 minSdk = libs.version("android-minSdk").toInt()
                 externalNativeBuild {
                     cmake {
-                        arguments += listOf("-DANDROID_STL=c++_static", "-DDRAWVIEW_BUILD_JNI=ON")
+                        arguments += listOf("-DANDROID_STL=c++_static", "-DPAGEBOARD_BUILD_JNI=ON")
                     }
                 }
             }

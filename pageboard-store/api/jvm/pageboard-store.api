@@ -1,6 +1,6 @@
-public abstract interface class io/github/valerioisufi/drawview/store/DocumentCatalog {
-	public abstract fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun createDocument$default (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public abstract interface class io/github/valerioisufi/pageboard/store/DocumentCatalog {
+	public abstract fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun createDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun createFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -18,50 +18,50 @@ public abstract interface class io/github/valerioisufi/drawview/store/DocumentCa
 	public abstract fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/DocumentCatalog$DefaultImpls {
-	public static synthetic fun createDocument$default (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/DocumentCatalog$DefaultImpls {
+	public static synthetic fun createDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/DocumentOutline {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/DocumentOutline$Companion;
+public final class io/github/valerioisufi/pageboard/store/DocumentOutline {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/DocumentOutline$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
-	public final fun findResource (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawResource;
+	public final fun findResource (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/DrawResource;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getPages ()Ljava/util/List;
 	public final fun getResources ()Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/store/DocumentOutline$Companion {
-	public final fun of (Lio/github/valerioisufi/drawview/model/DrawDocument;)Lio/github/valerioisufi/drawview/store/DocumentOutline;
+public final class io/github/valerioisufi/pageboard/store/DocumentOutline$Companion {
+	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawDocument;)Lio/github/valerioisufi/pageboard/store/DocumentOutline;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/DocumentStore : io/github/valerioisufi/drawview/store/DocumentCatalog, io/github/valerioisufi/drawview/store/OperationLog, io/github/valerioisufi/drawview/store/SharingStore {
+public abstract interface class io/github/valerioisufi/pageboard/store/DocumentStore : io/github/valerioisufi/pageboard/store/DocumentCatalog, io/github/valerioisufi/pageboard/store/OperationLog, io/github/valerioisufi/pageboard/store/SharingStore {
 	public fun closeDocument (Ljava/lang/String;)V
 	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
-	public abstract fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
-	public abstract fun insertDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getPersistence ()Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;
+	public abstract fun getStrokeModeller ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
+	public abstract fun insertDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadPage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageFingerprint (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/DocumentStore$DefaultImpls {
-	public static fun closeDocument (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;)V
-	public static fun flush (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static fun loadOutline (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun loadPage (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun pageFingerprint (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun proofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveProofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/DocumentStore$DefaultImpls {
+	public static fun closeDocument (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;)V
+	public static fun flush (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun loadOutline (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun loadPage (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun pageFingerprint (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun proofs (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveProofs (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/DocumentSummary {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZ)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/store/DocumentSummary {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/pageboard/model/PageBackground;ZIZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/pageboard/model/PageBackground;ZIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Z
 	public final fun component11 ()I
@@ -73,12 +73,12 @@ public final class io/github/valerioisufi/drawview/store/DocumentSummary {
 	public final fun component6 ()J
 	public final fun component7 ()F
 	public final fun component8 ()F
-	public final fun component9 ()Lio/github/valerioisufi/drawview/model/PageBackground;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZ)Lio/github/valerioisufi/drawview/store/DocumentSummary;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/DocumentSummary;
+	public final fun component9 ()Lio/github/valerioisufi/pageboard/model/PageBackground;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/pageboard/model/PageBackground;ZIZ)Lio/github/valerioisufi/pageboard/store/DocumentSummary;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/pageboard/model/PageBackground;ZIZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/DocumentSummary;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCreatedAt ()J
-	public final fun getDefaultBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getDefaultBackground ()Lio/github/valerioisufi/pageboard/model/PageBackground;
 	public final fun getDefaultHeightMm ()F
 	public final fun getDefaultWidthMm ()F
 	public final fun getFolderId ()Ljava/lang/String;
@@ -93,7 +93,7 @@ public final class io/github/valerioisufi/drawview/store/DocumentSummary {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/FolderSummary {
+public final class io/github/valerioisufi/pageboard/store/FolderSummary {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -102,8 +102,8 @@ public final class io/github/valerioisufi/drawview/store/FolderSummary {
 	public final fun component4 ()J
 	public final fun component5 ()J
 	public final fun component6 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)Lio/github/valerioisufi/drawview/store/FolderSummary;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/FolderSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/FolderSummary;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)Lio/github/valerioisufi/pageboard/store/FolderSummary;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/FolderSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/FolderSummary;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCreatedAt ()J
 	public final fun getId ()Ljava/lang/String;
@@ -115,7 +115,7 @@ public final class io/github/valerioisufi/drawview/store/FolderSummary {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/InMemoryKeyValueStorage : io/github/valerioisufi/drawview/store/KeyValueStorage {
+public final class io/github/valerioisufi/pageboard/store/InMemoryKeyValueStorage : io/github/valerioisufi/pageboard/store/KeyValueStorage {
 	public fun <init> ()V
 	public fun get (Ljava/lang/String;)Ljava/lang/String;
 	public final fun getKeys ()Ljava/util/Set;
@@ -123,11 +123,11 @@ public final class io/github/valerioisufi/drawview/store/InMemoryKeyValueStorage
 	public fun set (Ljava/lang/String;Ljava/lang/String;)Z
 }
 
-public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore : io/github/valerioisufi/drawview/model/change/DocumentPersistence, io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore, io/github/valerioisufi/drawview/store/space/SpaceStore {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/KeyValueDocumentStore$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun appendOperation (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore : io/github/valerioisufi/pageboard/model/change/DocumentPersistence, io/github/valerioisufi/pageboard/store/DocumentStore, io/github/valerioisufi/pageboard/store/PreferenceStore, io/github/valerioisufi/pageboard/store/space/SpaceStore {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/KeyValueDocumentStore$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/model/StrokeModeller;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/model/StrokeModeller;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun appendOperation (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun catalogItems (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun catalogOperationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun catalogProofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -135,22 +135,22 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun closeDocument (Ljava/lang/String;)V
 	public fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun createFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun deleteDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun deleteForGood (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public synthetic fun getDocuments ()Lkotlinx/coroutines/flow/Flow;
 	public fun getDocuments ()Lkotlinx/coroutines/flow/StateFlow;
 	public synthetic fun getFolders ()Lkotlinx/coroutines/flow/Flow;
 	public fun getFolders ()Lkotlinx/coroutines/flow/StateFlow;
-	public fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
-	public fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public fun getPersistence ()Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;
+	public fun getStrokeModeller ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
 	public synthetic fun getTrash ()Lkotlinx/coroutines/flow/Flow;
 	public fun getTrash ()Lkotlinx/coroutines/flow/StateFlow;
-	public fun insertDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun insertDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -170,54 +170,54 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun restore (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCatalogProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun savePdf (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveResource (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveSpace (Lio/github/valerioisufi/drawview/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveStrokes (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lio/github/valerioisufi/pageboard/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveSpace (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/pageboard/model/DrawPage;Lio/github/valerioisufi/pageboard/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setPreference (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/pageboard/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore$Companion {
+public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore$Companion {
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/KeyValueStorage {
+public abstract interface class io/github/valerioisufi/pageboard/store/KeyValueStorage {
 	public abstract fun get (Ljava/lang/String;)Ljava/lang/String;
 	public abstract fun remove (Ljava/lang/String;)V
 	public abstract fun set (Ljava/lang/String;Ljava/lang/String;)Z
 }
 
-public final class io/github/valerioisufi/drawview/store/LibraryTrash {
+public final class io/github/valerioisufi/pageboard/store/LibraryTrash {
 	public fun <init> (Ljava/util/Collection;Ljava/util/Collection;)V
 	public final fun availableDocumentName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public final fun availableFolderName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public final fun getItems ()Ljava/util/List;
 	public final fun isDocumentLive (Ljava/lang/String;)Z
 	public final fun isFolderLive (Ljava/lang/String;)Z
-	public final fun item (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/TrashedItem;
+	public final fun item (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/TrashedItem;
 	public final fun itemsInside (Ljava/lang/String;)Ljava/util/List;
-	public final fun restoreTarget (Lio/github/valerioisufi/drawview/store/TrashedItem;)Ljava/lang/String;
+	public final fun restoreTarget (Lio/github/valerioisufi/pageboard/store/TrashedItem;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/LibraryTrash$Entry {
+public final class io/github/valerioisufi/pageboard/store/LibraryTrash$Entry {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -225,8 +225,8 @@ public final class io/github/valerioisufi/drawview/store/LibraryTrash$Entry {
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/Long;
 	public final fun component5 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)Lio/github/valerioisufi/pageboard/store/LibraryTrash$Entry;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/LibraryTrash$Entry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/LibraryTrash$Entry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
@@ -237,45 +237,45 @@ public final class io/github/valerioisufi/drawview/store/LibraryTrash$Entry {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/LoadedPage {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;Ljava/util/List;)V
-	public final fun getContent ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
+public final class io/github/valerioisufi/pageboard/store/LoadedPage {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Ljava/util/List;)V
+	public final fun getContent ()Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getResources ()Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/store/OpenDocument {
+public final class io/github/valerioisufi/pageboard/store/OpenDocument {
 	public final fun compact (Ljava/util/Map;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun compactedOperations (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun edit (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
-	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/DrawDocument;
 	public final fun getResourcesReceived ()Lkotlinx/coroutines/flow/SharedFlow;
-	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun getSession ()Lio/github/valerioisufi/pageboard/model/change/DocumentSession;
 	public final fun operationsAfter (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun proofs (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceReceived (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun saveProofs (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/OpenDocuments {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun close (Lio/github/valerioisufi/drawview/store/OpenDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/OpenDocuments {
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close (Lio/github/valerioisufi/pageboard/store/OpenDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
-	public final fun getStore ()Lio/github/valerioisufi/drawview/store/DocumentStore;
-	public final fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
-	public final fun insert (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun insert$default (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun getStore ()Lio/github/valerioisufi/pageboard/store/DocumentStore;
+	public final fun getStrokeModeller ()Lio/github/valerioisufi/pageboard/model/StrokeModeller;
+	public final fun insert (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insert$default (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun open (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun rename (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun setReadOnly (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/OperationLog {
+public abstract interface class io/github/valerioisufi/pageboard/store/OperationLog {
 	public abstract fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -285,12 +285,12 @@ public abstract interface class io/github/valerioisufi/drawview/store/OperationL
 	public abstract fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/OperationLog$DefaultImpls {
-	public static fun proofs (Lio/github/valerioisufi/drawview/store/OperationLog;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveProofs (Lio/github/valerioisufi/drawview/store/OperationLog;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/OperationLog$DefaultImpls {
+	public static fun proofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveProofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/PageOutline {
+public final class io/github/valerioisufi/pageboard/store/PageOutline {
 	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
 	public final fun getCustomElements ()Ljava/util/List;
 	public final fun getId ()Ljava/lang/String;
@@ -298,41 +298,41 @@ public final class io/github/valerioisufi/drawview/store/PageOutline {
 	public final fun getTexts ()Ljava/util/List;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/PreferenceStore {
+public abstract interface class io/github/valerioisufi/pageboard/store/PreferenceStore {
 	public abstract fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setPreference (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/SharingStore {
+public abstract interface class io/github/valerioisufi/pageboard/store/SharingStore {
 	public abstract fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/pageboard/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/SharingStore$DefaultImpls {
-	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/SharingStore$DefaultImpls {
+	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/pageboard/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/TrashedItem {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/store/TrashedItem {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()J
 	public final fun component7 ()Ljava/util/Set;
 	public final fun component8 ()Z
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)Lio/github/valerioisufi/drawview/store/TrashedItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/TrashedItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/TrashedItem;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)Lio/github/valerioisufi/pageboard/store/TrashedItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/TrashedItem;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/TrashedItem;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDocumentIds ()Ljava/util/Set;
 	public final fun getFolderId ()Ljava/lang/String;
 	public final fun getFolderName ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
-	public final fun getKind ()Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getTrashedAt ()J
 	public fun hashCode ()I
@@ -340,22 +340,22 @@ public final class io/github/valerioisufi/drawview/store/TrashedItem {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/TrashedItem$Kind : java/lang/Enum {
-	public static final field DOCUMENT Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
-	public static final field FOLDER Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+public final class io/github/valerioisufi/pageboard/store/TrashedItem$Kind : java/lang/Enum {
+	public static final field DOCUMENT Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
+	public static final field FOLDER Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/store/TrashedItem$Kind;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/AddDocument : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/AddDocument$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/AddDocument : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/AddDocument$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/AddDocument;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/AddDocument;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/AddDocument;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/AddDocument;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/AddDocument;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/AddDocument;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getFolder ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
@@ -365,30 +365,30 @@ public final class io/github/valerioisufi/drawview/store/space/AddDocument : io/
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/AddDocument$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/AddDocument$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/AddDocument$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/AddDocument$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/AddDocument;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/AddDocument;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/AddDocument;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/AddDocument;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/AddDocument$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/AddDocument$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/AddFolder : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/AddFolder$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/AddFolder : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/AddFolder$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/AddFolder;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/AddFolder;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/AddFolder;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/AddFolder;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/AddFolder;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/AddFolder;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -399,50 +399,50 @@ public final class io/github/valerioisufi/drawview/store/space/AddFolder : io/gi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/AddFolder$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/AddFolder$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/AddFolder$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/AddFolder$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/AddFolder;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/AddFolder;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/AddFolder;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/AddFolder;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/AddFolder$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/AddFolder$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/CatalogChange$Companion;
-	public abstract fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+public abstract interface class io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CatalogChange$Companion;
+	public abstract fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public abstract fun getIds ()Ljava/util/List;
 	public fun isWellFormed ()Z
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogChange$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/CatalogChange$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogChange$DefaultImpls {
-	public static fun isWellFormed (Lio/github/valerioisufi/drawview/store/space/CatalogChange;)Z
+public final class io/github/valerioisufi/pageboard/store/space/CatalogChange$DefaultImpls {
+	public static fun isWellFormed (Lio/github/valerioisufi/pageboard/store/space/CatalogChange;)Z
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogEntry {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)V
+public final class io/github/valerioisufi/pageboard/store/space/CatalogEntry {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Z
 	public final fun component6 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)Lio/github/valerioisufi/drawview/store/space/CatalogEntry;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/CatalogEntry;Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/CatalogEntry;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBroughtBy ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
-	public final fun getKind ()Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getParent ()Ljava/lang/String;
 	public final fun getTrashed ()Z
@@ -450,135 +450,135 @@ public final class io/github/valerioisufi/drawview/store/space/CatalogEntry {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogItem {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/CatalogItem$Companion;
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;ZLio/github/valerioisufi/drawview/model/Stamp;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;ZLio/github/valerioisufi/drawview/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/store/space/CatalogItem {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CatalogItem$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Z
-	public final fun component11 ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+	public final fun component11 ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun component3 ()Z
 	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component5 ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component7 ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun component8 ()Ljava/lang/String;
-	public final fun component9 ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;ZLio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/CatalogItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Stamp;ZLio/github/valerioisufi/drawview/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/CatalogItem;
+	public final fun component9 ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogItem;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBroughtBy ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getInSpace ()Z
-	public final fun getKind ()Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getNamed ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getNamed ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getParent ()Ljava/lang/String;
-	public final fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun getPresence ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getPlaced ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun getPresence ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getTrashed ()Z
-	public final fun getTrashedVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getTrashedVersion ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/CatalogItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/CatalogItem$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/CatalogItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/CatalogItem$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/CatalogItem;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/CatalogItem;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/CatalogItem;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogItem$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/CatalogItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogItemKind : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/CatalogItemKind$Companion;
-	public static final field DOCUMENT Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
-	public static final field FOLDER Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+public final class io/github/valerioisufi/pageboard/store/space/CatalogItemKind : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind$Companion;
+	public static final field DOCUMENT Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
+	public static final field FOLDER Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/store/space/CatalogItemKind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogItemKind$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/CatalogItemKind$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/space/CatalogObserver {
-	public abstract fun onChange (Lio/github/valerioisufi/drawview/store/space/CommittedCatalogChange;)V
+public abstract interface class io/github/valerioisufi/pageboard/store/space/CatalogObserver {
+	public abstract fun onChange (Lio/github/valerioisufi/pageboard/store/space/CommittedCatalogChange;)V
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogOperation {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/CatalogOperation$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/store/space/CatalogChange;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/model/change/OperationId;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/store/space/CatalogChange;
-	public final fun copy (Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/store/space/CatalogChange;)Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/store/space/CatalogChange;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
+public final class io/github/valerioisufi/pageboard/store/space/CatalogOperation {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CatalogOperation$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/change/OperationId;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/store/space/CatalogChange;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/model/change/OperationId;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
+	public final fun copy (Lio/github/valerioisufi/pageboard/model/change/OperationId;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/store/space/CatalogChange;)Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lio/github/valerioisufi/pageboard/model/change/OperationId;Lio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/store/space/CatalogChange;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getChange ()Lio/github/valerioisufi/drawview/store/space/CatalogChange;
-	public final fun getId ()Lio/github/valerioisufi/drawview/model/change/OperationId;
-	public final fun getStamp ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getChange ()Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
+	public final fun getId ()Lio/github/valerioisufi/pageboard/model/change/OperationId;
+	public final fun getStamp ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/CatalogOperation$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/CatalogOperation$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/CatalogOperation$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/CatalogOperation$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogOperation$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/CatalogOperation$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CatalogSession {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun addObserver (Lio/github/valerioisufi/drawview/store/space/CatalogObserver;)V
-	public final fun admits (Lio/github/valerioisufi/drawview/store/space/CatalogOperation;)Z
-	public final fun getCatalog ()Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;
-	public final fun getClock ()Lio/github/valerioisufi/drawview/model/change/HybridClock;
+public final class io/github/valerioisufi/pageboard/store/space/CatalogSession {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Ljava/lang/String;Ljava/util/Map;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addObserver (Lio/github/valerioisufi/pageboard/store/space/CatalogObserver;)V
+	public final fun admits (Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;)Z
+	public final fun getCatalog ()Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;
+	public final fun getClock ()Lio/github/valerioisufi/pageboard/model/change/HybridClock;
 	public final fun getReplica ()Ljava/lang/String;
 	public final fun getSpaceId ()Ljava/lang/String;
 	public final fun getVersionVector ()Ljava/util/Map;
 	public final fun isReadOnly ()Z
 	public final fun lastApplied (Ljava/lang/String;)J
-	public final fun receive (Lio/github/valerioisufi/drawview/store/space/CatalogOperation;)Z
-	public final fun removeObserver (Lio/github/valerioisufi/drawview/store/space/CatalogObserver;)V
+	public final fun receive (Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;)Z
+	public final fun removeObserver (Lio/github/valerioisufi/pageboard/store/space/CatalogObserver;)V
 	public final fun setReadOnly (Z)V
-	public final fun submit (Lio/github/valerioisufi/drawview/store/space/CatalogChange;)Lio/github/valerioisufi/drawview/store/space/CommittedCatalogChange;
+	public final fun submit (Lio/github/valerioisufi/pageboard/store/space/CatalogChange;)Lio/github/valerioisufi/pageboard/store/space/CommittedCatalogChange;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CommittedCatalogChange {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lio/github/valerioisufi/drawview/store/space/CatalogChange;Z)V
-	public final fun getInverse ()Lio/github/valerioisufi/drawview/store/space/CatalogChange;
-	public final fun getOperation ()Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
+public final class io/github/valerioisufi/pageboard/store/space/CommittedCatalogChange {
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lio/github/valerioisufi/pageboard/store/space/CatalogChange;Z)V
+	public final fun getInverse ()Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
+	public final fun getOperation ()Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
 	public final fun getReceived ()Z
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CompositeCatalogChange : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/CompositeCatalogChange : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange$Companion;
 	public static final field MAX_CHANGES I
 	public fun <init> (Ljava/util/List;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/util/List;
-	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getChanges ()Ljava/util/List;
 	public fun getIds ()Ljava/util/List;
@@ -587,29 +587,29 @@ public final class io/github/valerioisufi/drawview/store/space/CompositeCatalogC
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/CompositeCatalogChange$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/CompositeCatalogChange$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/CompositeCatalogChange;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/CompositeCatalogChange;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/CompositeCatalogChange$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/CompositeCatalogChange$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/MoveItem : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/MoveItem$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/MoveItem : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/MoveItem$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/MoveItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/MoveItem;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/MoveItem;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/MoveItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/MoveItem;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/MoveItem;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -619,28 +619,28 @@ public final class io/github/valerioisufi/drawview/store/space/MoveItem : io/git
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/MoveItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/MoveItem$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/MoveItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/MoveItem$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/MoveItem;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/MoveItem;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/MoveItem;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/MoveItem;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/MoveItem$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/MoveItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RemoveFromSpace : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/RemoveFromSpace : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace$Companion;
 	public fun <init> (Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -649,29 +649,29 @@ public final class io/github/valerioisufi/drawview/store/space/RemoveFromSpace :
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/RemoveFromSpace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/RemoveFromSpace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/RemoveFromSpace;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/RemoveFromSpace;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RemoveFromSpace$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/RemoveFromSpace$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RenameFolder : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/RenameFolder$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/RenameFolder : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/RenameFolder$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/RenameFolder;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/RenameFolder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/RenameFolder;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/RenameFolder;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/RenameFolder;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/RenameFolder;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -681,28 +681,28 @@ public final class io/github/valerioisufi/drawview/store/space/RenameFolder : io
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/RenameFolder$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/RenameFolder$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/RenameFolder$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/RenameFolder$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/RenameFolder;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/RenameFolder;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/RenameFolder;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/RenameFolder;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RenameFolder$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/RenameFolder$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RestoreItem : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/RestoreItem$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/RestoreItem : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/RestoreItem$Companion;
 	public fun <init> (Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/RestoreItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/RestoreItem;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/RestoreItem;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/RestoreItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/RestoreItem;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/RestoreItem;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -711,46 +711,46 @@ public final class io/github/valerioisufi/drawview/store/space/RestoreItem : io/
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/RestoreItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/RestoreItem$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/RestoreItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/RestoreItem$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/RestoreItem;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/RestoreItem;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/RestoreItem;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/RestoreItem;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/RestoreItem$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/RestoreItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/SpaceCatalog {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/SpaceCatalog$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/SpaceCatalog {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog$Companion;
 	public static final field MAX_ID_LENGTH I
 	public static final field MAX_NAME_LENGTH I
 	public fun <init> ()V
 	public fun <init> (Ljava/util/Collection;)V
 	public synthetic fun <init> (Ljava/util/Collection;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/CatalogItem;
+	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
 	public final fun getItems ()Ljava/util/Map;
-	public final fun latestStamp ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun latestStamp ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun view ()Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/SpaceCatalog$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/SpaceCatalog$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/store/space/SpaceLibrary {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun admits (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/store/space/SpaceLibrary {
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun admits (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun folderOf-YNEx5aM (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getLocalOperations ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun has (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun join (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun join$default (Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun join$default (Lio/github/valerioisufi/pageboard/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun lastApplied (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun leave (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun newRootFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -760,30 +760,30 @@ public final class io/github/valerioisufi/drawview/store/space/SpaceLibrary {
 	public final fun reconcile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun share (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun share$default (Lio/github/valerioisufi/pageboard/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun spaceOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop ()V
-	public final fun update (Lio/github/valerioisufi/drawview/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun update (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun view (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/SpaceOperation {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;)V
+public final class io/github/valerioisufi/pageboard/store/space/SpaceOperation {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;)Lio/github/valerioisufi/drawview/store/space/SpaceOperation;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/SpaceOperation;Ljava/lang/String;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/SpaceOperation;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;)Lio/github/valerioisufi/pageboard/store/space/SpaceOperation;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/SpaceOperation;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/SpaceOperation;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getOperation ()Lio/github/valerioisufi/drawview/store/space/CatalogOperation;
+	public final fun getOperation ()Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;
 	public final fun getSpaceId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/store/space/SpaceStore {
+public abstract interface class io/github/valerioisufi/pageboard/store/space/SpaceStore {
 	public abstract fun catalogItems (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun catalogOperationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun catalogProofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -792,21 +792,21 @@ public abstract interface class io/github/valerioisufi/drawview/store/space/Spac
 	public abstract fun putFolder (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun putTrashed (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun removeSpace (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/drawview/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun saveCatalogProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveSpace (Lio/github/valerioisufi/drawview/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveSpace (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/StoredSpace {
+public final class io/github/valerioisufi/pageboard/store/space/StoredSpace {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lio/github/valerioisufi/drawview/store/space/StoredSpace;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/StoredSpace;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/StoredSpace;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lio/github/valerioisufi/pageboard/store/space/StoredSpace;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/StoredSpace;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public final fun getReadOnly ()Z
@@ -816,13 +816,13 @@ public final class io/github/valerioisufi/drawview/store/space/StoredSpace {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/TrashItem : io/github/valerioisufi/drawview/store/space/CatalogChange {
-	public static final field Companion Lio/github/valerioisufi/drawview/store/space/TrashItem$Companion;
+public final class io/github/valerioisufi/pageboard/store/space/TrashItem : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/TrashItem$Companion;
 	public fun <init> (Ljava/lang/String;)V
-	public fun applyTo (Lio/github/valerioisufi/drawview/store/space/SpaceCatalog;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/store/space/CatalogChange;
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/space/TrashItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/space/TrashItem;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/space/TrashItem;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/TrashItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/TrashItem;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/TrashItem;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getIds ()Ljava/util/List;
@@ -831,18 +831,18 @@ public final class io/github/valerioisufi/drawview/store/space/TrashItem : io/gi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/store/space/TrashItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/space/TrashItem$$serializer;
+public final synthetic class io/github/valerioisufi/pageboard/store/space/TrashItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/TrashItem$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/store/space/TrashItem;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/TrashItem;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/store/space/TrashItem;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/TrashItem;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/store/space/TrashItem$Companion {
+public final class io/github/valerioisufi/pageboard/store/space/TrashItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

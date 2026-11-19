@@ -38,7 +38,7 @@ public class TeXRender(private var nativePtr: Long) {
     }
 
     /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
-    public fun ops(): List<io.github.valerioisufi.drawview.canvas.render.tile.FormulaOp> {
+    public fun ops(): List<io.github.valerioisufi.pageboard.canvas.render.tile.FormulaOp> {
         val r = ActionRecorder()
         nDraw(nativePtr, r, 0, 0)
         return r.toOps()

@@ -1,4 +1,4 @@
-public final class io/github/valerioisufi/drawview/lecture/ArrivalNotification {
+public final class io/github/valerioisufi/pageboard/lecture/ArrivalNotification {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun getChannel ()Ljava/lang/String;
@@ -6,18 +6,18 @@ public final class io/github/valerioisufi/drawview/lecture/ArrivalNotification {
 	public final fun getTitle ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
+public final class io/github/valerioisufi/pageboard/lecture/AssistantSettings {
 	public static final field $stable I
 	public static final field CURRENT_VERSION I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/AssistantSettings$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/AssistantSettings$Companion;
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;I)V
-	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;ZLio/github/valerioisufi/pageboard/lecture/LocalEngine;I)V
+	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;ZLio/github/valerioisufi/pageboard/lecture/LocalEngine;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
-	public final fun component11 ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
+	public final fun component11 ()Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
 	public final fun component12 ()Z
-	public final fun component13 ()Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public final fun component13 ()Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
 	public final fun component14 ()I
 	public final fun component2 ()Z
 	public final fun component3 ()I
@@ -27,20 +27,20 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun component7 ()Ljava/util/Map;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;I)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZLio/github/valerioisufi/drawview/lecture/LocalEngine;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun copy (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;ZLio/github/valerioisufi/pageboard/lecture/LocalEngine;I)Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;ZLio/github/valerioisufi/pageboard/lecture/LocalEngine;IILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApiKey ()Ljava/lang/String;
 	public final fun getChunkSeconds ()I
 	public final fun getGenerateHere ()Z
 	public final fun getLiveLocalModels ()Ljava/util/Set;
-	public final fun getLocalEngine ()Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public final fun getLocalEngine ()Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
 	public final fun getLocalUrl ()Ljava/lang/String;
 	public final fun getNotesLanguage ()Ljava/lang/String;
 	public final fun getNotesSeconds ()I
-	public final fun getReceivedLectures ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
+	public final fun getReceivedLectures ()Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
 	public final fun getReviewAtTheEnd ()Z
-	public final fun getReviewProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun getReviewProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public final fun getSentToGoogle ()Ljava/util/Set;
 	public final fun getSpokenLanguage ()Ljava/lang/String;
 	public final fun getTasks ()Ljava/util/Map;
@@ -48,155 +48,155 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun getVersion ()I
 	public final fun getWhisperModel ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun modelOf (Lio/github/valerioisufi/drawview/lecture/TaskModel;)Ljava/lang/String;
-	public final fun task (Lio/github/valerioisufi/drawview/lecture/LectureTask;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+	public final fun modelOf (Lio/github/valerioisufi/pageboard/lecture/TaskModel;)Ljava/lang/String;
+	public final fun task (Lio/github/valerioisufi/pageboard/lecture/LectureTask;)Lio/github/valerioisufi/pageboard/lecture/TaskModel;
 	public fun toString ()Ljava/lang/String;
-	public final fun withTask (Lio/github/valerioisufi/drawview/lecture/LectureTask;Lio/github/valerioisufi/drawview/lecture/TaskModel;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun withTask (Lio/github/valerioisufi/pageboard/lecture/LectureTask;Lio/github/valerioisufi/pageboard/lecture/TaskModel;)Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/AssistantSettings$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/AssistantSettings$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/AssistantSettings$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/AssistantSettings$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/AssistantSettings;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/AssistantSettings$Companion {
-	public final fun defaultTask (Lio/github/valerioisufi/drawview/lecture/LectureTask;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+public final class io/github/valerioisufi/pageboard/lecture/AssistantSettings$Companion {
+	public final fun defaultTask (Lio/github/valerioisufi/pageboard/lecture/LectureTask;)Lio/github/valerioisufi/pageboard/lecture/TaskModel;
 	public final fun getCHUNK_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
 	public final fun getNOTES_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
 	public final fun getTHINKING_LEVELS ()Ljava/util/List;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/AssistantSettingsStore {
+public final class io/github/valerioisufi/pageboard/lecture/AssistantSettingsStore {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/SecretStorage;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/SecretStorage;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getHasApiKey ()Z
-	public final fun getSettings ()Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun getSettings ()Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
 	public final fun getUsesEnvironmentKey ()Z
-	public final fun update (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;)V
+	public final fun update (Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/AudioDownload : java/lang/Enum {
-	public static final field AUTOMATIC Lio/github/valerioisufi/drawview/lecture/AudioDownload;
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/AudioDownload$Companion;
-	public static final field ON_REQUEST Lio/github/valerioisufi/drawview/lecture/AudioDownload;
+public final class io/github/valerioisufi/pageboard/lecture/AudioDownload : java/lang/Enum {
+	public static final field AUTOMATIC Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/AudioDownload$Companion;
+	public static final field ON_REQUEST Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/AudioDownload;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/AudioDownload;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/AudioDownload$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/AudioDownload$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/CourseContext {
+public final class io/github/valerioisufi/pageboard/lecture/CourseContext {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/CourseContext$Companion;
-	public fun <init> (Ljava/lang/String;ZJLio/github/valerioisufi/drawview/lecture/Stamp;)V
-	public synthetic fun <init> (Ljava/lang/String;ZJLio/github/valerioisufi/drawview/lecture/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/CourseContext$Companion;
+	public fun <init> (Ljava/lang/String;ZJLio/github/valerioisufi/pageboard/lecture/Stamp;)V
+	public synthetic fun <init> (Ljava/lang/String;ZJLio/github/valerioisufi/pageboard/lecture/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Z
 	public final fun component3 ()J
-	public final fun component4 ()Lio/github/valerioisufi/drawview/lecture/Stamp;
-	public final fun copy (Ljava/lang/String;ZJLio/github/valerioisufi/drawview/lecture/Stamp;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/CourseContext;Ljava/lang/String;ZJLio/github/valerioisufi/drawview/lecture/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
+	public final fun component4 ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
+	public final fun copy (Ljava/lang/String;ZJLio/github/valerioisufi/pageboard/lecture/Stamp;)Lio/github/valerioisufi/pageboard/lecture/CourseContext;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/CourseContext;Ljava/lang/String;ZJLio/github/valerioisufi/pageboard/lecture/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/CourseContext;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEdited ()Z
 	public final fun getGeneratedAt ()J
-	public final fun getStamp ()Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun getStamp ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public final fun getText ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/CourseContext$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/CourseContext$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/CourseContext$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/CourseContext$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/CourseContext;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/CourseContext;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/CourseContext;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/CourseContext$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/CourseContext$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/DeviceModels {
+public final class io/github/valerioisufi/pageboard/lecture/DeviceModels {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Z)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getDownloads ()Lio/github/valerioisufi/drawview/ml/ModelDownloads;
+	public fun <init> (Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/ModelDownloads;Z)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/ModelDownloads;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDownloads ()Lio/github/valerioisufi/pageboard/ml/ModelDownloads;
 	public final fun getGenerators ()Ljava/util/List;
-	public final fun getInstalled ()Lio/github/valerioisufi/drawview/ml/InstalledModels;
-	public final fun getLoaded ()Lio/github/valerioisufi/drawview/ml/LoadedModels;
+	public final fun getInstalled ()Lio/github/valerioisufi/pageboard/ml/InstalledModels;
+	public final fun getLoaded ()Lio/github/valerioisufi/pageboard/ml/LoadedModels;
 	public final fun isAvailable ()Z
-	public final fun spec (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun spec (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ml/ModelSpec;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/DeviceUsage {
+public final class io/github/valerioisufi/pageboard/lecture/DeviceUsage {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/DeviceUsage$Companion;
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/TokenUsage;Lio/github/valerioisufi/drawview/lecture/Stamp;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/TokenUsage;Lio/github/valerioisufi/drawview/lecture/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/DeviceUsage$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;Lio/github/valerioisufi/pageboard/lecture/Stamp;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;Lio/github/valerioisufi/pageboard/lecture/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/lecture/TokenUsage;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/lecture/Stamp;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/TokenUsage;Lio/github/valerioisufi/drawview/lecture/Stamp;)Lio/github/valerioisufi/drawview/lecture/DeviceUsage;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/DeviceUsage;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/TokenUsage;Lio/github/valerioisufi/drawview/lecture/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/DeviceUsage;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;Lio/github/valerioisufi/pageboard/lecture/Stamp;)Lio/github/valerioisufi/pageboard/lecture/DeviceUsage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/DeviceUsage;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;Lio/github/valerioisufi/pageboard/lecture/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/DeviceUsage;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getName ()Ljava/lang/String;
-	public final fun getStamp ()Lio/github/valerioisufi/drawview/lecture/Stamp;
-	public final fun getUsage ()Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun getStamp ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
+	public final fun getUsage ()Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/DeviceUsage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/DeviceUsage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/DeviceUsage$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/DeviceUsage$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/DeviceUsage;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/DeviceUsage;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/DeviceUsage;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/DeviceUsage;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/DeviceUsage$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/DeviceUsage$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ExportResult {
+public final class io/github/valerioisufi/pageboard/lecture/ExportResult {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun getFailure ()Ljava/lang/String;
 	public final fun getFileName ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/GenerationLock {
+public final class io/github/valerioisufi/pageboard/lecture/GenerationLock {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/GenerationLock$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/GenerationLock$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;JJ)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
 	public final fun component4 ()J
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;JJ)Lio/github/valerioisufi/drawview/lecture/GenerationLock;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/GenerationLock;Ljava/lang/String;Ljava/lang/String;JJILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;JJ)Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/GenerationLock;Ljava/lang/String;Ljava/lang/String;JJILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
@@ -207,44 +207,44 @@ public final class io/github/valerioisufi/drawview/lecture/GenerationLock {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/GenerationLock$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/GenerationLock$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/GenerationLock$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/GenerationLock$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/GenerationLock;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/GenerationLock;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/GenerationLock$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/GenerationLock$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/GenerationOffer {
+public final class io/github/valerioisufi/pageboard/lecture/GenerationOffer {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureArrival;JLio/github/valerioisufi/drawview/lecture/ModelProvider;Z)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureArrival;JLio/github/valerioisufi/drawview/lecture/ModelProvider;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getArrival ()Lio/github/valerioisufi/drawview/lecture/LectureArrival;
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;JLio/github/valerioisufi/pageboard/lecture/ModelProvider;Z)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;JLio/github/valerioisufi/pageboard/lecture/ModelProvider;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getArrival ()Lio/github/valerioisufi/pageboard/lecture/LectureArrival;
 	public final fun getDurationMs ()J
 	public final fun getEstimatedTokens ()J
 	public final fun getLive ()Z
-	public final fun getProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun getProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ImportStep : java/lang/Enum {
-	public static final field CONVERTING Lio/github/valerioisufi/drawview/lecture/ImportStep;
-	public static final field REVIEWING Lio/github/valerioisufi/drawview/lecture/ImportStep;
-	public static final field TRANSCRIBING Lio/github/valerioisufi/drawview/lecture/ImportStep;
-	public static final field WAITING Lio/github/valerioisufi/drawview/lecture/ImportStep;
+public final class io/github/valerioisufi/pageboard/lecture/ImportStep : java/lang/Enum {
+	public static final field CONVERTING Lio/github/valerioisufi/pageboard/lecture/ImportStep;
+	public static final field REVIEWING Lio/github/valerioisufi/pageboard/lecture/ImportStep;
+	public static final field TRANSCRIBING Lio/github/valerioisufi/pageboard/lecture/ImportStep;
+	public static final field WAITING Lio/github/valerioisufi/pageboard/lecture/ImportStep;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/ImportStep;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/ImportStep;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/ImportStep;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/ImportStep;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/InstalledModel {
+public final class io/github/valerioisufi/pageboard/lecture/InstalledModel {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;JZ)V
 	public final fun getName ()Ljava/lang/String;
@@ -252,9 +252,9 @@ public final class io/github/valerioisufi/drawview/lecture/InstalledModel {
 	public final fun getSizeBytes ()J
 }
 
-public final class io/github/valerioisufi/drawview/lecture/Lecture {
+public final class io/github/valerioisufi/pageboard/lecture/Lecture {
 	public static final field $stable I
-	public final fun generatingElsewhere (J)Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun generatingElsewhere (J)Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public final fun getAudioShared ()Z
 	public final fun getCanGenerateReview ()Z
 	public final fun getCanPlayAudio ()Z
@@ -267,11 +267,11 @@ public final class io/github/valerioisufi/drawview/lecture/Lecture {
 	public final fun getFinalReview ()Ljava/lang/String;
 	public final fun getFollowedHere ()Z
 	public final fun getGenerates ()Z
-	public final fun getGeneration ()Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun getGeneration ()Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public final fun getHasAudio ()Z
 	public final fun getId ()Ljava/lang/String;
 	public final fun getImportProgress ()F
-	public final fun getImportStep ()Lio/github/valerioisufi/drawview/lecture/ImportStep;
+	public final fun getImportStep ()Lio/github/valerioisufi/pageboard/lecture/ImportStep;
 	public final fun getInterimTranscript ()Ljava/lang/String;
 	public final fun getLevel ()F
 	public final fun getMicrophoneInterrupted ()Z
@@ -279,97 +279,97 @@ public final class io/github/valerioisufi/drawview/lecture/Lecture {
 	public final fun getOtherUsage ()Ljava/util/Map;
 	public final fun getOutline ()Ljava/lang/String;
 	public final fun getPendingUpdates ()I
-	public final fun getPlayer ()Lio/github/valerioisufi/drawview/lecture/audio/RecordingPlayer;
-	public final fun getProblem ()Lio/github/valerioisufi/drawview/lecture/LectureProblem;
+	public final fun getPlayer ()Lio/github/valerioisufi/pageboard/lecture/audio/RecordingPlayer;
+	public final fun getProblem ()Lio/github/valerioisufi/pageboard/lecture/LectureProblem;
 	public final fun getProfessorPageIndex ()Ljava/lang/Integer;
 	public final fun getRecordedElsewhere ()Z
 	public final fun getRecordedOn ()Ljava/lang/String;
 	public final fun getRecordingHeardAt ()J
 	public final fun getReviewModel ()Ljava/lang/String;
 	public final fun getReviewProgressTokens ()I
-	public final fun getReviewProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
-	public final fun getReviewStatus ()Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
+	public final fun getReviewProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
+	public final fun getReviewStatus ()Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
 	public final fun getStartedAt ()J
-	public final fun getStatus ()Lio/github/valerioisufi/drawview/lecture/LectureStatus;
+	public final fun getStatus ()Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
 	public final fun getSuggestions ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
-	public final fun getTotalUsage ()Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun getTotalUsage ()Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public final fun getTranscript ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
-	public final fun getUsage ()Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun getUsage ()Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public final fun isAnalyzing ()Z
-	public final fun play (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;)V
-	public final fun updateSuggestion (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;)V
+	public final fun play (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;)V
+	public final fun updateSuggestion (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureAnchors {
+public final class io/github/valerioisufi/pageboard/lecture/LectureAnchors {
 	public static final field $stable I
 	public static final field AFTER_MS J
 	public static final field BEFORE_MS J
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureAnchors;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureAnchors;
 	public static final field MIN_SHARED_WORDS D
-	public final fun anchorOf (Lio/github/valerioisufi/drawview/model/DrawPage;JJJ)Lio/github/valerioisufi/drawview/model/geometry/Rect;
-	public final fun quoteAnchor (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PdfTextLayout;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
-	public static synthetic fun quoteAnchor$default (Lio/github/valerioisufi/drawview/lecture/LectureAnchors;Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun anchorOf (Lio/github/valerioisufi/pageboard/model/DrawPage;JJJ)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun quoteAnchor (Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public static synthetic fun quoteAnchor$default (Lio/github/valerioisufi/pageboard/lecture/LectureAnchors;Lio/github/valerioisufi/pageboard/model/DrawPage;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/PdfTextLayout;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureArrival {
+public final class io/github/valerioisufi/pageboard/lecture/LectureArrival {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;Ljava/lang/String;J)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;Ljava/lang/String;J)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()J
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;Ljava/lang/String;J)Lio/github/valerioisufi/drawview/lecture/LectureArrival;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureArrival;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureArrival;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;Ljava/lang/String;J)Lio/github/valerioisufi/pageboard/lecture/LectureArrival;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureArrival;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDirectory ()Ljava/lang/String;
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun getFrom ()Ljava/lang/String;
-	public final fun getKind ()Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
 	public final fun getStartedAt ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureArrival$Kind : java/lang/Enum {
-	public static final field AUDIO Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
-	public static final field LECTURE Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
-	public static final field REVIEW Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
+public final class io/github/valerioisufi/pageboard/lecture/LectureArrival$Kind : java/lang/Enum {
+	public static final field AUDIO Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
+	public static final field LECTURE Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
+	public static final field REVIEW Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
+public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/drawview/lecture/DeviceModels;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient;Lio/github/valerioisufi/drawview/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/drawview/lecture/DeviceModels;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun acceptGeneration (Lio/github/valerioisufi/drawview/lecture/GenerationOffer;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/AssistantSettingsStore;Lio/github/valerioisufi/pageboard/lecture/gemini/GeminiClient;Lio/github/valerioisufi/pageboard/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/pageboard/lecture/DeviceModels;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/lecture/AssistantSettingsStore;Lio/github/valerioisufi/pageboard/lecture/gemini/GeminiClient;Lio/github/valerioisufi/pageboard/lecture/local/OllamaClient;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ZLio/github/valerioisufi/pageboard/lecture/DeviceModels;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun acceptGeneration (Lio/github/valerioisufi/pageboard/lecture/GenerationOffer;)V
 	public final fun answerOnline (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun canRetranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
+	public final fun canRetranscribe (Lio/github/valerioisufi/pageboard/lecture/Lecture;)Z
 	public final fun canWriteContext (Ljava/lang/String;)Z
-	public final fun cancelTranscription (Lio/github/valerioisufi/drawview/lecture/Lecture;)V
+	public final fun cancelTranscription (Lio/github/valerioisufi/pageboard/lecture/Lecture;)V
 	public final fun changeSharing (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public final fun clearImportAndExportMessages ()V
-	public final fun contextOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/CourseContext;
+	public final fun contextOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/CourseContext;
 	public final fun courseContext (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun declineGeneration (Lio/github/valerioisufi/drawview/lecture/GenerationOffer;)V
-	public final fun delete (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureSummary;)V
-	public final fun dismissArrival (Lio/github/valerioisufi/drawview/lecture/LectureArrival;)V
+	public final fun declineGeneration (Lio/github/valerioisufi/pageboard/lecture/GenerationOffer;)V
+	public final fun delete (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureSummary;)V
+	public final fun dismissArrival (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;)V
 	public final fun editContext (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun editorNotebook (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lio/github/valerioisufi/drawview/lecture/NotebookSource;
+	public final fun editorNotebook (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lio/github/valerioisufi/pageboard/lecture/NotebookSource;
 	public final fun estimateTextNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun exportAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
-	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public final fun exportTranscript (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
-	public static synthetic fun exportTranscript$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun exportAudio (Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun exportTranscript (Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun exportTranscript$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun finishRecording (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun forgetDocuments (Ljava/util/Set;)V
-	public final fun generate (Lio/github/valerioisufi/drawview/lecture/Lecture;Lio/github/valerioisufi/drawview/lecture/ModelProvider;)Z
-	public final fun getActiveRecorder ()Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
+	public final fun generate (Lio/github/valerioisufi/pageboard/lecture/Lecture;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;)Z
+	public final fun getActiveRecorder ()Lio/github/valerioisufi/pageboard/lecture/LectureRecorder;
 	public final fun getArrivals ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
-	public final fun getAttachments ()Lio/github/valerioisufi/drawview/model/DocumentAttachments;
+	public final fun getAttachments ()Lio/github/valerioisufi/pageboard/model/DocumentAttachments;
 	public final fun getAudioArriving ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getCanAnswerOnline ()Z
 	public final fun getCanGenerate ()Z
@@ -377,60 +377,60 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getCanRecord ()Z
 	public final fun getCanTranscribeHere ()Z
 	public final fun getDescribeArrival ()Lkotlin/jvm/functions/Function3;
-	public final fun getDeviceModels ()Lio/github/valerioisufi/drawview/lecture/DeviceModels;
+	public final fun getDeviceModels ()Lio/github/valerioisufi/pageboard/lecture/DeviceModels;
 	public final fun getDocumentsWithLectures ()Ljava/util/Set;
 	public final fun getExportExtension ()Ljava/lang/String;
-	public final fun getExportResult ()Lio/github/valerioisufi/drawview/lecture/ExportResult;
+	public final fun getExportResult ()Lio/github/valerioisufi/pageboard/lecture/ExportResult;
 	public final fun getGenerationOffers ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getImportError ()Ljava/lang/String;
-	public final fun getImporting ()Lio/github/valerioisufi/drawview/lecture/Lecture;
-	public final fun getLibrary ()Lio/github/valerioisufi/drawview/lecture/LectureLibrary;
-	public final fun getLocalModels ()Lio/github/valerioisufi/drawview/lecture/LocalModels;
+	public final fun getImporting ()Lio/github/valerioisufi/pageboard/lecture/Lecture;
+	public final fun getLibrary ()Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;
+	public final fun getLocalModels ()Lio/github/valerioisufi/pageboard/lecture/LocalModels;
 	public final fun getMayGenerate ()Z
 	public final fun getMicrophoneDenied ()Z
-	public final fun getPlacingNote ()Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;
-	public final fun getRecorder ()Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
+	public final fun getPlacingNote ()Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;
+	public final fun getRecorder ()Lio/github/valerioisufi/pageboard/lecture/LectureRecorder;
 	public final fun getRequestMicrophone ()Lkotlin/jvm/functions/Function1;
-	public final fun getSettingsStore ()Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;
+	public final fun getSettingsStore ()Lio/github/valerioisufi/pageboard/lecture/AssistantSettingsStore;
 	public final fun getStartError ()Ljava/lang/String;
 	public final fun getTranscribing ()Ljava/util/List;
 	public final fun getTranscriptExportExtension ()Ljava/lang/String;
 	public final fun handwritingByPage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun handwritingTexts (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/platform/ChosenFile;)Z
+	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/lecture/platform/ChosenFile;)Z
 	public final fun isBusy ()Z
 	public final fun isPanelOpen ()Z
 	public final fun isRecording ()Z
 	public final fun isRecordingSupported ()Z
-	public final fun isTranscribing (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
+	public final fun isTranscribing (Lio/github/valerioisufi/pageboard/lecture/Lecture;)Z
 	public final fun isWritingContext (Ljava/lang/String;)Z
 	public final fun lecturesOf (Ljava/lang/String;)Ljava/util/List;
-	public final fun markdownOf (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun onEditorHidden (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
-	public final fun onEditorShown (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
+	public final fun markdownOf (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun onEditorHidden (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NotebookSource;)V
+	public final fun onEditorShown (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NotebookSource;)V
 	public final fun openLectureAt (Ljava/lang/String;Ljava/lang/String;J)V
-	public static synthetic fun openLectureAt$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)V
-	public final fun record (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
-	public final fun recorderOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
+	public static synthetic fun openLectureAt$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)V
+	public final fun record (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NotebookSource;)V
+	public final fun recorderOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureRecorder;
 	public final fun refresh (Ljava/lang/String;)V
-	public final fun requestAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;)V
-	public final fun retranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
+	public final fun requestAudio (Lio/github/valerioisufi/pageboard/lecture/Lecture;)V
+	public final fun retranscribe (Lio/github/valerioisufi/pageboard/lecture/Lecture;)Z
 	public final fun setDescribeArrival (Lkotlin/jvm/functions/Function3;)V
 	public final fun setPanelOpen (Z)V
-	public final fun setPlacingNote (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;)V
+	public final fun setPlacingNote (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;)V
 	public final fun setRequestMicrophone (Lkotlin/jvm/functions/Function1;)V
-	public final fun shareAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;Z)V
-	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
-	public final fun show (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureSummary;)V
-	public final fun showArrival (Lio/github/valerioisufi/drawview/lecture/LectureArrival;)V
-	public final fun shownLecture (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/Lecture;
-	public final fun start (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)Z
+	public final fun shareAudio (Lio/github/valerioisufi/pageboard/lecture/Lecture;Z)V
+	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;
+	public final fun show (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureSummary;)V
+	public final fun showArrival (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;)V
+	public final fun shownLecture (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/Lecture;
+	public final fun start (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NotebookSource;)Z
 	public final fun textNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun writeContext (Ljava/lang/String;Z)V
-	public static synthetic fun writeContext$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;ZILjava/lang/Object;)V
+	public static synthetic fun writeContext$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Ljava/lang/String;ZILjava/lang/Object;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureLibrary {
+public final class io/github/valerioisufi/pageboard/lecture/LectureLibrary {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -441,27 +441,27 @@ public final class io/github/valerioisufi/drawview/lecture/LectureLibrary {
 	public final fun getDeviceId ()Ljava/lang/String;
 	public final fun getDeviceName ()Ljava/lang/String;
 	public final fun list (Ljava/lang/String;)Ljava/util/List;
-	public final fun load (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureRecord;
+	public final fun load (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureRecord;
 	public final fun newLectureDirectory (Ljava/lang/String;J)Ljava/lang/String;
 	public final fun records (Ljava/lang/String;)Ljava/util/List;
-	public final fun saveContext (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/CourseContext;)Z
-	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
-	public final fun writeContext (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/CourseContext;)Z
+	public final fun saveContext (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/CourseContext;)Z
+	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;
+	public final fun writeContext (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/CourseContext;)Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureLibraryKt {
-	public static final fun writeLectureRecord (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureRecord;)Z
+public final class io/github/valerioisufi/pageboard/lecture/LectureLibraryKt {
+	public static final fun writeLectureRecord (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureRecord;)Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown {
+public final class io/github/valerioisufi/pageboard/lecture/LectureMarkdown {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureMarkdown;
-	public final fun write (Ljava/util/List;Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureMarkdown;
+	public final fun write (Ljava/util/List;Lio/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels;Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels {
+public final class io/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
 	public final fun getKinds ()Ljava/util/Map;
 	public final fun getLecture ()Ljava/lang/String;
@@ -471,95 +471,95 @@ public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown$Label
 	public final fun getSummary ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels$Companion {
-	public final fun getENGLISH ()Lio/github/valerioisufi/drawview/lecture/LectureMarkdown$Labels;
+public final class io/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels$Companion {
+	public final fun getENGLISH ()Lio/github/valerioisufi/pageboard/lecture/LectureMarkdown$Labels;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureModelsKt {
+public final class io/github/valerioisufi/pageboard/lecture/LectureModelsKt {
 	public static final fun formatLectureTime (J)Ljava/lang/String;
-	public static final fun resolvedPageIndex (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;Lio/github/valerioisufi/drawview/model/DrawDocument;)Ljava/lang/Integer;
+	public static final fun resolvedPageIndex (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;Lio/github/valerioisufi/pageboard/model/DrawDocument;)Ljava/lang/Integer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LecturePart : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LecturePart$Companion;
-	public static final field GENERATION Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static final field OUTLINE Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static final field RECORDING Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static final field REVIEW Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static final field SHARING Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static final field TRANSCRIPT Lio/github/valerioisufi/drawview/lecture/LecturePart;
+public final class io/github/valerioisufi/pageboard/lecture/LecturePart : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LecturePart$Companion;
+	public static final field GENERATION Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static final field OUTLINE Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static final field RECORDING Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static final field REVIEW Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static final field SHARING Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static final field TRANSCRIPT Lio/github/valerioisufi/pageboard/lecture/LecturePart;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LecturePart;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LecturePart;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LecturePart;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LecturePart;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LecturePart$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LecturePart$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/LectureProblem {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/LectureProblem {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$Authentication : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$Authentication : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Authentication;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$Authentication;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Authentication;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Authentication;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Authentication;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Authentication;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDetail ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$Failed : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$Failed : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Failed;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$Failed;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Failed;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Failed;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Failed;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Failed;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDetail ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$LocalModelUnavailable : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$LocalModelUnavailable : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$LocalModelUnavailable;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$LocalModelUnavailable;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$LocalModelUnavailable;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$LocalModelUnavailable;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$LocalModelUnavailable;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$LocalModelUnavailable;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDetail ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$MissingApiKey : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$MissingApiKey : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureProblem$MissingApiKey;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureProblem$MissingApiKey;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$NoTranscript : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$NoTranscript : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureProblem$NoTranscript;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureProblem$NoTranscript;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$QuotaExhausted : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$QuotaExhausted : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;ZLjava/lang/Long;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Z
 	public final fun component3 ()Ljava/lang/Long;
-	public final fun copy (Ljava/lang/String;ZLjava/lang/Long;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$QuotaExhausted;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$QuotaExhausted;Ljava/lang/String;ZLjava/lang/Long;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$QuotaExhausted;
+	public final fun copy (Ljava/lang/String;ZLjava/lang/Long;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$QuotaExhausted;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$QuotaExhausted;Ljava/lang/String;ZLjava/lang/Long;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$QuotaExhausted;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDaily ()Z
 	public final fun getModel ()Ljava/lang/String;
@@ -568,13 +568,13 @@ public final class io/github/valerioisufi/drawview/lecture/LectureProblem$QuotaE
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$Retrying : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$Retrying : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;I)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()I
-	public final fun copy (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Retrying;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$Retrying;Ljava/lang/String;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$Retrying;
+	public final fun copy (Ljava/lang/String;I)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Retrying;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Retrying;Ljava/lang/String;IILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$Retrying;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDetail ()Ljava/lang/String;
 	public final fun getRetryInSeconds ()I
@@ -582,45 +582,45 @@ public final class io/github/valerioisufi/drawview/lecture/LectureProblem$Retryi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureProblem$TranscriptionUnavailable : io/github/valerioisufi/drawview/lecture/LectureProblem {
+public final class io/github/valerioisufi/pageboard/lecture/LectureProblem$TranscriptionUnavailable : io/github/valerioisufi/pageboard/lecture/LectureProblem {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$TranscriptionUnavailable;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureProblem$TranscriptionUnavailable;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureProblem$TranscriptionUnavailable;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$TranscriptionUnavailable;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureProblem$TranscriptionUnavailable;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureProblem$TranscriptionUnavailable;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDetail ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureRecord {
+public final class io/github/valerioisufi/pageboard/lecture/LectureRecord {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureRecord$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/drawview/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/lecture/GenerationLock;Ljava/util/Map;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/drawview/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/lecture/GenerationLock;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureRecord$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/pageboard/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/lecture/GenerationLock;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/pageboard/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/lecture/GenerationLock;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/util/List;
 	public final fun component11 ()Ljava/lang/String;
 	public final fun component12 ()Ljava/lang/String;
-	public final fun component13 ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun component13 ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public final fun component14 ()Ljava/util/Map;
 	public final fun component15 ()Ljava/util/List;
 	public final fun component16 ()Ljava/lang/String;
 	public final fun component17 ()Ljava/lang/String;
 	public final fun component18 ()Z
-	public final fun component19 ()Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun component19 ()Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component20 ()Ljava/util/Map;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()J
 	public final fun component5 ()J
-	public final fun component6 ()Lio/github/valerioisufi/drawview/lecture/LectureStatus;
+	public final fun component6 ()Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/drawview/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/lecture/GenerationLock;Ljava/util/Map;)Lio/github/valerioisufi/drawview/lecture/LectureRecord;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureRecord;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/drawview/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/drawview/lecture/GenerationLock;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureRecord;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/pageboard/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/lecture/GenerationLock;Ljava/util/Map;)Lio/github/valerioisufi/pageboard/lecture/LectureRecord;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureRecord;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLio/github/valerioisufi/pageboard/lecture/LectureStatus;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/util/Map;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;ZLio/github/valerioisufi/pageboard/lecture/GenerationLock;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureRecord;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAudioShared ()Z
 	public final fun getCurrentTopic ()Ljava/lang/String;
@@ -629,8 +629,8 @@ public final class io/github/valerioisufi/drawview/lecture/LectureRecord {
 	public final fun getDurationMs ()J
 	public final fun getFinalReview ()Ljava/lang/String;
 	public final fun getFinalReviewBy ()Ljava/lang/String;
-	public final fun getFinalReviewProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
-	public final fun getGeneration ()Lio/github/valerioisufi/drawview/lecture/GenerationLock;
+	public final fun getFinalReviewProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
+	public final fun getGeneration ()Lio/github/valerioisufi/pageboard/lecture/GenerationLock;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getOutline ()Ljava/lang/String;
 	public final fun getPages ()Ljava/util/List;
@@ -638,95 +638,95 @@ public final class io/github/valerioisufi/drawview/lecture/LectureRecord {
 	public final fun getRecordedOn ()Ljava/lang/String;
 	public final fun getStamps ()Ljava/util/Map;
 	public final fun getStartedAt ()J
-	public final fun getStatus ()Lio/github/valerioisufi/drawview/lecture/LectureStatus;
+	public final fun getStatus ()Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
 	public final fun getSuggestions ()Ljava/util/List;
 	public final fun getTranscript ()Ljava/util/List;
 	public final fun getUsageByDevice ()Ljava/util/Map;
 	public fun hashCode ()I
-	public final fun stampOf (Lio/github/valerioisufi/drawview/lecture/LecturePart;)Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun stampOf (Lio/github/valerioisufi/pageboard/lecture/LecturePart;)Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/LectureRecord$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/LectureRecord$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureRecord$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureRecord$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/LectureRecord;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/LectureRecord;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/LectureRecord;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/LectureRecord;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureRecord$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LectureRecord$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureRecorder {
+public final class io/github/valerioisufi/pageboard/lecture/LectureRecorder {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureRecorder$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureRecorder$Companion;
 	public static final field SILENT_ELSEWHERE_MS J
 	public final fun catchUp ()V
-	public final fun getLecture ()Lio/github/valerioisufi/drawview/lecture/Lecture;
+	public final fun getLecture ()Lio/github/valerioisufi/pageboard/lecture/Lecture;
 	public final fun isRecording ()Z
 	public final fun stop ()V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureRecorder$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LectureRecorder$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureSharingSettings {
+public final class io/github/valerioisufi/pageboard/lecture/LectureSharingSettings {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/drawview/lecture/AudioDownload;Ljava/util/Set;)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/lecture/AudioDownload;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/pageboard/lecture/AudioDownload;Ljava/util/Set;)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/lecture/AudioDownload;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
-	public final fun component2 ()Lio/github/valerioisufi/drawview/lecture/AudioDownload;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
 	public final fun component3 ()Ljava/util/Set;
-	public final fun copy (ZLio/github/valerioisufi/drawview/lecture/AudioDownload;Ljava/util/Set;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;ZLio/github/valerioisufi/drawview/lecture/AudioDownload;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
+	public final fun copy (ZLio/github/valerioisufi/pageboard/lecture/AudioDownload;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;ZLio/github/valerioisufi/pageboard/lecture/AudioDownload;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDownloadAudio ()Lio/github/valerioisufi/drawview/lecture/AudioDownload;
+	public final fun getDownloadAudio ()Lio/github/valerioisufi/pageboard/lecture/AudioDownload;
 	public final fun getRequestedAudio ()Ljava/util/Set;
 	public final fun getShareAudio ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/LectureSharingSettings$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/LectureSharingSettings$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/LectureSharingSettings;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureSharingSettings$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LectureSharingSettings$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureStatus : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureStatus$Companion;
-	public static final field FINALIZING Lio/github/valerioisufi/drawview/lecture/LectureStatus;
-	public static final field FINISHED Lio/github/valerioisufi/drawview/lecture/LectureStatus;
-	public static final field IMPORTING Lio/github/valerioisufi/drawview/lecture/LectureStatus;
-	public static final field RECORDING Lio/github/valerioisufi/drawview/lecture/LectureStatus;
+public final class io/github/valerioisufi/pageboard/lecture/LectureStatus : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureStatus$Companion;
+	public static final field FINALIZING Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
+	public static final field FINISHED Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
+	public static final field IMPORTING Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
+	public static final field RECORDING Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureStatus;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LectureStatus;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LectureStatus;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureStatus$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LectureStatus$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureSummary {
+public final class io/github/valerioisufi/pageboard/lecture/LectureSummary {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZIZLjava/lang/String;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZIZLjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -740,39 +740,39 @@ public final class io/github/valerioisufi/drawview/lecture/LectureSummary {
 	public final fun getStartedAt ()J
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureTask : java/lang/Enum {
-	public static final field CATCH_UP Lio/github/valerioisufi/drawview/lecture/LectureTask;
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LectureTask$Companion;
-	public static final field FINAL_REVIEW Lio/github/valerioisufi/drawview/lecture/LectureTask;
-	public static final field LIVE_NOTES Lio/github/valerioisufi/drawview/lecture/LectureTask;
-	public static final field TRANSCRIPTION Lio/github/valerioisufi/drawview/lecture/LectureTask;
+public final class io/github/valerioisufi/pageboard/lecture/LectureTask : java/lang/Enum {
+	public static final field CATCH_UP Lio/github/valerioisufi/pageboard/lecture/LectureTask;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LectureTask$Companion;
+	public static final field FINAL_REVIEW Lio/github/valerioisufi/pageboard/lecture/LectureTask;
+	public static final field LIVE_NOTES Lio/github/valerioisufi/pageboard/lecture/LectureTask;
+	public static final field TRANSCRIPTION Lio/github/valerioisufi/pageboard/lecture/LectureTask;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureTask;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LectureTask;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LectureTask;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LectureTask;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LectureTask$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LectureTask$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LocalEngine : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/LocalEngine$Companion;
-	public static final field DEVICE Lio/github/valerioisufi/drawview/lecture/LocalEngine;
-	public static final field OLLAMA Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+public final class io/github/valerioisufi/pageboard/lecture/LocalEngine : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/LocalEngine$Companion;
+	public static final field DEVICE Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
+	public static final field OLLAMA Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LocalEngine;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LocalEngine;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LocalEngine;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LocalEngine$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/LocalEngine$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LocalModels {
+public final class io/github/valerioisufi/pageboard/lecture/LocalModels {
 	public static final field $stable I
-	public final fun downloadEncoder (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)V
-	public final fun downloadWhisper (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)V
-	public final fun encoderPath (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)Ljava/lang/String;
+	public final fun downloadEncoder (Lio/github/valerioisufi/pageboard/lecture/WhisperModel;)V
+	public final fun downloadWhisper (Lio/github/valerioisufi/pageboard/lecture/WhisperModel;)V
+	public final fun encoderPath (Lio/github/valerioisufi/pageboard/lecture/WhisperModel;)Ljava/lang/String;
 	public final fun findOnNetwork ()V
 	public final fun getCanTranscribe ()Z
 	public final fun getDownloadError ()Lkotlin/Pair;
@@ -781,7 +781,7 @@ public final class io/github/valerioisufi/drawview/lecture/LocalModels {
 	public final fun getFoundServers ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getInstalled ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getNearbyHosts ()Lkotlin/jvm/functions/Function1;
-	public final fun getOllamaState ()Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
+	public final fun getOllamaState ()Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
 	public final fun getOllamaVersion ()Ljava/lang/String;
 	public final fun getPreparing ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getUsesNeuralEngine ()Z
@@ -790,73 +790,73 @@ public final class io/github/valerioisufi/drawview/lecture/LocalModels {
 	public final fun isSearching ()Z
 	public final fun pull (Ljava/lang/String;)V
 	public final fun refresh (Ljava/lang/String;)V
-	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/lecture/LocalModels;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun refresh$default (Lio/github/valerioisufi/pageboard/lecture/LocalModels;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun setNearbyHosts (Lkotlin/jvm/functions/Function1;)V
-	public final fun whisperPath (Lio/github/valerioisufi/drawview/lecture/WhisperModel;)Ljava/lang/String;
+	public final fun whisperPath (Lio/github/valerioisufi/pageboard/lecture/WhisperModel;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/LocalModels$OllamaState : java/lang/Enum {
-	public static final field CHECKING Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
-	public static final field NOT_FOUND Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
-	public static final field RUNNING Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
+public final class io/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState : java/lang/Enum {
+	public static final field CHECKING Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
+	public static final field NOT_FOUND Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
+	public static final field RUNNING Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/LocalModels$OllamaState;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LocalModels$OllamaState;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ModelProvider : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/ModelProvider$Companion;
-	public static final field GEMINI Lio/github/valerioisufi/drawview/lecture/ModelProvider;
-	public static final field LOCAL Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+public final class io/github/valerioisufi/pageboard/lecture/ModelProvider : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/ModelProvider$Companion;
+	public static final field GEMINI Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
+	public static final field LOCAL Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/ModelProvider;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ModelProvider$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/ModelProvider$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NoteKind : java/lang/Enum {
-	public static final field ANNOUNCEMENT Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/NoteKind$Companion;
-	public static final field DEFINITION Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field EXAMPLE Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field EXAM_HINT Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field EXPLANATION Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field FORMULA Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field OTHER Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field REFERENCE Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static final field THEOREM Lio/github/valerioisufi/drawview/lecture/NoteKind;
+public final class io/github/valerioisufi/pageboard/lecture/NoteKind : java/lang/Enum {
+	public static final field ANNOUNCEMENT Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/NoteKind$Companion;
+	public static final field DEFINITION Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field EXAMPLE Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field EXAM_HINT Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field EXPLANATION Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field FORMULA Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field OTHER Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field REFERENCE Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static final field THEOREM Lio/github/valerioisufi/pageboard/lecture/NoteKind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/NoteKind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/NoteKind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/NoteKind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/NoteKind;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NoteKind$Companion {
-	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/NoteKind;
+public final class io/github/valerioisufi/pageboard/lecture/NoteKind$Companion {
+	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/NoteKind;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NotePlacement {
+public final class io/github/valerioisufi/pageboard/lecture/NotePlacement {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/NotePlacement;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/NotePlacement;
 	public static final field MARGIN_WIDTH_MM F
 	public static final field NOTE_WIDTH_MM F
-	public final fun policyOf (Lio/github/valerioisufi/drawview/lecture/NoteKind;Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;
-	public final fun widthOf (Lio/github/valerioisufi/drawview/lecture/NoteKind;Lio/github/valerioisufi/drawview/model/geometry/Rect;F)F
+	public final fun policyOf (Lio/github/valerioisufi/pageboard/lecture/NoteKind;Lio/github/valerioisufi/pageboard/model/geometry/Rect;)Lio/github/valerioisufi/pageboard/model/placement/PlacementPolicy;
+	public final fun widthOf (Lio/github/valerioisufi/pageboard/lecture/NoteKind;Lio/github/valerioisufi/pageboard/model/geometry/Rect;F)F
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NoteSuggestion {
+public final class io/github/valerioisufi/pageboard/lecture/NoteSuggestion {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/NoteSuggestion$Companion;
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/drawview/lecture/SuggestionStatus;Lio/github/valerioisufi/drawview/lecture/Stamp;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/drawview/lecture/SuggestionStatus;Lio/github/valerioisufi/drawview/lecture/Stamp;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/pageboard/lecture/SuggestionStatus;Lio/github/valerioisufi/pageboard/lecture/Stamp;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/pageboard/lecture/SuggestionStatus;Lio/github/valerioisufi/pageboard/lecture/Stamp;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public final fun component11 ()Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun component10 ()Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public final fun component11 ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public final fun component12 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/lecture/NoteKind;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/lecture/NoteKind;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/Integer;
@@ -864,8 +864,8 @@ public final class io/github/valerioisufi/drawview/lecture/NoteSuggestion {
 	public final fun component7 ()I
 	public final fun component8 ()J
 	public final fun component9 ()Z
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/drawview/lecture/SuggestionStatus;Lio/github/valerioisufi/drawview/lecture/Stamp;Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/drawview/lecture/SuggestionStatus;Lio/github/valerioisufi/drawview/lecture/Stamp;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/pageboard/lecture/SuggestionStatus;Lio/github/valerioisufi/pageboard/lecture/Stamp;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/NoteKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;IJZLio/github/valerioisufi/pageboard/lecture/SuggestionStatus;Lio/github/valerioisufi/pageboard/lecture/Stamp;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAnchor ()Ljava/lang/String;
 	public final fun getAtMs ()J
@@ -873,33 +873,33 @@ public final class io/github/valerioisufi/drawview/lecture/NoteSuggestion {
 	public final fun getFromFinalReview ()Z
 	public final fun getId ()Ljava/lang/String;
 	public final fun getImportance ()I
-	public final fun getKind ()Lio/github/valerioisufi/drawview/lecture/NoteKind;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/lecture/NoteKind;
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getPageIndex ()Ljava/lang/Integer;
-	public final fun getStatus ()Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public final fun getStatusStamp ()Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun getStatus ()Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public final fun getStatusStamp ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/NoteSuggestion$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/NoteSuggestion$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/NoteSuggestion$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NoteSuggestion$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/NoteSuggestion$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NotebookSnapshot {
+public final class io/github/valerioisufi/pageboard/lecture/NotebookSnapshot {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/List;)V
 	public synthetic fun <init> (Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/Set;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -914,42 +914,42 @@ public final class io/github/valerioisufi/drawview/lecture/NotebookSnapshot {
 	public final fun getVisiblePageIndexes ()Ljava/util/List;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/NotebookSource {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/NotebookSource {
 	public fun allPages (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun capture (Ljava/util/Set;IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getDocumentTitle ()Ljava/lang/String;
 	public fun inkBlocks (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun renderInk (Lio/github/valerioisufi/drawview/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renderInk (Lio/github/valerioisufi/pageboard/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun strokeIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NotebookSource$DefaultImpls {
-	public static fun allPages (Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun inkBlocks (Lio/github/valerioisufi/drawview/lecture/NotebookSource;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun pageIds (Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun renderInk (Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lio/github/valerioisufi/drawview/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/lecture/NotebookSource$DefaultImpls {
+	public static fun allPages (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun inkBlocks (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun pageIds (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun renderInk (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lio/github/valerioisufi/pageboard/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/NotebookSourceKt {
+public final class io/github/valerioisufi/pageboard/lecture/NotebookSourceKt {
 	public static final fun cleanSlideText (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/PageContent {
+public final class io/github/valerioisufi/pageboard/lecture/PageContent {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/PageContent$Companion;
-	public fun <init> (ILjava/lang/String;Lio/github/valerioisufi/drawview/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZI)V
-	public synthetic fun <init> (ILjava/lang/String;Lio/github/valerioisufi/drawview/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/PageContent$Companion;
+	public fun <init> (ILjava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZI)V
+	public synthetic fun <init> (ILjava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()I
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/lecture/SlideText;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/lecture/SlideText;
 	public final fun component4 ()Ljava/util/List;
 	public final fun component5 ()Ljava/util/List;
 	public final fun component6 ()Z
 	public final fun component7 ()Z
 	public final fun component8 ()I
-	public final fun copy (ILjava/lang/String;Lio/github/valerioisufi/drawview/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZI)Lio/github/valerioisufi/drawview/lecture/PageContent;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/PageContent;ILjava/lang/String;Lio/github/valerioisufi/drawview/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZIILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/PageContent;
+	public final fun copy (ILjava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZI)Lio/github/valerioisufi/pageboard/lecture/PageContent;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/PageContent;ILjava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SlideText;Ljava/util/List;Ljava/util/List;ZZIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/PageContent;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getHandwriting ()Ljava/util/List;
 	public final fun getHasInk ()Z
@@ -957,30 +957,30 @@ public final class io/github/valerioisufi/drawview/lecture/PageContent {
 	public final fun getIndex ()I
 	public final fun getInkTranscribed ()Z
 	public final fun getPageId ()Ljava/lang/String;
-	public final fun getSlide ()Lio/github/valerioisufi/drawview/lecture/SlideText;
+	public final fun getSlide ()Lio/github/valerioisufi/pageboard/lecture/SlideText;
 	public final fun getTypedTexts ()Ljava/util/List;
 	public fun hashCode ()I
 	public final fun isBlank ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/PageContent$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/PageContent$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/PageContent$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/PageContent$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/PageContent;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/PageContent;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/PageContent;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/PageContent;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/PageContent$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/PageContent$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/PageImage {
+public final class io/github/valerioisufi/pageboard/lecture/PageImage {
 	public static final field $stable I
 	public fun <init> (I[BZ)V
 	public synthetic fun <init> (I[BZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -988,21 +988,21 @@ public final class io/github/valerioisufi/drawview/lecture/PageImage {
 	public final fun getPageIndex ()I
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ReceivedLectures : java/lang/Enum {
-	public static final field ALWAYS Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
-	public static final field ASK Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/ReceivedLectures$Companion;
-	public static final field NEVER Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
+public final class io/github/valerioisufi/pageboard/lecture/ReceivedLectures : java/lang/Enum {
+	public static final field ALWAYS Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
+	public static final field ASK Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures$Companion;
+	public static final field NEVER Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/ReceivedLectures;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ReceivedLectures$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/ReceivedLectures$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/RequestAudio : io/github/valerioisufi/drawview/lecture/RequestSpeech {
+public final class io/github/valerioisufi/pageboard/lecture/RequestAudio : io/github/valerioisufi/pageboard/lecture/RequestSpeech {
 	public static final field $stable I
 	public fun <init> ([BJJJ)V
 	public fun getContextMs ()J
@@ -1011,41 +1011,41 @@ public final class io/github/valerioisufi/drawview/lecture/RequestAudio : io/git
 	public fun getStartMs ()J
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ReviewStatus : java/lang/Enum {
-	public static final field DONE Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
-	public static final field FAILED Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
-	public static final field NONE Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
-	public static final field RUNNING Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
+public final class io/github/valerioisufi/pageboard/lecture/ReviewStatus : java/lang/Enum {
+	public static final field DONE Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
+	public static final field FAILED Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
+	public static final field NONE Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
+	public static final field RUNNING Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/ReviewStatus;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/ReviewStatus;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/SecretStorage {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/SecretStorage {
 	public abstract fun read (Ljava/lang/String;)Ljava/lang/String;
 	public abstract fun write (Ljava/lang/String;Ljava/lang/String;)Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SecretStorage$System : io/github/valerioisufi/drawview/lecture/SecretStorage {
+public final class io/github/valerioisufi/pageboard/lecture/SecretStorage$System : io/github/valerioisufi/pageboard/lecture/SecretStorage {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/SecretStorage$System;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/SecretStorage$System;
 	public fun read (Ljava/lang/String;)Ljava/lang/String;
 	public fun write (Ljava/lang/String;Ljava/lang/String;)Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SeenPage {
+public final class io/github/valerioisufi/pageboard/lecture/SeenPage {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/SeenPage$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/lecture/PageContent;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/SeenPage$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/lecture/PageContent;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Z
 	public final fun component4 ()Ljava/lang/String;
-	public final fun copy (Lio/github/valerioisufi/drawview/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;)Lio/github/valerioisufi/drawview/lecture/SeenPage;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/SeenPage;Lio/github/valerioisufi/drawview/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/SeenPage;
+	public final fun copy (Lio/github/valerioisufi/pageboard/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/SeenPage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/SeenPage;Lio/github/valerioisufi/pageboard/lecture/PageContent;Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/SeenPage;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Lio/github/valerioisufi/drawview/lecture/PageContent;
+	public final fun getContent ()Lio/github/valerioisufi/pageboard/lecture/PageContent;
 	public final fun getImage ()Ljava/lang/String;
 	public final fun getImageHash ()Ljava/lang/String;
 	public final fun getVisible ()Z
@@ -1053,39 +1053,39 @@ public final class io/github/valerioisufi/drawview/lecture/SeenPage {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/SeenPage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/SeenPage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/SeenPage$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/SeenPage$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/SeenPage;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/SeenPage;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/SeenPage;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/SeenPage;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SeenPage$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/SeenPage$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SharedData : java/lang/Enum {
-	public static final field NOTEBOOK Lio/github/valerioisufi/drawview/lecture/SharedData;
-	public static final field TRANSCRIPT Lio/github/valerioisufi/drawview/lecture/SharedData;
+public final class io/github/valerioisufi/pageboard/lecture/SharedData : java/lang/Enum {
+	public static final field NOTEBOOK Lio/github/valerioisufi/pageboard/lecture/SharedData;
+	public static final field TRANSCRIPT Lio/github/valerioisufi/pageboard/lecture/SharedData;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/SharedData;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/SharedData;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/SharedData;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/SharedData;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SlideText {
+public final class io/github/valerioisufi/pageboard/lecture/SlideText {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/SlideText$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/SlideText$Companion;
 	public fun <init> (IILjava/lang/String;)V
 	public final fun component1 ()I
 	public final fun component2 ()I
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (IILjava/lang/String;)Lio/github/valerioisufi/drawview/lecture/SlideText;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/SlideText;IILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/SlideText;
+	public final fun copy (IILjava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/SlideText;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/SlideText;IILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/SlideText;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getPdfNumber ()I
 	public final fun getPdfPageIndex ()I
@@ -1094,142 +1094,142 @@ public final class io/github/valerioisufi/drawview/lecture/SlideText {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/SlideText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/SlideText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/SlideText$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/SlideText$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/SlideText;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/SlideText;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/SlideText;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/SlideText;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SlideText$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/SlideText$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SpeechSourceKt {
-	public static final fun requestAudio (Ljava/util/List;Ljava/lang/Long;Z)Lio/github/valerioisufi/drawview/lecture/RequestAudio;
-	public static synthetic fun requestAudio$default (Ljava/util/List;Ljava/lang/Long;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/RequestAudio;
+public final class io/github/valerioisufi/pageboard/lecture/SpeechSourceKt {
+	public static final fun requestAudio (Ljava/util/List;Ljava/lang/Long;Z)Lio/github/valerioisufi/pageboard/lecture/RequestAudio;
+	public static synthetic fun requestAudio$default (Ljava/util/List;Ljava/lang/Long;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/RequestAudio;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/Stamp : java/lang/Comparable {
+public final class io/github/valerioisufi/pageboard/lecture/Stamp : java/lang/Comparable {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/Stamp$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/Stamp$Companion;
 	public fun <init> (JLjava/lang/String;)V
-	public fun compareTo (Lio/github/valerioisufi/drawview/lecture/Stamp;)I
+	public fun compareTo (Lio/github/valerioisufi/pageboard/lecture/Stamp;)I
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public final fun component1 ()J
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (JLjava/lang/String;)Lio/github/valerioisufi/drawview/lecture/Stamp;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/Stamp;JLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun copy (JLjava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/Stamp;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/Stamp;JLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAt ()J
 	public final fun getBy ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun next (Ljava/lang/String;J)Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun next (Ljava/lang/String;J)Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/Stamp$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/Stamp$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/Stamp$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/Stamp$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/Stamp;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/Stamp;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/Stamp;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/Stamp$Companion {
-	public final fun getNONE ()Lio/github/valerioisufi/drawview/lecture/Stamp;
+public final class io/github/valerioisufi/pageboard/lecture/Stamp$Companion {
+	public final fun getNONE ()Lio/github/valerioisufi/pageboard/lecture/Stamp;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SuggestionStatus : java/lang/Enum {
-	public static final field ALREADY_NOTED Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/SuggestionStatus$Companion;
-	public static final field DISMISSED Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public static final field INSERTED Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public static final field NEW Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
+public final class io/github/valerioisufi/pageboard/lecture/SuggestionStatus : java/lang/Enum {
+	public static final field ALREADY_NOTED Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus$Companion;
+	public static final field DISMISSED Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public static final field INSERTED Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public static final field NEW Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/SuggestionStatus;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/SuggestionStatus$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/SuggestionStatus$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TaskModel {
+public final class io/github/valerioisufi/pageboard/lecture/TaskModel {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TaskModel$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/TaskModel$Companion;
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun copy (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/TaskModel;Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+	public final fun copy (Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/TaskModel;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/TaskModel;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/TaskModel;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getGemini ()Ljava/lang/String;
 	public final fun getLocal ()Ljava/lang/String;
 	public final fun getModel ()Ljava/lang/String;
-	public final fun getProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun getProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/TaskModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/TaskModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/TaskModel$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/TaskModel$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/TaskModel;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/TaskModel;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/TaskModel;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TaskModel$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/TaskModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TextNotes {
+public final class io/github/valerioisufi/pageboard/lecture/TextNotes {
 	public static final field $stable I
 	public static final field CHARS_PER_TOKEN I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TextNotes$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/TextNotes$Companion;
 	public static final field MAX_TEXT_CHARS I
 	public fun <init> (Ljava/util/List;D)V
 	public final fun getCoveredShare ()D
 	public final fun getNotes ()Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TextNotes$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/TextNotes$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TextNotesEstimate {
+public final class io/github/valerioisufi/pageboard/lecture/TextNotesEstimate {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;IIZZ)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/ModelProvider;Ljava/lang/String;IIZZ)V
 	public final fun getChars ()I
 	public final fun getMissingApiKey ()Z
 	public final fun getModel ()Ljava/lang/String;
-	public final fun getProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun getProvider ()Lio/github/valerioisufi/pageboard/lecture/ModelProvider;
 	public final fun getTokens ()I
 	public final fun getTooLong ()Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TokenUsage {
+public final class io/github/valerioisufi/pageboard/lecture/TokenUsage {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TokenUsage$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/TokenUsage$Companion;
 	public fun <init> ()V
 	public fun <init> (IJJJLjava/util/Map;II)V
 	public synthetic fun <init> (IJJJLjava/util/Map;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -1240,8 +1240,8 @@ public final class io/github/valerioisufi/drawview/lecture/TokenUsage {
 	public final fun component5 ()Ljava/util/Map;
 	public final fun component6 ()I
 	public final fun component7 ()I
-	public final fun copy (IJJJLjava/util/Map;II)Lio/github/valerioisufi/drawview/lecture/TokenUsage;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/TokenUsage;IJJJLjava/util/Map;IIILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun copy (IJJJLjava/util/Map;II)Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/TokenUsage;IJJJLjava/util/Map;IIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCachedTokens ()J
 	public final fun getLocalRequests ()I
@@ -1251,35 +1251,35 @@ public final class io/github/valerioisufi/drawview/lecture/TokenUsage {
 	public final fun getRequests ()I
 	public final fun getSkippedUpdates ()I
 	public fun hashCode ()I
-	public final fun plus (Lio/github/valerioisufi/drawview/lecture/TokenUsage;)Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun plus (Lio/github/valerioisufi/pageboard/lecture/TokenUsage;)Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/TokenUsage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/TokenUsage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/TokenUsage$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/TokenUsage$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/TokenUsage;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TokenUsage$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/TokenUsage$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TranscriptSegment {
+public final class io/github/valerioisufi/pageboard/lecture/TranscriptSegment {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TranscriptSegment$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment$Companion;
 	public fun <init> (JJLjava/lang/String;)V
 	public final fun component1 ()J
 	public final fun component2 ()J
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (JJLjava/lang/String;)Lio/github/valerioisufi/drawview/lecture/TranscriptSegment;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/TranscriptSegment;JJLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/TranscriptSegment;
+	public final fun copy (JJLjava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment;JJLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEndMs ()J
 	public final fun getStartMs ()J
@@ -1288,27 +1288,27 @@ public final class io/github/valerioisufi/drawview/lecture/TranscriptSegment {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/TranscriptSegment$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/TranscriptSegment$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/TranscriptSegment$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/TranscriptSegment;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/TranscriptSegment;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/TranscriptSegment;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TranscriptSegment$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/TranscriptSegment$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/WhisperModel : java/lang/Enum {
-	public static final field BASE Lio/github/valerioisufi/drawview/lecture/WhisperModel;
-	public static final field LARGE_V3_TURBO Lio/github/valerioisufi/drawview/lecture/WhisperModel;
-	public static final field LARGE_V3_TURBO_Q5 Lio/github/valerioisufi/drawview/lecture/WhisperModel;
-	public static final field SMALL Lio/github/valerioisufi/drawview/lecture/WhisperModel;
+public final class io/github/valerioisufi/pageboard/lecture/WhisperModel : java/lang/Enum {
+	public static final field BASE Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
+	public static final field LARGE_V3_TURBO Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
+	public static final field LARGE_V3_TURBO_Q5 Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
+	public static final field SMALL Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
 	public final fun getEncoderFileName ()Ljava/lang/String;
 	public final fun getEncoderSizeBytes ()J
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
@@ -1316,21 +1316,21 @@ public final class io/github/valerioisufi/drawview/lecture/WhisperModel : java/l
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getSizeBytes ()J
 	public final fun getUrl ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/WhisperModel;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/WhisperModel;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/WhisperModel;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/audio/AudioCapture {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/audio/AudioCapture {
 	public abstract fun start (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun start$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioCapture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun start$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioCapture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public abstract fun stop ()V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/AudioCapture$DefaultImpls {
-	public static synthetic fun start$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioCapture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+public final class io/github/valerioisufi/pageboard/lecture/audio/AudioCapture$DefaultImpls {
+	public static synthetic fun start$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioCapture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/AudioChunk {
+public final class io/github/valerioisufi/pageboard/lecture/audio/AudioChunk {
 	public static final field $stable I
 	public fun <init> (IJI[S)V
 	public final fun getIndex ()I
@@ -1338,40 +1338,40 @@ public final class io/github/valerioisufi/drawview/lecture/audio/AudioChunk {
 	public final fun getStartMs ()J
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/AudioCodecKt {
+public final class io/github/valerioisufi/pageboard/lecture/audio/AudioCodecKt {
 	public static final fun importableExtensions ()Ljava/util/Set;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/audio/AudioOutput {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/audio/AudioOutput {
 	public abstract fun close ()V
 	public abstract fun getPending ()I
 	public abstract fun open (Lkotlin/jvm/functions/Function0;)Z
-	public static synthetic fun open$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioOutput;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+	public static synthetic fun open$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioOutput;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
 	public abstract fun write ([SI)V
-	public static synthetic fun write$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioOutput;[SIILjava/lang/Object;)V
+	public static synthetic fun write$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioOutput;[SIILjava/lang/Object;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/AudioOutput$DefaultImpls {
-	public static synthetic fun open$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioOutput;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
-	public static synthetic fun write$default (Lio/github/valerioisufi/drawview/lecture/audio/AudioOutput;[SIILjava/lang/Object;)V
+public final class io/github/valerioisufi/pageboard/lecture/audio/AudioOutput$DefaultImpls {
+	public static synthetic fun open$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioOutput;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+	public static synthetic fun write$default (Lio/github/valerioisufi/pageboard/lecture/audio/AudioOutput;[SIILjava/lang/Object;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/CaptureEvent : java/lang/Enum {
-	public static final field DEVICE_CHANGED Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;
-	public static final field INTERRUPTED Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;
-	public static final field RESUMED Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;
+public final class io/github/valerioisufi/pageboard/lecture/audio/CaptureEvent : java/lang/Enum {
+	public static final field DEVICE_CHANGED Lio/github/valerioisufi/pageboard/lecture/audio/CaptureEvent;
+	public static final field INTERRUPTED Lio/github/valerioisufi/pageboard/lecture/audio/CaptureEvent;
+	public static final field RESUMED Lio/github/valerioisufi/pageboard/lecture/audio/CaptureEvent;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/lecture/audio/CaptureEvent;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/audio/CaptureEvent;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/PcmKt {
+public final class io/github/valerioisufi/pageboard/lecture/audio/PcmKt {
 	public static final field LECTURE_SAMPLE_RATE I
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/RecordingPlayer {
+public final class io/github/valerioisufi/pageboard/lecture/audio/RecordingPlayer {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/audio/RecordingPlayer$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/audio/RecordingPlayer$Companion;
 	public final fun getDurationMs ()J
 	public final fun getPositionMs ()J
 	public final fun getSpeed ()F
@@ -1379,45 +1379,45 @@ public final class io/github/valerioisufi/drawview/lecture/audio/RecordingPlayer
 	public final fun nextSpeed ()V
 	public final fun pause ()V
 	public final fun play (J)V
-	public static synthetic fun play$default (Lio/github/valerioisufi/drawview/lecture/audio/RecordingPlayer;JILjava/lang/Object;)V
+	public static synthetic fun play$default (Lio/github/valerioisufi/pageboard/lecture/audio/RecordingPlayer;JILjava/lang/Object;)V
 	public final fun refresh ()V
 	public final fun seek (J)V
 	public final fun skip (J)V
 	public final fun toggle ()V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/audio/RecordingPlayer$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/audio/RecordingPlayer$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/gemini/GeminiClient {
+public final class io/github/valerioisufi/pageboard/lecture/gemini/GeminiClient {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/gemini/GeminiClient$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/gemini/GeminiClient$Companion;
 	public fun <init> ()V
 	public fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;)V
 	public synthetic fun <init> (Lio/ktor/client/HttpClient;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public final class io/github/valerioisufi/drawview/lecture/gemini/GeminiClient$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/gemini/GeminiClient$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/handwriting/InkBlock {
+public final class io/github/valerioisufi/pageboard/lecture/handwriting/InkBlock {
 	public static final field $stable I
-	public fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Set;Lio/github/valerioisufi/drawview/model/geometry/Rect;)V
-	public final fun getBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Set;Lio/github/valerioisufi/pageboard/model/geometry/Rect;)V
+	public final fun getBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public final fun getKey ()Ljava/lang/String;
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getPageIndex ()I
 	public final fun getStrokeIds ()Ljava/util/Set;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/handwriting/InkBlocksKt {
+public final class io/github/valerioisufi/pageboard/lecture/handwriting/InkBlocksKt {
 	public static final fun blockKey (Ljava/util/Collection;)Ljava/lang/String;
 	public static final fun groupStrokes (Ljava/util/List;F)Ljava/util/List;
 	public static synthetic fun groupStrokes$default (Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
-	public static final fun unionOf (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public static final fun unionOf (Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/local/OllamaClient {
+public final class io/github/valerioisufi/pageboard/lecture/local/OllamaClient {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Lio/ktor/client/HttpClient;)V
@@ -1428,15 +1428,15 @@ public final class io/github/valerioisufi/drawview/lecture/local/OllamaClient {
 	public final fun version (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/local/OllamaModel {
+public final class io/github/valerioisufi/pageboard/lecture/local/OllamaModel {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/local/OllamaModel$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel$Companion;
 	public fun <init> (Ljava/lang/String;J)V
 	public synthetic fun <init> (Ljava/lang/String;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()J
-	public final fun copy (Ljava/lang/String;J)Lio/github/valerioisufi/drawview/lecture/local/OllamaModel;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/local/OllamaModel;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/local/OllamaModel;
+	public final fun copy (Ljava/lang/String;J)Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getName ()Ljava/lang/String;
 	public final fun getSize ()J
@@ -1444,23 +1444,23 @@ public final class io/github/valerioisufi/drawview/lecture/local/OllamaModel {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final synthetic class io/github/valerioisufi/drawview/lecture/local/OllamaModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class io/github/valerioisufi/pageboard/lecture/local/OllamaModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/local/OllamaModel$$serializer;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/lecture/local/OllamaModel;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/lecture/local/OllamaModel;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/lecture/local/OllamaModel;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/local/OllamaModel$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/local/OllamaModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/platform/ChosenFile {
+public final class io/github/valerioisufi/pageboard/lecture/platform/ChosenFile {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -1469,11 +1469,11 @@ public final class io/github/valerioisufi/drawview/lecture/platform/ChosenFile {
 	public final fun getTemporary ()Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/platform/LecturePlatform_androidKt {
+public final class io/github/valerioisufi/pageboard/lecture/platform/LecturePlatform_androidKt {
 	public static final fun isComputer ()Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/transcription/SpeechHints {
+public final class io/github/valerioisufi/pageboard/lecture/transcription/SpeechHints {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
@@ -1481,26 +1481,26 @@ public final class io/github/valerioisufi/drawview/lecture/transcription/SpeechH
 	public final fun getLanguage ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/lecture/transcription/Transcriber {
+public abstract interface class io/github/valerioisufi/pageboard/lecture/transcription/Transcriber {
 	public fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getParallelism ()I
 	public fun getPieceSeconds ()I
 	public fun getUsesLeadingContext ()Z
-	public abstract fun transcribe ([BLio/github/valerioisufi/drawview/lecture/transcription/SpeechHints;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun transcribe ([BLio/github/valerioisufi/pageboard/lecture/transcription/SpeechHints;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/transcription/Transcriber$DefaultImpls {
-	public static fun close (Lio/github/valerioisufi/drawview/lecture/transcription/Transcriber;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun getParallelism (Lio/github/valerioisufi/drawview/lecture/transcription/Transcriber;)I
-	public static fun getPieceSeconds (Lio/github/valerioisufi/drawview/lecture/transcription/Transcriber;)I
-	public static fun getUsesLeadingContext (Lio/github/valerioisufi/drawview/lecture/transcription/Transcriber;)Z
+public final class io/github/valerioisufi/pageboard/lecture/transcription/Transcriber$DefaultImpls {
+	public static fun close (Lio/github/valerioisufi/pageboard/lecture/transcription/Transcriber;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun getParallelism (Lio/github/valerioisufi/pageboard/lecture/transcription/Transcriber;)I
+	public static fun getPieceSeconds (Lio/github/valerioisufi/pageboard/lecture/transcription/Transcriber;)I
+	public static fun getUsesLeadingContext (Lio/github/valerioisufi/pageboard/lecture/transcription/Transcriber;)Z
 }
 
-public final class io/github/valerioisufi/drawview/lecture/transcription/Transcription {
+public final class io/github/valerioisufi/pageboard/lecture/transcription/Transcription {
 	public static final field $stable I
-	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/drawview/lecture/TokenUsage;)V
-	public synthetic fun <init> (Ljava/util/List;Lio/github/valerioisufi/drawview/lecture/TokenUsage;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/github/valerioisufi/pageboard/lecture/TokenUsage;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getSegments ()Ljava/util/List;
-	public final fun getUsage ()Lio/github/valerioisufi/drawview/lecture/TokenUsage;
+	public final fun getUsage ()Lio/github/valerioisufi/pageboard/lecture/TokenUsage;
 }
 

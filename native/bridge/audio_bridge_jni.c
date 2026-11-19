@@ -1,9 +1,9 @@
-// JNI entry points of the audio codecs (io.github.valerioisufi.drawview.lecture.audio.AudioNative).
+// JNI entry points of the audio codecs (io.github.valerioisufi.pageboard.lecture.audio.AudioNative).
 #include <jni.h>
 
 #include "audio_bridge.h"
 
-#define JNI_METHOD(name) Java_io_github_valerioisufi_drawview_lecture_audio_AudioNative_##name
+#define JNI_METHOD(name) Java_io_github_valerioisufi_pageboard_lecture_audio_AudioNative_##name
 
 JNIEXPORT jlong JNICALL JNI_METHOD(nOpusEncoderCreate)(JNIEnv *env, jclass clazz, jint rate, jint bitrate) {
     return (jlong) (intptr_t) dv_opus_encoder_create(rate, bitrate);

@@ -23,10 +23,10 @@ dependencies {
 }
 
 android {
-    namespace = "io.github.valerioisufi.drawview.consumer"
+    namespace = "io.github.valerioisufi.pageboard.consumer"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
-        applicationId = "io.github.valerioisufi.drawview.consumer"
+        applicationId = "io.github.valerioisufi.pageboard.consumer"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
     }

@@ -1,4 +1,4 @@
-package = io.github.valerioisufi.drawview.lecture.cinterop
+package = io.github.valerioisufi.pageboard.lecture.cinterop
 headers = audio_bridge.h
 headerFilter = audio_bridge.h
 staticLibraries = libpageboard_audio.a

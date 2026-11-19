@@ -1,4 +1,4 @@
-package = io.github.valerioisufi.drawview.sync.iroh.cinterop
+package = io.github.valerioisufi.pageboard.sync.iroh.cinterop
 headers = iroh_bridge.h
 headerFilter = iroh_bridge.h
 staticLibraries = libiroh_bridge.a

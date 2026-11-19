@@ -1,15 +1,15 @@
-public final class io/github/valerioisufi/drawview/ml/litert/LiteRtRuntime : io/github/valerioisufi/drawview/ml/ModelRuntime {
-	public static final field Companion Lio/github/valerioisufi/drawview/ml/litert/LiteRtRuntime$Companion;
+public final class io/github/valerioisufi/pageboard/ml/litert/LiteRtRuntime : io/github/valerioisufi/pageboard/ml/ModelRuntime {
+	public static final field Companion Lio/github/valerioisufi/pageboard/ml/litert/LiteRtRuntime$Companion;
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun embedder (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun generator (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun embedder (Lio/github/valerioisufi/pageboard/ml/InstalledModel;Lio/github/valerioisufi/pageboard/ml/EmbedderOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun generator (Lio/github/valerioisufi/pageboard/ml/InstalledModel;Lio/github/valerioisufi/pageboard/ml/GeneratorOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isAvailable ()Z
-	public fun supports (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Z
+	public fun supports (Lio/github/valerioisufi/pageboard/ml/ModelSpec;)Z
 }
 
-public final class io/github/valerioisufi/drawview/ml/litert/LiteRtRuntime$Companion {
+public final class io/github/valerioisufi/pageboard/ml/litert/LiteRtRuntime$Companion {
 	public final fun defaultCacheDirectory ()Ljava/lang/String;
 }
 

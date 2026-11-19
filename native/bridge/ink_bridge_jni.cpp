@@ -6,12 +6,12 @@
 
 // =========================================================================
 // JNI Export implementations for Kotlin Multiplatform (JVM & Android)
-// Package: io.github.valerioisufi.drawview.ink.InkNative
+// Package: io.github.valerioisufi.pageboard.ink.InkNative
 // =========================================================================
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_createBrush(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_createBrush(
     JNIEnv*, jclass,
     jint family_type,
     jfloat size,
@@ -21,20 +21,20 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_creat
     return reinterpret_cast<jlong>(ink_create_brush(family_type, size, r, g, b, a, epsilon));
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_destroyBrush(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_destroyBrush(
     JNIEnv*, jclass,
     jlong brush_handle
 ) {
     ink_destroy_brush(reinterpret_cast<InkBrushHandle>(brush_handle));
 }
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_createStrokeBuilder(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_createStrokeBuilder(
     JNIEnv*, jclass
 ) {
     return reinterpret_cast<jlong>(ink_stroke_builder_create());
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_startStroke(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_startStroke(
     JNIEnv*, jclass,
     jlong builder_handle,
     jlong brush_handle,
@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_startS
     );
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoint(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_addPoint(
     JNIEnv*, jclass,
     jlong builder_handle,
     jfloat x, jfloat y,
@@ -61,7 +61,7 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoi
     );
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoints(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_addPoints(
     JNIEnv* env, jclass,
     jlong builder_handle,
     jfloatArray xs, jfloatArray ys,
@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_addPoi
     if (times_ptr) env->ReleaseLongArrayElements(times_ms, times_ptr, JNI_ABORT);
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_predict(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_predict(
     JNIEnv* env, jclass,
     jlong builder_handle,
     jfloatArray xs, jfloatArray ys,
@@ -131,7 +131,7 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_predic
     if (times_ptr) env->ReleaseLongArrayElements(times_ms, times_ptr, JNI_ABORT);
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_takeUpdatedRegion(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_takeUpdatedRegion(
     JNIEnv* env, jclass,
     jlong builder_handle,
     jfloatArray out_bounds
@@ -145,42 +145,42 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_ta
     return JNI_TRUE;
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_finishInputs(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_finishInputs(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     ink_stroke_builder_finish_inputs(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_clearStroke(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_clearStroke(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     ink_stroke_builder_clear(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_destroyStrokeBuilder(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_destroyStrokeBuilder(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     ink_stroke_builder_destroy(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getVertexCount(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getVertexCount(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     return ink_stroke_builder_get_vertex_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getTriangleCount(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getTriangleCount(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     return ink_stroke_builder_get_triangle_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getMeshData(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getMeshData(
     JNIEnv* env, jclass,
     jlong builder_handle,
     jfloatArray out_positions,
@@ -212,21 +212,21 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_ge
     return res == 0 ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getOutlineCount(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getOutlineCount(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     return ink_stroke_builder_get_outline_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getOutlineVertexCount(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getOutlineVertexCount(
     JNIEnv*, jclass,
     jlong builder_handle
 ) {
     return ink_stroke_builder_get_outline_vertex_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_ink_InkNative_getOutlines(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_ink_InkNative_getOutlines(
     JNIEnv* env, jclass,
     jlong builder_handle,
     jfloatArray out_positions,

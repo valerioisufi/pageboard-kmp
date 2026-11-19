@@ -1,8 +1,8 @@
-import io.github.valerioisufi.drawview.model.DrawDocument
-import io.github.valerioisufi.drawview.model.DrawText
-import io.github.valerioisufi.drawview.model.change.AddElements
-import io.github.valerioisufi.drawview.model.change.DocumentSession
-import io.github.valerioisufi.drawview.model.change.RenameDocument
+import io.github.valerioisufi.pageboard.model.DrawDocument
+import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.change.AddElements
+import io.github.valerioisufi.pageboard.model.change.DocumentSession
+import io.github.valerioisufi.pageboard.model.change.RenameDocument
 
 /** A document changed and undone through its session, without any UI. */
 fun main() {

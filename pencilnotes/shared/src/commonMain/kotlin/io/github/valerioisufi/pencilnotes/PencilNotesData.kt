@@ -1,10 +1,10 @@
 package io.github.valerioisufi.pencilnotes
 
-import io.github.valerioisufi.drawview.ink.InkStrokeModeller
-import io.github.valerioisufi.drawview.session.EditorSessions
-import io.github.valerioisufi.drawview.store.OpenDocuments
-import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
-import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
+import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
+import io.github.valerioisufi.pageboard.session.EditorSessions
+import io.github.valerioisufi.pageboard.store.OpenDocuments
+import io.github.valerioisufi.pageboard.store.room.RoomDocumentStore
+import io.github.valerioisufi.pageboard.store.room.db.createDrawDatabase
 
 /**
  * The notes of PencilNotes in this process (`docs/plans/instances.md`): the database of the platform,

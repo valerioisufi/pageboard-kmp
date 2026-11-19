@@ -1,42 +1,42 @@
-public final class io/github/valerioisufi/drawview/export/ArchiveException : java/lang/Exception {
+public final class io/github/valerioisufi/pageboard/export/ArchiveException : java/lang/Exception {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;Ljava/lang/String;)V
-	public final fun getReason ()Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;Ljava/lang/String;)V
+	public final fun getReason ()Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;
 }
 
-public final class io/github/valerioisufi/drawview/export/ArchiveException$Reason : java/lang/Enum {
-	public static final field NOT_AN_ARCHIVE Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
-	public static final field TOO_NEW Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+public final class io/github/valerioisufi/pageboard/export/ArchiveException$Reason : java/lang/Enum {
+	public static final field NOT_AN_ARCHIVE Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;
+	public static final field TOO_NEW Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
-	public static fun values ()[Lio/github/valerioisufi/drawview/export/ArchiveException$Reason;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/export/ArchiveException$Reason;
 }
 
-public final class io/github/valerioisufi/drawview/export/ArchiveExporter {
+public final class io/github/valerioisufi/pageboard/export/ArchiveExporter {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;)V
 	public final fun write (Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun write$default (Lio/github/valerioisufi/drawview/export/ArchiveExporter;Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun write$default (Lio/github/valerioisufi/pageboard/export/ArchiveExporter;Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/ArchiveFormat {
+public final class io/github/valerioisufi/pageboard/export/ArchiveFormat {
 	public static final field $stable I
 	public static final field EXTENSION Ljava/lang/String;
 	public static final field FORMAT Ljava/lang/String;
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ArchiveFormat;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/export/ArchiveFormat;
 	public static final field MIME_TYPE Ljava/lang/String;
 	public static final field VERSION I
 	public final fun folderNameOf (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/ArchiveImporter {
+public final class io/github/valerioisufi/pageboard/export/ArchiveImporter {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;)V
 	public final fun import ([BLjava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun import$default (Lio/github/valerioisufi/drawview/export/ArchiveImporter;[BLjava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun import$default (Lio/github/valerioisufi/pageboard/export/ArchiveImporter;[BLjava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/ArchiveResult {
+public final class io/github/valerioisufi/pageboard/export/ArchiveResult {
 	public static final field $stable I
 	public fun <init> ([BIILjava/util/List;)V
 	public final fun getBytes ()[B
@@ -45,9 +45,9 @@ public final class io/github/valerioisufi/drawview/export/ArchiveResult {
 	public final fun getPages ()I
 }
 
-public final class io/github/valerioisufi/drawview/export/DocumentContent {
+public final class io/github/valerioisufi/pageboard/export/DocumentContent {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/export/DocumentContent$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/export/DocumentContent$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/Map;Ljava/lang/Long;Ljava/lang/Long;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/Map;Ljava/lang/Long;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCreatedAt ()Ljava/lang/Long;
@@ -57,154 +57,154 @@ public final class io/github/valerioisufi/drawview/export/DocumentContent {
 	public final fun getTitle ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/DocumentContent$Companion {
-	public final fun of (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;)Lio/github/valerioisufi/drawview/export/DocumentContent;
-	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/export/DocumentContent$Companion;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/export/DocumentContent;
+public final class io/github/valerioisufi/pageboard/export/DocumentContent$Companion {
+	public final fun of (Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
+	public static synthetic fun of$default (Lio/github/valerioisufi/pageboard/export/DocumentContent$Companion;Lio/github/valerioisufi/pageboard/model/DrawDocument;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/export/DocumentContent;
 }
 
-public final class io/github/valerioisufi/drawview/export/DocumentExport {
+public final class io/github/valerioisufi/pageboard/export/DocumentExport {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/export/DocumentExport$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;)V
-	public final fun content (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/ExportOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun content$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/ExportOptions;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun export (Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;Lio/github/valerioisufi/drawview/export/ExportOptions;Lio/github/valerioisufi/drawview/export/ExportWriters;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun export (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun export$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;Lio/github/valerioisufi/drawview/export/ExportOptions;Lio/github/valerioisufi/drawview/export/ExportWriters;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun export$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final field Companion Lio/github/valerioisufi/pageboard/export/DocumentExport$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;)V
+	public final fun content (Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun content$default (Lio/github/valerioisufi/pageboard/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun export (Lio/github/valerioisufi/pageboard/export/ExportContents;Lio/github/valerioisufi/pageboard/export/ExportFormat;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lio/github/valerioisufi/pageboard/export/ExportWriters;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun export (Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/DocumentExporter;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun export$default (Lio/github/valerioisufi/pageboard/export/DocumentExport;Lio/github/valerioisufi/pageboard/export/ExportContents;Lio/github/valerioisufi/pageboard/export/ExportFormat;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lio/github/valerioisufi/pageboard/export/ExportWriters;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun export$default (Lio/github/valerioisufi/pageboard/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/DocumentExporter;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun folderDocuments (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun folderDocuments$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun resolve (Lio/github/valerioisufi/drawview/export/ExportScope;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun resolve$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Lio/github/valerioisufi/drawview/export/ExportScope;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun folderDocuments$default (Lio/github/valerioisufi/pageboard/export/DocumentExport;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun resolve (Lio/github/valerioisufi/pageboard/export/ExportScope;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun resolve$default (Lio/github/valerioisufi/pageboard/export/DocumentExport;Lio/github/valerioisufi/pageboard/export/ExportScope;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/DocumentExport$Companion {
-	public final fun fileName (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;)Ljava/lang/String;
+public final class io/github/valerioisufi/pageboard/export/DocumentExport$Companion {
+	public final fun fileName (Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/DocumentExporter;)Ljava/lang/String;
 	public final fun sanitizeFileName (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/export/DocumentExporter {
-	public abstract fun export (Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun export$default (Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public abstract interface class io/github/valerioisufi/pageboard/export/DocumentExporter {
+	public abstract fun export (Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun export$default (Lio/github/valerioisufi/pageboard/export/DocumentExporter;Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun getExtension ()Ljava/lang/String;
 	public abstract fun getMimeType ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/DocumentExporter$DefaultImpls {
-	public static synthetic fun export$default (Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/export/DocumentExporter$DefaultImpls {
+	public static synthetic fun export$default (Lio/github/valerioisufi/pageboard/export/DocumentExporter;Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportContents {
+public final class io/github/valerioisufi/pageboard/export/ExportContents {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun fileName (Lio/github/valerioisufi/drawview/export/ExportFormat;ILjava/lang/String;)Ljava/lang/String;
-	public static synthetic fun fileName$default (Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;ILjava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun fileName (Lio/github/valerioisufi/pageboard/export/ExportFormat;ILjava/lang/String;)Ljava/lang/String;
+	public static synthetic fun fileName$default (Lio/github/valerioisufi/pageboard/export/ExportContents;Lio/github/valerioisufi/pageboard/export/ExportFormat;ILjava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
 	public final fun getDocuments ()Ljava/util/List;
 	public final fun getFolders ()Ljava/util/Map;
 	public final fun getFormats ()Ljava/util/List;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getPages ()I
-	public final fun getScope ()Lio/github/valerioisufi/drawview/export/ExportScope;
+	public final fun getScope ()Lio/github/valerioisufi/pageboard/export/ExportScope;
 	public final fun isSingleDocument ()Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportException : java/lang/Exception {
+public final class io/github/valerioisufi/pageboard/export/ExportException : java/lang/Exception {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportFailure;Ljava/lang/String;Ljava/lang/Throwable;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/ExportFailure;Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getFailure ()Lio/github/valerioisufi/drawview/export/ExportFailure;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportFailure;Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/ExportFailure;Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFailure ()Lio/github/valerioisufi/pageboard/export/ExportFailure;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportFailure : java/lang/Enum {
-	public static final field Companion Lio/github/valerioisufi/drawview/export/ExportFailure$Companion;
-	public static final field DOCUMENT_MISSING Lio/github/valerioisufi/drawview/export/ExportFailure;
-	public static final field NOTHING_TO_EXPORT Lio/github/valerioisufi/drawview/export/ExportFailure;
-	public static final field NOT_WRITABLE Lio/github/valerioisufi/drawview/export/ExportFailure;
-	public static final field NO_SPACE Lio/github/valerioisufi/drawview/export/ExportFailure;
-	public static final field UNKNOWN Lio/github/valerioisufi/drawview/export/ExportFailure;
+public final class io/github/valerioisufi/pageboard/export/ExportFailure : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/pageboard/export/ExportFailure$Companion;
+	public static final field DOCUMENT_MISSING Lio/github/valerioisufi/pageboard/export/ExportFailure;
+	public static final field NOTHING_TO_EXPORT Lio/github/valerioisufi/pageboard/export/ExportFailure;
+	public static final field NOT_WRITABLE Lio/github/valerioisufi/pageboard/export/ExportFailure;
+	public static final field NO_SPACE Lio/github/valerioisufi/pageboard/export/ExportFailure;
+	public static final field UNKNOWN Lio/github/valerioisufi/pageboard/export/ExportFailure;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/export/ExportFailure;
-	public static fun values ()[Lio/github/valerioisufi/drawview/export/ExportFailure;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/export/ExportFailure;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/export/ExportFailure;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportFailure$Companion {
-	public final fun of (Ljava/lang/Throwable;)Lio/github/valerioisufi/drawview/export/ExportFailure;
+public final class io/github/valerioisufi/pageboard/export/ExportFailure$Companion {
+	public final fun of (Ljava/lang/Throwable;)Lio/github/valerioisufi/pageboard/export/ExportFailure;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportFormat : java/lang/Enum {
-	public static final field ARCHIVE Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static final field COMBINED_PDF Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static final field IMAGES Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static final field MARKDOWN Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static final field PDF Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static final field PDF_PER_DOCUMENT Lio/github/valerioisufi/drawview/export/ExportFormat;
+public final class io/github/valerioisufi/pageboard/export/ExportFormat : java/lang/Enum {
+	public static final field ARCHIVE Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field COMBINED_PDF Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field IMAGES Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field MARKDOWN Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field PDF Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field PDF_PER_DOCUMENT Lio/github/valerioisufi/pageboard/export/ExportFormat;
 	public final fun extension (I)Ljava/lang/String;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun mimeType (I)Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public static fun values ()[Lio/github/valerioisufi/drawview/export/ExportFormat;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/export/ExportFormat;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJob {
+public final class io/github/valerioisufi/pageboard/export/ExportJob {
 	public static final field $stable I
-	public fun <init> (JLio/github/valerioisufi/drawview/export/ExportRequest;Lio/github/valerioisufi/drawview/export/ExportJobState;)V
+	public fun <init> (JLio/github/valerioisufi/pageboard/export/ExportRequest;Lio/github/valerioisufi/pageboard/export/ExportJobState;)V
 	public final fun getId ()J
-	public final fun getRequest ()Lio/github/valerioisufi/drawview/export/ExportRequest;
-	public final fun getState ()Lio/github/valerioisufi/drawview/export/ExportJobState;
+	public final fun getRequest ()Lio/github/valerioisufi/pageboard/export/ExportRequest;
+	public final fun getState ()Lio/github/valerioisufi/pageboard/export/ExportJobState;
 	public final fun isActive ()Z
 }
 
-public abstract interface class io/github/valerioisufi/drawview/export/ExportJobState {
+public abstract interface class io/github/valerioisufi/pageboard/export/ExportJobState {
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobState$Cancelled : io/github/valerioisufi/drawview/export/ExportJobState {
+public final class io/github/valerioisufi/pageboard/export/ExportJobState$Cancelled : io/github/valerioisufi/pageboard/export/ExportJobState {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ExportJobState$Cancelled;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/export/ExportJobState$Cancelled;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobState$Done : io/github/valerioisufi/drawview/export/ExportJobState {
+public final class io/github/valerioisufi/pageboard/export/ExportJobState$Done : io/github/valerioisufi/pageboard/export/ExportJobState {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportOutcome;Ljava/lang/String;)V
-	public final fun getOutcome ()Lio/github/valerioisufi/drawview/export/ExportOutcome;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportOutcome;Ljava/lang/String;)V
+	public final fun getOutcome ()Lio/github/valerioisufi/pageboard/export/ExportOutcome;
 	public final fun getPath ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobState$Failed : io/github/valerioisufi/drawview/export/ExportJobState {
+public final class io/github/valerioisufi/pageboard/export/ExportJobState$Failed : io/github/valerioisufi/pageboard/export/ExportJobState {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportFailure;)V
-	public final fun getFailure ()Lio/github/valerioisufi/drawview/export/ExportFailure;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportFailure;)V
+	public final fun getFailure ()Lio/github/valerioisufi/pageboard/export/ExportFailure;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobState$Queued : io/github/valerioisufi/drawview/export/ExportJobState {
+public final class io/github/valerioisufi/pageboard/export/ExportJobState$Queued : io/github/valerioisufi/pageboard/export/ExportJobState {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ExportJobState$Queued;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/export/ExportJobState$Queued;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobState$Running : io/github/valerioisufi/drawview/export/ExportJobState {
+public final class io/github/valerioisufi/pageboard/export/ExportJobState$Running : io/github/valerioisufi/pageboard/export/ExportJobState {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportProgress;)V
-	public final fun getProgress ()Lio/github/valerioisufi/drawview/export/ExportProgress;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportProgress;)V
+	public final fun getProgress ()Lio/github/valerioisufi/pageboard/export/ExportProgress;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportJobs {
+public final class io/github/valerioisufi/pageboard/export/ExportJobs {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/DocumentExport;Lkotlinx/coroutines/CoroutineScope;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/DocumentExport;Lkotlinx/coroutines/CoroutineScope;)V
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;)V
 	public final fun cancel (J)V
 	public final fun dismiss (J)V
 	public final fun getJobs ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun retry (J)V
-	public final fun start (Lio/github/valerioisufi/drawview/export/ExportRequest;)J
+	public final fun start (Lio/github/valerioisufi/pageboard/export/ExportRequest;)J
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportOptions {
+public final class io/github/valerioisufi/pageboard/export/ExportOptions {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Ljava/util/Set;ZLjava/util/Set;)V
@@ -214,7 +214,7 @@ public final class io/github/valerioisufi/drawview/export/ExportOptions {
 	public final fun getPageIndices ()Ljava/util/Set;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportOutcome {
+public final class io/github/valerioisufi/pageboard/export/ExportOutcome {
 	public static final field $stable I
 	public fun <init> (IIILjava/util/List;Ljava/util/List;)V
 	public synthetic fun <init> (IIILjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -225,7 +225,7 @@ public final class io/github/valerioisufi/drawview/export/ExportOutcome {
 	public final fun getSkippedIn ()Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportProgress {
+public final class io/github/valerioisufi/pageboard/export/ExportProgress {
 	public static final field $stable I
 	public fun <init> (FIILjava/lang/String;)V
 	public final fun getFraction ()F
@@ -234,42 +234,42 @@ public final class io/github/valerioisufi/drawview/export/ExportProgress {
 	public final fun getName ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportRequest {
+public final class io/github/valerioisufi/pageboard/export/ExportRequest {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;Lio/github/valerioisufi/drawview/export/ExportOptions;Lio/github/valerioisufi/drawview/export/ExportWriters;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/ExportContents;Lio/github/valerioisufi/drawview/export/ExportFormat;Lio/github/valerioisufi/drawview/export/ExportOptions;Lio/github/valerioisufi/drawview/export/ExportWriters;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getContents ()Lio/github/valerioisufi/drawview/export/ExportContents;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportContents;Lio/github/valerioisufi/pageboard/export/ExportFormat;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lio/github/valerioisufi/pageboard/export/ExportWriters;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/ExportContents;Lio/github/valerioisufi/pageboard/export/ExportFormat;Lio/github/valerioisufi/pageboard/export/ExportOptions;Lio/github/valerioisufi/pageboard/export/ExportWriters;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getContents ()Lio/github/valerioisufi/pageboard/export/ExportContents;
 	public final fun getDeliver ()Lkotlin/jvm/functions/Function2;
 	public final fun getFileName ()Ljava/lang/String;
-	public final fun getFormat ()Lio/github/valerioisufi/drawview/export/ExportFormat;
-	public final fun getOptions ()Lio/github/valerioisufi/drawview/export/ExportOptions;
+	public final fun getFormat ()Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public final fun getOptions ()Lio/github/valerioisufi/pageboard/export/ExportOptions;
 	public final fun getPath ()Ljava/lang/String;
-	public final fun getWriters ()Lio/github/valerioisufi/drawview/export/ExportWriters;
+	public final fun getWriters ()Lio/github/valerioisufi/pageboard/export/ExportWriters;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportResult {
+public final class io/github/valerioisufi/pageboard/export/ExportResult {
 	public static final field $stable I
 	public fun <init> (II)V
 	public final fun getPages ()I
 	public final fun getSkipped ()I
 }
 
-public abstract interface class io/github/valerioisufi/drawview/export/ExportScope {
-	public static final field Companion Lio/github/valerioisufi/drawview/export/ExportScope$Companion;
+public abstract interface class io/github/valerioisufi/pageboard/export/ExportScope {
+	public static final field Companion Lio/github/valerioisufi/pageboard/export/ExportScope$Companion;
 	public fun getFormats ()Ljava/util/List;
 	public fun isSingleDocument ()Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportScope$Companion {
-	public final fun ofSelection (Ljava/util/List;Ljava/util/List;)Lio/github/valerioisufi/drawview/export/ExportScope;
+public final class io/github/valerioisufi/pageboard/export/ExportScope$Companion {
+	public final fun ofSelection (Ljava/util/List;Ljava/util/List;)Lio/github/valerioisufi/pageboard/export/ExportScope;
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportScope$DefaultImpls {
-	public static fun getFormats (Lio/github/valerioisufi/drawview/export/ExportScope;)Ljava/util/List;
-	public static fun isSingleDocument (Lio/github/valerioisufi/drawview/export/ExportScope;)Z
+public final class io/github/valerioisufi/pageboard/export/ExportScope$DefaultImpls {
+	public static fun getFormats (Lio/github/valerioisufi/pageboard/export/ExportScope;)Ljava/util/List;
+	public static fun isSingleDocument (Lio/github/valerioisufi/pageboard/export/ExportScope;)Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportScope$Folder : io/github/valerioisufi/drawview/export/ExportScope {
+public final class io/github/valerioisufi/pageboard/export/ExportScope$Folder : io/github/valerioisufi/pageboard/export/ExportScope {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getFolderId ()Ljava/lang/String;
@@ -277,7 +277,7 @@ public final class io/github/valerioisufi/drawview/export/ExportScope$Folder : i
 	public fun isSingleDocument ()Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportScope$Items : io/github/valerioisufi/drawview/export/ExportScope {
+public final class io/github/valerioisufi/pageboard/export/ExportScope$Items : io/github/valerioisufi/pageboard/export/ExportScope {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;Ljava/util/List;)V
 	public final fun getDocumentIds ()Ljava/util/List;
@@ -286,7 +286,7 @@ public final class io/github/valerioisufi/drawview/export/ExportScope$Items : io
 	public fun isSingleDocument ()Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportScope$Pages : io/github/valerioisufi/drawview/export/ExportScope {
+public final class io/github/valerioisufi/pageboard/export/ExportScope$Pages : io/github/valerioisufi/pageboard/export/ExportScope {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/util/Set;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -296,23 +296,23 @@ public final class io/github/valerioisufi/drawview/export/ExportScope$Pages : io
 	public fun isSingleDocument ()Z
 }
 
-public final class io/github/valerioisufi/drawview/export/ExportWriters {
+public final class io/github/valerioisufi/pageboard/export/ExportWriters {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;Lio/github/valerioisufi/drawview/export/MarkdownExporter;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/PdfExporter;Lio/github/valerioisufi/drawview/export/PageImageExporter;Lio/github/valerioisufi/drawview/export/MarkdownExporter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getImage ()Lio/github/valerioisufi/drawview/export/PageImageExporter;
-	public final fun getMarkdown ()Lio/github/valerioisufi/drawview/export/MarkdownExporter;
-	public final fun getPdf ()Lio/github/valerioisufi/drawview/export/PdfExporter;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getImage ()Lio/github/valerioisufi/pageboard/export/PageImageExporter;
+	public final fun getMarkdown ()Lio/github/valerioisufi/pageboard/export/MarkdownExporter;
+	public final fun getPdf ()Lio/github/valerioisufi/pageboard/export/PdfExporter;
 }
 
-public final class io/github/valerioisufi/drawview/export/FolderDocumentItem {
+public final class io/github/valerioisufi/pageboard/export/FolderDocumentItem {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Ljava/lang/String;)V
 	public final fun getRelativePath ()Ljava/lang/String;
-	public final fun getSummary ()Lio/github/valerioisufi/drawview/store/DocumentSummary;
+	public final fun getSummary ()Lio/github/valerioisufi/pageboard/store/DocumentSummary;
 }
 
-public final class io/github/valerioisufi/drawview/export/ImportResult {
+public final class io/github/valerioisufi/pageboard/export/ImportResult {
 	public static final field $stable I
 	public fun <init> (IILjava/lang/String;)V
 	public final fun getDocuments ()I
@@ -320,35 +320,35 @@ public final class io/github/valerioisufi/drawview/export/ImportResult {
 	public final fun getPages ()I
 }
 
-public abstract interface class io/github/valerioisufi/drawview/export/MarkdownAppendix {
+public abstract interface class io/github/valerioisufi/pageboard/export/MarkdownAppendix {
 	public abstract fun of (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/MarkdownExporter {
+public final class io/github/valerioisufi/pageboard/export/MarkdownExporter {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/export/MarkdownAppendix;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun hasText (Lio/github/valerioisufi/drawview/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun write (Lio/github/valerioisufi/drawview/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun hasText (Lio/github/valerioisufi/pageboard/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun write (Lio/github/valerioisufi/pageboard/export/DocumentContent;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/export/PageImageExporter : io/github/valerioisufi/drawview/export/DocumentExporter {
+public final class io/github/valerioisufi/pageboard/export/PageImageExporter : io/github/valerioisufi/pageboard/export/DocumentExporter {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun export (Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun <init> (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun export (Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getExtension ()Ljava/lang/String;
 	public fun getMimeType ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/export/PdfExporter : io/github/valerioisufi/drawview/export/DocumentExporter {
+public final class io/github/valerioisufi/pageboard/export/PdfExporter : io/github/valerioisufi/pageboard/export/DocumentExporter {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun export (Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun exportCombined (Ljava/util/List;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun exportCombined$default (Lio/github/valerioisufi/drawview/export/PdfExporter;Ljava/util/List;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun <init> (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/pageboard/canvas/render/ElementRenderers;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun export (Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun exportCombined (Ljava/util/List;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun exportCombined$default (Lio/github/valerioisufi/pageboard/export/PdfExporter;Ljava/util/List;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getExtension ()Ljava/lang/String;
 	public fun getMimeType ()Ljava/lang/String;
 }

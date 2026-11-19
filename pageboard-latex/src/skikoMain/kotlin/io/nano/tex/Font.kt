@@ -1,9 +1,9 @@
 package io.nano.tex
 
-import io.github.valerioisufi.drawview.canvas.render.tile.FormulaFont
-import io.github.valerioisufi.drawview.latex.TexTextFonts
-import io.github.valerioisufi.drawview.platform.SyncLock
-import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaFont
+import io.github.valerioisufi.pageboard.latex.TexTextFonts
+import io.github.valerioisufi.pageboard.platform.SyncLock
+import io.github.valerioisufi.pageboard.platform.syncLock
 import kotlin.jvm.JvmStatic
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.FontMgr
@@ -25,7 +25,7 @@ public class Font(
 ) {
     public fun deriveFont(style: Int): Font = if (style == this.style) this else Font(typeface, size, style, file)
 
-    /** This font for a [io.github.valerioisufi.drawview.canvas.render.tile.FormulaDrawing]: the style synthesized over the file as [toSkiaFont] does. */
+    /** This font for a [io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing]: the style synthesized over the file as [toSkiaFont] does. */
     public fun toTexFont(): FormulaFont {
         val tfStyle = typeface?.fontStyle
         val boldFace = tfStyle != null && tfStyle.weight >= 600

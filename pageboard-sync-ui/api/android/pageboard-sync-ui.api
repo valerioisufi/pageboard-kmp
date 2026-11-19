@@ -1,10 +1,10 @@
-public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
+public final class io/github/valerioisufi/pageboard/sync/ui/Collaboration {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/pageboard/sync/InternetSync;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlin/jvm/functions/Function1;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/pageboard/sync/InternetSync;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun answer (Lio/github/valerioisufi/pageboard/sync/JoinRequest;Z)V
 	public final fun getDevice ()Ljava/lang/String;
-	public final fun getEngine ()Lio/github/valerioisufi/drawview/sync/SyncEngine;
+	public final fun getEngine ()Lio/github/valerioisufi/pageboard/sync/SyncEngine;
 	public final fun getInternetSettings ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getJoinRequests ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getJoining ()Lkotlinx/coroutines/flow/StateFlow;
@@ -16,37 +16,37 @@ public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public final fun getSpaceMemberships ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun invitationsOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isInternetAvailable ()Z
-	public final fun join (Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/SpaceRoot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun join$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/SpaceRoot;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun join (Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/SpaceRoot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun join$default (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/SpaceRoot;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun nearbyHosts (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun nearbyHosts$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun nearbyHosts$default (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun revokeInvitation (Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun revokeInvitation (Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/InvitationGrant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun routeOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setInternet (Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun share (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun shareFolder (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun shareFolder$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun setInternet (Lio/github/valerioisufi/pageboard/sync/ui/InternetSettings;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun share (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun share$default (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun shareFolder (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun shareFolder$default (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun spaceOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/CollaborationExtensionKt {
-	public static final fun editorExtension (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+public final class io/github/valerioisufi/pageboard/sync/ui/CollaborationExtensionKt {
+	public static final fun editorExtension (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/CollaborationKt {
-	public static final fun CollaborationAccess (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Landroidx/compose/runtime/Composer;I)V
-	public static final fun createCollaboration (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
-	public static synthetic fun createCollaboration$default (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
+public final class io/github/valerioisufi/pageboard/sync/ui/CollaborationKt {
+	public static final fun CollaborationAccess (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;Landroidx/compose/runtime/Composer;I)V
+	public static final fun createCollaboration (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;)Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;
+	public static synthetic fun createCollaboration$default (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/InternetSync;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/InternetSettings {
+public final class io/github/valerioisufi/pageboard/sync/ui/InternetSettings {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (ZLjava/lang/String;Ljava/lang/String;)V
@@ -54,8 +54,8 @@ public final class io/github/valerioisufi/drawview/sync/ui/InternetSettings {
 	public final fun component1 ()Z
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (ZLjava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;ZLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;
+	public final fun copy (ZLjava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/ui/InternetSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/ui/InternetSettings;ZLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/ui/InternetSettings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEnabled ()Z
 	public final fun getRelay ()Ljava/lang/String;
@@ -64,18 +64,18 @@ public final class io/github/valerioisufi/drawview/sync/ui/InternetSettings {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/InvitationLinks {
+public final class io/github/valerioisufi/pageboard/sync/ui/InvitationLinks {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/ui/InvitationLinks;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/ui/InvitationLinks;
 	public final fun open (Ljava/lang/String;)V
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/JoinDocumentKt {
-	public static final fun CollaborationDialogs (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Landroidx/compose/runtime/Composer;I)V
-	public static final fun joinAction (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;)Lio/github/valerioisufi/drawview/ui/extension/LibraryAction;
+public final class io/github/valerioisufi/pageboard/sync/ui/JoinDocumentKt {
+	public static final fun CollaborationDialogs (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;Landroidx/compose/runtime/Composer;I)V
+	public static final fun joinAction (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;)Lio/github/valerioisufi/pageboard/ui/extension/LibraryAction;
 }
 
-public final class io/github/valerioisufi/drawview/sync/ui/ShareFolderKt {
-	public static final fun shareAction (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;)Lio/github/valerioisufi/drawview/ui/extension/LibraryItemsAction;
+public final class io/github/valerioisufi/pageboard/sync/ui/ShareFolderKt {
+	public static final fun shareAction (Lio/github/valerioisufi/pageboard/sync/ui/Collaboration;)Lio/github/valerioisufi/pageboard/ui/extension/LibraryItemsAction;
 }
 

@@ -1,58 +1,58 @@
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohInternet : io/github/valerioisufi/drawview/sync/InternetSync {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/iroh/IrohInternet;
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohInternet : io/github/valerioisufi/pageboard/sync/InternetSync {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/iroh/IrohInternet;
 	public fun isAvailable ()Z
-	public fun network (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/SyncNetwork;
+	public fun network (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/SyncNetwork;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret {
-	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companion;
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohSecret {
+	public static final field Companion Lio/github/valerioisufi/pageboard/sync/iroh/IrohSecret$Companion;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companion {
-	public final fun generate ()Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;
-	public final fun ofThisDevice ()Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohSecret$Companion {
+	public final fun generate ()Lio/github/valerioisufi/pageboard/sync/iroh/IrohSecret;
+	public final fun ofThisDevice ()Lio/github/valerioisufi/pageboard/sync/iroh/IrohSecret;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohSync : io/github/valerioisufi/drawview/sync/SyncNetwork {
-	public fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJ)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohSync : io/github/valerioisufi/pageboard/sync/SyncNetwork {
+	public fun <init> (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Lio/github/valerioisufi/pageboard/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJ)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Lio/github/valerioisufi/pageboard/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun join (Lio/github/valerioisufi/pageboard/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
-	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport$Companion;
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohTransport : io/github/valerioisufi/pageboard/sync/protocol/SyncTransport {
+	public static final field Companion Lio/github/valerioisufi/pageboard/sync/iroh/IrohTransport$Companion;
 	public static final field NAME Ljava/lang/String;
-	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;J)V
-	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/sync/iroh/IrohSecret;Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;J)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/sync/iroh/IrohSecret;Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun connect (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun currentAddress (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun currentAddress$default (Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun currentAddress$default (Lio/github/valerioisufi/pageboard/sync/iroh/IrohTransport;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun getAddress ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
 	public fun getIncoming ()Lkotlinx/coroutines/flow/Flow;
 	public final fun networkChanged (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun start$default (Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun start$default (Lio/github/valerioisufi/pageboard/sync/iroh/IrohTransport;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohTransport$Companion {
+public final class io/github/valerioisufi/pageboard/sync/iroh/IrohTransport$Companion {
 	public final fun isAvailable ()Z
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/RelayConfig {
-	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig$Companion;
+public final class io/github/valerioisufi/pageboard/sync/iroh/RelayConfig {
+	public static final field Companion Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig$Companion;
 	public fun <init> ()V
 	public fun <init> (Ljava/util/List;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/util/List;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;
+	public final fun copy (Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getToken ()Ljava/lang/String;
 	public final fun getUrls ()Ljava/util/List;
@@ -60,8 +60,8 @@ public final class io/github/valerioisufi/drawview/sync/iroh/RelayConfig {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/RelayConfig$Companion {
-	public final fun getN0_PUBLIC ()Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;
-	public final fun getNONE ()Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;
+public final class io/github/valerioisufi/pageboard/sync/iroh/RelayConfig$Companion {
+	public final fun getN0_PUBLIC ()Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;
+	public final fun getNONE ()Lio/github/valerioisufi/pageboard/sync/iroh/RelayConfig;
 }
 

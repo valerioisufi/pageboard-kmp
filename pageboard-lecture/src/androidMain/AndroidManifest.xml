@@ -9,7 +9,7 @@
 
     <application>
         <service
-                android:name="io.github.valerioisufi.drawview.lecture.audio.LectureRecordingService"
+                android:name="io.github.valerioisufi.pageboard.lecture.audio.LectureRecordingService"
                 android:exported="false"
                 android:foregroundServiceType="microphone"/>
     </application>

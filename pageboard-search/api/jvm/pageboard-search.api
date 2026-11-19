@@ -1,24 +1,24 @@
-public final class io/github/valerioisufi/drawview/search/CitedPassage {
-	public fun <init> (ILio/github/valerioisufi/drawview/search/SearchHit;)V
+public final class io/github/valerioisufi/pageboard/search/CitedPassage {
+	public fun <init> (ILio/github/valerioisufi/pageboard/search/SearchHit;)V
 	public final fun component1 ()I
-	public final fun component2 ()Lio/github/valerioisufi/drawview/search/SearchHit;
-	public final fun copy (ILio/github/valerioisufi/drawview/search/SearchHit;)Lio/github/valerioisufi/drawview/search/CitedPassage;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/CitedPassage;ILio/github/valerioisufi/drawview/search/SearchHit;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/CitedPassage;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/search/SearchHit;
+	public final fun copy (ILio/github/valerioisufi/pageboard/search/SearchHit;)Lio/github/valerioisufi/pageboard/search/CitedPassage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/CitedPassage;ILio/github/valerioisufi/pageboard/search/SearchHit;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/CitedPassage;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getHit ()Lio/github/valerioisufi/drawview/search/SearchHit;
+	public final fun getHit ()Lio/github/valerioisufi/pageboard/search/SearchHit;
 	public final fun getNumber ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/DocumentSearchResult {
+public final class io/github/valerioisufi/pageboard/search/DocumentSearchResult {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;D)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/util/List;
 	public final fun component4 ()D
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;D)Lio/github/valerioisufi/drawview/search/DocumentSearchResult;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/DocumentSearchResult;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;DILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/DocumentSearchResult;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;D)Lio/github/valerioisufi/pageboard/search/DocumentSearchResult;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/DocumentSearchResult;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;DILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/DocumentSearchResult;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun getHits ()Ljava/util/List;
@@ -28,23 +28,23 @@ public final class io/github/valerioisufi/drawview/search/DocumentSearchResult {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/DocumentSearchSource : io/github/valerioisufi/drawview/search/SearchSource {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/DocumentSearchSource$Companion;
+public final class io/github/valerioisufi/pageboard/search/DocumentSearchSource : io/github/valerioisufi/pageboard/search/SearchSource {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/DocumentSearchSource$Companion;
 	public static final field ID Ljava/lang/String;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/util/List;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun chunks (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/util/List;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun chunks (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
 	public fun getId ()Ljava/lang/String;
-	public fun version (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun version (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/search/DocumentSearchSource$Companion {
+public final class io/github/valerioisufi/pageboard/search/DocumentSearchSource$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/search/EmbeddingPrompts {
+public final class io/github/valerioisufi/pageboard/search/EmbeddingPrompts {
 	public static final field DEFAULT_DIMENSIONS I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/search/EmbeddingPrompts;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/search/EmbeddingPrompts;
 	public static final field VERSION I
 	public final fun document (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public final fun hash (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
@@ -52,37 +52,37 @@ public final class io/github/valerioisufi/drawview/search/EmbeddingPrompts {
 	public final fun question (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/IndexedChunk {
-	public fun <init> (JLio/github/valerioisufi/drawview/search/SearchChunk;Ljava/lang/String;)V
+public final class io/github/valerioisufi/pageboard/search/IndexedChunk {
+	public fun <init> (JLio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;)V
 	public final fun component1 ()J
-	public final fun component2 ()Lio/github/valerioisufi/drawview/search/SearchChunk;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/search/SearchChunk;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (JLio/github/valerioisufi/drawview/search/SearchChunk;Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/IndexedChunk;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/IndexedChunk;JLio/github/valerioisufi/drawview/search/SearchChunk;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/IndexedChunk;
+	public final fun copy (JLio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/IndexedChunk;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/IndexedChunk;JLio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/IndexedChunk;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getChunk ()Lio/github/valerioisufi/drawview/search/SearchChunk;
+	public final fun getChunk ()Lio/github/valerioisufi/pageboard/search/SearchChunk;
 	public final fun getHash ()Ljava/lang/String;
 	public final fun getId ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/search/IndexingConditions {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/IndexingConditions$Companion;
+public abstract interface class io/github/valerioisufi/pageboard/search/IndexingConditions {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/IndexingConditions$Companion;
 	public abstract fun getCanIndex ()Lkotlinx/coroutines/flow/Flow;
 }
 
-public final class io/github/valerioisufi/drawview/search/IndexingConditions$Always : io/github/valerioisufi/drawview/search/IndexingConditions {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/search/IndexingConditions$Always;
+public final class io/github/valerioisufi/pageboard/search/IndexingConditions$Always : io/github/valerioisufi/pageboard/search/IndexingConditions {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/search/IndexingConditions$Always;
 	public fun getCanIndex ()Lkotlinx/coroutines/flow/Flow;
 }
 
-public final class io/github/valerioisufi/drawview/search/IndexingConditions$Companion {
-	public final fun from (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/flow/Flow;)Lio/github/valerioisufi/drawview/search/IndexingConditions;
-	public static synthetic fun from$default (Lio/github/valerioisufi/drawview/search/IndexingConditions$Companion;Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/flow/Flow;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/IndexingConditions;
+public final class io/github/valerioisufi/pageboard/search/IndexingConditions$Companion {
+	public final fun from (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/flow/Flow;)Lio/github/valerioisufi/pageboard/search/IndexingConditions;
+	public static synthetic fun from$default (Lio/github/valerioisufi/pageboard/search/IndexingConditions$Companion;Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/flow/Flow;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/IndexingConditions;
 }
 
-public final class io/github/valerioisufi/drawview/search/IndexingProgress {
+public final class io/github/valerioisufi/pageboard/search/IndexingProgress {
 	public fun <init> ()V
 	public fun <init> (ZIII)V
 	public synthetic fun <init> (ZIIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -90,8 +90,8 @@ public final class io/github/valerioisufi/drawview/search/IndexingProgress {
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()I
-	public final fun copy (ZIII)Lio/github/valerioisufi/drawview/search/IndexingProgress;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/IndexingProgress;ZIIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/IndexingProgress;
+	public final fun copy (ZIII)Lio/github/valerioisufi/pageboard/search/IndexingProgress;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/IndexingProgress;ZIIIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/IndexingProgress;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getIndexedDocuments ()I
 	public final fun getTotalDocuments ()I
@@ -101,7 +101,7 @@ public final class io/github/valerioisufi/drawview/search/IndexingProgress {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/MutableIndexingConditions : io/github/valerioisufi/drawview/search/IndexingConditions {
+public final class io/github/valerioisufi/pageboard/search/MutableIndexingConditions : io/github/valerioisufi/pageboard/search/IndexingConditions {
 	public fun <init> ()V
 	public fun <init> (Z)V
 	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -110,28 +110,28 @@ public final class io/github/valerioisufi/drawview/search/MutableIndexingConditi
 	public final fun setCanIndex (Z)V
 }
 
-public final class io/github/valerioisufi/drawview/search/NoteVocabulary {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/NoteVocabulary$Companion;
+public final class io/github/valerioisufi/pageboard/search/NoteVocabulary {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/NoteVocabulary$Companion;
 	public static final field MAX_DOCUMENTS I
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/CoroutineDispatcher;JLkotlin/time/TimeSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/CoroutineDispatcher;JLkotlin/time/TimeSource;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun document (Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/WordCounts;
-	public final fun library ()Lio/github/valerioisufi/drawview/search/WordCounts;
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/search/SearchIndex;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/CoroutineDispatcher;JLkotlin/time/TimeSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/search/SearchIndex;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/CoroutineDispatcher;JLkotlin/time/TimeSource;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun document (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/WordCounts;
+	public final fun library ()Lio/github/valerioisufi/pageboard/search/WordCounts;
 }
 
-public final class io/github/valerioisufi/drawview/search/NoteVocabulary$Companion {
+public final class io/github/valerioisufi/pageboard/search/NoteVocabulary$Companion {
 	public final fun getLIBRARY_REFRESH-UwyO8pc ()J
 }
 
-public final class io/github/valerioisufi/drawview/search/NotesAnswer {
+public final class io/github/valerioisufi/pageboard/search/NotesAnswer {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/util/List;
 	public final fun component4 ()Ljava/util/List;
 	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/NotesAnswer;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/NotesAnswer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/NotesAnswer;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/NotesAnswer;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/NotesAnswer;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/NotesAnswer;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCitations ()Ljava/util/List;
 	public final fun getModelName ()Ljava/lang/String;
@@ -142,36 +142,36 @@ public final class io/github/valerioisufi/drawview/search/NotesAnswer {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/NotesAnswerer {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/NotesAnswerer$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;Lio/github/valerioisufi/drawview/ml/Generator;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;Lio/github/valerioisufi/drawview/ml/Generator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun answerOnDevice (Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelSpec;ILjava/util/Set;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun answerOnDevice$default (Lio/github/valerioisufi/drawview/search/NotesAnswerer;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelSpec;ILjava/util/Set;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun answerOnline (Ljava/lang/String;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;ILjava/util/Set;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun answerOnline$default (Lio/github/valerioisufi/drawview/search/NotesAnswerer;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;ILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+public final class io/github/valerioisufi/pageboard/search/NotesAnswerer {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/NotesAnswerer$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/search/SearchEngine;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/GeneratorOptions;Lio/github/valerioisufi/pageboard/ml/Generator;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/search/SearchEngine;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/GeneratorOptions;Lio/github/valerioisufi/pageboard/ml/Generator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun answerOnDevice (Ljava/lang/String;Lio/github/valerioisufi/pageboard/ml/ModelSpec;ILjava/util/Set;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun answerOnDevice$default (Lio/github/valerioisufi/pageboard/search/NotesAnswerer;Ljava/lang/String;Lio/github/valerioisufi/pageboard/ml/ModelSpec;ILjava/util/Set;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun answerOnline (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;ILjava/util/Set;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun answerOnline$default (Lio/github/valerioisufi/pageboard/search/NotesAnswerer;Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;ILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/search/NotesAnswerer$Companion {
+public final class io/github/valerioisufi/pageboard/search/NotesAnswerer$Companion {
 }
 
-public abstract interface class io/github/valerioisufi/drawview/search/OnlineAnswerBackend {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend$Companion;
+public abstract interface class io/github/valerioisufi/pageboard/search/OnlineAnswerBackend {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend$Companion;
 	public abstract fun generate (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isAvailable ()Z
 }
 
-public final class io/github/valerioisufi/drawview/search/OnlineAnswerBackend$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;)Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;
-	public static synthetic fun invoke$default (Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend$Companion;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;
+public final class io/github/valerioisufi/pageboard/search/OnlineAnswerBackend$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;)Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;
+	public static synthetic fun invoke$default (Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend$Companion;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;
 }
 
-public final class io/github/valerioisufi/drawview/search/OnlineAnswerBackend$DefaultImpls {
-	public static fun isAvailable (Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;)Z
+public final class io/github/valerioisufi/pageboard/search/OnlineAnswerBackend$DefaultImpls {
+	public static fun isAvailable (Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;)Z
 }
 
-public final class io/github/valerioisufi/drawview/search/QuantizedVector {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/QuantizedVector$Companion;
+public final class io/github/valerioisufi/pageboard/search/QuantizedVector {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/QuantizedVector$Companion;
 	public fun <init> (F[B)V
 	public final fun dot ([F)F
 	public fun equals (Ljava/lang/Object;)Z
@@ -182,49 +182,49 @@ public final class io/github/valerioisufi/drawview/search/QuantizedVector {
 	public final fun toFloatArray ()[F
 }
 
-public final class io/github/valerioisufi/drawview/search/QuantizedVector$Companion {
-	public final fun fromFloatArray ([FI)Lio/github/valerioisufi/drawview/search/QuantizedVector;
-	public static synthetic fun fromFloatArray$default (Lio/github/valerioisufi/drawview/search/QuantizedVector$Companion;[FIILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/QuantizedVector;
+public final class io/github/valerioisufi/pageboard/search/QuantizedVector$Companion {
+	public final fun fromFloatArray ([FI)Lio/github/valerioisufi/pageboard/search/QuantizedVector;
+	public static synthetic fun fromFloatArray$default (Lio/github/valerioisufi/pageboard/search/QuantizedVector$Companion;[FIILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/QuantizedVector;
 	public final fun truncateAndNormalize ([FI)[F
-	public static synthetic fun truncateAndNormalize$default (Lio/github/valerioisufi/drawview/search/QuantizedVector$Companion;[FIILjava/lang/Object;)[F
+	public static synthetic fun truncateAndNormalize$default (Lio/github/valerioisufi/pageboard/search/QuantizedVector$Companion;[FIILjava/lang/Object;)[F
 }
 
-public final class io/github/valerioisufi/drawview/search/ScoredChunk {
-	public fun <init> (Lio/github/valerioisufi/drawview/search/IndexedChunk;D)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/search/IndexedChunk;
+public final class io/github/valerioisufi/pageboard/search/ScoredChunk {
+	public fun <init> (Lio/github/valerioisufi/pageboard/search/IndexedChunk;D)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/search/IndexedChunk;
 	public final fun component2 ()D
-	public final fun copy (Lio/github/valerioisufi/drawview/search/IndexedChunk;D)Lio/github/valerioisufi/drawview/search/ScoredChunk;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/ScoredChunk;Lio/github/valerioisufi/drawview/search/IndexedChunk;DILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/ScoredChunk;
+	public final fun copy (Lio/github/valerioisufi/pageboard/search/IndexedChunk;D)Lio/github/valerioisufi/pageboard/search/ScoredChunk;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/ScoredChunk;Lio/github/valerioisufi/pageboard/search/IndexedChunk;DILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/ScoredChunk;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getIndexed ()Lio/github/valerioisufi/drawview/search/IndexedChunk;
+	public final fun getIndexed ()Lio/github/valerioisufi/pageboard/search/IndexedChunk;
 	public final fun getScore ()D
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/search/SearchAnchor {
+public abstract interface class io/github/valerioisufi/pageboard/search/SearchAnchor {
 	public abstract fun getDocumentId ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchAnchor$Document : io/github/valerioisufi/drawview/search/SearchAnchor {
+public final class io/github/valerioisufi/pageboard/search/SearchAnchor$Document : io/github/valerioisufi/pageboard/search/SearchAnchor {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/SearchAnchor$Document;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/SearchAnchor$Document;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchAnchor$Document;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Document;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchAnchor$Document;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Document;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getDocumentId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchAnchor$Lecture : io/github/valerioisufi/drawview/search/SearchAnchor {
+public final class io/github/valerioisufi/pageboard/search/SearchAnchor$Lecture : io/github/valerioisufi/pageboard/search/SearchAnchor {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;J)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;J)Lio/github/valerioisufi/drawview/search/SearchAnchor$Lecture;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/SearchAnchor$Lecture;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchAnchor$Lecture;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;J)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Lecture;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchAnchor$Lecture;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Lecture;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getDocumentId ()Ljava/lang/String;
 	public final fun getLectureId ()Ljava/lang/String;
@@ -233,17 +233,17 @@ public final class io/github/valerioisufi/drawview/search/SearchAnchor$Lecture :
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchAnchor$Page : io/github/valerioisufi/drawview/search/SearchAnchor {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;I)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class io/github/valerioisufi/pageboard/search/SearchAnchor$Page : io/github/valerioisufi/pageboard/search/SearchAnchor {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/Rect;I)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/Rect;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public final fun component4 ()I
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;I)Lio/github/valerioisufi/drawview/search/SearchAnchor$Page;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/SearchAnchor$Page;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/Rect;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchAnchor$Page;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/Rect;I)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Page;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchAnchor$Page;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/geometry/Rect;IILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchAnchor$Page;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public fun getDocumentId ()Ljava/lang/String;
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getPageNumber ()I
@@ -251,18 +251,18 @@ public final class io/github/valerioisufi/drawview/search/SearchAnchor$Page : io
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchChunk {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Lio/github/valerioisufi/drawview/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)V
+public final class io/github/valerioisufi/pageboard/search/SearchChunk {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/search/SearchAnchor;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Lio/github/valerioisufi/drawview/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/SearchChunk;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/SearchChunk;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Lio/github/valerioisufi/drawview/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchChunk;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAnchor ()Lio/github/valerioisufi/drawview/search/SearchAnchor;
-	public final fun getKind ()Lio/github/valerioisufi/drawview/search/SearchChunkKind;
+	public final fun getAnchor ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public final fun getSourceId ()Ljava/lang/String;
 	public final fun getText ()Ljava/lang/String;
 	public final fun getTitle ()Ljava/lang/String;
@@ -270,49 +270,49 @@ public final class io/github/valerioisufi/drawview/search/SearchChunk {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchChunkKind : java/lang/Enum {
-	public static final field HANDWRITING Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static final field LECTURE_NOTES Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static final field LECTURE_TRANSCRIPT Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static final field PDF Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static final field TEXT Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static final field TITLE Lio/github/valerioisufi/drawview/search/SearchChunkKind;
+public final class io/github/valerioisufi/pageboard/search/SearchChunkKind : java/lang/Enum {
+	public static final field HANDWRITING Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static final field LECTURE_NOTES Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static final field LECTURE_TRANSCRIPT Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static final field PDF Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static final field TEXT Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static final field TITLE Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/SearchChunkKind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/search/SearchChunkKind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchEngine {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/SearchEngine$Companion;
+public final class io/github/valerioisufi/pageboard/search/SearchEngine {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/SearchEngine$Companion;
 	public static final field DEFAULT_MAX_HITS_PER_DOCUMENT I
 	public static final field DEFAULT_PASSAGE_LIMIT I
 	public static final field DEFAULT_TOPIC_PAGES I
-	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/ml/Embedder;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/ml/Embedder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/search/SearchIndex;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/ModelSpec;Lio/github/valerioisufi/pageboard/ml/EmbedderOptions;Lio/github/valerioisufi/pageboard/ml/Embedder;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/search/SearchIndex;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/ModelSpec;Lio/github/valerioisufi/pageboard/ml/EmbedderOptions;Lio/github/valerioisufi/pageboard/ml/Embedder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun pagesAbout (Ljava/lang/String;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun pagesAbout$default (Lio/github/valerioisufi/drawview/search/SearchEngine;Ljava/lang/String;Ljava/lang/String;ILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun pagesAbout$default (Lio/github/valerioisufi/pageboard/search/SearchEngine;Ljava/lang/String;Ljava/lang/String;ILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun passages (Ljava/lang/String;ILjava/util/Set;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun passages$default (Lio/github/valerioisufi/drawview/search/SearchEngine;Ljava/lang/String;ILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun passages$default (Lio/github/valerioisufi/pageboard/search/SearchEngine;Ljava/lang/String;ILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun search (Ljava/lang/String;IILjava/util/Set;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun search$default (Lio/github/valerioisufi/drawview/search/SearchEngine;Ljava/lang/String;IILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun search$default (Lio/github/valerioisufi/pageboard/search/SearchEngine;Ljava/lang/String;IILjava/util/Set;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchEngine$Companion {
+public final class io/github/valerioisufi/pageboard/search/SearchEngine$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchHit {
-	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchAnchor;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/search/SearchAnchor;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/search/SearchChunkKind;
+public final class io/github/valerioisufi/pageboard/search/SearchHit {
+	public fun <init> (Lio/github/valerioisufi/pageboard/search/SearchAnchor;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()D
-	public final fun copy (Lio/github/valerioisufi/drawview/search/SearchAnchor;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)Lio/github/valerioisufi/drawview/search/SearchHit;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/SearchHit;Lio/github/valerioisufi/drawview/search/SearchAnchor;Lio/github/valerioisufi/drawview/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;DILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchHit;
+	public final fun copy (Lio/github/valerioisufi/pageboard/search/SearchAnchor;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;D)Lio/github/valerioisufi/pageboard/search/SearchHit;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchHit;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;DILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchHit;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAnchor ()Lio/github/valerioisufi/drawview/search/SearchAnchor;
-	public final fun getKind ()Lio/github/valerioisufi/drawview/search/SearchChunkKind;
+	public final fun getAnchor ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
+	public final fun getKind ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public final fun getScore ()D
 	public final fun getSnippet ()Ljava/lang/String;
 	public final fun getText ()Ljava/lang/String;
@@ -321,8 +321,8 @@ public final class io/github/valerioisufi/drawview/search/SearchHit {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchIndex : java/lang/AutoCloseable {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/SearchIndex$Companion;
+public final class io/github/valerioisufi/pageboard/search/SearchIndex : java/lang/AutoCloseable {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/SearchIndex$Companion;
 	public static final field FORMAT_VERSION I
 	public static final field MEMORY_PATH Ljava/lang/String;
 	public fun <init> ()V
@@ -345,45 +345,45 @@ public final class io/github/valerioisufi/drawview/search/SearchIndex : java/lan
 	public final fun removeSource (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun replaceChunks (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
 	public final fun searchVectors ([FILjava/util/Set;)Ljava/util/List;
-	public static synthetic fun searchVectors$default (Lio/github/valerioisufi/drawview/search/SearchIndex;[FILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun searchVectors$default (Lio/github/valerioisufi/pageboard/search/SearchIndex;[FILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
 	public final fun searchWords (Ljava/lang/String;ILjava/util/Set;)Ljava/util/List;
-	public static synthetic fun searchWords$default (Lio/github/valerioisufi/drawview/search/SearchIndex;Ljava/lang/String;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun searchWords$default (Lio/github/valerioisufi/pageboard/search/SearchIndex;Ljava/lang/String;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
 	public final fun texts (Ljava/lang/String;Ljava/util/Set;)Ljava/util/List;
 	public final fun unembeddedChunks (I)Ljava/util/List;
-	public static synthetic fun unembeddedChunks$default (Lio/github/valerioisufi/drawview/search/SearchIndex;IILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun unembeddedChunks$default (Lio/github/valerioisufi/pageboard/search/SearchIndex;IILjava/lang/Object;)Ljava/util/List;
 	public final fun unembeddedCount ()I
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchIndex$Companion {
+public final class io/github/valerioisufi/pageboard/search/SearchIndex$Companion {
 	public final fun defaultPath ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchIndexer {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/SearchIndexer$Companion;
+public final class io/github/valerioisufi/pageboard/search/SearchIndexer {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/SearchIndexer$Companion;
 	public static final field DEFAULT_QUIET_MILLIS J
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Lio/github/valerioisufi/drawview/search/SearchIndex;Ljava/util/List;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/ml/Embedder;J)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Lio/github/valerioisufi/drawview/search/SearchIndex;Ljava/util/List;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/ml/Embedder;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentCatalog;Lio/github/valerioisufi/pageboard/search/SearchIndex;Ljava/util/List;Lio/github/valerioisufi/pageboard/search/IndexingConditions;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/ModelSpec;Lio/github/valerioisufi/pageboard/ml/EmbedderOptions;Lio/github/valerioisufi/pageboard/ml/Embedder;J)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentCatalog;Lio/github/valerioisufi/pageboard/search/SearchIndex;Ljava/util/List;Lio/github/valerioisufi/pageboard/search/IndexingConditions;Lio/github/valerioisufi/pageboard/ml/LoadedModels;Lio/github/valerioisufi/pageboard/ml/InstalledModels;Lio/github/valerioisufi/pageboard/ml/ModelSpec;Lio/github/valerioisufi/pageboard/ml/EmbedderOptions;Lio/github/valerioisufi/pageboard/ml/Embedder;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getProgress ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getQuietMillis ()J
 	public final fun indexNow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (Lkotlinx/coroutines/CoroutineScope;)Lkotlinx/coroutines/Job;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchIndexer$Companion {
+public final class io/github/valerioisufi/pageboard/search/SearchIndexer$Companion {
 }
 
-public abstract interface class io/github/valerioisufi/drawview/search/SearchSource {
-	public abstract fun chunks (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public abstract interface class io/github/valerioisufi/pageboard/search/SearchSource {
+	public abstract fun chunks (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getId ()Ljava/lang/String;
-	public abstract fun version (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun version (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchSource$DefaultImpls {
-	public static fun getChanges (Lio/github/valerioisufi/drawview/search/SearchSource;)Lkotlinx/coroutines/flow/Flow;
+public final class io/github/valerioisufi/pageboard/search/SearchSource$DefaultImpls {
+	public static fun getChanges (Lio/github/valerioisufi/pageboard/search/SearchSource;)Lkotlinx/coroutines/flow/Flow;
 }
 
-public final class io/github/valerioisufi/drawview/search/SearchTextKt {
+public final class io/github/valerioisufi/pageboard/search/SearchTextKt {
 	public static final fun cleanMarkdownForSearch (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun searchWordsOf (Ljava/lang/String;)Ljava/util/List;
 	public static final fun snippetOf (Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;
@@ -392,13 +392,13 @@ public final class io/github/valerioisufi/drawview/search/SearchTextKt {
 	public static synthetic fun splitTextChunks$default (Ljava/lang/String;IILjava/lang/Object;)Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/search/UnembeddedChunk {
+public final class io/github/valerioisufi/pageboard/search/UnembeddedChunk {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/search/UnembeddedChunk;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/search/UnembeddedChunk;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/UnembeddedChunk;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/UnembeddedChunk;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/UnembeddedChunk;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/UnembeddedChunk;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getHash ()Ljava/lang/String;
 	public final fun getText ()Ljava/lang/String;
@@ -407,25 +407,25 @@ public final class io/github/valerioisufi/drawview/search/UnembeddedChunk {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/WordCount {
+public final class io/github/valerioisufi/pageboard/search/WordCount {
 	public fun <init> (Ljava/lang/String;I)V
 	public final fun getCount ()I
 	public final fun getWord ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/search/WordCounts {
-	public static final field Companion Lio/github/valerioisufi/drawview/search/WordCounts$Companion;
+public final class io/github/valerioisufi/pageboard/search/WordCounts {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/WordCounts$Companion;
 	public static final field MIN_LENGTH I
 	public fun <init> ()V
 	public final fun add (Ljava/lang/String;)V
-	public final fun addAll (Lio/github/valerioisufi/drawview/search/WordCounts;)V
+	public final fun addAll (Lio/github/valerioisufi/pageboard/search/WordCounts;)V
 	public final fun count (Ljava/lang/String;)I
 	public final fun getSize ()I
 	public final fun withPrefix (Ljava/lang/String;)Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/search/WordCounts$Companion {
+public final class io/github/valerioisufi/pageboard/search/WordCounts$Companion {
 	public final fun wordsOf (Ljava/lang/String;)Ljava/util/List;
 }
 

@@ -51,5 +51,5 @@ kotlin {
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "io.github.valerioisufi.drawview.explorer.generated.resources"
+    packageOfResClass = "io.github.valerioisufi.pageboard.explorer.generated.resources"
 }

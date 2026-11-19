@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pencilnotes
 
-import io.github.valerioisufi.drawview.agent.AgentJournal
+import io.github.valerioisufi.pageboard.agent.AgentJournal
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets

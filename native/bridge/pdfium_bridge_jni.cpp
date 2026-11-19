@@ -1,4 +1,4 @@
-// JNI entry points of io.github.valerioisufi.drawview.pdf.PdfiumNative (desktop JVM and Android)
+// JNI entry points of io.github.valerioisufi.pageboard.pdf.PdfiumNative (desktop JVM and Android)
 // on top of the plain C API of pdfium_bridge.h (also used by iOS through cinterop).
 #include "pdfium_bridge.h"
 #include <jni.h>
@@ -6,7 +6,7 @@
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nOpenDocument(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nOpenDocument(
     JNIEnv* env, jclass, jstring jpath, jstring jpass) {
     const char* path = env->GetStringUTFChars(jpath, nullptr);
     const char* pass = jpass ? env->GetStringUTFChars(jpass, nullptr) : nullptr;
@@ -16,12 +16,12 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nO
     return handle;
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageCount(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nGetPageCount(
     JNIEnv*, jclass, jlong handle) {
     return pdfium_get_page_count(handle);
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageSize(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nGetPageSize(
     JNIEnv* env, jclass, jlong handle, jint page_index, jdoubleArray out_size) {
     double w = 0, h = 0;
     int32_t res = pdfium_get_page_size(handle, page_index, &w, &h);
@@ -33,7 +33,7 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nRenderPageBitmap(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nRenderPageBitmap(
     JNIEnv* env, jclass, jlong handle, jint page_index,
     jint start_x, jint start_y, jint size_x, jint size_y,
     jint width_px, jint height_px, jint rotate, jintArray out_pixels) {
@@ -48,7 +48,7 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jstring JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageText(
+JNIEXPORT jstring JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nGetPageText(
     JNIEnv* env, jclass, jlong handle, jint page_index) {
     int32_t length = pdfium_get_page_text(handle, page_index, nullptr, 0);
     if (length < 0) return nullptr;
@@ -57,7 +57,7 @@ JNIEXPORT jstring JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_
     return env->NewString(reinterpret_cast<const jchar*>(text.data()), length);
 }
 
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageTextLayout(
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nGetPageTextLayout(
     JNIEnv* env, jclass, jlong handle, jint page_index, jintArray out_chars, jfloatArray out_boxes) {
     if (!out_chars || !out_boxes) return pdfium_get_page_text_layout(handle, page_index, nullptr, nullptr, 0);
     jsize capacity = env->GetArrayLength(out_chars);
@@ -72,7 +72,7 @@ JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGe
     return count;
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCloseDocument(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nCloseDocument(
     JNIEnv*, jclass, jlong handle) {
     pdfium_close_document(handle);
 }
@@ -81,16 +81,16 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCl
 // Writing
 // ==========================================================
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nNewDocument(JNIEnv*, jclass) {
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nNewDocument(JNIEnv*, jclass) {
     return pdfium_new_document();
 }
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nNewPage(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nNewPage(
     JNIEnv*, jclass, jlong doc, jint index, jdouble width_pt, jdouble height_pt) {
     return pdfium_new_page(doc, index, width_pt, height_pt);
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nImportPages(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nImportPages(
     JNIEnv* env, jclass, jlong doc, jlong source, jintArray jindices) {
     if (!jindices) return JNI_FALSE;
     jsize count = env->GetArrayLength(jindices);
@@ -101,7 +101,7 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPlacePage(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPlacePage(
     JNIEnv* env, jclass, jlong doc, jint from_index, jint to_index, jdoubleArray jmatrix) {
     if (!jmatrix || env->GetArrayLength(jmatrix) < 6) return 0;
     double matrix[6];
@@ -110,11 +110,11 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nP
     return page;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nDeletePage(JNIEnv*, jclass, jlong doc, jint index) {
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nDeletePage(JNIEnv*, jclass, jlong doc, jint index) {
     return pdfium_delete_page(doc, index) ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddPath(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddPath(
     JNIEnv* env, jclass, jlong page, jbyteArray jverbs, jint verb_count, jfloatArray jpoints,
     jint fill_argb, jint stroke_argb, jfloat stroke_width) {
     if (!jverbs || !jpoints || env->GetArrayLength(jverbs) < verb_count) return JNI_FALSE;
@@ -136,7 +136,7 @@ static bool read_matrix(JNIEnv* env, jdoubleArray jmatrix, double* out) {
     return true;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddJpeg(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddJpeg(
     JNIEnv* env, jclass, jlong doc, jlong page, jbyteArray jdata, jdoubleArray jmatrix) {
     double matrix[6];
     if (!jdata || !read_matrix(env, jmatrix, matrix)) return JNI_FALSE;
@@ -147,7 +147,7 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddBitmap(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddBitmap(
     JNIEnv* env, jclass, jlong doc, jlong page, jintArray jpixels, jint width, jint height, jdoubleArray jmatrix) {
     double matrix[6];
     if (!jpixels || width <= 0 || height <= 0 || env->GetArrayLength(jpixels) < width * height || !read_matrix(env, jmatrix, matrix)) {
@@ -160,14 +160,14 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddPdfPage(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddPdfPage(
     JNIEnv* env, jclass, jlong doc, jlong page, jlong source, jint page_index, jdoubleArray jmatrix) {
     double matrix[6];
     if (!read_matrix(env, jmatrix, matrix)) return JNI_FALSE;
     return pdfium_page_add_pdf_page(doc, page, source, page_index, matrix) ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddMarkup(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddMarkup(
     JNIEnv* env, jclass, jlong page, jint kind, jfloatArray jquads, jint color, jstring jappearance) {
     if (!jquads) return JNI_FALSE;
     jsize count = env->GetArrayLength(jquads) / 8;
@@ -180,7 +180,7 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nLoadFont(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nLoadFont(
     JNIEnv* env, jclass, jlong doc, jbyteArray jdata) {
     if (!jdata) return 0;
     jbyte* data = env->GetByteArrayElements(jdata, nullptr);
@@ -190,11 +190,11 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nL
     return font;
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCloseFont(JNIEnv*, jclass, jlong font) {
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nCloseFont(JNIEnv*, jclass, jlong font) {
     pdfium_close_font(font);
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddText(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddText(
     JNIEnv* env, jclass, jlong doc, jlong page, jlong font, jstring jtext, jfloat font_size, jint argb, jboolean invisible,
     jdoubleArray jmatrix) {
     double matrix[6];
@@ -210,11 +210,11 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nEndPage(JNIEnv*, jclass, jlong page) {
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nEndPage(JNIEnv*, jclass, jlong page) {
     return pdfium_end_page(page) ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nSaveDocument(
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nSaveDocument(
     JNIEnv* env, jclass, jlong doc, jstring jpath, jstring jinfo) {
     if (!jpath) return JNI_FALSE;
     const char* info = jinfo ? env->GetStringUTFChars(jinfo, nullptr) : nullptr;

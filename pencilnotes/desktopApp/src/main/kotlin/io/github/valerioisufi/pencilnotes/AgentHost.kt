@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pencilnotes
 
-import io.github.valerioisufi.drawview.agent.AgentEndpoint
-import io.github.valerioisufi.drawview.agent.AgentAccess
+import io.github.valerioisufi.pageboard.agent.AgentEndpoint
+import io.github.valerioisufi.pageboard.agent.AgentAccess
 import java.io.File
 import java.io.IOException
 import java.net.StandardProtocolFamily

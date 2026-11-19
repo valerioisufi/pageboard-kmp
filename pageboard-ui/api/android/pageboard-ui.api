@@ -1,48 +1,48 @@
-public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;
-	public final fun component3 ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
-	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
+	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;
+	public final fun component3 ()Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;
+	public final fun copy (Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)Lio/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo;Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getConventions ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
-	public final fun getInput ()Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;
-	public final fun getWindow ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public final fun getConventions ()Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;
+	public final fun getInput ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;
+	public final fun getWindow ()Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfoKt {
-	public static final fun AdaptiveRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
-	public static final fun currentAdaptiveInfo (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfoKt {
+	public static final fun AdaptiveRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun currentAdaptiveInfo (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveSheetKt {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveSheetKt {
 	public static final fun AdaptiveSheet-jIwJxvA (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;FZLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/HeightClass : java/lang/Enum {
-	public static final field COMPACT Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
-	public static final field EXPANDED Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
-	public static final field MEDIUM Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/HeightClass : java/lang/Enum {
+	public static final field COMPACT Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
+	public static final field EXPANDED Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
+	public static final field MEDIUM Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/InputCapabilities {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getHasKeyboard ()Z
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/InputHints {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/adaptive/InputHints$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints$Companion;
 	public fun <init> ()V
 	public fun <init> (ZZZZ)V
 	public synthetic fun <init> (ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -50,8 +50,8 @@ public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints {
 	public final fun component2 ()Z
 	public final fun component3 ()Z
 	public final fun component4 ()Z
-	public final fun copy (ZZZZ)Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;ZZZZILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public final fun copy (ZZZZ)Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;ZZZZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getKeyboard ()Z
 	public final fun getPrecisePointer ()Z
@@ -61,88 +61,88 @@ public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints$Companion {
-	public final fun getPointerAndKeyboard ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
-	public final fun getStylus ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
-	public final fun getTouch ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/InputHints$Companion {
+	public final fun getPointerAndKeyboard ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
+	public final fun getStylus ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
+	public final fun getTouch ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/PlatformConventions {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
-	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;)Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
+	public final fun copy (Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;)Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getShortcutModifier ()Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public final fun getShortcutModifier ()Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/Platform_androidKt {
-	public static final fun getPlatformConventions ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/Platform_androidKt {
+	public static final fun getPlatformConventions ()Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow : java/lang/Enum {
-	public static final field DESKTOP Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field DESKTOP_NARROW Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field PHONE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field PHONE_LANDSCAPE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field TABLET_LANDSCAPE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field TABLET_PORTRAIT Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static final field TABLET_SPLIT_SCREEN Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow : java/lang/Enum {
+	public static final field DESKTOP Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field DESKTOP_NARROW Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field PHONE Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field PHONE_LANDSCAPE Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_LANDSCAPE Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_PORTRAIT Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_SPLIT_SCREEN Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getHeight-D9Ej5fM ()F
-	public final fun getInput ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
-	public final fun getLayout ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public final fun getInput ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
+	public final fun getLayout ()Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
 	public final fun getWidth-D9Ej5fM ()F
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier : java/lang/Enum {
-	public static final field COMMAND Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
-	public static final field CONTROL Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier : java/lang/Enum {
+	public static final field COMMAND Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
+	public static final field CONTROL Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/WidthClass : java/lang/Enum {
-	public static final field COMPACT Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
-	public static final field EXPANDED Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
-	public static final field MEDIUM Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/WidthClass : java/lang/Enum {
+	public static final field COMPACT Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
+	public static final field EXPANDED Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
+	public static final field MEDIUM Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/WindowLayout {
+public final class io/github/valerioisufi/pageboard/ui/adaptive/WindowLayout {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;)V
-	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
-	public final fun component2 ()Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
-	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout$Companion;
+	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;)V
+	public final fun component1 ()Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
+	public final fun copy (Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;)Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getHeightClass ()Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
-	public final fun getWidthClass ()Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public final fun getHeightClass ()Lio/github/valerioisufi/pageboard/ui/adaptive/HeightClass;
+	public final fun getWidthClass ()Lio/github/valerioisufi/pageboard/ui/adaptive/WidthClass;
 	public fun hashCode ()I
 	public final fun isCompact ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/adaptive/WindowLayout$Companion {
-	public final fun of-YgX7TsA (FF)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+public final class io/github/valerioisufi/pageboard/ui/adaptive/WindowLayout$Companion {
+	public final fun of-YgX7TsA (FF)Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/Command {
+public final class io/github/valerioisufi/pageboard/ui/command/Command {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/drawview/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/drawview/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDestructive ()Z
-	public final fun getGroup ()Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public final fun getGroup ()Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
 	public final fun getIcon ()Lkotlin/jvm/functions/Function2;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
@@ -152,40 +152,40 @@ public final class io/github/valerioisufi/drawview/ui/command/Command {
 	public final fun isChecked ()Lkotlin/jvm/functions/Function0;
 	public final fun isEnabled ()Lkotlin/jvm/functions/Function0;
 	public final fun performIfEnabled ()Z
-	public final fun shortcutLabel (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Ljava/lang/String;
+	public final fun shortcutLabel (Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/CommandGroup : java/lang/Enum {
-	public static final field ARRANGE Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field EDIT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field FILE Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field FORMAT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field HELP Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field INSERT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field TOOLS Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static final field VIEW Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+public final class io/github/valerioisufi/pageboard/ui/command/CommandGroup : java/lang/Enum {
+	public static final field ARRANGE Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field EDIT Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field FILE Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field FORMAT Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field HELP Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field INSERT Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field TOOLS Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static final field VIEW Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/command/CommandGroup;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/CommandHost {
+public final class io/github/valerioisufi/pageboard/ui/command/CommandHost {
 	public static final field $stable I
 	public fun <init> ()V
-	public final fun dispatch-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Z
-	public static synthetic fun dispatch-YhN2O0w$default (Lio/github/valerioisufi/drawview/ui/command/CommandHost;Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Z
+	public final fun dispatch-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)Z
+	public static synthetic fun dispatch-YhN2O0w$default (Lio/github/valerioisufi/pageboard/ui/command/CommandHost;Landroid/view/KeyEvent;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Z
 	public final fun getCommands ()Ljava/util/List;
 	public final fun register (Ljava/util/List;Ljava/util/List;)Lkotlin/jvm/functions/Function0;
-	public static synthetic fun register$default (Lio/github/valerioisufi/drawview/ui/command/CommandHost;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
+	public static synthetic fun register$default (Lio/github/valerioisufi/pageboard/ui/command/CommandHost;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/CommandHostKt {
-	public static final fun CommandRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/command/CommandHost;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+public final class io/github/valerioisufi/pageboard/ui/command/CommandHostKt {
+	public static final fun CommandRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/command/CommandHost;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 	public static final fun RegisterCommands (Ljava/util/List;Landroidx/compose/runtime/Composer;I)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/CommandMenuKt {
+public final class io/github/valerioisufi/pageboard/ui/command/CommandMenuKt {
 	public static final fun CommandMenu-M8vcaI4 (Ljava/util/List;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
 	public static final fun CommandMenuOfSections (Ljava/util/List;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
 	public static final fun DesignMenu-IBZr-mw (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
@@ -195,11 +195,11 @@ public final class io/github/valerioisufi/drawview/ui/command/CommandMenuKt {
 	public static final fun onSecondaryClick (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;)Landroidx/compose/ui/Modifier;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/KeyboardShortcuts_androidKt {
-	public static final fun keyboardShortcutGroups (Lio/github/valerioisufi/drawview/ui/command/CommandHost;)Ljava/util/List;
+public final class io/github/valerioisufi/pageboard/ui/command/KeyboardShortcuts_androidKt {
+	public static final fun keyboardShortcutGroups (Lio/github/valerioisufi/pageboard/ui/command/CommandHost;)Ljava/util/List;
 }
 
-public final class io/github/valerioisufi/drawview/ui/command/Shortcut {
+public final class io/github/valerioisufi/pageboard/ui/command/Shortcut {
 	public static final field $stable I
 	public synthetic fun <init> (JZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (JZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -207,20 +207,20 @@ public final class io/github/valerioisufi/drawview/ui/command/Shortcut {
 	public final fun component2 ()Z
 	public final fun component3 ()Z
 	public final fun component4 ()Z
-	public final fun copy-mFnzM5g (JZZZ)Lio/github/valerioisufi/drawview/ui/command/Shortcut;
-	public static synthetic fun copy-mFnzM5g$default (Lio/github/valerioisufi/drawview/ui/command/Shortcut;JZZZILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/command/Shortcut;
+	public final fun copy-mFnzM5g (JZZZ)Lio/github/valerioisufi/pageboard/ui/command/Shortcut;
+	public static synthetic fun copy-mFnzM5g$default (Lio/github/valerioisufi/pageboard/ui/command/Shortcut;JZZZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/command/Shortcut;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAlt ()Z
 	public final fun getKey-EK5gGoQ ()J
 	public final fun getPrimary ()Z
 	public final fun getShift ()Z
 	public fun hashCode ()I
-	public final fun label (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Ljava/lang/String;
-	public final fun matches-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Z
+	public final fun label (Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)Ljava/lang/String;
+	public final fun matches-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)Z
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/AboutAppInfo {
+public final class io/github/valerioisufi/pageboard/ui/components/AboutAppInfo {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -230,8 +230,8 @@ public final class io/github/valerioisufi/drawview/ui/components/AboutAppInfo {
 	public final fun component4 ()Ljava/util/List;
 	public final fun component5 ()Lkotlin/jvm/functions/Function2;
 	public final fun component6 ()Landroidx/compose/ui/text/font/FontFamily;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;)Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;)Lio/github/valerioisufi/pageboard/ui/components/AboutAppInfo;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/components/AboutAppInfo;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/components/AboutAppInfo;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAdditionalLicenses ()Ljava/util/List;
 	public final fun getDescription ()Ljava/lang/String;
@@ -243,27 +243,27 @@ public final class io/github/valerioisufi/drawview/ui/components/AboutAppInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/AboutLicensesDialogKt {
+public final class io/github/valerioisufi/pageboard/ui/components/AboutLicensesDialogKt {
 	public static final fun AboutLicensesDialog (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun getLocalAboutAppInfo ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/BadgeTone : java/lang/Enum {
-	public static final field Blue Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
-	public static final field Green Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
-	public static final field Red Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
-	public static final field Yellow Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+public final class io/github/valerioisufi/pageboard/ui/components/BadgeTone : java/lang/Enum {
+	public static final field Blue Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
+	public static final field Green Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
+	public static final field Red Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
+	public static final field Yellow Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/DesignComponentsKt {
+public final class io/github/valerioisufi/pageboard/ui/components/DesignComponentsKt {
 	public static final fun ChipRow (Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/PaddingValues;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun DesignFilterChip (Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public static final fun DesignIconButton-Wo10IMk (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;ZZLjava/lang/String;JFLandroidx/compose/runtime/Composer;II)V
+	public static final fun DesignIconButton-Wo10IMk (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;ZZLjava/lang/String;JFLandroidx/compose/runtime/Composer;II)V
 	public static final fun DesignSnackbar (Landroidx/compose/material3/SnackbarData;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public static final fun LabelBadge (Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/components/BadgeTone;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/vector/ImageVector;Landroidx/compose/runtime/Composer;II)V
+	public static final fun LabelBadge (Ljava/lang/String;Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/vector/ImageVector;Landroidx/compose/runtime/Composer;II)V
 	public static final fun NavigationItem (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;II)V
 	public static final fun OutlineButton-nBX6wN0 (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/foundation/layout/PaddingValues;JJLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun SearchField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
@@ -272,20 +272,20 @@ public final class io/github/valerioisufi/drawview/ui/components/DesignComponent
 	public static final fun TonalButton (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/foundation/layout/PaddingValues;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/IconButtonStyle : java/lang/Enum {
-	public static final field Filled Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
-	public static final field Standard Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
-	public static final field Tonal Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+public final class io/github/valerioisufi/pageboard/ui/components/IconButtonStyle : java/lang/Enum {
+	public static final field Filled Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;
+	public static final field Standard Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;
+	public static final field Tonal Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/components/IconButtonStyle;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/MarkdownTextKt {
+public final class io/github/valerioisufi/pageboard/ui/components/MarkdownTextKt {
 	public static final fun MarkdownText-cf5BqRc (Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/text/TextStyle;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/ThirdPartyLicense {
+public final class io/github/valerioisufi/pageboard/ui/components/ThirdPartyLicense {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -293,8 +293,8 @@ public final class io/github/valerioisufi/drawview/ui/components/ThirdPartyLicen
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/components/ThirdPartyLicense;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/components/ThirdPartyLicense;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/components/ThirdPartyLicense;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCopyright ()Ljava/lang/String;
 	public final fun getLicense ()Ljava/lang/String;
@@ -305,18 +305,18 @@ public final class io/github/valerioisufi/drawview/ui/components/ThirdPartyLicen
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt {
+public final class io/github/valerioisufi/pageboard/ui/components/ToolSettingsKt {
 	public static final fun DesignSlider (FLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;ILkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
+public final class io/github/valerioisufi/pageboard/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/editor/MarkdownTextUtil;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
-	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
+	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/pageboard/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
 }
 
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineCode {
+public final class io/github/valerioisufi/pageboard/ui/editor/MarkdownTextUtil$InlineCode {
 	public static final field $stable I
 	public fun <init> (IIF)V
 	public final fun getEnd ()I
@@ -324,7 +324,7 @@ public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$In
 	public final fun getStart ()I
 }
 
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$RenderedFormula {
+public final class io/github/valerioisufi/pageboard/ui/editor/MarkdownTextUtil$RenderedFormula {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/Object;FFF)V
 	public final fun getBaselineRatio ()F
@@ -333,35 +333,35 @@ public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$Re
 	public final fun getWidthPx ()F
 }
 
-public final class io/github/valerioisufi/drawview/ui/editor/TextImportSheetKt {
+public final class io/github/valerioisufi/pageboard/ui/editor/TextImportSheetKt {
 	public static final field TEXT_TO_NOTES_COMMAND_ID Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/DocumentTag {
+public final class io/github/valerioisufi/pageboard/ui/extension/DocumentTag {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/vector/ImageVector;Lio/github/valerioisufi/drawview/ui/components/BadgeTone;Lkotlin/jvm/functions/Function0;)V
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/vector/ImageVector;Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;Lkotlin/jvm/functions/Function0;)V
 	public final fun contains (Ljava/lang/String;)Z
 	public final fun getDocuments ()Lkotlin/jvm/functions/Function0;
 	public final fun getFilterLabel ()Lkotlin/jvm/functions/Function2;
 	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
-	public final fun getTone ()Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public final fun getTone ()Lio/github/valerioisufi/pageboard/ui/components/BadgeTone;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/EditorContext {
+public final class io/github/valerioisufi/pageboard/ui/extension/EditorContext {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
-	public final fun getDocument ()Lio/github/valerioisufi/drawview/canvas/port/EditorDocument;
+	public fun <init> (Lio/github/valerioisufi/pageboard/canvas/controller/DrawViewController;)V
+	public final fun getDocument ()Lio/github/valerioisufi/pageboard/canvas/port/EditorDocument;
 	public final fun getDocumentId ()Ljava/lang/String;
-	public final fun getEdits ()Lio/github/valerioisufi/drawview/canvas/port/EditorEdits;
-	public final fun getPages ()Lio/github/valerioisufi/drawview/canvas/port/EditorPages;
-	public final fun getPlacement ()Lio/github/valerioisufi/drawview/canvas/port/EditorPlacement;
-	public final fun getPresence ()Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;
-	public final fun getRendering ()Lio/github/valerioisufi/drawview/canvas/port/EditorRendering;
+	public final fun getEdits ()Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;
+	public final fun getPages ()Lio/github/valerioisufi/pageboard/canvas/port/EditorPages;
+	public final fun getPlacement ()Lio/github/valerioisufi/pageboard/canvas/port/EditorPlacement;
+	public final fun getPresence ()Lio/github/valerioisufi/pageboard/canvas/controller/CollaboratorPresence;
+	public final fun getRendering ()Lio/github/valerioisufi/pageboard/canvas/port/EditorRendering;
 }
 
-public abstract class io/github/valerioisufi/drawview/ui/extension/EditorExtension {
+public abstract class io/github/valerioisufi/pageboard/ui/extension/EditorExtension {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun getCanvasOverlay ()Lkotlin/jvm/functions/Function4;
@@ -369,27 +369,27 @@ public abstract class io/github/valerioisufi/drawview/ui/extension/EditorExtensi
 	public fun getPageGridActions ()Lkotlin/jvm/functions/Function1;
 	public fun getPanels ()Lkotlin/jvm/functions/Function1;
 	public fun getReadOnlyNote ()Lkotlin/jvm/functions/Function3;
-	public fun getTextSuggestions ()Lio/github/valerioisufi/drawview/ui/extension/TextSuggester;
+	public fun getTextSuggestions ()Lio/github/valerioisufi/pageboard/ui/extension/TextSuggester;
 	public fun getToolbarActions ()Lkotlin/jvm/functions/Function4;
-	public final fun plus (Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+	public final fun plus (Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/EditorExtensionBuilder {
+public final class io/github/valerioisufi/pageboard/ui/extension/EditorExtensionBuilder {
 	public static final field $stable I
 	public final fun canvasOverlay (Lkotlin/jvm/functions/Function4;)V
 	public final fun commands (Lkotlin/jvm/functions/Function1;)V
 	public final fun pageGridActions (Lkotlin/jvm/functions/Function1;)V
 	public final fun panels (Lkotlin/jvm/functions/Function1;)V
 	public final fun readOnlyNote (Lkotlin/jvm/functions/Function3;)V
-	public final fun textSuggestions (Lio/github/valerioisufi/drawview/ui/extension/TextSuggester;)V
+	public final fun textSuggestions (Lio/github/valerioisufi/pageboard/ui/extension/TextSuggester;)V
 	public final fun toolbarActions (Lkotlin/jvm/functions/Function4;)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/EditorExtensionKt {
-	public static final fun EditorExtension (Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+public final class io/github/valerioisufi/pageboard/ui/extension/EditorExtensionKt {
+	public static final fun EditorExtension (Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/EditorPanel {
+public final class io/github/valerioisufi/pageboard/ui/extension/EditorPanel {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function3;)V
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -402,7 +402,7 @@ public final class io/github/valerioisufi/drawview/ui/extension/EditorPanel {
 	public final fun isOpen ()Lkotlin/jvm/functions/Function0;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
+public final class io/github/valerioisufi/pageboard/ui/extension/LibraryAction {
 	public static final field $stable I
 	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;)V
 	public synthetic fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -412,27 +412,27 @@ public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
 	public final fun getProminent ()Z
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/LibraryItemsAction {
+public final class io/github/valerioisufi/pageboard/ui/extension/LibraryItemsAction {
 	public static final field $stable I
-	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;)V
-	public synthetic fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/pageboard/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;)V
+	public synthetic fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/pageboard/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getContent ()Lkotlin/jvm/functions/Function4;
 	public final fun getFolderLabel ()Lkotlin/jvm/functions/Function3;
 	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
-	public final fun getShortcut ()Lio/github/valerioisufi/drawview/ui/command/Shortcut;
+	public final fun getShortcut ()Lio/github/valerioisufi/pageboard/ui/command/Shortcut;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+public abstract interface class io/github/valerioisufi/pageboard/ui/extension/LibrarySelection {
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection$Folder : io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+public final class io/github/valerioisufi/pageboard/ui/extension/LibrarySelection$Folder : io/github/valerioisufi/pageboard/ui/extension/LibrarySelection {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getFolderId ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection$Items : io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+public final class io/github/valerioisufi/pageboard/ui/extension/LibrarySelection$Items : io/github/valerioisufi/pageboard/ui/extension/LibrarySelection {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -441,7 +441,7 @@ public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection
 	public final fun getThumbnail ()Lkotlin/jvm/functions/Function1;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/TextBeingWritten {
+public final class io/github/valerioisufi/pageboard/ui/extension/TextBeingWritten {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;IILjava/lang/String;)V
 	public final fun getCaret ()I
@@ -450,383 +450,383 @@ public final class io/github/valerioisufi/drawview/ui/extension/TextBeingWritten
 	public final fun getTextId ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/ui/extension/TextSuggester {
-	public abstract fun suggest (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lio/github/valerioisufi/drawview/ui/extension/TextBeingWritten;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public abstract interface class io/github/valerioisufi/pageboard/ui/extension/TextSuggester {
+	public abstract fun suggest (Lio/github/valerioisufi/pageboard/ui/extension/EditorContext;Lio/github/valerioisufi/pageboard/ui/extension/TextBeingWritten;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/TextSuggestion {
+public final class io/github/valerioisufi/pageboard/ui/extension/TextSuggestion {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getText ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/ActualResourceCollectorsKt {
-	public static final fun getAllDrawableResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllFontResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllPluralStringResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllStringArrayResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
-	public static final fun getAllStringResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/ActualResourceCollectorsKt {
+	public static final fun getAllDrawableResources (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllFontResources (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllPluralStringResources (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringArrayResources (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringResources (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;)Ljava/util/Map;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Array0_commonMainKt {
-	public static final fun getDate_months_short (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$array;)Lorg/jetbrains/compose/resources/StringArrayResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Array0_commonMainKt {
+	public static final fun getDate_months_short (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$array;)Lorg/jetbrains/compose/resources/StringArrayResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Drawable0_commonMainKt {
-	public static final fun getLogo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
-	public static final fun getMaschera_color_wheel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Drawable0_commonMainKt {
+	public static final fun getLogo (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getMaschera_color_wheel (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_commonMainKt {
-	public static final fun getNotes_symbols (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_bold_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_mono_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_mono_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getNoto_sans_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getPlus_jakarta_sans_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getPlus_jakarta_sans_extrabold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getPlus_jakarta_sans_medium (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getPlus_jakarta_sans_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getPlus_jakarta_sans_semibold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getStrut_above (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
-	public static final fun getStrut_below (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Font0_commonMainKt {
+	public static final fun getNotes_symbols (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_bold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_bold_italic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_italic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_mono_bold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_mono_regular (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_regular (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_bold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_extrabold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_medium (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_regular (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_semibold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getStrut_above (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getStrut_below (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Plurals0_commonMainKt {
-	public static final fun getEditor_pages_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getMessage_pages_deleted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getPage_config_subtitle_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getPage_grid_days_left (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
-	public static final fun getPage_grid_selected_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Plurals0_commonMainKt {
+	public static final fun getEditor_pages_count (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getMessage_pages_deleted (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getPage_config_subtitle_pages (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getPage_grid_days_left (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getPage_grid_selected_count (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res;
 	public final fun getUri (Ljava/lang/String;)Ljava/lang/String;
 	public final fun readBytes (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$array {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res$array {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$array;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$array;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$drawable {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res$drawable {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$drawable;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$font {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res$font {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$font;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$plurals {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$plurals;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$string {
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/Res$string {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String0_commonMainKt {
-	public static final fun getAbout_dialog_app_description (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getAbout_dialog_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getAbout_dialog_libraries_header (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getAbout_dialog_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getAbout_dialog_version (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getApp_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getColor_picker_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_bring_forward (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_bring_to_front (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_find (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_fit_width (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_insert_shape (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_next_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_previous_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_rename (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_send_backward (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_send_to_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_snapping (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_text_suggestions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_zoom_in (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommand_zoom_out (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_copy (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_cut (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_more_options (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_paste (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_paste_plain (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_redo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_action_undo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_button_apply (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_button_cancel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_label_not_available (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getCommon_state_loading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_add_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_add_page_after (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_add_page_before (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_copy_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_delete_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_duplicate_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_edit_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_paste_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getContext_menu_action_reorder_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDialog_override_bg_confirm (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDialog_override_bg_dismiss (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDialog_override_bg_message (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDialog_override_bg_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_action_expand (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_created_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_elements_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_modified_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_label_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDocument_info_value_dimensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_menu_document_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_menu_stylus_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_read_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_add_preset (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_decrease_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_draw (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_edit_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_grid_view (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_import_image (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_import_pdf (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_import_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_increase_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_ink_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_lasso (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_pan (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_action_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_eraser_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_label_text_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_option_images_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_option_select_all (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_title_lasso_mode (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getDraw_toolbar_title_text_settings (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getEditor_action_extensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getEditor_page_indicator (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_next (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_placeholder (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_previous (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_as_notes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_as_notes_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_at_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_clean (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_clean_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_from_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/String0_commonMainKt {
+	public static final fun getAbout_dialog_app_description (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_close (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_libraries_header (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_version (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getApp_name (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getColor_picker_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_bring_forward (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_bring_to_front (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_close (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_find (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_fit_width (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_insert_shape (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_next_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_previous_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_rename (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_send_backward (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_send_to_back (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_shapes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_snapping (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_text_suggestions (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_zoom_in (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_zoom_out (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_back (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_close (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_copy (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_cut (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_delete (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_more_options (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_paste (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_paste_plain (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_redo (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_undo (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_button_apply (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_button_cancel (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_label_not_available (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_state_loading (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_add_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_add_page_after (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_add_page_before (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_copy_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_delete_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_duplicate_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_edit_background (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_paste_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_reorder_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_confirm (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_dismiss (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_message (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_action_expand (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_created_date (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_elements_count (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_format (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_modified_date (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_name (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_pages (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_value_dimensions (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_document_background (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_stylus_only (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_read_only (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_add_preset (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_decrease_font_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_draw (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_edit_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_eraser (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_grid_view (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_highlighter (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_import_image (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_import_pdf (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_import_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_increase_font_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_ink_pen (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_lasso (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_pan (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_shapes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_text_markup (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_eraser_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_font_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_text_color (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_option_images_only (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_option_select_all (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_title_lasso_mode (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_title_text_settings (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getEditor_action_extensions (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getEditor_page_indicator (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_count (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_next (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_placeholder (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_as_notes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_as_notes_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_at_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_clean (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_clean_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_from_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
-	public static final fun getImport_text_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_label (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_preview (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_where (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_arrange (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_edit (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_help (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_tools (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMenu_view (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMessage_import_image_failed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMessage_import_pdf_failed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMessage_pasted_without_missing_files (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMessage_pdf_not_supported (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getMessage_pdf_page_without_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getName_error_empty (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getName_error_exists (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getName_error_invalid_chars (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_automatic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_decimal (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_delimiter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_lower_alpha (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_lower_roman (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_start_earlier (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_start_later (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_upper_alpha (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getNumbering_upper_roman (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_bg_dotted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_bg_grid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_bg_ruled (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_bg_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_error_max_area (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_error_min_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_format_custom (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_bg_pattern (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_height (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_line_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_paper_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_spacing (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_thickness (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_label_width (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_preview_invalid_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_subtitle_document (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_subtitle_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_value_spacing (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_config_value_thickness (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_done (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_duplicate (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_restore (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_select (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_action_select_all (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_content_desc_options (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_content_desc_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_deleted_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_deleted_pages_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPage_grid_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPaste_equation_placeholder (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_confirm (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_hint_tap (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_new_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_next (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_previous (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_spot (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_arrow (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_diamond (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_double_arrow (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_ellipse (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_fill (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_fill_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_fill_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_fill_tinted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_head_filled (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_head_open (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_heads (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_hexagon (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_kind (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_line (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_outline (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_outline_dashed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_outline_dotted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_outline_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_pentagon (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_rectangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_right_triangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_rounded_rectangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_style (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_triangle (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getStylus_mode_activated (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_column_left (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/String1_commonMainKt {
+	public static final fun getImport_text_insert (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_label (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_preview (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_where (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_arrange (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_edit (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_file (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_format (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_help (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_insert (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_tools (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_view (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_import_image_failed (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_import_pdf_failed (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pasted_without_missing_files (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pdf_not_supported (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pdf_page_without_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_empty (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_exists (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_invalid_chars (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_automatic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_decimal (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_delimiter (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_lower_alpha (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_lower_roman (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_start (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_start_earlier (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_start_later (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_upper_alpha (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getNumbering_upper_roman (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_dotted (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_grid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_ruled (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_solid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_error_max_area (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_error_min_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_format_custom (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_bg_pattern (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_format (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_height (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_line_color (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_paper_color (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_spacing (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_thickness (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_width (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_preview_invalid_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_subtitle_document (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_subtitle_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_value_spacing (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_value_thickness (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_close (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_done (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_duplicate (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_restore (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_select (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_select_all (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_content_desc_options (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_content_desc_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_deleted_pages (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_deleted_pages_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPaste_equation_placeholder (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_confirm (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_hint_tap (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_new_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_next (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPlacement_spot (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_arrow (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_diamond (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_double_arrow (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_ellipse (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_solid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_fill_tinted (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_head_filled (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_head_open (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_heads (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_hexagon (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_kind (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_line (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_dashed (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_dotted (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_outline_solid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_pentagon (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_rectangle (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_right_triangle (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_rounded_rectangle (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_style (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_triangle (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getStylus_mode_activated (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_center (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_align_start (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_column_left (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/generated/resources/String2_commonMainKt {
-	public static final fun getTable_column_right (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_delete_column (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_delete_row (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_row_above (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_row_below (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTable_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_background_none (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_bullet_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_check_item (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_checklist (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_code (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_code_block (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_heading_level (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_heading_n (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_line_numbers (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_math (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_normal_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_numbering (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_quote (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_action_table (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_markup_highlight (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_markup_underline (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_delete_preset (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_eraser_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_ink (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_lasso_all_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_lasso_images_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_markup_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_presets (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_shapes_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_shapes_tool_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getTool_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/String2_commonMainKt {
+	public static final fun getTable_column_right (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete_column (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_delete_row (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_row_above (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_row_below (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTable_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_center (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_start (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_background (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_background_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_bold (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_bullet_list (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_check_item (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_checklist (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_code (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_code_block (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_heading_level (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_heading_n (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_line_numbers (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_math (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_normal_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_numbering (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_quote (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_save (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_table (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_size_points (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_highlight (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_underline (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_eraser (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_highlighter (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_pen (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_delete_preset (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_eraser_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_ink (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_lasso_all_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_lasso_images_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_markup_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_presets (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_shapes_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_shapes_tool_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_shapes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider : androidx/core/content/FileProvider {
+public final class io/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider : androidx/core/content/FileProvider {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider$Companion;
 	public fun <init> ()V
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider$Companion {
+public final class io/github/valerioisufi/pageboard/ui/platform/DrawViewFileProvider$Companion {
 	public final fun authority (Landroid/content/Context;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/FileDrop_androidKt {
+public final class io/github/valerioisufi/pageboard/ui/platform/FileDrop_androidKt {
 	public static final fun fileDropTarget (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/Modifier;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/FilePicker_androidKt {
-	public static final fun rememberFilePicker (Lio/github/valerioisufi/drawview/ui/platform/PickerType;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function0;
+public final class io/github/valerioisufi/pageboard/ui/platform/FilePicker_androidKt {
+	public static final fun rememberFilePicker (Lio/github/valerioisufi/pageboard/ui/platform/PickerType;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function0;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/FileReveal {
+public final class io/github/valerioisufi/pageboard/ui/platform/FileReveal {
 	public static final field $stable I
 	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public final fun getOpen ()Lkotlin/jvm/functions/Function1;
 	public final fun getShow ()Lkotlin/jvm/functions/Function1;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/FileSaver_androidKt {
-	public static final fun fileReveal ()Lio/github/valerioisufi/drawview/ui/platform/FileReveal;
+public final class io/github/valerioisufi/pageboard/ui/platform/FileSaver_androidKt {
+	public static final fun fileReveal ()Lio/github/valerioisufi/pageboard/ui/platform/FileReveal;
 	public static final fun rememberFileSaver (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
 	public static final fun rememberFileSharer (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/FileTarget {
+public final class io/github/valerioisufi/pageboard/ui/platform/FileTarget {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -834,9 +834,9 @@ public final class io/github/valerioisufi/drawview/ui/platform/FileTarget {
 	public final fun getPath ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/PickedFile {
+public final class io/github/valerioisufi/pageboard/ui/platform/PickedFile {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/platform/PickedFile$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/platform/PickedFile$Companion;
 	public fun <init> (Ljava/lang/String;[B)V
 	public final fun getBytes ()[B
 	public final fun getExtension ()Ljava/lang/String;
@@ -844,28 +844,28 @@ public final class io/github/valerioisufi/drawview/ui/platform/PickedFile {
 	public final fun text ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/PickedFile$Companion {
+public final class io/github/valerioisufi/pageboard/ui/platform/PickedFile$Companion {
 	public final fun getTEXT_EXTENSIONS ()Ljava/util/Set;
 }
 
-public final class io/github/valerioisufi/drawview/ui/platform/PickerType : java/lang/Enum {
-	public static final field ARCHIVE Lio/github/valerioisufi/drawview/ui/platform/PickerType;
-	public static final field IMAGE Lio/github/valerioisufi/drawview/ui/platform/PickerType;
-	public static final field PDF Lio/github/valerioisufi/drawview/ui/platform/PickerType;
-	public static final field TEXT Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+public final class io/github/valerioisufi/pageboard/ui/platform/PickerType : java/lang/Enum {
+	public static final field ARCHIVE Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
+	public static final field IMAGE Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
+	public static final field PDF Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
+	public static final field TEXT Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/platform/PickerType;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/platform/PickerType;
 }
 
-public final class io/github/valerioisufi/drawview/ui/render/CodeBlockLayout {
+public final class io/github/valerioisufi/pageboard/ui/render/CodeBlockLayout {
 	public static final field $stable I
 	public final fun getHeightPx ()F
 	public final fun getNaturalWidthPx ()F
 	public final fun getWidthPx ()F
 }
 
-public final class io/github/valerioisufi/drawview/ui/render/CodeBlockSource {
+public final class io/github/valerioisufi/pageboard/ui/render/CodeBlockSource {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;IZF)V
 	public final fun component1 ()Ljava/lang/String;
@@ -873,8 +873,8 @@ public final class io/github/valerioisufi/drawview/ui/render/CodeBlockSource {
 	public final fun component3 ()I
 	public final fun component4 ()Z
 	public final fun component5 ()F
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;IZF)Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;Ljava/lang/String;Ljava/lang/String;IZFILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;IZF)Lio/github/valerioisufi/pageboard/ui/render/CodeBlockSource;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/ui/render/CodeBlockSource;Ljava/lang/String;Ljava/lang/String;IZFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/render/CodeBlockSource;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCode ()Ljava/lang/String;
 	public final fun getIndent ()I
@@ -885,81 +885,81 @@ public final class io/github/valerioisufi/drawview/ui/render/CodeBlockSource {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter : io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {
+public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAdapter : io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/render/ComposeTextTileAdapter$Companion;
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clearCaches ()V
-	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;I)V
-	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;I)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
-	public fun lineMetrics (F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
-	public fun measure (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/DrawText;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
+	public fun layout (Lio/github/valerioisufi/pageboard/model/DrawText;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
+	public fun lineMetrics (F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
+	public fun measure (Lio/github/valerioisufi/pageboard/model/DrawText;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 
-public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter$Companion {
+public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAdapter$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/ui/render/LocalDrawViewEnginesKt {
+public final class io/github/valerioisufi/pageboard/ui/render/LocalDrawViewEnginesKt {
 	public static final fun getLocalDrawViewEngines ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
-public final class io/github/valerioisufi/drawview/ui/screen/DocumentNames {
+public final class io/github/valerioisufi/pageboard/ui/screen/DocumentNames {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/DocumentNames;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/screen/DocumentNames;
 	public final fun syntaxError (Ljava/lang/String;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/ui/screen/DocumentRenamer {
+public abstract interface class io/github/valerioisufi/pageboard/ui/screen/DocumentRenamer {
 	public abstract fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
-	public static final fun EditorScreen (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lio/github/valerioisufi/drawview/ui/screen/DocumentRenamer;Landroidx/compose/runtime/Composer;II)V
+public final class io/github/valerioisufi/pageboard/ui/screen/EditorScreenKt {
+	public static final fun EditorScreen (Lio/github/valerioisufi/pageboard/ui/extension/EditorContext;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;Lio/github/valerioisufi/pageboard/ui/screen/DocumentRenamer;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/screen/EditorToolbarKt {
+public final class io/github/valerioisufi/pageboard/ui/screen/EditorToolbarKt {
 	public static final fun EditorActionButton (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ZZLandroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/CanvasColors {
+public final class io/github/valerioisufi/pageboard/ui/theme/CanvasColors {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/CanvasColors$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/theme/CanvasColors$Companion;
 	public synthetic fun <init> (JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1-0d7_KjU ()J
-	public final fun copy-8_81llA (J)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
-	public static synthetic fun copy-8_81llA$default (Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
+	public final fun copy-8_81llA (J)Lio/github/valerioisufi/pageboard/ui/theme/CanvasColors;
+	public static synthetic fun copy-8_81llA$default (Lio/github/valerioisufi/pageboard/ui/theme/CanvasColors;JILjava/lang/Object;)Lio/github/valerioisufi/pageboard/ui/theme/CanvasColors;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDesk-0d7_KjU ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/CanvasColors$Companion {
-	public final fun of (Landroidx/compose/material3/ColorScheme;Z)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
+public final class io/github/valerioisufi/pageboard/ui/theme/CanvasColors$Companion {
+	public final fun of (Landroidx/compose/material3/ColorScheme;Z)Lio/github/valerioisufi/pageboard/ui/theme/CanvasColors;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/CanvasColorsKt {
+public final class io/github/valerioisufi/pageboard/ui/theme/CanvasColorsKt {
 	public static final fun getLocalCanvasColors ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/ColorKt {
+public final class io/github/valerioisufi/pageboard/ui/theme/ColorKt {
 	public static final fun getSeed ()J
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/DrawViewElevation : java/lang/Enum {
-	public static final field Level1 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
-	public static final field Level2 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
-	public static final field Level3 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
-	public static final field Paper Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+public final class io/github/valerioisufi/pageboard/ui/theme/DrawViewElevation : java/lang/Enum {
+	public static final field Level1 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+	public static final field Level2 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+	public static final field Level3 Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+	public static final field Paper Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
-	public static fun values ()[Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
+public final class io/github/valerioisufi/pageboard/ui/theme/DrawViewIcons {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/DrawViewIcons;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/DrawViewIcons;
 	public final fun getArrowLeft ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUp ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getArrowUpDown ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -1039,13 +1039,13 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getZap ()Landroidx/compose/ui/graphics/vector/ImageVector;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/ElevationKt {
-	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
+public final class io/github/valerioisufi/pageboard/ui/theme/ElevationKt {
+	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/theme/DrawViewElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/InkPalette {
+public final class io/github/valerioisufi/pageboard/ui/theme/InkPalette {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/InkPalette;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/InkPalette;
 	public final fun getBlack-0d7_KjU ()J
 	public final fun getBlue-0d7_KjU ()J
 	public final fun getGreen-0d7_KjU ()J
@@ -1057,15 +1057,15 @@ public final class io/github/valerioisufi/drawview/ui/theme/InkPalette {
 	public final fun getViolet-0d7_KjU ()J
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/NotesFontFiles {
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontFiles {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/NotesFontFiles;
-	public final fun bytes (Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/NotesFontFiles;
+	public final fun bytes (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts {
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion;
 	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
 	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
@@ -1075,19 +1075,19 @@ public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts {
 	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion {
-	public final fun getSystem ()Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion {
+	public final fun getSystem ()Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/NotesFontsKt {
-	public static final fun rememberNotesFonts (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontsKt {
+	public static final fun rememberNotesFonts (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
 }
 
-public final class io/github/valerioisufi/drawview/ui/theme/ThemeKt {
+public final class io/github/valerioisufi/pageboard/ui/theme/ThemeKt {
 	public static final fun DrawViewTheme (ZZLandroidx/compose/material3/ColorScheme;Landroidx/compose/material3/ColorScheme;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
-public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
+public final class io/github/valerioisufi/pageboard/ui/util/FormattingKt {
 	public static final fun formatDate (JLjava/util/List;)Ljava/lang/String;
 	public static final fun formatDateTime (JLjava/util/List;)Ljava/lang/String;
 	public static final fun formatDecimal (FI)Ljava/lang/String;
@@ -1095,7 +1095,7 @@ public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
 	public static final fun formatShortDateTime (JLjava/util/List;)Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/ui/window/WindowDecorInsetsKt {
+public final class io/github/valerioisufi/pageboard/ui/window/WindowDecorInsetsKt {
 	public static final fun WindowDraggable (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 	public static final fun getLocalWindowDecorInsets ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 	public static final fun getLocalWindowDraggableArea ()Landroidx/compose/runtime/ProvidableCompositionLocal;

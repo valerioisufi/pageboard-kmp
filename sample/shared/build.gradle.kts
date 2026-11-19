@@ -25,7 +25,7 @@ kotlin {
     jvm()
 
     android {
-        namespace = "io.github.valerioisufi.drawview.shared"
+        namespace = "io.github.valerioisufi.pageboard.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

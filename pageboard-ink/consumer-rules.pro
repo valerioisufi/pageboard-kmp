@@ -3,6 +3,6 @@
 
 # The classes with native methods keep their names and those methods: the functions of the native
 # library are named after them.
--keepclasseswithmembernames,includedescriptorclasses class io.github.valerioisufi.drawview.ink.** {
+-keepclasseswithmembernames,includedescriptorclasses class io.github.valerioisufi.pageboard.ink.** {
     native <methods>;
 }

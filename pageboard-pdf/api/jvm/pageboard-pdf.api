@@ -1,4 +1,4 @@
-public final class io/github/valerioisufi/drawview/pdf/GlyphContour {
+public final class io/github/valerioisufi/pageboard/pdf/GlyphContour {
 	public static final field $stable I
 	public fun <init> ([F[F[Z)V
 	public final fun getOnCurve ()[Z
@@ -7,37 +7,37 @@ public final class io/github/valerioisufi/drawview/pdf/GlyphContour {
 	public final fun getYs ()[F
 }
 
-public abstract interface class io/github/valerioisufi/drawview/pdf/PdfDocument : java/lang/AutoCloseable {
+public abstract interface class io/github/valerioisufi/pageboard/pdf/PdfDocument : java/lang/AutoCloseable {
 	public abstract fun close ()V
 	public abstract fun getPageCount ()I
-	public abstract fun getPageSize (I)Lio/github/valerioisufi/drawview/pdf/PdfSize;
+	public abstract fun getPageSize (I)Lio/github/valerioisufi/pageboard/pdf/PdfSize;
 	public abstract fun getPageText (I)Ljava/lang/String;
-	public abstract fun getPageTextLayout (I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+	public abstract fun getPageTextLayout (I)Lio/github/valerioisufi/pageboard/model/PdfTextLayout;
 	public fun renderPage (IIII)Landroidx/compose/ui/graphics/ImageBitmap;
-	public static synthetic fun renderPage$default (Lio/github/valerioisufi/drawview/pdf/PdfDocument;IIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
+	public static synthetic fun renderPage$default (Lio/github/valerioisufi/pageboard/pdf/PdfDocument;IIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
 	public abstract fun renderPageSlice (IIIIIIII)Landroidx/compose/ui/graphics/ImageBitmap;
-	public static synthetic fun renderPageSlice$default (Lio/github/valerioisufi/drawview/pdf/PdfDocument;IIIIIIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
+	public static synthetic fun renderPageSlice$default (Lio/github/valerioisufi/pageboard/pdf/PdfDocument;IIIIIIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfDocument$DefaultImpls {
-	public static fun renderPage (Lio/github/valerioisufi/drawview/pdf/PdfDocument;IIII)Landroidx/compose/ui/graphics/ImageBitmap;
-	public static synthetic fun renderPage$default (Lio/github/valerioisufi/drawview/pdf/PdfDocument;IIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
-	public static synthetic fun renderPageSlice$default (Lio/github/valerioisufi/drawview/pdf/PdfDocument;IIIIIIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
+public final class io/github/valerioisufi/pageboard/pdf/PdfDocument$DefaultImpls {
+	public static fun renderPage (Lio/github/valerioisufi/pageboard/pdf/PdfDocument;IIII)Landroidx/compose/ui/graphics/ImageBitmap;
+	public static synthetic fun renderPage$default (Lio/github/valerioisufi/pageboard/pdf/PdfDocument;IIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
+	public static synthetic fun renderPageSlice$default (Lio/github/valerioisufi/pageboard/pdf/PdfDocument;IIIIIIIIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfFont {
+public final class io/github/valerioisufi/pageboard/pdf/PdfFont {
 	public static final field $stable I
-	public final fun getMetrics ()Lio/github/valerioisufi/drawview/pdf/TrueTypeFont;
+	public final fun getMetrics ()Lio/github/valerioisufi/pageboard/pdf/TrueTypeFont;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfImportedPage {
+public final class io/github/valerioisufi/pageboard/pdf/PdfImportedPage {
 	public static final field $stable I
 	public fun <init> (FF)V
 	public final fun getHeightPt ()F
 	public final fun getWidthPt ()F
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfInfo {
+public final class io/github/valerioisufi/pageboard/pdf/PdfInfo {
 	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;)V
@@ -48,16 +48,16 @@ public final class io/github/valerioisufi/drawview/pdf/PdfInfo {
 	public final fun getTitle ()Ljava/lang/String;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfMarkupKind : java/lang/Enum {
-	public static final field HIGHLIGHT Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;
-	public static final field STRIKEOUT Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;
-	public static final field UNDERLINE Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;
+public final class io/github/valerioisufi/pageboard/pdf/PdfMarkupKind : java/lang/Enum {
+	public static final field HIGHLIGHT Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;
+	public static final field STRIKEOUT Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;
+	public static final field UNDERLINE Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;
-	public static fun values ()[Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfPath {
+public final class io/github/valerioisufi/pageboard/pdf/PdfPath {
 	public static final field $stable I
 	public fun <init> ()V
 	public final fun addCircle (FFF)V
@@ -69,13 +69,13 @@ public final class io/github/valerioisufi/drawview/pdf/PdfPath {
 	public final fun moveTo (FF)V
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfSize {
+public final class io/github/valerioisufi/pageboard/pdf/PdfSize {
 	public static final field $stable I
 	public fun <init> (DD)V
 	public final fun component1 ()D
 	public final fun component2 ()D
-	public final fun copy (DD)Lio/github/valerioisufi/drawview/pdf/PdfSize;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/pdf/PdfSize;DDILjava/lang/Object;)Lio/github/valerioisufi/drawview/pdf/PdfSize;
+	public final fun copy (DD)Lio/github/valerioisufi/pageboard/pdf/PdfSize;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/pdf/PdfSize;DDILjava/lang/Object;)Lio/github/valerioisufi/pageboard/pdf/PdfSize;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAspectRatio ()F
 	public final fun getHeightMm ()F
@@ -86,43 +86,43 @@ public final class io/github/valerioisufi/drawview/pdf/PdfSize {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class io/github/valerioisufi/drawview/pdf/PdfWriter : java/lang/AutoCloseable {
-	public abstract fun addMarkup (Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;)Z
-	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
-	public abstract fun addText (Lio/github/valerioisufi/drawview/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/geometry/Matrix2D;IFZ)Z
-	public static synthetic fun addText$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Lio/github/valerioisufi/drawview/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/geometry/Matrix2D;IFZILjava/lang/Object;)Z
+public abstract interface class io/github/valerioisufi/pageboard/pdf/PdfWriter : java/lang/AutoCloseable {
+	public abstract fun addMarkup (Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;)Z
+	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
+	public abstract fun addText (Lio/github/valerioisufi/pageboard/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;IFZ)Z
+	public static synthetic fun addText$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;IFZILjava/lang/Object;)Z
 	public abstract fun beginPage (FF)V
-	public abstract fun beginPage (Lio/github/valerioisufi/drawview/pdf/PdfImportedPage;)V
+	public abstract fun beginPage (Lio/github/valerioisufi/pageboard/pdf/PdfImportedPage;)V
 	public abstract fun close ()V
-	public abstract fun drawImage ([IIILio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Z
-	public abstract fun drawJpeg ([BLio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Z
-	public abstract fun drawPdfPage (Ljava/lang/String;ILio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Z
-	public abstract fun fillPath (Lio/github/valerioisufi/drawview/pdf/PdfPath;I)Z
+	public abstract fun drawImage ([IIILio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)Z
+	public abstract fun drawJpeg ([BLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)Z
+	public abstract fun drawPdfPage (Ljava/lang/String;ILio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)Z
+	public abstract fun fillPath (Lio/github/valerioisufi/pageboard/pdf/PdfPath;I)Z
 	public abstract fun importPdfPages (Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
-	public abstract fun loadFont ([B)Lio/github/valerioisufi/drawview/pdf/PdfFont;
-	public abstract fun pdfPageSize (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/pdf/PdfSize;
-	public abstract fun save (Ljava/lang/String;Lio/github/valerioisufi/drawview/pdf/PdfInfo;)V
-	public static synthetic fun save$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Ljava/lang/String;Lio/github/valerioisufi/drawview/pdf/PdfInfo;ILjava/lang/Object;)V
-	public abstract fun strokePath (Lio/github/valerioisufi/drawview/pdf/PdfPath;IF)Z
+	public abstract fun loadFont ([B)Lio/github/valerioisufi/pageboard/pdf/PdfFont;
+	public abstract fun pdfPageSize (Ljava/lang/String;I)Lio/github/valerioisufi/pageboard/pdf/PdfSize;
+	public abstract fun save (Ljava/lang/String;Lio/github/valerioisufi/pageboard/pdf/PdfInfo;)V
+	public static synthetic fun save$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Ljava/lang/String;Lio/github/valerioisufi/pageboard/pdf/PdfInfo;ILjava/lang/Object;)V
+	public abstract fun strokePath (Lio/github/valerioisufi/pageboard/pdf/PdfPath;IF)Z
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfWriter$DefaultImpls {
-	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Lio/github/valerioisufi/drawview/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
-	public static synthetic fun addText$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Lio/github/valerioisufi/drawview/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/geometry/Matrix2D;IFZILjava/lang/Object;)Z
-	public static synthetic fun save$default (Lio/github/valerioisufi/drawview/pdf/PdfWriter;Ljava/lang/String;Lio/github/valerioisufi/drawview/pdf/PdfInfo;ILjava/lang/Object;)V
+public final class io/github/valerioisufi/pageboard/pdf/PdfWriter$DefaultImpls {
+	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
+	public static synthetic fun addText$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;IFZILjava/lang/Object;)Z
+	public static synthetic fun save$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Ljava/lang/String;Lio/github/valerioisufi/pageboard/pdf/PdfInfo;ILjava/lang/Object;)V
 }
 
-public final class io/github/valerioisufi/drawview/pdf/PdfiumEngine {
+public final class io/github/valerioisufi/pageboard/pdf/PdfiumEngine {
 	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/pdf/PdfiumEngine;
-	public final fun create ()Lio/github/valerioisufi/drawview/pdf/PdfWriter;
-	public final fun createTileAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/pdf/PdfiumEngine;
+	public final fun create ()Lio/github/valerioisufi/pageboard/pdf/PdfWriter;
+	public final fun createTileAdapter ()Lio/github/valerioisufi/pageboard/canvas/render/tile/PdfTileAdapter;
 	public final fun isAvailable ()Z
-	public final fun open (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/pdf/PdfDocument;
-	public static synthetic fun open$default (Lio/github/valerioisufi/drawview/pdf/PdfiumEngine;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/pdf/PdfDocument;
+	public final fun open (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/pdf/PdfDocument;
+	public static synthetic fun open$default (Lio/github/valerioisufi/pageboard/pdf/PdfiumEngine;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/pdf/PdfDocument;
 }
 
-public final class io/github/valerioisufi/drawview/pdf/TrueTypeFont {
+public final class io/github/valerioisufi/pageboard/pdf/TrueTypeFont {
 	public static final field $stable I
 	public fun <init> ([B)V
 	public final fun advance (I)I

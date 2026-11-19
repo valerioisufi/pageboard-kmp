@@ -1,37 +1,37 @@
-public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExtensionKt {
-	public static final fun LectureDialogs (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
+public final class io/github/valerioisufi/pageboard/lecture/ui/LectureEditorExtensionKt {
+	public static final fun LectureDialogs (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureExitDialog (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
-	public static final fun LectureMicrophone (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
-	public static final fun LectureRecordingIndicator (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public static final fun createLectureAssistant (Lio/github/valerioisufi/drawview/lecture/DeviceModels;)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
-	public static synthetic fun createLectureAssistant$default (Lio/github/valerioisufi/drawview/lecture/DeviceModels;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
-	public static final fun documentTag (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/DocumentTag;
-	public static final fun editorExtension (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+	public static final fun LectureMicrophone (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
+	public static final fun LectureRecordingIndicator (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun createLectureAssistant (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
+	public static synthetic fun createLectureAssistant$default (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
+	public static final fun documentTag (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;)Lio/github/valerioisufi/pageboard/ui/extension/DocumentTag;
+	public static final fun editorExtension (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ui/LectureMarkdownLabelsKt {
+public final class io/github/valerioisufi/pageboard/lecture/ui/LectureMarkdownLabelsKt {
 	public static final fun lectureMarkdownLabels (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final fun markdownInLanguage (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun markdownInLanguage (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource : io/github/valerioisufi/drawview/search/SearchSource {
+public final class io/github/valerioisufi/pageboard/lecture/ui/LectureSearchSource : io/github/valerioisufi/pageboard/search/SearchSource {
 	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/drawview/lecture/ui/LectureSearchSource$Companion;
+	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/ui/LectureSearchSource$Companion;
 	public static final field ID Ljava/lang/String;
-	public fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun chunks (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun <init> (Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun chunks (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
 	public fun getId ()Ljava/lang/String;
-	public fun version (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun version (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource$Companion {
+public final class io/github/valerioisufi/pageboard/lecture/ui/LectureSearchSource$Companion {
 }
 
-public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSourceKt {
-	public static final fun onlineAnswerBackend (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;
-	public static final fun searchSource (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;)Lio/github/valerioisufi/drawview/search/SearchSource;
-	public static synthetic fun searchSource$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchSource;
+public final class io/github/valerioisufi/pageboard/lecture/ui/LectureSearchSourceKt {
+	public static final fun onlineAnswerBackend (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;)Lio/github/valerioisufi/pageboard/search/OnlineAnswerBackend;
+	public static final fun searchSource (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/store/DocumentStore;)Lio/github/valerioisufi/pageboard/search/SearchSource;
+	public static synthetic fun searchSource$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/store/DocumentStore;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchSource;
 }
 

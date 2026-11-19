@@ -6,8 +6,8 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:pageboard-html>
-final class io.github.valerioisufi.drawview.html/HtmlToMarkdown { // io.github.valerioisufi.drawview.html/HtmlToMarkdown|null[0]
-    constructor <init>(kotlin/String = ...) // io.github.valerioisufi.drawview.html/HtmlToMarkdown.<init>|<init>(kotlin.String){}[0]
+final class io.github.valerioisufi.pageboard.html/HtmlToMarkdown { // io.github.valerioisufi.pageboard.html/HtmlToMarkdown|null[0]
+    constructor <init>(kotlin/String = ...) // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.<init>|<init>(kotlin.String){}[0]
 
-    final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.html/HtmlToMarkdown.convert|convert(kotlin.String){}[0]
+    final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.convert|convert(kotlin.String){}[0]
 }

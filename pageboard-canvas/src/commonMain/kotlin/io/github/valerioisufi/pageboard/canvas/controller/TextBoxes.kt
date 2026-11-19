@@ -1,0 +1,84 @@
+package io.github.valerioisufi.pageboard.canvas.controller
+
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
+import io.github.valerioisufi.pageboard.model.DrawPage
+import io.github.valerioisufi.pageboard.model.DrawText
+import io.github.valerioisufi.pageboard.model.change.ChangeEffects
+import io.github.valerioisufi.pageboard.model.change.toData
+import kotlin.math.abs
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/**
+ * The boxes of the texts of the document of [controller] as this device lays them out (their
+ * [DrawText.height], the [DrawText.naturalWidth] a box following its text takes): the box of a
+ * text is what its lines take, never what a version of the application measured when it wrote
+ * it (docs/plans/text-heights.md).
+ *
+ * Every text is laid out when the text adapter is set, off the main thread, and again when a
+ * change reaches it, made here or on another device (the adapter keeps the sizes it laid out, so
+ * a text not changed is not laid out again); the tiles of the box it had and of the box it has are
+ * drawn again. The frame of the selection, the lasso, the taps and the snapping read its heights.
+ */
+internal class TextBoxes(private val controller: DrawViewController) {
+
+    private var layingOut: Job? = null
+
+    /** Where the texts are laid out when the adapter is set: off the main thread. */
+    var dispatcher: CoroutineDispatcher = Dispatchers.Default
+
+    /** Lays out every text of the document with [adapter] (none: the heights stay as they are). */
+    fun adapterChanged(adapter: TextTileAdapter?) {
+        layingOut?.cancel()
+        if (adapter == null) return
+        val texts = controller.document.pages.flatMap { page -> page.texts.map { page to it.toData() } }
+        layingOut = controller.coroutineScope.launch {
+            val heights = withContext(dispatcher) {
+                texts.mapNotNull { (page, data) -> adapter.measure(data.toElement())?.let { Triple(page, data, it) } }
+            }
+            for ((page, data, size) in heights) {
+                // A text changed meanwhile was laid out by its change
+                val text = page.texts.firstOrNull { it.id == data.id } ?: continue
+                if (text.toData() == data) apply(page, text, size)
+            }
+        }
+    }
+
+    /** Lays out again the texts [effects] changed, and the texts of the pages that came. */
+    fun onChange(effects: ChangeEffects) {
+        for ((element, page) in effects.savedElements) {
+            if (element is DrawText && element.removed == null) layOut(page, element)
+        }
+        if (effects.layoutChanged) {
+            for (page in controller.document.pages) for (text in page.texts) layOut(page, text)
+        }
+    }
+
+    /** Stops laying the texts out. */
+    fun dispose() {
+        layingOut?.cancel()
+    }
+
+    private fun layOut(page: DrawPage, text: DrawText) {
+        val size = controller.textAdapter?.measure(text) ?: return
+        apply(page, text, size)
+    }
+
+    private fun apply(page: DrawPage, text: DrawText, size: TextBlockSize) {
+        val sameWidth = abs(size.width - text.naturalWidth) <= SIZE_EPSILON_MM
+        if (abs(size.height - text.height) <= SIZE_EPSILON_MM && sameWidth) return
+        val before = text.getRotatedBounds()
+        text.height = size.height
+        text.naturalWidth = size.width
+        controller.invalidatePageContent(page, before.union(text.getRotatedBounds()))
+    }
+
+    private companion object {
+        /** A difference of size smaller than this is the rounding of the layout. */
+        const val SIZE_EPSILON_MM = 0.01f
+    }
+}

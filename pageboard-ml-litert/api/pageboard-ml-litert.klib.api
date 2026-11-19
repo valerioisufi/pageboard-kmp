@@ -6,17 +6,17 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:pageboard-ml-litert>
-final class io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime : io.github.valerioisufi.drawview.ml/ModelRuntime { // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime|null[0]
-    constructor <init>(kotlin/String? = ...) // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.<init>|<init>(kotlin.String?){}[0]
+final class io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime : io.github.valerioisufi.pageboard.ml/ModelRuntime { // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime|null[0]
+    constructor <init>(kotlin/String? = ...) // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.<init>|<init>(kotlin.String?){}[0]
 
-    final val isAvailable // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.isAvailable|{}isAvailable[0]
-        final fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
+    final val isAvailable // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.isAvailable|{}isAvailable[0]
+        final fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
 
-    final fun supports(io.github.valerioisufi.drawview.ml/ModelSpec): kotlin/Boolean // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.supports|supports(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
-    final suspend fun embedder(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/EmbedderOptions): io.github.valerioisufi.drawview.ml/Embedder // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.embedder|embedder(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.EmbedderOptions){}[0]
-    final suspend fun generator(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/GeneratorOptions): io.github.valerioisufi.drawview.ml/Generator // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.generator|generator(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.GeneratorOptions){}[0]
+    final fun supports(io.github.valerioisufi.pageboard.ml/ModelSpec): kotlin/Boolean // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.supports|supports(io.github.valerioisufi.pageboard.ml.ModelSpec){}[0]
+    final suspend fun embedder(io.github.valerioisufi.pageboard.ml/InstalledModel, io.github.valerioisufi.pageboard.ml/EmbedderOptions): io.github.valerioisufi.pageboard.ml/Embedder // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.embedder|embedder(io.github.valerioisufi.pageboard.ml.InstalledModel;io.github.valerioisufi.pageboard.ml.EmbedderOptions){}[0]
+    final suspend fun generator(io.github.valerioisufi.pageboard.ml/InstalledModel, io.github.valerioisufi.pageboard.ml/GeneratorOptions): io.github.valerioisufi.pageboard.ml/Generator // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.generator|generator(io.github.valerioisufi.pageboard.ml.InstalledModel;io.github.valerioisufi.pageboard.ml.GeneratorOptions){}[0]
 
-    final object Companion { // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.Companion|null[0]
-        final fun defaultCacheDirectory(): kotlin/String // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.Companion.defaultCacheDirectory|defaultCacheDirectory(){}[0]
+    final object Companion { // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.Companion|null[0]
+        final fun defaultCacheDirectory(): kotlin/String // io.github.valerioisufi.pageboard.ml.litert/LiteRtRuntime.Companion.defaultCacheDirectory|defaultCacheDirectory(){}[0]
     }
 }

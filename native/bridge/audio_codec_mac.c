@@ -1,4 +1,4 @@
-// JNI entry points of io.github.valerioisufi.drawview.lecture.audio.AudioCodecNative (desktop JVM,
+// JNI entry points of io.github.valerioisufi.pageboard.lecture.audio.AudioCodecNative (desktop JVM,
 // macOS): the audio files of other applications (m4a, mp3, wav, aiff, caf, flac...) decoded into
 // the PCM of the lectures, with Audio Toolbox.
 #include <AudioToolbox/AudioToolbox.h>
@@ -61,7 +61,7 @@ static long read_block(ExtAudioFileRef file, SInt16* buffer) {
 
 // Decodes [input] into [output] (raw 16-bit mono PCM at 16 kHz): the number of samples, -1 when
 // the file cannot be read
-JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_lecture_audio_AudioCodecNative_nDecode(
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_lecture_audio_AudioCodecNative_nDecode(
     JNIEnv* env, jclass cls, jstring input, jstring output) {
     (void)cls;
     ExtAudioFileRef file = open_input(env, input);

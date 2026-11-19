@@ -1,14 +1,14 @@
-public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUi {
+public final class io/github/valerioisufi/pageboard/export/ui/DocumentExportUi {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/MarkdownAppendix;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun StatusHost (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public final fun getEditorExtension ()Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
-	public final fun getImportAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryAction;
-	public final fun getLibraryAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryItemsAction;
+	public final fun getEditorExtension ()Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
+	public final fun getImportAction ()Lio/github/valerioisufi/pageboard/ui/extension/LibraryAction;
+	public final fun getLibraryAction ()Lio/github/valerioisufi/pageboard/ui/extension/LibraryItemsAction;
 }
 
-public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUiKt {
-	public static final fun rememberDocumentExportUi (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/export/ui/DocumentExportUi;
+public final class io/github/valerioisufi/pageboard/export/ui/DocumentExportUiKt {
+	public static final fun rememberDocumentExportUi (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/pageboard/export/ui/DocumentExportUi;
 }
 

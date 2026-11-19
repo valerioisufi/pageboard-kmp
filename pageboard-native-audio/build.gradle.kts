@@ -18,8 +18,8 @@ android {
             cmake {
                 val sources = rootProject.layout.buildDirectory
                 arguments += listOf(
-                    "-DDRAWVIEW_OPUS_DIR=${sources.dir("opus/src/opus-${codecVersion("opus")}").get().asFile.absolutePath}",
-                    "-DDRAWVIEW_AAC_DIR=${sources.dir("aac/src/vo-aacenc-${codecVersion("aac")}").get().asFile.absolutePath}"
+                    "-DPAGEBOARD_OPUS_DIR=${sources.dir("opus/src/opus-${codecVersion("opus")}").get().asFile.absolutePath}",
+                    "-DPAGEBOARD_AAC_DIR=${sources.dir("aac/src/vo-aacenc-${codecVersion("aac")}").get().asFile.absolutePath}"
                 )
                 targets += "audio_bridge"
             }

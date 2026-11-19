@@ -3,7 +3,7 @@
     <application>
         <!-- The files shared with the other applications (rememberFileSharer) -->
         <provider
-            android:name="io.github.valerioisufi.drawview.ui.platform.DrawViewFileProvider"
+            android:name="io.github.valerioisufi.pageboard.ui.platform.DrawViewFileProvider"
             android:authorities="${applicationId}.drawview.files"
             android:exported="false"
             android:grantUriPermissions="true">

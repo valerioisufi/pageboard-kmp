@@ -1,4 +1,4 @@
-//! The JNI functions of `io.github.valerioisufi.drawview.sync.iroh.IrohJni` (Android and the
+//! The JNI functions of `io.github.valerioisufi.pageboard.sync.iroh.IrohJni` (Android and the
 //! desktop JVM), through the raw interface of `jni-sys`: numbers, strings and byte arrays only.
 //!
 //! A number of 0 or less tells what went wrong: 0 a timeout, -1 closed, -2 an error (see
@@ -87,7 +87,7 @@ unsafe fn new_bytes(env: *mut JNIEnv, value: &[u8]) -> jbyteArray {
 /// Gives iroh the Java VM and the application context, before any endpoint (Android only).
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_initAndroid(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_initAndroid(
     env: *mut JNIEnv,
     _this: jobject,
     context: jobject,
@@ -104,7 +104,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_lastError(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_lastError(
     env: *mut JNIEnv,
     _this: jobject,
 ) -> jstring {
@@ -113,7 +113,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_bind(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_bind(
     env: *mut JNIEnv,
     _this: jobject,
     secret_key: jbyteArray,
@@ -127,7 +127,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_address(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_address(
     env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -140,7 +140,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_id(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_id(
     env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -152,7 +152,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_networkChange(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_networkChange(
     _env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -163,7 +163,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_closeEndpoint(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_closeEndpoint(
     _env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -172,7 +172,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_connect(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_connect(
     env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -184,7 +184,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_accept(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_accept(
     _env: *mut JNIEnv,
     _this: jobject,
     endpoint: jlong,
@@ -194,7 +194,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_remoteId(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_remoteId(
     env: *mut JNIEnv,
     _this: jobject,
     connection: jlong,
@@ -206,7 +206,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_pathKind(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_pathKind(
     _env: *mut JNIEnv,
     _this: jobject,
     connection: jlong,
@@ -215,7 +215,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_closeConnection(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_closeConnection(
     _env: *mut JNIEnv,
     _this: jobject,
     connection: jlong,
@@ -224,7 +224,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_openStream(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_openStream(
     _env: *mut JNIEnv,
     _this: jobject,
     connection: jlong,
@@ -233,7 +233,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_acceptStream(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_acceptStream(
     _env: *mut JNIEnv,
     _this: jobject,
     connection: jlong,
@@ -244,7 +244,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 
 /// 0 sent, 1 timeout (not queued), 2 closed, -1 an error.
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_send(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_send(
     env: *mut JNIEnv,
     _this: jobject,
     stream: jlong,
@@ -265,7 +265,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 
 /// The next frame, or null: a timeout, or the end of the stream when `isEnded` says so.
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_receive(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_receive(
     env: *mut JNIEnv,
     _this: jobject,
     stream: jlong,
@@ -279,7 +279,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_isEnded(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_isEnded(
     _env: *mut JNIEnv,
     _this: jobject,
     stream: jlong,
@@ -288,7 +288,7 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_IrohJni_closeStream(
+pub unsafe extern "system" fn Java_io_github_valerioisufi_pageboard_sync_iroh_IrohJni_closeStream(
     _env: *mut JNIEnv,
     _this: jobject,
     stream: jlong,

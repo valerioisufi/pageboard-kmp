@@ -58,5 +58,5 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "io.github.valerioisufi.drawview.lecture.ui.generated.resources"
+    packageOfResClass = "io.github.valerioisufi.pageboard.lecture.ui.generated.resources"
 }

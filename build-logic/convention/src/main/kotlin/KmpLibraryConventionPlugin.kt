@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
  * simulator).
  *
  * The Android namespace follows the name of the module (`pageboard-sync-ui` →
- * `io.github.valerioisufi.drawview.sync.ui`). The explicit API mode is strict: every public
+ * `io.github.valerioisufi.pageboard.sync.ui`). The explicit API mode is strict: every public
  * declaration says so, with its type. A module whose native code reaches its classes by name keeps
  * them in its `consumer-rules.pro`, published with its Android library. The tests run on a data
  * directory of their own ([TestDataConventionPlugin]), the benchmarks apart
@@ -40,7 +40,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             iosSimulatorArm64()
 
             (this as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("android") {
-                namespace = "io.github.valerioisufi.drawview." + module.removePrefix("pageboard-").replace('-', '.')
+                namespace = "io.github.valerioisufi.pageboard." + module.removePrefix("pageboard-").replace('-', '.')
                 compileSdk = libs.version("android-compileSdk").toInt()
                 minSdk = libs.version("android-minSdk").toInt()
                 compilerOptions {

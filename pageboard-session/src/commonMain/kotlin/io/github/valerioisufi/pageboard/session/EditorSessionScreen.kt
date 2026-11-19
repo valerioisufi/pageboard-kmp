@@ -1,0 +1,79 @@
+package io.github.valerioisufi.pageboard.session
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
+import io.github.valerioisufi.pageboard.ui.extension.EditorContext
+import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
+import io.github.valerioisufi.pageboard.ui.screen.DocumentRenamer
+import io.github.valerioisufi.pageboard.ui.screen.EditorScreen
+import kotlinx.coroutines.flow.combine
+
+/**
+ * The editor of an open document: a progress bar while the document is being loaded, then the
+ * [EditorScreen], with the folder of the document under its title, renamed there (the devices it is
+ * shared with rename it too). [onClose] is called by the back button of the editor and by the
+ * system back. The text being written is saved when the screen stops (the application in the
+ * background) and when the editor goes (see `docs/plans/text-autosave.md`).
+ *
+ * @param extension content contributed to the editor by the application (top bar actions, panels,
+ *   commands, overlays).
+ */
+@Composable
+public fun EditorSessionScreen(
+    session: EditorSession,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    extension: EditorExtension? = null
+) {
+    // Before the system may kill the process in the background, and when the window or the activity goes
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { session.saveWriting() }
+    DisposableEffect(session) {
+        onDispose { session.saveWriting() }
+    }
+    val controller = session.controller
+    if (controller == null) {
+        // The document is being loaded
+        AdaptiveRoot(modifier = modifier) {
+            Box(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        }
+        return
+    }
+    val context = remember(controller) { EditorContext(controller) }
+    // The folder of the document, under its title
+    val location by remember(session) {
+        combine(session.store.documents, session.store.folders) { documents, folders ->
+            val folderId = documents.firstOrNull { it.id == session.documentId }?.folderId
+            folders.firstOrNull { it.id == folderId }?.name
+        }
+    }.collectAsState(null)
+    // Renamed as in the library: by a change of the document, unless its folder has the name
+    val renamer = remember(session) { DocumentRenamer { name -> session.documents.rename(session.documentId, name) } }
+    EditorScreen(context, onClose, modifier, location, extension, renamer)
+}

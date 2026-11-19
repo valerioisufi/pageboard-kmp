@@ -6,7 +6,7 @@
 
     <application>
         <service
-            android:name="io.github.valerioisufi.drawview.sync.ui.SyncService"
+            android:name="io.github.valerioisufi.pageboard.sync.ui.SyncService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
     </application>

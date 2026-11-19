@@ -1,0 +1,118 @@
+package io.github.valerioisufi.pageboard.lecture
+
+import io.github.valerioisufi.pageboard.lecture.audio.Wav
+import io.github.valerioisufi.pageboard.lecture.transcription.SpeechHints
+import io.github.valerioisufi.pageboard.lecture.transcription.TranscriptionException
+import io.github.valerioisufi.pageboard.lecture.transcription.WhisperEngine
+import io.github.valerioisufi.pageboard.lecture.transcription.WhisperNative
+import io.github.valerioisufi.pageboard.lecture.transcription.WhisperTranscriber
+import io.github.valerioisufi.pageboard.lecture.testing.MemorySecrets
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonPrimitive
+import java.io.File
+import java.nio.file.Files
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+
+class WhisperTranscriberTest {
+    private val directory: File = Files.createTempDirectory("whisper").toFile()
+    private val model = File(directory, "ggml-base.bin").apply { writeText("") }
+
+    @AfterTest
+    fun cleanUp() {
+        directory.deleteRecursively()
+    }
+
+    private class FakeEngine(private val answer: String) : WhisperEngine {
+        val loaded = mutableListOf<String>()
+        val prompts = mutableListOf<String>()
+        var samples = FloatArray(0)
+        var freed = 0L
+
+        override fun load(modelPath: String, useGpu: Boolean): Long {
+            loaded.add(modelPath)
+            return 42L
+        }
+
+        override fun transcribe(handle: Long, samples: FloatArray, language: String, prompt: String, threads: Int): ByteArray {
+            this.samples = samples
+            prompts.add("$language|$prompt")
+            return answer.encodeToByteArray()
+        }
+
+        override fun abort(handle: Long) {}
+
+        override fun free(handle: Long) {
+            freed = handle
+        }
+    }
+
+    @Test
+    fun theModelIsLoadedOnceAndTheSegmentsAreJoined() = runBlocking<Unit> {
+        val engine = FakeEngine(
+            """{"segments":[{"start":0.0,"end":2.0,"text":" definito il conc"},{"start":2.0,"end":3.5,"text":"etto di integrità,"},""" +
+                """{"start":3.5,"end":4.0,"text":" [Musica]"},{"start":4.0,"end":5.5,"text":" se vi ricordate."}]}"""
+        )
+        val transcriber = WhisperTranscriber(model.path, engine)
+        val wav = Wav.encode(shortArrayOf(0, 16384, -32768))
+        val segments = transcriber.transcribe(wav, SpeechHints(language = "it", prompt = "Sicurezza: MAC e funzioni hash")).segments
+        assertEquals(
+            listOf(TranscriptSegment(0, 3500, "definito il concetto di integrità,"), TranscriptSegment(4000, 5500, "se vi ricordate.")),
+            segments
+        )
+        assertContentEquals(floatArrayOf(0f, 0.5f, -1f), engine.samples)
+        assertEquals(listOf("it|Sicurezza: MAC e funzioni hash"), engine.prompts)
+
+        transcriber.transcribe(wav, SpeechHints(language = ""))
+        assertEquals(listOf(model.path), engine.loaded)
+        assertEquals("auto|", engine.prompts.last())
+        transcriber.close()
+        assertEquals(42L, engine.freed)
+    }
+
+    @Test
+    fun aMissingModelOrPlatformIsReported() = runBlocking<Unit> {
+        val missing = WhisperTranscriber(File(directory, "missing.bin").path, FakeEngine("{}"))
+        assertTrue(assertFailsWith<TranscriptionException> { missing.transcribe(Wav.encode(ShortArray(1)), SpeechHints("it")) }.message.orEmpty().contains("not downloaded"))
+        val unsupported = WhisperTranscriber(model.path, engine = null)
+        assertTrue(assertFailsWith<TranscriptionException> { unsupported.transcribe(Wav.encode(ShortArray(1)), SpeechHints("it")) }.message.orEmpty().contains("not available"))
+    }
+
+    @Test
+    fun whisperCppIsBuiltIntoTheDesktop() {
+        assertTrue(WhisperNative.isAvailable)
+        // Not a model: refused without crashing
+        assertEquals(0L, WhisperNative.load(model.path, useGpu = false))
+    }
+
+    @Test
+    fun aModelChosenInTheResourcesIsReadWhereItWasMoved() {
+        // As Windows saved it: in the resources, built with '/'
+        val chosen = PlatformFiles.resourcesDirectory() + "/whisper/ggml-small.bin"
+        val moved = File(WhisperTranscriber.modelsDirectory(), "ggml-small.bin").apply { parentFile.mkdirs(); writeText("") }
+        val path = File(directory, "settings.json").path
+        File(path).writeText("""{"whisperModel": ${JsonPrimitive(chosen)}}""")
+        try {
+            val settings = AssistantSettingsStore(path, MemorySecrets()).settings
+            assertEquals(moved.absoluteFile, File(settings.whisperModel).absoluteFile)
+            assertEquals(WhisperTranscriber.modelsDirectory() + "/ggml-small.bin", settings.whisperModel)
+            // The file as it was, until the settings are changed
+            assertTrue(File(path).readText().contains("resources"))
+
+            // Still in the resources (not moved yet), or chosen elsewhere: as it is
+            File(chosen).apply { parentFile.mkdirs(); writeText("") }
+            assertEquals(chosen, WhisperTranscriber.movedModel(chosen))
+            File(chosen).delete()
+            val elsewhere = File(directory, "ggml-small.bin").path
+            assertEquals(elsewhere, WhisperTranscriber.movedModel(elsewhere))
+            assertEquals("", WhisperTranscriber.movedModel(""))
+        } finally {
+            moved.delete()
+        }
+    }
+}

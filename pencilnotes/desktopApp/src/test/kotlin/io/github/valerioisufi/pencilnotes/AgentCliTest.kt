@@ -1,12 +1,12 @@
 package io.github.valerioisufi.pencilnotes
 
-import io.github.valerioisufi.drawview.agent.AgentEndpoint
-import io.github.valerioisufi.drawview.agent.AgentEngines
-import io.github.valerioisufi.drawview.agent.ExternalAgents
-import io.github.valerioisufi.drawview.model.PageBackground
-import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.pageboard.agent.AgentEndpoint
+import io.github.valerioisufi.pageboard.agent.AgentEngines
+import io.github.valerioisufi.pageboard.agent.ExternalAgents
+import io.github.valerioisufi.pageboard.model.PageBackground
+import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
+import io.github.valerioisufi.pageboard.store.OpenDocuments
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File

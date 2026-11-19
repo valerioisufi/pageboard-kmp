@@ -12,9 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import io.github.valerioisufi.drawview.platform.DrawViewAndroid
-import io.github.valerioisufi.drawview.ui.command.CommandHost
-import io.github.valerioisufi.drawview.ui.command.keyboardShortcutGroups
+import io.github.valerioisufi.pageboard.platform.DrawViewAndroid
+import io.github.valerioisufi.pageboard.ui.command.CommandHost
+import io.github.valerioisufi.pageboard.ui.command.keyboardShortcutGroups
 
 class MainActivity : ComponentActivity() {
     /** The commands of the screen shown: their shortcuts in the list of the system (Meta + /). */
@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
         /** The activities of PencilNotes created and not destroyed (a document may have a task of its own). */
         private var alive = 0
 
-        private const val EXTRA_DOCUMENT_ID = "io.github.valerioisufi.drawview.DOCUMENT_ID"
+        private const val EXTRA_DOCUMENT_ID = "io.github.valerioisufi.pageboard.DOCUMENT_ID"
     }
 }
 
