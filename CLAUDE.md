@@ -109,8 +109,14 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
 - **The sync modules changed:** their tests on the iOS simulator too,
   `./gradlew :drawview-sync-protocol:iosSimulatorArm64Test :drawview-sync:iosSimulatorArm64Test :drawview-sync-lan:iosSimulatorArm64Test :drawview-sync-iroh:iosSimulatorArm64Test`.
 
-- **UI changes:** check the screenshots with `verifyRoborazziJvm` (explorer, ui, sync-ui,
-  lecture-ui, export-ui), and run the desktop app on a scratch data directory.
+- **UI changes:** check the screenshots, and run the desktop app on a scratch data directory.
+  - The references are recorded only in the Docker image of `tools/screenshots/`
+    (`docs/plans/ci-screenshots.md`): never record them on the Mac or on Windows, where
+    `recordRoborazziJvm` refuses.
+  - Verify with `tools/screenshots/run.sh verify` where Docker runs, else look at the differences
+    of `compareRoborazziJvm` and let the workflow Screenshots of the pull request verify.
+  - Record with the label `record-screenshots` on the pull request (it commits on the branch), or
+    `tools/screenshots/run.sh record`.
 - **Stale results:** if a result looks stale, run again with `--rerun-tasks` on the module.
 
 ## Worktrees

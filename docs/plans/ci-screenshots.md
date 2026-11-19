@@ -171,11 +171,12 @@ workflow, one run each).
 | 1 | The convention plugin `drawview.screenshots`: the plugin, `outputDir`, the test JVM, the notice of verify and the guard of record; the seven modules use it. The defaults of the comparison of Roborazzi 1.76 checked | Done: `SimpleImageComparator(maxDistance = 0.007)` and `ThresholdValidator(0)`; record refused and verify noticed on Windows |
 | 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on the label `record-screenshots` and on `workflow_dispatch`; `tools/screenshots/gradle.sh` and `collect.sh`; `.github/actions/screenshots-environment`. Tried on the branch: one verify that fails (the references of the Mac) and one record | Written; record refused and collect tried on Windows; not run on Actions yet |
 | 3 | The migration: every reference recorded on the runner, in one commit; a verify of the next run passes | Planned |
-| 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Planned |
+| 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Done |
 | 5 | The Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, its JDK and fonts, cmake and cargo for the JNI libraries), `tools/screenshots/run.sh`, and the workflow running in the image | Written (approved 2026-11-19); not built yet: Docker is not running on the Windows host |
 
-**Minutes.** A run of `verify` is about 30 minutes of Linux with cold caches (the image, a few minutes; the JNI libraries,
-19 minutes in the measures of `feat/ci-time`) and about 10 with a warm one. Phases 2 and 3 need
+**Minutes.** A run of `verify` is about 30 minutes of Linux with cold caches (the image, a few
+minutes; the JNI libraries, 19 minutes in the measures of `feat/ci-time`) and about 10 with warm
+ones. Phases 2 and 3 need
 about four runs, 60-80 minutes of Linux. Each run is asked to the maintainer first while the
 repository is private.
 

@@ -42,8 +42,36 @@ Your own notes stay safe while you check: run the desktop applications on a scra
 * On macOS: `./gradlew compileKotlinIosSimulatorArm64`, and the tests of the sync modules on the iOS
   simulator.
 * A change of the public API: `./gradlew updateKotlinAbi`, and say so in the commit.
-* A change of the interface: `verifyRoborazziJvm` on the modules with screenshots.
+* A change of the interface: the screenshots, below.
 * A change of the published APIs or of the dependencies: `./consumer-checks/check.sh`.
+
+## Screenshots
+
+The modules with an interface compare it with reference images, in their `screenshots/`
+directories. The references are recorded in one environment, a Docker image of Ubuntu on x86_64
+(`tools/screenshots/Dockerfile`): each system draws the text with its own antialiasing, so an image
+recorded on macOS or Windows differs from one recorded there.
+
+* **The check of your pull request** (the workflow Screenshots) verifies them. When they differ it
+  uploads two artifacts: `screenshots-diff`, the differences (`_compare.png`), and
+  `screenshots-new`, the images of the run at their paths in the repository.
+* **When the change is meant**, get the new references:
+  * on a fork, download `screenshots-new`, unzip it at the root of your checkout, look at the
+    images and commit them;
+  * on a branch of the repository, add the label `record-screenshots` to the pull request (or run
+    `gh workflow run screenshots.yml -f branch=<branch>`): the workflow records the references
+    and commits them on the branch. Push, or run the checks again, to verify them.
+* **On your computer with Docker**: `tools/screenshots/run.sh verify` verifies and
+  `tools/screenshots/run.sh record` records, in the same image. On Apple silicon the image is
+  emulated, and the first run takes long.
+* **On your computer without Docker**: `jvmTest` runs the screenshot tests without comparing.
+  `compareRoborazziJvm` writes the differences in `build/outputs/roborazzi` of each module without
+  failing, to look at; `verifyRoborazziJvm` may fail on text antialiasing alone, and
+  `recordRoborazziJvm` refuses to record there.
+
+There is no tolerance in the comparison: a threshold wide enough for the antialiasing of another
+system would hide a moved icon or a line one pixel off. See
+[docs/plans/ci-screenshots.md](docs/plans/ci-screenshots.md).
 
 ## License
 
