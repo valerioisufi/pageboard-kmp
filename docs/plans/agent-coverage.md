@@ -181,11 +181,11 @@ never over a file, and answers its path and size; the folder is the application'
 ## Phases
 
 One commit per phase on `feat/agent-coverage`, with the checks of `CLAUDE.md`; every phase records the
-ABI of `drawview-agent` on purpose and adds its tools to `read_guide` and the usage of the command line.
+ABI of `drawview-agent` on purpose; the command line reaches the new tools with `call <tool>`.
 
 | Phase | What | Points | Status |
 |---|---|---|---|
-| 1 | Reading: marks, background details, dates, `is_shared`, `has_pdf`, the defaults in `read_document`, `list_removed_pages`, `read_image`. Tests: each field, a document of before reading as before, the bound of `read_image` | 2, 10, 11, 12, 8 | proposed |
+| 1 | Reading: marks, background details, dates, `is_shared`, `has_pdf`, the defaults in `read_document`, `list_removed_pages`, `read_image`. Tests: each field, a document of before reading as before, the bound of `read_image` | 2, 10, 11, 12, 8 | done |
 | 2 | The small items: `rotation` and `to_page` in `place_elements`, `rotation` and `auto_width` in `update_text`, `alignment` in `insert_text`, `set_document_defaults`, `restore_pages`, the background of `create_document`. Tests: each item, stale, one undo, converging on another device through the written operation | 3, 4, 6a, 10, 11, 13 | proposed |
 | 3 | Shapes: `add_shape`, `update_shape`. Tests: every kind, a line by its ends, refused values, a style kept by `withKind`, undo, the review marks | 1 | proposed |
 | 4 | Marks: `add_markup`, `restyle_markups`, their removal. Tests: a quote found once, at an occurrence, not found, a scanned page, the rects on a page of another format, undo | 2 | proposed |

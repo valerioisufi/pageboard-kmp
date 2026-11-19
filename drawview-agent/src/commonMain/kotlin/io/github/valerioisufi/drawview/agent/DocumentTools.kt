@@ -61,6 +61,8 @@ public class DocumentTools internal constructor(
         add(reading.readPage())
         add(reading.readPages())
         add(reading.readStroke())
+        add(reading.listRemovedPages())
+        if (engines.images != null) add(reading.readImage())
         if (engines.renderPage != null || engines.pages != null) add(reading.renderPage())
         if (engines.search != null) add(reading.search())
         add(proposing.previewProposal())

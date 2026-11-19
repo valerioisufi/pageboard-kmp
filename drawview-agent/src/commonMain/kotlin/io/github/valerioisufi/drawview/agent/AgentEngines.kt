@@ -105,6 +105,12 @@ public interface AgentImages {
      * or `null` when it is not an image the application reads.
      */
     public suspend fun keep(path: String): AgentImage?
+
+    /**
+     * The bytes of the file at [path], a file of the images of the documents, or `null` when it cannot
+     * be read or is larger than [maxBytes] (told before it is read).
+     */
+    public suspend fun bytes(path: String, maxBytes: Int): ByteArray? = null
 }
 
 /**

@@ -1,7 +1,11 @@
 package io.github.valerioisufi.drawview.agent
 
 import io.github.valerioisufi.drawview.model.DrawCustomElement
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.shape.ShapeBox
 import io.github.valerioisufi.drawview.model.shape.ShapeElement
@@ -133,7 +137,88 @@ internal fun DrawStroke.toEntry(): StrokeEntry {
 
 
 @Serializable
-internal data class DocumentEntry(val id: String, val title: String, val pages: Int, val folder: String? = null)
+internal data class DocumentEntry(
+    val id: String,
+    val title: String,
+    val pages: Int,
+    val folder: String? = null,
+    @SerialName("created_at") val createdAt: Long? = null,
+    @SerialName("modified_at") val modifiedAt: Long? = null,
+    @SerialName("last_opened_at") val lastOpenedAt: Long? = null,
+    @SerialName("is_shared") val isShared: Boolean = false,
+    @SerialName("has_pdf") val hasPdf: Boolean = false
+)
+
+/** [summary] as a model reads it in a list of documents. */
+internal fun DocumentSummary.toEntry() = DocumentEntry(
+    id, name, pageCount, folderId,
+    createdAt = createdAt.takeIf { it > 0L },
+    modifiedAt = modifiedAt.takeIf { it > 0L },
+    lastOpenedAt = lastOpenedAt.takeIf { it > 0L },
+    isShared = isShared,
+    hasPdf = hasPdf
+)
+
+/** The format a new page of a document takes: its size and background. */
+@Serializable
+internal data class FormatEntry(
+    @SerialName("width_mm") val widthMm: Float,
+    @SerialName("height_mm") val heightMm: Float,
+    val background: String,
+    @SerialName("spacing_mm") val spacingMm: Float? = null,
+    @SerialName("background_color") val backgroundColor: String
+)
+
+/** [background] on a page of [widthMm] by [heightMm], as a model reads it. */
+internal fun formatEntryOf(widthMm: Float, heightMm: Float, background: PageBackground) =
+    FormatEntry(widthMm, heightMm, PageItems.kindOf(background), spacingOf(background), colorHex(background.backgroundColor))
+
+/** The distance between the lines or the dots of [background], or `null` for a plain one. */
+internal fun spacingOf(background: PageBackground): Float? = when (background) {
+    is PageBackground.Solid -> null
+    is PageBackground.Ruled -> background.spacingMm
+    is PageBackground.Grid -> background.spacingMm
+    is PageBackground.Dotted -> background.spacingMm
+}
+
+/** A page in the trash of the pages of its document, as a model reads it. */
+@Serializable
+internal data class RemovedPageEntry(
+    val id: String,
+    @SerialName("former_index") val formerIndex: Int,
+    @SerialName("removed_at") val removedAt: Long,
+    @SerialName("width_mm") val widthMm: Float,
+    @SerialName("height_mm") val heightMm: Float,
+    val texts: Int,
+    val strokes: Int,
+    val images: Int,
+    val pdfs: Int,
+    @SerialName("text_start") val textStart: String? = null
+)
+
+/** A highlight, underline or strikeout of the text of a PDF page, as a model reads it. */
+@Serializable
+internal data class MarkupEntry(
+    val id: String,
+    val kind: String,
+    val color: String,
+    val text: String,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float,
+    val base: String
+)
+
+/** [markup] on [page] as a model reads it: its box in the millimeters of the page. */
+internal fun markupEntryOf(page: DrawPage, markup: DrawTextMarkup): MarkupEntry {
+    val matrix = markup.pointsToPageMm(page)
+    val box = markup.rects.map { matrix.mapRect(it) }.reduceOrNull { all, next -> all.union(next) } ?: Rect(0f, 0f, 0f, 0f)
+    return MarkupEntry(
+        markup.id, markup.kind.name.lowercase(), colorHex(markup.color), markup.text,
+        box.left.tenths(), box.top.tenths(), box.width.tenths(), box.height.tenths(), markup.elementBase()
+    )
+}
 
 @Serializable
 internal data class DocumentContent(
@@ -141,6 +226,13 @@ internal data class DocumentContent(
     val title: String,
     @SerialName("read_only") val readOnly: Boolean,
     val pages: List<PageEntry>,
+    @SerialName("new_page_format") val defaults: FormatEntry? = null,
+    @SerialName("created_at") val createdAt: Long? = null,
+    @SerialName("modified_at") val modifiedAt: Long? = null,
+    @SerialName("last_opened_at") val lastOpenedAt: Long? = null,
+    @SerialName("is_shared") val isShared: Boolean = false,
+    @SerialName("has_pdf") val hasPdf: Boolean = false,
+    @SerialName("removed_pages") val removedPages: Int = 0,
     val measured: Boolean? = null,
     val notice: String? = null
 )
@@ -184,11 +276,14 @@ internal data class PageContent(
     val measured: Boolean,
     val base: String,
     val background: String,
+    @SerialName("spacing_mm") val spacingMm: Float? = null,
+    @SerialName("background_color") val backgroundColor: String? = null,
     val strokes: Int,
     val texts: List<TextEntry>,
     val images: List<ImageEntry>,
     val pdfs: List<PdfEntry> = emptyList(),
     @SerialName("custom_elements") val customElements: List<CustomEntry> = emptyList(),
+    val markups: List<MarkupEntry> = emptyList(),
     @SerialName("stroke_list") val strokeList: List<StrokeEntry>? = null,
     @SerialName("strokes_left_out") val strokesLeftOut: Int? = null,
     @SerialName("ink_area") val inkArea: AgentArea? = null,

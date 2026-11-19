@@ -65,6 +65,9 @@ class PencilNotesAgents(
                 override suspend fun read(path: String): AgentImage? = image(path, keep = false)
 
                 override suspend fun keep(path: String): AgentImage? = image(path, keep = true)
+
+                override suspend fun bytes(path: String, maxBytes: Int): ByteArray? =
+                    withContext(Dispatchers.Default) { readFile(path, maxBytes.toLong()) }
             }
         ),
         journal = journal

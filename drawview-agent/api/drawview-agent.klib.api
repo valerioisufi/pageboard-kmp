@@ -95,6 +95,7 @@ abstract interface io.github.valerioisufi.drawview.agent/AgentEditors { // io.gi
 abstract interface io.github.valerioisufi.drawview.agent/AgentImages { // io.github.valerioisufi.drawview.agent/AgentImages|null[0]
     abstract suspend fun keep(kotlin/String): io.github.valerioisufi.drawview.agent/AgentImage? // io.github.valerioisufi.drawview.agent/AgentImages.keep|keep(kotlin.String){}[0]
     abstract suspend fun read(kotlin/String): io.github.valerioisufi.drawview.agent/AgentImage? // io.github.valerioisufi.drawview.agent/AgentImages.read|read(kotlin.String){}[0]
+    open suspend fun bytes(kotlin/String, kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.agent/AgentImages.bytes|bytes(kotlin.String;kotlin.Int){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.agent/AgentJournal { // io.github.valerioisufi.drawview.agent/AgentJournal|null[0]

@@ -207,8 +207,13 @@ public final class io/github/valerioisufi/drawview/agent/AgentImage {
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/AgentImages {
+	public fun bytes (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun keep (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun read (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/agent/AgentImages$DefaultImpls {
+	public static fun bytes (Lio/github/valerioisufi/drawview/agent/AgentImages;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/agent/AgentJournal {
