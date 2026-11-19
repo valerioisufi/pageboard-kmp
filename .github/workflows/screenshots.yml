@@ -1,6 +1,7 @@
-# The screenshot tests in their reference environment (docs/plans/ci-screenshots.md): Ubuntu 24.04
-# on x86_64, the fonts and the JDK of .github/actions/screenshots-environment. The references of the
-# modules (*/screenshots) are recorded here only.
+# The screenshot tests in their reference environment (docs/plans/ci-screenshots.md): the image of
+# tools/screenshots/Dockerfile (Ubuntu 24.04 on x86_64, its fonts and its JDK), the same that
+# tools/screenshots/run.sh runs on any computer. The references of the modules (*/screenshots) are
+# recorded there only.
 #
 # - verify: every pull request and every push on main. When screenshots differ it uploads
 #   screenshots-diff (the _compare.png, to look at) and screenshots-new (the images of the run at
@@ -33,10 +34,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # Marks the reference environment for drawview.screenshots (ScreenshotsConventionPlugin)
-  DRAWVIEW_SCREENSHOTS: reference
-
 jobs:
   verify:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'labeled')
@@ -46,22 +43,22 @@ jobs:
       - uses: ./.github/actions/screenshots-environment
 
       - name: Verify the screenshots
-        run: tools/screenshots/gradle.sh verify
+        run: tools/screenshots/run.sh verify
 
       - name: Collect the differences
         if: failure()
-        run: tools/screenshots/collect.sh build/screenshots
+        run: tools/screenshots/collect.sh build/screenshots-collected
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: screenshots-diff
-          path: build/screenshots/diff
+          path: build/screenshots-collected/diff
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: screenshots-new
-          path: build/screenshots/new
+          path: build/screenshots-collected/new
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -100,9 +97,9 @@ jobs:
       - uses: ./.github/actions/screenshots-environment
 
       - name: Record the screenshots
-        run: tools/screenshots/gradle.sh record
+        run: tools/screenshots/run.sh record
       - name: Verify what was recorded
-        run: tools/screenshots/gradle.sh verify
+        run: tools/screenshots/run.sh verify
 
       - name: Commit the references
         run: |

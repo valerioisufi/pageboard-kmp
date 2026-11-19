@@ -55,26 +55,42 @@ Variations).
 | Responsibility | Where | GRASP |
 |---|---|---|
 | The screenshot settings of a module (the plugin, `outputDir`, the test JVM, the guard of recording) | a convention plugin `drawview.screenshots` in `build-logic`, applied by the seven modules in place of their own `roborazzi {}` | Information Expert, High Cohesion |
-| Telling the reference environment apart | the variable `DRAWVIEW_SCREENSHOTS=reference`, set only by the workflow (and the Docker image, phase 5) | Protected Variations, Indirection |
+| The reference environment | the image of `tools/screenshots/Dockerfile`, in which the workflow runs and which `tools/screenshots/run.sh` runs on any computer | Information Expert, Protected Variations |
+| Telling the reference environment apart | the variable `DRAWVIEW_SCREENSHOTS=reference`, set only by the image | Protected Variations, Indirection |
+| Running the screenshot tasks of every module | `tools/screenshots/gradle.sh record\|verify\|compare`, inside the image | Pure Fabrication |
 | Verifying every pull request | `.github/workflows/screenshots.yml`, job `verify`, on `ubuntu-24.04` | Controller |
-| Recording on demand | the same workflow, job `record`, on `workflow_dispatch` | Controller |
+| Recording on demand | the same workflow, job `record`, on the label `record-screenshots` and on `workflow_dispatch` | Controller |
 | The differences and the new images of a failing verify | artifacts of the `verify` job | Pure Fabrication |
 | How to verify and record, for a contributor | `CONTRIBUTING.md`, `docs/reference.md` | Information Expert |
 
 ### The reference environment
 
-* **The runner** is pinned: `ubuntu-24.04`, not `ubuntu-latest` (which moves to Ubuntu 26), on
-  x86_64. The raster of Skia can take other paths on another architecture (NEON on arm64), so the
-  architecture is part of the environment.
-* **The JDK** is Zulu 21, as in the other workflows; the version of Skiko comes from Compose, in the
-  version catalog.
-* **The fonts of the system** are those of Ubuntu 24.04 plus `fonts-dejavu-core`, installed by the
-  workflow, so that `Default`, `Monospace` and `Serif` resolve to fixed families. The bundled fonts
-  need nothing.
+The environment is a Docker image, `tools/screenshots/Dockerfile`, and the workflow runs its tests
+inside it rather than on the runner itself: so the image that a contributor runs with
+`tools/screenshots/run.sh` is the environment of the references, not a copy that may drift from
+the runner (whose image changes every week, fonts included).
+
+* **The system** is `ubuntu:24.04` by digest, on `linux/amd64` only: the raster of Skia can take
+  other paths on another architecture (NEON on arm64), so the architecture is part of the
+  environment. On Apple silicon Docker emulates it, slowly. The packages come from the archive of
+  Ubuntu 24.04 when the image is built; the build cache of Actions keeps the layers.
+* **The JDK** is `openjdk-21-jdk` of Ubuntu (with AWT, for the tests that open windows); the
+  version of Skiko comes from Compose, in the version catalog.
+* **The fonts of the system** are `fonts-dejavu-core` and nothing else, so that `Default`,
+  `Monospace` and `Serif` resolve to fixed families (the build of the image prints them). The
+  bundled fonts need nothing.
+* **The toolchain of the JNI libraries**: `build-essential`, `cmake`, `ninja-build` and Rust by
+  rustup, at the version of `native/iroh-bridge/rust-toolchain.toml` (a build argument).
+* **The checkout** is mounted at `/work`, the Gradle home is a volume (on the runner, a directory
+  cached by `actions/cache`), and the container runs as the user of the host. It sees an empty
+  `local.properties`: the one of the host names an Android SDK and a cargo that the image does not
+  have, and the JVM tests need neither (checked: the modules configure without an SDK).
+* **The runner** of the workflow is pinned too, `ubuntu-24.04`, though only Docker runs on it.
 * **The test JVM** of the screenshot modules gets `-Duser.language=en -Duser.country=US
   -Duser.timezone=UTC -Dfile.encoding=UTF-8` from the convention plugin, on every system, so that
   dates, numbers and text do not depend on the host. Not `java.awt.headless`: some tests of the
-  modules open an AWT `Frame` (`WindowDecorTest`), and the runner gives them a display (`xvfb-run`).
+  modules open an AWT `Frame` (`WindowDecorTest`), and `gradle.sh` gives them a virtual display
+  (`xvfb-run`).
 * **The comparison** is the default of Roborazzi 1.76: a distance per pixel of 0.007
   (`SimpleImageComparator`) and no share of differing pixels allowed (`ThresholdValidator(0)`). The same on every system.
 
@@ -84,11 +100,12 @@ Variations).
 only `docs/**` or Markdown files: a change of the model or of the canvas can move a screenshot as
 much as a change of a UI module, so there is no filter on the modules.
 
-1. Installs the fonts, sets up the JDK and Gradle (`gradle/actions/setup-gradle`, whose cache keeps
-   the JNI libraries when their sources are the same; the caches of `feat/ci-time` when it is
-   merged).
-2. Runs `tools/screenshots/gradle.sh verify`: `verifyRoborazziJvm --continue` on every module that
-   applies `drawview.screenshots`, under `xvfb-run` (some tests of these modules open AWT windows).
+1. `.github/actions/screenshots-environment` builds the image (`docker/build-push-action`, with the
+   cache of Actions) and restores the Gradle home of the container (`actions/cache`, keyed by
+   `gradle/`, `build-logic/`, `native/` and the Dockerfile; its build cache keeps the JNI libraries
+   of the same sources).
+2. Runs `tools/screenshots/run.sh verify`, which runs `tools/screenshots/gradle.sh verify` in the
+   image: `verifyRoborazziJvm --continue` on every module that applies `drawview.screenshots`.
 3. On a failure `tools/screenshots/collect.sh` gathers, and the job uploads, two artifacts (and the
    test reports):
    * `screenshots-diff`: the `_compare.png` of every differing screenshot, to look at;
@@ -155,9 +172,9 @@ workflow, one run each).
 | 2 | `screenshots.yml`: `verify` on pull requests with its two artifacts, `record` on the label `record-screenshots` and on `workflow_dispatch`; `tools/screenshots/gradle.sh` and `collect.sh`; `.github/actions/screenshots-environment`. Tried on the branch: one verify that fails (the references of the Mac) and one record | Written; record refused and collect tried on Windows; not run on Actions yet |
 | 3 | The migration: every reference recorded on the runner, in one commit; a verify of the next run passes | Planned |
 | 4 | The documentation: `CONTRIBUTING.md` (verify, record, `screenshots-new`), `docs/reference.md`, the line of `CLAUDE.md` on UI changes | Planned |
-| 5 | Optional: a Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, the same JDK and fonts, cmake and cargo for the JNI libraries) and a script that records and verifies in it | Planned (approved 2026-11-19) |
+| 5 | The Docker image of the environment (`tools/screenshots/Dockerfile`, `ubuntu:24.04` by digest, its JDK and fonts, cmake and cargo for the JNI libraries), `tools/screenshots/run.sh`, and the workflow running in the image | Written (approved 2026-11-19); not built yet: Docker is not running on the Windows host |
 
-**Minutes.** A run of `verify` is about 25 minutes of Linux with a cold cache (the JNI libraries,
+**Minutes.** A run of `verify` is about 30 minutes of Linux with cold caches (the image, a few minutes; the JNI libraries,
 19 minutes in the measures of `feat/ci-time`) and about 10 with a warm one. Phases 2 and 3 need
 about four runs, 60-80 minutes of Linux. Each run is asked to the maintainer first while the
 repository is private.
@@ -165,10 +182,13 @@ repository is private.
 ## Decisions
 
 * **Linux, not macOS, as the reference** (revertible): a runner that anyone can use, free for a
-  public repository and a tenth of the cost of macOS while it is private, and the same system as a
-  Docker image. The maintainer can no longer record on the Mac.
-* **`ubuntu-24.04` on x86_64, pinned** (revertible): a change of the image or of the architecture is
-  a migration of its own (phase 3 again).
+  public repository and a tenth of the cost of macOS while it is private, and a system that runs in
+  Docker anywhere. The maintainer can no longer record on the Mac.
+* **The workflow in the Docker image, not on the runner** (revertible, decided while writing phase
+  5): one environment for the CI and for `run.sh`, at the cost of building the image (cached) and
+  of a Gradle home cached by hand instead of `setup-gradle`.
+* **`ubuntu:24.04` by digest on x86_64** (revertible): a change of the image or of the architecture
+  is a migration of its own (phase 3 again).
 * **No tolerance anywhere** (revertible): see "Why no tolerance off Linux".
 * **A workflow of its own** rather than a job of `check.yml` (revertible): so that it runs on Linux
   and does not collide with `feat/ci-time`. It can become a job of `check.yml` once that branch is
@@ -176,7 +196,7 @@ repository is private.
 * **Forks get an artifact, not a commit**: no `pull_request_target`, no token that writes for the
   code of a fork.
 * **The variable `DRAWVIEW_SCREENSHOTS`** rather than detecting `CI` or Linux: a Linux laptop is not
-  the reference environment, and the Docker image of phase 5 is.
+  the reference environment, and the Docker image is.
 
 ## Left for later
 
