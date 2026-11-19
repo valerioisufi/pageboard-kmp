@@ -99,6 +99,9 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_a
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_update_shape
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_add_markup
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_markups
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_copy_elements
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_copy_pages
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_import_pdf
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_reorder_elements
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_replace
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_item_restyle_stroke
@@ -601,6 +604,9 @@ private fun itemLabel(item: ProposalItem): String = stringResource(
         is ProposalItem.UpdateShape -> Res.string.agent_item_update_shape
         is ProposalItem.AddMarkup -> Res.string.agent_item_add_markup
         is ProposalItem.RestyleMarkups -> Res.string.agent_item_restyle_markups
+        is ProposalItem.CopyElements -> Res.string.agent_item_copy_elements
+        is ProposalItem.CopyPages -> Res.string.agent_item_copy_pages
+        is ProposalItem.ImportPdf -> Res.string.agent_item_import_pdf
     }
 )
 

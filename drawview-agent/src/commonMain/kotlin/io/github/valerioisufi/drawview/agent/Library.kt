@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import io.github.valerioisufi.drawview.model.change.CompositeChange
+import io.github.valerioisufi.drawview.model.change.RemovePage
+import io.github.valerioisufi.drawview.model.change.copyPages
+import io.github.valerioisufi.drawview.model.change.pasteInto
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -76,6 +80,22 @@ public sealed interface LibraryItem {
     @Serializable
     @SerialName("restore")
     public data class Restore(val item: String) : LibraryItem
+
+    /**
+     * Makes a copy of the document [document] with all its pages, named [title] (`null`: its name
+     * with a number), in the folder [folder] (`null`: the folder of the document).
+     */
+    @Serializable
+    @SerialName("duplicate_document")
+    public data class DuplicateDocument(val document: String, val title: String? = null, val folder: String? = null) : LibraryItem
+
+    /**
+     * Brings the notes of the archive of the application at [path] (`.drawview`) into a new folder of
+     * the folder [folder] (`null`: the root), as new documents.
+     */
+    @Serializable
+    @SerialName("import_archive")
+    public data class ImportArchive(val path: String, val folder: String? = null) : LibraryItem
 }
 
 /** Whether [this] item sends something to the trash. */
@@ -166,6 +186,23 @@ internal sealed interface LibraryUndo {
         override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.trashDocument(document)
     }
 
+    /**
+     * A folder made by an import of an archive, with its documents: still there, and none written in
+     * since ([versions]), trashing it loses nothing of the user's.
+     */
+    @Serializable
+    @SerialName("imported_archive")
+    class ImportedArchive(val folder: String, val versions: Map<String, Map<String, Long>?>) : LibraryUndo {
+        override suspend fun isAsLeft(documents: OpenDocuments): Boolean {
+            val catalog = documents.store
+            if (catalog.folder(folder) == null) return false
+            val inside = documentsUnder(catalog, folder)
+            return inside.toSet() == versions.keys && inside.all { documents.versionsOf(it) == versions[it] }
+        }
+
+        override suspend fun undo(catalog: DocumentCatalog): Boolean = catalog.trashFolder(folder)
+    }
+
     /** A document moved into [to] from [from]. */
     @Serializable
     @SerialName("moved_document")
@@ -245,7 +282,7 @@ internal class AppliedLibrary(val outcomes: List<ItemOutcome>, val undos: List<L
  * each one with the step undoing it. An item that cannot be done as the library is now (a document
  * gone, a name taken) is stale; the others are done.
  */
-internal class LibraryApplier {
+internal class LibraryApplier(private val engines: AgentEngines = AgentEngines()) {
 
     suspend fun apply(documents: OpenDocuments, items: List<LibraryItem>): AppliedLibrary {
         val catalog = documents.store
@@ -303,7 +340,65 @@ internal class LibraryApplier {
             if (trashed == null || catalog.restore(item.item) == null) null
             else LibraryUndo.Restored(item.item, document = trashed.kind == io.github.valerioisufi.drawview.store.TrashedItem.Kind.DOCUMENT)
         }
+        is LibraryItem.DuplicateDocument -> duplicate(documents, catalog, item, created)
+        is LibraryItem.ImportArchive -> {
+            val made = if (item.folder != null && catalog.folder(item.folder) == null) null else engines.files?.importArchive(item.path, item.folder)
+            if (made == null) null
+            else {
+                val inside = documentsUnder(catalog, made)
+                created += inside
+                LibraryUndo.ImportedArchive(made, inside.associateWith { documents.versionsOf(it) })
+            }
+        }
     }
+
+    /** A copy of the document of [item] with all its pages, as the editor pastes copied pages: new ids. */
+    private suspend fun duplicate(documents: OpenDocuments, catalog: DocumentCatalog, item: LibraryItem.DuplicateDocument, created: MutableList<String>): LibraryUndo? {
+        val source = catalog.documents.first().firstOrNull { it.id == item.document } ?: return null
+        val folder = item.folder ?: source.folderId
+        if (folder != null && catalog.folder(folder) == null) return null
+        val taken = catalog.documents.first().filter { it.folderId == folder }.mapTo(HashSet()) { it.name }
+        val title = item.title?.trim()?.takeIf { it !in taken } ?: if (item.title != null) return null else freeName(source.name, taken)
+        val from = documents.open(source.id) ?: return null
+        val copied = try {
+            from.edit { session -> session.document.let { it to it.copyPages(it.pages) } }.second
+        } finally {
+            documents.close(from)
+        }
+        val made = catalog.createDocument(title, source.defaultWidthMm, source.defaultHeightMm, source.defaultBackground, folder)
+        val open = documents.open(made.id) ?: return null
+        try {
+            open.edit { session ->
+                val document = session.document
+                val blank = document.pages.single()
+                val pasted = copied.pasteInto(document, 1).change ?: return@edit
+                session.submit(CompositeChange(listOf(pasted, RemovePage(blank.id))))
+            }
+        } finally {
+            documents.close(open)
+        }
+        created += made.id
+        return LibraryUndo.CreatedDocument(made.id, documents.versionsOf(made.id))
+    }
+
+    /** [name] with the first number that makes it free among [taken]: "Name (2)", "Name (3)"... */
+    private fun freeName(name: String, taken: Set<String>): String {
+        var n = 2
+        while ("$name ($n)" in taken) n++
+        return "$name ($n)"
+    }
+}
+
+/** The documents in the folder [folder] and in the folders under it. */
+private suspend fun documentsUnder(catalog: DocumentCatalog, folder: String): List<String> {
+    val folders = catalog.folders.first()
+    val under = mutableSetOf(folder)
+    var grew = true
+    while (grew) {
+        grew = false
+        for (one in folders) if (one.parentId in under && under.add(one.id)) grew = true
+    }
+    return catalog.documents.first().filter { it.folderId in under }.map { it.id }
 }
 
 /**

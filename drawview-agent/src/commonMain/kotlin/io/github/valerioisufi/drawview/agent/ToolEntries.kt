@@ -78,6 +78,15 @@ internal val ProposalItem.wireKind: String
         is ProposalItem.UpdateShape -> "update_shape"
         is ProposalItem.AddMarkup -> "add_markup"
         is ProposalItem.RestyleMarkups -> "restyle_markups"
+        is ProposalItem.CopyElements -> "copy_elements"
+        is ProposalItem.CopyPages -> "copy_pages"
+        is ProposalItem.ImportPdf -> "import_pdf"
+        is ProposalItem.CopyElements -> "copy_elements"
+        is ProposalItem.CopyPages -> "copy_pages"
+        is ProposalItem.ImportPdf -> "import_pdf"
+        is ProposalItem.CopyElements -> "copy_elements"
+        is ProposalItem.CopyPages -> "copy_pages"
+        is ProposalItem.ImportPdf -> "import_pdf"
     }
 
 /**

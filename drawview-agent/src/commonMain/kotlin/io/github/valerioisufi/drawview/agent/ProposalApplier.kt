@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.CompositeChange
+import io.github.valerioisufi.drawview.model.change.CopiedContent
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.PlaceElements
@@ -52,8 +53,15 @@ public class ProposalApplier(private val engines: AgentEngines = AgentEngines())
      * Applies [items] to the document of [session], those still valid.
      *
      * @param chosen the places chosen by the user, by index in [items] and in the order of the pieces.
+     * @param copies what the items copying from a document copy, taken from it as it is now, by index in
+     *   [items]: an item copying with none is stale.
      */
-    public fun apply(session: DocumentSession, items: List<ProposalItem>, chosen: Map<Int, List<ChosenPlace>> = emptyMap()): AppliedProposal {
+    public fun apply(
+        session: DocumentSession,
+        items: List<ProposalItem>,
+        chosen: Map<Int, List<ChosenPlace>> = emptyMap(),
+        copies: Map<Int, CopiedContent> = emptyMap()
+    ): AppliedProposal {
         val document = session.document
         if (session.isReadOnly) return AppliedProposal(items.map { ItemOutcome.STALE }, null)
         val plan = planner.plan(document, items, chosen)
@@ -66,6 +74,14 @@ public class ProposalApplier(private val engines: AgentEngines = AgentEngines())
                 return@mapIndexed ItemOutcome.STALE
             }
             val from = changes.size
+            if (item is ProposalItem.CopyElements || item is ProposalItem.CopyPages) {
+                val pasted = copies[index]?.let { CopyItems.changeOf(document, item, it) }
+                if (pasted == null) {
+                    touched += emptyList<String>()
+                    return@mapIndexed ItemOutcome.STALE
+                }
+                changes += pasted
+            }
             when (item) {
                 is ProposalItem.ReplaceText -> {
                     val (page, text) = document.findText(item.text)!!
@@ -102,6 +118,8 @@ public class ProposalApplier(private val engines: AgentEngines = AgentEngines())
                 is ProposalItem.RestorePages -> changes += PageItems.changesOf(document, item)
                 is ProposalItem.AddShape, is ProposalItem.UpdateShape -> changes += ShapeItems.changesOf(document, item)
                 is ProposalItem.AddMarkup, is ProposalItem.RestyleMarkups -> changes += MarkupItems.changesOf(document, item, engines)
+                is ProposalItem.CopyElements, is ProposalItem.CopyPages -> {}
+                is ProposalItem.ImportPdf -> changes += CopyItems.importChanges(document, item)
                 else -> changes += ElementItems.changesOf(document, item)
             }
             touched += changes.subList(from, changes.size).flatMap { it.elementsLeft() }.distinct()

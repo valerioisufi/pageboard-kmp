@@ -89,6 +89,10 @@ internal object ProposalMarks {
                 PlannedMark(PlannedMark.Kind.MOVED, page.id, before, toBox = piece.box, elementId = element.id)
             }
             is ProposalItem.AddStroke -> listOfNotNull(strokeMark(item))
+            // Where a copy goes is known once it is taken from its document; new pages are not on a page yet
+            is ProposalItem.CopyElements, is ProposalItem.CopyPages, is ProposalItem.ImportPdf -> emptyList()
+            // Where a copy goes is known once it is taken from its document; new pages are not on a page yet
+            is ProposalItem.CopyElements, is ProposalItem.CopyPages, is ProposalItem.ImportPdf -> emptyList()
             is ProposalItem.AddMarkup -> planned.pieces.map { PlannedMark(PlannedMark.Kind.ADDED, it.pageId, it.box) }
             is ProposalItem.RestyleMarkups -> elementMarks(document, item.markups.map { it.id }, PlannedMark.Kind.CHANGED, measure)
             is ProposalItem.AddShape -> listOf(PlannedMark(PlannedMark.Kind.ADDED, item.page, ShapeItems.boundsOf(ShapeItems.added(item).second)))

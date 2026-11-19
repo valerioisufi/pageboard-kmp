@@ -113,6 +113,28 @@ public interface AgentImages {
     public suspend fun bytes(path: String, maxBytes: Int): ByteArray? = null
 }
 
+/** A PDF file read by the application: where it is, its content, the size of each of its pages in millimeters. */
+public class AgentPdf(public val path: String, public val hash: String, public val pageSizesMm: List<Pair<Float, Float>>)
+
+/** The files a client names to bring into the notes, read by the application. */
+public interface AgentFiles {
+    /** The PDF file at [path] as it is, or `null` when it is not a PDF the application reads, or is too large. */
+    public suspend fun readPdf(path: String): AgentPdf?
+
+    /**
+     * The PDF file at [path] kept among the files of the documents (the same content is kept once), or
+     * `null` when it is not a PDF the application reads, or is too large.
+     */
+    public suspend fun keepPdf(path: String): AgentPdf?
+
+    /**
+     * The archive of the application at [path] brought into the library, in a new folder in [parentId]
+     * (`null`: the root): the id of that folder, or `null` when it is not an archive the application
+     * reads (nothing is added then).
+     */
+    public suspend fun importArchive(path: String, parentId: String?): String?
+}
+
 /**
  * What the tools need from the application, each optional: without one the tool that needs it is not
  * offered, or says that it cannot tell (rule 1 of the libraries, see `docs/plans/modularization.md`).
@@ -128,6 +150,7 @@ public interface AgentImages {
  *   its PDF pages is not known, and its pages are not drawn.
  * @param images the image files a client adds (`add_image`), read by the application.
  * @param defaultTextSize the size of a text on a page that tells nothing about it.
+ * @param files the PDF files and the archives a client brings into the notes (`import_pdf`, `import_archive`).
  */
 public class AgentEngines(
     public val editors: AgentEditors? = null,
@@ -137,7 +160,8 @@ public class AgentEngines(
     public val renderPage: (suspend (documentId: String, pageId: String, maxSidePx: Int) -> ByteArray?)? = null,
     public val images: AgentImages? = null,
     public val defaultTextSize: Float = 16f,
-    public val pages: (() -> PageEngine?)? = null
+    public val pages: (() -> PageEngine?)? = null,
+    public val files: AgentFiles? = null
 ) {
     /** The text of the PDF page [pdf] of [document]: as its editor knows it, or read by [pages]. */
     internal fun pdfLayout(document: DrawDocument, pdf: DrawPdf): PdfTextLayout? {

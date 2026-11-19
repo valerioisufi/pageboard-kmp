@@ -26,6 +26,8 @@ import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_librar
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_move_folder
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_rename_folder
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_restore
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_duplicate_document
+import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_import_archive
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_root
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_trash_document
 import io.github.valerioisufi.drawview.agent.ui.generated.resources.agent_library_trash_folder
@@ -102,6 +104,8 @@ internal fun libraryItemText(item: LibraryItem, names: Map<String, String>): Str
         is LibraryItem.MoveFolder -> stringResource(Res.string.agent_library_move_folder, name(item.folder), place(item.parent))
         is LibraryItem.TrashFolder -> stringResource(Res.string.agent_library_trash_folder, name(item.folder))
         is LibraryItem.Restore -> stringResource(Res.string.agent_library_restore, name(item.item))
+        is LibraryItem.DuplicateDocument -> stringResource(Res.string.agent_library_duplicate_document, name(item.document))
+        is LibraryItem.ImportArchive -> stringResource(Res.string.agent_library_import_archive, item.path.substringAfterLast('/').substringAfterLast('\\'), place(item.folder))
     }
 }
 

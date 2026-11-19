@@ -47,7 +47,8 @@ internal class ProposalTools(
         limits.checkItems(items)
         if (!limits.canPlan(items)) throw AgentToolException(AgentErrorCode.REFUSED, "This is too much text to preview at once: use fewer items, or propose it.")
         checkNames(documentId, items)
-        value(proposalJson.encodeToJsonElement(withDocument(documentId) { open -> planOf(open, withImages(open, items, keep = false)) }))
+        checkCopies(documentId, items)
+        value(proposalJson.encodeToJsonElement(withDocument(documentId) { open -> planOf(open, withFiles(open, items, keep = false)) }))
     }
 
     fun propose() = AgentTool(
@@ -63,7 +64,8 @@ internal class ProposalTools(
         val documentId = arguments.requiredString("document")
         val title = arguments.requiredString("title")
         limits.check(title, arguments.items())
-        val items = withDocument(documentId) { open -> withImages(open, arguments.items(), keep = true) }
+        checkCopies(documentId, arguments.items())
+        val items = withDocument(documentId) { open -> withFiles(open, arguments.items(), keep = true) }
         checkNames(documentId, items)
         var plan: PlanAnswer? = null
         val proposal = withDocument(documentId) { open ->
@@ -79,6 +81,65 @@ internal class ProposalTools(
         val review = arguments.boolean("require_review") ?: false
         submit(proposal, review)
         value(proposalJson.encodeToJsonElement(proposals.find(proposal.id)!!.toStatus().copy(plan = plan, mode = modeOf(review))))
+    }
+
+    /**
+     * Refuses an item copying from a document the client may not reach, or what is not there; the copy
+     * itself is taken when the items are applied.
+     */
+    private suspend fun checkCopies(documentId: String, items: List<ProposalItem>) {
+        for (item in items) {
+            val source = CopyItems.sourceOf(item) ?: continue
+            val box = withDocument(source) { open ->
+                open.edit { session ->
+                    val document = session.document
+                    when (item) {
+                        is ProposalItem.CopyElements -> {
+                            val (page, elements) = document.elementsOf(item.fromPage, item.elements) { what ->
+                                throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no $what in the document copied from: read it again.")
+                            }
+                            CopyItems.boundsOf(page, elements)
+                        }
+                        is ProposalItem.CopyPages -> {
+                            item.pages.forEach { id -> document.pageById(id) ?: throw AgentToolException(AgentErrorCode.NOT_FOUND, "There is no page \"${id.take(64)}\" in the document copied from.") }
+                            null
+                        }
+                        else -> null
+                    }
+                }
+            }
+            if (item is ProposalItem.CopyElements && box != null) {
+                withDocument(documentId) { open ->
+                    open.edit { session ->
+                        val page = session.document.pageById(item.page) ?: return@edit
+                        val moved = Rect(box.left + item.dx, box.top + item.dy, box.right + item.dx, box.bottom + item.dy)
+                        if (moved.left < 0f || moved.top < 0f || moved.right > page.widthMm || moved.bottom > page.heightMm) {
+                            throw AgentToolException(AgentErrorCode.REFUSED, "They would go outside the page, which is ${page.widthMm} by ${page.heightMm} millimeters.")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * [items] with their files read by the application ([keep]: kept among the files of the documents):
+     * an image given its page and the box it goes in, a PDF the sizes of its pages.
+     */
+    private suspend fun withFiles(open: OpenDocument, items: List<ProposalItem>, keep: Boolean): List<ProposalItem> {
+        val withPdfs = if (items.none { it is ProposalItem.ImportPdf }) items else {
+            val files = engines.files ?: throw AgentToolException(AgentErrorCode.UNAVAILABLE, "This application does not import PDF files.")
+            items.map { item ->
+                if (item !is ProposalItem.ImportPdf) return@map item
+                val pdf = (if (keep) files.keepPdf(item.path) else files.readPdf(item.path))
+                    ?: throw AgentToolException(AgentErrorCode.REFUSED, "\"${item.path.take(200)}\" is not a PDF file this application reads, or is too large.")
+                if (pdf.pageSizesMm.isEmpty() || pdf.pageSizesMm.size > MAX_PDF_PAGES) {
+                    throw AgentToolException(AgentErrorCode.REFUSED, "A PDF imported has from 1 to $MAX_PDF_PAGES pages.")
+                }
+                item.copy(path = pdf.path, hash = pdf.hash, pageSizes = pdf.pageSizesMm.map { (width, height) -> listOf(width, height) })
+            }
+        }
+        return withImages(open, withPdfs, keep)
     }
 
     /**
@@ -169,7 +230,7 @@ internal class ProposalTools(
         put("description", "What to do, in order. Text is the Markdown of the notebook, with LaTeX formulas between $ signs; a numbered list in a style of its own has two spaces after its markers, as in `a.  text`, `I.  text`, `1)  text`; a checklist is `- [ ] to do`, `- [x] done`.")
         putJsonObject("items") {
             put("type", "object")
-            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?, area?, font_size?, color?, width?, style_from?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it (after the page of near, when given); near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. where inside, with page and area ({x, y, width, height}), puts it in that area instead, at its top-left corner and as wide as it, whatever is there: the answer warns with past_area when it is higher than the area and overlaps when it covers something. The application computes the place otherwise, and the size from the page unless you give font_size (points); color is the blue of the models unless given; width (millimeters) is the width of its boxes, never made narrower; style_from is the id of a text box whose size, color and alignment it takes; alignment is start, center or end. Several new pages after the same page keep the order of their items. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?, rotation?, to_page?): moves them by dx and dy millimeters, scales them around the top-left corner of the box holding them and turns them by rotation degrees (clockwise) around its center, staying on the page; to_page puts them on that page instead, at the same place (not a PDF page or a mark of its text). kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"update_text\" (text, base, markdown?, font_size?, color?, alignment?, width?, x?, y?, rotation?, auto_width?): changes a text box in any way with one item: its words, its style, the width its lines wrap on, its top-left corner, in millimeters, and its rotation in degrees; auto_width true makes its box as wide as its longest line again; what is not given stays as it is. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. kind \"set_document_defaults\" (width_mm?, height_mm?, background?: plain, ruled, grid or dotted, spacing_mm?, background_color?): changes the format a new page takes, and the background of the pages that have the one of the document. kind \"restore_pages\" (pages: [id]): puts pages of the trash of the pages (list_removed_pages) back where they were. kind \"add_shape\" (page, shape_kind: line, arrow, double_arrow, rectangle, rounded_rectangle, ellipse, triangle, right_triangle, diamond, pentagon or hexagon, x?, y?, width?, height?, rotation?, from?, to?, color?, fill?, width_mm?, outline?: solid, dashed or dotted, start_head?, end_head?: none, open or filled): draws a shape, a shape of a box in {x, y, width, height} millimeters turned by rotation degrees, a line from [x, y] to [x, y] (an arrow has its head at to), in blue with no fill by default. kind \"update_shape\" (shape, base, shape_kind?, color?, fill?: a color or none, width_mm?, outline?, start_head?, end_head?, from?, to?): changes a shape of read_page (its custom_elements of type drawview.shape): its style, its shape_kind (a line stays a line), the ends of a line; place_elements moves, scales and turns it. kind \"add_markup\" (page, quote, markup_kind: highlight, underline or strikeout, occurrence?, color?): marks a passage of the PDF text of the page (pdf_text of read_page), its occurrence-th one (1 by default); spaces and line breaks count as one space. kind \"restyle_markups\" (page, markups: [{id, base}], markup_kind?, color?): changes marks of read_page; remove_elements removes them. Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
+            put("description", "kind \"replace_text\" (text, base, markdown): replaces a text box, with the base read_page gave. kind \"remove_text\" (text, base): removes one. kind \"insert_text\" (markdown, page?, new_page?, near?, near_area?, where?, area?, font_size?, color?, width?, style_from?): adds text in the free space of a page (default: the last one), going on onto new pages; new_page puts it on a new page after it (after the page of near, when given); near is the id of the text box it is about, near_area ({x, y, width, height} in millimeters, with page) the area it is about, and where (below, the default, or margin) how to go next to it. where inside, with page and area ({x, y, width, height}), puts it in that area instead, at its top-left corner and as wide as it, whatever is there: the answer warns with past_area when it is higher than the area and overlaps when it covers something. The application computes the place otherwise, and the size from the page unless you give font_size (points); color is the blue of the models unless given; width (millimeters) is the width of its boxes, never made narrower; style_from is the id of a text box whose size, color and alignment it takes; alignment is start, center or end. Several new pages after the same page keep the order of their items. kind \"add_page\" (after?): adds a page. kind \"remove_elements\" (page, elements: [{id, base}]): removes elements of any kind from a page. kind \"place_elements\" (page, elements, dx?, dy?, scale?, rotation?, to_page?): moves them by dx and dy millimeters, scales them around the top-left corner of the box holding them and turns them by rotation degrees (clockwise) around its center, staying on the page; to_page puts them on that page instead, at the same place (not a PDF page or a mark of its text). kind \"reorder_elements\" (page, elements, to: front or back): puts them over or under the others. kind \"restyle_text\" (text, base, color?, font_size?, alignment?: start, center or end): changes the style of a text box. kind \"update_text\" (text, base, markdown?, font_size?, color?, alignment?, width?, x?, y?, rotation?, auto_width?): changes a text box in any way with one item: its words, its style, the width its lines wrap on, its top-left corner, in millimeters, and its rotation in degrees; auto_width true makes its box as wide as its longest line again; what is not given stays as it is. kind \"add_stroke\" (page, points: [[x, y], ...] in millimeters, color?, width? in millimeters, tool?: pressure_pen, marker, highlighter or dashed_line): draws a stroke, in blue by default. kind \"restyle_stroke\" (stroke, base, color?, width?): changes the color or width of a stroke, which gets a new id. kind \"add_image\" (path, page?, area?): adds an image file of this computer, in area (its proportions kept) or in the free space of the page. kind \"remove_page\" (page, base): removes a page, to the trash of the pages; a document keeps one page. kind \"move_page\" (page, after?): moves a page after another, or first. kind \"duplicate_page\" (page, after?): adds a copy of a page with all it holds, after it by default. kind \"set_page_format\" (page, base, width_mm?, height_mm?, background?: plain, ruled, grid, dotted or document, spacing_mm?, background_color?): changes the size or the background of a page. kind \"rename_document\" (title): renames the document. kind \"set_document_defaults\" (width_mm?, height_mm?, background?: plain, ruled, grid or dotted, spacing_mm?, background_color?): changes the format a new page takes, and the background of the pages that have the one of the document. kind \"restore_pages\" (pages: [id]): puts pages of the trash of the pages (list_removed_pages) back where they were. kind \"add_shape\" (page, shape_kind: line, arrow, double_arrow, rectangle, rounded_rectangle, ellipse, triangle, right_triangle, diamond, pentagon or hexagon, x?, y?, width?, height?, rotation?, from?, to?, color?, fill?, width_mm?, outline?: solid, dashed or dotted, start_head?, end_head?: none, open or filled): draws a shape, a shape of a box in {x, y, width, height} millimeters turned by rotation degrees, a line from [x, y] to [x, y] (an arrow has its head at to), in blue with no fill by default. kind \"update_shape\" (shape, base, shape_kind?, color?, fill?: a color or none, width_mm?, outline?, start_head?, end_head?, from?, to?): changes a shape of read_page (its custom_elements of type drawview.shape): its style, its shape_kind (a line stays a line), the ends of a line; place_elements moves, scales and turns it. kind \"add_markup\" (page, quote, markup_kind: highlight, underline or strikeout, occurrence?, color?): marks a passage of the PDF text of the page (pdf_text of read_page), its occurrence-th one (1 by default); spaces and line breaks count as one space. kind \"restyle_markups\" (page, markups: [{id, base}], markup_kind?, color?): changes marks of read_page; remove_elements removes them. kind \"copy_elements\" (from_document, from_page, elements: [{id, base}], page, dx?, dy?): copies elements of a page of a document you may read (this one too) onto a page of this one, moved by dx and dy millimeters, under new ids (proposal_status gives them). kind \"copy_pages\" (from_document, pages: [id], after?): copies pages with all they hold after a page of this one (default: the last). kind \"import_pdf\" (path, after?): adds a page for each page of a PDF file of this computer, after a page (default: the last). Colors are #RRGGBB or #RRGGBBAA; the bases are those read_page gave.")
             putJsonObject("properties") {
                 putJsonObject("kind") {
                     put("type", "string")
@@ -197,6 +258,9 @@ internal class ProposalTools(
                         add(JsonPrimitive("update_shape"))
                         add(JsonPrimitive("add_markup"))
                         add(JsonPrimitive("restyle_markups"))
+                        add(JsonPrimitive("copy_elements"))
+                        add(JsonPrimitive("copy_pages"))
+                        add(JsonPrimitive("import_pdf"))
                     }
                 }
             }

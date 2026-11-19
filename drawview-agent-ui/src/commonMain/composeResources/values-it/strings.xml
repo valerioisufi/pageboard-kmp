@@ -33,6 +33,9 @@
     <string name="agent_item_update_shape">Modifica una forma</string>
     <string name="agent_item_add_markup">Segna un passaggio del PDF</string>
     <string name="agent_item_restyle_markups">Modifica segni del PDF</string>
+    <string name="agent_item_copy_elements">Copia elementi da un documento</string>
+    <string name="agent_item_copy_pages">Copia pagine da un documento</string>
+    <string name="agent_item_import_pdf">Importa un file PDF</string>
     <string name="agent_item_stale">Questo testo è cambiato dopo che il modello l\'ha letto: non verrà sovrascritto.</string>
     <string name="agent_item_stale_other">Questo è cambiato dopo che il modello l\'ha letto, oppure non c\'è più: non verrà toccato.</string>
     <string name="agent_outcome_accepted">Applicato</string>
@@ -79,6 +82,8 @@
     <string name="agent_library_move_folder">Sposta la cartella “%1$s” in %2$s</string>
     <string name="agent_library_trash_folder">Sposta nel cestino la cartella “%1$s” e tutto ciò che contiene</string>
     <string name="agent_library_restore">Ripristina “%1$s” dal cestino</string>
+    <string name="agent_library_duplicate_document">Crea una copia di “%1$s”</string>
+    <string name="agent_library_import_archive">Porta le note dell\'archivio “%1$s” in %2$s</string>
     <string name="agent_activity_title">Modificato dai modelli</string>
     <plurals name="agent_activity_changes">
         <item quantity="one">%1$d modifica, da %2$s</item>

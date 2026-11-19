@@ -55,12 +55,12 @@ internal class LibraryTools(
                 put("description", "What to do, in order.")
                 putJsonObject("items") {
                     put("type", "object")
-                    put("description", "kind \"create_document\" (title, folder?, width_mm?, height_mm?, background?: plain, ruled, grid or dotted, spacing_mm?, background_color?: #RRGGBB). kind \"move_document\" (document, folder?: none for the root). kind \"trash_document\" (document). kind \"create_folder\" (name, parent?). kind \"rename_folder\" (folder, name). kind \"move_folder\" (folder, parent?). kind \"trash_folder\" (folder): with all it holds. kind \"restore\" (item): an item of list_trash, back where it was. Folders need the user to have allowed all the documents.")
+                    put("description", "kind \"create_document\" (title, folder?, width_mm?, height_mm?, background?: plain, ruled, grid or dotted, spacing_mm?, background_color?: #RRGGBB). kind \"move_document\" (document, folder?: none for the root). kind \"trash_document\" (document). kind \"create_folder\" (name, parent?). kind \"rename_folder\" (folder, name). kind \"move_folder\" (folder, parent?). kind \"trash_folder\" (folder): with all it holds. kind \"restore\" (item): an item of list_trash, back where it was. kind \"duplicate_document\" (document, title?, folder?): a copy of a document with all its pages, in its folder by default. kind \"import_archive\" (path, folder?): the notes of an archive of the application (.drawview) of this computer, in a new folder. Folders need the user to have allowed all the documents.")
                     putJsonObject("properties") {
                         putJsonObject("kind") {
                             put("type", "string")
                             putJsonArray("enum") {
-                                listOf("create_document", "move_document", "trash_document", "create_folder", "rename_folder", "move_folder", "trash_folder", "restore")
+                                listOf("create_document", "move_document", "trash_document", "create_folder", "rename_folder", "move_folder", "trash_folder", "restore", "duplicate_document", "import_archive")
                                     .forEach { add(JsonPrimitive(it)) }
                             }
                         }
@@ -101,6 +101,15 @@ internal class LibraryTools(
                     if (item.folder != null) requireAllDocuments()
                 }
                 is LibraryItem.TrashDocument -> document(item.document)
+                is LibraryItem.DuplicateDocument -> {
+                    document(item.document)
+                    if (item.folder != null) requireAllDocuments()
+                }
+                // Its notes come in a folder made for them
+                is LibraryItem.ImportArchive -> {
+                    if (engines.files == null) throw AgentToolException(AgentErrorCode.UNAVAILABLE, "This application does not import archives.")
+                    requireAllDocuments()
+                }
                 is LibraryItem.CreateFolder, is LibraryItem.RenameFolder, is LibraryItem.MoveFolder, is LibraryItem.TrashFolder -> requireAllDocuments()
                 is LibraryItem.Restore -> {
                     val trashed = documents.store.trash.first().firstOrNull { it.id == item.item }

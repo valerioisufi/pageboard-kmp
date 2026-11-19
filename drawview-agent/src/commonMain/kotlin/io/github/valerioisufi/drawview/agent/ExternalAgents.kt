@@ -70,7 +70,7 @@ public class ExternalAgents(
         }
     }
 
-    private val libraryApplier = LibraryApplier()
+    private val libraryApplier = LibraryApplier(engines)
 
     private val applier = ProposalApplier(engines)
     private val planner = ProposalPlanner(engines)
@@ -95,6 +95,8 @@ public class ExternalAgents(
         val placed = mutableMapOf<Int, List<PlannedPiece>>()
         val changed = mutableMapOf<Int, List<ElementRef>>()
         if (indexes.isNotEmpty()) {
+            val items = indexes.map { proposal.entries[it].item }
+            val copies = CopyItems.copiesOf(documents, items) { access.allows(it) }
             val open = documents.open(proposal.documentId)
             if (open == null) {
                 indexes.forEach { outcomes[it] = ItemOutcome.STALE }
@@ -107,7 +109,7 @@ public class ExternalAgents(
                         val observer = ChangeObserver { committed -> if (committed.origin == ChangeOrigin.LOCAL) stamp = committed.operation.stamp }
                         session.addObserver(observer)
                         try {
-                            applier.apply(session, indexes.map { proposal.entries[it].item }, places) to stamp
+                            applier.apply(session, items, places, copies) to stamp
                         } finally {
                             session.removeObserver(observer)
                         }

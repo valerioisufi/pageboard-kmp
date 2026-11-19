@@ -2,6 +2,10 @@ package io.github.valerioisufi.pencilnotes
 
 import io.github.valerioisufi.drawview.agent.AgentEndpoint
 import io.github.valerioisufi.drawview.agent.AgentEngines
+import io.github.valerioisufi.drawview.agent.AgentFiles
+import io.github.valerioisufi.drawview.agent.AgentPdf
+import io.github.valerioisufi.drawview.export.ArchiveException
+import io.github.valerioisufi.drawview.export.ArchiveImporter
 import io.github.valerioisufi.drawview.agent.AgentImage
 import io.github.valerioisufi.drawview.agent.AgentImages
 import io.github.valerioisufi.drawview.agent.AgentJournal
@@ -68,6 +72,21 @@ class PencilNotesAgents(
 
                 override suspend fun bytes(path: String, maxBytes: Int): ByteArray? =
                     withContext(Dispatchers.Default) { readFile(path, maxBytes.toLong()) }
+            },
+            files = object : AgentFiles {
+                override suspend fun readPdf(path: String): AgentPdf? = pdf(path, keep = false)
+
+                override suspend fun keepPdf(path: String): AgentPdf? = pdf(path, keep = true)
+
+                override suspend fun importArchive(path: String, parentId: String?): String? = withContext(Dispatchers.Default) {
+                    val bytes = readFile(path, MAX_ARCHIVE_BYTES) ?: return@withContext null
+                    val name = PlatformFiles.name(path).substringBeforeLast('.').ifBlank { "Archive" }
+                    try {
+                        ArchiveImporter(PencilNotesData.documents).import(bytes, name, parentId).folderId
+                    } catch (_: ArchiveException) {
+                        null
+                    }
+                }
             }
         ),
         journal = journal
@@ -110,6 +129,31 @@ class PencilNotesAgents(
         AgentImage(kept, hash, bitmap.width, bitmap.height)
     }
 
+    /**
+     * The PDF at [path], read by PDFium to be sure it is one and to know its pages; [keep]: copied among
+     * the files of the documents, as the editor imports one.
+     */
+    private suspend fun pdf(path: String, keep: Boolean): AgentPdf? = withContext(Dispatchers.Default) {
+        val bytes = readFile(path, MAX_PDF_BYTES) ?: return@withContext null
+        val hash = Sha256.of(bytes)
+        val kept = PencilNotesData.documents.fileWithContent(hash)?.takeIf { PlatformFiles.exists(it) }
+            ?: if (!keep) path else newResourcePath("pdf", "pdf").takeIf { PlatformFiles.writeBytes(it, bytes) } ?: return@withContext null
+        val adapter = PdfiumEngine.createTileAdapter() ?: return@withContext null
+        val sizes = try {
+            adapter.getPageSizesMm(kept)
+        } catch (_: Throwable) {
+            emptyList()
+        } finally {
+            adapter.close()
+        }
+        if (sizes.isEmpty()) {
+            // Not a PDF: the copy is not kept, unless a document has the same content
+            if (keep && kept != path && PencilNotesData.documents.fileWithContent(hash) != kept) PlatformFiles.delete(kept)
+            return@withContext null
+        }
+        AgentPdf(kept, hash, sizes)
+    }
+
     private fun extensionOf(path: String): String =
         path.substringAfterLast('.', "").lowercase().takeIf { it in IMAGE_EXTENSIONS } ?: "png"
 
@@ -125,6 +169,8 @@ class PencilNotesAgents(
     private companion object {
         const val SEARCH_OVERFETCH = 5
         const val MAX_IMAGE_BYTES = 32L * 1024 * 1024
+        const val MAX_PDF_BYTES = 256L * 1024 * 1024
+        const val MAX_ARCHIVE_BYTES = 512L * 1024 * 1024
         val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "webp", "gif", "bmp")
     }
 }

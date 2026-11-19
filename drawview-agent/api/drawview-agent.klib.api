@@ -92,6 +92,12 @@ abstract interface io.github.valerioisufi.drawview.agent/AgentEditors { // io.gi
     abstract fun textHeight(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float): kotlin/Float? // io.github.valerioisufi.drawview.agent/AgentEditors.textHeight|textHeight(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.agent/AgentFiles { // io.github.valerioisufi.drawview.agent/AgentFiles|null[0]
+    abstract suspend fun importArchive(kotlin/String, kotlin/String?): kotlin/String? // io.github.valerioisufi.drawview.agent/AgentFiles.importArchive|importArchive(kotlin.String;kotlin.String?){}[0]
+    abstract suspend fun keepPdf(kotlin/String): io.github.valerioisufi.drawview.agent/AgentPdf? // io.github.valerioisufi.drawview.agent/AgentFiles.keepPdf|keepPdf(kotlin.String){}[0]
+    abstract suspend fun readPdf(kotlin/String): io.github.valerioisufi.drawview.agent/AgentPdf? // io.github.valerioisufi.drawview.agent/AgentFiles.readPdf|readPdf(kotlin.String){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.agent/AgentImages { // io.github.valerioisufi.drawview.agent/AgentImages|null[0]
     abstract suspend fun keep(kotlin/String): io.github.valerioisufi.drawview.agent/AgentImage? // io.github.valerioisufi.drawview.agent/AgentImages.keep|keep(kotlin.String){}[0]
     abstract suspend fun read(kotlin/String): io.github.valerioisufi.drawview.agent/AgentImage? // io.github.valerioisufi.drawview.agent/AgentImages.read|read(kotlin.String){}[0]
@@ -187,6 +193,67 @@ sealed interface io.github.valerioisufi.drawview.agent/LibraryItem { // io.githu
 
         final object Companion { // io.github.valerioisufi.drawview.agent/LibraryItem.CreateFolder.Companion|null[0]
             final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/LibraryItem.CreateFolder> // io.github.valerioisufi.drawview.agent/LibraryItem.CreateFolder.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class DuplicateDocument : io.github.valerioisufi.drawview.agent/LibraryItem { // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument|null[0]
+        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+
+        final val document // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.document|{}document[0]
+            final fun <get-document>(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.document.<get-document>|<get-document>(){}[0]
+        final val folder // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.folder|{}folder[0]
+            final fun <get-folder>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.folder.<get-folder>|<get-folder>(){}[0]
+        final val title // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.title|{}title[0]
+            final fun <get-title>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.title.<get-title>|<get-title>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.component2|component2(){}[0]
+        final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.component3|component3(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.copy|copy(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument> { // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument) // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.LibraryItem.DuplicateDocument){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument> // io.github.valerioisufi.drawview.agent/LibraryItem.DuplicateDocument.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class ImportArchive : io.github.valerioisufi.drawview.agent/LibraryItem { // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive|null[0]
+        constructor <init>(kotlin/String, kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+        final val folder // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.folder|{}folder[0]
+            final fun <get-folder>(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.folder.<get-folder>|<get-folder>(){}[0]
+        final val path // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.path|{}path[0]
+            final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.path.<get-path>|<get-path>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.component2|component2(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.copy|copy(kotlin.String;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive> { // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive) // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.LibraryItem.ImportArchive){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive> // io.github.valerioisufi.drawview.agent/LibraryItem.ImportArchive.Companion.serializer|serializer(){}[0]
         }
     }
 
@@ -683,6 +750,83 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
         }
     }
 
+    final class CopyElements : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef>, kotlin/String, kotlin/Float = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.String;kotlin.Float;kotlin.Float){}[0]
+
+        final val dx // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.dx|{}dx[0]
+            final fun <get-dx>(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.dx.<get-dx>|<get-dx>(){}[0]
+        final val dy // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.dy|{}dy[0]
+            final fun <get-dy>(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.dy.<get-dy>|<get-dy>(){}[0]
+        final val elements // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.elements|{}elements[0]
+            final fun <get-elements>(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.elements.<get-elements>|<get-elements>(){}[0]
+        final val fromDocument // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.fromDocument|{}fromDocument[0]
+            final fun <get-fromDocument>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.fromDocument.<get-fromDocument>|<get-fromDocument>(){}[0]
+        final val fromPage // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.fromPage|{}fromPage[0]
+            final fun <get-fromPage>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.fromPage.<get-fromPage>|<get-fromPage>(){}[0]
+        final val page // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.page|{}page[0]
+            final fun <get-page>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.page.<get-page>|<get-page>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component1|component1(){}[0]
+        final fun component2(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component2|component2(){}[0]
+        final fun component3(): kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component3|component3(){}[0]
+        final fun component4(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component4|component4(){}[0]
+        final fun component5(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component5|component5(){}[0]
+        final fun component6(): kotlin/Float // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.component6|component6(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.agent/ElementRef> = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ElementRef>;kotlin.String;kotlin.Float;kotlin.Float){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements> { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements) // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.CopyElements){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.Companion|null[0]
+            final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyElements.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class CopyPages : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages|null[0]
+        constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+
+        final val after // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.after|{}after[0]
+            final fun <get-after>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.after.<get-after>|<get-after>(){}[0]
+        final val fromDocument // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.fromDocument|{}fromDocument[0]
+            final fun <get-fromDocument>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.fromDocument.<get-fromDocument>|<get-fromDocument>(){}[0]
+        final val pages // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.pages|{}pages[0]
+            final fun <get-pages>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.pages.<get-pages>|<get-pages>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.component1|component1(){}[0]
+        final fun component2(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.component2|component2(){}[0]
+        final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.component3|component3(){}[0]
+        final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages> { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages) // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.CopyPages){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.Companion|null[0]
+            final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages> // io.github.valerioisufi.drawview.agent/ProposalItem.CopyPages.Companion.serializer|serializer(){}[0]
+        }
+    }
+
     final class DuplicatePage : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.DuplicatePage|null[0]
         constructor <init>(kotlin/String, kotlin/String? = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.DuplicatePage.<init>|<init>(kotlin.String;kotlin.String?){}[0]
 
@@ -709,6 +853,43 @@ sealed interface io.github.valerioisufi.drawview.agent/ProposalItem { // io.gith
 
         final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.DuplicatePage.Companion|null[0]
             final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.DuplicatePage> // io.github.valerioisufi.drawview.agent/ProposalItem.DuplicatePage.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class ImportPdf : io.github.valerioisufi.drawview.agent/ProposalItem { // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf|null[0]
+        constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String = ..., kotlin.collections/List<kotlin.collections/List<kotlin/Float>> = ...) // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String;kotlin.collections.List<kotlin.collections.List<kotlin.Float>>){}[0]
+
+        final val after // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.after|{}after[0]
+            final fun <get-after>(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.after.<get-after>|<get-after>(){}[0]
+        final val hash // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.hash|{}hash[0]
+            final fun <get-hash>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.hash.<get-hash>|<get-hash>(){}[0]
+        final val pageSizes // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.pageSizes|{}pageSizes[0]
+            final fun <get-pageSizes>(): kotlin.collections/List<kotlin.collections/List<kotlin/Float>> // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.pageSizes.<get-pageSizes>|<get-pageSizes>(){}[0]
+        final val path // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.path|{}path[0]
+            final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.path.<get-path>|<get-path>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.component2|component2(){}[0]
+        final fun component3(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.component3|component3(){}[0]
+        final fun component4(): kotlin.collections/List<kotlin.collections/List<kotlin/Float>> // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.component4|component4(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String = ..., kotlin.collections/List<kotlin.collections/List<kotlin/Float>> = ...): io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.copy|copy(kotlin.String;kotlin.String?;kotlin.String;kotlin.collections.List<kotlin.collections.List<kotlin.Float>>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf> { // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer|null[0]
+            final val descriptor // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf) // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.agent.ProposalItem.ImportPdf){}[0]
+        }
+
+        final object Companion { // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.Companion|null[0]
+            final val $childSerializers // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf> // io.github.valerioisufi.drawview.agent/ProposalItem.ImportPdf.Companion.serializer|serializer(){}[0]
         }
     }
 
@@ -1539,12 +1720,14 @@ final class io.github.valerioisufi.drawview.agent/AgentEndpointConnection { // i
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentEngines { // io.github.valerioisufi.drawview.agent/AgentEngines|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.agent/AgentEditors? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/AgentSearchHit>>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Int, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray?>? = ..., io.github.valerioisufi.drawview.agent/AgentImages? = ..., kotlin/Float = ..., kotlin/Function0<io.github.valerioisufi.drawview.agent/PageEngine?>? = ..., io.github.valerioisufi.drawview.agent/AgentFiles? = ...) // io.github.valerioisufi.drawview.agent/AgentEngines.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEditors?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.collections.Set<kotlin.String>,kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.AgentSearchHit>>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Int,kotlin.String?>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.String?>?;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.Int,kotlin.ByteArray?>?;io.github.valerioisufi.drawview.agent.AgentImages?;kotlin.Float;kotlin.Function0<io.github.valerioisufi.drawview.agent.PageEngine?>?;io.github.valerioisufi.drawview.agent.AgentFiles?){}[0]
 
     final val defaultTextSize // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize|{}defaultTextSize[0]
         final fun <get-defaultTextSize>(): kotlin/Float // io.github.valerioisufi.drawview.agent/AgentEngines.defaultTextSize.<get-defaultTextSize>|<get-defaultTextSize>(){}[0]
     final val editors // io.github.valerioisufi.drawview.agent/AgentEngines.editors|{}editors[0]
         final fun <get-editors>(): io.github.valerioisufi.drawview.agent/AgentEditors? // io.github.valerioisufi.drawview.agent/AgentEngines.editors.<get-editors>|<get-editors>(){}[0]
+    final val files // io.github.valerioisufi.drawview.agent/AgentEngines.files|{}files[0]
+        final fun <get-files>(): io.github.valerioisufi.drawview.agent/AgentFiles? // io.github.valerioisufi.drawview.agent/AgentEngines.files.<get-files>|<get-files>(){}[0]
     final val handwriting // io.github.valerioisufi.drawview.agent/AgentEngines.handwriting|{}handwriting[0]
         final fun <get-handwriting>(): kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/String?>? // io.github.valerioisufi.drawview.agent/AgentEngines.handwriting.<get-handwriting>|<get-handwriting>(){}[0]
     final val images // io.github.valerioisufi.drawview.agent/AgentEngines.images|{}images[0]
@@ -1608,6 +1791,17 @@ final class io.github.valerioisufi.drawview.agent/AgentImage { // io.github.vale
         final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentImage.path.<get-path>|<get-path>(){}[0]
     final val widthPx // io.github.valerioisufi.drawview.agent/AgentImage.widthPx|{}widthPx[0]
         final fun <get-widthPx>(): kotlin/Int // io.github.valerioisufi.drawview.agent/AgentImage.widthPx.<get-widthPx>|<get-widthPx>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.agent/AgentPdf { // io.github.valerioisufi.drawview.agent/AgentPdf|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/Float, kotlin/Float>>) // io.github.valerioisufi.drawview.agent/AgentPdf.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.Float,kotlin.Float>>){}[0]
+
+    final val hash // io.github.valerioisufi.drawview.agent/AgentPdf.hash|{}hash[0]
+        final fun <get-hash>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentPdf.hash.<get-hash>|<get-hash>(){}[0]
+    final val pageSizesMm // io.github.valerioisufi.drawview.agent/AgentPdf.pageSizesMm|{}pageSizesMm[0]
+        final fun <get-pageSizesMm>(): kotlin.collections/List<kotlin/Pair<kotlin/Float, kotlin/Float>> // io.github.valerioisufi.drawview.agent/AgentPdf.pageSizesMm.<get-pageSizesMm>|<get-pageSizesMm>(){}[0]
+    final val path // io.github.valerioisufi.drawview.agent/AgentPdf.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.agent/AgentPdf.path.<get-path>|<get-path>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.agent/AgentSearchHit { // io.github.valerioisufi.drawview.agent/AgentSearchHit|null[0]
@@ -1896,7 +2090,7 @@ final class io.github.valerioisufi.drawview.agent/Proposal { // io.github.valeri
 final class io.github.valerioisufi.drawview.agent/ProposalApplier { // io.github.valerioisufi.drawview.agent/ProposalApplier|null[0]
     constructor <init>(io.github.valerioisufi.drawview.agent/AgentEngines = ...) // io.github.valerioisufi.drawview.agent/ProposalApplier.<init>|<init>(io.github.valerioisufi.drawview.agent.AgentEngines){}[0]
 
-    final fun apply(io.github.valerioisufi.drawview.model.change/DocumentSession, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ProposalItem>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ...): io.github.valerioisufi.drawview.agent/AppliedProposal // io.github.valerioisufi.drawview.agent/ProposalApplier.apply|apply(io.github.valerioisufi.drawview.model.change.DocumentSession;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ProposalItem>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>){}[0]
+    final fun apply(io.github.valerioisufi.drawview.model.change/DocumentSession, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ProposalItem>, kotlin.collections/Map<kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ChosenPlace>> = ..., kotlin.collections/Map<kotlin/Int, io.github.valerioisufi.drawview.model.change/CopiedContent> = ...): io.github.valerioisufi.drawview.agent/AppliedProposal // io.github.valerioisufi.drawview.agent/ProposalApplier.apply|apply(io.github.valerioisufi.drawview.model.change.DocumentSession;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ProposalItem>;kotlin.collections.Map<kotlin.Int,kotlin.collections.List<io.github.valerioisufi.drawview.agent.ChosenPlace>>;kotlin.collections.Map<kotlin.Int,io.github.valerioisufi.drawview.model.change.CopiedContent>){}[0]
     final fun staleItems(io.github.valerioisufi.drawview.model/DrawDocument, kotlin.collections/List<io.github.valerioisufi.drawview.agent/ProposalItem>): kotlin.collections/Set<kotlin/Int> // io.github.valerioisufi.drawview.agent/ProposalApplier.staleItems|staleItems(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.collections.List<io.github.valerioisufi.drawview.agent.ProposalItem>){}[0]
 }
 

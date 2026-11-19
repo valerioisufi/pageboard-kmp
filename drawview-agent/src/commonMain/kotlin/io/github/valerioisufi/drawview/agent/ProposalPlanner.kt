@@ -176,7 +176,10 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
                 is ProposalItem.PlaceElements -> planPlace(document, pages, item, measure, grown, chains.value)
                 is ProposalItem.ReorderElements,
                 is ProposalItem.AddStroke, is ProposalItem.RestyleStroke, is ProposalItem.AddImage,
-                is ProposalItem.AddShape, is ProposalItem.UpdateShape, is ProposalItem.RestyleMarkups -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.AddShape, is ProposalItem.UpdateShape, is ProposalItem.RestyleMarkups,
+                is ProposalItem.CopyElements -> PlannedItem(false, emptyList(), 0, emptyList())
+                is ProposalItem.CopyPages -> PlannedItem(false, emptyList(), item.pages.size, emptyList())
+                is ProposalItem.ImportPdf -> PlannedItem(false, emptyList(), item.pageSizes.size, emptyList())
                 is ProposalItem.AddMarkup -> {
                     val page = document.pageById(item.page)!!
                     val passage = MarkupItems.find(document, page, item.quote, item.occurrence, engines)!!
@@ -230,6 +233,12 @@ public class ProposalPlanner(private val engines: AgentEngines = AgentEngines())
         is ProposalItem.UpdateText -> document.findText(item.text)?.second?.base() != item.base
         is ProposalItem.AddStroke -> document.pageById(item.page) == null
         is ProposalItem.AddShape -> document.pageById(item.page) == null
+        is ProposalItem.CopyElements -> document.pageById(item.page) == null
+        is ProposalItem.CopyPages -> item.after != null && document.pageById(item.after) == null
+        is ProposalItem.ImportPdf -> item.pageSizes.isEmpty() || (item.after != null && document.pageById(item.after) == null)
+        is ProposalItem.CopyElements -> document.pageById(item.page) == null
+        is ProposalItem.CopyPages -> item.after != null && document.pageById(item.after) == null
+        is ProposalItem.ImportPdf -> item.pageSizes.isEmpty() || (item.after != null && document.pageById(item.after) == null)
         is ProposalItem.AddMarkup -> document.pageById(item.page)?.let { MarkupItems.find(document, it, item.quote, item.occurrence, engines) } == null
         is ProposalItem.RestyleMarkups -> ElementItems.isStale(document.pageById(item.page), item.markups) ||
             document.pageById(item.page)?.let { MarkupItems.marksOf(it, item.markups) } == null

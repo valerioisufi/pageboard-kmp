@@ -74,6 +74,8 @@ internal class ProposalLimits(
                     if (item.backgroundColor != null && ElementItems.parseColor(item.backgroundColor) == null) refuse("A color is #RRGGBB or #RRGGBBAA.")
                     spacing(item.spacingMm)
                 }
+                is LibraryItem.DuplicateDocument -> item.title?.let { name(it) }
+                is LibraryItem.ImportArchive -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of an archive of the application.")
                 is LibraryItem.CreateFolder -> name(item.name)
                 is LibraryItem.RenameFolder -> name(item.name)
                 else -> {}
@@ -230,6 +232,33 @@ internal class ProposalLimits(
                 color(item.color)
                 if (item.kind == null && item.color == null) refuse("restyle_markups needs markup_kind or color.")
             }
+            is ProposalItem.CopyElements -> {
+                refs(item.elements)
+                if (!item.dx.isFinite() || !item.dy.isFinite()) refuse("dx and dy are millimeters.")
+            }
+            is ProposalItem.CopyPages -> {
+                if (item.pages.isEmpty() || item.pages.size > maxElements) refuse("copy_pages copies from 1 to $maxElements pages.")
+                if (item.pages.toSet().size != item.pages.size) refuse("A page is copied once by an item.")
+            }
+            is ProposalItem.ImportPdf -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of a PDF file.")
+            is ProposalItem.CopyElements -> {
+                refs(item.elements)
+                if (!item.dx.isFinite() || !item.dy.isFinite()) refuse("dx and dy are millimeters.")
+            }
+            is ProposalItem.CopyPages -> {
+                if (item.pages.isEmpty() || item.pages.size > maxElements) refuse("copy_pages copies from 1 to $maxElements pages.")
+                if (item.pages.toSet().size != item.pages.size) refuse("A page is copied once by an item.")
+            }
+            is ProposalItem.ImportPdf -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of a PDF file.")
+            is ProposalItem.CopyElements -> {
+                refs(item.elements)
+                if (!item.dx.isFinite() || !item.dy.isFinite()) refuse("dx and dy are millimeters.")
+            }
+            is ProposalItem.CopyPages -> {
+                if (item.pages.isEmpty() || item.pages.size > maxElements) refuse("copy_pages copies from 1 to $maxElements pages.")
+                if (item.pages.toSet().size != item.pages.size) refuse("A page is copied once by an item.")
+            }
+            is ProposalItem.ImportPdf -> if (item.path.isBlank() || item.path.length > MAX_PATH_LENGTH) refuse("path is the path of a PDF file.")
             is ProposalItem.UpdateShape -> {
                 if (item.kind != null && item.kind !in ShapeItems.KINDS) refuse("shape_kind is ${ShapeItems.KINDS.keys.joinToString(", ")}.")
                 shapeStyle(item.color, item.widthMm, item.outline, item.startHead, item.endHead)
@@ -349,6 +378,42 @@ internal fun DrawDocument.beforeOf(item: ProposalItem): String? {
             null
         }
         is ProposalItem.SetDocumentDefaults -> null
+        is ProposalItem.CopyElements -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            null
+        }
+        is ProposalItem.CopyPages -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.ImportPdf -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.CopyElements -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            null
+        }
+        is ProposalItem.CopyPages -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.ImportPdf -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.CopyElements -> {
+            pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
+            null
+        }
+        is ProposalItem.CopyPages -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
+        is ProposalItem.ImportPdf -> {
+            if (item.after != null) pageById(item.after) ?: missing("page \"${item.after.take(64)}\"")
+            null
+        }
         is ProposalItem.AddMarkup -> {
             val page = pageById(item.page) ?: missing("page \"${item.page.take(64)}\"")
             if (page.pdfs.none { it.removed == null }) throw AgentToolException(AgentErrorCode.REFUSED, "This page shows no PDF page: only the text of a PDF is marked.")
@@ -466,6 +531,15 @@ internal fun DrawDocument.pageIndexOf(item: ProposalItem): Int? {
         is ProposalItem.RestyleStroke -> ElementItems.findStroke(this, item.stroke)?.first?.id
         is ProposalItem.AddShape -> item.page
         is ProposalItem.AddMarkup -> item.page
+        is ProposalItem.CopyElements -> item.page
+        is ProposalItem.CopyPages -> item.after
+        is ProposalItem.ImportPdf -> item.after
+        is ProposalItem.CopyElements -> item.page
+        is ProposalItem.CopyPages -> item.after
+        is ProposalItem.ImportPdf -> item.after
+        is ProposalItem.CopyElements -> item.page
+        is ProposalItem.CopyPages -> item.after
+        is ProposalItem.ImportPdf -> item.after
         is ProposalItem.RestyleMarkups -> item.page
         is ProposalItem.UpdateShape -> ShapeItems.findShape(this, item.shape)?.first?.id
         else -> null

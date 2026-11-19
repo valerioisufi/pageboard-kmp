@@ -33,6 +33,9 @@
     <string name="agent_item_update_shape">Change a shape</string>
     <string name="agent_item_add_markup">Mark a passage of the PDF</string>
     <string name="agent_item_restyle_markups">Change marks of the PDF</string>
+    <string name="agent_item_copy_elements">Copy elements from a document</string>
+    <string name="agent_item_copy_pages">Copy pages from a document</string>
+    <string name="agent_item_import_pdf">Import a PDF file</string>
     <string name="agent_item_stale">This text changed after the model read it: it will not be overwritten.</string>
     <string name="agent_item_stale_other">This changed after the model read it, or is gone: it will not be touched.</string>
     <string name="agent_outcome_accepted">Applied</string>
@@ -79,6 +82,8 @@
     <string name="agent_library_move_folder">Move the folder “%1$s” to %2$s</string>
     <string name="agent_library_trash_folder">Move the folder “%1$s” and all it holds to the trash</string>
     <string name="agent_library_restore">Put “%1$s” back from the trash</string>
+    <string name="agent_library_duplicate_document">Make a copy of “%1$s”</string>
+    <string name="agent_library_import_archive">Bring the notes of the archive “%1$s” into %2$s</string>
     <string name="agent_activity_title">Changed by models</string>
     <plurals name="agent_activity_changes">
         <item quantity="one">%1$d change, by %2$s</item>

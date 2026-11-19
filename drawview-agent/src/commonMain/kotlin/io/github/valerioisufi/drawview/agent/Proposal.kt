@@ -316,6 +316,46 @@ public sealed interface ProposalItem {
         val color: String? = null
     ) : ProposalItem
 
+    /**
+     * Copies [elements] of the page [fromPage] of the document [fromDocument], as they were when read,
+     * onto the page [page] of this document, moved by [dx] and [dy] millimeters, on top of what is there.
+     */
+    @Serializable
+    @SerialName("copy_elements")
+    public data class CopyElements(
+        @SerialName("from_document") val fromDocument: String,
+        @SerialName("from_page") val fromPage: String,
+        val elements: List<ElementRef>,
+        val page: String,
+        val dx: Float = 0f,
+        val dy: Float = 0f
+    ) : ProposalItem
+
+    /** Copies the pages [pages] of the document [fromDocument], with all they hold, after the page [after] (`null`: the last one). */
+    @Serializable
+    @SerialName("copy_pages")
+    public data class CopyPages(
+        @SerialName("from_document") val fromDocument: String,
+        val pages: List<String>,
+        val after: String? = null
+    ) : ProposalItem
+
+    /**
+     * Adds a page for each page of the PDF file [path], after the page [after] (`null`: the last one).
+     *
+     * Once proposed, [path] is the copy the application keeps among the files of the documents, [hash]
+     * its content and [pageSizes] the size of each of its pages in millimeters: what a client sends for
+     * them is replaced.
+     */
+    @Serializable
+    @SerialName("import_pdf")
+    public data class ImportPdf(
+        val path: String,
+        val after: String? = null,
+        val hash: String = "",
+        @SerialName("page_sizes") val pageSizes: List<List<Float>> = emptyList()
+    ) : ProposalItem
+
     /** Puts the pages [pages] of the trash of the pages back where they were. */
     @Serializable
     @SerialName("restore_pages")
