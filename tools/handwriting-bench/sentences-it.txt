@@ -1,0 +1,60 @@
+Il limite di una funzione in un punto
+se esiste è unico
+Teorema di Weierstrass: una funzione continua
+su un intervallo chiuso ha massimo e minimo
+la derivata è il limite del rapporto incrementale
+Esercizio 3: calcolare l'integrale per parti
+ricordare il cambio di variabile
+la serie geometrica converge se la ragione è minore di 1
+criterio del rapporto e criterio della radice
+Fisica: la forza è la derivata della quantità di moto
+il lavoro non dipende dal percorso se la forza è conservativa
+energia cinetica più energia potenziale è costante
+attrito dinamico e attrito statico
+il campo elettrico di una carica puntiforme
+legge di Gauss per il campo elettrico
+la corrente è la carica che attraversa una sezione
+circuito con due resistenze in serie
+Sistemi operativi: il processo e il thread
+lo scheduler sceglie il prossimo processo
+la memoria virtuale divide lo spazio in pagine
+page fault quando la pagina non è in memoria
+il semaforo protegge la sezione critica
+deadlock: attesa circolare tra processi
+Basi di dati: la chiave primaria identifica la riga
+la forma normale di Boyce e Codd
+una transazione è atomica e isolata
+l'indice velocizza la ricerca ma rallenta le scritture
+Algoritmi: la ricerca binaria richiede un vettore ordinato
+il costo è logaritmico nel numero di elementi
+ordinamento per fusione in tempo n log n
+il grafo è connesso se esiste un cammino
+visita in ampiezza con una coda
+la programmazione dinamica salva i risultati parziali
+Reti: il protocollo TCP garantisce la consegna
+l'indirizzo IP identifica l'interfaccia
+la finestra di congestione cresce lentamente
+Chimica: la mole contiene un numero di Avogadro di particelle
+il legame covalente condivide gli elettroni
+pH minore di 7 per una soluzione acida
+Economia: domanda e offerta determinano il prezzo
+il costo marginale è la variazione del costo totale
+Note della lezione di lunedì
+da rivedere per l'esame di giugno
+chiedere al professore la dimostrazione
+pagina 42 del libro, paragrafo 3
+esempio importante, sarà nello scritto
+la dimostrazione è per induzione su n
+caso base n uguale a zero
+passo induttivo: supponiamo vero per n
+quindi vale anche per n più uno
+attenzione al segno meno
+perché la funzione è dispari
+vedi anche l'esercizio della settimana scorsa
+città, università, perché, così, più
+è già stato detto nella lezione precedente
+la velocità media è lo spazio diviso il tempo
+l'accelerazione di gravità vale circa 9,8
+un'onda trasporta energia ma non materia
+il periodo è l'inverso della frequenza
+ogni numero primo maggiore di due è dispari

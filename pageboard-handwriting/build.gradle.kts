@@ -16,3 +16,16 @@ kotlin {
         }
     }
 }
+
+// The bench of the readers (phase 0 of docs/plans/handwriting.md), never run by jvmTest:
+//   ./gradlew :pageboard-handwriting:jvmTest --tests '*HandwritingBench*' -Ppageboard.bench=<directory>
+//     [-Ppageboard.bench.parts=generate,lines,score]
+val benchDirectory = providers.gradleProperty("pageboard.bench")
+tasks.withType<Test>().configureEach {
+    if (benchDirectory.isPresent) {
+        systemProperty("pageboard.bench", benchDirectory.get())
+        systemProperty("pageboard.bench.parts", providers.gradleProperty("pageboard.bench.parts").getOrElse(""))
+        testLogging { showStandardStreams = true }
+        outputs.upToDateWhen { false }
+    }
+}

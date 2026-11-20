@@ -253,7 +253,7 @@ On `feat/handwriting`, one commit a phase, its status here in the same commit.
 
 | Phase | Content | Status |
 |---|---|---|
-| 0 | **Measure first, on ink that exists or is made, none written for the bench.** The formulas: the 60 of `FormulaBench` (MathWriting, real writers). English text: IAM-OnDB (real writers, for research only: it measures, never trains; the registration is the maintainer's), if obtained. Italian text: synthetic ink, the sentences of the typed notes (a copy of the database in a scratch directory) written with a single-stroke script font (Hershey) with random slant, size, spacing, wobble and times. Drawings: Quick, Draw! (CC BY 4.0), set into blocks beside lines of text, to measure `InkLines`. Everything as InkML with its text as the label, the format `FormulaBench` reads. The readers measured on it, each by a small program of its platform in `tools/handwriting-bench` (never shipped): ML Kit on an emulator with Google Play services; PencilKit on macOS 27 and in the simulator of iPadOS 27 (Italian among `supportedLanguages`?); Windows ink in a desktop process; Gemma 4 as today. Synthetic ink is cleaner than real writing: its numbers are an upper bound, said so with the results. The formulas also on the 60 of `FormulaBench`: PencilKit, and the published models on images (Pix2Text MFR, UniMERNet, PP-FormulaNet, Texo; PosFormer and CoMER as references that may not ship), each with the license of its weights and of its training data. The characters and words wrong, the formulas exact, the right word among the candidates, the drawings read as words, the time a line (on the emulator and the computers: no device of the bench runs ML Kit). The results and the choices here; the plan approved again: the readers, Windows, the rules of `InkLines`, the plan of the formulas | Planned |
+| 0 | **Measure first, on ink that exists or is made, none written for the bench.** The formulas: the 60 of `FormulaBench` (MathWriting, real writers). English text: IAM-OnDB (real writers, for research only: it measures, never trains; the registration is the maintainer's), if obtained. Italian text: synthetic ink, the sentences of the typed notes (a copy of the database in a scratch directory) written with a single-stroke script font (Hershey) with random slant, size, spacing, wobble and times. Drawings: Quick, Draw! (CC BY 4.0), set into blocks beside lines of text, to measure `InkLines`. Everything as InkML with its text as the label, the format `FormulaBench` reads. The readers measured on it, each by a small program of its platform in `tools/handwriting-bench` (never shipped): ML Kit on an emulator with Google Play services; PencilKit on macOS 27 and in the simulator of iPadOS 27 (Italian among `supportedLanguages`?); Windows ink in a desktop process; Gemma 4 as today. Synthetic ink is cleaner than real writing: its numbers are an upper bound, said so with the results. The formulas also on the 60 of `FormulaBench`: PencilKit, and the published models on images (Pix2Text MFR, UniMERNet, PP-FormulaNet, Texo; PosFormer and CoMER as references that may not ship), each with the license of its weights and of its training data. The characters and words wrong, the formulas exact, the right word among the candidates, the drawings read as words, the time a line (on the emulator and the computers: no device of the bench runs ML Kit). The results and the choices here; the plan approved again: the readers, Windows, the rules of `InkLines`, the plan of the formulas | Done on Windows for text and drawings (results below); left for the Mac: PencilKit, the formulas (MathWriting and the published models), Gemma 4 on the same lines |
 | 1 | **The headless module and the samples.** `pageboard-handwriting` (`InkSample`, `InkReading`, the two ports, `InkLanguageModels`, `InkLines`, `HandwritingReading`, `HandwritingEngines`); `InkBlock`, `groupStrokes`, `blockKey`, `isHandwriting` moved to `pageboard-model` (`model.ink`); `DocumentStore.loadInk` in the stores, `checkInk`; tests on strokes drawn from shapes and on the InkML of phase 0; `Module.md`, `settings.gradle.kts`, the Dokka aggregate; the ABI of the new module, of model, store, store-room, store-testing, lecture and lecture-ui recorded on purpose | Done before phase 0, whose tools use it: `InkSample.retimed` gives one clock to the strokes (the recorded times start again in each session); `isHandwriting` is `StrokeTool.isHandwriting`; the lines of `InkLines` tested on strokes drawn from shapes, the InkML of phase 0 to come. On Windows: the klib dumps of store-room and lecture edited by hand (to check on the Mac), iOS not compiled |
 | 2 | **Android.** `pageboard-handwriting-mlkit`: ML Kit 19.0.0, `MlKitTextRecognizer`, `MlKitLanguageModels`; the license; run on an emulator with Google Play services, not only compiled; on a device without them the reader has no languages (a test) | Planned |
 | 3 | **Apple.** `pageboard-handwriting-pencilkit`: the Swift bridge built by Gradle into a static library for iOS (cinterop) and into the JNI library of macOS (`buildDesktopNativeLibs`); `PencilKitTextRecognizer` on the systems 27 and later, no languages before; a test reading block capitals drawn as strokes, on the Mac and in the simulator | Planned |
@@ -261,6 +261,42 @@ On `feat/handwriting`, one commit a phase, its status here in the same commit.
 | 5 | **The lecture and the external models.** `HandwritingReader` reads with the readers first, from `NotebookSource.inkSample`; the model reads the blocks without samples, or all of them without a reader of the language; `handwriting.json` as today (a test that the same readings write the same bytes); `AgentEngines.handwriting` from the index for every notebook; tests | Planned |
 | 6 | **Convert a selection.** `EditorEdits.selection` and `EditorExtension.selectionActions` (the ABI of canvas and ui); `pageboard-handwriting-ui`: "Convert to text" in the context menu of a selection of strokes, offered when the device reads the language; the sheet with the reading editable and the other readings; the text box at the place of the strokes, as wide as they are, at `PageTextSizes.handwriting`, in their color; one change to undo (`EditorDocument.group` of `RemoveElements` and `AddElements`, nothing new that travels); the strings in the seven languages; tests (`HandwritingConversionTest`), the screenshots; PencilNotes adds it; tried by hand where a reader runs (the simulator of iPadOS 27, an emulator with Google Play services, macOS 27) | Planned |
 | 7 | **Windows**, if phase 0 says it reads well: `pageboard-handwriting-windows`, C++/WinRT in the JNI library of Windows, the recognizers of the languages installed; a test in a desktop process | Planned |
+
+### Phase 0 results on Windows (2026-11-20)
+
+On a Windows 11 computer (x86-64), the ink made by `HandwritingBench` (`generate`): the 60 Italian
+and 20 English lines of `tools/handwriting-bench` written with the Hershey fonts `scripts` and
+`cursive` (seed 2026), and 40 blocks of two Italian lines beside or under a doodle of Quick, Draw!
+(10 categories, the first 4 of each). IAM-OnDB was not used (it needs a registration).
+
+| Reader | Where | Language | CER | WER | Words among the candidates | Lines exact | Time a line (median / p90) |
+|---|---|---|---|---|---|---|---|
+| ML Kit 19.0.0 | emulator, Android 15, Google Play services, on the computer | Italian | 1.6 % | 8.0 % | 98.1 % | 50 % | 156 / 176 ms |
+| ML Kit 19.0.0 | same | English | 0.7 % | 2.3 % | 99.2 % | 85 % | 162 / 298 ms |
+| Windows ink (`InkRecognizerContainer`, "Riconoscimento grafia italiana Microsoft") | a desktop process | Italian | 2.5 % | 13.0 % | 92.2 % | 40 % | 44 / 57 ms |
+| Windows ink ("Microsoft English (US) Handwriting Recognizer") | same | English | 0.0 % | 0.0 % | 100 % | 100 % | 37 / 57 ms |
+
+* Most errors of both are the `o` of the Hershey script read as `a` ("massima", "processa"): an
+  error of the font more than of the readers. The numbers are an upper bound for real writing.
+* ML Kit downloads its models and reads on an emulator with Google Play services; the time of the
+  emulator is not the time of a tablet.
+* The ink of Windows reads from a desktop process (an STA thread, `tools/handwriting-bench/windows`),
+  with the recognizers installed with the languages of Windows, and gives candidates for each word.
+* `InkLines` on the 40 blocks, before and after its rules were changed by this bench (the bands of
+  the lines made of the middles of their strokes, a stroke touching a drawing without writing
+  beside it part of the drawing):
+
+  | Measure | First rules | Rules now |
+  |---|---|---|
+  | Blocks split into their two lines | 10 of 40 | 34 of 40 |
+  | Doodles left out (half of their strokes or more) | 27 of 40 | 36 of 40 |
+  | Strokes of the doodles left out | 39.5 % | 83.0 % |
+  | Strokes of writing left out by mistake | 0 % | 0 % |
+
+  The doodles left in are made of small strokes (a sun, a bicycle).
+
+Choices, revertible: ML Kit is the reader of Android; the ink of Windows is good enough for phase 7
+(it is faster than ML Kit and a little worse in Italian).
 
 The formulas get a plan of their own after phase 0: a published model that may ship, or one
 trained on data we may use (formulas laid out by MicroTeX and written with permissive glyphs, the

@@ -1,0 +1,20 @@
+The limit of a sequence is unique
+a continuous function on a closed interval
+the derivative of the product rule
+Operating systems manage processes and memory
+the scheduler picks the next ready process
+virtual memory splits the address space into pages
+a binary search needs a sorted array
+merge sort runs in n log n time
+the graph is connected if every pair has a path
+breadth first search uses a queue
+dynamic programming stores partial results
+TCP guarantees the delivery of every segment
+the IP address identifies an interface
+a primary key identifies each row
+transactions are atomic and isolated
+Lecture notes, Monday morning
+review this before the exam
+ask the professor about the proof
+example on page 42, section 3
+the proof goes by induction on n
