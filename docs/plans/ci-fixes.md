@@ -66,7 +66,7 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 | 3 | `check.yml`: `--continue`, the results of failed tests kept | Done |
 | 4 | The references of the screenshots recorded on the runner (label `record-screenshots`) | Done ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44773530808), 27 references; the [first try](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770955493) failed verifying `library-trash` just recorded) |
 | 5 | The klib dumps of the seven modules as the runner writes them; `LectureMarkdown` in common Kotlin | Done |
-| 6 | The runs of the pull request green, linked here | To do |
+| 6 | The runs of the pull request green, linked here | Done on 2157828a: [Check](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44782302360), [Native libraries](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44782302246), [Screenshots](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44782302368) |
 
 ## Decisions
 
