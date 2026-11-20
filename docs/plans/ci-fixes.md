@@ -58,7 +58,7 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 |---|---|---|
 | 1 | This plan | Done |
 | 2 | The klib dump of `pageboard-canvas` in order; `TranscriptionQueueTest` waits for the queue | Done, the test green here (Windows) |
-| 3 | `check.yml`: `--continue`, the results of failed tests kept | To do |
+| 3 | `check.yml`: `--continue`, the results of failed tests kept | Done |
 | 4 | The references of the screenshots recorded on the runner (label `record-screenshots`) | To do |
 | 5 | The runs of the pull request green, linked here | To do |
 

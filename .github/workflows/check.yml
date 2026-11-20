@@ -26,12 +26,21 @@ jobs:
       - uses: ./.github/actions/native-caches
         with:
           key: check
+      # --continue: every failure in one run, not the first one only
       - name: Tests and public API
-        run: ./gradlew jvmTest checkKotlinAbi
+        run: ./gradlew --continue jvmTest checkKotlinAbi
       - name: Every platform
-        run: ./gradlew compileAndroidMain compileKotlinIosSimulatorArm64
+        run: ./gradlew --continue compileAndroidMain compileKotlinIosSimulatorArm64
       - name: The libraries as another developer uses them
         run: ./consumer-checks/check.sh
+      # The logs show the name of an exception only: its message is in these
+      - name: Keep the results of the tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-check
+          path: '*/build/test-results/jvmTest/*.xml'
+          if-no-files-found: ignore
 
   # The APKs of every change, on Linux, for the ABI of the real devices. All the ABIs are checked by
   # native.yml
