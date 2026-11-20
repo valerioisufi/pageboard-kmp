@@ -27,8 +27,8 @@ final enum class io.github.valerioisufi.pageboard.export/ExportFailure : kotlin/
 final enum class io.github.valerioisufi.pageboard.export/ExportFormat : kotlin/Enum<io.github.valerioisufi.pageboard.export/ExportFormat> { // io.github.valerioisufi.pageboard.export/ExportFormat|null[0]
     enum entry ARCHIVE // io.github.valerioisufi.pageboard.export/ExportFormat.ARCHIVE|null[0]
     enum entry COMBINED_PDF // io.github.valerioisufi.pageboard.export/ExportFormat.COMBINED_PDF|null[0]
-    enum entry MARKDOWN // io.github.valerioisufi.pageboard.export/ExportFormat.MARKDOWN|null[0]
     enum entry IMAGES // io.github.valerioisufi.pageboard.export/ExportFormat.IMAGES|null[0]
+    enum entry MARKDOWN // io.github.valerioisufi.pageboard.export/ExportFormat.MARKDOWN|null[0]
     enum entry PDF // io.github.valerioisufi.pageboard.export/ExportFormat.PDF|null[0]
     enum entry PDF_PER_DOCUMENT // io.github.valerioisufi.pageboard.export/ExportFormat.PDF_PER_DOCUMENT|null[0]
 
@@ -41,6 +41,10 @@ final enum class io.github.valerioisufi.pageboard.export/ExportFormat : kotlin/E
     final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.export/ExportFormat> // io.github.valerioisufi.pageboard.export/ExportFormat.values|values#static(){}[0]
 }
 
+abstract fun interface io.github.valerioisufi.pageboard.export/MarkdownAppendix { // io.github.valerioisufi.pageboard.export/MarkdownAppendix|null[0]
+    abstract suspend fun of(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.export/MarkdownAppendix.of|of(kotlin.String){}[0]
+}
+
 abstract interface io.github.valerioisufi.pageboard.export/DocumentExporter { // io.github.valerioisufi.pageboard.export/DocumentExporter|null[0]
     abstract val extension // io.github.valerioisufi.pageboard.export/DocumentExporter.extension|{}extension[0]
         abstract fun <get-extension>(): kotlin/String // io.github.valerioisufi.pageboard.export/DocumentExporter.extension.<get-extension>|<get-extension>(){}[0]
@@ -48,10 +52,6 @@ abstract interface io.github.valerioisufi.pageboard.export/DocumentExporter { //
         abstract fun <get-mimeType>(): kotlin/String // io.github.valerioisufi.pageboard.export/DocumentExporter.mimeType.<get-mimeType>|<get-mimeType>(){}[0]
 
     abstract suspend fun export(io.github.valerioisufi.pageboard.export/DocumentContent, io.github.valerioisufi.pageboard.export/ExportOptions, kotlin/String, kotlin/Function1<kotlin/Float, kotlin/Unit> = ...): io.github.valerioisufi.pageboard.export/ExportResult // io.github.valerioisufi.pageboard.export/DocumentExporter.export|export(io.github.valerioisufi.pageboard.export.DocumentContent;io.github.valerioisufi.pageboard.export.ExportOptions;kotlin.String;kotlin.Function1<kotlin.Float,kotlin.Unit>){}[0]
-}
-
-abstract fun interface io.github.valerioisufi.pageboard.export/MarkdownAppendix { // io.github.valerioisufi.pageboard.export/MarkdownAppendix|null[0]
-    abstract suspend fun of(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.export/MarkdownAppendix.of|of(kotlin.String){}[0]
 }
 
 sealed interface io.github.valerioisufi.pageboard.export/ExportJobState { // io.github.valerioisufi.pageboard.export/ExportJobState|null[0]
@@ -395,6 +395,7 @@ final object io.github.valerioisufi.pageboard.export/ArchiveFormat { // io.githu
         final fun <get-MIME_TYPE>(): kotlin/String // io.github.valerioisufi.pageboard.export/ArchiveFormat.MIME_TYPE.<get-MIME_TYPE>|<get-MIME_TYPE>(){}[0]
     final const val VERSION // io.github.valerioisufi.pageboard.export/ArchiveFormat.VERSION|{}VERSION[0]
         final fun <get-VERSION>(): kotlin/Int // io.github.valerioisufi.pageboard.export/ArchiveFormat.VERSION.<get-VERSION>|<get-VERSION>(){}[0]
+
     final fun folderNameOf(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.export/ArchiveFormat.folderNameOf|folderNameOf(kotlin.String){}[0]
 }
 

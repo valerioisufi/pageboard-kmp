@@ -23,6 +23,7 @@ The runs of `main` (0480bf58) and of the first pull requests of Dependabot, on 2
 | `native.yml`, Desktop windows-x86_64 | failed ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44761228341)) | `TranscriptionQueueTest.theOtherDevicesAreToldWhenATranscriptionStartsNotWhileItWaits`: the test takes an import out of the queue as soon as it is `WAITING`, but the import is `WAITING` a moment before it is put in the queue (`LectureImporter` sets it, then `AssistantWork.enqueueTranscription`); on a slow runner `cancelTranscription` finds nothing to cancel. `aLectureIsTakenOutOfTheQueueWaitingOrRunning` has the same race. The other five desktop jobs, Android and iOS are green |
 | `release.yml` | never run (no tag `pageboard-v*`) | the environment `maven-central` has no secrets (`MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY`, `SIGNING_KEY_PASSWORD`): a release would fail at publishing. A setting for the maintainer, not the repository |
 | CodeQL (default setup) | green | |
+| `check.yml` of this branch, with `--continue` | failed ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770914442)) | what the first failure hid: the klib dumps of `pageboard-canvas`, `-export`, `-export-ui`, `-ui` and `-sync-ui` miss declarations and keep the old order of renamed ones (dumps of Windows, where the klib dumps of the Compose modules come out empty, completed by hand); `pageboard-lecture` does not compile for iOS since fe9aded5 (2026-11-14): `toSortedMap`, of the JVM only, in `LectureMarkdown.kt` of `commonMain`. Never seen: no run had minutes since |
 
 Nothing in `.github/` keeps a `drawview` name, a `-Pdrawview.*` property or the name `DrawView-KMP`.
 
@@ -33,8 +34,8 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 ## Requirements
 
 * Every workflow that can pass on a branch passes: `check.yml`, `screenshots.yml`, `native.yml`.
-* No change to the sync protocol, to a stored format or to the public API (the dump is reordered,
-  not changed).
+* No change to the sync protocol, to a stored format or to the public API (the dumps are reordered
+  and completed, not changed).
 * The references of the screenshots are recorded in their Docker image only (label
   `record-screenshots`), never on Windows.
 * A failure that comes back says why in one run.
@@ -44,6 +45,10 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 * **The klib dump in its order** (Information Expert: the dump is what `updateKotlinAbi` writes on
   macOS): `TextElement` moved between `SetStrokeWidth` and `Translate`, the diff of the run applied
   as it is.
+* **The other klib dumps as the runner writes them**: the diffs printed by `checkKotlinAbi` in
+  the run applied as they are (declarations already in the code, none added or removed).
+* **Common code in common Kotlin**: the notes of a lecture grouped by kind, sorted with
+  `entries.sortedBy`, the same order (`NoteKind.ordinal`) on every platform.
 * **The tests wait for what they act on** (Protected Variations against the speed of the runner):
   `TranscriptionQueueTest` waits until an import is in the queue (`waitsInTheQueue`: `WAITING`
   and its `generating` job set, both on the thread of the state), not only converted.
@@ -59,8 +64,9 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 | 1 | This plan | Done |
 | 2 | The klib dump of `pageboard-canvas` in order; `TranscriptionQueueTest` waits for the queue | Done, the test green here (Windows) |
 | 3 | `check.yml`: `--continue`, the results of failed tests kept | Done |
-| 4 | The references of the screenshots recorded on the runner (label `record-screenshots`) | To do |
-| 5 | The runs of the pull request green, linked here | To do |
+| 4 | The references of the screenshots recorded on the runner (label `record-screenshots`) | Done ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44773530808), 27 references; the [first try](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770955493) failed verifying `library-trash` just recorded) |
+| 5 | The klib dumps of the five modules as the runner writes them; `LectureMarkdown` in common Kotlin | Done |
+| 6 | The runs of the pull request green, linked here | To do |
 
 ## Decisions
 
@@ -74,3 +80,5 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 
 * The secrets of `maven-central` before the first tag `pageboard-v*` (the maintainer).
 * `LanSyncTest` if it fails again, with the results of the run.
+* `AdaptiveScreenshotTest.libraryTrash` differed from the references it had just recorded, once in
+  two runs: a screenshot that may not be the same at every run, to look at if it comes back.

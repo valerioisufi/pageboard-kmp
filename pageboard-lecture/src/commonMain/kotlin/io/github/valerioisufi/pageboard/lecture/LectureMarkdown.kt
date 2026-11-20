@@ -76,7 +76,7 @@ public object LectureMarkdown {
             }
             if (notes.isNotEmpty()) {
                 append("#### ").append(labels.notes).append("\n\n")
-                for ((kind, ofKind) in notes.sortedBy { it.atMs }.groupBy { it.kind }.toSortedMap(compareBy { it.ordinal })) {
+                for ((kind, ofKind) in notes.sortedBy { it.atMs }.groupBy { it.kind }.entries.sortedBy { it.key.ordinal }) {
                     append("##### ").append(labels.kinds[kind] ?: kind.name).append("\n\n")
                     for (note in ofKind) {
                         append("- ")
