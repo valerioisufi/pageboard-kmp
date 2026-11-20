@@ -75,6 +75,8 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
   - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`;
   - `-ml`, `-ml-litert`, `-search` (the local models and the search in the notes, see
     docs/plans/local-models.md and docs/plans/search.md);
+  - `-handwriting`, `-handwriting-mlkit`, `-handwriting-windows` (the handwriting read, see
+    docs/plans/handwriting.md);
   - `-agent` (what an external model reads and proposes, see docs/plans/agent-tools.md).
 
   `pageboard-lecture` keeps the Compose runtime only.

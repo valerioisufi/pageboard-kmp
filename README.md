@@ -75,6 +75,7 @@ fun App() {
 | Engines | `pageboard-pdf` (PDFium), `-latex` (MicroTeX) |
 | Sync (experimental, `@ExperimentalSyncApi`) | `pageboard-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`, `-sync-ui` |
 | Search and local models | `pageboard-search`, `-search-ui`, `-ml`, `-ml-litert` |
+| Handwriting recognition | `pageboard-handwriting`, `-handwriting-mlkit`, `-handwriting-windows`, `-handwriting-ui` |
 | Lecture assistant | `pageboard-lecture`, `-lecture-ui`, `-lecture-testing` |
 | Export | `pageboard-export`, `-export-ui` |
 | External models | `pageboard-agent`, `-agent-ui` |

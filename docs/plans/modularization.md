@@ -81,7 +81,7 @@ until the release (see the release checklist at the end).
 2. Headless modules (no Compose): `pageboard-platform`, `pageboard-model`, `pageboard-ink`,
    `pageboard-store`, `pageboard-store-room`, `pageboard-sync-protocol`, `pageboard-sync`,
    `pageboard-sync-lan`, `pageboard-sync-iroh`, `pageboard-ml`, `pageboard-ml-litert`,
-   `pageboard-search`, `pageboard-agent`; `pageboard-lecture` keeps the Compose runtime only (no UI, no Skia), the
+   `pageboard-search`, `pageboard-handwriting`, `pageboard-agent`; `pageboard-lecture` keeps the Compose runtime only (no UI, no Skia), the
    observable state of its assistant (see Feature modules).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
@@ -121,7 +121,11 @@ until the release (see the release checklist at the end).
 | `pageboard-lecture-testing` | the test doubles of the assistant (microphone, notebook, secrets) | lecture | runtime only | — |
 | `pageboard-ml` | local models port: catalog, downloads, `Embedder`, `Generator`, `LoadedModels` | platform | no | — |
 | `pageboard-ml-litert` | LiteRT-LM runtime of the local models (desktop, Android) | ml | no | LiteRT-LM |
-| `pageboard-search` | search index (FTS5 and vectors), sources, indexer, engine, `NotesAnswerer` | ml, store | no | SQLite |
+| `pageboard-handwriting` | the samples of the strokes, the ports of the readers, the lines of a block, the reading, InkML | model | no | — |
+| `pageboard-handwriting-mlkit` | ML Kit Digital Ink as the reader of Android | handwriting | no | ML Kit (Android) |
+| `pageboard-handwriting-windows` | the handwriting recognizers of Windows as the reader of the desktop | handwriting, platform | no | C++/WinRT (JNI, Windows) |
+| `pageboard-handwriting-ui` | "Convert to text" on a selection of strokes | handwriting, ui | yes | — |
+| `pageboard-search` | search index (FTS5 and vectors), sources, indexer, engine, `NotesAnswerer` | ml, store, handwriting | no | SQLite |
 | `pageboard-search-ui` | `ContentSearch` of the library, PDF source, model settings, "Ask your notes" card | search, explorer, ui | yes | — |
 | `pageboard-agent` | what an external model reads and proposes: tools, proposals, access, its messages (see [agent-tools.md](agent-tools.md)) | store | no | — |
 | `pageboard-agent-ui` | the review of the proposals in the editor, the access of the clients | agent, session | yes | — |
