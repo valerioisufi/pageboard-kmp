@@ -89,6 +89,9 @@ cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DPAGEBOARD_BU
     -DPAGEBOARD_PDFIUM_DIR="$PDFIUM_DIR" -DPAGEBOARD_WHISPER_DIR="$WHISPER_DIR" \
     -DPAGEBOARD_OPUS_DIR="$OPUS_DIR" -DPAGEBOARD_AAC_DIR="$AAC_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
 TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge audio_bridge)
+if [[ "$PLATFORM" == windows-* ]]; then
+    TARGETS+=(ink_recognizer_bridge) # the handwriting recognizers of Windows
+fi
 if [[ "$PLATFORM" == darwin-* ]]; then
     TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad
     TARGETS+=(audio_codec_bridge) # audio files of other applications, AAC
@@ -142,6 +145,9 @@ cp "$RUST_DIR/$RUST_TARGET/release/$IROH_FILE" "$OUT_DIR/pageboard-sync-iroh/nat
 echo "Installed $OUT_DIR/pageboard-sync-iroh/native/$PLATFORM/$IROH_FILE"
 if [[ "$PLATFORM" == darwin-* ]]; then
     install_lib trackpad_bridge pageboard-canvas
+fi
+if [[ "$PLATFORM" == windows-* ]]; then
+    install_lib ink_recognizer_bridge pageboard-handwriting-windows
 fi
 cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/pageboard-ink/native/$PLATFORM/INK_LICENSE.txt"
 install_lib tex pageboard-latex

@@ -182,6 +182,20 @@ target_include_directories(ink_bridge PUBLIC
 target_link_libraries(ink_bridge PRIVATE ink_core)
 
 # ==============================================================================
+# Ink recognizer bridge (desktop JVM on Windows): the handwriting recognizers of Windows, through
+# C++/WinRT (the headers of the Windows SDK)
+# ==============================================================================
+if(PAGEBOARD_BUILD_JNI AND WIN32 AND NOT ANDROID)
+    add_library(ink_recognizer_bridge SHARED
+        bridge/ink_recognizer_windows.cpp
+    )
+    set_target_properties(ink_recognizer_bridge PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+    target_compile_options(ink_recognizer_bridge PRIVATE /EHsc)
+    target_link_libraries(ink_recognizer_bridge PRIVATE windowsapp user32)
+    pageboard_configure_shared_library(ink_recognizer_bridge)
+endif()
+
+# ==============================================================================
 # Trackpad bridge (desktop JVM on macOS): phases of the scroll and pinch of the trackpad
 # ==============================================================================
 if(PAGEBOARD_BUILD_JNI AND APPLE AND NOT ANDROID)
