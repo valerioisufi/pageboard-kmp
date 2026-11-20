@@ -44,8 +44,8 @@ internal class FinalReviewer(
     /** The handwriting of the pages seen not transcribed yet, with the model of the live suggestions. */
     private suspend fun readRemainingHandwriting(source: NotebookSource) {
         val reader = handwriting ?: return
-        val task = lecture.backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES)
-        if (task.unavailable() != null) return
+        val task = lecture.backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES).takeIf { it.unavailable() == null }
+        if (task == null && !reader.readsOnDevice()) return
         try {
             val (pages, lastIds) = lecture.setStateResult { seenPageContents() to lastPageIds }
             val pageIds = source.pageIds().ifEmpty { lastIds }

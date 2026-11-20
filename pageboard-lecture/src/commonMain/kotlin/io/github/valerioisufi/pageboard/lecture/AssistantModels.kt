@@ -2,6 +2,8 @@ package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiClient
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.pageboard.lecture.handwriting.DeviceHandwriting
+import kotlin.concurrent.Volatile
 import io.github.valerioisufi.pageboard.lecture.local.OllamaClient
 import io.github.valerioisufi.pageboard.lecture.model.DeviceBackend
 import io.github.valerioisufi.pageboard.lecture.model.GeminiBackend
@@ -43,13 +45,17 @@ internal class AssistantModels(
     /** The models on this computer (Ollama, whisper.cpp), for the settings. */
     val localModels: LocalModels = LocalModels(settingsStore, localClient, stateContext = stateContext)
 
+    /** The readers of handwriting of the device and the language of the notes, given by the application. */
+    @Volatile
+    var deviceHandwriting: DeviceHandwriting? = null
+
     private val handwritingReaders = mutableMapOf<String, HandwritingReader>()
     private val handwritingLock = SyncLock()
 
     /** The reader of the handwriting of [documentId], shared by its recordings and its reviews. */
     fun handwritingOf(documentId: String): HandwritingReader = syncLock(handwritingLock) {
         handwritingReaders.getOrPut(documentId) {
-            HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json") { library.changed(documentId, null) }
+            HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", device = { deviceHandwriting }) { library.changed(documentId, null) }
         }
     }
 

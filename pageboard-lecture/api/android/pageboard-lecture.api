@@ -382,6 +382,8 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun getExportExtension ()Ljava/lang/String;
 	public final fun getExportResult ()Lio/github/valerioisufi/pageboard/lecture/ExportResult;
 	public final fun getGenerationOffers ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
+	public final fun getHandwritingLanguage ()Ljava/lang/String;
+	public final fun getHandwritingReading ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;
 	public final fun getImportError ()Ljava/lang/String;
 	public final fun getImporting ()Lio/github/valerioisufi/pageboard/lecture/Lecture;
 	public final fun getLibrary ()Lio/github/valerioisufi/pageboard/lecture/LectureLibrary;
@@ -416,6 +418,8 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun requestAudio (Lio/github/valerioisufi/pageboard/lecture/Lecture;)V
 	public final fun retranscribe (Lio/github/valerioisufi/pageboard/lecture/Lecture;)Z
 	public final fun setDescribeArrival (Lkotlin/jvm/functions/Function3;)V
+	public final fun setHandwritingLanguage (Ljava/lang/String;)V
+	public final fun setHandwritingReading (Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;)V
 	public final fun setPanelOpen (Z)V
 	public final fun setPlacingNote (Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;)V
 	public final fun setRequestMicrophone (Lkotlin/jvm/functions/Function1;)V
@@ -919,6 +923,7 @@ public abstract interface class io/github/valerioisufi/pageboard/lecture/Noteboo
 	public abstract fun capture (Ljava/util/Set;IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getDocumentTitle ()Ljava/lang/String;
 	public fun inkBlocks (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun inkSample (Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renderInk (Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun strokeIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -927,6 +932,7 @@ public abstract interface class io/github/valerioisufi/pageboard/lecture/Noteboo
 public final class io/github/valerioisufi/pageboard/lecture/NotebookSource$DefaultImpls {
 	public static fun allPages (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun inkBlocks (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun inkSample (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun pageIds (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun renderInk (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

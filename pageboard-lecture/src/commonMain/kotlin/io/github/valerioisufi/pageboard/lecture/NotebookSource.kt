@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.model.ink.InkBlock
+import io.github.valerioisufi.pageboard.handwriting.InkSample
 import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.geometry.Rect
@@ -102,6 +103,9 @@ public interface NotebookSource {
 
     /** An image of the strokes of [block] alone, on white (`null` when it cannot be rendered). */
     public suspend fun renderInk(block: InkBlock): ByteArray? = null
+
+    /** The strokes of [block] as they were written, for the readers of the device (`null` when not known). */
+    public suspend fun inkSample(block: InkBlock): InkSample? = null
 }
 
 /** The text layer of a slide: lines trimmed, no empty lines, at most [MAX_SLIDE_TEXT_CHARS]. */

@@ -59,6 +59,7 @@ public final class io/github/valerioisufi/pageboard/search/HandwritingSearch {
 	public final fun getLanguage ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getReading ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;
 	public final fun isEnabled ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun pageText (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun readersChanged ()V
 	public final fun setEnabled (Z)V
 	public final fun setLanguage (Ljava/lang/String;)V
@@ -73,6 +74,7 @@ public final class io/github/valerioisufi/pageboard/search/HandwritingSearchSour
 	public fun chunks (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
 	public fun getId ()Ljava/lang/String;
+	public final fun pageText (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun version (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

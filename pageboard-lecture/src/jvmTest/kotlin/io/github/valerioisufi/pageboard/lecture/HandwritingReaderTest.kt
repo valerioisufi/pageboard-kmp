@@ -2,6 +2,13 @@ package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiClient
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.pageboard.model.StrokePoint
+import io.github.valerioisufi.pageboard.handwriting.TextInkRecognizer
+import io.github.valerioisufi.pageboard.handwriting.InkSample
+import io.github.valerioisufi.pageboard.handwriting.InkReading
+import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
+import io.github.valerioisufi.pageboard.handwriting.HandwritingEngines
+import io.github.valerioisufi.pageboard.lecture.handwriting.DeviceHandwriting
 import io.github.valerioisufi.pageboard.model.ink.InkBlock
 import io.github.valerioisufi.pageboard.model.ink.blockKey
 import io.github.valerioisufi.pageboard.model.ink.groupStrokes
@@ -128,4 +135,67 @@ class HandwritingReaderTest {
         assertNull(again.read(listOf(new, old), listOf(page), source, task, max = 6, stableOnly = false))
         assertEquals(2, requests.size)
     }
+
+    /** A notebook whose blocks "a" and "b" have strokes, "image" only an image. */
+    private class SampledSource : NotebookSource {
+        val rendered = mutableListOf<String>()
+        override val documentTitle = "Fisica"
+        override suspend fun strokeIds() = emptySet<String>()
+        override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) =
+            NotebookSnapshot(documentTitle, 1, listOf(0), emptyList())
+
+        override suspend fun renderInk(block: InkBlock): ByteArray {
+            rendered.add(block.key)
+            return byteArrayOf(1)
+        }
+
+        override suspend fun inkSample(block: InkBlock): InkSample? = if (block.key == "image") null else InkSample(
+            (0 until (if (block.key == "a") 3 else 4)).map { i -> (0..6).map { k -> StrokePoint(10f + i * 4f + k * 0.4f, if (k % 2 == 0) 0f else 4f, 0.5f, k * 8L) } }
+        )
+    }
+
+    /** Reads a line as the number of its strokes. */
+    private class DeviceReader : TextInkRecognizer {
+        var reads = 0
+        override val version = "device 1"
+        override suspend fun languages() = setOf("it")
+        override suspend fun recognize(ink: InkSample, language: String, context: String): InkReading {
+            reads++
+            return InkReading("${ink.strokes.size} tratti")
+        }
+    }
+
+    @Test
+    fun theDeviceReadsTheBlocksWithStrokesAndTheModelOnlyTheOthers() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            requests.add(request.body.toByteArray().decodeToString())
+            respond(geminiAnswer("""{"blocks":[{"image":1,"text":"figura"}]}"""), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+        }
+        val backends = ModelBackends(GeminiBackend(GeminiClient(HttpClient(engine))) { "key" }, OllamaBackend(OllamaClient(HttpClient(engine))) { "" })
+        val task = backends.forTask(AssistantSettings(), LectureTask.LIVE_NOTES)
+        val path = File(directory, "handwriting.json").absolutePath
+        val device = DeviceReader()
+        val reader = HandwritingReader(path, device = { DeviceHandwriting(HandwritingReading(HandwritingEngines(listOf(device))), "it-IT") })
+        val source = SampledSource()
+        val page = PageContent(0, pageId = "7", hasInk = true)
+        val blocks = listOf(block("a", setOf("s1"), 10f), block("b", setOf("s2"), 40f), block("image", setOf("s3"), 70f))
+
+        assertTrue(reader.readsOnDevice())
+        reader.read(blocks, listOf(page), source, task, max = 6, stableOnly = false)
+        assertEquals(2, device.reads, "the blocks with strokes read on the device")
+        assertEquals(listOf("image"), source.rendered, "only the block without strokes sent as an image")
+        assertEquals(1, requests.size)
+        assertEquals(listOf("3 tratti", "4 tratti", "figura"), reader.fill(page, blocks).handwriting)
+
+        // The file as before: a text and its page by key of block
+        val saved = HandwritingReader.readFile(path)
+        assertEquals(mapOf("a" to HandwritingReader.Entry("7", "3 tratti"), "b" to HandwritingReader.Entry("7", "4 tratti"), "image" to HandwritingReader.Entry("7", "figura")), saved)
+
+        // Without a model, the device still reads
+        val alone = HandwritingReader(File(directory, "alone.json").absolutePath, device = { DeviceHandwriting(HandwritingReading(HandwritingEngines(listOf(device))), "it") })
+        assertNull(alone.read(blocks, listOf(page), source, task = null, max = 6, stableOnly = false))
+        assertTrue(alone.isRead(blocks[0]) && alone.isRead(blocks[1]) && !alone.isRead(blocks[2]))
+    }
 }
+

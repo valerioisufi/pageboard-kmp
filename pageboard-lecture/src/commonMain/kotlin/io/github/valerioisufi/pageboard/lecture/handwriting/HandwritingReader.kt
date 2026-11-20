@@ -12,6 +12,7 @@ import io.github.valerioisufi.pageboard.lecture.model.ModelUse
 import io.github.valerioisufi.pageboard.lecture.model.PromptPart
 import io.github.valerioisufi.pageboard.lecture.model.TaskBackend
 import io.github.valerioisufi.pageboard.model.ink.InkBlock
+import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,11 +37,16 @@ import kotlin.concurrent.Volatile
  * The devices working on the notebook share what they read ([merge]): the file gathers it when
  * saved ([onSaved]).
  *
+ * With the readers of the device ([device]), a block is read from its strokes
+ * ([NotebookSource.inkSample]) in milliseconds, with no request: the model reads as images only the
+ * blocks without samples, or all of them when the device reads no text of the language.
+ *
  * One per notebook, shared by its recording and its reviews: one transcription at a time, the
  * texts read from any coroutine.
  */
 internal class HandwritingReader(
     private val path: String,
+    private val device: () -> DeviceHandwriting? = { null },
     private val onSaved: () -> Unit = {}
 ) {
     private val store = atomic<Map<String, Entry>?>(null)
@@ -71,27 +77,42 @@ internal class HandwritingReader(
     /** Whether [block] is transcribed already. */
     fun isRead(block: InkBlock): Boolean = block.key in texts
 
+    /** Whether the device reads the handwriting itself, without a model. */
+    suspend fun readsOnDevice(): Boolean = device()?.let { it.reading.readsText(it.language) } == true
+
     /**
      * Transcribes at most [max] blocks of [blocks] (in their order) not transcribed yet. With
      * [stableOnly], only the blocks that did not change since the previous call or that were
      * written before the lecture ([initialStrokeIds]): the student may still be writing the others.
      *
+     * The readers of the device read first, up to [DEVICE_BLOCKS] blocks; [task] (the model, `null`
+     * when there is none) reads at most [max] of the blocks left.
+     *
      * @param pages the pages of the blocks (the text of their slides helps reading the notes).
-     * @return the tokens of the requests (none for a local model), `null` when nothing was sent.
+     * @return the tokens of the requests (none for a local model or the device), `null` when
+     *   nothing was sent to a model.
      */
     suspend fun read(
         blocks: List<InkBlock>,
         pages: List<PageContent>,
         source: NotebookSource,
-        task: TaskBackend,
+        task: TaskBackend?,
         max: Int,
         stableOnly: Boolean,
         initialStrokeIds: Set<String> = emptySet()
     ): TokenUsage? = mutex.withLock {
-        val candidates = blocks.filter { block ->
+        val waiting = blocks.filter { block ->
             block.key !in texts && (!stableOnly || block.key in previousKeys || initialStrokeIds.containsAll(block.strokeIds))
-        }.take(max)
+        }
         if (stableOnly) previousKeys = blocks.mapTo(mutableSetOf()) { it.key }
+        if (waiting.isEmpty()) return@withLock null
+        val readHere = readOnDevice(waiting.take(DEVICE_BLOCKS), source)
+        if (readHere.isNotEmpty()) {
+            store.value = texts + readHere
+            save()
+        }
+        if (task == null) return@withLock null
+        val candidates = waiting.filter { it.key !in readHere }.take(max)
         if (candidates.isEmpty()) return@withLock null
         var usage: TokenUsage? = null
         for (group in candidates.chunked(task.limits.handwritingBatch)) {
@@ -109,6 +130,23 @@ internal class HandwritingReader(
         }
         save()
         usage
+    }
+
+    /**
+     * The texts of [blocks] the device reads from their strokes (an empty text for a block read as
+     * nothing, so that it is not read again), by key; none when the device reads no text of the
+     * language, or for a block without samples.
+     */
+    private suspend fun readOnDevice(blocks: List<InkBlock>, source: NotebookSource): Map<String, Entry> {
+        val device = device() ?: return emptyMap()
+        if (!device.reading.readsText(device.language)) return emptyMap()
+        val read = LinkedHashMap<String, Entry>()
+        for (block in blocks) {
+            val ink = source.inkSample(block)?.takeIf { !it.isEmpty } ?: continue
+            val reading = device.reading.readText(ink, device.language)
+            read[block.key] = Entry(block.pageId, reading?.text?.trim().orEmpty())
+        }
+        return read
     }
 
     private fun load(): Map<String, Entry> = readFile(path)
@@ -129,6 +167,9 @@ internal class HandwritingReader(
     companion object {
         /** Blocks transcribed at the end of the lecture (after each update: [io.github.valerioisufi.pageboard.lecture.model.ModelLimits.handwritingPerUpdate]). */
         const val MAX_AT_THE_END = 20
+
+        /** Blocks the device reads at a time: milliseconds each, no request. */
+        const val DEVICE_BLOCKS = 200
 
         private const val SLIDE_HINT_CHARS = 300
         private const val MAX_ENTRIES = 5000
@@ -223,3 +264,6 @@ internal class HandwritingReader(
         }
     }
 }
+
+/** The readers of handwriting of the device and the language the notes are read in. */
+internal class DeviceHandwriting(val reading: HandwritingReading, val language: String)

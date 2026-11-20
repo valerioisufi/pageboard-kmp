@@ -186,6 +186,7 @@ final class io.github.valerioisufi.pageboard.search/HandwritingSearch { // io.gi
     final fun setEnabled(kotlin/Boolean) // io.github.valerioisufi.pageboard.search/HandwritingSearch.setEnabled|setEnabled(kotlin.Boolean){}[0]
     final fun setLanguage(kotlin/String) // io.github.valerioisufi.pageboard.search/HandwritingSearch.setLanguage|setLanguage(kotlin.String){}[0]
     final fun source(io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.search/SearchIndex): io.github.valerioisufi.pageboard.search/HandwritingSearchSource // io.github.valerioisufi.pageboard.search/HandwritingSearch.source|source(io.github.valerioisufi.pageboard.store.DocumentStore;io.github.valerioisufi.pageboard.search.SearchIndex){}[0]
+    final suspend fun pageText(kotlin/String, kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.search/HandwritingSearch.pageText|pageText(kotlin.String;kotlin.String){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.search/HandwritingSearchSource : io.github.valerioisufi.pageboard.search/SearchSource { // io.github.valerioisufi.pageboard.search/HandwritingSearchSource|null[0]
@@ -197,6 +198,7 @@ final class io.github.valerioisufi.pageboard.search/HandwritingSearchSource : io
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.id.<get-id>|<get-id>(){}[0]
 
     final suspend fun chunks(io.github.valerioisufi.pageboard.store/DocumentSummary): kotlin.collections/List<io.github.valerioisufi.pageboard.search/SearchChunk> // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.chunks|chunks(io.github.valerioisufi.pageboard.store.DocumentSummary){}[0]
+    final suspend fun pageText(kotlin/String, kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.pageText|pageText(kotlin.String;kotlin.String){}[0]
     final suspend fun version(io.github.valerioisufi.pageboard.store/DocumentSummary): kotlin/String? // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.version|version(io.github.valerioisufi.pageboard.store.DocumentSummary){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.Companion|null[0]

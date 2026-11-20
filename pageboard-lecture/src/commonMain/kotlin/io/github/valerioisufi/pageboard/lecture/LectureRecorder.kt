@@ -614,9 +614,9 @@ public class LectureRecorder internal constructor(
      */
     private suspend fun readHandwriting(snapshot: NotebookSnapshot) {
         val source = notebook ?: return
-        val task = backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES)
-        if (task.unavailable() != null) return
-        val max = task.limits.handwritingPerUpdate
+        val task = backends.forTask(settingsStore.settings, LectureTask.LIVE_NOTES).takeIf { it.unavailable() == null }
+        if (task == null && !handwriting.readsOnDevice()) return
+        val max = task?.limits?.handwritingPerUpdate ?: 0
         val order = snapshot.pages.map { it.index }
         val blocks = snapshot.inkBlocks.sortedBy { order.indexOf(it.pageIndex) }
         try {

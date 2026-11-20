@@ -87,6 +87,30 @@ public class HandwritingSearchSource(
         return chunks
     }
 
+    /**
+     * The handwriting of the page [pageId] of [documentId], its blocks from the top a line under the
+     * other (the readings kept in the index, the others read now), `null` when the page has none or
+     * nothing is read: what the external models read of a page.
+     */
+    public suspend fun pageText(documentId: String, pageId: String): String? {
+        if (!isEnabled()) return null
+        val language = language()
+        val reader = reading.version(language) ?: return null
+        val page = store.loadInk(documentId)?.pages?.firstOrNull { it.id == pageId } ?: return null
+        val known = index.handwriting(documentId)
+        val writing = page.strokes.filter { it.tool.isHandwriting && it.points.isNotEmpty() }
+        if (writing.isEmpty()) return null
+        val samples = writing.map { InkSample.ofData(listOf(it)) }
+        val bounds = samples.map { it.bounds ?: Rect.Zero }
+        val texts = groupStrokes(bounds).map { group ->
+            val key = blockKey(group.map { writing[it].id })
+            val stored = known[key]?.takeIf { it.reader == reader && it.language == language }
+                ?: readBlock(key, group.map { samples[it] }, writing, reader, language)
+            stored.text
+        }.filter { it.isNotBlank() }
+        return texts.joinToString("\n").ifEmpty { null }
+    }
+
     private suspend fun readBlock(key: String, samples: List<InkSample>, writing: List<StrokeData>, reader: String, language: String): StoredHandwriting {
         val ink = InkSample(samples.flatMap { it.strokes })
         val read = reading.readText(ink, language)

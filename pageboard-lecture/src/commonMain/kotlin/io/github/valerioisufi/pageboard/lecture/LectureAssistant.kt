@@ -12,6 +12,8 @@ import io.github.valerioisufi.pageboard.lecture.audio.createAudioOutput
 import io.github.valerioisufi.pageboard.lecture.audio.exportRecording
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiClient
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.pageboard.lecture.handwriting.DeviceHandwriting
+import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
 import io.github.valerioisufi.pageboard.lecture.local.OllamaClient
 import io.github.valerioisufi.pageboard.lecture.platform.ChosenFile
 import io.github.valerioisufi.pageboard.lecture.platform.showNotification
@@ -202,6 +204,24 @@ public class LectureAssistant(
      * The notification of the system telling what arrived in the document titled `documentTitle`
      * (in the language of the application: set by its UI), `null` for none.
      */
+    /**
+     * The readers of handwriting of the device ([HandwritingReading]), given by the application:
+     * the notes are read with them first, from their strokes, and by the model as images only when
+     * the device does not read them. `null`: the model reads them all, as before.
+     */
+    public var handwritingReading: HandwritingReading?
+        get() = models.deviceHandwriting?.reading
+        set(value) {
+            models.deviceHandwriting = value?.let { DeviceHandwriting(it, handwritingLanguage) }
+        }
+
+    /** The language the handwriting is read in by [handwritingReading], as a BCP 47 tag. */
+    public var handwritingLanguage: String = "en"
+        set(value) {
+            field = value
+            models.deviceHandwriting = models.deviceHandwriting?.let { DeviceHandwriting(it.reading, value) }
+        }
+
     public var describeArrival: suspend (arrival: LectureArrival, documentTitle: String) -> ArrivalNotification? = { _, _ -> null }
 
     /** Tells the user (with a notification of the system) what arrived. */

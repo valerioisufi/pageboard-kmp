@@ -36,6 +36,7 @@ kotlin {
             api(project(":pageboard-model"))
             // The models of the device: their catalog, downloads and the models in memory (DeviceModels)
             api(project(":pageboard-ml"))
+            api(project(":pageboard-handwriting"))
             // The state of the assistant, observed by its UI (the runtime only: no UI, no Skia)
             api(libs.compose.runtime)
             implementation(libs.kotlinx.coroutines.core)

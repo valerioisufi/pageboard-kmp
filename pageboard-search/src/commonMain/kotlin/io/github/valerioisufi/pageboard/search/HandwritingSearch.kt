@@ -46,6 +46,8 @@ public class HandwritingSearch(
     /** Emits at every change of the settings or of the readers. */
     public val changes: Flow<Unit> = combine(languageState, enabledState, readersState) { _, _, _ -> }.drop(1)
 
+    private var lastSource: HandwritingSearchSource? = null
+
     /** The source of a search of [store] keeping its readings in [index]. */
     public fun source(store: DocumentStore, index: SearchIndex): HandwritingSearchSource = HandwritingSearchSource(
         store = store,
@@ -54,5 +56,8 @@ public class HandwritingSearch(
         language = { languageState.value },
         isEnabled = { enabledState.value },
         changes = changes
-    )
+    ).also { lastSource = it }
+
+    /** The handwriting of a page, through the last [source] made (see [HandwritingSearchSource.pageText]). */
+    public suspend fun pageText(documentId: String, pageId: String): String? = lastSource?.pageText(documentId, pageId)
 }

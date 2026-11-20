@@ -131,8 +131,11 @@ class PencilNotesAgents(
                 override suspend fun export(request: AgentExportRequest): AgentExported = exportFor(request)
             },
             show = ::show,
-            // What the assistant transcribed and saved: reading it starts no model
-            handwriting = { documentId, pageId -> lectureAssistant?.handwritingByPage(documentId)?.get(pageId) },
+            // What the assistant transcribed and saved, else what the readers of the device read for
+            // the search: neither starts a model
+            handwriting = { documentId, pageId ->
+                lectureAssistant?.handwritingByPage(documentId)?.get(pageId) ?: contentSearch?.handwriting?.pageText(documentId, pageId)
+            },
             lectures = object : AgentLectures {
                 override suspend fun lectures(documentId: String): List<AgentLecture> =
                     records(documentId).map { it.toAgentLecture() }

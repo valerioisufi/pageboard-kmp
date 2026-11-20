@@ -90,6 +90,14 @@ object PencilNotesServices {
         HandwritingSearch(HandwritingReading(engines), language = Locale.current.toLanguageTag())
     }
 
+    init {
+        // The lecture assistant reads the notes with the same readers first
+        handwriting?.let {
+            lectureAssistant.handwritingLanguage = it.language.value
+            lectureAssistant.handwritingReading = it.reading
+        }
+    }
+
     /** The notes are indexed while no lecture is recorded or transcribed. */
     private val indexingConditions = MutableIndexingConditions(initialCanIndex = true)
 

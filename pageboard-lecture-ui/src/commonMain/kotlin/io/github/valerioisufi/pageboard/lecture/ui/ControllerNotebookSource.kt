@@ -12,6 +12,7 @@ import io.github.valerioisufi.pageboard.lecture.PageImage
 import io.github.valerioisufi.pageboard.lecture.SlideText
 import io.github.valerioisufi.pageboard.lecture.cleanSlideText
 import io.github.valerioisufi.pageboard.model.ink.InkBlock
+import io.github.valerioisufi.pageboard.handwriting.InkSample
 import io.github.valerioisufi.pageboard.model.ink.blockKey
 import io.github.valerioisufi.pageboard.model.ink.groupStrokes
 import io.github.valerioisufi.pageboard.model.ink.isHandwriting
@@ -164,6 +165,14 @@ internal class ControllerNotebookSource(private val editor: EditorContext) : Not
             // The ink alone, on white: the slide behind would confuse the reading
             val ink = PageContentSnapshot(strokes, emptyList(), emptyList(), emptyList(), PageBackground.Solid(), content.widthMm, content.heightMm)
             renderRegion(editor.rendering, document, ink, block.pageIndex, unionOf(strokes.map { it.bounds }))?.jpeg
+        }
+    }
+
+    override suspend fun inkSample(block: InkBlock): InkSample? {
+        val pages = withContext(Dispatchers.Main) { editor.document.document.pages.toList() }
+        return withContext(Dispatchers.Default) {
+            val page = pages.firstOrNull { it.id == block.pageId } ?: pages.getOrNull(block.pageIndex) ?: return@withContext null
+            InkSample.of(page.snapshotContent().strokes.filter { it.id in block.strokeIds }).takeIf { !it.isEmpty }
         }
     }
 
