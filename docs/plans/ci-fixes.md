@@ -23,7 +23,7 @@ The runs of `main` (0480bf58) and of the first pull requests of Dependabot, on 2
 | `native.yml`, Desktop windows-x86_64 | failed ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44761228341)) | `TranscriptionQueueTest.theOtherDevicesAreToldWhenATranscriptionStartsNotWhileItWaits`: the test takes an import out of the queue as soon as it is `WAITING`, but the import is `WAITING` a moment before it is put in the queue (`LectureImporter` sets it, then `AssistantWork.enqueueTranscription`); on a slow runner `cancelTranscription` finds nothing to cancel. `aLectureIsTakenOutOfTheQueueWaitingOrRunning` has the same race. The other five desktop jobs, Android and iOS are green |
 | `release.yml` | never run (no tag `pageboard-v*`) | the environment `maven-central` has no secrets (`MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY`, `SIGNING_KEY_PASSWORD`): a release would fail at publishing. A setting for the maintainer, not the repository |
 | CodeQL (default setup) | green | |
-| `check.yml` of this branch, with `--continue` | failed ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770914442)) | what the first failure hid: the klib dumps of `pageboard-canvas`, `-export`, `-export-ui`, `-ui` and `-sync-ui` miss declarations and keep the old order of renamed ones (dumps of Windows, where the klib dumps of the Compose modules come out empty, completed by hand); `pageboard-lecture` does not compile for iOS since fe9aded5 (2026-11-14): `toSortedMap`, of the JVM only, in `LectureMarkdown.kt` of `commonMain`. Never seen: no run had minutes since |
+| `check.yml` of this branch, with `--continue` | failed ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770914442)) | what the first failure hid: the klib dumps of `pageboard-canvas`, `-export`, `-export-ui`, `-ui` and `-sync-ui` (and of `-lecture` and `-lecture-ui`, [checked](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44778123914) once `pageboard-lecture` compiled for iOS) miss declarations and keep the old order of renamed ones (dumps of Windows, where the klib dumps of the Compose modules come out empty, completed by hand); `pageboard-lecture` does not compile for iOS since fe9aded5 (2026-11-14): `toSortedMap`, of the JVM only, in `LectureMarkdown.kt` of `commonMain`. Never seen: no run had minutes since |
 
 Nothing in `.github/` keeps a `drawview` name, a `-Pdrawview.*` property or the name `DrawView-KMP`.
 
@@ -65,7 +65,7 @@ actions of `check.yml` go with the Dependabot pull request of the actions.
 | 2 | The klib dump of `pageboard-canvas` in order; `TranscriptionQueueTest` waits for the queue | Done, the test green here (Windows) |
 | 3 | `check.yml`: `--continue`, the results of failed tests kept | Done |
 | 4 | The references of the screenshots recorded on the runner (label `record-screenshots`) | Done ([run](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44773530808), 27 references; the [first try](https://github.com/valerioisufi/pageboard-kmp/actions/runs/44770955493) failed verifying `library-trash` just recorded) |
-| 5 | The klib dumps of the five modules as the runner writes them; `LectureMarkdown` in common Kotlin | Done |
+| 5 | The klib dumps of the seven modules as the runner writes them; `LectureMarkdown` in common Kotlin | Done |
 | 6 | The runs of the pull request green, linked here | To do |
 
 ## Decisions
