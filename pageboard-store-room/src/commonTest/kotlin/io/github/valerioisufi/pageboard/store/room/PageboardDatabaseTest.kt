@@ -42,6 +42,7 @@ import io.github.valerioisufi.pageboard.store.testing.checkFolderOperations
 import io.github.valerioisufi.pageboard.store.testing.checkOperationProofs
 import io.github.valerioisufi.pageboard.store.testing.checkSharedFolders
 import io.github.valerioisufi.pageboard.store.testing.checkSpaceStore
+import io.github.valerioisufi.pageboard.store.testing.checkInk
 import io.github.valerioisufi.pageboard.store.testing.checkOutline
 import io.github.valerioisufi.pageboard.store.testing.checkPageFingerprint
 import io.github.valerioisufi.pageboard.store.testing.checkTrash
@@ -404,6 +405,11 @@ class PageboardDatabaseTest {
     @Test
     fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
         checkOutline(RoomDocumentStore(database, InkStrokeModeller))
+    }
+
+    @Test
+    fun theInkIsReadWithoutModelingTheStrokes() = runTest {
+        checkInk(RoomDocumentStore(database, InkStrokeModeller))
     }
 
     @Test

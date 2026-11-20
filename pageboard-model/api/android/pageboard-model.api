@@ -2812,6 +2812,24 @@ public final class io/github/valerioisufi/pageboard/model/geometry/VectorLine {
 	public final fun getWidthMm ()F
 }
 
+public final class io/github/valerioisufi/pageboard/model/ink/InkBlock {
+	public fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Set;Lio/github/valerioisufi/pageboard/model/geometry/Rect;)V
+	public final fun getBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPageIndex ()I
+	public final fun getStrokeIds ()Ljava/util/Set;
+}
+
+public final class io/github/valerioisufi/pageboard/model/ink/InkBlocksKt {
+	public static final field BLOCK_GAP_MM F
+	public static final fun blockKey (Ljava/util/Collection;)Ljava/lang/String;
+	public static final fun groupStrokes (Ljava/util/List;F)Ljava/util/List;
+	public static synthetic fun groupStrokes$default (Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
+	public static final fun isHandwriting (Lio/github/valerioisufi/pageboard/model/StrokeTool;)Z
+	public static final fun unionOf (Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+}
+
 public final class io/github/valerioisufi/pageboard/model/placement/BesideAnchor : io/github/valerioisufi/pageboard/model/placement/PlacementPolicy {
 	public fun <init> (Lio/github/valerioisufi/pageboard/model/geometry/Rect;)V
 	public fun cost (Lio/github/valerioisufi/pageboard/model/geometry/Rect;Lio/github/valerioisufi/pageboard/model/placement/PlacementBlock;)F

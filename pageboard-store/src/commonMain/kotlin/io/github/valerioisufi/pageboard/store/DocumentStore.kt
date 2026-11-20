@@ -38,6 +38,14 @@ public interface DocumentStore : DocumentCatalog, OperationLog, SharingStore {
         loadDocument(documentId)?.let { DocumentOutline.of(it) }
 
     /**
+     * The strokes of a document as they were drawn, without modeling them (see [DocumentInk]), or
+     * `null` when it does not exist: from [loadDocument] by default, from the stored samples alone
+     * in the stores of Pageboard.
+     */
+    public suspend fun loadInk(documentId: String): DocumentInk? =
+        loadDocument(documentId)?.let { DocumentInk.of(it) }
+
+    /**
      * A text that changes whenever the page at [index] of the document [documentId] (among its
      * pages shown, see [Document.pages]) changes as it is drawn, or `null` when there is no
      * such page: the hash of its identifier, format and background, of the stamps of every element

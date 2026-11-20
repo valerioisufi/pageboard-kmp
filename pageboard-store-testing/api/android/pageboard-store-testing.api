@@ -2,6 +2,10 @@ public final class io/github/valerioisufi/pageboard/store/testing/FolderOperatio
 	public static final fun checkFolderOperations (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/pageboard/store/testing/InkContractKt {
+	public static final fun checkInk (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/pageboard/store/testing/OperationProofsContractKt {
 	public static final fun checkOperationProofs (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

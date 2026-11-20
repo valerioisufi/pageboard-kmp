@@ -11,6 +11,7 @@ import io.github.valerioisufi.pageboard.lecture.model.ModelPrompt
 import io.github.valerioisufi.pageboard.lecture.model.ModelUse
 import io.github.valerioisufi.pageboard.lecture.model.PromptPart
 import io.github.valerioisufi.pageboard.lecture.model.TaskBackend
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

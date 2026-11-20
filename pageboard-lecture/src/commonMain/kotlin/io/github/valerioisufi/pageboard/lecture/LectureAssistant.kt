@@ -467,7 +467,7 @@ public class LectureAssistant(
 
     /**
      * The handwriting of document [documentId] read so far, by key of block (see
-     * [io.github.valerioisufi.pageboard.lecture.handwriting.blockKey]): as last saved, also by a
+     * [io.github.valerioisufi.pageboard.model.ink.blockKey]): as last saved, also by a
      * recording going on.
      */
     public suspend fun handwritingTexts(documentId: String): Map<String, String> = withContext(Dispatchers.IO) {

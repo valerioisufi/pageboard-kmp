@@ -260,6 +260,10 @@ internal interface PageDao {
 internal interface StrokeDao {
     @Upsert
     suspend fun upsertAll(strokes: List<StrokeEntity>)
+
+    /** The strokes not removed of the pages of document [documentId] (see `DocumentInk`). */
+    @Query("SELECT strokes.* FROM strokes JOIN pages ON strokes.pageId = pages.id WHERE pages.documentId = :documentId AND strokes.removed IS NULL")
+    suspend fun getShownStrokesOfDocument(documentId: String): List<StrokeEntity>
 }
 
 /**

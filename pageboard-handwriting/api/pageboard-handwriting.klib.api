@@ -1,0 +1,154 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <pageboard-kmp:pageboard-handwriting>
+abstract interface io.github.valerioisufi.pageboard.handwriting/InkLanguageModels { // io.github.valerioisufi.pageboard.handwriting/InkLanguageModels|null[0]
+    abstract suspend fun delete(kotlin/String) // io.github.valerioisufi.pageboard.handwriting/InkLanguageModels.delete|delete(kotlin.String){}[0]
+    abstract suspend fun download(kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.handwriting/InkLanguageModels.download|download(kotlin.String;kotlin.Boolean){}[0]
+    abstract suspend fun models(kotlin.collections/Collection<kotlin/String>): kotlin.collections/List<io.github.valerioisufi.pageboard.handwriting/InkLanguageModel> // io.github.valerioisufi.pageboard.handwriting/InkLanguageModels.models|models(kotlin.collections.Collection<kotlin.String>){}[0]
+}
+
+abstract interface io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer { // io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer|null[0]
+    abstract val version // io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer.version|{}version[0]
+        abstract fun <get-version>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer.version.<get-version>|<get-version>(){}[0]
+
+    abstract suspend fun recognize(io.github.valerioisufi.pageboard.handwriting/InkSample): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer.recognize|recognize(io.github.valerioisufi.pageboard.handwriting.InkSample){}[0]
+}
+
+abstract interface io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer { // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer|null[0]
+    abstract val version // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.version|{}version[0]
+        abstract fun <get-version>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.version.<get-version>|<get-version>(){}[0]
+    open val readsBlocks // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.readsBlocks|{}readsBlocks[0]
+        open fun <get-readsBlocks>(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.readsBlocks.<get-readsBlocks>|<get-readsBlocks>(){}[0]
+
+    abstract suspend fun languages(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.languages|languages(){}[0]
+    abstract suspend fun recognize(io.github.valerioisufi.pageboard.handwriting/InkSample, kotlin/String, kotlin/String = ...): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer.recognize|recognize(io.github.valerioisufi.pageboard.handwriting.InkSample;kotlin.String;kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/HandwritingEngines { // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer> = ..., io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer? = ..., io.github.valerioisufi.pageboard.handwriting/InkLanguageModels? = ...) // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.handwriting.TextInkRecognizer>;io.github.valerioisufi.pageboard.handwriting.MathInkRecognizer?;io.github.valerioisufi.pageboard.handwriting.InkLanguageModels?){}[0]
+
+    final val languageModels // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.languageModels|{}languageModels[0]
+        final fun <get-languageModels>(): io.github.valerioisufi.pageboard.handwriting/InkLanguageModels? // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.languageModels.<get-languageModels>|<get-languageModels>(){}[0]
+    final val math // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.math|{}math[0]
+        final fun <get-math>(): io.github.valerioisufi.pageboard.handwriting/MathInkRecognizer? // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.math.<get-math>|<get-math>(){}[0]
+    final val text // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.text|{}text[0]
+        final fun <get-text>(): kotlin.collections/List<io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer> // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.text.<get-text>|<get-text>(){}[0]
+
+    final suspend fun languages(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.languages|languages(){}[0]
+    final suspend fun textReader(kotlin/String): io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer? // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.textReader|textReader(kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.Companion|null[0]
+        final val None // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.Companion.None|{}None[0]
+            final fun <get-None>(): io.github.valerioisufi.pageboard.handwriting/HandwritingEngines // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.Companion.None.<get-None>|<get-None>(){}[0]
+
+        final fun sameLanguage(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/HandwritingEngines.Companion.sameLanguage|sameLanguage(kotlin.String;kotlin.String){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/HandwritingReading { // io.github.valerioisufi.pageboard.handwriting/HandwritingReading|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.handwriting/HandwritingEngines, io.github.valerioisufi.pageboard.handwriting/InkLines = ...) // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.<init>|<init>(io.github.valerioisufi.pageboard.handwriting.HandwritingEngines;io.github.valerioisufi.pageboard.handwriting.InkLines){}[0]
+
+    final val engines // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.engines|{}engines[0]
+        final fun <get-engines>(): io.github.valerioisufi.pageboard.handwriting/HandwritingEngines // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.engines.<get-engines>|<get-engines>(){}[0]
+    final val readsFormulas // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.readsFormulas|{}readsFormulas[0]
+        final fun <get-readsFormulas>(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.readsFormulas.<get-readsFormulas>|<get-readsFormulas>(){}[0]
+
+    final suspend fun readFormula(io.github.valerioisufi.pageboard.handwriting/InkSample): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.readFormula|readFormula(io.github.valerioisufi.pageboard.handwriting.InkSample){}[0]
+    final suspend fun readText(io.github.valerioisufi.pageboard.handwriting/InkSample, kotlin/String, kotlin/String = ...): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.readText|readText(io.github.valerioisufi.pageboard.handwriting.InkSample;kotlin.String;kotlin.String){}[0]
+    final suspend fun readsText(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.readsText|readsText(kotlin.String){}[0]
+    final suspend fun version(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.handwriting/HandwritingReading.version|version(kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkLanguageModel { // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel|null[0]
+    constructor <init>(kotlin/String, kotlin/Boolean, kotlin/Long? = ...) // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.Long?){}[0]
+
+    final val isDownloaded // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.isDownloaded|{}isDownloaded[0]
+        final fun <get-isDownloaded>(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.isDownloaded.<get-isDownloaded>|<get-isDownloaded>(){}[0]
+    final val language // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.language|{}language[0]
+        final fun <get-language>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.language.<get-language>|<get-language>(){}[0]
+    final val sizeBytes // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.sizeBytes|{}sizeBytes[0]
+        final fun <get-sizeBytes>(): kotlin/Long? // io.github.valerioisufi.pageboard.handwriting/InkLanguageModel.sizeBytes.<get-sizeBytes>|<get-sizeBytes>(){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkLayout { // io.github.valerioisufi.pageboard.handwriting/InkLayout|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.handwriting/InkSample>, io.github.valerioisufi.pageboard.handwriting/InkSample) // io.github.valerioisufi.pageboard.handwriting/InkLayout.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.handwriting.InkSample>;io.github.valerioisufi.pageboard.handwriting.InkSample){}[0]
+
+    final val drawing // io.github.valerioisufi.pageboard.handwriting/InkLayout.drawing|{}drawing[0]
+        final fun <get-drawing>(): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkLayout.drawing.<get-drawing>|<get-drawing>(){}[0]
+    final val lines // io.github.valerioisufi.pageboard.handwriting/InkLayout.lines|{}lines[0]
+        final fun <get-lines>(): kotlin.collections/List<io.github.valerioisufi.pageboard.handwriting/InkSample> // io.github.valerioisufi.pageboard.handwriting/InkLayout.lines.<get-lines>|<get-lines>(){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkLines { // io.github.valerioisufi.pageboard.handwriting/InkLines|null[0]
+    constructor <init>(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // io.github.valerioisufi.pageboard.handwriting/InkLines.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final val drawingFactor // io.github.valerioisufi.pageboard.handwriting/InkLines.drawingFactor|{}drawingFactor[0]
+        final fun <get-drawingFactor>(): kotlin/Float // io.github.valerioisufi.pageboard.handwriting/InkLines.drawingFactor.<get-drawingFactor>|<get-drawingFactor>(){}[0]
+    final val lineOverlap // io.github.valerioisufi.pageboard.handwriting/InkLines.lineOverlap|{}lineOverlap[0]
+        final fun <get-lineOverlap>(): kotlin/Float // io.github.valerioisufi.pageboard.handwriting/InkLines.lineOverlap.<get-lineOverlap>|<get-lineOverlap>(){}[0]
+    final val tallFactor // io.github.valerioisufi.pageboard.handwriting/InkLines.tallFactor|{}tallFactor[0]
+        final fun <get-tallFactor>(): kotlin/Float // io.github.valerioisufi.pageboard.handwriting/InkLines.tallFactor.<get-tallFactor>|<get-tallFactor>(){}[0]
+
+    final fun split(io.github.valerioisufi.pageboard.handwriting/InkSample): io.github.valerioisufi.pageboard.handwriting/InkLayout // io.github.valerioisufi.pageboard.handwriting/InkLines.split|split(io.github.valerioisufi.pageboard.handwriting.InkSample){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkMlInk { // io.github.valerioisufi.pageboard.handwriting/InkMlInk|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.handwriting/InkSample, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.pageboard.handwriting/InkMlInk.<init>|<init>(io.github.valerioisufi.pageboard.handwriting.InkSample;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+
+    final val annotations // io.github.valerioisufi.pageboard.handwriting/InkMlInk.annotations|{}annotations[0]
+        final fun <get-annotations>(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.handwriting/InkMlInk.annotations.<get-annotations>|<get-annotations>(){}[0]
+    final val label // io.github.valerioisufi.pageboard.handwriting/InkMlInk.label|{}label[0]
+        final fun <get-label>(): kotlin/String? // io.github.valerioisufi.pageboard.handwriting/InkMlInk.label.<get-label>|<get-label>(){}[0]
+    final val sample // io.github.valerioisufi.pageboard.handwriting/InkMlInk.sample|{}sample[0]
+        final fun <get-sample>(): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkMlInk.sample.<get-sample>|<get-sample>(){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkReading { // io.github.valerioisufi.pageboard.handwriting/InkReading|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String> = ..., kotlin/String = ...) // io.github.valerioisufi.pageboard.handwriting/InkReading.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String){}[0]
+
+    final val alternatives // io.github.valerioisufi.pageboard.handwriting/InkReading.alternatives|{}alternatives[0]
+        final fun <get-alternatives>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.handwriting/InkReading.alternatives.<get-alternatives>|<get-alternatives>(){}[0]
+    final val searchText // io.github.valerioisufi.pageboard.handwriting/InkReading.searchText|{}searchText[0]
+        final fun <get-searchText>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/InkReading.searchText.<get-searchText>|<get-searchText>(){}[0]
+    final val text // io.github.valerioisufi.pageboard.handwriting/InkReading.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/InkReading.text.<get-text>|<get-text>(){}[0]
+
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.handwriting/InkReading.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.handwriting/InkSample { // io.github.valerioisufi.pageboard.handwriting/InkSample|null[0]
+    constructor <init>(kotlin.collections/List<kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>>, kotlin/Int = ...) // io.github.valerioisufi.pageboard.handwriting/InkSample.<init>|<init>(kotlin.collections.List<kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>>;kotlin.Int){}[0]
+
+    final val bounds // io.github.valerioisufi.pageboard.handwriting/InkSample.bounds|{}bounds[0]
+        final fun <get-bounds>(): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.handwriting/InkSample.bounds.<get-bounds>|<get-bounds>(){}[0]
+    final val isEmpty // io.github.valerioisufi.pageboard.handwriting/InkSample.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting/InkSample.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val missing // io.github.valerioisufi.pageboard.handwriting/InkSample.missing|{}missing[0]
+        final fun <get-missing>(): kotlin/Int // io.github.valerioisufi.pageboard.handwriting/InkSample.missing.<get-missing>|<get-missing>(){}[0]
+    final val strokes // io.github.valerioisufi.pageboard.handwriting/InkSample.strokes|{}strokes[0]
+        final fun <get-strokes>(): kotlin.collections/List<kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>> // io.github.valerioisufi.pageboard.handwriting/InkSample.strokes.<get-strokes>|<get-strokes>(){}[0]
+
+    final fun retimed(): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkSample.retimed|retimed(){}[0]
+    final fun strokeBounds(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect> // io.github.valerioisufi.pageboard.handwriting/InkSample.strokeBounds|strokeBounds(){}[0]
+    final fun subset(kotlin.collections/Collection<kotlin/Int>): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkSample.subset|subset(kotlin.collections.Collection<kotlin.Int>){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion|null[0]
+        final const val SAMPLE_MS // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.SAMPLE_MS|{}SAMPLE_MS[0]
+            final fun <get-SAMPLE_MS>(): kotlin/Long // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.SAMPLE_MS.<get-SAMPLE_MS>|<get-SAMPLE_MS>(){}[0]
+        final const val STROKE_GAP_MS // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.STROKE_GAP_MS|{}STROKE_GAP_MS[0]
+            final fun <get-STROKE_GAP_MS>(): kotlin/Long // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.STROKE_GAP_MS.<get-STROKE_GAP_MS>|<get-STROKE_GAP_MS>(){}[0]
+
+        final fun of(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.of|of(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>){}[0]
+        final fun ofData(kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/StrokeData>): io.github.valerioisufi.pageboard.handwriting/InkSample // io.github.valerioisufi.pageboard.handwriting/InkSample.Companion.ofData|ofData(kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.StrokeData>){}[0]
+    }
+}
+
+final object io.github.valerioisufi.pageboard.handwriting/InkMl { // io.github.valerioisufi.pageboard.handwriting/InkMl|null[0]
+    final fun read(kotlin/String): io.github.valerioisufi.pageboard.handwriting/InkMlInk // io.github.valerioisufi.pageboard.handwriting/InkMl.read|read(kotlin.String){}[0]
+    final fun write(io.github.valerioisufi.pageboard.handwriting/InkSample, kotlin.collections/Map<kotlin/String, kotlin/String> = ...): kotlin/String // io.github.valerioisufi.pageboard.handwriting/InkMl.write|write(io.github.valerioisufi.pageboard.handwriting.InkSample;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
+}

@@ -8,6 +8,7 @@ import io.github.valerioisufi.pageboard.model.change.DocumentPersistence
 import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
+import io.github.valerioisufi.pageboard.store.DocumentInk
 import io.github.valerioisufi.pageboard.store.DocumentOutline
 import io.github.valerioisufi.pageboard.store.DocumentStore
 import io.github.valerioisufi.pageboard.store.DocumentSummary
@@ -108,6 +109,8 @@ public class RoomDocumentStore(
     override suspend fun loadDocument(documentId: String): Document? = repository.loadDocument(documentId)
 
     override suspend fun loadOutline(documentId: String): DocumentOutline? = repository.loadOutline(documentId)
+
+    override suspend fun loadInk(documentId: String): DocumentInk? = repository.loadInk(documentId)
 
     override suspend fun pageFingerprint(documentId: String, index: Int): String? = repository.pageFingerprint(documentId, index)
 

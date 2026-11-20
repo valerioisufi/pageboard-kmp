@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture
 
-import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
 import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.geometry.Rect

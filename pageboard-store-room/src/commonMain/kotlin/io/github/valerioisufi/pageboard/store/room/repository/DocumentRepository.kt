@@ -32,7 +32,9 @@ import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import io.github.valerioisufi.pageboard.platform.Sha256
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
+import io.github.valerioisufi.pageboard.store.DocumentInk
 import io.github.valerioisufi.pageboard.store.DocumentOutline
+import io.github.valerioisufi.pageboard.store.PageInk
 import io.github.valerioisufi.pageboard.store.LoadedPage
 import io.github.valerioisufi.pageboard.store.PageOutline
 import io.github.valerioisufi.pageboard.store.room.db.CustomElementEntity
@@ -231,6 +233,22 @@ internal class DocumentRepository(
         return DocumentOutline(documentId, shown, resources.map(::mapResource))
     }
 
+    /** The strokes of a document as they were drawn, page by page, without modeling them. */
+    suspend fun loadInk(documentId: String): DocumentInk? {
+        val docEntity = withContext(Dispatchers.IO) { documentDao.getDocumentById(documentId) } ?: return null
+        val pages = withContext(Dispatchers.IO) { pageDao.getPagesForDocument(documentId) }
+        val strokes = withContext(Dispatchers.IO) { strokeDao.getShownStrokesOfDocument(documentId) }.groupBy { it.pageId }
+        val shown = pages.sortedWith(compareBy({ it.orderKey }, { it.id }))
+            .filterNot { mapPage(it, docEntity).isHidden }
+            .map { page ->
+                PageInk(
+                    id = page.id,
+                    strokes = strokes[page.id].orEmpty().sortedWith(compareBy({ it.orderKey }, { it.id })).map(::strokeData)
+                )
+            }
+        return DocumentInk(documentId, shown)
+    }
+
     private fun mapPage(entity: PageEntity, document: DocumentEntity): Page = Page(
         widthMm = entity.width,
         heightMm = entity.height,
@@ -263,15 +281,18 @@ internal class DocumentRepository(
             this.updated = updated
         }
 
-    private fun mapStroke(entity: StrokeEntity): StrokeElement = StrokeData(
+    private fun mapStroke(entity: StrokeEntity): StrokeElement = strokeData(entity).toElement(strokeModeller)
+
+    private fun strokeData(entity: StrokeEntity): StrokeData = StrokeData(
         id = entity.id,
         points = StrokeInputCodec.decode(entity.inputs),
         tool = StrokeTool.fromName(entity.brushFamily) ?: StrokeTool.PRESSURE_PEN,
         size = entity.size,
         color = entity.color,
         inputToolType = InputToolType.fromName(entity.toolType),
-        transform = entity.transform
-    ).toElement(strokeModeller)
+        transform = entity.transform,
+        order = entity.orderKey
+    )
 
     private fun mapTextMarkup(entity: TextMarkupEntity): TextMarkupElement? {
         val rects = try {

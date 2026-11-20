@@ -11,10 +11,11 @@ import io.github.valerioisufi.pageboard.lecture.PageContent
 import io.github.valerioisufi.pageboard.lecture.PageImage
 import io.github.valerioisufi.pageboard.lecture.SlideText
 import io.github.valerioisufi.pageboard.lecture.cleanSlideText
-import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
-import io.github.valerioisufi.pageboard.lecture.handwriting.blockKey
-import io.github.valerioisufi.pageboard.lecture.handwriting.groupStrokes
-import io.github.valerioisufi.pageboard.lecture.handwriting.unionOf
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
+import io.github.valerioisufi.pageboard.model.ink.blockKey
+import io.github.valerioisufi.pageboard.model.ink.groupStrokes
+import io.github.valerioisufi.pageboard.model.ink.isHandwriting
+import io.github.valerioisufi.pageboard.model.ink.unionOf
 import io.github.valerioisufi.pageboard.lecture.ui.platform.encodeJpeg
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.DocumentResource
@@ -229,7 +230,7 @@ internal fun inkBlocksOf(pageIndex: Int, pageId: String, strokes: List<StrokeEle
 
 /** A stroke of writing or drawing (the highlights mark the slides, they are not read). */
 private val StrokeElement.isHandwriting: Boolean
-    get() = brushConfig.tool != StrokeTool.HIGHLIGHTER && brushConfig.tool != StrokeTool.ERASER && brushConfig.tool != StrokeTool.LASSO
+    get() = brushConfig.tool.isHandwriting
 
 private fun union(a: Rect, b: Rect) = Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
 

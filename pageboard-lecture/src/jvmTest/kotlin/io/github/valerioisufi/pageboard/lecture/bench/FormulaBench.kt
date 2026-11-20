@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.lecture.bench
 
 import io.github.valerioisufi.pageboard.lecture.LectureAnalysis
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
 import io.github.valerioisufi.pageboard.lecture.model.OllamaBackend
 import io.github.valerioisufi.pageboard.ml.GeneratorOptions
 import io.github.valerioisufi.pageboard.ml.InstalledModel

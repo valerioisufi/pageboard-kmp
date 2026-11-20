@@ -16,6 +16,7 @@ import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.store.testing.checkFolderOperations
+import io.github.valerioisufi.pageboard.store.testing.checkInk
 import io.github.valerioisufi.pageboard.store.testing.checkOutline
 import io.github.valerioisufi.pageboard.store.testing.checkPageFingerprint
 import io.github.valerioisufi.pageboard.store.testing.checkTrash
@@ -246,6 +247,11 @@ class KeyValueDocumentStoreTest {
     @Test
     fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
         checkOutline(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+    }
+
+    @Test
+    fun theInkIsReadWithoutModelingTheStrokes() = runTest {
+        checkInk(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
     }
 
     @Test

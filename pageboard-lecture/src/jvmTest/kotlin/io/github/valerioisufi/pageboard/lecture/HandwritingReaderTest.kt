@@ -2,9 +2,9 @@ package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiClient
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
-import io.github.valerioisufi.pageboard.lecture.handwriting.blockKey
-import io.github.valerioisufi.pageboard.lecture.handwriting.groupStrokes
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
+import io.github.valerioisufi.pageboard.model.ink.blockKey
+import io.github.valerioisufi.pageboard.model.ink.groupStrokes
 import io.github.valerioisufi.pageboard.lecture.local.OllamaClient
 import io.github.valerioisufi.pageboard.lecture.model.GeminiBackend
 import io.github.valerioisufi.pageboard.lecture.model.ModelBackends

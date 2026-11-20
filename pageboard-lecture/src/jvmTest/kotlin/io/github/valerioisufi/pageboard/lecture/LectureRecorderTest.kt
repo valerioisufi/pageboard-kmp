@@ -8,7 +8,7 @@ import io.github.valerioisufi.pageboard.lecture.audio.toLittleEndianBytes
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiClient
 import io.github.valerioisufi.pageboard.lecture.gemini.GeminiException
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.pageboard.lecture.handwriting.InkBlock
+import io.github.valerioisufi.pageboard.model.ink.InkBlock
 import io.github.valerioisufi.pageboard.lecture.local.OllamaClient
 import io.github.valerioisufi.pageboard.lecture.model.GeminiBackend
 import io.github.valerioisufi.pageboard.lecture.model.ModelBackends

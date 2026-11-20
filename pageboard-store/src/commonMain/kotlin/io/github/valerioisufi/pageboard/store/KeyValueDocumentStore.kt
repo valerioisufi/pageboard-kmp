@@ -200,6 +200,11 @@ public class KeyValueDocumentStore(
     }
 
     /** Read from the document stored, as [loadOutline]. */
+    override suspend fun loadInk(documentId: String): DocumentInk? = syncLock(lock) {
+        readDocumentLocked(documentId)?.let { DocumentInk.of(it) }
+    }
+
+    /** Read from the document stored, as [loadOutline]. */
     override suspend fun pageFingerprint(documentId: String, index: Int): String? = syncLock(lock) {
         readDocumentLocked(documentId)?.pageFingerprint(index)
     }

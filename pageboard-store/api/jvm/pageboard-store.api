@@ -22,6 +22,17 @@ public final class io/github/valerioisufi/pageboard/store/DocumentCatalog$Defaul
 	public static synthetic fun createDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/pageboard/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/pageboard/store/DocumentInk {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/DocumentInk$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPages ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/pageboard/store/DocumentInk$Companion {
+	public final fun of (Lio/github/valerioisufi/pageboard/model/Document;)Lio/github/valerioisufi/pageboard/store/DocumentInk;
+}
+
 public final class io/github/valerioisufi/pageboard/store/DocumentOutline {
 	public static final field Companion Lio/github/valerioisufi/pageboard/store/DocumentOutline$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
@@ -43,6 +54,7 @@ public abstract interface class io/github/valerioisufi/pageboard/store/DocumentS
 	public abstract fun insertDocument (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun loadInk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadPage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageFingerprint (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -52,6 +64,7 @@ public final class io/github/valerioisufi/pageboard/store/DocumentStore$DefaultI
 	public static fun closeDocument (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;)V
 	public static fun flush (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun loadInk (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun loadOutline (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun loadPage (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun pageFingerprint (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -154,6 +167,7 @@ public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore 
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun loadInk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadPage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -288,6 +302,12 @@ public abstract interface class io/github/valerioisufi/pageboard/store/Operation
 public final class io/github/valerioisufi/pageboard/store/OperationLog$DefaultImpls {
 	public static fun proofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun saveProofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/store/PageInk {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getId ()Ljava/lang/String;
+	public final fun getStrokes ()Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/pageboard/store/PageOutline {

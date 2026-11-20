@@ -1,5 +1,6 @@
-package io.github.valerioisufi.pageboard.lecture.handwriting
+package io.github.valerioisufi.pageboard.model.ink
 
+import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import kotlin.math.max
 import kotlin.math.min
@@ -71,4 +72,8 @@ public fun unionOf(rects: List<Rect>): Rect = rects.reduce { a, b ->
 }
 
 /** Strokes closer than this (millimeters) are in the same block: the lines of a paragraph. */
-internal const val BLOCK_GAP_MM = 12f
+public const val BLOCK_GAP_MM: Float = 12f
+
+/** Whether a stroke of this tool is writing or drawing to read: a highlight marks, the eraser and the lasso leave no ink. */
+public val StrokeTool.isHandwriting: Boolean
+    get() = this != StrokeTool.HIGHLIGHTER && this != StrokeTool.ERASER && this != StrokeTool.LASSO

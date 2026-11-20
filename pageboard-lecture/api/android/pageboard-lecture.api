@@ -920,7 +920,7 @@ public abstract interface class io/github/valerioisufi/pageboard/lecture/Noteboo
 	public abstract fun getDocumentTitle ()Ljava/lang/String;
 	public fun inkBlocks (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun renderInk (Lio/github/valerioisufi/pageboard/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renderInk (Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun strokeIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -928,7 +928,7 @@ public final class io/github/valerioisufi/pageboard/lecture/NotebookSource$Defau
 	public static fun allPages (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun inkBlocks (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun pageIds (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun renderInk (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lio/github/valerioisufi/pageboard/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun renderInk (Lio/github/valerioisufi/pageboard/lecture/NotebookSource;Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/NotebookSourceKt {
@@ -1398,23 +1398,6 @@ public final class io/github/valerioisufi/pageboard/lecture/gemini/GeminiClient 
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/gemini/GeminiClient$Companion {
-}
-
-public final class io/github/valerioisufi/pageboard/lecture/handwriting/InkBlock {
-	public static final field $stable I
-	public fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Set;Lio/github/valerioisufi/pageboard/model/geometry/Rect;)V
-	public final fun getBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
-	public final fun getKey ()Ljava/lang/String;
-	public final fun getPageId ()Ljava/lang/String;
-	public final fun getPageIndex ()I
-	public final fun getStrokeIds ()Ljava/util/Set;
-}
-
-public final class io/github/valerioisufi/pageboard/lecture/handwriting/InkBlocksKt {
-	public static final fun blockKey (Ljava/util/Collection;)Ljava/lang/String;
-	public static final fun groupStrokes (Ljava/util/List;F)Ljava/util/List;
-	public static synthetic fun groupStrokes$default (Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
-	public static final fun unionOf (Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/local/OllamaClient {

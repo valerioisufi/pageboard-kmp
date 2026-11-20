@@ -1,0 +1,125 @@
+public final class io/github/valerioisufi/pageboard/handwriting/HandwritingEngines {
+	public static final field Companion Lio/github/valerioisufi/pageboard/handwriting/HandwritingEngines$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/pageboard/handwriting/MathInkRecognizer;Lio/github/valerioisufi/pageboard/handwriting/InkLanguageModels;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/github/valerioisufi/pageboard/handwriting/MathInkRecognizer;Lio/github/valerioisufi/pageboard/handwriting/InkLanguageModels;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getLanguageModels ()Lio/github/valerioisufi/pageboard/handwriting/InkLanguageModels;
+	public final fun getMath ()Lio/github/valerioisufi/pageboard/handwriting/MathInkRecognizer;
+	public final fun getText ()Ljava/util/List;
+	public final fun languages (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun textReader (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/HandwritingEngines$Companion {
+	public final fun getNone ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingEngines;
+	public final fun sameLanguage (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/HandwritingReading {
+	public fun <init> (Lio/github/valerioisufi/pageboard/handwriting/HandwritingEngines;Lio/github/valerioisufi/pageboard/handwriting/InkLines;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/handwriting/HandwritingEngines;Lio/github/valerioisufi/pageboard/handwriting/InkLines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEngines ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingEngines;
+	public final fun getReadsFormulas ()Z
+	public final fun readFormula (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun readText (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun readText$default (Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun readsText (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun version (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkLanguageModel {
+	public fun <init> (Ljava/lang/String;ZLjava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;ZLjava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getLanguage ()Ljava/lang/String;
+	public final fun getSizeBytes ()Ljava/lang/Long;
+	public final fun isDownloaded ()Z
+}
+
+public abstract interface class io/github/valerioisufi/pageboard/handwriting/InkLanguageModels {
+	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun download (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun download$default (Lio/github/valerioisufi/pageboard/handwriting/InkLanguageModels;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun models (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkLanguageModels$DefaultImpls {
+	public static synthetic fun download$default (Lio/github/valerioisufi/pageboard/handwriting/InkLanguageModels;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkLayout {
+	public fun <init> (Ljava/util/List;Lio/github/valerioisufi/pageboard/handwriting/InkSample;)V
+	public final fun getDrawing ()Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+	public final fun getLines ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkLines {
+	public fun <init> ()V
+	public fun <init> (FFF)V
+	public synthetic fun <init> (FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDrawingFactor ()F
+	public final fun getLineOverlap ()F
+	public final fun getTallFactor ()F
+	public final fun split (Lio/github/valerioisufi/pageboard/handwriting/InkSample;)Lio/github/valerioisufi/pageboard/handwriting/InkLayout;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkMl {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/handwriting/InkMl;
+	public final fun read (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/handwriting/InkMlInk;
+	public final fun write (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/util/Map;)Ljava/lang/String;
+	public static synthetic fun write$default (Lio/github/valerioisufi/pageboard/handwriting/InkMl;Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/util/Map;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkMlInk {
+	public fun <init> (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/util/Map;)V
+	public final fun getAnnotations ()Ljava/util/Map;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getSample ()Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkReading {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAlternatives ()Ljava/util/List;
+	public final fun getSearchText ()Ljava/lang/String;
+	public final fun getText ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkSample {
+	public static final field Companion Lio/github/valerioisufi/pageboard/handwriting/InkSample$Companion;
+	public static final field SAMPLE_MS J
+	public static final field STROKE_GAP_MS J
+	public fun <init> (Ljava/util/List;I)V
+	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
+	public final fun getMissing ()I
+	public final fun getStrokes ()Ljava/util/List;
+	public final fun isEmpty ()Z
+	public final fun retimed ()Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+	public final fun strokeBounds ()Ljava/util/List;
+	public final fun subset (Ljava/util/Collection;)Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkSample$Companion {
+	public final fun of (Ljava/util/List;)Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+	public final fun ofData (Ljava/util/List;)Lio/github/valerioisufi/pageboard/handwriting/InkSample;
+}
+
+public abstract interface class io/github/valerioisufi/pageboard/handwriting/MathInkRecognizer {
+	public abstract fun getVersion ()Ljava/lang/String;
+	public abstract fun recognize (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/pageboard/handwriting/TextInkRecognizer {
+	public fun getReadsBlocks ()Z
+	public abstract fun getVersion ()Ljava/lang/String;
+	public abstract fun languages (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun recognize (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun recognize$default (Lio/github/valerioisufi/pageboard/handwriting/TextInkRecognizer;Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/TextInkRecognizer$DefaultImpls {
+	public static fun getReadsBlocks (Lio/github/valerioisufi/pageboard/handwriting/TextInkRecognizer;)Z
+	public static synthetic fun recognize$default (Lio/github/valerioisufi/pageboard/handwriting/TextInkRecognizer;Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+

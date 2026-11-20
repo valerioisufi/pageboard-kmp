@@ -2157,6 +2157,21 @@ final class io.github.valerioisufi.pageboard.model.geometry/VectorLine { // io.g
         final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model.geometry/VectorLine.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.model.ink/InkBlock { // io.github.valerioisufi.pageboard.model.ink/InkBlock|null[0]
+    constructor <init>(kotlin/Int, kotlin/String, kotlin/String, kotlin.collections/Set<kotlin/String>, io.github.valerioisufi.pageboard.model.geometry/Rect) // io.github.valerioisufi.pageboard.model.ink/InkBlock.<init>|<init>(kotlin.Int;kotlin.String;kotlin.String;kotlin.collections.Set<kotlin.String>;io.github.valerioisufi.pageboard.model.geometry.Rect){}[0]
+
+    final val bounds // io.github.valerioisufi.pageboard.model.ink/InkBlock.bounds|{}bounds[0]
+        final fun <get-bounds>(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model.ink/InkBlock.bounds.<get-bounds>|<get-bounds>(){}[0]
+    final val key // io.github.valerioisufi.pageboard.model.ink/InkBlock.key|{}key[0]
+        final fun <get-key>(): kotlin/String // io.github.valerioisufi.pageboard.model.ink/InkBlock.key.<get-key>|<get-key>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.ink/InkBlock.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.ink/InkBlock.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val pageIndex // io.github.valerioisufi.pageboard.model.ink/InkBlock.pageIndex|{}pageIndex[0]
+        final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.pageboard.model.ink/InkBlock.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+    final val strokeIds // io.github.valerioisufi.pageboard.model.ink/InkBlock.strokeIds|{}strokeIds[0]
+        final fun <get-strokeIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.model.ink/InkBlock.strokeIds.<get-strokeIds>|<get-strokeIds>(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.model.placement/BesideAnchor : io.github.valerioisufi.pageboard.model.placement/PlacementPolicy { // io.github.valerioisufi.pageboard.model.placement/BesideAnchor|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.model.geometry/Rect?) // io.github.valerioisufi.pageboard.model.placement/BesideAnchor.<init>|<init>(io.github.valerioisufi.pageboard.model.geometry.Rect?){}[0]
 
@@ -4098,6 +4113,8 @@ final object io.github.valerioisufi.pageboard.model/TrashRetention { // io.githu
     final fun expiredBefore(kotlin/Long): kotlin/Long // io.github.valerioisufi.pageboard.model/TrashRetention.expiredBefore|expiredBefore(kotlin.Long){}[0]
 }
 
+final const val io.github.valerioisufi.pageboard.model.ink/BLOCK_GAP_MM // io.github.valerioisufi.pageboard.model.ink/BLOCK_GAP_MM|{}BLOCK_GAP_MM[0]
+    final fun <get-BLOCK_GAP_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.ink/BLOCK_GAP_MM.<get-BLOCK_GAP_MM>|<get-BLOCK_GAP_MM>(){}[0]
 final const val io.github.valerioisufi.pageboard.model.shape/SHAPE_INPUT_SPACING_MM // io.github.valerioisufi.pageboard.model.shape/SHAPE_INPUT_SPACING_MM|{}SHAPE_INPUT_SPACING_MM[0]
     final fun <get-SHAPE_INPUT_SPACING_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/SHAPE_INPUT_SPACING_MM.<get-SHAPE_INPUT_SPACING_MM>|<get-SHAPE_INPUT_SPACING_MM>(){}[0]
 final const val io.github.valerioisufi.pageboard.model/STROKE_UNIT_LENGTH_CM_MM // io.github.valerioisufi.pageboard.model/STROKE_UNIT_LENGTH_CM_MM|{}STROKE_UNIT_LENGTH_CM_MM[0]
@@ -4123,6 +4140,8 @@ final val io.github.valerioisufi.pageboard.model.geometry/px // io.github.valeri
     final inline fun (kotlin/Float).<get-px>(): io.github.valerioisufi.pageboard.model.geometry/Px // io.github.valerioisufi.pageboard.model.geometry/px.<get-px>|<get-px>@kotlin.Float(){}[0]
 final val io.github.valerioisufi.pageboard.model.geometry/px // io.github.valerioisufi.pageboard.model.geometry/px|@kotlin.Int{}px[0]
     final inline fun (kotlin/Int).<get-px>(): io.github.valerioisufi.pageboard.model.geometry/Px // io.github.valerioisufi.pageboard.model.geometry/px.<get-px>|<get-px>@kotlin.Int(){}[0]
+final val io.github.valerioisufi.pageboard.model.ink/isHandwriting // io.github.valerioisufi.pageboard.model.ink/isHandwriting|@io.github.valerioisufi.pageboard.model.StrokeTool{}isHandwriting[0]
+    final fun (io.github.valerioisufi.pageboard.model/StrokeTool).<get-isHandwriting>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.ink/isHandwriting.<get-isHandwriting>|<get-isHandwriting>@io.github.valerioisufi.pageboard.model.StrokeTool(){}[0]
 final val io.github.valerioisufi.pageboard.model.shape/pivot // io.github.valerioisufi.pageboard.model.shape/pivot|@io.github.valerioisufi.pageboard.model.shape.Shape{}pivot[0]
     final fun (io.github.valerioisufi.pageboard.model.shape/Shape).<get-pivot>(): io.github.valerioisufi.pageboard.model.geometry/Point // io.github.valerioisufi.pageboard.model.shape/pivot.<get-pivot>|<get-pivot>@io.github.valerioisufi.pageboard.model.shape.Shape(){}[0]
 
@@ -4150,6 +4169,9 @@ final fun <#A: kotlin/Any> (io.github.valerioisufi.pageboard.model/ElementType<#
 final fun io.github.valerioisufi.pageboard.model.change/isFileHere(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/isFileHere|isFileHere(kotlin.String){}[0]
 final fun io.github.valerioisufi.pageboard.model.change/placementOf(io.github.valerioisufi.pageboard.model/PageElement): io.github.valerioisufi.pageboard.model.change/Placement? // io.github.valerioisufi.pageboard.model.change/placementOf|placementOf(io.github.valerioisufi.pageboard.model.PageElement){}[0]
 final fun io.github.valerioisufi.pageboard.model.geometry/fitPdfPage(kotlin/Double, kotlin/Double, io.github.valerioisufi.pageboard.model.geometry/Rect): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model.geometry/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;io.github.valerioisufi.pageboard.model.geometry.Rect){}[0]
+final fun io.github.valerioisufi.pageboard.model.ink/blockKey(kotlin.collections/Collection<kotlin/String>): kotlin/String // io.github.valerioisufi.pageboard.model.ink/blockKey|blockKey(kotlin.collections.Collection<kotlin.String>){}[0]
+final fun io.github.valerioisufi.pageboard.model.ink/groupStrokes(kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect>, kotlin/Float = ...): kotlin.collections/List<kotlin.collections/List<kotlin/Int>> // io.github.valerioisufi.pageboard.model.ink/groupStrokes|groupStrokes(kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Rect>;kotlin.Float){}[0]
+final fun io.github.valerioisufi.pageboard.model.ink/unionOf(kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect>): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model.ink/unionOf|unionOf(kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Rect>){}[0]
 final fun io.github.valerioisufi.pageboard.model.text/codePointAt(kotlin/String, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/codePointAt|codePointAt(kotlin.String;kotlin.Int){}[0]
 final fun io.github.valerioisufi.pageboard.model.text/codePoints(kotlin/String): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.pageboard.model.text/codePoints|codePoints(kotlin.String){}[0]
 final fun io.github.valerioisufi.pageboard.model/newElementId(): kotlin/String // io.github.valerioisufi.pageboard.model/newElementId|newElementId(){}[0]

@@ -74,6 +74,7 @@ abstract interface io.github.valerioisufi.pageboard.store/DocumentStore : io.git
     abstract suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store/DocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     open fun closeDocument(kotlin/String) // io.github.valerioisufi.pageboard.store/DocumentStore.closeDocument|closeDocument(kotlin.String){}[0]
     open suspend fun flush() // io.github.valerioisufi.pageboard.store/DocumentStore.flush|flush(){}[0]
+    open suspend fun loadInk(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentInk? // io.github.valerioisufi.pageboard.store/DocumentStore.loadInk|loadInk(kotlin.String){}[0]
     open suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store/DocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
     open suspend fun loadPage(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.store/LoadedPage? // io.github.valerioisufi.pageboard.store/DocumentStore.loadPage|loadPage(kotlin.String;kotlin.Int){}[0]
     open suspend fun pageFingerprint(kotlin/String, kotlin/Int): kotlin/String? // io.github.valerioisufi.pageboard.store/DocumentStore.pageFingerprint|pageFingerprint(kotlin.String;kotlin.Int){}[0]
@@ -617,6 +618,19 @@ final class io.github.valerioisufi.pageboard.store.space/TrashItem : io.github.v
     }
 }
 
+final class io.github.valerioisufi.pageboard.store/DocumentInk { // io.github.valerioisufi.pageboard.store/DocumentInk|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageInk>) // io.github.valerioisufi.pageboard.store/DocumentInk.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.store.PageInk>){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.store/DocumentInk.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store/DocumentInk.id.<get-id>|<get-id>(){}[0]
+    final val pages // io.github.valerioisufi.pageboard.store/DocumentInk.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageInk> // io.github.valerioisufi.pageboard.store/DocumentInk.pages.<get-pages>|<get-pages>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.store/DocumentInk.Companion|null[0]
+        final fun of(io.github.valerioisufi.pageboard.model/Document): io.github.valerioisufi.pageboard.store/DocumentInk // io.github.valerioisufi.pageboard.store/DocumentInk.Companion.of|of(io.github.valerioisufi.pageboard.model.Document){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.store/DocumentOutline { // io.github.valerioisufi.pageboard.store/DocumentOutline|null[0]
     constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.store/PageOutline>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/DocumentResource>) // io.github.valerioisufi.pageboard.store/DocumentOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.store.PageOutline>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.DocumentResource>){}[0]
 
@@ -751,6 +765,7 @@ final class io.github.valerioisufi.pageboard.store/KeyValueDocumentStore : io.gi
     final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
     final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    final suspend fun loadInk(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentInk? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadInk|loadInk(kotlin.String){}[0]
     final suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
     final suspend fun loadPage(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.store/LoadedPage? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadPage|loadPage(kotlin.String;kotlin.Int){}[0]
     final suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
@@ -882,6 +897,15 @@ final class io.github.valerioisufi.pageboard.store/OpenDocuments { // io.github.
     final suspend fun rename(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/OpenDocuments.rename|rename(kotlin.String;kotlin.String){}[0]
     final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.pageboard.store/OpenDocuments.replicaId|replicaId(){}[0]
     final suspend fun setReadOnly(kotlin/String, kotlin/Boolean) // io.github.valerioisufi.pageboard.store/OpenDocuments.setReadOnly|setReadOnly(kotlin.String;kotlin.Boolean){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.store/PageInk { // io.github.valerioisufi.pageboard.store/PageInk|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/StrokeData>) // io.github.valerioisufi.pageboard.store/PageInk.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.StrokeData>){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.store/PageInk.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store/PageInk.id.<get-id>|<get-id>(){}[0]
+    final val strokes // io.github.valerioisufi.pageboard.store/PageInk.strokes|{}strokes[0]
+        final fun <get-strokes>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/StrokeData> // io.github.valerioisufi.pageboard.store/PageInk.strokes.<get-strokes>|<get-strokes>(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store/PageOutline { // io.github.valerioisufi.pageboard.store/PageOutline|null[0]

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture
 
-import io.github.valerioisufi.pageboard.lecture.handwriting.groupStrokes
+import io.github.valerioisufi.pageboard.model.ink.groupStrokes
 import io.github.valerioisufi.pageboard.model.PageElement
 import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.PdfTextLayout
