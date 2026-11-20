@@ -1,6 +1,7 @@
 """The store graphics of PencilNotes: captioned screenshots, the feature graphic, the social preview.
 
 Usage: python -I graphics.py <shots dir> <repo dir>
+       python -I graphics.py --social-preview <repo dir>   (the social preview alone, from docs/images)
 """
 import os
 import sys
@@ -8,6 +9,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 SHOTS, REPO = sys.argv[1], sys.argv[2]
+SOCIAL_ONLY = SHOTS == "--social-preview"
 FONT = os.path.join(REPO, "pageboard-ui/src/commonMain/composeResources/font")
 BOLD = os.path.join(FONT, "plus_jakarta_sans_extrabold.ttf")
 MEDIUM = os.path.join(FONT, "plus_jakarta_sans_medium.ttf")
@@ -133,23 +135,33 @@ def icon_512(locale):
 
 
 def social_preview():
-    """The preview GitHub shows for a link to the repository (1280x640)."""
-    w, h = 1280, 640
+    """The preview GitHub shows for a link to the repository (1280x640).
+
+    What matters stays 80 px (40 pt) from the edges, where GitHub may crop it; only the background
+    reaches them. The screenshot is the one of the README, docs/images/annotate.png.
+    """
+    w, h, safe = 1280, 640, 80
+    left, right = safe + 16, w - safe - 16
     canvas = Image.new("RGBA", (w, h), CREAM + (255,))
     d = ImageDraw.Draw(canvas)
-    d.ellipse((700, -300, 1700, 800), fill=LIGHT + (255,))
-    d.text((64, 150), "Pageboard", font=font(BOLD, 78), fill=INK)
-    d.text((66, 250), "Kotlin Multiplatform libraries for", font=font(MEDIUM, 32), fill=INK)
-    d.text((66, 292), "drawing, handwriting and notes", font=font(MEDIUM, 32), fill=INK)
-    icon = Image.open(ICON).convert("RGB").resize((64, 64), Image.LANCZOS)
-    canvas.alpha_composite(rounded(icon, 14), (66, 380))
-    d.text((146, 384), "PencilNotes", font=font(WORDMARK, 44), fill=GREEN)
-    d.text((66, 470), "Android  ·  iOS  ·  Desktop", font=font(MEDIUM, 26), fill=GREEN)
-    shot = Image.open(os.path.join(SHOTS, "tablet-1-annotate.png")).convert("RGB").resize((640, 400), Image.LANCZOS)
-    paste_shadowed(canvas, shot, 590, 120, 24)
+    d.ellipse((720, -300, 1720, 800), fill=LIGHT + (255,))
+    d.text((left - 4, 112), "Pageboard", font=font(BOLD, 84), fill=INK, anchor="la")
+    d.text((left, 236), "Kotlin Multiplatform libraries for", font=font(MEDIUM, 31), fill=INK)
+    d.text((left, 276), "drawing, handwriting and notes", font=font(MEDIUM, 31), fill=INK)
+    icon = Image.open(ICON).convert("RGB").resize((60, 60), Image.LANCZOS)
+    canvas.alpha_composite(rounded(icon, 13), (left, 372))
+    d.text((left + 76, 374), "PencilNotes", font=font(WORDMARK, 42), fill=GREEN)
+    d.text((left, 470), "Android  ·  iOS  ·  Desktop", font=font(MEDIUM, 26), fill=GREEN)
+    shot = Image.open(os.path.join(REPO, "docs/images/annotate.png")).convert("RGB")
+    sw = 560
+    shot = shot.resize((sw, int(shot.height * sw / shot.width)), Image.LANCZOS)
+    paste_shadowed(canvas, shot, right - sw, (h - shot.height) // 2, 22)
     canvas.convert("RGB").save(os.path.join(REPO, "docs/images/social-preview.png"), optimize=True)
 
 
+if SOCIAL_ONLY:
+    social_preview()
+    sys.exit()
 for name, locales in CAPTIONS.items():
     for locale, (title, subtitle) in locales.items():
         captioned(name, locale, title, subtitle)
