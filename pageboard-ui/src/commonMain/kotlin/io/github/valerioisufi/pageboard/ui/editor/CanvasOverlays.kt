@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.ui.editor
 
+import io.github.valerioisufi.pageboard.ui.command.Command
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -143,6 +144,7 @@ private fun ArrangeAction(commands: EditorCommands) {
 internal fun CanvasContextMenu(
     controller: PageboardController,
     commands: EditorCommands,
+    selectionActions: List<Command> = emptyList(),
     onEditPageBackground: () -> Unit
 ) {
     val position = controller.contextMenuPosition
@@ -177,7 +179,7 @@ internal fun CanvasContextMenu(
                 .padding(8.dp)
         ) {
             if (controller.selectionManager.currentSelection != null) {
-                SelectionMenuItems(controller, commands)
+                SelectionMenuItems(controller, commands, selectionActions)
                 return@Column
             }
             // What was copied in any document or in another application, where the menu was
@@ -257,12 +259,14 @@ internal fun CanvasContextMenu(
     }
 }
 
-/** The items of the context menu of a selection: cut, copy, delete, then the stack. */
+/** The items of the context menu of a selection: cut, copy, delete, then the stack, then the actions of the extensions. */
 @Composable
-private fun SelectionMenuItems(controller: PageboardController, commands: EditorCommands) {
+private fun SelectionMenuItems(controller: PageboardController, commands: EditorCommands, selectionActions: List<Command>) {
     val adaptive = currentAdaptiveInfo()
     val conventions = adaptive.conventions.takeIf { adaptive.input.hasKeyboard }
-    for ((index, section) in listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements).withIndex()) {
+    val sections = listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements) +
+        listOf(selectionActions).filter { it.isNotEmpty() }
+    for ((index, section) in sections.withIndex()) {
         if (index > 0) MenuDivider()
         for (command in section) {
             MenuItem(

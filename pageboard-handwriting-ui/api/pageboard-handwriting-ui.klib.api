@@ -1,0 +1,24 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <pageboard-kmp:pageboard-handwriting-ui>
+final class io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion { // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.handwriting/HandwritingReading, kotlin/Function0<kotlin/String>) // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.<init>|<init>(io.github.valerioisufi.pageboard.handwriting.HandwritingReading;kotlin.Function0<kotlin.String>){}[0]
+
+    final val reading // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.reading|{}reading[0]
+        final fun <get-reading>(): io.github.valerioisufi.pageboard.handwriting/HandwritingReading // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.reading.<get-reading>|<get-reading>(){}[0]
+
+    final fun replace(io.github.valerioisufi.pageboard.canvas.port/EditorDocument, kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, io.github.valerioisufi.pageboard.model/TextElement): io.github.valerioisufi.pageboard.model/TextElement? // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.replace|replace(io.github.valerioisufi.pageboard.canvas.port.EditorDocument;kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;io.github.valerioisufi.pageboard.model.TextElement){}[0]
+    final fun textBox(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, kotlin/String): io.github.valerioisufi.pageboard.model/TextElement // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.textBox|textBox(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;kotlin.String){}[0]
+    final suspend fun read(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.read|read(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>){}[0]
+    final suspend fun readsText(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion.readsText|readsText(){}[0]
+}
+
+final val io.github.valerioisufi.pageboard.handwriting.ui/io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop // io.github.valerioisufi.pageboard.handwriting.ui/io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop|#static{}io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop[0]
+
+final fun io.github.valerioisufi.pageboard.handwriting.ui/handwritingEditorExtension(io.github.valerioisufi.pageboard.handwriting.ui/HandwritingConversion): io.github.valerioisufi.pageboard.ui.extension/EditorExtension // io.github.valerioisufi.pageboard.handwriting.ui/handwritingEditorExtension|handwritingEditorExtension(io.github.valerioisufi.pageboard.handwriting.ui.HandwritingConversion){}[0]
+final fun io.github.valerioisufi.pageboard.handwriting.ui/io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.handwriting.ui/io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop_getter|io_github_valerioisufi_pageboard_handwriting_ui_HandwritingConversion$stableprop_getter(){}[0]

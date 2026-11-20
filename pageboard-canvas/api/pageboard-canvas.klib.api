@@ -161,6 +161,8 @@ abstract interface io.github.valerioisufi.pageboard.canvas.port/EditorDocument {
 abstract interface io.github.valerioisufi.pageboard.canvas.port/EditorEdits { // io.github.valerioisufi.pageboard.canvas.port/EditorEdits|null[0]
     abstract val isEditingText // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.isEditingText|{}isEditingText[0]
         abstract fun <get-isEditingText>(): kotlin/Boolean // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.isEditingText.<get-isEditingText>|<get-isEditingText>(){}[0]
+    open val selection // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.selection|{}selection[0]
+        open fun <get-selection>(): io.github.valerioisufi.pageboard.canvas.port/ElementSelection? // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.selection.<get-selection>|<get-selection>(){}[0]
 
     abstract var pendingTextImport // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.pendingTextImport|{}pendingTextImport[0]
         abstract fun <get-pendingTextImport>(): io.github.valerioisufi.pageboard.canvas.controller/TextImport? // io.github.valerioisufi.pageboard.canvas.port/EditorEdits.pendingTextImport.<get-pendingTextImport>|<get-pendingTextImport>(){}[0]
@@ -1520,6 +1522,19 @@ final class io.github.valerioisufi.pageboard.canvas.port/EditorPorts { // io.git
         final fun <get-rendering>(): io.github.valerioisufi.pageboard.canvas.port/EditorRendering // io.github.valerioisufi.pageboard.canvas.port/EditorPorts.rendering.<get-rendering>|<get-rendering>(){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.canvas.port/ElementSelection { // io.github.valerioisufi.pageboard.canvas.port/ElementSelection|null[0]
+    constructor <init>(kotlin/Int, kotlin.collections/Set<kotlin/String>, kotlin.collections/Set<kotlin/String>) // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.<init>|<init>(kotlin.Int;kotlin.collections.Set<kotlin.String>;kotlin.collections.Set<kotlin.String>){}[0]
+
+    final val isStrokesOnly // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.isStrokesOnly|{}isStrokesOnly[0]
+        final fun <get-isStrokesOnly>(): kotlin/Boolean // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.isStrokesOnly.<get-isStrokesOnly>|<get-isStrokesOnly>(){}[0]
+    final val otherIds // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.otherIds|{}otherIds[0]
+        final fun <get-otherIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.otherIds.<get-otherIds>|<get-otherIds>(){}[0]
+    final val pageIndex // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.pageIndex|{}pageIndex[0]
+        final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+    final val strokeIds // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.strokeIds|{}strokeIds[0]
+        final fun <get-strokeIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.canvas.port/ElementSelection.strokeIds.<get-strokeIds>|<get-strokeIds>(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.canvas.render.tile/FormulaDrawing { // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaDrawing|null[0]
     constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp>) // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaDrawing.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.canvas.render.tile.FormulaOp>){}[0]
 
@@ -2034,6 +2049,7 @@ final val io.github.valerioisufi.pageboard.canvas.controller/io_github_valeriois
 final val io.github.valerioisufi.pageboard.canvas.controller/io_github_valerioisufi_pageboard_canvas_controller_ToolPreset_$serializer$stableprop // io.github.valerioisufi.pageboard.canvas.controller/io_github_valerioisufi_pageboard_canvas_controller_ToolPreset_$serializer$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_controller_ToolPreset_$serializer$stableprop[0]
 final val io.github.valerioisufi.pageboard.canvas.history/io_github_valerioisufi_pageboard_canvas_history_HistoryManager$stableprop // io.github.valerioisufi.pageboard.canvas.history/io_github_valerioisufi_pageboard_canvas_history_HistoryManager$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_history_HistoryManager$stableprop[0]
 final val io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop // io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop[0]
+final val io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop // io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop[0]
 final val io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop // io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop[0]
 final val io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop // io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop[0]
 final val io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaImage$stableprop // io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaImage$stableprop|#static{}io_github_valerioisufi_pageboard_canvas_render_tile_FormulaImage$stableprop[0]
@@ -2137,6 +2153,7 @@ final fun io.github.valerioisufi.pageboard.canvas.platform/exifOrientation(kotli
 final fun io.github.valerioisufi.pageboard.canvas.platform/isJpeg(kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.pageboard.canvas.platform/isJpeg|isJpeg(kotlin.ByteArray){}[0]
 final fun io.github.valerioisufi.pageboard.canvas.platform/jpegOrientation(kotlin/ByteArray): kotlin/Int // io.github.valerioisufi.pageboard.canvas.platform/jpegOrientation|jpegOrientation(kotlin.ByteArray){}[0]
 final fun io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop_getter|io_github_valerioisufi_pageboard_canvas_port_EditorPorts$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.port/io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop_getter|io_github_valerioisufi_pageboard_canvas_port_ElementSelection$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.pageboard.canvas.render.tile/fitPdfPage(kotlin/Double, kotlin/Double, androidx.compose.ui.geometry/Rect): androidx.compose.ui.geometry/Rect // io.github.valerioisufi.pageboard.canvas.render.tile/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;androidx.compose.ui.geometry.Rect){}[0]
 final fun io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop_getter|io_github_valerioisufi_pageboard_canvas_render_tile_FormulaDrawing$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.render.tile/io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop_getter|io_github_valerioisufi_pageboard_canvas_render_tile_FormulaFont$stableprop_getter(){}[0]

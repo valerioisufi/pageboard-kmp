@@ -369,6 +369,7 @@ public abstract class io/github/valerioisufi/pageboard/ui/extension/EditorExtens
 	public fun getPageGridActions ()Lkotlin/jvm/functions/Function1;
 	public fun getPanels ()Lkotlin/jvm/functions/Function1;
 	public fun getReadOnlyNote ()Lkotlin/jvm/functions/Function3;
+	public fun getSelectionActions ()Lkotlin/jvm/functions/Function1;
 	public fun getTextSuggestions ()Lio/github/valerioisufi/pageboard/ui/extension/TextSuggester;
 	public fun getToolbarActions ()Lkotlin/jvm/functions/Function4;
 	public final fun plus (Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
@@ -381,6 +382,7 @@ public final class io/github/valerioisufi/pageboard/ui/extension/EditorExtension
 	public final fun pageGridActions (Lkotlin/jvm/functions/Function1;)V
 	public final fun panels (Lkotlin/jvm/functions/Function1;)V
 	public final fun readOnlyNote (Lkotlin/jvm/functions/Function3;)V
+	public final fun selectionActions (Lkotlin/jvm/functions/Function1;)V
 	public final fun textSuggestions (Lio/github/valerioisufi/pageboard/ui/extension/TextSuggester;)V
 	public final fun toolbarActions (Lkotlin/jvm/functions/Function4;)V
 }

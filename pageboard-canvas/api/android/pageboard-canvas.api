@@ -1110,6 +1110,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/port/Edi
 	public abstract fun clearSelection ()V
 	public abstract fun finishEditingText ()V
 	public abstract fun getPendingTextImport ()Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;
+	public fun getSelection ()Lio/github/valerioisufi/pageboard/canvas/port/ElementSelection;
 	public abstract fun isEditingText ()Z
 	public abstract fun selectText (ILio/github/valerioisufi/pageboard/model/TextElement;)V
 	public abstract fun setPendingTextImport (Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;)V
@@ -1117,6 +1118,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/port/Edi
 
 public final class io/github/valerioisufi/pageboard/canvas/port/EditorEdits$DefaultImpls {
 	public static synthetic fun addCustomElement$default (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;Lio/github/valerioisufi/pageboard/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/pageboard/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public static fun getSelection (Lio/github/valerioisufi/pageboard/canvas/port/EditorEdits;)Lio/github/valerioisufi/pageboard/canvas/port/ElementSelection;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/port/EditorPages {
@@ -1174,6 +1176,15 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/port/Edi
 	public abstract fun pdfPageText (Ljava/lang/String;I)Ljava/lang/String;
 	public abstract fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
 	public abstract fun renderThumbnail (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
+}
+
+public final class io/github/valerioisufi/pageboard/canvas/port/ElementSelection {
+	public static final field $stable I
+	public fun <init> (ILjava/util/Set;Ljava/util/Set;)V
+	public final fun getOtherIds ()Ljava/util/Set;
+	public final fun getPageIndex ()I
+	public final fun getStrokeIds ()Ljava/util/Set;
+	public final fun isStrokesOnly ()Z
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/render/ElementRenderer {

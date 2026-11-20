@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="handwriting_convert_to_text">Convertir en texte</string>
+    <string name="handwriting_reading">Lecture</string>
+    <string name="handwriting_other_readings">Autres lectures</string>
+    <string name="handwriting_nothing_read">Rien n’a été lu : écris le texte.</string>
+    <string name="handwriting_action_convert">Convertir</string>
+    <string name="handwriting_action_cancel">Annuler</string>
+</resources>

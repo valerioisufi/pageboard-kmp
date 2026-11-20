@@ -114,6 +114,8 @@ import org.jetbrains.compose.resources.stringResource
  *   with those of the editor for the menu bar and the shortcuts.
  * @param pageGridActions actions contributed on the pages selected in the page grid (e.g. their
  *   export), in the bar of its selection.
+ * @param selectionActions actions contributed on the elements selected (e.g. a conversion), in the
+ *   context menu of the selection.
  * @param location where the document is (its folder), shown under its title.
  * @param readOnlyNote why the document may only be read (e.g. who decides who edits), if known.
  * @param renamer renames the document from its title and the command "Rename…" (none: the title
@@ -133,6 +135,7 @@ internal fun DocumentScreen(
     canvasOverlay: @Composable BoxScope.() -> Unit = {},
     extraCommands: List<Command> = emptyList(),
     pageGridActions: List<Command> = emptyList(),
+    selectionActions: List<Command> = emptyList(),
     location: String? = null,
     readOnlyNote: @Composable () -> String? = { null },
     renamer: DocumentRenamer? = null
@@ -141,7 +144,7 @@ internal fun DocumentScreen(
     // windows opened over it (menus, popovers, dialogs)
     val hiddenBars = immersiveSystemBars()
     CompositionLocalProvider(LocalPageboardEngines provides controller.engines, LocalHiddenSystemBars provides hiddenBars) {
-        DocumentScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote, renamer)
+        DocumentScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, selectionActions, location, readOnlyNote, renamer)
     }
 }
 
@@ -157,6 +160,7 @@ private fun DocumentScreenContent(
     canvasOverlay: @Composable BoxScope.() -> Unit,
     extraCommands: List<Command>,
     pageGridActions: List<Command>,
+    selectionActions: List<Command>,
     location: String?,
     readOnlyNote: @Composable () -> String?,
     renamer: DocumentRenamer?
@@ -379,6 +383,7 @@ private fun DocumentScreenContent(
                             CanvasContextMenu(
                                 controller = controller,
                                 commands = commands,
+                                selectionActions = selectionActions,
                                 onEditPageBackground = { showSinglePageConfigurator = true }
                             )
 

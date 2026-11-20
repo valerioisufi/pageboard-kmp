@@ -22,6 +22,8 @@ import io.github.valerioisufi.pageboard.ml.litert.LiteRtRuntime
 import io.github.valerioisufi.pageboard.pdf.PdfiumEngine
 import io.github.valerioisufi.pageboard.search.MutableIndexingConditions
 import io.github.valerioisufi.pageboard.handwriting.HandwritingEngines
+import io.github.valerioisufi.pageboard.handwriting.ui.HandwritingConversion
+import io.github.valerioisufi.pageboard.handwriting.ui.handwritingEditorExtension
 import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
 import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import io.github.valerioisufi.pageboard.search.ui.ContentSearch
@@ -156,7 +158,11 @@ object PencilNotesServices {
      * the notes, the lectures, the sharing, the export, and the external models with [agents].
      */
     fun editorExtension(agents: PencilNotesAgents?): EditorExtension {
-        val extension = search.editorExtension + lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
+        val base = search.editorExtension + lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
+        // "Convert to text" on a selection of strokes, with the readers of the search
+        val extension = handwriting?.let { reading ->
+            base + handwritingEditorExtension(HandwritingConversion(reading.reading) { reading.language.value })
+        } ?: base
         return agents?.let { extension + it.editorExtension } ?: extension
     }
 

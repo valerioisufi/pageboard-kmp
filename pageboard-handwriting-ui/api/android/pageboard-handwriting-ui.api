@@ -1,0 +1,14 @@
+public final class io/github/valerioisufi/pageboard/handwriting/ui/HandwritingConversion {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Lkotlin/jvm/functions/Function0;)V
+	public final fun getReading ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;
+	public final fun read (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun readsText (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun replace (Lio/github/valerioisufi/pageboard/canvas/port/EditorDocument;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/model/TextElement;
+	public final fun textBox (Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/TextElement;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/ui/HandwritingEditorUiKt {
+	public static final fun handwritingEditorExtension (Lio/github/valerioisufi/pageboard/handwriting/ui/HandwritingConversion;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
+}
+

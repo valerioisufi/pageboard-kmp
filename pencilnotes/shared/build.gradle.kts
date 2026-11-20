@@ -50,6 +50,7 @@ kotlin {
             implementation(project(":pageboard-search-ui"))
             // The handwriting read for the search, by the reader of each platform
             implementation(project(":pageboard-handwriting"))
+            implementation(project(":pageboard-handwriting-ui"))
             // The external models, where the application of a platform lets their clients in
             api(project(":pageboard-agent"))
             implementation(project(":pageboard-agent-ui"))

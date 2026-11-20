@@ -100,6 +100,9 @@ public interface EditorEdits {
     /** Clears the selection of elements. */
     public fun clearSelection()
 
+    /** The elements selected on a page, `null` without a selection (while they are moved too). */
+    public val selection: ElementSelection? get() = null
+
     /** Whether a text is being written. */
     public val isEditingText: Boolean
 
@@ -108,6 +111,19 @@ public interface EditorEdits {
 
     /** A text long enough to be imported (pasted, dropped), waiting for the user to choose how; `null` without one. */
     public var pendingTextImport: TextImport?
+}
+
+/**
+ * The elements selected in an editor: their page and their identifiers, by kind (see
+ * [EditorEdits.selection]).
+ */
+public class ElementSelection(
+    public val pageIndex: Int,
+    public val strokeIds: Set<String>,
+    public val otherIds: Set<String>
+) {
+    /** Whether only strokes are selected. */
+    public val isStrokesOnly: Boolean get() = strokeIds.isNotEmpty() && otherIds.isEmpty()
 }
 
 /** Elements and texts placed in the free space of the pages, as the user chooses among spots. */

@@ -46,6 +46,7 @@ public fun EditorScreen(
             val extensionCommands = remember(extension, context) { extension?.commands?.invoke(context).orEmpty() }
             val extensionPanels = remember(extension, context) { extension?.panels?.invoke(context).orEmpty() }
             val extensionPageGridActions = remember(extension, context) { extension?.pageGridActions?.invoke(context).orEmpty() }
+            val extensionSelectionActions = remember(extension, context) { extension?.selectionActions?.invoke(context).orEmpty() }
             val suggester = extension?.textSuggestions
             val suggestions = remember(suggester, context) { suggester?.let { TextSuggestions(it, context) } }
             CompositionLocalProvider(LocalTextSuggestions provides suggestions) {
@@ -58,6 +59,7 @@ public fun EditorScreen(
                     canvasOverlay = { extension?.canvasOverlay?.invoke(this, context) },
                     extraCommands = extensionCommands,
                     pageGridActions = extensionPageGridActions,
+                    selectionActions = extensionSelectionActions,
                     readOnlyNote = { extension?.readOnlyNote?.invoke(context) },
                     renamer = renamer
                 )

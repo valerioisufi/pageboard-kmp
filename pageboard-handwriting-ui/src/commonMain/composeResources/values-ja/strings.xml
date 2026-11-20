@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="handwriting_convert_to_text">テキストに変換</string>
+    <string name="handwriting_reading">読み取り</string>
+    <string name="handwriting_other_readings">ほかの候補</string>
+    <string name="handwriting_nothing_read">読み取れませんでした。テキストを入力してください。</string>
+    <string name="handwriting_action_convert">変換</string>
+    <string name="handwriting_action_cancel">キャンセル</string>
+</resources>

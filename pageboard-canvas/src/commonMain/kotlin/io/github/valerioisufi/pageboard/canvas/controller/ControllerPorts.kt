@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.canvas.controller
 
+import io.github.valerioisufi.pageboard.canvas.port.ElementSelection
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
@@ -65,6 +66,14 @@ private class EditsPort(private val controller: PageboardController) : EditorEdi
 
     override fun selectText(pageIndex: Int, text: TextElement) = controller.selectionManager.selectText(pageIndex, text)
     override fun clearSelection() = controller.selectionManager.clearSelection()
+    override val selection: ElementSelection?
+        get() = controller.selectionManager.currentSelection?.takeIf { !it.isEmpty() }?.let { group ->
+            ElementSelection(
+                pageIndex = group.pageIndex,
+                strokeIds = group.strokes.mapTo(mutableSetOf()) { it.id },
+                otherIds = (group.texts + group.images + group.customs).mapTo(mutableSetOf()) { it.id }
+            )
+        }
     override val isEditingText: Boolean get() = controller.textEditorManager.isEditing
     override fun finishEditingText() = controller.textEditorManager.finishEditing()
     override var pendingTextImport: TextImport?
