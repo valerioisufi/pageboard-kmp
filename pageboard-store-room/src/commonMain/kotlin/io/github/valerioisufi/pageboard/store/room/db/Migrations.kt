@@ -35,7 +35,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 
 /** The migrations from version 16 to [PageboardDatabase]'s version. */
-internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
+internal val PAGEBOARD_DATABASE_MIGRATIONS: Array<Migration> =
     arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25)
 
 /** 17: the elements of the types added by the applications. */

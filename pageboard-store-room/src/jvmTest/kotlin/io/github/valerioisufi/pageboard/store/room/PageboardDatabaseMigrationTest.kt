@@ -13,7 +13,7 @@ import io.github.valerioisufi.pageboard.model.change.PlaceElements
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.change.TextPlacement
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
-import io.github.valerioisufi.pageboard.store.room.db.DRAW_DATABASE_MIGRATIONS
+import io.github.valerioisufi.pageboard.store.room.db.PAGEBOARD_DATABASE_MIGRATIONS
 import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.Migration18To19
 import io.github.valerioisufi.pageboard.store.room.db.Migration19To20
@@ -74,7 +74,7 @@ class PageboardDatabaseMigrationTest {
             )
         }
 
-        helper.runMigrationsAndValidate(25, DRAW_DATABASE_MIGRATIONS.toList()).close()
+        helper.runMigrationsAndValidate(25, PAGEBOARD_DATABASE_MIGRATIONS.toList()).close()
 
         val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {

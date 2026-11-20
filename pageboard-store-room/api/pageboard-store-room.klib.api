@@ -10,11 +10,11 @@ abstract class io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase 
     constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase.<init>|<init>(){}[0]
 }
 
-final class io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl : io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase { // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl|null[0]
-    constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl.<init>|<init>(){}[0]
+final class io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase_Impl : io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase { // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase_Impl|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase_Impl.<init>|<init>(){}[0]
 
-    final fun createAutoMigrations(kotlin.collections/Map<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>, androidx.room.migration/AutoMigrationSpec>): kotlin.collections/List<androidx.room.migration/Migration> // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl.createAutoMigrations|createAutoMigrations(kotlin.collections.Map<kotlin.reflect.KClass<out|androidx.room.migration.AutoMigrationSpec>,androidx.room.migration.AutoMigrationSpec>){}[0]
-    final fun getRequiredAutoMigrationSpecClasses(): kotlin.collections/Set<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>> // io.github.valerioisufi.pageboard.store.room.db/DrawDatabase_Impl.getRequiredAutoMigrationSpecClasses|getRequiredAutoMigrationSpecClasses(){}[0]
+    final fun createAutoMigrations(kotlin.collections/Map<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>, androidx.room.migration/AutoMigrationSpec>): kotlin.collections/List<androidx.room.migration/Migration> // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase_Impl.createAutoMigrations|createAutoMigrations(kotlin.collections.Map<kotlin.reflect.KClass<out|androidx.room.migration.AutoMigrationSpec>,androidx.room.migration.AutoMigrationSpec>){}[0]
+    final fun getRequiredAutoMigrationSpecClasses(): kotlin.collections/Set<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>> // io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase_Impl.getRequiredAutoMigrationSpecClasses|getRequiredAutoMigrationSpecClasses(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store.room/RoomDocumentStore : io.github.valerioisufi.pageboard.store.space/SpaceStore, io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.store/PreferenceStore { // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore|null[0]

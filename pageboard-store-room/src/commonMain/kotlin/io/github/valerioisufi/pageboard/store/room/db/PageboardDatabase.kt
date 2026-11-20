@@ -29,7 +29,7 @@ import androidx.room.TypeConverters
         CatalogOperationEntity::class,
         CatalogProofEntity::class
     ],
-    // Every new version comes with its migration (see DRAW_DATABASE_MIGRATIONS)
+    // Every new version comes with its migration (see PAGEBOARD_DATABASE_MIGRATIONS)
     version = 25
 )
 @TypeConverters(
@@ -41,7 +41,7 @@ import androidx.room.TypeConverters
 /**
  * The Room database of the documents, their folders, operations, sharing, the shared folders
  * and the preferences of the applications: opened by [createPageboardDatabase], migrated from version 16 on (see
- * `DRAW_DATABASE_MIGRATIONS`).
+ * `PAGEBOARD_DATABASE_MIGRATIONS`).
  */
 public abstract class PageboardDatabase : RoomDatabase() {
     internal abstract fun folderDao(): FolderDao

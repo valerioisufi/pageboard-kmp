@@ -937,6 +937,50 @@ public final class io/github/valerioisufi/pageboard/ui/theme/ColorKt {
 	public static final fun getSeed ()J
 }
 
+public final class io/github/valerioisufi/pageboard/ui/theme/ElevationKt {
+	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/theme/InkPalette {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/InkPalette;
+	public final fun getBlack-0d7_KjU ()J
+	public final fun getBlue-0d7_KjU ()J
+	public final fun getGreen-0d7_KjU ()J
+	public final fun getGuide-0d7_KjU ()J
+	public final fun getHighlights ()Ljava/util/List;
+	public final fun getInks ()Ljava/util/List;
+	public final fun getOrange-0d7_KjU ()J
+	public final fun getRed-0d7_KjU ()J
+	public final fun getViolet-0d7_KjU ()J
+}
+
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontFiles {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/NotesFontFiles;
+	public final fun bytes (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion;
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getStrutAbove ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getStrutBelow ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getSymbols ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion {
+	public final fun getSystem ()Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontsKt {
+	public static final fun rememberNotesFonts (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
+}
+
 public final class io/github/valerioisufi/pageboard/ui/theme/PageboardElevation : java/lang/Enum {
 	public static final field Level1 Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
 	public static final field Level2 Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;
@@ -1027,50 +1071,6 @@ public final class io/github/valerioisufi/pageboard/ui/theme/PageboardIcons {
 	public final fun getVolume ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getWifiOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getZap ()Landroidx/compose/ui/graphics/vector/ImageVector;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/ElevationKt {
-	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/pageboard/ui/theme/PageboardElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/InkPalette {
-	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/InkPalette;
-	public final fun getBlack-0d7_KjU ()J
-	public final fun getBlue-0d7_KjU ()J
-	public final fun getGreen-0d7_KjU ()J
-	public final fun getGuide-0d7_KjU ()J
-	public final fun getHighlights ()Ljava/util/List;
-	public final fun getInks ()Ljava/util/List;
-	public final fun getOrange-0d7_KjU ()J
-	public final fun getRed-0d7_KjU ()J
-	public final fun getViolet-0d7_KjU ()J
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontFiles {
-	public static final field $stable I
-	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/NotesFontFiles;
-	public final fun bytes (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts {
-	public static final field $stable I
-	public static final field Companion Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
-	public final fun getStrutAbove ()Landroidx/compose/ui/text/font/FontFamily;
-	public final fun getStrutBelow ()Landroidx/compose/ui/text/font/FontFamily;
-	public final fun getSymbols ()Landroidx/compose/ui/text/font/FontFamily;
-	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion {
-	public final fun getSystem ()Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontsKt {
-	public static final fun rememberNotesFonts (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/theme/ThemeKt {

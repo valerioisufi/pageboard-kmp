@@ -2876,6 +2876,57 @@ final class io.github.valerioisufi.pageboard.model/Document { // io.github.valer
     final fun restorePageOrder(kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page>) // io.github.valerioisufi.pageboard.model/Document.restorePageOrder|restorePageOrder(kotlin.collections.List<io.github.valerioisufi.pageboard.model.Page>){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.model/DocumentResource { // io.github.valerioisufi.pageboard.model/DocumentResource|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType, kotlin/String, kotlin/String = ...) // io.github.valerioisufi.pageboard.model/DocumentResource.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.DocumentResource.ResourceType;kotlin.String;kotlin.String){}[0]
+
+    final val hash // io.github.valerioisufi.pageboard.model/DocumentResource.hash|{}hash[0]
+        final fun <get-hash>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.hash.<get-hash>|<get-hash>(){}[0]
+    final val id // io.github.valerioisufi.pageboard.model/DocumentResource.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.id.<get-id>|<get-id>(){}[0]
+    final val type // io.github.valerioisufi.pageboard.model/DocumentResource.type|{}type[0]
+        final fun <get-type>(): io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType // io.github.valerioisufi.pageboard.model/DocumentResource.type.<get-type>|<get-type>(){}[0]
+
+    final var path // io.github.valerioisufi.pageboard.model/DocumentResource.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.path.<get-path>|<get-path>(){}[0]
+        final fun <set-path>(kotlin/String) // io.github.valerioisufi.pageboard.model/DocumentResource.path.<set-path>|<set-path>(kotlin.String){}[0]
+
+    final enum class ResourceType : kotlin/Enum<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> { // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType|null[0]
+        enum entry COLOR // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.COLOR|null[0]
+        enum entry IMAGE // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.IMAGE|null[0]
+        enum entry PDF // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.PDF|null[0]
+
+        final val entries // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.values|values#static(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model/ElementOrder : kotlin/Comparable<io.github.valerioisufi.pageboard.model/ElementOrder> { // io.github.valerioisufi.pageboard.model/ElementOrder|null[0]
+    final val key // io.github.valerioisufi.pageboard.model/ElementOrder.key|{}key[0]
+        final fun <get-key>(): kotlin/String // io.github.valerioisufi.pageboard.model/ElementOrder.key.<get-key>|<get-key>(){}[0]
+
+    final fun compareTo(io.github.valerioisufi.pageboard.model/ElementOrder): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.compareTo|compareTo(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/ElementOrder.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/ElementOrder.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/ElementOrder.Companion|null[0]
+        final const val MAX_LENGTH // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.MAX_LENGTH|{}MAX_LENGTH[0]
+            final fun <get-MAX_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.MAX_LENGTH.<get-MAX_LENGTH>|<get-MAX_LENGTH>(){}[0]
+
+        final val UNASSIGNED // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.UNASSIGNED|{}UNASSIGNED[0]
+            final fun <get-UNASSIGNED>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.UNASSIGNED.<get-UNASSIGNED>|<get-UNASSIGNED>(){}[0]
+
+        final fun between(io.github.valerioisufi.pageboard.model/ElementOrder?, io.github.valerioisufi.pageboard.model/ElementOrder): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.between|between(io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
+        final fun between(io.github.valerioisufi.pageboard.model/ElementOrder?, io.github.valerioisufi.pageboard.model/ElementOrder, kotlin/Int): kotlin.collections/List<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.between|between(io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.ElementOrder;kotlin.Int){}[0]
+        final fun onTop(io.github.valerioisufi.pageboard.model/Stamp, kotlin/Int): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.onTop|onTop(io.github.valerioisufi.pageboard.model.Stamp;kotlin.Int){}[0]
+        final fun parse(kotlin/String): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.parse|parse(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.model/ImageElement : io.github.valerioisufi.pageboard.model/PageElement, io.github.valerioisufi.pageboard.model/RotatableItem { // io.github.valerioisufi.pageboard.model/ImageElement|null[0]
     constructor <init>(kotlin/String = ...) // io.github.valerioisufi.pageboard.model/ImageElement.<init>|<init>(kotlin.String){}[0]
 
@@ -2918,6 +2969,33 @@ final class io.github.valerioisufi.pageboard.model/ImageElement : io.github.vale
     final var y // io.github.valerioisufi.pageboard.model/ImageElement.y|{}y[0]
         final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model/ImageElement.y.<get-y>|<get-y>(){}[0]
         final fun <set-y>(kotlin/Float) // io.github.valerioisufi.pageboard.model/ImageElement.y.<set-y>|<set-y>(kotlin.Float){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate : io.github.valerioisufi.pageboard.model/StrokeEngineDelegate { // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.<init>|<init>(){}[0]
+
+    final val isNative // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.isNative|{}isNative[0]
+        final fun <get-isNative>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.isNative.<get-isNative>|<get-isNative>(){}[0]
+
+    final fun addInput(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Long, io.github.valerioisufi.pageboard.model/InputToolType) // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.addInput|addInput(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long;io.github.valerioisufi.pageboard.model.InputToolType){}[0]
+    final fun clear() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.clear|clear(){}[0]
+    final fun currentMesh(io.github.valerioisufi.pageboard.model/BrushConfig, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/InputToolType): io.github.valerioisufi.pageboard.model/StrokeMesh? // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.currentMesh|currentMesh(io.github.valerioisufi.pageboard.model.BrushConfig;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.InputToolType){}[0]
+    final fun finishInputs() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.finishInputs|finishInputs(){}[0]
+    final fun release() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.release|release(){}[0]
+    final fun start(io.github.valerioisufi.pageboard.model/BrushConfig, kotlin/Float) // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.start|start(io.github.valerioisufi.pageboard.model.BrushConfig;kotlin.Float){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/MeshPartition { // io.github.valerioisufi.pageboard.model/MeshPartition|null[0]
+    constructor <init>(kotlin/FloatArray, kotlin/ShortArray) // io.github.valerioisufi.pageboard.model/MeshPartition.<init>|<init>(kotlin.FloatArray;kotlin.ShortArray){}[0]
+
+    final val indices // io.github.valerioisufi.pageboard.model/MeshPartition.indices|{}indices[0]
+        final fun <get-indices>(): kotlin/ShortArray // io.github.valerioisufi.pageboard.model/MeshPartition.indices.<get-indices>|<get-indices>(){}[0]
+    final val positions // io.github.valerioisufi.pageboard.model/MeshPartition.positions|{}positions[0]
+        final fun <get-positions>(): kotlin/FloatArray // io.github.valerioisufi.pageboard.model/MeshPartition.positions.<get-positions>|<get-positions>(){}[0]
+    final val triangleCount // io.github.valerioisufi.pageboard.model/MeshPartition.triangleCount|{}triangleCount[0]
+        final fun <get-triangleCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/MeshPartition.triangleCount.<get-triangleCount>|<get-triangleCount>(){}[0]
+    final val vertexCount // io.github.valerioisufi.pageboard.model/MeshPartition.vertexCount|{}vertexCount[0]
+        final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/MeshPartition.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.model/Page { // io.github.valerioisufi.pageboard.model/Page|null[0]
@@ -3002,6 +3080,36 @@ final class io.github.valerioisufi.pageboard.model/Page { // io.github.valeriois
     }
 }
 
+final class io.github.valerioisufi.pageboard.model/PageContentSnapshot { // io.github.valerioisufi.pageboard.model/PageContentSnapshot|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement>, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement>? = ...) // io.github.valerioisufi.pageboard.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.ImageElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PdfElement>;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextMarkupElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.CustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageElement>?){}[0]
+
+    final val background // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background|{}background[0]
+        final fun <get-background>(): io.github.valerioisufi.pageboard.model/PageBackground // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background.<get-background>|<get-background>(){}[0]
+    final val customs // io.github.valerioisufi.pageboard.model/PageContentSnapshot.customs|{}customs[0]
+        final fun <get-customs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.customs.<get-customs>|<get-customs>(){}[0]
+    final val heightMm // io.github.valerioisufi.pageboard.model/PageContentSnapshot.heightMm|{}heightMm[0]
+        final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PageContentSnapshot.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+    final val images // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images|{}images[0]
+        final fun <get-images>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images.<get-images>|<get-images>(){}[0]
+    final val markups // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups|{}markups[0]
+        final fun <get-markups>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups.<get-markups>|<get-markups>(){}[0]
+    final val paintOrder // io.github.valerioisufi.pageboard.model/PageContentSnapshot.paintOrder|{}paintOrder[0]
+        final fun <get-paintOrder>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.paintOrder.<get-paintOrder>|<get-paintOrder>(){}[0]
+    final val pdfs // io.github.valerioisufi.pageboard.model/PageContentSnapshot.pdfs|{}pdfs[0]
+        final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
+    final val stack // io.github.valerioisufi.pageboard.model/PageContentSnapshot.stack|{}stack[0]
+        final fun <get-stack>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.stack.<get-stack>|<get-stack>(){}[0]
+    final val strokes // io.github.valerioisufi.pageboard.model/PageContentSnapshot.strokes|{}strokes[0]
+        final fun <get-strokes>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.strokes.<get-strokes>|<get-strokes>(){}[0]
+    final val texts // io.github.valerioisufi.pageboard.model/PageContentSnapshot.texts|{}texts[0]
+        final fun <get-texts>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.texts.<get-texts>|<get-texts>(){}[0]
+    final val widthMm // io.github.valerioisufi.pageboard.model/PageContentSnapshot.widthMm|{}widthMm[0]
+        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PageContentSnapshot.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+
+    final fun detached(): io.github.valerioisufi.pageboard.model/PageContentSnapshot // io.github.valerioisufi.pageboard.model/PageContentSnapshot.detached|detached(){}[0]
+    final fun rect(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/PageContentSnapshot.rect|rect(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.model/PdfElement : io.github.valerioisufi.pageboard.model/PageElement { // io.github.valerioisufi.pageboard.model/PdfElement|null[0]
     constructor <init>(kotlin/Int = ..., kotlin/String = ...) // io.github.valerioisufi.pageboard.model/PdfElement.<init>|<init>(kotlin.Int;kotlin.String){}[0]
 
@@ -3034,30 +3142,118 @@ final class io.github.valerioisufi.pageboard.model/PdfElement : io.github.valeri
         final fun <set-updated>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PdfElement.updated.<set-updated>|<set-updated>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
 }
 
-final class io.github.valerioisufi.pageboard.model/DocumentResource { // io.github.valerioisufi.pageboard.model/DocumentResource|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType, kotlin/String, kotlin/String = ...) // io.github.valerioisufi.pageboard.model/DocumentResource.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.DocumentResource.ResourceType;kotlin.String;kotlin.String){}[0]
+final class io.github.valerioisufi.pageboard.model/PdfInk { // io.github.valerioisufi.pageboard.model/PdfInk|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/BooleanArray) // io.github.valerioisufi.pageboard.model/PdfInk.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.BooleanArray){}[0]
 
-    final val hash // io.github.valerioisufi.pageboard.model/DocumentResource.hash|{}hash[0]
-        final fun <get-hash>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.hash.<get-hash>|<get-hash>(){}[0]
-    final val id // io.github.valerioisufi.pageboard.model/DocumentResource.id|{}id[0]
-        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.id.<get-id>|<get-id>(){}[0]
-    final val type // io.github.valerioisufi.pageboard.model/DocumentResource.type|{}type[0]
-        final fun <get-type>(): io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType // io.github.valerioisufi.pageboard.model/DocumentResource.type.<get-type>|<get-type>(){}[0]
+    final val columns // io.github.valerioisufi.pageboard.model/PdfInk.columns|{}columns[0]
+        final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfInk.columns.<get-columns>|<get-columns>(){}[0]
+    final val height // io.github.valerioisufi.pageboard.model/PdfInk.height|{}height[0]
+        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfInk.height.<get-height>|<get-height>(){}[0]
+    final val isEmpty // io.github.valerioisufi.pageboard.model/PdfInk.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfInk.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val rows // io.github.valerioisufi.pageboard.model/PdfInk.rows|{}rows[0]
+        final fun <get-rows>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfInk.rows.<get-rows>|<get-rows>(){}[0]
+    final val width // io.github.valerioisufi.pageboard.model/PdfInk.width|{}width[0]
+        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfInk.width.<get-width>|<get-width>(){}[0]
 
-    final var path // io.github.valerioisufi.pageboard.model/DocumentResource.path|{}path[0]
-        final fun <get-path>(): kotlin/String // io.github.valerioisufi.pageboard.model/DocumentResource.path.<get-path>|<get-path>(){}[0]
-        final fun <set-path>(kotlin/String) // io.github.valerioisufi.pageboard.model/DocumentResource.path.<set-path>|<set-path>(kotlin.String){}[0]
+    final fun boxesIn(io.github.valerioisufi.pageboard.model.geometry/Rect): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect> // io.github.valerioisufi.pageboard.model/PdfInk.boxesIn|boxesIn(io.github.valerioisufi.pageboard.model.geometry.Rect){}[0]
+    final fun isTaken(kotlin/Int, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfInk.isTaken|isTaken(kotlin.Int;kotlin.Int){}[0]
+}
 
-    final enum class ResourceType : kotlin/Enum<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> { // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType|null[0]
-        enum entry COLOR // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.COLOR|null[0]
-        enum entry IMAGE // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.IMAGE|null[0]
-        enum entry PDF // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.PDF|null[0]
+final class io.github.valerioisufi.pageboard.model/PdfTextLayout { // io.github.valerioisufi.pageboard.model/PdfTextLayout|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/IntArray, kotlin/FloatArray) // io.github.valerioisufi.pageboard.model/PdfTextLayout.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.IntArray;kotlin.FloatArray){}[0]
 
-        final val entries // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.entries|#static{}entries[0]
-            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val charCount // io.github.valerioisufi.pageboard.model/PdfTextLayout.charCount|{}charCount[0]
+        final fun <get-charCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charCount.<get-charCount>|<get-charCount>(){}[0]
+    final val hasText // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasText|{}hasText[0]
+        final fun <get-hasText>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasText.<get-hasText>|<get-hasText>(){}[0]
+    final val heightPt // io.github.valerioisufi.pageboard.model/PdfTextLayout.heightPt|{}heightPt[0]
+        final fun <get-heightPt>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfTextLayout.heightPt.<get-heightPt>|<get-heightPt>(){}[0]
+    final val widthPt // io.github.valerioisufi.pageboard.model/PdfTextLayout.widthPt|{}widthPt[0]
+        final fun <get-widthPt>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfTextLayout.widthPt.<get-widthPt>|<get-widthPt>(){}[0]
 
-        final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.valueOf|valueOf#static(kotlin.String){}[0]
-        final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType> // io.github.valerioisufi.pageboard.model/DocumentResource.ResourceType.values|values#static(){}[0]
+    final fun boxOf(kotlin/Int): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/PdfTextLayout.boxOf|boxOf(kotlin.Int){}[0]
+    final fun charIndexForSelection(kotlin/Float, kotlin/Float): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charIndexForSelection|charIndexForSelection(kotlin.Float;kotlin.Float){}[0]
+    final fun charIndexNear(kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charIndexNear|charIndexNear(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun codePointAt(kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.codePointAt|codePointAt(kotlin.Int){}[0]
+    final fun hasBox(kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasBox|hasBox(kotlin.Int){}[0]
+    final fun lineRects(kotlin/Int, kotlin/Int): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect> // io.github.valerioisufi.pageboard.model/PdfTextLayout.lineRects|lineRects(kotlin.Int;kotlin.Int){}[0]
+    final fun text(kotlin/Int, kotlin/Int): kotlin/String // io.github.valerioisufi.pageboard.model/PdfTextLayout.text|text(kotlin.Int;kotlin.Int){}[0]
+    final fun wordRange(kotlin/Int): kotlin.ranges/IntRange // io.github.valerioisufi.pageboard.model/PdfTextLayout.wordRange|wordRange(kotlin.Int){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/PurgedContent { // io.github.valerioisufi.pageboard.model/PurgedContent|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page>, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/PageElement>>) // io.github.valerioisufi.pageboard.model/PurgedContent.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.Page>;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.pageboard.model.Page,io.github.valerioisufi.pageboard.model.PageElement>>){}[0]
+
+    final val elements // io.github.valerioisufi.pageboard.model/PurgedContent.elements|{}elements[0]
+        final fun <get-elements>(): kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/PageElement>> // io.github.valerioisufi.pageboard.model/PurgedContent.elements.<get-elements>|<get-elements>(){}[0]
+    final val isEmpty // io.github.valerioisufi.pageboard.model/PurgedContent.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PurgedContent.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val pages // io.github.valerioisufi.pageboard.model/PurgedContent.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page> // io.github.valerioisufi.pageboard.model/PurgedContent.pages.<get-pages>|<get-pages>(){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/SelectionActivity { // io.github.valerioisufi.pageboard.model/SelectionActivity|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ...) // io.github.valerioisufi.pageboard.model/SelectionActivity.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;io.github.valerioisufi.pageboard.model.geometry.AffineTransform){}[0]
+
+    final val ids // io.github.valerioisufi.pageboard.model/SelectionActivity.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model/SelectionActivity.ids.<get-ids>|<get-ids>(){}[0]
+    final val isMoving // io.github.valerioisufi.pageboard.model/SelectionActivity.isMoving|{}isMoving[0]
+        final fun <get-isMoving>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/SelectionActivity.isMoving.<get-isMoving>|<get-isMoving>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model/SelectionActivity.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val transform // io.github.valerioisufi.pageboard.model/SelectionActivity.transform|{}transform[0]
+        final fun <get-transform>(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model/SelectionActivity.transform.<get-transform>|<get-transform>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model/SelectionActivity.component2|component2(){}[0]
+    final fun component3(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model/SelectionActivity.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ...): io.github.valerioisufi.pageboard.model/SelectionActivity // io.github.valerioisufi.pageboard.model/SelectionActivity.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;io.github.valerioisufi.pageboard.model.geometry.AffineTransform){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/SelectionActivity.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/SelectionActivity.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model/SelectionActivity> { // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model/SelectionActivity // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model/SelectionActivity) // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.SelectionActivity){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/SelectionActivity> // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model/Stamp : kotlin/Comparable<io.github.valerioisufi.pageboard.model/Stamp> { // io.github.valerioisufi.pageboard.model/Stamp|null[0]
+    constructor <init>(kotlin/Long, kotlin/Int, kotlin/String) // io.github.valerioisufi.pageboard.model/Stamp.<init>|<init>(kotlin.Long;kotlin.Int;kotlin.String){}[0]
+
+    final val counter // io.github.valerioisufi.pageboard.model/Stamp.counter|{}counter[0]
+        final fun <get-counter>(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.counter.<get-counter>|<get-counter>(){}[0]
+    final val replica // io.github.valerioisufi.pageboard.model/Stamp.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.replica.<get-replica>|<get-replica>(){}[0]
+    final val time // io.github.valerioisufi.pageboard.model/Stamp.time|{}time[0]
+        final fun <get-time>(): kotlin/Long // io.github.valerioisufi.pageboard.model/Stamp.time.<get-time>|<get-time>(){}[0]
+
+    final fun compareTo(io.github.valerioisufi.pageboard.model/Stamp): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.compareTo|compareTo(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final fun component1(): kotlin/Long // io.github.valerioisufi.pageboard.model/Stamp.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.component3|component3(){}[0]
+    final fun copy(kotlin/Long = ..., kotlin/Int = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/Stamp.copy|copy(kotlin.Long;kotlin.Int;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/Stamp.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/Stamp.Companion|null[0]
+        final val ZERO // io.github.valerioisufi.pageboard.model/Stamp.Companion.ZERO|{}ZERO[0]
+            final fun <get-ZERO>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/Stamp.Companion.ZERO.<get-ZERO>|<get-ZERO>(){}[0]
+
+        final fun parse(kotlin/String): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model/Stamp.Companion.parse|parse(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.model/Stamp.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -3099,6 +3295,89 @@ final class io.github.valerioisufi.pageboard.model/StrokeElement : io.github.val
         final fun <set-updated>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/StrokeElement.updated.<set-updated>|<set-updated>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
 
     final fun place(io.github.valerioisufi.pageboard.model.geometry/AffineTransform) // io.github.valerioisufi.pageboard.model/StrokeElement.place|place(io.github.valerioisufi.pageboard.model.geometry.AffineTransform){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/StrokeMesh { // io.github.valerioisufi.pageboard.model/StrokeMesh|null[0]
+    constructor <init>(kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/MeshPartition> = ..., io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model/StrokeOutline? = ...) // io.github.valerioisufi.pageboard.model/StrokeMesh.<init>|<init>(kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.MeshPartition>;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.StrokeOutline?){}[0]
+
+    final val color // io.github.valerioisufi.pageboard.model/StrokeMesh.color|{}color[0]
+        final fun <get-color>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.color.<get-color>|<get-color>(){}[0]
+    final val indices // io.github.valerioisufi.pageboard.model/StrokeMesh.indices|{}indices[0]
+        final fun <get-indices>(): kotlin/ShortArray // io.github.valerioisufi.pageboard.model/StrokeMesh.indices.<get-indices>|<get-indices>(){}[0]
+    final val inputToolType // io.github.valerioisufi.pageboard.model/StrokeMesh.inputToolType|{}inputToolType[0]
+        final fun <get-inputToolType>(): io.github.valerioisufi.pageboard.model/InputToolType // io.github.valerioisufi.pageboard.model/StrokeMesh.inputToolType.<get-inputToolType>|<get-inputToolType>(){}[0]
+    final val isEmpty // io.github.valerioisufi.pageboard.model/StrokeMesh.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeMesh.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val outline // io.github.valerioisufi.pageboard.model/StrokeMesh.outline|{}outline[0]
+        final fun <get-outline>(): io.github.valerioisufi.pageboard.model/StrokeOutline? // io.github.valerioisufi.pageboard.model/StrokeMesh.outline.<get-outline>|<get-outline>(){}[0]
+    final val partitions // io.github.valerioisufi.pageboard.model/StrokeMesh.partitions|{}partitions[0]
+        final fun <get-partitions>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/MeshPartition> // io.github.valerioisufi.pageboard.model/StrokeMesh.partitions.<get-partitions>|<get-partitions>(){}[0]
+    final val points // io.github.valerioisufi.pageboard.model/StrokeMesh.points|{}points[0]
+        final fun <get-points>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> // io.github.valerioisufi.pageboard.model/StrokeMesh.points.<get-points>|<get-points>(){}[0]
+    final val positions // io.github.valerioisufi.pageboard.model/StrokeMesh.positions|{}positions[0]
+        final fun <get-positions>(): kotlin/FloatArray // io.github.valerioisufi.pageboard.model/StrokeMesh.positions.<get-positions>|<get-positions>(){}[0]
+    final val size // io.github.valerioisufi.pageboard.model/StrokeMesh.size|{}size[0]
+        final fun <get-size>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokeMesh.size.<get-size>|<get-size>(){}[0]
+    final val tool // io.github.valerioisufi.pageboard.model/StrokeMesh.tool|{}tool[0]
+        final fun <get-tool>(): io.github.valerioisufi.pageboard.model/StrokeTool // io.github.valerioisufi.pageboard.model/StrokeMesh.tool.<get-tool>|<get-tool>(){}[0]
+    final val triangleCount // io.github.valerioisufi.pageboard.model/StrokeMesh.triangleCount|{}triangleCount[0]
+        final fun <get-triangleCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.triangleCount.<get-triangleCount>|<get-triangleCount>(){}[0]
+    final val vertexCount // io.github.valerioisufi.pageboard.model/StrokeMesh.vertexCount|{}vertexCount[0]
+        final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
+
+    final fun computeBounds(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/StrokeMesh.computeBounds|computeBounds(){}[0]
+    final fun transformed(io.github.valerioisufi.pageboard.model.geometry/Matrix2D): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.transformed|transformed(io.github.valerioisufi.pageboard.model.geometry.Matrix2D){}[0]
+    final fun withPoints(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.withPoints|withPoints(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/StrokeMesh.Companion|null[0]
+        final fun fromIndexedMesh(kotlin/FloatArray, kotlin/IntArray, kotlin/Int, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/InputToolType, io.github.valerioisufi.pageboard.model/StrokeOutline? = ...): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.Companion.fromIndexedMesh|fromIndexedMesh(kotlin.FloatArray;kotlin.IntArray;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.StrokeOutline?){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model/StrokeOutline { // io.github.valerioisufi.pageboard.model/StrokeOutline|null[0]
+    constructor <init>(kotlin.collections/List<kotlin/FloatArray>) // io.github.valerioisufi.pageboard.model/StrokeOutline.<init>|<init>(kotlin.collections.List<kotlin.FloatArray>){}[0]
+
+    final val isEmpty // io.github.valerioisufi.pageboard.model/StrokeOutline.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeOutline.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val polygons // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons|{}polygons[0]
+        final fun <get-polygons>(): kotlin.collections/List<kotlin/FloatArray> // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons.<get-polygons>|<get-polygons>(){}[0]
+
+    final fun transformed(io.github.valerioisufi.pageboard.model.geometry/Matrix2D): io.github.valerioisufi.pageboard.model/StrokeOutline // io.github.valerioisufi.pageboard.model/StrokeOutline.transformed|transformed(io.github.valerioisufi.pageboard.model.geometry.Matrix2D){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.model/StrokePoint { // io.github.valerioisufi.pageboard.model/StrokePoint|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Long = ...) // io.github.valerioisufi.pageboard.model/StrokePoint.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long){}[0]
+
+    final val pressure // io.github.valerioisufi.pageboard.model/StrokePoint.pressure|{}pressure[0]
+        final fun <get-pressure>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.pressure.<get-pressure>|<get-pressure>(){}[0]
+    final val timestampMs // io.github.valerioisufi.pageboard.model/StrokePoint.timestampMs|{}timestampMs[0]
+        final fun <get-timestampMs>(): kotlin/Long // io.github.valerioisufi.pageboard.model/StrokePoint.timestampMs.<get-timestampMs>|<get-timestampMs>(){}[0]
+    final val x // io.github.valerioisufi.pageboard.model/StrokePoint.x|{}x[0]
+        final fun <get-x>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.x.<get-x>|<get-x>(){}[0]
+    final val y // io.github.valerioisufi.pageboard.model/StrokePoint.y|{}y[0]
+        final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.y.<get-y>|<get-y>(){}[0]
+
+    final fun component1(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component1|component1(){}[0]
+    final fun component2(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component3|component3(){}[0]
+    final fun component4(): kotlin/Long // io.github.valerioisufi.pageboard.model/StrokePoint.component4|component4(){}[0]
+    final fun copy(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Long = ...): io.github.valerioisufi.pageboard.model/StrokePoint // io.github.valerioisufi.pageboard.model/StrokePoint.copy|copy(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokePoint.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokePoint.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/StrokePoint.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model/StrokePoint> { // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model/StrokePoint // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model/StrokePoint) // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.StrokePoint){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/StrokePoint.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/StrokePoint> // io.github.valerioisufi.pageboard.model/StrokePoint.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.pageboard.model/TextElement : io.github.valerioisufi.pageboard.model/PageElement, io.github.valerioisufi.pageboard.model/RotatableItem { // io.github.valerioisufi.pageboard.model/TextElement|null[0]
@@ -3252,285 +3531,6 @@ final class io.github.valerioisufi.pageboard.model/TextMarkupElement : io.github
     final fun containsPoint(io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model.geometry/Point, kotlin/Float = ...): kotlin/Boolean // io.github.valerioisufi.pageboard.model/TextMarkupElement.containsPoint|containsPoint(io.github.valerioisufi.pageboard.model.Page;io.github.valerioisufi.pageboard.model.geometry.Point;kotlin.Float){}[0]
     final fun pointsToPageMm(io.github.valerioisufi.pageboard.model/Page): io.github.valerioisufi.pageboard.model.geometry/Matrix2D // io.github.valerioisufi.pageboard.model/TextMarkupElement.pointsToPageMm|pointsToPageMm(io.github.valerioisufi.pageboard.model.Page){}[0]
     final fun pointsToPageMm(kotlin/Float, kotlin/Float): io.github.valerioisufi.pageboard.model.geometry/Matrix2D // io.github.valerioisufi.pageboard.model/TextMarkupElement.pointsToPageMm|pointsToPageMm(kotlin.Float;kotlin.Float){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/ElementOrder : kotlin/Comparable<io.github.valerioisufi.pageboard.model/ElementOrder> { // io.github.valerioisufi.pageboard.model/ElementOrder|null[0]
-    final val key // io.github.valerioisufi.pageboard.model/ElementOrder.key|{}key[0]
-        final fun <get-key>(): kotlin/String // io.github.valerioisufi.pageboard.model/ElementOrder.key.<get-key>|<get-key>(){}[0]
-
-    final fun compareTo(io.github.valerioisufi.pageboard.model/ElementOrder): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.compareTo|compareTo(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/ElementOrder.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/ElementOrder.toString|toString(){}[0]
-
-    final object Companion { // io.github.valerioisufi.pageboard.model/ElementOrder.Companion|null[0]
-        final const val MAX_LENGTH // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.MAX_LENGTH|{}MAX_LENGTH[0]
-            final fun <get-MAX_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.MAX_LENGTH.<get-MAX_LENGTH>|<get-MAX_LENGTH>(){}[0]
-
-        final val UNASSIGNED // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.UNASSIGNED|{}UNASSIGNED[0]
-            final fun <get-UNASSIGNED>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.UNASSIGNED.<get-UNASSIGNED>|<get-UNASSIGNED>(){}[0]
-
-        final fun between(io.github.valerioisufi.pageboard.model/ElementOrder?, io.github.valerioisufi.pageboard.model/ElementOrder): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.between|between(io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
-        final fun between(io.github.valerioisufi.pageboard.model/ElementOrder?, io.github.valerioisufi.pageboard.model/ElementOrder, kotlin/Int): kotlin.collections/List<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.between|between(io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.ElementOrder;kotlin.Int){}[0]
-        final fun onTop(io.github.valerioisufi.pageboard.model/Stamp, kotlin/Int): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.onTop|onTop(io.github.valerioisufi.pageboard.model.Stamp;kotlin.Int){}[0]
-        final fun parse(kotlin/String): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.parse|parse(kotlin.String){}[0]
-        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model/ElementOrder.Companion.serializer|serializer(){}[0]
-    }
-}
-
-final class io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate : io.github.valerioisufi.pageboard.model/StrokeEngineDelegate { // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate|null[0]
-    constructor <init>() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.<init>|<init>(){}[0]
-
-    final val isNative // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.isNative|{}isNative[0]
-        final fun <get-isNative>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.isNative.<get-isNative>|<get-isNative>(){}[0]
-
-    final fun addInput(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Long, io.github.valerioisufi.pageboard.model/InputToolType) // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.addInput|addInput(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long;io.github.valerioisufi.pageboard.model.InputToolType){}[0]
-    final fun clear() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.clear|clear(){}[0]
-    final fun currentMesh(io.github.valerioisufi.pageboard.model/BrushConfig, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/InputToolType): io.github.valerioisufi.pageboard.model/StrokeMesh? // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.currentMesh|currentMesh(io.github.valerioisufi.pageboard.model.BrushConfig;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.InputToolType){}[0]
-    final fun finishInputs() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.finishInputs|finishInputs(){}[0]
-    final fun release() // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.release|release(){}[0]
-    final fun start(io.github.valerioisufi.pageboard.model/BrushConfig, kotlin/Float) // io.github.valerioisufi.pageboard.model/KotlinStrokeEngineDelegate.start|start(io.github.valerioisufi.pageboard.model.BrushConfig;kotlin.Float){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/MeshPartition { // io.github.valerioisufi.pageboard.model/MeshPartition|null[0]
-    constructor <init>(kotlin/FloatArray, kotlin/ShortArray) // io.github.valerioisufi.pageboard.model/MeshPartition.<init>|<init>(kotlin.FloatArray;kotlin.ShortArray){}[0]
-
-    final val indices // io.github.valerioisufi.pageboard.model/MeshPartition.indices|{}indices[0]
-        final fun <get-indices>(): kotlin/ShortArray // io.github.valerioisufi.pageboard.model/MeshPartition.indices.<get-indices>|<get-indices>(){}[0]
-    final val positions // io.github.valerioisufi.pageboard.model/MeshPartition.positions|{}positions[0]
-        final fun <get-positions>(): kotlin/FloatArray // io.github.valerioisufi.pageboard.model/MeshPartition.positions.<get-positions>|<get-positions>(){}[0]
-    final val triangleCount // io.github.valerioisufi.pageboard.model/MeshPartition.triangleCount|{}triangleCount[0]
-        final fun <get-triangleCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/MeshPartition.triangleCount.<get-triangleCount>|<get-triangleCount>(){}[0]
-    final val vertexCount // io.github.valerioisufi.pageboard.model/MeshPartition.vertexCount|{}vertexCount[0]
-        final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/MeshPartition.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/PageContentSnapshot { // io.github.valerioisufi.pageboard.model/PageContentSnapshot|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement>, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement>? = ...) // io.github.valerioisufi.pageboard.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.ImageElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PdfElement>;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextMarkupElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.CustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageElement>?){}[0]
-
-    final val background // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background|{}background[0]
-        final fun <get-background>(): io.github.valerioisufi.pageboard.model/PageBackground // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background.<get-background>|<get-background>(){}[0]
-    final val customs // io.github.valerioisufi.pageboard.model/PageContentSnapshot.customs|{}customs[0]
-        final fun <get-customs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.customs.<get-customs>|<get-customs>(){}[0]
-    final val heightMm // io.github.valerioisufi.pageboard.model/PageContentSnapshot.heightMm|{}heightMm[0]
-        final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PageContentSnapshot.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
-    final val images // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images|{}images[0]
-        final fun <get-images>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images.<get-images>|<get-images>(){}[0]
-    final val markups // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups|{}markups[0]
-        final fun <get-markups>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups.<get-markups>|<get-markups>(){}[0]
-    final val paintOrder // io.github.valerioisufi.pageboard.model/PageContentSnapshot.paintOrder|{}paintOrder[0]
-        final fun <get-paintOrder>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.paintOrder.<get-paintOrder>|<get-paintOrder>(){}[0]
-    final val pdfs // io.github.valerioisufi.pageboard.model/PageContentSnapshot.pdfs|{}pdfs[0]
-        final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
-    final val stack // io.github.valerioisufi.pageboard.model/PageContentSnapshot.stack|{}stack[0]
-        final fun <get-stack>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.stack.<get-stack>|<get-stack>(){}[0]
-    final val strokes // io.github.valerioisufi.pageboard.model/PageContentSnapshot.strokes|{}strokes[0]
-        final fun <get-strokes>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.strokes.<get-strokes>|<get-strokes>(){}[0]
-    final val texts // io.github.valerioisufi.pageboard.model/PageContentSnapshot.texts|{}texts[0]
-        final fun <get-texts>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.texts.<get-texts>|<get-texts>(){}[0]
-    final val widthMm // io.github.valerioisufi.pageboard.model/PageContentSnapshot.widthMm|{}widthMm[0]
-        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PageContentSnapshot.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
-
-    final fun detached(): io.github.valerioisufi.pageboard.model/PageContentSnapshot // io.github.valerioisufi.pageboard.model/PageContentSnapshot.detached|detached(){}[0]
-    final fun rect(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/PageContentSnapshot.rect|rect(){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/PdfInk { // io.github.valerioisufi.pageboard.model/PdfInk|null[0]
-    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/BooleanArray) // io.github.valerioisufi.pageboard.model/PdfInk.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.BooleanArray){}[0]
-
-    final val columns // io.github.valerioisufi.pageboard.model/PdfInk.columns|{}columns[0]
-        final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfInk.columns.<get-columns>|<get-columns>(){}[0]
-    final val height // io.github.valerioisufi.pageboard.model/PdfInk.height|{}height[0]
-        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfInk.height.<get-height>|<get-height>(){}[0]
-    final val isEmpty // io.github.valerioisufi.pageboard.model/PdfInk.isEmpty|{}isEmpty[0]
-        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfInk.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
-    final val rows // io.github.valerioisufi.pageboard.model/PdfInk.rows|{}rows[0]
-        final fun <get-rows>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfInk.rows.<get-rows>|<get-rows>(){}[0]
-    final val width // io.github.valerioisufi.pageboard.model/PdfInk.width|{}width[0]
-        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfInk.width.<get-width>|<get-width>(){}[0]
-
-    final fun boxesIn(io.github.valerioisufi.pageboard.model.geometry/Rect): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect> // io.github.valerioisufi.pageboard.model/PdfInk.boxesIn|boxesIn(io.github.valerioisufi.pageboard.model.geometry.Rect){}[0]
-    final fun isTaken(kotlin/Int, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfInk.isTaken|isTaken(kotlin.Int;kotlin.Int){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/PdfTextLayout { // io.github.valerioisufi.pageboard.model/PdfTextLayout|null[0]
-    constructor <init>(kotlin/Float, kotlin/Float, kotlin/IntArray, kotlin/FloatArray) // io.github.valerioisufi.pageboard.model/PdfTextLayout.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.IntArray;kotlin.FloatArray){}[0]
-
-    final val charCount // io.github.valerioisufi.pageboard.model/PdfTextLayout.charCount|{}charCount[0]
-        final fun <get-charCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charCount.<get-charCount>|<get-charCount>(){}[0]
-    final val hasText // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasText|{}hasText[0]
-        final fun <get-hasText>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasText.<get-hasText>|<get-hasText>(){}[0]
-    final val heightPt // io.github.valerioisufi.pageboard.model/PdfTextLayout.heightPt|{}heightPt[0]
-        final fun <get-heightPt>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfTextLayout.heightPt.<get-heightPt>|<get-heightPt>(){}[0]
-    final val widthPt // io.github.valerioisufi.pageboard.model/PdfTextLayout.widthPt|{}widthPt[0]
-        final fun <get-widthPt>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PdfTextLayout.widthPt.<get-widthPt>|<get-widthPt>(){}[0]
-
-    final fun boxOf(kotlin/Int): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/PdfTextLayout.boxOf|boxOf(kotlin.Int){}[0]
-    final fun charIndexForSelection(kotlin/Float, kotlin/Float): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charIndexForSelection|charIndexForSelection(kotlin.Float;kotlin.Float){}[0]
-    final fun charIndexNear(kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.charIndexNear|charIndexNear(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
-    final fun codePointAt(kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model/PdfTextLayout.codePointAt|codePointAt(kotlin.Int){}[0]
-    final fun hasBox(kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfTextLayout.hasBox|hasBox(kotlin.Int){}[0]
-    final fun lineRects(kotlin/Int, kotlin/Int): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect> // io.github.valerioisufi.pageboard.model/PdfTextLayout.lineRects|lineRects(kotlin.Int;kotlin.Int){}[0]
-    final fun text(kotlin/Int, kotlin/Int): kotlin/String // io.github.valerioisufi.pageboard.model/PdfTextLayout.text|text(kotlin.Int;kotlin.Int){}[0]
-    final fun wordRange(kotlin/Int): kotlin.ranges/IntRange // io.github.valerioisufi.pageboard.model/PdfTextLayout.wordRange|wordRange(kotlin.Int){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/PurgedContent { // io.github.valerioisufi.pageboard.model/PurgedContent|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page>, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/PageElement>>) // io.github.valerioisufi.pageboard.model/PurgedContent.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.Page>;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.pageboard.model.Page,io.github.valerioisufi.pageboard.model.PageElement>>){}[0]
-
-    final val elements // io.github.valerioisufi.pageboard.model/PurgedContent.elements|{}elements[0]
-        final fun <get-elements>(): kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.pageboard.model/Page, io.github.valerioisufi.pageboard.model/PageElement>> // io.github.valerioisufi.pageboard.model/PurgedContent.elements.<get-elements>|<get-elements>(){}[0]
-    final val isEmpty // io.github.valerioisufi.pageboard.model/PurgedContent.isEmpty|{}isEmpty[0]
-        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PurgedContent.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
-    final val pages // io.github.valerioisufi.pageboard.model/PurgedContent.pages|{}pages[0]
-        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page> // io.github.valerioisufi.pageboard.model/PurgedContent.pages.<get-pages>|<get-pages>(){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/SelectionActivity { // io.github.valerioisufi.pageboard.model/SelectionActivity|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ...) // io.github.valerioisufi.pageboard.model/SelectionActivity.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;io.github.valerioisufi.pageboard.model.geometry.AffineTransform){}[0]
-
-    final val ids // io.github.valerioisufi.pageboard.model/SelectionActivity.ids|{}ids[0]
-        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model/SelectionActivity.ids.<get-ids>|<get-ids>(){}[0]
-    final val isMoving // io.github.valerioisufi.pageboard.model/SelectionActivity.isMoving|{}isMoving[0]
-        final fun <get-isMoving>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/SelectionActivity.isMoving.<get-isMoving>|<get-isMoving>(){}[0]
-    final val pageId // io.github.valerioisufi.pageboard.model/SelectionActivity.pageId|{}pageId[0]
-        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.pageId.<get-pageId>|<get-pageId>(){}[0]
-    final val transform // io.github.valerioisufi.pageboard.model/SelectionActivity.transform|{}transform[0]
-        final fun <get-transform>(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model/SelectionActivity.transform.<get-transform>|<get-transform>(){}[0]
-
-    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.component1|component1(){}[0]
-    final fun component2(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model/SelectionActivity.component2|component2(){}[0]
-    final fun component3(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model/SelectionActivity.component3|component3(){}[0]
-    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ...): io.github.valerioisufi.pageboard.model/SelectionActivity // io.github.valerioisufi.pageboard.model/SelectionActivity.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;io.github.valerioisufi.pageboard.model.geometry.AffineTransform){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/SelectionActivity.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/SelectionActivity.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/SelectionActivity.toString|toString(){}[0]
-
-    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model/SelectionActivity> { // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer|null[0]
-        final val descriptor // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.descriptor|{}descriptor[0]
-            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.childSerializers|childSerializers(){}[0]
-        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model/SelectionActivity // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model/SelectionActivity) // io.github.valerioisufi.pageboard.model/SelectionActivity.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.SelectionActivity){}[0]
-    }
-
-    final object Companion { // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion|null[0]
-        final val $childSerializers // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion.$childSerializers|{}$childSerializers[0]
-
-        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/SelectionActivity> // io.github.valerioisufi.pageboard.model/SelectionActivity.Companion.serializer|serializer(){}[0]
-    }
-}
-
-final class io.github.valerioisufi.pageboard.model/Stamp : kotlin/Comparable<io.github.valerioisufi.pageboard.model/Stamp> { // io.github.valerioisufi.pageboard.model/Stamp|null[0]
-    constructor <init>(kotlin/Long, kotlin/Int, kotlin/String) // io.github.valerioisufi.pageboard.model/Stamp.<init>|<init>(kotlin.Long;kotlin.Int;kotlin.String){}[0]
-
-    final val counter // io.github.valerioisufi.pageboard.model/Stamp.counter|{}counter[0]
-        final fun <get-counter>(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.counter.<get-counter>|<get-counter>(){}[0]
-    final val replica // io.github.valerioisufi.pageboard.model/Stamp.replica|{}replica[0]
-        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.replica.<get-replica>|<get-replica>(){}[0]
-    final val time // io.github.valerioisufi.pageboard.model/Stamp.time|{}time[0]
-        final fun <get-time>(): kotlin/Long // io.github.valerioisufi.pageboard.model/Stamp.time.<get-time>|<get-time>(){}[0]
-
-    final fun compareTo(io.github.valerioisufi.pageboard.model/Stamp): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.compareTo|compareTo(io.github.valerioisufi.pageboard.model.Stamp){}[0]
-    final fun component1(): kotlin/Long // io.github.valerioisufi.pageboard.model/Stamp.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.component2|component2(){}[0]
-    final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.component3|component3(){}[0]
-    final fun copy(kotlin/Long = ..., kotlin/Int = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/Stamp.copy|copy(kotlin.Long;kotlin.Int;kotlin.String){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/Stamp.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/Stamp.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/Stamp.toString|toString(){}[0]
-
-    final object Companion { // io.github.valerioisufi.pageboard.model/Stamp.Companion|null[0]
-        final val ZERO // io.github.valerioisufi.pageboard.model/Stamp.Companion.ZERO|{}ZERO[0]
-            final fun <get-ZERO>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/Stamp.Companion.ZERO.<get-ZERO>|<get-ZERO>(){}[0]
-
-        final fun parse(kotlin/String): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model/Stamp.Companion.parse|parse(kotlin.String){}[0]
-        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.model/Stamp.Companion.serializer|serializer(){}[0]
-    }
-}
-
-final class io.github.valerioisufi.pageboard.model/StrokeMesh { // io.github.valerioisufi.pageboard.model/StrokeMesh|null[0]
-    constructor <init>(kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/MeshPartition> = ..., io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model/StrokeOutline? = ...) // io.github.valerioisufi.pageboard.model/StrokeMesh.<init>|<init>(kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.MeshPartition>;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.StrokeOutline?){}[0]
-
-    final val color // io.github.valerioisufi.pageboard.model/StrokeMesh.color|{}color[0]
-        final fun <get-color>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.color.<get-color>|<get-color>(){}[0]
-    final val indices // io.github.valerioisufi.pageboard.model/StrokeMesh.indices|{}indices[0]
-        final fun <get-indices>(): kotlin/ShortArray // io.github.valerioisufi.pageboard.model/StrokeMesh.indices.<get-indices>|<get-indices>(){}[0]
-    final val inputToolType // io.github.valerioisufi.pageboard.model/StrokeMesh.inputToolType|{}inputToolType[0]
-        final fun <get-inputToolType>(): io.github.valerioisufi.pageboard.model/InputToolType // io.github.valerioisufi.pageboard.model/StrokeMesh.inputToolType.<get-inputToolType>|<get-inputToolType>(){}[0]
-    final val isEmpty // io.github.valerioisufi.pageboard.model/StrokeMesh.isEmpty|{}isEmpty[0]
-        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeMesh.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
-    final val outline // io.github.valerioisufi.pageboard.model/StrokeMesh.outline|{}outline[0]
-        final fun <get-outline>(): io.github.valerioisufi.pageboard.model/StrokeOutline? // io.github.valerioisufi.pageboard.model/StrokeMesh.outline.<get-outline>|<get-outline>(){}[0]
-    final val partitions // io.github.valerioisufi.pageboard.model/StrokeMesh.partitions|{}partitions[0]
-        final fun <get-partitions>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/MeshPartition> // io.github.valerioisufi.pageboard.model/StrokeMesh.partitions.<get-partitions>|<get-partitions>(){}[0]
-    final val points // io.github.valerioisufi.pageboard.model/StrokeMesh.points|{}points[0]
-        final fun <get-points>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> // io.github.valerioisufi.pageboard.model/StrokeMesh.points.<get-points>|<get-points>(){}[0]
-    final val positions // io.github.valerioisufi.pageboard.model/StrokeMesh.positions|{}positions[0]
-        final fun <get-positions>(): kotlin/FloatArray // io.github.valerioisufi.pageboard.model/StrokeMesh.positions.<get-positions>|<get-positions>(){}[0]
-    final val size // io.github.valerioisufi.pageboard.model/StrokeMesh.size|{}size[0]
-        final fun <get-size>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokeMesh.size.<get-size>|<get-size>(){}[0]
-    final val tool // io.github.valerioisufi.pageboard.model/StrokeMesh.tool|{}tool[0]
-        final fun <get-tool>(): io.github.valerioisufi.pageboard.model/StrokeTool // io.github.valerioisufi.pageboard.model/StrokeMesh.tool.<get-tool>|<get-tool>(){}[0]
-    final val triangleCount // io.github.valerioisufi.pageboard.model/StrokeMesh.triangleCount|{}triangleCount[0]
-        final fun <get-triangleCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.triangleCount.<get-triangleCount>|<get-triangleCount>(){}[0]
-    final val vertexCount // io.github.valerioisufi.pageboard.model/StrokeMesh.vertexCount|{}vertexCount[0]
-        final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeMesh.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
-
-    final fun computeBounds(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/StrokeMesh.computeBounds|computeBounds(){}[0]
-    final fun transformed(io.github.valerioisufi.pageboard.model.geometry/Matrix2D): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.transformed|transformed(io.github.valerioisufi.pageboard.model.geometry.Matrix2D){}[0]
-    final fun withPoints(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.withPoints|withPoints(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>){}[0]
-
-    final object Companion { // io.github.valerioisufi.pageboard.model/StrokeMesh.Companion|null[0]
-        final fun fromIndexedMesh(kotlin/FloatArray, kotlin/IntArray, kotlin/Int, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/InputToolType, io.github.valerioisufi.pageboard.model/StrokeOutline? = ...): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeMesh.Companion.fromIndexedMesh|fromIndexedMesh(kotlin.FloatArray;kotlin.IntArray;kotlin.Int;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.StrokeOutline?){}[0]
-    }
-}
-
-final class io.github.valerioisufi.pageboard.model/StrokeOutline { // io.github.valerioisufi.pageboard.model/StrokeOutline|null[0]
-    constructor <init>(kotlin.collections/List<kotlin/FloatArray>) // io.github.valerioisufi.pageboard.model/StrokeOutline.<init>|<init>(kotlin.collections.List<kotlin.FloatArray>){}[0]
-
-    final val isEmpty // io.github.valerioisufi.pageboard.model/StrokeOutline.isEmpty|{}isEmpty[0]
-        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeOutline.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
-    final val polygons // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons|{}polygons[0]
-        final fun <get-polygons>(): kotlin.collections/List<kotlin/FloatArray> // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons.<get-polygons>|<get-polygons>(){}[0]
-
-    final fun transformed(io.github.valerioisufi.pageboard.model.geometry/Matrix2D): io.github.valerioisufi.pageboard.model/StrokeOutline // io.github.valerioisufi.pageboard.model/StrokeOutline.transformed|transformed(io.github.valerioisufi.pageboard.model.geometry.Matrix2D){}[0]
-}
-
-final class io.github.valerioisufi.pageboard.model/StrokePoint { // io.github.valerioisufi.pageboard.model/StrokePoint|null[0]
-    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Long = ...) // io.github.valerioisufi.pageboard.model/StrokePoint.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long){}[0]
-
-    final val pressure // io.github.valerioisufi.pageboard.model/StrokePoint.pressure|{}pressure[0]
-        final fun <get-pressure>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.pressure.<get-pressure>|<get-pressure>(){}[0]
-    final val timestampMs // io.github.valerioisufi.pageboard.model/StrokePoint.timestampMs|{}timestampMs[0]
-        final fun <get-timestampMs>(): kotlin/Long // io.github.valerioisufi.pageboard.model/StrokePoint.timestampMs.<get-timestampMs>|<get-timestampMs>(){}[0]
-    final val x // io.github.valerioisufi.pageboard.model/StrokePoint.x|{}x[0]
-        final fun <get-x>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.x.<get-x>|<get-x>(){}[0]
-    final val y // io.github.valerioisufi.pageboard.model/StrokePoint.y|{}y[0]
-        final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.y.<get-y>|<get-y>(){}[0]
-
-    final fun component1(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component1|component1(){}[0]
-    final fun component2(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component2|component2(){}[0]
-    final fun component3(): kotlin/Float // io.github.valerioisufi.pageboard.model/StrokePoint.component3|component3(){}[0]
-    final fun component4(): kotlin/Long // io.github.valerioisufi.pageboard.model/StrokePoint.component4|component4(){}[0]
-    final fun copy(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Long = ...): io.github.valerioisufi.pageboard.model/StrokePoint // io.github.valerioisufi.pageboard.model/StrokePoint.copy|copy(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Long){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokePoint.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokePoint.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/StrokePoint.toString|toString(){}[0]
-
-    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model/StrokePoint> { // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer|null[0]
-        final val descriptor // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.descriptor|{}descriptor[0]
-            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.childSerializers|childSerializers(){}[0]
-        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model/StrokePoint // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model/StrokePoint) // io.github.valerioisufi.pageboard.model/StrokePoint.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.StrokePoint){}[0]
-    }
-
-    final object Companion { // io.github.valerioisufi.pageboard.model/StrokePoint.Companion|null[0]
-        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model/StrokePoint> // io.github.valerioisufi.pageboard.model/StrokePoint.Companion.serializer|serializer(){}[0]
-    }
 }
 
 final class io.github.valerioisufi.pageboard.model/Versions { // io.github.valerioisufi.pageboard.model/Versions|null[0]
@@ -4135,15 +4135,15 @@ final fun (io.github.valerioisufi.pageboard.model/CustomElement).io.github.valer
 final fun (io.github.valerioisufi.pageboard.model/Document).io.github.valerioisufi.pageboard.model.change/copyElements(io.github.valerioisufi.pageboard.model/Page, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement>, io.github.valerioisufi.pageboard.model.geometry/Rect, kotlin/Float = ...): io.github.valerioisufi.pageboard.model.change/CopiedElements // io.github.valerioisufi.pageboard.model.change/copyElements|copyElements@io.github.valerioisufi.pageboard.model.Document(io.github.valerioisufi.pageboard.model.Page;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageElement>;io.github.valerioisufi.pageboard.model.geometry.Rect;kotlin.Float){}[0]
 final fun (io.github.valerioisufi.pageboard.model/Document).io.github.valerioisufi.pageboard.model.change/copyPages(kotlin.collections/List<io.github.valerioisufi.pageboard.model/Page>): io.github.valerioisufi.pageboard.model.change/CopiedPages // io.github.valerioisufi.pageboard.model.change/copyPages|copyPages@io.github.valerioisufi.pageboard.model.Document(kotlin.collections.List<io.github.valerioisufi.pageboard.model.Page>){}[0]
 final fun (io.github.valerioisufi.pageboard.model/Document).io.github.valerioisufi.pageboard.model.change/snapshot(): io.github.valerioisufi.pageboard.model.change/DocumentSnapshot // io.github.valerioisufi.pageboard.model.change/snapshot|snapshot@io.github.valerioisufi.pageboard.model.Document(){}[0]
-final fun (io.github.valerioisufi.pageboard.model/PageElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/ElementData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.PageElement(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/ImageElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/ImageData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.ImageElement(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/Page).io.github.valerioisufi.pageboard.model.change/snapshot(): io.github.valerioisufi.pageboard.model.change/PageSnapshot // io.github.valerioisufi.pageboard.model.change/snapshot|snapshot@io.github.valerioisufi.pageboard.model.Page(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/Page).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/PageData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.Page(){}[0]
+final fun (io.github.valerioisufi.pageboard.model/PageElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/ElementData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.PageElement(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/PdfElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/PdfData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.PdfElement(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/StrokeElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/StrokeData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.StrokeElement(){}[0]
+final fun (io.github.valerioisufi.pageboard.model/StrokeMesh).io.github.valerioisufi.pageboard.model/triangleOutline(): io.github.valerioisufi.pageboard.model/StrokeOutline // io.github.valerioisufi.pageboard.model/triangleOutline|triangleOutline@io.github.valerioisufi.pageboard.model.StrokeMesh(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/TextElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/TextData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.TextElement(){}[0]
 final fun (io.github.valerioisufi.pageboard.model/TextMarkupElement).io.github.valerioisufi.pageboard.model.change/toData(): io.github.valerioisufi.pageboard.model.change/TextMarkupData // io.github.valerioisufi.pageboard.model.change/toData|toData@io.github.valerioisufi.pageboard.model.TextMarkupElement(){}[0]
-final fun (io.github.valerioisufi.pageboard.model/StrokeMesh).io.github.valerioisufi.pageboard.model/triangleOutline(): io.github.valerioisufi.pageboard.model/StrokeOutline // io.github.valerioisufi.pageboard.model/triangleOutline|triangleOutline@io.github.valerioisufi.pageboard.model.StrokeMesh(){}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.pageboard.model/ElementType<#A>).io.github.valerioisufi.pageboard.model/decode(io.github.valerioisufi.pageboard.model/CustomElement): #A? // io.github.valerioisufi.pageboard.model/decode|decode@io.github.valerioisufi.pageboard.model.ElementType<0:0>(io.github.valerioisufi.pageboard.model.CustomElement){0§<kotlin.Any>}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.pageboard.model/ElementType<#A>).io.github.valerioisufi.pageboard.model/encode(#A): kotlin/ByteArray // io.github.valerioisufi.pageboard.model/encode|encode@io.github.valerioisufi.pageboard.model.ElementType<0:0>(0:0){0§<kotlin.Any>}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.pageboard.model/ElementType<#A>).io.github.valerioisufi.pageboard.model/searchTextOf(io.github.valerioisufi.pageboard.model/CustomElement): kotlin/String? // io.github.valerioisufi.pageboard.model/searchTextOf|searchTextOf@io.github.valerioisufi.pageboard.model.ElementType<0:0>(io.github.valerioisufi.pageboard.model.CustomElement){0§<kotlin.Any>}[0]

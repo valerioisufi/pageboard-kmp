@@ -32,6 +32,7 @@ public final class io/github/valerioisufi/pageboard/platform/PlatformFilesKt {
 
 public final class io/github/valerioisufi/pageboard/platform/PlatformFiles_jvmKt {
 	public static final field PAGEBOARD_DATA_DIRECTORY_PROPERTY Ljava/lang/String;
+	public static final fun checkDataDirectoryProperty ()V
 	public static final fun getPageboardDesktopDataDirectory ()Ljava/io/File;
 }
 

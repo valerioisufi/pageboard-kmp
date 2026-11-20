@@ -64,7 +64,7 @@ public abstract class io/github/valerioisufi/pageboard/store/room/db/PageboardDa
 	public fun <init> ()V
 }
 
-public final class io/github/valerioisufi/pageboard/store/room/db/DrawDatabase_Impl : io/github/valerioisufi/pageboard/store/room/db/PageboardDatabase {
+public final class io/github/valerioisufi/pageboard/store/room/db/PageboardDatabase_Impl : io/github/valerioisufi/pageboard/store/room/db/PageboardDatabase {
 	public fun <init> ()V
 	public fun createAutoMigrations (Ljava/util/Map;)Ljava/util/List;
 	public synthetic fun createOpenDelegate ()Landroidx/room/RoomOpenDelegateMarker;

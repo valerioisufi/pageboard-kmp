@@ -181,7 +181,7 @@ One commit per phase. The checks of `CLAUDE.md` run at the end of each phase fro
 | 5 | The types, as in the table; `updateKotlinAbi` for the new names | Done, compiled for the JVM; the ABI dumps renamed with the code, checked after phase 6 |
 | 6 | The protocol and the stored names: ALPN, invitations, Bonjour, archives, shape type, secure store, deep links, channel; `ProtocolFormatTest` re-recorded | Done: `ProtocolFormatTest` records no ALPN nor scheme and passes unchanged; the invitations of the tests renamed |
 | 7 | The docs, `CLAUDE.md` and the index of the plans | Done; the links point to `valerioisufi/pageboard-kmp`, which phase 9 creates |
-| 8 | Verification: the conversion tried on a scratch directory with notes of the old build, PencilNotes on desktop opening them; two devices on the new build syncing | To do |
+| 8 | Verification: the conversion tried on a scratch directory with notes of the old build, PencilNotes on desktop opening them; two devices on the new build syncing | Done here: the checks of `CLAUDE.md` (failures known on Windows only), the conversion tried on a database with shapes under the old type, PencilNotes on a scratch directory, the old property refused. Left: the klib dumps of the Compose and Room modules (`updateKotlinAbi` on the Mac), the sync between two devices |
 | 9 | The repository renamed on GitHub, the remote updated | To do, after the merge |
 
 ## Decisions

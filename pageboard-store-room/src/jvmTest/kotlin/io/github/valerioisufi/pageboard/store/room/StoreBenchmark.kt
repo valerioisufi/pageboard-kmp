@@ -10,7 +10,7 @@ import io.github.valerioisufi.pageboard.model.change.AddElements
 import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.OpenDocuments
-import io.github.valerioisufi.pageboard.store.room.db.DRAW_DATABASE_MIGRATIONS
+import io.github.valerioisufi.pageboard.store.room.db.PAGEBOARD_DATABASE_MIGRATIONS
 import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.testing.SyntheticDocuments
 import java.io.File
@@ -44,7 +44,7 @@ class StoreBenchmark {
         file.parentFile.mkdirs()
         driver = CountingSQLiteDriver(BundledSQLiteDriver())
         database = Room.databaseBuilder<PageboardDatabase>(name = file.absolutePath)
-            .addMigrations(*DRAW_DATABASE_MIGRATIONS)
+            .addMigrations(*PAGEBOARD_DATABASE_MIGRATIONS)
             .setDriver(driver)
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()

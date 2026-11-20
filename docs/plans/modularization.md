@@ -164,7 +164,7 @@ applications never declare them.
 | Clearing the text caches when the formula engine becomes ready | the text adapter, subscribed to its `FormulaRenderer` | Information Expert |
 | Storage of documents, folders, operations, sharing secrets, preferences | segregated ports in `pageboard-store` (`DocumentCatalog`, `OperationLog`, `SharingStore`, `PreferenceStore`; `DocumentStore` adds the content and the persistence), Room behind them in `pageboard-store-room` | Protected Variations, High Cohesion |
 | The documents of a store being changed, one session each | `OpenDocuments`, created once by the application and given to the library, the editor, the synchronization and the export (it knows its store: Information Expert); an open document reads only the operation log | Creator, Low Coupling |
-| Keeping the stored documents across the versions of the schema | the migrations of `pageboard-store-room` (`DRAW_DATABASE_MIGRATIONS`), each one tested on a database of its version | Protected Variations |
+| Keeping the stored documents across the versions of the schema | the migrations of `pageboard-store-room` (`PAGEBOARD_DATABASE_MIGRATIONS`), each one tested on a database of its version | Protected Variations |
 | Saving the changes of an open document | `DrawPersistence` with element saves for every type; preferences in a port of their own | High Cohesion, Polymorphism |
 | What an extension of the editor receives | `EditorContext` (document identifier, controller) in `pageboard-ui` | Low Coupling |
 | Opening a stored document in the editor and writing its changes | `DocumentEditorViewModel` (`pageboard-session`) | Controller, High Cohesion |
