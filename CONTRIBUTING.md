@@ -1,7 +1,8 @@
 # Contributing
 
 Thank you for helping. Bugs, ideas and questions are welcome as issues; for a change of the code,
-open an issue first, so that its design can be agreed before the work.
+open an issue first, so that its design can be agreed before the work. Everyone who takes part
+follows the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## How a change is made
 

@@ -1,5 +1,10 @@
 # Pageboard
 
+[![Check](https://github.com/valerioisufi/pageboard-kmp/actions/workflows/check.yml/badge.svg)](https://github.com/valerioisufi/pageboard-kmp/actions/workflows/check.yml)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.4.20-7f52ff?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+![Platforms](https://img.shields.io/badge/platforms-android%20%7C%20ios%20%7C%20jvm-informational)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 **Kotlin Multiplatform libraries for drawing, handwriting and note-taking** on Android, iOS and the
 desktop (JVM), and **PencilNotes**, the note-taking application built on them.
 

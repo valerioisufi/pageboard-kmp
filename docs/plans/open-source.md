@@ -71,7 +71,7 @@ minor version may break.
 | 2 | CLAUDE.md without the devices and the infrastructure of the maintainer; `docs/plans/` with the links updated | Done |
 | 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | Done |
 | 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | Done |
-| 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning (the maintainer's) | To do |
+| 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning; `dependabot.yml`, the template of the pull requests, `CODE_OF_CONDUCT.md`, the badges, the environment `maven-central` | Done |
 | 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the maintainer's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
 
 Open Collective and `FUNDING.yml` come after phase 5, on their own.
@@ -132,6 +132,38 @@ Open Collective and `FUNDING.yml` come after phase 5, on their own.
   `publish`): the documentation of the version released, not of `main`. The source of the Pages of
   the repository is to be set to GitHub Actions (phase 5).
 * Not run: the release itself, which needs the secrets and the public repository (phase 6).
+
+### Phase 5 results
+
+The repository is `valerioisufi/pageboard-kmp` (renamed with the libraries, [pageboard.md](pageboard.md)),
+made public by the maintainer on 2026-11-20. Its settings, through the API of GitHub:
+
+* The description, the website (PencilNotes on Play, the documentation after the first release)
+  and the topics. No wiki and no projects; Discussions on.
+* Pull requests merged by rebase only, the branches updated when behind and deleted after the
+  merge.
+* A ruleset on `main`: no deletion, no force push, a linear history, the checks `check` and
+  `Android applications` required; the administrators may bypass it, to push on `main`. The check
+  of the screenshots is not required: its workflow ignores the changes of the documentation, and a
+  pull request of the documentation alone would wait for it forever (alone, revertible). Neither
+  are the jobs of `native.yml`, filtered by path too.
+* A ruleset on the tags `pageboard-v*` and `pencilnotes-v*`: a release once tagged is neither moved
+  nor deleted.
+* Dependabot alerts and security updates; secret scanning with push protection; private
+  vulnerability reporting; CodeQL (default setup) on the workflows.
+* Actions: the token reads only and approves no pull request; the workflows of every external
+  contributor wait for an approval.
+* Pages from GitHub Actions; the environments `github-pages` and `maven-central` taken by the tags
+  `pageboard-v*` (`github-pages` by `main` too). `release.yml` publishes in `maven-central`, where
+  the four secrets go (phase 6).
+* `dependabot.yml`: Gradle, the actions and cargo, once a month, grouped. Not the image of the
+  screenshots, whose update means recording the references again.
+* The template of the pull requests (the checks of `CONTRIBUTING.md`), `CODE_OF_CONDUCT.md` (its
+  own, short, with the address of `SECURITY.md`), the badges of the README (the check, Kotlin, the
+  platforms, the license; Maven Central after the first release).
+
+Left to the maintainer, in the interface of GitHub: the image of the social preview
+(`docs/images/social-preview.png`), the repository pinned on the profile.
 
 ## Decisions
 

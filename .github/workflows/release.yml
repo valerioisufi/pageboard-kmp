@@ -3,7 +3,7 @@
 # the JNI libraries of every desktop platform built on its own runner, then published together
 # (-Ppageboard.native.prebuilt=true: a release without one of them fails), signed.
 #
-# Secrets: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD (a token of the Central Portal),
+# Secrets, of the environment maven-central: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD (a token of the Central Portal),
 # SIGNING_KEY (an armored PGP key), SIGNING_KEY_PASSWORD.
 name: Release
 
@@ -48,6 +48,9 @@ jobs:
   publish:
     needs: natives
     runs-on: macos-26
+    # The secrets of Maven Central are kept in this environment, which only the tags pageboard-v*
+    # may use
+    environment: maven-central
     permissions:
       # The release of GitHub with the PDFium of the iOS applications
       contents: write
