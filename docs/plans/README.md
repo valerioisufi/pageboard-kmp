@@ -40,6 +40,7 @@ who uses the applications or the libraries.
 | [build-speed](build-speed.md) | The speed of the build |
 | [camera-bounds](camera-bounds.md) | Camera bounds |
 | [checklists](checklists.md) | Checklists and the levels of the headings |
+| [ci-fixes](ci-fixes.md) | The workflows after the rename |
 | [ci-screenshots](ci-screenshots.md) | Screenshots that anyone can verify and record |
 | [ci-time](ci-time.md) | The time of the GitHub workflows |
 | [cleanup](cleanup.md) | Cleanup |
