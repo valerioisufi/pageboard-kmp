@@ -291,17 +291,6 @@ sealed interface io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp {
             final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.DrawRoundRect.y.<get-y>|<get-y>(){}[0]
     }
 
-    final class TextElement : io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp { // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement|null[0]
-        constructor <init>(kotlin/String, kotlin/Float, kotlin/Float) // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.<init>|<init>(kotlin.String;kotlin.Float;kotlin.Float){}[0]
-
-        final val text // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.text|{}text[0]
-            final fun <get-text>(): kotlin/String // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.text.<get-text>|<get-text>(){}[0]
-        final val x // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.x|{}x[0]
-            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.x.<get-x>|<get-x>(){}[0]
-        final val y // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.y|{}y[0]
-            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.y.<get-y>|<get-y>(){}[0]
-    }
-
     final class Rotate : io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp { // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.Rotate|null[0]
         constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.Rotate.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 
@@ -352,6 +341,17 @@ sealed interface io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp {
 
         final val width // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.SetStrokeWidth.width|{}width[0]
             final fun <get-width>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.SetStrokeWidth.width.<get-width>|<get-width>(){}[0]
+    }
+
+    final class TextElement : io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp { // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement|null[0]
+        constructor <init>(kotlin/String, kotlin/Float, kotlin/Float) // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.<init>|<init>(kotlin.String;kotlin.Float;kotlin.Float){}[0]
+
+        final val text // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.text.<get-text>|<get-text>(){}[0]
+        final val x // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.TextElement.y.<get-y>|<get-y>(){}[0]
     }
 
     final class Translate : io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp { // io.github.valerioisufi.pageboard.canvas.render.tile/FormulaOp.Translate|null[0]

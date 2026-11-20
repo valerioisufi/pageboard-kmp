@@ -159,6 +159,12 @@ class TranscriptionQueueTest {
         }
     }
 
+    /**
+     * Whether [lecture] waits its turn in the queue: converted ([ImportStep.WAITING]) and put in
+     * the queue, a moment later (only then can it be taken out of it).
+     */
+    private fun waitsInTheQueue(lecture: Lecture) = lecture.importStep == ImportStep.WAITING && lecture.generating != null
+
     private fun audioOf(lecture: Lecture) = File(lecture.directory, "audio.opus")
 
     @Test
@@ -166,7 +172,7 @@ class TranscriptionQueueTest {
         val first = import("first")
         val second = import("second")
         await("the first transcription to start") { begun.size == 1 }
-        await("the second import to be converted") { second.importStep == ImportStep.WAITING }
+        await("the second import to be converted") { waitsInTheQueue(second) }
         // Converted at once: its audio is in the notebook while it waits
         assertTrue(audioOf(second).exists())
         assertEquals(LectureStatus.IMPORTING, onState { second.status })
@@ -203,7 +209,7 @@ class TranscriptionQueueTest {
         assertFalse(onState { assistant.canRetranscribe(first) }, "already in the queue")
         val second = import("second")
         val third = import("third", documentId = "other")
-        await("both imports to be converted") { second.importStep == ImportStep.WAITING && third.importStep == ImportStep.WAITING }
+        await("both imports to be converted") { waitsInTheQueue(second) && waitsInTheQueue(third) }
         assertEquals(listOf(first, second, third), onState { assistant.transcribing })
 
         gate(1).complete(Unit)
@@ -242,7 +248,7 @@ class TranscriptionQueueTest {
         val second = import("second")
         val third = import("third")
         await("the first transcription to start") { begun.size == 1 }
-        await("the others to wait") { second.importStep == ImportStep.WAITING && third.importStep == ImportStep.WAITING }
+        await("the others to wait") { waitsInTheQueue(second) && waitsInTheQueue(third) }
 
         // Waiting: it never starts, and stays a lecture with its audio
         onState { assistant.cancelTranscription(second) }
@@ -268,7 +274,7 @@ class TranscriptionQueueTest {
         val first = import("first")
         val second = import("second")
         await("the first transcription to start") { begun.size == 1 }
-        await("the second import to wait") { second.importStep == ImportStep.WAITING }
+        await("the second import to wait") { waitsInTheQueue(second) }
         // A lecture with its audio and no transcript, as one received from a tablet
         onState { assistant.cancelTranscription(second) }
         await("the second lecture to be finished") { second.status == LectureStatus.FINISHED && assistant.transcribing == listOf(first) }
@@ -327,7 +333,7 @@ class TranscriptionQueueTest {
         assertTrue(onState { assistant.start("doc", "Live", FakeNotebook()) })
         val recorded = onState { assistant.recorder!!.lecture }
         val imported = import("imported")
-        await("the import to be converted") { imported.importStep == ImportStep.WAITING }
+        await("the import to be converted") { waitsInTheQueue(imported) }
         assertTrue(audioOf(imported).exists())
         delay(300)
         assertTrue(begun.isEmpty(), "nothing transcribed while the recording goes on")
