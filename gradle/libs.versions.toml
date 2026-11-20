@@ -28,6 +28,7 @@ kotlinx-io = "0.9.1"
 ksoup = "0.2.6"
 # The runtime of the local models (pageboard-ml-litert), from the Maven of Google
 litertlm = "0.18.0"
+mlkit-digitalInk = "19.0.0"
 cryptography = "0.6.0"
 jmdns = "3.6.3"
 jna = "5.19.1"
@@ -80,6 +81,7 @@ kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.re
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 litertlm-android = { module = "com.google.ai.edge.litertlm:litertlm-android", version.ref = "litertlm" }
 litertlm-jvm = { module = "com.google.ai.edge.litertlm:litertlm-jvm", version.ref = "litertlm" }
+mlkit-digitalInk = { module = "com.google.mlkit:digital-ink-recognition", version.ref = "mlkit-digitalInk" }
 navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
 # Plugins used by the convention plugins of build-logic

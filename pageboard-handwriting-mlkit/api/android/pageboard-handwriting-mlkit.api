@@ -1,0 +1,19 @@
+public final class io/github/valerioisufi/pageboard/handwriting/mlkit/MlKitLanguageModels : io/github/valerioisufi/pageboard/handwriting/InkLanguageModels {
+	public fun <init> ()V
+	public fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun download (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun downloaded (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun models (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/mlkit/MlKitTextRecognizer : io/github/valerioisufi/pageboard/handwriting/TextInkRecognizer {
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/pageboard/handwriting/mlkit/MlKitLanguageModels;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/handwriting/mlkit/MlKitLanguageModels;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getReadsBlocks ()Z
+	public fun getVersion ()Ljava/lang/String;
+	public fun languages (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recognize (Lio/github/valerioisufi/pageboard/handwriting/InkSample;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
