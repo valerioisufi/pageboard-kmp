@@ -4,7 +4,7 @@
 
 PencilNotes is a note-taking application for Android, iOS and computers (Windows, macOS, Linux),
 made by one developer and published as open source
-(<https://github.com/valerioisufi/DrawView-KMP>). It has no accounts, no advertising, no analytics
+(<https://github.com/valerioisufi/pageboard-kmp>). It has no accounts, no advertising, no analytics
 and no crash reporting. The developer runs no server that receives your notes.
 
 ## What stays on your device
@@ -64,7 +64,7 @@ Changes to this policy are published at this address, with the date above.
 
 PencilNotes è un'applicazione per prendere appunti su Android, iOS e computer (Windows, macOS,
 Linux), fatta da un solo sviluppatore e pubblicata come open source
-(<https://github.com/valerioisufi/DrawView-KMP>). Non ha account, pubblicità, statistiche d'uso né
+(<https://github.com/valerioisufi/pageboard-kmp>). Non ha account, pubblicità, statistiche d'uso né
 segnalazione dei crash. Lo sviluppatore non gestisce alcun server che riceva le tue note.
 
 ## Cosa resta sul tuo dispositivo

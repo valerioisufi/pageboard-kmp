@@ -29,6 +29,6 @@ SYNC AND SHARE
 • Keep your devices in sync on the same Wi-Fi or over the internet: directly when they can, otherwise through a relay that cannot read your notes.
 • Share a notebook with a classmate with a link.
 
-Open source: PencilNotes is built on Pageboard, a set of Kotlin Multiplatform libraries released under the MIT license. The code is on GitHub: https://github.com/valerioisufi/DrawView-KMP
+Open source: PencilNotes is built on Pageboard, a set of Kotlin Multiplatform libraries released under the MIT license. The code is on GitHub: https://github.com/valerioisufi/pageboard-kmp
 
 Privacy policy: https://valerioisufi.github.io/pencilnotes/privacy

@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Report it privately, through
-[the private reporting of GitHub](https://github.com/valerioisufi/DrawView-KMP/security/advisories/new),
+[the private reporting of GitHub](https://github.com/valerioisufi/pageboard-kmp/security/advisories/new),
 or by email to pencilnotes@proton.me. Please do not open a public issue.
 
 Say what is affected (a module, a version or a commit), how to reproduce it and what an attacker

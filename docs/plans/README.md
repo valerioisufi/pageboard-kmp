@@ -1,6 +1,6 @@
 # The plans
 
-Every feature, refactor or change of the interface of DrawView and PencilNotes starts with a plan
+Every feature, refactor or change of the interface of Pageboard and PencilNotes starts with a plan
 here, written before the code and kept up to date while the work goes on (see
 [CONTRIBUTING.md](../../CONTRIBUTING.md)). Each plan holds:
 
@@ -14,6 +14,8 @@ here, written before the code and kept up to date while the work goes on (see
 They are records, not the reference: a plan describes the code of its time, and later work may
 have changed it. What holds today is the code, [docs/reference.md](../reference.md) and the
 `Module.md` of each library. The status of a phase is the one written when the phase was done.
+The libraries were named DrawView until November 2026 ([pageboard.md](pageboard.md)): the plans
+written before keep the names of their time (`drawview-*`, `DrawViewController`, `DrawDocument`).
 
 The plans were written with the help of an AI coding assistant, following these same rules, and
 reviewed by the maintainer. "The maintainer" is the author of the project; "the user" is a person

@@ -1,8 +1,9 @@
-# DrawView-KMP
+# Pageboard
 
 Kotlin Multiplatform libraries for drawing and note-taking (Android, desktop JVM, iOS), published
 as `io.github.valerioisufi:pageboard-*`, plus two applications built on them: PencilNotes and the
-sample. Start from:
+sample. The libraries were named DrawView until November 2026 (`docs/plans/pageboard.md`): the
+plans written before keep the old names. Start from:
 
 - `docs/reference.md`: the modules, the features, how to build, run and test (`README.md` is the
   short version for visitors).
@@ -40,9 +41,10 @@ sample. Start from:
   - Every change to a stored format (documents, preferences, lecture records, attachments)
     needs a tested migration too.
   - Never use a destructive fallback, and never delete or rewrite stored data to "start clean".
-- **Never touch `~/.pencilnotes` or `~/.drawview` while verifying.** Run the desktop apps on a
-  scratch directory:
+- **Never touch `~/.pencilnotes`, `~/.pageboard` or `~/.drawview` (the sample before the rename)
+  while verifying.** Run the desktop apps on a scratch directory:
   `JAVA_TOOL_OPTIONS="-Dpageboard.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
+  (the old `-Ddrawview.dataDir` alone stops the run).
 - **The sync protocol is live between devices** (`PROTOCOL_VERSION` in `OpenFrame.kt`: 1).
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version

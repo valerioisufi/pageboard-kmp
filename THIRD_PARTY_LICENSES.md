@@ -1,6 +1,6 @@
 # Third-Party Licenses and Attributions
 
-DrawView-KMP incorporates and relies on open-source software libraries, components, and fonts.
+Pageboard incorporates and relies on open-source software libraries, components, and fonts.
 This document details the respective licenses, copyright notices, and disclaimers for each third-party component.
 The PencilNotes application (`pencilnotes/`) includes every Pageboard component plus the fonts marked *PencilNotes*.
 
@@ -8,7 +8,7 @@ The PencilNotes application (`pencilnotes/`) includes every Pageboard component 
 
 ## Summary of Third-Party Components
 
-| Component | Author / Project | License | Purpose in DrawView-KMP |
+| Component | Author / Project | License | Purpose in Pageboard |
 | :--- | :--- | :--- | :--- |
 | **Google Ink** | Google LLC / Android Open Source Project | [Apache License 2.0](#apache-license-version-20) | Freehand stroke generation and geometry modeling |
 | **Abseil C++** | The Abseil Authors / Google LLC | [Apache License 2.0](#apache-license-version-20) | C++ foundation library used by Google Ink |
