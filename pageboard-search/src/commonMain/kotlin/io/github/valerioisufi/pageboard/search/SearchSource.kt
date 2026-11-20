@@ -63,13 +63,17 @@ public enum class SearchChunkKind {
 
 /**
  * A searchable piece of a document, with its [anchor] and the [title] of its document.
+ *
+ * @param extraWords more words the search by words finds the piece by, never embedded, shown in a
+ *   snippet or suggested while writing: the other readings of handwriting.
  */
 public data class SearchChunk(
     public val sourceId: String,
     public val kind: SearchChunkKind,
     public val anchor: SearchAnchor,
     public val title: String,
-    public val text: String
+    public val text: String,
+    public val extraWords: String = ""
 )
 
 /**

@@ -111,6 +111,23 @@ public class QuantizedVector(
 }
 
 /**
+ * The handwriting of a block of strokes as a reader read it, kept by the index so that a block is
+ * read once (again when its strokes or its reader change).
+ *
+ * @param blockKey the key of the block (`blockKey` of its strokes).
+ * @param reader the reader and its version (`TextInkRecognizer.version`).
+ * @param text the most likely reading, empty when nothing was read.
+ * @param searchText every candidate of the reader.
+ */
+public data class StoredHandwriting(
+    val blockKey: String,
+    val reader: String,
+    val language: String,
+    val text: String,
+    val searchText: String
+)
+
+/**
  * The search index of this device (`search/index.db` in the data directory by default, or
  * `":memory:"` in tests), backed by `BundledSQLiteDriver` (Pure Fabrication).
  *
@@ -245,7 +262,7 @@ public class SearchIndex(
                     val rowId = insertChunk(conn, documentId, chunk, hash)
                     conn.prepare("INSERT INTO chunks_fts(rowid, text) VALUES (?, ?)").use { fts ->
                         fts.bindLong(1, rowId)
-                        fts.bindText(2, "${chunk.title}\n${chunk.text}")
+                        fts.bindText(2, if (chunk.extraWords.isBlank()) "${chunk.title}\n${chunk.text}" else "${chunk.title}\n${chunk.text}\n${chunk.extraWords}")
                         fts.step()
                     }
                 }
@@ -296,6 +313,10 @@ public class SearchIndex(
             conn.execSQL("BEGIN IMMEDIATE TRANSACTION")
             try {
                 conn.prepare("DELETE FROM chunks_fts WHERE rowid IN (SELECT id FROM chunks WHERE documentId = ?)").use { stmt ->
+                    stmt.bindText(1, documentId)
+                    stmt.step()
+                }
+                conn.prepare("DELETE FROM handwriting WHERE documentId = ?").use { stmt ->
                     stmt.bindText(1, documentId)
                     stmt.step()
                 }
@@ -461,6 +482,60 @@ public class SearchIndex(
             val texts = mutableListOf<String>()
             while (stmt.step()) texts += stmt.getText(0)
             texts
+        }
+    }
+
+    /** The handwriting read of [documentId], by key of block (see [StoredHandwriting]). */
+    public fun handwriting(documentId: String): Map<String, StoredHandwriting> = syncLock(lock) {
+        checkNotClosed()
+        val read = LinkedHashMap<String, StoredHandwriting>()
+        writeConnection.prepare("SELECT blockKey, reader, language, text, searchText FROM handwriting WHERE documentId = ?").use { stmt ->
+            stmt.bindText(1, documentId)
+            while (stmt.step()) read[stmt.getText(0)] = StoredHandwriting(stmt.getText(0), stmt.getText(1), stmt.getText(2), stmt.getText(3), stmt.getText(4))
+        }
+        read
+    }
+
+    /**
+     * Keeps the handwriting of [documentId] read: [readings] added or replaced, and the blocks not in
+     * [blockKeys] (erased, changed) forgotten.
+     */
+    public fun putHandwriting(documentId: String, readings: Collection<StoredHandwriting>, blockKeys: Set<String>) {
+        syncLock(lock) {
+            checkNotClosed()
+            val conn = writeConnection
+            conn.execSQL("BEGIN IMMEDIATE TRANSACTION")
+            try {
+                conn.prepare("INSERT OR REPLACE INTO handwriting(documentId, blockKey, reader, language, text, searchText) VALUES (?, ?, ?, ?, ?, ?)").use { stmt ->
+                    for (reading in readings) {
+                        stmt.bindText(1, documentId)
+                        stmt.bindText(2, reading.blockKey)
+                        stmt.bindText(3, reading.reader)
+                        stmt.bindText(4, reading.language)
+                        stmt.bindText(5, reading.text)
+                        stmt.bindText(6, reading.searchText)
+                        stmt.step()
+                        stmt.reset()
+                    }
+                }
+                val stale = mutableListOf<String>()
+                conn.prepare("SELECT blockKey FROM handwriting WHERE documentId = ?").use { stmt ->
+                    stmt.bindText(1, documentId)
+                    while (stmt.step()) stmt.getText(0).takeIf { it !in blockKeys }?.let(stale::add)
+                }
+                conn.prepare("DELETE FROM handwriting WHERE documentId = ? AND blockKey = ?").use { stmt ->
+                    for (key in stale) {
+                        stmt.bindText(1, documentId)
+                        stmt.bindText(2, key)
+                        stmt.step()
+                        stmt.reset()
+                    }
+                }
+                conn.execSQL("COMMIT")
+            } catch (e: Throwable) {
+                runCatching { conn.execSQL("ROLLBACK") }
+                throw e
+            }
         }
     }
 
@@ -723,6 +798,17 @@ public class SearchIndex(
         conn.execSQL(
             "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(" +
                 "text, tokenize = 'unicode61 remove_diacritics 2')"
+        )
+        // Added at format 1: an index made before gets it at its first open, its vectors kept
+        conn.execSQL(
+            "CREATE TABLE IF NOT EXISTS handwriting (" +
+                "documentId TEXT NOT NULL, " +
+                "blockKey TEXT NOT NULL, " +
+                "reader TEXT NOT NULL, " +
+                "language TEXT NOT NULL, " +
+                "text TEXT NOT NULL, " +
+                "searchText TEXT NOT NULL, " +
+                "PRIMARY KEY(documentId, blockKey))"
         )
         conn.execSQL(
             "CREATE TABLE IF NOT EXISTS vectors (" +

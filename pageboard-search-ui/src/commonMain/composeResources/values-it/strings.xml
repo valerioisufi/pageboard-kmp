@@ -34,4 +34,15 @@
     <string name="search_ask_searched_title">Passaggi consultati</string>
     <string name="search_ask_answered_by">Risposta di %1$s</string>
     <string name="search_ask_error">Impossibile generare una risposta: %1$s</string>
+    <string name="search_handwriting_title">Scrittura a mano</string>
+    <string name="search_handwriting_read">Leggi la scrittura a mano degli appunti</string>
+    <string name="search_handwriting_description">La tua scrittura viene letta su questo dispositivo, una volta per blocco, perché la ricerca la trovi. Non viene inviato nulla.</string>
+    <string name="search_handwriting_model">Modello della scrittura in %1$s</string>
+    <string name="search_handwriting_model_hint">Circa %1$s, scaricato da Google; la lettura resta su questo dispositivo.</string>
+    <string name="search_handwriting_no_reader">Questo dispositivo non legge la scrittura a mano in %1$s.</string>
+    <string name="search_handwriting_language_it">italiano</string>
+    <string name="search_handwriting_language_en">inglese</string>
+    <string name="search_handwriting_language_fr">francese</string>
+    <string name="search_handwriting_language_de">tedesco</string>
+    <string name="search_handwriting_language_es">spagnolo</string>
 </resources>

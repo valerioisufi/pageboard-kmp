@@ -35,7 +35,23 @@ import io.github.valerioisufi.pageboard.ml.InstalledModels
 import io.github.valerioisufi.pageboard.ml.ModelCatalog
 import io.github.valerioisufi.pageboard.ml.ModelDownloads
 import io.github.valerioisufi.pageboard.ml.ModelSpec
+import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import io.github.valerioisufi.pageboard.search.IndexingProgress
+import io.github.valerioisufi.pageboard.handwriting.InkLanguageModel
+import io.github.valerioisufi.pageboard.ui.components.SwitchRow
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_description
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_model
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_model_hint
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_no_reader
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_read
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_title
+import androidx.compose.runtime.rememberCoroutineScope
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_language_de
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_language_en
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_language_es
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_language_fr
+import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_language_it
+import kotlinx.coroutines.launch
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_embedding_status
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_index_ready
@@ -127,6 +143,8 @@ internal fun SearchSettingsContent(
 
         IndexingStatusCard(progress = indexingProgress)
 
+        search.handwriting?.let { HandwritingSection(it) }
+
         if (!search.runtimeAvailable || installedModels == null || downloads == null) {
             PrivacyBanner(text = stringResource(Res.string.search_runtime_unavailable))
         } else {
@@ -189,6 +207,91 @@ internal fun SearchSettingsContent(
             }
         }
     }
+}
+
+/** The reading of the handwriting: on or off, and the model of its language when the reader downloads one. */
+@Composable
+private fun HandwritingSection(handwriting: HandwritingSearch) {
+    val enabled by handwriting.isEnabled.collectAsState()
+    val language by handwriting.language.collectAsState()
+    val languageName = languageName(language)
+    val models = handwriting.reading.engines.languageModels
+    val scope = rememberCoroutineScope()
+    var readsLanguage by remember { mutableStateOf<Boolean?>(null) }
+    var model by remember { mutableStateOf<InkLanguageModel?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var failure by remember { mutableStateOf<String?>(null) }
+    var refresh by remember { mutableStateOf(0) }
+    LaunchedEffect(language, refresh) {
+        readsLanguage = handwriting.reading.readsText(language)
+        model = models?.models(listOf(language))?.firstOrNull()
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = stringResource(Res.string.search_handwriting_title), style = MaterialTheme.typography.titleMedium)
+        SwitchRow(
+            text = stringResource(Res.string.search_handwriting_read),
+            hint = stringResource(Res.string.search_handwriting_description),
+            checked = enabled,
+            onCheckedChange = handwriting::setEnabled
+        )
+        val current = model
+        if (current != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.search_handwriting_model, languageName), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(Res.string.search_handwriting_model_hint, formatBytes(current.sizeBytes ?: 0L)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (busy) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else if (current.isDownloaded) {
+                    TextButton(onClick = {
+                        busy = true
+                        scope.launch {
+                            runCatching { models?.delete(current.language) }
+                            handwriting.readersChanged()
+                            busy = false
+                            refresh++
+                        }
+                    }) { Text(stringResource(Res.string.search_model_delete)) }
+                } else {
+                    TextButton(onClick = {
+                        busy = true
+                        failure = null
+                        scope.launch {
+                            runCatching { models?.download(current.language) }.onFailure { failure = it.message ?: it.toString() }
+                            handwriting.readersChanged()
+                            busy = false
+                            refresh++
+                        }
+                    }) { Text(stringResource(Res.string.search_model_download, formatBytes(current.sizeBytes ?: 0L))) }
+                }
+            }
+            failure?.let {
+                Text(stringResource(Res.string.search_model_failed, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+        } else if (readsLanguage == false) {
+            Text(
+                stringResource(Res.string.search_handwriting_no_reader, languageName),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/** The name of the language [tag] in the language of the interface, or the tag for a language without one here. */
+@Composable
+private fun languageName(tag: String): String = when (tag.substringBefore('-').lowercase()) {
+    "it" -> stringResource(Res.string.search_handwriting_language_it)
+    "en" -> stringResource(Res.string.search_handwriting_language_en)
+    "fr" -> stringResource(Res.string.search_handwriting_language_fr)
+    "de" -> stringResource(Res.string.search_handwriting_language_de)
+    "es" -> stringResource(Res.string.search_handwriting_language_es)
+    else -> tag
 }
 
 @Composable

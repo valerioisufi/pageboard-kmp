@@ -34,4 +34,15 @@
     <string name="search_ask_searched_title">Passages searched</string>
     <string name="search_ask_answered_by">Answered by %1$s</string>
     <string name="search_ask_error">Could not generate an answer: %1$s</string>
+    <string name="search_handwriting_title">Handwriting</string>
+    <string name="search_handwriting_read">Read the handwriting of the notes</string>
+    <string name="search_handwriting_description">Your handwriting is read on this device, once a block, so that the search finds it. Nothing is sent.</string>
+    <string name="search_handwriting_model">Model of the handwriting in %1$s</string>
+    <string name="search_handwriting_model_hint">About %1$s, downloaded from Google; the reading stays on this device.</string>
+    <string name="search_handwriting_no_reader">This device does not read handwriting in %1$s.</string>
+    <string name="search_handwriting_language_it">Italian</string>
+    <string name="search_handwriting_language_en">English</string>
+    <string name="search_handwriting_language_fr">French</string>
+    <string name="search_handwriting_language_de">German</string>
+    <string name="search_handwriting_language_es">Spanish</string>
 </resources>

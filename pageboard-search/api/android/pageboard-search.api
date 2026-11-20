@@ -52,6 +52,33 @@ public final class io/github/valerioisufi/pageboard/search/EmbeddingPrompts {
 	public final fun question (Ljava/lang/String;)Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/search/HandwritingSearch {
+	public fun <init> (Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getChanges ()Lkotlinx/coroutines/flow/Flow;
+	public final fun getLanguage ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getReading ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;
+	public final fun isEnabled ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun readersChanged ()V
+	public final fun setEnabled (Z)V
+	public final fun setLanguage (Ljava/lang/String;)V
+	public final fun source (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/search/SearchIndex;)Lio/github/valerioisufi/pageboard/search/HandwritingSearchSource;
+}
+
+public final class io/github/valerioisufi/pageboard/search/HandwritingSearchSource : io/github/valerioisufi/pageboard/search/SearchSource {
+	public static final field Companion Lio/github/valerioisufi/pageboard/search/HandwritingSearchSource$Companion;
+	public static final field ID Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/search/SearchIndex;Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlinx/coroutines/flow/Flow;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/search/SearchIndex;Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun chunks (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
+	public fun getId ()Ljava/lang/String;
+	public fun version (Lio/github/valerioisufi/pageboard/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/search/HandwritingSearchSource$Companion {
+}
+
 public final class io/github/valerioisufi/pageboard/search/IndexedChunk {
 	public fun <init> (JLio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;)V
 	public final fun component1 ()J
@@ -252,16 +279,19 @@ public final class io/github/valerioisufi/pageboard/search/SearchAnchor$Page : i
 }
 
 public final class io/github/valerioisufi/pageboard/search/SearchChunk {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/SearchChunk;Ljava/lang/String;Lio/github/valerioisufi/pageboard/search/SearchChunkKind;Lio/github/valerioisufi/pageboard/search/SearchAnchor;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/SearchChunk;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAnchor ()Lio/github/valerioisufi/pageboard/search/SearchAnchor;
+	public final fun getExtraWords ()Ljava/lang/String;
 	public final fun getKind ()Lio/github/valerioisufi/pageboard/search/SearchChunkKind;
 	public final fun getSourceId ()Ljava/lang/String;
 	public final fun getText ()Ljava/lang/String;
@@ -337,9 +367,11 @@ public final class io/github/valerioisufi/pageboard/search/SearchIndex : java/la
 	public final fun getPath ()Ljava/lang/String;
 	public final fun getPromptVersion ()I
 	public final fun getRevision ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun handwriting (Ljava/lang/String;)Ljava/util/Map;
 	public final fun indexedDocumentIds ()Ljava/util/Set;
 	public final fun isRebuilding ()Z
 	public final fun metadata ()Ljava/util/Map;
+	public final fun putHandwriting (Ljava/lang/String;Ljava/util/Collection;Ljava/util/Set;)V
 	public final fun putVectors (Ljava/util/Map;)V
 	public final fun removeDocument (Ljava/lang/String;)V
 	public final fun removeSource (Ljava/lang/String;Ljava/lang/String;)V
@@ -390,6 +422,25 @@ public final class io/github/valerioisufi/pageboard/search/SearchTextKt {
 	public static synthetic fun snippetOf$default (Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ljava/lang/String;
 	public static final fun splitTextChunks (Ljava/lang/String;I)Ljava/util/List;
 	public static synthetic fun splitTextChunks$default (Ljava/lang/String;IILjava/lang/Object;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/pageboard/search/StoredHandwriting {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/search/StoredHandwriting;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/search/StoredHandwriting;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/search/StoredHandwriting;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBlockKey ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
+	public final fun getReader ()Ljava/lang/String;
+	public final fun getSearchText ()Ljava/lang/String;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/pageboard/search/UnembeddedChunk {

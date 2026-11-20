@@ -25,6 +25,7 @@ import io.github.valerioisufi.pageboard.ml.ModelSpec
 import io.github.valerioisufi.pageboard.model.ElementType
 import io.github.valerioisufi.pageboard.search.DocumentSearchResult
 import io.github.valerioisufi.pageboard.search.DocumentSearchSource
+import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import io.github.valerioisufi.pageboard.search.IndexingConditions
 import io.github.valerioisufi.pageboard.search.IndexingProgress
 import io.github.valerioisufi.pageboard.search.NoteVocabulary
@@ -77,7 +78,9 @@ public class ContentSearch(
     public val answerer: NotesAnswerer = NotesAnswerer(engine, loadedModels, installedModels),
     public val onlineBackend: OnlineAnswerBackend? = null,
     private val onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
-    private val onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
+    private val onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null,
+    /** The reading of the handwriting of the notes, `null` when the device has no reader. */
+    public val handwriting: HandwritingSearch? = null
 ) : LibrarySearch {
     private val queryFlow = MutableStateFlow("")
     private val scopeFlow = MutableStateFlow<Set<String>?>(null)
@@ -420,23 +423,29 @@ public fun createContentSearch(
     embedderOptions: EmbedderOptions = EmbedderOptions(),
     onlineBackend: OnlineAnswerBackend? = null,
     onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
-    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
-): ContentSearch = searchOver(
-    SearchIndex(path = indexPath, embeddingModel = embeddingSpec.id),
-    sourcesOf(store, pdfTiles, elementTypes, extraSources),
-    store, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions,
-    onlineBackend, onOpenLecture, onOpenAnchor
-)
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null,
+    handwriting: HandwritingSearch? = null
+): ContentSearch {
+    val index = SearchIndex(path = indexPath, embeddingModel = embeddingSpec.id)
+    return searchOver(
+        index,
+        sourcesOf(store, pdfTiles, elementTypes, extraSources, handwriting?.source(store, index)),
+        store, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions,
+        onlineBackend, onOpenLecture, onOpenAnchor, handwriting
+    )
+}
 
-/** The notes of [store], the pages of its PDFs and [extraSources]. */
+/** The notes of [store], the pages of its PDFs, their [handwriting] and [extraSources]. */
 private fun sourcesOf(
     store: DocumentStore,
     pdfTiles: () -> PdfTileAdapter?,
     elementTypes: List<ElementType<*>>,
-    extraSources: List<SearchSource>
+    extraSources: List<SearchSource>,
+    handwriting: SearchSource? = null
 ): List<SearchSource> = buildList {
     add(DocumentSearchSource(store, elementTypes))
     add(PdfSearchSource(store, pdfTiles))
+    handwriting?.let(::add)
     addAll(extraSources)
 }
 
@@ -454,7 +463,8 @@ private fun searchOver(
     embedderOptions: EmbedderOptions,
     onlineBackend: OnlineAnswerBackend?,
     onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)?,
-    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)?
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)?,
+    handwriting: HandwritingSearch? = null
 ): ContentSearch {
     val indexer = SearchIndexer(
         catalog = store,
@@ -484,7 +494,8 @@ private fun searchOver(
         runtimeAvailable = runtimeAvailable,
         onlineBackend = onlineBackend,
         onOpenLecture = onOpenLecture,
-        onOpenAnchor = onOpenAnchor
+        onOpenAnchor = onOpenAnchor,
+        handwriting = handwriting
     )
 }
 
@@ -509,7 +520,8 @@ public fun rememberContentSearch(
     embedderOptions: EmbedderOptions = EmbedderOptions(),
     onlineBackend: OnlineAnswerBackend? = null,
     onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
-    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null,
+    handwriting: HandwritingSearch? = null
 ): ContentSearch {
     val index = remember(indexPath, embeddingSpec.id) {
         SearchIndex(path = indexPath, embeddingModel = embeddingSpec.id)
@@ -517,13 +529,13 @@ public fun rememberContentSearch(
     DisposableEffect(index) {
         onDispose { index.close() }
     }
-    val sources = remember(store, engines.pdfTiles, elementTypes, extraSources) {
-        sourcesOf(store, engines.pdfTiles, elementTypes, extraSources)
+    val sources = remember(store, index, engines.pdfTiles, elementTypes, extraSources, handwriting) {
+        sourcesOf(store, engines.pdfTiles, elementTypes, extraSources, handwriting?.source(store, index))
     }
-    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor) {
+    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor, handwriting) {
         searchOver(
             index, sources, store, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec,
-            embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor
+            embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor, handwriting
         )
     }
     // The indexer and the answers of a search replaced stop with it, before its index is closed

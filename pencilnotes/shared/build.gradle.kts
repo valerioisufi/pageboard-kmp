@@ -48,6 +48,8 @@ kotlin {
             implementation(project(":pageboard-sync-iroh"))
             implementation(project(":pageboard-export-ui"))
             implementation(project(":pageboard-search-ui"))
+            // The handwriting read for the search, by the reader of each platform
+            implementation(project(":pageboard-handwriting"))
             // The external models, where the application of a platform lets their clients in
             api(project(":pageboard-agent"))
             implementation(project(":pageboard-agent-ui"))
@@ -63,6 +65,12 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+            // The handwriting recognizers of Windows
+            implementation(project(":pageboard-handwriting-windows"))
+        }
+        androidMain.dependencies {
+            // ML Kit Digital Ink Recognition
+            implementation(project(":pageboard-handwriting-mlkit"))
         }
         jvmTest.dependencies {
             implementation(kotlin("test"))

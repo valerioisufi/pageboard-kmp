@@ -170,6 +170,41 @@ final class io.github.valerioisufi.pageboard.search/DocumentSearchSource : io.gi
     }
 }
 
+final class io.github.valerioisufi.pageboard.search/HandwritingSearch { // io.github.valerioisufi.pageboard.search/HandwritingSearch|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.handwriting/HandwritingReading, kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.search/HandwritingSearch.<init>|<init>(io.github.valerioisufi.pageboard.handwriting.HandwritingReading;kotlin.String;kotlin.Boolean){}[0]
+
+    final val changes // io.github.valerioisufi.pageboard.search/HandwritingSearch.changes|{}changes[0]
+        final fun <get-changes>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.valerioisufi.pageboard.search/HandwritingSearch.changes.<get-changes>|<get-changes>(){}[0]
+    final val isEnabled // io.github.valerioisufi.pageboard.search/HandwritingSearch.isEnabled|{}isEnabled[0]
+        final fun <get-isEnabled>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.pageboard.search/HandwritingSearch.isEnabled.<get-isEnabled>|<get-isEnabled>(){}[0]
+    final val language // io.github.valerioisufi.pageboard.search/HandwritingSearch.language|{}language[0]
+        final fun <get-language>(): kotlinx.coroutines.flow/StateFlow<kotlin/String> // io.github.valerioisufi.pageboard.search/HandwritingSearch.language.<get-language>|<get-language>(){}[0]
+    final val reading // io.github.valerioisufi.pageboard.search/HandwritingSearch.reading|{}reading[0]
+        final fun <get-reading>(): io.github.valerioisufi.pageboard.handwriting/HandwritingReading // io.github.valerioisufi.pageboard.search/HandwritingSearch.reading.<get-reading>|<get-reading>(){}[0]
+
+    final fun readersChanged() // io.github.valerioisufi.pageboard.search/HandwritingSearch.readersChanged|readersChanged(){}[0]
+    final fun setEnabled(kotlin/Boolean) // io.github.valerioisufi.pageboard.search/HandwritingSearch.setEnabled|setEnabled(kotlin.Boolean){}[0]
+    final fun setLanguage(kotlin/String) // io.github.valerioisufi.pageboard.search/HandwritingSearch.setLanguage|setLanguage(kotlin.String){}[0]
+    final fun source(io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.search/SearchIndex): io.github.valerioisufi.pageboard.search/HandwritingSearchSource // io.github.valerioisufi.pageboard.search/HandwritingSearch.source|source(io.github.valerioisufi.pageboard.store.DocumentStore;io.github.valerioisufi.pageboard.search.SearchIndex){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.search/HandwritingSearchSource : io.github.valerioisufi.pageboard.search/SearchSource { // io.github.valerioisufi.pageboard.search/HandwritingSearchSource|null[0]
+    constructor <init>(io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.search/SearchIndex, io.github.valerioisufi.pageboard.handwriting/HandwritingReading, kotlin/Function0<kotlin/String>, kotlin/Function0<kotlin/Boolean> = ..., kotlinx.coroutines.flow/Flow<kotlin/Unit> = ...) // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.<init>|<init>(io.github.valerioisufi.pageboard.store.DocumentStore;io.github.valerioisufi.pageboard.search.SearchIndex;io.github.valerioisufi.pageboard.handwriting.HandwritingReading;kotlin.Function0<kotlin.String>;kotlin.Function0<kotlin.Boolean>;kotlinx.coroutines.flow.Flow<kotlin.Unit>){}[0]
+
+    final val changes // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.changes|{}changes[0]
+        final fun <get-changes>(): kotlinx.coroutines.flow/Flow<kotlin/Unit> // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.changes.<get-changes>|<get-changes>(){}[0]
+    final val id // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.id.<get-id>|<get-id>(){}[0]
+
+    final suspend fun chunks(io.github.valerioisufi.pageboard.store/DocumentSummary): kotlin.collections/List<io.github.valerioisufi.pageboard.search/SearchChunk> // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.chunks|chunks(io.github.valerioisufi.pageboard.store.DocumentSummary){}[0]
+    final suspend fun version(io.github.valerioisufi.pageboard.store/DocumentSummary): kotlin/String? // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.version|version(io.github.valerioisufi.pageboard.store.DocumentSummary){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.Companion|null[0]
+        final const val ID // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.Companion.ID|{}ID[0]
+            final fun <get-ID>(): kotlin/String // io.github.valerioisufi.pageboard.search/HandwritingSearchSource.Companion.ID.<get-ID>|<get-ID>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.search/IndexedChunk { // io.github.valerioisufi.pageboard.search/IndexedChunk|null[0]
     constructor <init>(kotlin/Long, io.github.valerioisufi.pageboard.search/SearchChunk, kotlin/String) // io.github.valerioisufi.pageboard.search/IndexedChunk.<init>|<init>(kotlin.Long;io.github.valerioisufi.pageboard.search.SearchChunk;kotlin.String){}[0]
 
@@ -307,10 +342,12 @@ final class io.github.valerioisufi.pageboard.search/ScoredChunk { // io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.search/SearchChunk { // io.github.valerioisufi.pageboard.search/SearchChunk|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.search/SearchChunkKind, io.github.valerioisufi.pageboard.search/SearchAnchor, kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.search/SearchChunk.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.search.SearchChunkKind;io.github.valerioisufi.pageboard.search.SearchAnchor;kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.search/SearchChunkKind, io.github.valerioisufi.pageboard.search/SearchAnchor, kotlin/String, kotlin/String, kotlin/String = ...) // io.github.valerioisufi.pageboard.search/SearchChunk.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.search.SearchChunkKind;io.github.valerioisufi.pageboard.search.SearchAnchor;kotlin.String;kotlin.String;kotlin.String){}[0]
 
     final val anchor // io.github.valerioisufi.pageboard.search/SearchChunk.anchor|{}anchor[0]
         final fun <get-anchor>(): io.github.valerioisufi.pageboard.search/SearchAnchor // io.github.valerioisufi.pageboard.search/SearchChunk.anchor.<get-anchor>|<get-anchor>(){}[0]
+    final val extraWords // io.github.valerioisufi.pageboard.search/SearchChunk.extraWords|{}extraWords[0]
+        final fun <get-extraWords>(): kotlin/String // io.github.valerioisufi.pageboard.search/SearchChunk.extraWords.<get-extraWords>|<get-extraWords>(){}[0]
     final val kind // io.github.valerioisufi.pageboard.search/SearchChunk.kind|{}kind[0]
         final fun <get-kind>(): io.github.valerioisufi.pageboard.search/SearchChunkKind // io.github.valerioisufi.pageboard.search/SearchChunk.kind.<get-kind>|<get-kind>(){}[0]
     final val sourceId // io.github.valerioisufi.pageboard.search/SearchChunk.sourceId|{}sourceId[0]
@@ -325,7 +362,8 @@ final class io.github.valerioisufi.pageboard.search/SearchChunk { // io.github.v
     final fun component3(): io.github.valerioisufi.pageboard.search/SearchAnchor // io.github.valerioisufi.pageboard.search/SearchChunk.component3|component3(){}[0]
     final fun component4(): kotlin/String // io.github.valerioisufi.pageboard.search/SearchChunk.component4|component4(){}[0]
     final fun component5(): kotlin/String // io.github.valerioisufi.pageboard.search/SearchChunk.component5|component5(){}[0]
-    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.search/SearchChunkKind = ..., io.github.valerioisufi.pageboard.search/SearchAnchor = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.search/SearchChunk // io.github.valerioisufi.pageboard.search/SearchChunk.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.search.SearchChunkKind;io.github.valerioisufi.pageboard.search.SearchAnchor;kotlin.String;kotlin.String){}[0]
+    final fun component6(): kotlin/String // io.github.valerioisufi.pageboard.search/SearchChunk.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.search/SearchChunkKind = ..., io.github.valerioisufi.pageboard.search/SearchAnchor = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.search/SearchChunk // io.github.valerioisufi.pageboard.search/SearchChunk.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.search.SearchChunkKind;io.github.valerioisufi.pageboard.search.SearchAnchor;kotlin.String;kotlin.String;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.search/SearchChunk.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.search/SearchChunk.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.search/SearchChunk.toString|toString(){}[0]
@@ -397,8 +435,10 @@ final class io.github.valerioisufi.pageboard.search/SearchIndex : kotlin/AutoClo
     final fun close() // io.github.valerioisufi.pageboard.search/SearchIndex.close|close(){}[0]
     final fun completeRebuild() // io.github.valerioisufi.pageboard.search/SearchIndex.completeRebuild|completeRebuild(){}[0]
     final fun documentVersions(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.search/SearchIndex.documentVersions|documentVersions(kotlin.String){}[0]
+    final fun handwriting(kotlin/String): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.search/StoredHandwriting> // io.github.valerioisufi.pageboard.search/SearchIndex.handwriting|handwriting(kotlin.String){}[0]
     final fun indexedDocumentIds(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.search/SearchIndex.indexedDocumentIds|indexedDocumentIds(){}[0]
     final fun metadata(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.pageboard.search/SearchIndex.metadata|metadata(){}[0]
+    final fun putHandwriting(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.pageboard.search/StoredHandwriting>, kotlin.collections/Set<kotlin/String>) // io.github.valerioisufi.pageboard.search/SearchIndex.putHandwriting|putHandwriting(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.pageboard.search.StoredHandwriting>;kotlin.collections.Set<kotlin.String>){}[0]
     final fun putVectors(kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.search/QuantizedVector>) // io.github.valerioisufi.pageboard.search/SearchIndex.putVectors|putVectors(kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.search.QuantizedVector>){}[0]
     final fun removeDocument(kotlin/String) // io.github.valerioisufi.pageboard.search/SearchIndex.removeDocument|removeDocument(kotlin.String){}[0]
     final fun removeSource(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.search/SearchIndex.removeSource|removeSource(kotlin.String;kotlin.String){}[0]
@@ -434,6 +474,31 @@ final class io.github.valerioisufi.pageboard.search/SearchIndexer { // io.github
         final const val DEFAULT_QUIET_MILLIS // io.github.valerioisufi.pageboard.search/SearchIndexer.Companion.DEFAULT_QUIET_MILLIS|{}DEFAULT_QUIET_MILLIS[0]
             final fun <get-DEFAULT_QUIET_MILLIS>(): kotlin/Long // io.github.valerioisufi.pageboard.search/SearchIndexer.Companion.DEFAULT_QUIET_MILLIS.<get-DEFAULT_QUIET_MILLIS>|<get-DEFAULT_QUIET_MILLIS>(){}[0]
     }
+}
+
+final class io.github.valerioisufi.pageboard.search/StoredHandwriting { // io.github.valerioisufi.pageboard.search/StoredHandwriting|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.search/StoredHandwriting.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val blockKey // io.github.valerioisufi.pageboard.search/StoredHandwriting.blockKey|{}blockKey[0]
+        final fun <get-blockKey>(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.blockKey.<get-blockKey>|<get-blockKey>(){}[0]
+    final val language // io.github.valerioisufi.pageboard.search/StoredHandwriting.language|{}language[0]
+        final fun <get-language>(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.language.<get-language>|<get-language>(){}[0]
+    final val reader // io.github.valerioisufi.pageboard.search/StoredHandwriting.reader|{}reader[0]
+        final fun <get-reader>(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.reader.<get-reader>|<get-reader>(){}[0]
+    final val searchText // io.github.valerioisufi.pageboard.search/StoredHandwriting.searchText|{}searchText[0]
+        final fun <get-searchText>(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.searchText.<get-searchText>|<get-searchText>(){}[0]
+    final val text // io.github.valerioisufi.pageboard.search/StoredHandwriting.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.text.<get-text>|<get-text>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.component4|component4(){}[0]
+    final fun component5(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.search/StoredHandwriting // io.github.valerioisufi.pageboard.search/StoredHandwriting.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.search/StoredHandwriting.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.search/StoredHandwriting.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.search/StoredHandwriting.toString|toString(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.search/UnembeddedChunk { // io.github.valerioisufi.pageboard.search/UnembeddedChunk|null[0]

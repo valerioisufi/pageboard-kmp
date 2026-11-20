@@ -10,6 +10,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":pageboard-store"))
             api(project(":pageboard-ml"))
+            api(project(":pageboard-handwriting"))
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.io.core)

@@ -21,7 +21,11 @@ import io.github.valerioisufi.pageboard.ml.ModelDownloads
 import io.github.valerioisufi.pageboard.ml.litert.LiteRtRuntime
 import io.github.valerioisufi.pageboard.pdf.PdfiumEngine
 import io.github.valerioisufi.pageboard.search.MutableIndexingConditions
+import io.github.valerioisufi.pageboard.handwriting.HandwritingEngines
+import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
+import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import io.github.valerioisufi.pageboard.search.ui.ContentSearch
+import androidx.compose.ui.text.intl.Locale
 import io.github.valerioisufi.pageboard.search.ui.createContentSearch
 import io.github.valerioisufi.pageboard.sync.iroh.IrohInternet
 import io.github.valerioisufi.pageboard.sync.ui.Collaboration
@@ -78,6 +82,14 @@ object PencilNotesServices {
         markdownAppendix = MarkdownAppendix { documentId -> lectureAssistant.markdownInLanguage(documentId) }
     )
 
+    /**
+     * The handwriting of the notes read for the search by the reader of the platform (ML Kit on
+     * Android, the ink of Windows on its desktop), in the language of the system.
+     */
+    private val handwriting: HandwritingSearch? = handwritingEngines().takeIf { it.text.isNotEmpty() }?.let { engines ->
+        HandwritingSearch(HandwritingReading(engines), language = Locale.current.toLanguageTag())
+    }
+
     /** The notes are indexed while no lecture is recorded or transcribed. */
     private val indexingConditions = MutableIndexingConditions(initialCanIndex = true)
 
@@ -92,7 +104,8 @@ object PencilNotesServices {
         downloads = modelDownloads,
         runtimeAvailable = liteRtRuntime.isAvailable,
         onlineBackend = lectureAssistant.onlineAnswerBackend(),
-        onOpenLecture = lectureAssistant::openLectureAt
+        onOpenLecture = lectureAssistant::openLectureAt,
+        handwriting = handwriting
     )
 
     /**
@@ -156,3 +169,6 @@ object PencilNotesServices {
 
     private const val STOP_WAIT_MS = 3_000L
 }
+
+/** The readers of handwriting of this platform. */
+internal expect fun handwritingEngines(): HandwritingEngines
