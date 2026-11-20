@@ -822,7 +822,7 @@ public class KeyValueDocumentStore(
     }
 
     public companion object {
-        private const val PREFIX = "drawview."
+        private const val PREFIX = "pageboard."
         private const val INDEX_KEY = PREFIX + "index"
         private const val PREFERENCE_PREFIX = PREFIX + "preference."
 

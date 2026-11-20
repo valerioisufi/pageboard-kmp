@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
-                <data android:scheme="drawview" android:host="document"/>
+                <data android:scheme="pageboard" android:host="document"/>
             </intent-filter>
         </activity>
     </application>

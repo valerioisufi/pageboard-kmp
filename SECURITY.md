@@ -16,7 +16,7 @@ public.
   same Wi-Fi, and so is a member of a shared document. A frame, a message or an operation that makes
   an application crash, allocate without bound, accept what its sender may not send, or read what it
   should not, is a vulnerability (`pageboard-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`).
-* **The files opened.** A PDF, an image, an archive (`.drawview`) or a note pasted from elsewhere.
+* **The files opened.** A PDF, an image, an archive (`.pageboard`) or a note pasted from elsewhere.
 * **The notes of the users.** Anything that loses or corrupts them.
 * **Secrets.** The keys of the devices and the API keys kept by the applications.
 

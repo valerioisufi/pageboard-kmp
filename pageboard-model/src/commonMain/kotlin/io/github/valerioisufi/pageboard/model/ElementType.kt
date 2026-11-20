@@ -19,7 +19,7 @@ import kotlinx.serialization.cbor.Cbor
 public interface ElementType<T : Any> {
     /**
      * The identifier of the type, the same on every device and in every version of the
-     * application: a reverse domain name (`com.example.table`); `drawview.*` is reserved.
+     * application: a reverse domain name (`com.example.table`); `pageboard.*` is reserved.
      */
     public val id: String
 

@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
     /** Opens the given note in a separate document task (split-screen / DeX multi-window). */
     private fun openDocumentInNewTask(documentId: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("drawview://document/$documentId"), this, MainActivity::class.java).apply {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("pageboard://document/$documentId"), this, MainActivity::class.java).apply {
             putExtra(EXTRA_DOCUMENT_ID, documentId)
             addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
             addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
@@ -80,21 +80,21 @@ class MainActivity : ComponentActivity() {
         startActivity(intent)
     }
 
-    /** Extracts a document ID from an intent with drawview://document/<id> or EXTRA_DOCUMENT_ID. */
+    /** Extracts a document ID from an intent with pageboard://document/<id> or EXTRA_DOCUMENT_ID. */
     private fun documentIdOf(intent: Intent?): String? {
         if (intent == null) return null
         intent.getStringExtra(EXTRA_DOCUMENT_ID)?.let { return it }
         val data = intent.data ?: return null
-        if (data.scheme == "drawview" && data.host == "document") {
+        if (data.scheme == "pageboard" && data.host == "document") {
             return data.pathSegments.firstOrNull() ?: data.lastPathSegment
         }
         return null
     }
 
-    /** An invitation to a shared document opened on the device (a drawview://join link). */
+    /** An invitation to a shared document opened on the device (a pageboard://join link). */
     private fun openInvitationOf(intent: Intent?) {
         val data = intent?.data ?: return
-        if (data.scheme == "drawview" && data.host == "join") {
+        if (data.scheme == "pageboard" && data.host == "join") {
             openInvitation(data.toString())
         }
     }

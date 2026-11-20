@@ -23,9 +23,9 @@ internal class ExportTools(
 
     fun export() = AgentTool(
         name = "export",
-        description = "Exports notes into a new file of the folder of the exports of the application, never over another file, and answers its path and size. One document (document, and pages: ids of some of its pages): format pdf, png (one image, or a ZIP of one image a page) or markdown. Several documents (documents) or a folder with the folders under it (folder, when the user allowed all the documents): pdf_per_document (a ZIP keeping their folders) or combined_pdf. Any of them: drawview, an archive of the application that import_archive brings back.",
+        description = "Exports notes into a new file of the folder of the exports of the application, never over another file, and answers its path and size. One document (document, and pages: ids of some of its pages): format pdf, png (one image, or a ZIP of one image a page) or markdown. Several documents (documents) or a folder with the folders under it (folder, when the user allowed all the documents): pdf_per_document (a ZIP keeping their folders) or combined_pdf. Any of them: pageboard, an archive of the application that import_archive brings back.",
         inputSchema = schema(required = listOf("format")) {
-            string("format", "pdf, png, markdown, pdf_per_document, combined_pdf or drawview.")
+            string("format", "pdf, png, markdown, pdf_per_document, combined_pdf or pageboard.")
             string("document", "The id of one document.")
             putJsonObject("documents") {
                 put("type", "array")
@@ -108,7 +108,7 @@ internal class ExportTools(
     companion object {
         val SINGLE_FORMATS: List<String> = listOf("pdf", "png", "markdown")
         val SEVERAL_FORMATS: List<String> = listOf("pdf_per_document", "combined_pdf")
-        val ANY_FORMATS: List<String> = listOf("drawview")
+        val ANY_FORMATS: List<String> = listOf("pageboard")
         const val MAX_EXPORTED: Int = 500
     }
 }

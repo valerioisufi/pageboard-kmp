@@ -381,7 +381,7 @@ public fun CollaborationAccess(collaboration: Collaboration) {
 }
 
 /**
- * The invitations opened from outside of the application (a `drawview://join` link opened on the
+ * The invitations opened from outside of the application (a `pageboard://join` link opened on the
  * device), waiting for [CollaborationDialogs] to join them.
  */
 public object InvitationLinks {

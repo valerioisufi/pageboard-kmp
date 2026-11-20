@@ -166,7 +166,7 @@ Running:
 ## Running Tests
 
 * **Modules**: `./gradlew :pageboard-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:pageboard-store-room:jvmTest`, `:pageboard-explorer:jvmTest`, `:pageboard-lecture:jvmTest`, `:pageboard-export:jvmTest`
-* **Data**: every test task runs on a data directory of its own, `build/test-data/<task>` of its module (`pageboard.dataDir`), never on `~/.drawview` or `~/.pencilnotes` (see [docs/plans/test-data.md](plans/test-data.md))
+* **Data**: every test task runs on a data directory of its own, `build/test-data/<task>` of its module (`pageboard.dataDir`), never on `~/.pageboard` or `~/.pencilnotes` (see [docs/plans/test-data.md](plans/test-data.md))
 * **Public API**: every library declares it (explicit API mode) and records it in its `api/` directory; `./gradlew check` fails when it changes, `./gradlew updateKotlinAbi` records a change wanted
 * **Screenshots** of the library and of the editor in the reference windows of the adaptive interface (phones, tablets, desktop; see [docs/plans/adaptive-ui.md](plans/adaptive-ui.md)): `./gradlew :pageboard-explorer:verifyRoborazziJvm` compares the interface with the images of `pageboard-explorer/screenshots` (the same in the other modules with screenshots). The references are recorded in the Docker image of `tools/screenshots/` only: the workflow Screenshots verifies them on every pull request and records them on the label `record-screenshots`, and `tools/screenshots/run.sh verify|record` runs the same image on any computer; elsewhere `recordRoborazziJvm` refuses to record (see [CONTRIBUTING.md](../CONTRIBUTING.md#screenshots) and [docs/plans/ci-screenshots.md](plans/ci-screenshots.md))
 * **Sample**:

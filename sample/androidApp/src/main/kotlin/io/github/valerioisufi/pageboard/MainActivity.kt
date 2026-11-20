@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDocumentInNewTask(documentId: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("drawview://document/$documentId"), this, MainActivity::class.java).apply {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("pageboard://document/$documentId"), this, MainActivity::class.java).apply {
             putExtra(EXTRA_DOCUMENT_ID, documentId)
             addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
             addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
         if (intent == null) return null
         intent.getStringExtra(EXTRA_DOCUMENT_ID)?.let { return it }
         val data = intent.data ?: return null
-        if (data.scheme == "drawview" && data.host == "document") {
+        if (data.scheme == "pageboard" && data.host == "document") {
             return data.pathSegments.firstOrNull() ?: data.lastPathSegment
         }
         return null

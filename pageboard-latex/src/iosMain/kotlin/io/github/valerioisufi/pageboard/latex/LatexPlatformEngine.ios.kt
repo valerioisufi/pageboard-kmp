@@ -214,7 +214,7 @@ internal actual object LatexPlatformEngine {
 internal actual fun texResourcesDirectory(): String {
     val base = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, true)
         .firstOrNull() as? String ?: ""
-    val dir = "$base/drawview/tex"
+    val dir = "$base/pageboard/tex"
     NSFileManager.defaultManager.createDirectoryAtPath(dir, withIntermediateDirectories = true, attributes = null, error = null)
     return dir
 }

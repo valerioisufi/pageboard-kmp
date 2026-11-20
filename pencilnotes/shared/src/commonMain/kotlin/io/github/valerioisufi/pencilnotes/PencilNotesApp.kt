@@ -219,7 +219,7 @@ private val PencilNotesLogo: ImageVector by lazy {
         .build()
 }
 
-/** Opens the invitation [link] to a shared document (a `drawview://join` link opened on the device). */
+/** Opens the invitation [link] to a shared document (a `pageboard://join` link opened on the device). */
 fun openInvitation(link: String) = InvitationLinks.open(link)
 
 /** The font of the PencilNotes title, listed by the About & Licenses dialog. */

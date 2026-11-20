@@ -2,13 +2,13 @@ package io.github.valerioisufi.pageboard.platform
 
 import java.io.File
 
-/** System property naming the data directory of the application (`~/.drawview` when not set). */
+/** System property naming the data directory of the application (`~/.pageboard` when not set). */
 public const val PAGEBOARD_DATA_DIRECTORY_PROPERTY: String = "pageboard.dataDir"
 
 /**
  * Root directory of the Pageboard desktop data (database, resources, LaTeX fonts): the
  * [PAGEBOARD_DATA_DIRECTORY_PROPERTY] system property, so that each application keeps its own
- * data, `~/.drawview` by default. Its layout is brought up to date the first time it is read
+ * data, `~/.pageboard` by default. Its layout is brought up to date the first time it is read
  * ([DesktopDataLayout]).
  */
 /**
@@ -28,7 +28,7 @@ public val pageboardDesktopDataDirectory: File
     get() {
         checkDataDirectoryProperty()
         val configured = System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY)?.takeIf { it.isNotBlank() }
-        return (configured?.let(::File) ?: File(System.getProperty("user.home"), ".drawview")).apply {
+        return (configured?.let(::File) ?: File(System.getProperty("user.home"), ".pageboard")).apply {
             mkdirs()
             DesktopDataLayout.ensureUpToDate(this)
         }

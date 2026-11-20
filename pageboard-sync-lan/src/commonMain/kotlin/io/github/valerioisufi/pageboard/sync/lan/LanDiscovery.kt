@@ -25,6 +25,6 @@ public interface LanDiscovery {
     public fun close()
 
     public companion object {
-        internal const val SERVICE_TYPE = "_drawview._tcp"
+        internal const val SERVICE_TYPE = "_pageboard._tcp"
     }
 }

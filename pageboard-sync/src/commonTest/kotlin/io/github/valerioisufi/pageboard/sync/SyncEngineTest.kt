@@ -119,17 +119,17 @@ class SyncEngineTest {
         assertEquals(invitation, Invitation.parse(invitation.toLink()))
         assertEquals(invitation.copy(addresses = emptyMap()), Invitation.parse(invitation.copy(addresses = emptyMap()).toLink()))
         assertNull(Invitation.parse("https://example.com/?d=x&k=y"))
-        assertNull(Invitation.parse("drawview://join?d=doc&k=not-a-key"))
+        assertNull(Invitation.parse("pageboard://join?d=doc&k=not-a-key"))
     }
 
     @Test
     fun aLinkOfBeforeIsReadWithItsAddressOnTheLocalNetwork() {
         // As kept by a device joining (SharingState.joining) before the addresses by transport
         val key = DocumentKey.generate()
-        val link = "drawview://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&a=192.168.1.20%3A4567"
+        val link = "pageboard://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&a=192.168.1.20%3A4567"
         assertEquals(Invitation("doc-1", "Lab", key, "0123456789abcdef", mapOf("lan" to "192.168.1.20:4567")), Invitation.parse(link))
         // What a link of a later version adds is skipped
-        assertEquals(Invitation("doc-1", "Lab", key, "0123456789abcdef"), Invitation.parse("drawview://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&z=1"))
+        assertEquals(Invitation("doc-1", "Lab", key, "0123456789abcdef"), Invitation.parse("pageboard://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&z=1"))
     }
 
     @Test

@@ -50,7 +50,7 @@ struct ContentView: View {
         })
         .ignoresSafeArea()
         .onOpenURL { url in
-            if url.scheme == "drawview", url.host == "document" {
+            if url.scheme == "pageboard", url.host == "document" {
                 let docId = url.lastPathComponent
                 openWindow(id: "sample-note", value: docId)
             }

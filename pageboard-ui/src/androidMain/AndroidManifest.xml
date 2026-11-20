@@ -4,7 +4,7 @@
         <!-- The files shared with the other applications (rememberFileSharer) -->
         <provider
             android:name="io.github.valerioisufi.pageboard.ui.platform.PageboardFileProvider"
-            android:authorities="${applicationId}.drawview.files"
+            android:authorities="${applicationId}.pageboard.files"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

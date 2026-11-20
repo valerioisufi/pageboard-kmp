@@ -132,6 +132,8 @@ draw, not the library. Where a nested `Document` or `Page` already exists (`Sear
   `_pageboard._tcp` (with the `Info.plist` of both iOS apps).
 * The stored formats: archives `pageboard-archive` with the extension `.pageboard`, the shape type
   `pageboard.shape`, the shape of the sample `io.github.valerioisufi.pageboard.sample.shape`.
+* The prefix of the keys of `KeyValueDocumentStore` (`pageboard.`), a store no application of the
+  repository uses, and the directory of the TeX files on iOS.
 * The rest: the Keychain service, the key and the preferences of the Android Keystore, the deep
   links `pageboard://document/<id>` and their extra, the notification channel, the marker of the
   TeX files, the data directory and the application id of the sample, the Ogg vendor string.
@@ -177,7 +179,7 @@ One commit per phase. The checks of `CLAUDE.md` run at the end of each phase fro
 | 3 | The modules and the build: directories, `settings.gradle.kts`, the plugins, the properties, the environment variables, the data directory, the workflows, the consumer checks | Done, compiled for the JVM; the full checks run after phase 6 |
 | 4 | The packages, the JNI symbols, the cinterop and Swift code, the Room schema directory | Done, compiled for the JVM (with the `-D` options of CMake missed by phase 3) |
 | 5 | The types, as in the table; `updateKotlinAbi` for the new names | Done, compiled for the JVM; the ABI dumps renamed with the code, checked after phase 6 |
-| 6 | The protocol and the stored names: ALPN, invitations, Bonjour, archives, shape type, secure store, deep links, channel; `ProtocolFormatTest` re-recorded | To do |
+| 6 | The protocol and the stored names: ALPN, invitations, Bonjour, archives, shape type, secure store, deep links, channel; `ProtocolFormatTest` re-recorded | Done: `ProtocolFormatTest` records no ALPN nor scheme and passes unchanged; the invitations of the tests renamed |
 | 7 | The docs, `CLAUDE.md` and the index of the plans | To do |
 | 8 | Verification: the conversion tried on a scratch directory with notes of the old build, PencilNotes on desktop opening them; two devices on the new build syncing | To do |
 | 9 | The repository renamed on GitHub, the remote updated | To do, after the merge |

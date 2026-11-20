@@ -7,7 +7,7 @@ use std::sync::Arc;
 use iroh_bridge::bridge::{self, Failure, MAX_FRAME};
 use iroh_relay::server::{AllowAll, RelayConfig, Server, ServerConfig};
 
-const ALPN: &str = "drawview/test";
+const ALPN: &str = "pageboard/test";
 
 fn key(seed: u8) -> Vec<u8> {
     (0..32).map(|i| seed.wrapping_add(i)).collect()

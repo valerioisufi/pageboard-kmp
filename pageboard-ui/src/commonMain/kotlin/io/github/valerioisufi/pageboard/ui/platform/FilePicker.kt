@@ -18,7 +18,7 @@ public class PickedFile(public val name: String, public val bytes: ByteArray) {
     }
 }
 
-/** The kinds of files the file pickers choose: [ARCHIVE] is an archive of the application (`.drawview`). */
+/** The kinds of files the file pickers choose: [ARCHIVE] is an archive of the application (`.pageboard`). */
 public enum class PickerType { IMAGE, PDF, TEXT, ARCHIVE }
 
 /**

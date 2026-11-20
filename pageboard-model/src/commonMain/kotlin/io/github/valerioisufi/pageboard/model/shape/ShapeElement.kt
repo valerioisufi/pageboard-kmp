@@ -103,11 +103,11 @@ public enum class ShapeHead {
 }
 
 /**
- * The shapes as a type of element (`drawview.shape`): the value is a [ShapeElement] in CBOR,
+ * The shapes as a type of element (`pageboard.shape`): the value is a [ShapeElement] in CBOR,
  * format 1. A value that does not hold the checks of [ShapeElement] is not read (a placeholder).
  */
 public object ShapeElementType : ElementType<ShapeElement> {
-    override val id: String = "drawview.shape"
+    override val id: String = "pageboard.shape"
 
     override val version: Int = 1
 

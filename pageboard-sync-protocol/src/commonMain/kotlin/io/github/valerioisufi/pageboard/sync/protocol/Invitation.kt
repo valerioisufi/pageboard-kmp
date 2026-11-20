@@ -36,7 +36,7 @@ public data class Invitation(
     }
 
     public companion object {
-        private const val SCHEME = "drawview://join"
+        private const val SCHEME = "pageboard://join"
 
         /**
          * The transport of an address written `a=` (the links of before: the address on the local

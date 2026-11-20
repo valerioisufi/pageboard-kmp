@@ -189,7 +189,7 @@ public interface AgentFiles {
  * all of them when `null`), or the notes of the folder [folderId] and of the folders under it.
  *
  * @param format `pdf`, `png` or `markdown` for one document; `pdf_per_document` or `combined_pdf` for
- *   several; `drawview` (an archive of the application) for any.
+ *   several; `pageboard` (an archive of the application) for any.
  */
 public class AgentExportRequest(
     public val documentIds: List<String>,

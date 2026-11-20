@@ -82,7 +82,7 @@ class SharingScreenshotTest {
                         shared = true,
                         isOwner = true,
                         owner = "Valerio’s Mac",
-                        invitation = SharingInvitation("drawview://join?d=7F3K-Q9PL-2MXA&k=c2VjcmV0&o=bWFj", Role.EDITOR, approval = true),
+                        invitation = SharingInvitation("pageboard://join?d=7F3K-Q9PL-2MXA&k=c2VjcmV0&o=bWFj", Role.EDITOR, approval = true),
                         requests = listOf(SharingPerson("lab", "Lab PC", Role.READER, InkPalette.Orange)),
                         members = members.mapIndexed { index, member -> if (index == 0) member.copy(me = true) else member },
                         offline = false,

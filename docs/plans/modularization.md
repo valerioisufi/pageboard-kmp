@@ -184,7 +184,7 @@ applications never declare them.
 
   ```kotlin
   interface ElementType<T : Any> {
-      /** The same on every device: a reverse domain name ("com.example.table"); "drawview.*" is reserved. */
+      /** The same on every device: a reverse domain name ("com.example.table"); "pageboard.*" is reserved. */
       val id: String
       /** Version of the payload format; older payloads go through [migrate]. */
       val version: Int get() = 1

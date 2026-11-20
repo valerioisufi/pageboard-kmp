@@ -56,18 +56,18 @@ public object ArchiveFormat {
     public const val VERSION: Int = 1
 
     /** The extension of an archive, without its dot. */
-    public const val EXTENSION: String = "drawview"
+    public const val EXTENSION: String = "pageboard"
 
     /**
      * The media type an archive is saved with. It is a ZIP, but declared as `application/zip` the
-     * file picker of Android adds `.zip` to its name (`notes.drawview.zip`): a generic type keeps
+     * file picker of Android adds `.zip` to its name (`notes.pageboard.zip`): a generic type keeps
      * the name given.
      */
     public const val MIME_TYPE: String = "application/octet-stream"
 
     /**
      * The name of the folder an archive called [fileName] is imported into: the name without the
-     * extension of an archive, nor the `.zip` a file picker may have added (`notes.drawview.zip` →
+     * extension of an archive, nor the `.zip` a file picker may have added (`notes.pageboard.zip` →
      * `notes`).
      */
     public fun folderNameOf(fileName: String): String {

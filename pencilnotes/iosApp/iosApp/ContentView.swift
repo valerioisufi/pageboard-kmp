@@ -49,9 +49,9 @@ struct ContentView: View {
             openWindow(id: "note", value: docId)
         })
         .ignoresSafeArea()
-        // Invitations to the shared documents (drawview://join links) and document links
+        // Invitations to the shared documents (pageboard://join links) and document links
         .onOpenURL { url in
-            if url.scheme == "drawview", url.host == "document" {
+            if url.scheme == "pageboard", url.host == "document" {
                 let docId = url.lastPathComponent
                 openWindow(id: "note", value: docId)
             } else {

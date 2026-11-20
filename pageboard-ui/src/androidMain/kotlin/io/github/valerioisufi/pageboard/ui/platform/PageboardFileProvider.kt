@@ -11,6 +11,6 @@ import androidx.core.content.FileProvider
 public class PageboardFileProvider : FileProvider() {
     public companion object {
         /** The authority of the provider in the application of [context]. */
-        public fun authority(context: Context): String = "${context.packageName}.drawview.files"
+        public fun authority(context: Context): String = "${context.packageName}.pageboard.files"
     }
 }

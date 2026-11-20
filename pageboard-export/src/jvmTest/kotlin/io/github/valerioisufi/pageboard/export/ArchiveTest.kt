@@ -121,17 +121,17 @@ class ArchiveTest {
 
     @Test
     fun anArchiveIsSavedWithAGenericTypeSoThatItKeepsItsName() {
-        assertEquals("drawview", ExportFormat.ARCHIVE.extension(3))
+        assertEquals("pageboard", ExportFormat.ARCHIVE.extension(3))
         assertEquals("application/octet-stream", ExportFormat.ARCHIVE.mimeType(3))
     }
 
     @Test
     fun theFolderOfAnImportIsTheNameWithoutTheExtensionsOfAnArchive() {
-        assertEquals("slides", ArchiveFormat.folderNameOf("slides.drawview"))
-        assertEquals("slides", ArchiveFormat.folderNameOf("slides.drawview.zip"))
+        assertEquals("slides", ArchiveFormat.folderNameOf("slides.pageboard"))
+        assertEquals("slides", ArchiveFormat.folderNameOf("slides.pageboard.zip"))
         assertEquals("slides", ArchiveFormat.folderNameOf("slides.zip"))
-        assertEquals("Analysis 1.2", ArchiveFormat.folderNameOf("Analysis 1.2.drawview"))
-        assertEquals("drawview", ArchiveFormat.folderNameOf(".drawview"))
+        assertEquals("Analysis 1.2", ArchiveFormat.folderNameOf("Analysis 1.2.pageboard"))
+        assertEquals("pageboard", ArchiveFormat.folderNameOf(".pageboard"))
     }
 
     @Test

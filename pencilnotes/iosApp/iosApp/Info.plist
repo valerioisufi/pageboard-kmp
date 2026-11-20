@@ -11,13 +11,13 @@
 			<string>io.github.valerioisufi.pencilnotes.join</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>drawview</string>
+				<string>pageboard</string>
 			</array>
 		</dict>
 	</array>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_drawview._tcp</string>
+		<string>_pageboard._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>PencilNotes finds the devices around you to work on the shared documents together.</string>

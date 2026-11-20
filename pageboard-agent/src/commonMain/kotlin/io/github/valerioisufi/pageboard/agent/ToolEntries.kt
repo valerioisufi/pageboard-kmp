@@ -376,7 +376,7 @@ internal data class CustomEntry(
     val width: Float,
     val height: Float,
     val base: String,
-    /** What a shape of the shapes tool is (its type `drawview.shape`). */
+    /** What a shape of the shapes tool is (its type `pageboard.shape`). */
     val shape: ShapeEntry? = null
 )
 

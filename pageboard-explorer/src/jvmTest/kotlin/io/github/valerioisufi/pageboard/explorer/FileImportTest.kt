@@ -43,7 +43,7 @@ class FileImportTest {
 
     @Test
     fun aPdfImportedIntoANewNoteReplacesItsEmptyPage() {
-        val data = Files.createTempDirectory("drawview").toFile()
+        val data = Files.createTempDirectory("pageboard").toFile()
         val previous = System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY)
         System.setProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY, data.path)
         try {

@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * The stored format of the shapes (version 1 of `drawview.shape`): the payloads recorded here are
+ * The stored format of the shapes (version 1 of `pageboard.shape`): the payloads recorded here are
  * in documents and travel between devices; a change of them needs a new version and a migration.
  */
 @OptIn(ExperimentalStdlibApi::class)

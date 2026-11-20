@@ -64,9 +64,9 @@ class CoverageExportTest {
 
         harness.store.createFolder("Courses", null)
         val folder = harness.store.folders.first().single().id
-        assertEquals(AgentErrorCode.NOT_GRANTED, refused("format" to "drawview", "folder" to folder))
+        assertEquals(AgentErrorCode.NOT_GRANTED, refused("format" to "pageboard", "folder" to folder))
         harness.agents.access.setAllDocuments(true)
-        harness.export("format" to "drawview", "folder" to folder)
+        harness.export("format" to "pageboard", "folder" to folder)
         assertEquals(folder, exports.asked.last().folderId)
         assertEquals(2, exports.asked.size)
     }

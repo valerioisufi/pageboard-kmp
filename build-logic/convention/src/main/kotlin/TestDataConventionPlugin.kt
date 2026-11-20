@@ -9,7 +9,7 @@ import org.gradle.process.CommandLineArgumentProvider
 /**
  * The data directory of the tests of a module: every [Test] task runs with `pageboard.dataDir`
  * set to `build/test-data/<task>`, so that no test reads or writes the data of the user
- * (`~/.drawview`, `~/.pencilnotes`).
+ * (`~/.pageboard`, `~/.pencilnotes`).
  *
  * The directory is emptied and created before the tests start: each run starts from no data, and
  * the data of a failed run stays to be looked at until the next one.

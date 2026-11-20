@@ -24,10 +24,10 @@ val checkWithoutEngines by tasks.registering {
     }
     inputs.property("artifacts", artifacts)
     doLast {
-        val drawView = artifacts.get().filter { "pageboard-" in it }.map { it.substringAfter(":").substringBefore(":") }.toSortedSet()
-        val unwanted = drawView.filter { it.startsWith("pageboard-pdf") || it.startsWith("pageboard-latex") || it.startsWith("pageboard-store") }
+        val ours = artifacts.get().filter { "pageboard-" in it }.map { it.substringAfter(":").substringBefore(":") }.toSortedSet()
+        val unwanted = ours.filter { it.startsWith("pageboard-pdf") || it.startsWith("pageboard-latex") || it.startsWith("pageboard-store") }
         check(unwanted.isEmpty()) { "pageboard-ui brings $unwanted" }
-        println("pageboard-ui: $drawView")
+        println("pageboard-ui: $ours")
     }
 }
 

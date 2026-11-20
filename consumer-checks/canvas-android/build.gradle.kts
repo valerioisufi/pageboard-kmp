@@ -42,8 +42,8 @@ val checkNativeLibraries by tasks.registering {
     doLast {
         val apk = apks.get().asFile.listFiles().orEmpty().single { it.extension == "apk" }
         val libraries = ZipFile(apk).use { zip -> zip.entries().toList().map { it.name }.filter { it.startsWith("lib/") }.map { it.substringAfterLast('/') }.toSortedSet() }
-        val drawView = libraries.filter { it in setOf("libink_bridge.so", "libtex.so", "libpdfium.so", "libpdfium_bridge.so", "libaudio_bridge.so") }
-        check(drawView == listOf("libink_bridge.so")) { "The native libraries of Pageboard in the APK: $drawView" }
+        val ours = libraries.filter { it in setOf("libink_bridge.so", "libtex.so", "libpdfium.so", "libpdfium_bridge.so", "libaudio_bridge.so") }
+        check(ours == listOf("libink_bridge.so")) { "The native libraries of Pageboard in the APK: $ours" }
         println("pageboard-canvas on Android: $libraries")
     }
 }

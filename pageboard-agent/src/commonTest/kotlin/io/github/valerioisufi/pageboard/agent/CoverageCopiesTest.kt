@@ -28,7 +28,7 @@ class CoverageCopiesTest {
         val kept = mutableListOf<String>()
         override suspend fun readPdf(path: String): AgentPdf? = if (path.endsWith(".pdf")) AgentPdf(path, "hash", listOf(210f to 297f, 297f to 210f)) else null
         override suspend fun keepPdf(path: String): AgentPdf? = readPdf(path)?.let { AgentPdf("/kept/slides.pdf", it.hash, it.pageSizesMm) }?.also { kept += path }
-        override suspend fun importArchive(path: String, parentId: String?): String? = if (path.endsWith(".drawview")) archive?.invoke(parentId) else null
+        override suspend fun importArchive(path: String, parentId: String?): String? = if (path.endsWith(".pageboard")) archive?.invoke(parentId) else null
     }
 
     /** A second document, allowed, with an image and a text on its page. */
@@ -178,7 +178,7 @@ class CoverageCopiesTest {
             folder
         })
         harness = AgentHarness.of(this, backgroundScope, AgentEngines(files = files), all = true)
-        val answer = harness.proposeLibrary(item("import_archive") { put("path", "/home/notes.drawview") })
+        val answer = harness.proposeLibrary(item("import_archive") { put("path", "/home/notes.pageboard") })
         assertEquals(listOf("accepted"), harness.outcomes(answer))
         val made = harness.store.documents.first().single { it.name == "From the archive" }
         assertNotNull(made.folderId)
@@ -189,6 +189,6 @@ class CoverageCopiesTest {
         assertEquals(listOf("stale"), harness.outcomes(wrong))
 
         val some = AgentHarness.of(this, backgroundScope, AgentEngines(files = files))
-        assertEquals(AgentErrorCode.NOT_GRANTED, assertFailsWith<AgentToolException> { some.proposeLibrary(item("import_archive") { put("path", "/home/notes.drawview") }) }.code)
+        assertEquals(AgentErrorCode.NOT_GRANTED, assertFailsWith<AgentToolException> { some.proposeLibrary(item("import_archive") { put("path", "/home/notes.pageboard") }) }.code)
     }
 }

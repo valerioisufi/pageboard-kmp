@@ -10,7 +10,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
  */
 internal object TexResources {
     private const val ROOT = "files/tex"
-    private const val MARKER = ".drawview_tex_resources"
+    private const val MARKER = ".pageboard_tex_resources"
 
     @OptIn(ExperimentalResourceApi::class)
     suspend fun ensureUnpacked(directory: String): Boolean {

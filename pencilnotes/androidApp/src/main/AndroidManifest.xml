@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
-                <data android:scheme="drawview" android:host="document"/>
+                <data android:scheme="pageboard" android:host="document"/>
             </intent-filter>
             <!-- Invitations to the shared documents -->
             <intent-filter>
@@ -37,7 +37,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
-                <data android:scheme="drawview" android:host="join"/>
+                <data android:scheme="pageboard" android:host="join"/>
             </intent-filter>
         </activity>
     </application>

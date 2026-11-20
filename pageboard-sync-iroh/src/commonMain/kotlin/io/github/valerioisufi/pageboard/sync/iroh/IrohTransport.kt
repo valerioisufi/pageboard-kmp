@@ -204,7 +204,7 @@ public class IrohTransport(
         public const val NAME: String = "iroh"
 
         /** The protocol the endpoints answer (the version of the synchronization with it). */
-        internal val ALPN: String = "drawview/sync/$PROTOCOL_VERSION"
+        internal val ALPN: String = "pageboard/sync/$PROTOCOL_VERSION"
 
         /** Whether the iroh bridge is on this platform (its native library is). */
         public val isAvailable: Boolean get() = irohBridge != null

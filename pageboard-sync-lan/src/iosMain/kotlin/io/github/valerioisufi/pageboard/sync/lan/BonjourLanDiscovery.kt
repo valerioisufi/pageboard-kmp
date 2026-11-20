@@ -28,7 +28,7 @@ import platform.posix.AF_INET
 
 /**
  * [LanDiscovery] of iOS (Bonjour). The application declares the service in its `Info.plist`
- * (`NSBonjourServices`: `_drawview._tcp`) with the reason of the use of the local network
+ * (`NSBonjourServices`: `_pageboard._tcp`) with the reason of the use of the local network
  * (`NSLocalNetworkUsageDescription`).
  */
 @OptIn(BetaInteropApi::class)

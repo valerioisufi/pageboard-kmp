@@ -94,6 +94,6 @@ class IrohRelayTest {
     }
 
     private companion object {
-        const val ALPN = "drawview/test"
+        const val ALPN = "pageboard/test"
     }
 }

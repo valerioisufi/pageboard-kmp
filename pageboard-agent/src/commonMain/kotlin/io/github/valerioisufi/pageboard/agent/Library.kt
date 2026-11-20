@@ -90,7 +90,7 @@ public sealed interface LibraryItem {
     public data class DuplicateDocument(val document: String, val title: String? = null, val folder: String? = null) : LibraryItem
 
     /**
-     * Brings the notes of the archive of the application at [path] (`.drawview`) into a new folder of
+     * Brings the notes of the archive of the application at [path] (`.pageboard`) into a new folder of
      * the folder [folder] (`null`: the root), as new documents.
      */
     @Serializable
