@@ -56,6 +56,7 @@ who uses the applications or the libraries.
 | [export-ux](export-ux.md) | The experience of the export |
 | [export](export.md) | Export of the documents |
 | [find-in-document](find-in-document.md) | Find in the document |
+| [handwriting](handwriting.md) | Handwriting recognition |
 | [header-fit](header-fit.md) | Bars that fit their window |
 | [html-paste](html-paste.md) | Pasting formatted text |
 | [ink-antialiasing](ink-antialiasing.md) | Antialiased ink |
