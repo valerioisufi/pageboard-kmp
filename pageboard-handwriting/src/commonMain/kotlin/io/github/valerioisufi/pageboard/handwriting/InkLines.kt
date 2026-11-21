@@ -18,7 +18,7 @@ public class InkLayout(public val lines: List<InkSample>, public val drawing: In
  * as drawing the strokes much larger than the writing around them: a misreading of a drawing would
  * be found by the searches and suggested while writing.
  *
- * The height of the writing is the median height of the strokes. A stroke higher and wider than
+ * The height of the writing is the median height of the strokes, the flat ones left out. A stroke higher and wider than
  * [drawingFactor] times it, or higher than [tallFactor] times it, is drawing, and so is a stroke
  * touching a drawing without writing beside it. The others go to the line whose middle is nearest
  * to theirs, within [lineOverlap] of the height of the writing beyond their half height; the small
@@ -33,7 +33,10 @@ public class InkLines(
         if (ink.isEmpty) return InkLayout(emptyList(), InkSample(emptyList()))
         val bounds = ink.strokeBounds()
         val heights = bounds.map { max(it.height, MIN_HEIGHT_MM) }
-        val writingHeight = heights.sorted()[heights.size / 2]
+        // The flat strokes (bars, dashes, dots) do not tell the height of the writing: in block
+        // capitals they are most of the strokes
+        val upright = heights.filter { it >= FLAT_MM }.ifEmpty { heights }
+        val writingHeight = upright.sorted()[upright.size / 2]
 
         // The large strokes, then what touches them (the petals of a flower, the rays of a sun)
         val drawing = bounds.indices.filter { i ->
@@ -122,21 +125,30 @@ public class InkLines(
     private val Rect.centerX: Float get() = (left + right) / 2f
     private val Rect.centerY: Float get() = (top + bottom) / 2f
 
-    private companion object {
+    public companion object {
+        /**
+         * The version of the rules: the readings made by other rules are made again (see
+         * [HandwritingReading.version]). 2: the flat strokes left out of the height of the writing.
+         */
+        public const val RULES: Int = 2
+
         /** A stroke lower than this is a dot (millimeters). */
-        const val MIN_HEIGHT_MM = 0.2f
+        private const val MIN_HEIGHT_MM = 0.2f
+
+        /** A stroke lower than this (millimeters) is flat: a bar, a dash, a dot. */
+        private const val FLAT_MM = 1f
 
         /** A stroke lower than this share of the writing is small: a dot, an accent, a bar. */
-        const val SMALL_SHARE = 0.4f
+        private const val SMALL_SHARE = 0.4f
 
         /** A small stroke belongs to the line above or below it before the one beside it. */
-        const val VERTICAL_WEIGHT = 3f
+        private const val VERTICAL_WEIGHT = 3f
 
         /** A stroke this close to a drawing (a share of the height of the writing) is part of it... */
-        const val TOUCH_SHARE = 0.5f
+        private const val TOUCH_SHARE = 0.5f
 
         /** ...unless it has this many strokes of writing beside it, within this share of the height. */
-        const val WRITING_NEIGHBOURS = 2
-        const val NEIGHBOUR_SHARE = 2.5f
+        private const val WRITING_NEIGHBOURS = 2
+        private const val NEIGHBOUR_SHARE = 2.5f
     }
 }

@@ -51,6 +51,22 @@ class HandwritingReadingTest {
     }
 
     @Test
+    fun blockCapitalsWithMoreBarsThanStemsAreWritingNotDrawing() {
+        fun line(x0: Float, y0: Float, x1: Float, y1: Float) = (0..8).map { k -> StrokePoint(x0 + (x1 - x0) * k / 8, y0 + (y1 - y0) * k / 8, 0.5f, k * 8L) }
+        // FILE, 20 mm high: four stems and six bars
+        val file = listOf(
+            line(0f, 0f, 0f, 20f), line(0f, 0f, 10f, 0f), line(0f, 10f, 8f, 10f),
+            line(18f, 0f, 18f, 20f),
+            line(27f, 0f, 27f, 20f), line(27f, 20f, 37f, 20f),
+            line(45f, 0f, 45f, 20f), line(45f, 0f, 55f, 0f), line(45f, 10f, 53f, 10f), line(45f, 20f, 55f, 20f)
+        )
+        val layout = InkLines().split(InkSample(file))
+        assertTrue(layout.drawing.isEmpty, "nothing left out as drawing")
+        assertEquals(1, layout.lines.size)
+        assertEquals(10, layout.lines.single().strokes.size)
+    }
+
+    @Test
     fun theTimesAreMadeOneClockAcrossTheStrokes() {
         // Two strokes of two sessions: the second recorded earlier than the first
         val ink = InkSample(listOf(letter(0f, 0f, startMs = 900_000L), letter(4f, 0f, startMs = 1_000L), listOf(StrokePoint(9f, 0f), StrokePoint(9f, 3f))))
@@ -98,7 +114,7 @@ class HandwritingReadingTest {
         assertEquals(listOf("titolo", "3 tratti"), reader.contexts)
         assertEquals("3 tratti tratto\n4 tratti tratto", read.searchText)
         assertEquals(emptyList(), read.alternatives, "the readings of several lines are not put together")
-        assertEquals("counting 1", reading.version("it-CH"))
+        assertEquals("counting 1; lines ${InkLines.RULES}", reading.version("it-CH"))
     }
 
     @Test

@@ -53,6 +53,8 @@ public final class io/github/valerioisufi/pageboard/handwriting/InkLayout {
 }
 
 public final class io/github/valerioisufi/pageboard/handwriting/InkLines {
+	public static final field Companion Lio/github/valerioisufi/pageboard/handwriting/InkLines$Companion;
+	public static final field RULES I
 	public fun <init> ()V
 	public fun <init> (FFF)V
 	public synthetic fun <init> (FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -60,6 +62,9 @@ public final class io/github/valerioisufi/pageboard/handwriting/InkLines {
 	public final fun getLineOverlap ()F
 	public final fun getTallFactor ()F
 	public final fun split (Lio/github/valerioisufi/pageboard/handwriting/InkSample;)Lio/github/valerioisufi/pageboard/handwriting/InkLayout;
+}
+
+public final class io/github/valerioisufi/pageboard/handwriting/InkLines$Companion {
 }
 
 public final class io/github/valerioisufi/pageboard/handwriting/InkMl {

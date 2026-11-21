@@ -95,6 +95,11 @@ final class io.github.valerioisufi.pageboard.handwriting/InkLines { // io.github
         final fun <get-tallFactor>(): kotlin/Float // io.github.valerioisufi.pageboard.handwriting/InkLines.tallFactor.<get-tallFactor>|<get-tallFactor>(){}[0]
 
     final fun split(io.github.valerioisufi.pageboard.handwriting/InkSample): io.github.valerioisufi.pageboard.handwriting/InkLayout // io.github.valerioisufi.pageboard.handwriting/InkLines.split|split(io.github.valerioisufi.pageboard.handwriting.InkSample){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.handwriting/InkLines.Companion|null[0]
+        final const val RULES // io.github.valerioisufi.pageboard.handwriting/InkLines.Companion.RULES|{}RULES[0]
+            final fun <get-RULES>(): kotlin/Int // io.github.valerioisufi.pageboard.handwriting/InkLines.Companion.RULES.<get-RULES>|<get-RULES>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.pageboard.handwriting/InkMlInk { // io.github.valerioisufi.pageboard.handwriting/InkMlInk|null[0]

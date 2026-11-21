@@ -20,8 +20,11 @@ public class HandwritingReading(
     /** Whether a reader of formulas is there. */
     public val readsFormulas: Boolean get() = engines.math != null
 
-    /** The version of the reader of [language], `null` when none reads it. */
-    public suspend fun version(language: String): String? = engines.textReader(language)?.version
+    /**
+     * The version of the readings of [language]: of its reader and of the rules that split a block
+     * ([InkLines.RULES]), `null` when none reads it. A reading kept with another version is read again.
+     */
+    public suspend fun version(language: String): String? = engines.textReader(language)?.version?.let { "$it; lines ${InkLines.RULES}" }
 
     /**
      * The text of [ink] in [language], `null` when no reader reads the language or nothing was read.

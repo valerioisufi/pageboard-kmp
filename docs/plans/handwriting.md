@@ -342,6 +342,20 @@ The same ink as on Windows (`HandwritingBench`, `generate`, seed 2026), read by
   candidates), 78 ms a formula. It is not the reader of the formulas; the published models are
   still to measure.
 
+### Tried by hand on Windows (2026-11-21)
+
+PencilNotes desktop on a scratch directory, the strokes drawn with the mouse:
+
+* "Convert to text" on HELLO in block capitals: read HELLO, the text box in place of the strokes,
+  undone and done again in one step each. The text is at 24 points, the largest size of a note
+  (`TextSizePolicy.MAX`), though the letters were 21 mm high.
+* FILE in block capitals was not found by the search: it was read as nothing. Six of its ten
+  strokes are bars, so the median height of the strokes, the height of the writing, was that of a
+  bar, and the four stems were left out as drawing. Fixed: the flat strokes (lower than 1 mm) are
+  left out of the height (`InkLines.RULES` 2), and the version of a reading holds the version of
+  the rules, so the readings made by other rules are made again. On the blocks of the bench: 32 of
+  40 split into their lines (34 before), 35 doodles left out (36), no writing left out; FILE found.
+
 ## Checks
 
 * The checks of `CLAUDE.md` at every phase; `./consumer-checks/check.sh` for the phases that add
