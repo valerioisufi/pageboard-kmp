@@ -714,6 +714,10 @@ public class LectureAssistant(
         }
     }
 
+    /** Whether this device can generate lecture topic titles locally (a generation model is installed). */
+    public val canGenerateLectureTitleLocally: Boolean
+        get() = LectureTitleGenerator.installedModel(deviceModels) != null
+
     /**
      * Finished lectures of [documentId] (the oldest first) whose audio or transcript can be
      * exported in bulk: excludes lectures still recording, active elsewhere, or currently in the
@@ -737,10 +741,38 @@ public class LectureAssistant(
                         directory = summary.directory,
                         startedAt = summary.startedAt,
                         hasAudio = hasAudio,
-                        transcript = transcript
+                        transcript = transcript,
+                        topic = record.topic
                     )
                 }
         }
+    }
+
+    /**
+     * Returns the short topic title of the lecture in [directory], generating and saving it on
+     * `lecture.json` via the on-device generation model when missing, or falling back to existing
+     * headings/topic without persisting when no local model can generate one.
+     */
+    public suspend fun generateAndSaveTopic(directory: String): String {
+        val record = withContext(Dispatchers.IO) { library.readRecord(directory) } ?: return ""
+        if (record.topic.isNotBlank()) return record.topic
+        val generated = LectureTitleGenerator.generate(record, deviceModels)
+            ?: return LectureTitleGenerator.fallbackTitle(record)
+        val savedTopic = library.records.withLock {
+            val latest = withContext(Dispatchers.IO) { library.readRecord(directory) } ?: return@withLock generated
+            if (latest.topic.isNotBlank()) return@withLock latest.topic
+            val stamped = LectureRecords.stamped(latest.copy(topic = generated), latest, library.deviceId, currentTimeMillis())
+            val open = withContext(stateContext) { lectures.shown[stamped.documentId]?.takeIf { it.directory == directory } }
+            if (open != null) {
+                open.merge(stamped).topic
+            } else {
+                withContext(Dispatchers.IO) { writeLectureRecord(directory, stamped) }
+                stamped.topic
+            }
+        }
+        library.changed(record.documentId, record.id)
+        lectures.refreshNow(record.documentId)
+        return savedTopic
     }
 
     /**

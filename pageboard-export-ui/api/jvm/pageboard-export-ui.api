@@ -1,7 +1,7 @@
 public final class io/github/valerioisufi/pageboard/export/ui/DocumentExportUi {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/pageboard/export/MarkdownAppendix;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun StatusHost (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public final fun getEditorExtension ()Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 	public final fun getImportAction ()Lio/github/valerioisufi/pageboard/ui/extension/LibraryAction;

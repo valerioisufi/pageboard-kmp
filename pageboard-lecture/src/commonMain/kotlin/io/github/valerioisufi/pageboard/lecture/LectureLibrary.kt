@@ -28,10 +28,12 @@ public class LectureSummary(
     internal val suggestionCount: Int,
     /** Saved while recording: still being recorded (maybe on another device), or interrupted. */
     internal val wasRecording: Boolean,
-    /** The name of the device that recorded it, when it is another one. */
+    /** Name of the device that recorded it, when it is another one. */
     public val recordedElsewhere: String? = null,
     /** Being recorded (or imported) on another device. */
-    public val activeElsewhere: Boolean = false
+    public val activeElsewhere: Boolean = false,
+    /** Short generated topic title of the lecture, empty when not generated yet. */
+    public val topic: String = ""
 )
 
 /**
@@ -136,7 +138,8 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
                 suggestionCount = record.suggestions.size,
                 wasRecording = record.status != LectureStatus.FINISHED,
                 recordedElsewhere = record.recordedOn.takeIf { record.recordedBy.isNotEmpty() && record.recordedBy != deviceId },
-                activeElsewhere = record.status != LectureStatus.FINISHED && !statusSetHere(record)
+                activeElsewhere = record.status != LectureStatus.FINISHED && !statusSetHere(record),
+                topic = record.topic
             )
         }.sortedByDescending { it.startedAt }
     }

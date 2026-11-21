@@ -35,10 +35,7 @@ Variations).
 2. **Audio-first with optional transcripts**: exports finished lecture recordings as `.m4a` files,
    with a switch in the sheet (`includeTranscripts`, default off) to include `.txt` transcripts
    alongside the audio.
-3. **Emulate folder structure**: mirrors the library folder tree and timestamps in the ZIP, placing
-   each note's recordings under its folder path (`<folder>/<Note> - <YYYY-MM-DD HH.mm>.m4a`),
-   disambiguating duplicates, skipping notes without recordings (without creating empty folders),
-   and reporting skipped missing-audio lectures in `ExportOutcome`.
+3. **Emulate folder structure & customizable names**: mirrors the library folder tree and timestamps in the ZIP (default `<folder>/<Note> - <yyyy-MM-DD HH.mm>.m4a`), lets the user choose and reorder the filename fields (`FOLDER`, `NOTE`, `DATE`, `TOPIC`, `NUMBER`) with a live preview, generates and persists short lecture topics (`topic`) via the local Gemma 4 model when missing, skips notes without recordings (without creating empty folders), and reports skipped missing-audio lectures in `ExportOutcome`.
 4. **Streaming ZIP**: writes directory/file entries incrementally to disk (`StreamingZipWriter`)
    without buffering all `.m4a` payloads in RAM, respecting cancellation and cleaning up partial
    output and temp files.
@@ -52,21 +49,23 @@ Variations).
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| Recordings format, extension (`zip`), media type | `ExportFormat.RECORDINGS`, `ExportOptions.includeTranscripts` (`pageboard-export`) | Information Expert |
+| Recordings format, extension (`zip`), media type, filename parts & formatting | `ExportFormat.RECORDINGS`, `ExportOptions`, `RecordingNamePart`, `formatRecordingFileName` (`pageboard-export`) | Information Expert |
 | Port for reading lecture audio & transcripts without coupling | `DocumentRecordings`, `ExportedRecording` (`pageboard-export`) | Protected Variations, Indirection |
 | Incremental ZIP writing on disk with CRC-32 | `StreamingZipWriter`, `Crc32` (`pageboard-export`) | Pure Fabrication, High Cohesion |
 | Batch recordings orchestration & folder structure | `DocumentExport.exportRecordings` (`pageboard-export`) | Controller |
 | Thread-safe page index, unique temp frames, cancellable progress | `RecordingFile`, `M4aWriter`, `exportRecording` (`pageboard-lecture`) | Information Expert, High Cohesion |
+| On-device short lecture topic generation & persistence | `LectureTitleGenerator`, `LectureRecord.topic`, `LectureAssistant.generateAndSaveTopic` (`pageboard-lecture`) | Pure Fabrication, Information Expert |
 | Serialized export queue, multi-result notices, delete guard, batch API | `LectureAssistant`, `ExportableRecording`, `formatRecordingTimestamp` (`pageboard-lecture`) | Controller |
-| Running/queued/all-result notices in lecture panel | `LectureHeader` (`pageboard-lecture-ui`) | Controller |
+| Running/queued/all-result notices & lecture titles in menu | `LectureHeader` (`pageboard-lecture-ui`) | Controller |
 | Isolated staging dirs & serialized iOS presentation | `rememberFileSaver`, `rememberFileSharer` (`pageboard-ui`) | Protected Variations |
-| Format card, transcript switch, wiring | `ExportSheetState`, `ExportSheet`, `DocumentExportUi` (`pageboard-export-ui`), `PencilNotesServices` | Controller, Low Coupling |
+| Format card, reorderable name builder, switches, wiring | `ExportSheetState`, `ExportSheet`, `DocumentExportUi` (`pageboard-export-ui`), `PencilNotesServices` | Controller, Low Coupling |
 
 ## Plan
 
 | Phase | Content | Status |
 |---|---|---|
 | 1 | GRASP plan; lecture & platform export concurrency fixes (`RecordingFile`, `M4aWriter`, `AudioCodec`, `LectureAssistant`, `LectureHeader`, Android & iOS `FileSaver`); `StreamingZipWriter`, `DocumentRecordings`, `ExportFormat.RECORDINGS`, `DocumentExport.exportRecordings`; `ExportSheet` / `DocumentExportUi` / `PencilNotesServices` wiring and 7-locale strings; tests and ABI update | Done |
+| 2 | Persist `LectureRecord.topic` (backward-compatible JSON & sync merge under `LecturePart.OUTLINE`), `LectureTitleGenerator` with on-device Gemma 4 (`LoadedModels`), show topic in `LectureHeader` menu, customizable & reorderable `RecordingNamePart` fields with live preview in `ExportSheet`, 7-locale strings, tests and ABI update | Done |
 
 ### Phase 1 results
 
@@ -75,6 +74,15 @@ Variations).
   * `ExportSheetStateTest` (`pageboard-export-ui`): `ExportFormat.RECORDINGS` visibility with/without `DocumentRecordings`, `.zip` / `application/zip`, ignoring page range errors, `includeTranscripts` persistence and fallback.
   * `RecordingExportTest` (`pageboard-lecture`): concurrent `LectureAssistant.exportAudio` serialization, keeping all `exportResults` (including errors), delete protection during active export, `exportableRecordings` filtering/ordering, `writeRecordingAudio` encoding and cancellation, `formatRecordingTimestamp`.
 * Verified `jvmTest` across `:pageboard-export`, `:pageboard-export-ui`, `:pageboard-lecture`, `:pageboard-lecture-ui`, `:pageboard-ui`, plus `checkKotlinAbi`, Android debug builds (`:pencilnotes-android:assembleDebug`, `:sample-android:assembleDebug`), and iOS builds (`compileKotlinIosArm64`, `compileKotlinIosSimulatorArm64`, `:pencilnotes-shared:compileKotlinIosSimulatorArm64`).
+
+### Phase 2 results
+
+* Tests:
+  * `LectureRecordsTest` (`pageboard-lecture` `commonTest`): legacy `lecture.json` without `topic` decodes and hashes identically without emitting `"topic"`, round-trip persistence, deterministic merge under `LecturePart.OUTLINE`, and `ignoreUnknownKeys` forward compatibility for older readers.
+  * `RecordingExportTest` (`pageboard-lecture` `jvmTest`): `LectureTitleGenerator` prompt building, output cleaning, fallback extraction (`finalReview` heading / `currentTopic`), and `LectureAssistant.generateAndSaveTopic` with fake `ModelRuntime` persisting to `lecture.json`, updating open lectures/summaries, and reusing cached titles without re-invoking the model.
+  * `RecordingsExportTest` (`pageboard-export` `jvmTest`): custom `RecordingNamePart` orderings, lazy `resolveTopic` invocation only when `TOPIC` is requested and missing, skipped missing-audio lectures not triggering AI generation, duplicate disambiguation, and `formatRecordingFileName` fallbacks.
+  * `ExportSheetStateTest` (`pageboard-export-ui` `jvmTest`): toggling (preserving at least one active part), moving fields up/down within bounds, and persistence of `recordingNameParts`.
+* Verified `jvmTest` across `:pageboard-export`, `:pageboard-export-ui`, `:pageboard-lecture`, `:pageboard-lecture-ui`, `:pageboard-ui`, desktop compilation (`:pencilnotes-desktop:compileKotlin`, `:sample-desktop:compileKotlin`), `checkKotlinAbi`, Android debug APKs (`:pencilnotes-android:assembleDebug`, `:sample-android:assembleDebug`), and iOS builds (`compileKotlinIosArm64`, `compileKotlinIosSimulatorArm64`, `:pencilnotes-shared:compileKotlinIosSimulatorArm64`).
 
 ## Decisions
 
@@ -93,6 +101,9 @@ Taken on 2026-11-21, every one revertible:
 4. **Two-pass streaming ZIP (`StreamingZipWriter`)** with STORE method: computes CRC-32 and byte
    length on disk before streaming the file into the ZIP sink, avoiding holding hundreds of
    megabytes of audio in memory.
+5. **Reuse `LecturePart.OUTLINE` for `LectureRecord.topic`** (with `@EncodeDefault(EncodeDefault.Mode.NEVER)`): keeps sync backward-compatible with older devices (avoiding a new `LecturePart` enum value in `stamps` maps) and omits empty `topic` from legacy records so version hashes stay identical.
+6. **Keep local Gemma 4 loaded across batch topic generation** (`keepLoadedMillis = 60_000L` via `LoadedModels.withGenerator`): avoids reloading the multi-gigabyte model for every lecture in a batch, and falls back to `finalReview` heading / `currentTopic` without overwriting `lecture.json` when no local model is installed.
+7. **Reorderable token rows with up/down buttons, addable chips, and live preview in `ExportSheet`**: works uniformly across mouse, touch, keyboard, and desktop/mobile without fragile drag-and-drop gestures or raw format strings.
 
 ## Left for later
 

@@ -77,4 +77,18 @@
     <string name="export_retry">再試行</string>
     <string name="export_stop">中止</string>
     <string name="export_close">閉じる</string>
+    <string name="export_recording_names">ファイル名</string>
+    <string name="export_name_part_folder">フォルダ</string>
+    <string name="export_name_part_note">ノート</string>
+    <string name="export_name_part_date">日付</string>
+    <string name="export_name_part_topic">トピック</string>
+    <string name="export_name_part_number">番号</string>
+    <string name="export_name_part_move_up">上へ</string>
+    <string name="export_name_part_move_down">下へ</string>
+    <string name="export_name_part_remove">削除</string>
+    <string name="export_name_part_topic_local_hint">トピックが未生成の講義は、書き出し時にこの端末で生成されます。</string>
+    <string name="export_name_part_topic_saved_hint">保存済みのトピックを含めます（未保存の場合は代替名を使用）。</string>
+    <string name="export_name_part_sample_folder">講義</string>
+    <string name="export_name_part_sample_note">第1回</string>
+    <string name="export_name_part_sample_topic">極限と連続性</string>
 </resources>

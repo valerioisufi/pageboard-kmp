@@ -94,10 +94,13 @@ object PencilNotesServices {
                     hasAudio = rec.hasAudio,
                     transcriptFileName = rec.transcript?.let { "$stem.${lectureAssistant.transcriptExportExtension}" },
                     transcript = rec.transcript,
+                    topic = rec.topic,
+                    resolveTopic = { lectureAssistant.generateAndSaveTopic(rec.directory) },
                     writeAudio = { path, progress -> lectureAssistant.writeRecordingAudio(rec.directory, path, progress) }
                 )
             }
-        }
+        },
+        canGenerateRecordingTopic = { lectureAssistant.canGenerateLectureTitleLocally }
     )
 
     /**

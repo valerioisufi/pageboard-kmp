@@ -260,4 +260,140 @@ class RecordingsExportTest {
             assertTrue(leftoverTemps.isEmpty(), "Leftover temps: $leftoverTemps")
         }
     }
+
+    @Test
+    fun customRecordingNamePartsOrderLazyTopicsAndFallback() = runBlocking<Unit> {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage())
+        val export = DocumentExport(OpenDocuments(store, Dispatchers.Default))
+        store.createFolder("Physics", parentId = null)
+        val physics = store.folders.first().single { it.name == "Physics" }
+        val inFolder = store.createDocument("Kinematics", folderId = physics.id).also { store.closeDocument(it.id) }.id
+        val inRoot = store.createDocument("Intro", folderId = null).also { store.closeDocument(it.id) }.id
+        val missingAudioDoc = store.createDocument("Missing", folderId = null).also { store.closeDocument(it.id) }.id
+
+        var resolvedCalls = 0
+        var missingAudioCalls = 0
+        val byDoc = mapOf(
+            inFolder to listOf(
+                ExportedRecording(
+                    fileName = "2026-11-21 09.00.m4a",
+                    recordedAt = 1_773_500_000_000L,
+                    topic = "Moto rettilineo"
+                ) { p, _ -> File(p).writeBytes("a1".encodeToByteArray()) },
+                ExportedRecording(
+                    fileName = "2026-11-21 11.00.m4a",
+                    recordedAt = 1_773_507_200_000L,
+                    topic = "",
+                    resolveTopic = {
+                        resolvedCalls++
+                        "Caduta libera"
+                    }
+                ) { p, _ -> File(p).writeBytes("a2".encodeToByteArray()) }
+            ),
+            inRoot to listOf(
+                ExportedRecording(
+                    fileName = "2026-11-21 08.00.m4a",
+                    recordedAt = 1_773_496_400_000L,
+                    topic = ""
+                ) { p, _ -> File(p).writeBytes("r1".encodeToByteArray()) },
+                ExportedRecording(
+                    fileName = "2026-11-21 12.00.m4a",
+                    recordedAt = 1_773_510_800_000L,
+                    topic = ""
+                ) { p, _ -> File(p).writeBytes("r2".encodeToByteArray()) }
+            ),
+            missingAudioDoc to listOf(
+                ExportedRecording(
+                    fileName = "2026-11-21 13.00.m4a",
+                    recordedAt = 1_773_514_400_000L,
+                    hasAudio = false,
+                    resolveTopic = {
+                        missingAudioCalls++
+                        "Should not run"
+                    }
+                ) { _, _ -> }
+            )
+        )
+        val writers = ExportWriters(PdfExporter(textAdapter = null), recordings = DocumentRecordings { byDoc[it].orEmpty() })
+        val contents = export.resolve(ExportScope.Folder(null))
+
+        withTempDir { dir ->
+            // When TOPIC is not in recordingNameParts, resolveTopic must never be called
+            val withoutTopicZip = File(dir, "no-topic.zip").absolutePath
+            export.export(
+                contents,
+                ExportFormat.RECORDINGS,
+                ExportOptions(recordingNameParts = listOf(RecordingNamePart.DATE, RecordingNamePart.NUMBER)),
+                writers,
+                withoutTopicZip
+            )
+            assertEquals(0, resolvedCalls)
+            assertEquals(0, missingAudioCalls)
+
+            // Custom order [DATE, FOLDER, NOTE, TOPIC] invokes lazy resolveTopic only when needed and skips missing audio
+            val customZip = File(dir, "custom.zip").absolutePath
+            export.export(
+                contents,
+                ExportFormat.RECORDINGS,
+                ExportOptions(recordingNameParts = listOf(RecordingNamePart.DATE, RecordingNamePart.FOLDER, RecordingNamePart.NOTE, RecordingNamePart.TOPIC)),
+                writers,
+                customZip
+            )
+            assertEquals(1, resolvedCalls)
+            assertEquals(0, missingAudioCalls)
+            ZipFile(customZip).use { zip ->
+                assertEquals(
+                    listOf(
+                        "2026-11-21 08.00 - Intro.m4a",
+                        "2026-11-21 12.00 - Intro.m4a",
+                        "Physics/",
+                        "Physics/2026-11-21 09.00 - Physics - Kinematics - Moto rettilineo.m4a",
+                        "Physics/2026-11-21 11.00 - Physics - Kinematics - Caduta libera.m4a"
+                    ),
+                    zip.entries().toList().map { it.name }
+                )
+            }
+
+            // Duplicate disambiguation when [NOTE] alone is chosen, and [FOLDER, TOPIC] fallback on root note without topic
+            val noteOnlyZip = File(dir, "note-only.zip").absolutePath
+            export.export(
+                contents,
+                ExportFormat.RECORDINGS,
+                ExportOptions(recordingNameParts = listOf(RecordingNamePart.NOTE)),
+                writers,
+                noteOnlyZip
+            )
+            ZipFile(noteOnlyZip).use { zip ->
+                val names = zip.entries().toList().map { it.name }
+                assertTrue("Intro.m4a" in names)
+                assertTrue("Intro (2).m4a" in names)
+                assertTrue("Physics/Kinematics.m4a" in names)
+                assertTrue("Physics/Kinematics (2).m4a" in names)
+            }
+
+            assertEquals(
+                "Intro - 2026-11-21 08.00",
+                formatRecordingFileName(
+                    parts = listOf(RecordingNamePart.FOLDER, RecordingNamePart.TOPIC),
+                    folder = null,
+                    note = "Intro",
+                    date = "2026-11-21 08.00",
+                    topic = "",
+                    number = 1
+                )
+            )
+            assertEquals(
+                "02 - Moto_ rettilineo",
+                formatRecordingFileName(
+                    parts = listOf(RecordingNamePart.NUMBER, RecordingNamePart.TOPIC),
+                    folder = "Physics",
+                    note = "Kinematics",
+                    date = "2026-11-21 09.00",
+                    topic = "Moto: rettilineo",
+                    number = 2,
+                    totalInNote = 5
+                )
+            )
+        }
+    }
 }

@@ -4,6 +4,7 @@ import io.github.valerioisufi.pageboard.export.ExportContents
 import io.github.valerioisufi.pageboard.export.ExportFormat
 import io.github.valerioisufi.pageboard.export.ExportScope
 import io.github.valerioisufi.pageboard.export.FolderDocumentItem
+import io.github.valerioisufi.pageboard.export.RecordingNamePart
 import io.github.valerioisufi.pageboard.store.DocumentSummary
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -130,5 +131,36 @@ class ExportSheetStateTest {
         // Saved RECORDINGS choice falls back to the default format when recordings are unavailable
         val fallbackSingle = ExportSheetState(ExportScope.Pages("lecture"), preferences, hasRecordings = false)
         assertEquals(ExportFormat.PDF, fallbackSingle.format)
+
+        // Custom recording name parts can be toggled, reordered, and persisted (never empty)
+        val naming = ExportSheetState(ExportScope.Folder(null), preferences, hasRecordings = true)
+        assertEquals(listOf(RecordingNamePart.NOTE, RecordingNamePart.DATE), naming.recordingNameParts)
+        naming.toggleRecordingNamePart(RecordingNamePart.TOPIC)
+        naming.toggleRecordingNamePart(RecordingNamePart.FOLDER)
+        assertEquals(
+            listOf(RecordingNamePart.NOTE, RecordingNamePart.DATE, RecordingNamePart.TOPIC, RecordingNamePart.FOLDER),
+            naming.recordingNameParts
+        )
+        naming.moveRecordingNamePart(2, -1) // TOPIC moves before DATE
+        naming.moveRecordingNamePart(0, -1) // Out of bounds no-op
+        naming.moveRecordingNamePart(3, +1) // Out of bounds no-op
+        assertEquals(
+            listOf(RecordingNamePart.NOTE, RecordingNamePart.TOPIC, RecordingNamePart.DATE, RecordingNamePart.FOLDER),
+            naming.recordingNameParts
+        )
+        naming.toggleRecordingNamePart(RecordingNamePart.NOTE)
+        naming.toggleRecordingNamePart(RecordingNamePart.DATE)
+        naming.toggleRecordingNamePart(RecordingNamePart.FOLDER)
+        assertEquals(listOf(RecordingNamePart.TOPIC), naming.recordingNameParts)
+        // Cannot remove the last remaining field
+        naming.toggleRecordingNamePart(RecordingNamePart.TOPIC)
+        assertEquals(listOf(RecordingNamePart.TOPIC), naming.recordingNameParts)
+
+        naming.toggleRecordingNamePart(RecordingNamePart.DATE)
+        naming.remember()
+        assertEquals(listOf(RecordingNamePart.TOPIC, RecordingNamePart.DATE), naming.options().recordingNameParts)
+
+        val restoredNaming = ExportSheetState(ExportScope.Folder(null), preferences, hasRecordings = true)
+        assertEquals(listOf(RecordingNamePart.TOPIC, RecordingNamePart.DATE), restoredNaming.recordingNameParts)
     }
 }

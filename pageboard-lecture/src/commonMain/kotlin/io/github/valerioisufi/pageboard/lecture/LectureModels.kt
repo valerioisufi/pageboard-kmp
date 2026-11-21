@@ -184,7 +184,11 @@ public data class GenerationLock(val device: String, val name: String, val since
 
 /**
  * A recorded lecture, saved as `lecture.json` next to its audio.
+ *
+ * @param topic short descriptive title of the lecture generated from its content; never written
+ *   when empty, so records written before stay as they were.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 public data class LectureRecord(
     val id: String,
@@ -195,6 +199,7 @@ public data class LectureRecord(
     val status: LectureStatus = LectureStatus.FINISHED,
     val outline: String = "",
     val currentTopic: String = "",
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val topic: String = "",
     val transcript: List<TranscriptSegment> = emptyList(),
     val suggestions: List<NoteSuggestion> = emptyList(),
     val finalReview: String? = null,

@@ -44,7 +44,8 @@ public class ExportableRecording(
     public val directory: String,
     public val startedAt: Long,
     public val hasAudio: Boolean,
-    public val transcript: String?
+    public val transcript: String?,
+    public val topic: String = ""
 )
 
 /** Formats [epochMs] as `yyyy-MM-dd HH.mm` in the local time zone, sortable in file names. */

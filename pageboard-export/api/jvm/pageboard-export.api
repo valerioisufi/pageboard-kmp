@@ -211,13 +211,19 @@ public final class io/github/valerioisufi/pageboard/export/ExportJobs {
 
 public final class io/github/valerioisufi/pageboard/export/ExportOptions {
 	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/pageboard/export/ExportOptions$Companion;
 	public fun <init> ()V
-	public fun <init> (Ljava/util/Set;ZLjava/util/Set;Z)V
-	public synthetic fun <init> (Ljava/util/Set;ZLjava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/Set;ZLjava/util/Set;ZLjava/util/List;)V
+	public synthetic fun <init> (Ljava/util/Set;ZLjava/util/Set;ZLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBackgroundPattern ()Z
 	public final fun getIncludeTranscripts ()Z
 	public final fun getPageIds ()Ljava/util/Set;
 	public final fun getPageIndices ()Ljava/util/Set;
+	public final fun getRecordingNameParts ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/pageboard/export/ExportOptions$Companion {
+	public final fun getDEFAULT_RECORDING_NAME_PARTS ()Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/pageboard/export/ExportOutcome {
@@ -314,11 +320,13 @@ public final class io/github/valerioisufi/pageboard/export/ExportWriters {
 
 public final class io/github/valerioisufi/pageboard/export/ExportedRecording {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)V
-	public synthetic fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getFileName ()Ljava/lang/String;
 	public final fun getHasAudio ()Z
 	public final fun getRecordedAt ()J
+	public final fun getResolveTopic ()Lkotlin/jvm/functions/Function1;
+	public final fun getTopic ()Ljava/lang/String;
 	public final fun getTranscript ()Ljava/lang/String;
 	public final fun getTranscriptFileName ()Ljava/lang/String;
 	public final fun getWriteAudio ()Lkotlin/jvm/functions/Function3;
@@ -370,5 +378,21 @@ public final class io/github/valerioisufi/pageboard/export/PdfExporter : io/gith
 	public static synthetic fun exportCombined$default (Lio/github/valerioisufi/pageboard/export/PdfExporter;Ljava/util/List;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getExtension ()Ljava/lang/String;
 	public fun getMimeType ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/export/RecordingNamePart : java/lang/Enum {
+	public static final field DATE Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static final field FOLDER Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static final field NOTE Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static final field NUMBER Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static final field TOPIC Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/export/RecordingNamePart;
+}
+
+public final class io/github/valerioisufi/pageboard/export/RecordingsExportKt {
+	public static final fun formatRecordingFileName (Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;II)Ljava/lang/String;
+	public static synthetic fun formatRecordingFileName$default (Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIILjava/lang/Object;)Ljava/lang/String;
 }
 

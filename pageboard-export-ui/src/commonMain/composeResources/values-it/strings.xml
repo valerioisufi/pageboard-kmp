@@ -80,4 +80,18 @@
     <string name="export_retry">Riprova</string>
     <string name="export_stop">Interrompi</string>
     <string name="export_close">Chiudi</string>
+    <string name="export_recording_names">Nomi dei file</string>
+    <string name="export_name_part_folder">Cartella</string>
+    <string name="export_name_part_note">Nota</string>
+    <string name="export_name_part_date">Data</string>
+    <string name="export_name_part_topic">Argomento</string>
+    <string name="export_name_part_number">Numero</string>
+    <string name="export_name_part_move_up">Sposta su</string>
+    <string name="export_name_part_move_down">Sposta giù</string>
+    <string name="export_name_part_remove">Rimuovi</string>
+    <string name="export_name_part_topic_local_hint">Gli argomenti mancanti verranno generati su questo dispositivo durante l’esportazione.</string>
+    <string name="export_name_part_topic_saved_hint">Include gli argomenti già salvati nelle lezioni (altrimenti usa il titolo disponibile).</string>
+    <string name="export_name_part_sample_folder">Corso</string>
+    <string name="export_name_part_sample_note">Lezione 1</string>
+    <string name="export_name_part_sample_topic">Limiti e continuità</string>
 </resources>

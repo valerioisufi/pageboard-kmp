@@ -80,4 +80,18 @@
     <string name="export_retry">Retry</string>
     <string name="export_stop">Stop</string>
     <string name="export_close">Close</string>
+    <string name="export_recording_names">File names</string>
+    <string name="export_name_part_folder">Folder</string>
+    <string name="export_name_part_note">Note</string>
+    <string name="export_name_part_date">Date</string>
+    <string name="export_name_part_topic">Topic</string>
+    <string name="export_name_part_number">Number</string>
+    <string name="export_name_part_move_up">Move up</string>
+    <string name="export_name_part_move_down">Move down</string>
+    <string name="export_name_part_remove">Remove</string>
+    <string name="export_name_part_topic_local_hint">Missing lecture topics will be generated on this device during export.</string>
+    <string name="export_name_part_topic_saved_hint">Includes previously saved lecture topics (or falls back when missing).</string>
+    <string name="export_name_part_sample_folder">Course</string>
+    <string name="export_name_part_sample_note">Lecture 1</string>
+    <string name="export_name_part_sample_topic">Limits and continuity</string>
 </resources>

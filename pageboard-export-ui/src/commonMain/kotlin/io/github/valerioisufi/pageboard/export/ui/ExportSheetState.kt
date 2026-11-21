@@ -9,6 +9,7 @@ import io.github.valerioisufi.pageboard.export.ExportContents
 import io.github.valerioisufi.pageboard.export.ExportFormat
 import io.github.valerioisufi.pageboard.export.ExportOptions
 import io.github.valerioisufi.pageboard.export.ExportScope
+import io.github.valerioisufi.pageboard.export.RecordingNamePart
 
 /** The pages of a note the user exports. */
 internal enum class PageChoice { ALL, ON_SCREEN, SELECTED, RANGE }
@@ -27,6 +28,7 @@ internal class ExportPreferences {
     var backgroundPattern: Boolean = true
     var includeSubfolders: Boolean = true
     var includeTranscripts: Boolean = false
+    var recordingNameParts: List<RecordingNamePart> = ExportOptions.DEFAULT_RECORDING_NAME_PARTS
 }
 
 /**
@@ -47,7 +49,8 @@ internal class ExportSheetState(
     private val preferences: ExportPreferences,
     val pageOnScreen: PageOnScreen? = null,
     val selectedPages: Set<String> = emptySet(),
-    val hasRecordings: Boolean = false
+    val hasRecordings: Boolean = false,
+    val canGenerateRecordingTopic: Boolean = false
 ) {
     /** What the scope gives, `null` while it is being read (again when the subfolders change). */
     var contents: ExportContents? by mutableStateOf(null)
@@ -71,6 +74,27 @@ internal class ExportSheetState(
     var includeSubfolders: Boolean by mutableStateOf(preferences.includeSubfolders)
 
     var includeTranscripts: Boolean by mutableStateOf(preferences.includeTranscripts)
+
+    var recordingNameParts: List<RecordingNamePart> by mutableStateOf(preferences.recordingNameParts)
+
+    /** Adds [part] to the end or removes it, keeping at least one field selected. */
+    fun toggleRecordingNamePart(part: RecordingNamePart) {
+        if (part in recordingNameParts) {
+            if (recordingNameParts.size > 1) recordingNameParts = recordingNameParts - part
+        } else {
+            recordingNameParts = recordingNameParts + part
+        }
+    }
+
+    /** Moves the field at [index] by [delta] (-1 or +1) when within bounds. */
+    fun moveRecordingNamePart(index: Int, delta: Int) {
+        val target = index + delta
+        if (index !in recordingNameParts.indices || target !in recordingNameParts.indices || target == index) return
+        val updated = recordingNameParts.toMutableList()
+        val moved = updated.removeAt(index)
+        updated.add(target, moved)
+        recordingNameParts = updated
+    }
 
     /** The name of the file without its extension, as edited by the user; `null` while untouched. */
     var editedName: String? by mutableStateOf(null)
@@ -141,7 +165,8 @@ internal class ExportSheetState(
     fun options(): ExportOptions = ExportOptions(
         backgroundPattern = backgroundPattern,
         pageIndices = if (isSingleDocument && pages == PageChoice.RANGE) rangeIndices else null,
-        includeTranscripts = includeTranscripts
+        includeTranscripts = includeTranscripts,
+        recordingNameParts = recordingNameParts
     )
 
     /** Keeps the choices of this export for the next one. */
@@ -150,6 +175,7 @@ internal class ExportSheetState(
         preferences.backgroundPattern = backgroundPattern
         if (!isSingleDocument) preferences.includeSubfolders = includeSubfolders
         preferences.includeTranscripts = includeTranscripts
+        preferences.recordingNameParts = recordingNameParts
     }
 
     companion object {

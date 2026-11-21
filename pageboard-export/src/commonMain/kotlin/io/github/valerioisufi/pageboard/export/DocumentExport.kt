@@ -353,9 +353,10 @@ public class DocumentExport(private val documents: OpenDocuments) {
         try {
             for ((item, recordings) in entriesByItem) {
                 val dirSegments = directorySegments(item.relativePath)
+                val folderName = dirSegments.lastOrNull()
                 val noteBase = item.relativePath.substringAfterLast('/').removeSuffix(".pdf")
                 val dirPrefix = if (dirSegments.isEmpty()) "" else dirSegments.joinToString("/") + "/"
-                for (rec in recordings) {
+                recordings.forEachIndexed { recIndex, rec ->
                     currentCoroutineContext().ensureActive()
                     val dot = rec.fileName.lastIndexOf('.')
                     val rawStem = if (dot > 0) rec.fileName.substring(0, dot) else rec.fileName
@@ -363,7 +364,36 @@ public class DocumentExport(private val documents: OpenDocuments) {
                     val recStem = sanitizeFileName(rawStem)
                     val txtExt = rec.transcriptFileName?.substringAfterLast('.', "")?.ifBlank { "txt" } ?: "txt"
 
-                    val baseStem = "$dirPrefix$noteBase - $recStem"
+                    val willWrite = rec.hasAudio || (options.includeTranscripts && !rec.transcript.isNullOrBlank())
+                    val resolvedTopic = if (willWrite && RecordingNamePart.TOPIC in options.recordingNameParts) {
+                        rec.topic.ifBlank {
+                            val resolve = rec.resolveTopic
+                            if (resolve == null) {
+                                ""
+                            } else {
+                                progress(ExportProgress(completed.toFloat() / totalSteps, completed + 1, totalSteps, item.summary.name))
+                                try {
+                                    resolve()
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (_: Exception) {
+                                    ""
+                                }
+                            }
+                        }
+                    } else {
+                        ""
+                    }
+                    val formatted = formatRecordingFileName(
+                        parts = options.recordingNameParts,
+                        folder = folderName,
+                        note = noteBase,
+                        date = recStem,
+                        topic = resolvedTopic,
+                        number = recIndex + 1,
+                        totalInNote = recordings.size
+                    )
+                    val baseStem = "$dirPrefix$formatted"
                     var stem = baseStem
                     var counter = 2
                     while ("$stem.$audioExt" in usedPaths || "$stem.$txtExt" in usedPaths) {

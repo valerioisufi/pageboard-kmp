@@ -117,7 +117,39 @@ class LectureRecordsTest {
         assertEquals(listOf("Buongiorno, oggi parliamo di validazione.", "Il fattore di utilizzazione."), record.transcript.map { it.text })
         assertEquals(mapOf("TEXT" to 274_990L, "AUDIO" to 51_840L), record.usageByDevice.getValue("0236e586").usage.promptByModality)
         assertEquals(LectureStatus.FINISHED, record.status)
+        assertEquals("", record.topic)
+        val reencoded = LectureRecords.encode(record).decodeToString()
+        assertEquals(false, "\"topic\"" in reencoded)
+        assertEquals(LectureRecords.version(record), LectureRecords.version(assertNotNull(LectureRecords.decode(reencoded.encodeToByteArray()))))
     }
+
+    @Test
+    fun aGeneratedTopicIsSavedMergedAndIgnoredByOlderReaders() {
+        val withTopic = LectureRecords.stamped(
+            recorded.copy(topic = "Limiti e continuità"),
+            recorded,
+            "computer",
+            250
+        )
+        val encoded = LectureRecords.encode(withTopic)
+        val decoded = assertNotNull(LectureRecords.decode(encoded))
+        assertEquals("Limiti e continuità", decoded.topic)
+
+        // Merged under LecturePart.OUTLINE regardless of device order
+        val mergedA = LectureRecords.merge(recorded, decoded)
+        val mergedB = LectureRecords.merge(decoded, recorded)
+        assertEquals("Limiti e continuità", mergedA.topic)
+        assertEquals("Limiti e continuità", mergedB.topic)
+        assertEquals(LectureRecords.version(mergedA), LectureRecords.version(mergedB))
+        assertNotEquals(LectureRecords.version(recorded), LectureRecords.version(decoded))
+
+        // Older deserializers with ignoreUnknownKeys = true read it without failing
+        val older = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        assertEquals("2026-10-06_10-00-00-a1b2c3", older.decodeFromString(LegacyRecord.serializer(), encoded.decodeToString()).id)
+    }
+
+    @kotlinx.serialization.Serializable
+    private data class LegacyRecord(val id: String, val documentId: String, val startedAt: Long)
 
     /** A suggestion as the versions before the anchors know it. */
     @kotlinx.serialization.Serializable

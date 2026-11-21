@@ -50,12 +50,15 @@ import org.jetbrains.compose.resources.stringResource
  *   its lectures), see [MarkdownAppendix].
  * @param recordings lecture recordings of a note provided by the application for batch export, see
  *   [DocumentRecordings].
+ * @param canGenerateRecordingTopic whether the device can generate missing lecture topics locally
+ *   (used only to hint the user in `ExportSheet`).
  */
 public class DocumentExportUi(
     documents: OpenDocuments,
     private val appName: String? = null,
     private val markdownAppendix: MarkdownAppendix? = null,
-    private val recordings: DocumentRecordings? = null
+    private val recordings: DocumentRecordings? = null,
+    private val canGenerateRecordingTopic: () -> Boolean = { false }
 ) {
     private val export = DocumentExport(documents)
 
@@ -81,7 +84,14 @@ public class DocumentExportUi(
         val selected = if (selection.isActive) selection.pageIds.toSet() else emptySet()
         editorExport = EditorExport(
             context.documentId,
-            ExportSheetState(ExportScope.Pages(context.documentId), preferences, pageOnScreen, selected, hasRecordings = recordings != null)
+            ExportSheetState(
+                ExportScope.Pages(context.documentId),
+                preferences,
+                pageOnScreen,
+                selected,
+                hasRecordings = recordings != null,
+                canGenerateRecordingTopic = canGenerateRecordingTopic()
+            )
         )
     }
 
@@ -119,7 +129,12 @@ public class DocumentExportUi(
                     is LibrarySelection.Items -> ExportScope.ofSelection(selection.documentIds, selection.folderIds)
                     is LibrarySelection.Folder -> ExportScope.Folder(selection.folderId)
                 }
-                ExportSheetState(scope, preferences, hasRecordings = recordings != null)
+                ExportSheetState(
+                    scope,
+                    preferences,
+                    hasRecordings = recordings != null,
+                    canGenerateRecordingTopic = canGenerateRecordingTopic()
+                )
             }
             // The first page of the note, or of the first note among several
             val thumbnail = (selection as? LibrarySelection.Items)?.thumbnail

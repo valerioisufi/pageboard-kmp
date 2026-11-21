@@ -32,13 +32,20 @@ public interface DocumentExporter {
  *   [pageIds]; all of them when `null`.
  * @param includeTranscripts whether batch recordings exports include plain-text transcripts alongside
  *   audio files.
+ * @param recordingNameParts ordered filename fields used for batch recordings exports.
  */
 public class ExportOptions(
     public val pageIds: Set<String>? = null,
     public val backgroundPattern: Boolean = true,
     public val pageIndices: Set<Int>? = null,
-    public val includeTranscripts: Boolean = false
-)
+    public val includeTranscripts: Boolean = false,
+    public val recordingNameParts: List<RecordingNamePart> = DEFAULT_RECORDING_NAME_PARTS
+) {
+    public companion object {
+        /** Default filename fields for exported recordings: note title followed by recording timestamp. */
+        public val DEFAULT_RECORDING_NAME_PARTS: List<RecordingNamePart> = listOf(RecordingNamePart.NOTE, RecordingNamePart.DATE)
+    }
+}
 
 /**
  * What an export wrote: [pages], and the [skipped] elements that could not be read (a missing

@@ -80,4 +80,18 @@
     <string name="export_retry">Erneut versuchen</string>
     <string name="export_stop">Stoppen</string>
     <string name="export_close">Schließen</string>
+    <string name="export_recording_names">Dateinamen</string>
+    <string name="export_name_part_folder">Ordner</string>
+    <string name="export_name_part_note">Notiz</string>
+    <string name="export_name_part_date">Datum</string>
+    <string name="export_name_part_topic">Thema</string>
+    <string name="export_name_part_number">Nummer</string>
+    <string name="export_name_part_move_up">Nach oben</string>
+    <string name="export_name_part_move_down">Nach unten</string>
+    <string name="export_name_part_remove">Entfernen</string>
+    <string name="export_name_part_topic_local_hint">Fehlende Vorlesungsthemen werden beim Export auf diesem Gerät erzeugt.</string>
+    <string name="export_name_part_topic_saved_hint">Verwendet bereits gespeicherte Vorlesungsthemen (sonst ein Ersatzwert).</string>
+    <string name="export_name_part_sample_folder">Kurs</string>
+    <string name="export_name_part_sample_note">Vorlesung 1</string>
+    <string name="export_name_part_sample_topic">Grenzwerte und Stetigkeit</string>
 </resources>

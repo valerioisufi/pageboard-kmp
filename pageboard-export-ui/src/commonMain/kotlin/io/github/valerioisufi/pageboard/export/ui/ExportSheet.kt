@@ -16,13 +16,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -57,6 +60,8 @@ import io.github.valerioisufi.pageboard.export.ExportJobs
 import io.github.valerioisufi.pageboard.export.ExportRequest
 import io.github.valerioisufi.pageboard.export.ExportScope
 import io.github.valerioisufi.pageboard.export.ExportWriters
+import io.github.valerioisufi.pageboard.export.RecordingNamePart
+import io.github.valerioisufi.pageboard.export.formatRecordingFileName
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_markdown_hint
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_markdown
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_archive
@@ -65,6 +70,20 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_for
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_recordings_hint
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_include_transcripts
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_include_transcripts_hint
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_date
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_folder
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_move_down
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_move_up
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_note
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_number
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_remove
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_sample_folder
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_sample_note
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_sample_topic
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_topic
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_topic_local_hint
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_name_part_topic_saved_hint
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_recording_names
 import io.github.valerioisufi.pageboard.export.MarkdownExporter
 import io.github.valerioisufi.pageboard.export.MarkdownAppendix
 import io.github.valerioisufi.pageboard.export.PageImageExporter
@@ -207,14 +226,16 @@ internal fun ExportSheet(
             thumbnail = image,
             fallbackName = fallbackName,
             onSubmit = primary,
-            modifier = Modifier.onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown && event.key == Key.Enter && state.problem == null) {
-                    primary()
-                    true
-                } else {
-                    false
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown && event.key == Key.Enter && state.problem == null) {
+                        primary()
+                        true
+                    } else {
+                        false
+                    }
                 }
-            }
         )
     }
 }
@@ -311,6 +332,8 @@ internal fun ExportSheetContent(
             )
         }
         if (state.format == ExportFormat.RECORDINGS) {
+            RecordingNameConfigurator(state)
+            Spacer(modifier = Modifier.height(4.dp))
             SwitchRow(
                 text = stringResource(Res.string.export_include_transcripts),
                 hint = stringResource(Res.string.export_include_transcripts_hint),
@@ -448,6 +471,146 @@ private fun Label(text: StringResource) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 12.dp, bottom = 6.dp)
     )
+}
+
+/**
+ * Interactive composer for choosing and reordering the filename parts of exported recordings,
+ * paired with a live preview of the resulting `.m4a` entry name.
+ */
+@Composable
+private fun RecordingNameConfigurator(state: ExportSheetState) {
+    val colors = MaterialTheme.colorScheme
+    Label(Res.string.export_recording_names)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surfaceContainer, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        state.recordingNameParts.forEachIndexed { index, part ->
+            Row(
+                modifier = Modifier.fillMaxWidth().height(36.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "${index + 1}.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.width(20.dp)
+                )
+                if (part == RecordingNamePart.TOPIC) {
+                    Icon(
+                        PageboardIcons.Sparkles,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                Text(
+                    text = stringResource(partLabel(part)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(
+                    onClick = { state.moveRecordingNamePart(index, -1) },
+                    enabled = index > 0,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        PageboardIcons.ChevronUp,
+                        contentDescription = stringResource(Res.string.export_name_part_move_up),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                IconButton(
+                    onClick = { state.moveRecordingNamePart(index, +1) },
+                    enabled = index < state.recordingNameParts.lastIndex,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        PageboardIcons.ChevronDown,
+                        contentDescription = stringResource(Res.string.export_name_part_move_down),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                IconButton(
+                    onClick = { state.toggleRecordingNamePart(part) },
+                    enabled = state.recordingNameParts.size > 1,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        PageboardIcons.Close,
+                        contentDescription = stringResource(Res.string.export_name_part_remove),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    val inactive = RecordingNamePart.entries.filter { it !in state.recordingNameParts }
+    if (inactive.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        ChipRow {
+            for (part in inactive) {
+                DesignFilterChip(
+                    label = "+ ${stringResource(partLabel(part))}",
+                    selected = false,
+                    onClick = { state.toggleRecordingNamePart(part) }
+                )
+            }
+        }
+    }
+
+    val firstDoc = state.contents?.documents?.firstOrNull()
+    val sampleFolder = firstDoc?.relativePath?.substringBeforeLast('/', "")?.substringAfterLast('/')
+        ?.takeIf { it.isNotEmpty() }
+        ?: stringResource(Res.string.export_name_part_sample_folder)
+    val sampleNote = firstDoc?.summary?.name?.takeIf { it.isNotBlank() }
+        ?: stringResource(Res.string.export_name_part_sample_note)
+    val sampleTopic = stringResource(Res.string.export_name_part_sample_topic)
+    val preview = formatRecordingFileName(
+        parts = state.recordingNameParts,
+        folder = sampleFolder,
+        note = sampleNote,
+        date = "2026-11-21 10.15",
+        topic = sampleTopic,
+        number = 1,
+        totalInNote = 1
+    ) + ".m4a"
+    Text(
+        text = preview,
+        style = MaterialTheme.typography.bodySmall,
+        color = colors.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.padding(top = 6.dp)
+    )
+    if (RecordingNamePart.TOPIC in state.recordingNameParts) {
+        val hint = if (state.canGenerateRecordingTopic) {
+            Res.string.export_name_part_topic_local_hint
+        } else {
+            Res.string.export_name_part_topic_saved_hint
+        }
+        Text(
+            text = stringResource(hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+private fun partLabel(part: RecordingNamePart): StringResource = when (part) {
+    RecordingNamePart.FOLDER -> Res.string.export_name_part_folder
+    RecordingNamePart.NOTE -> Res.string.export_name_part_note
+    RecordingNamePart.DATE -> Res.string.export_name_part_date
+    RecordingNamePart.TOPIC -> Res.string.export_name_part_topic
+    RecordingNamePart.NUMBER -> Res.string.export_name_part_number
 }
 
 /** A format to choose: its [icon], its [name] and what it gives ([hint]); the primary container when [selected]. */

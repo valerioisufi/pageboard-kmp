@@ -94,7 +94,7 @@ internal object LectureRecords {
 
     private fun LecturePart.of(record: LectureRecord): Any? = when (this) {
         LecturePart.RECORDING -> listOf(record.documentTitle, record.durationMs, record.status, record.pages)
-        LecturePart.OUTLINE -> record.outline to record.currentTopic
+        LecturePart.OUTLINE -> Triple(record.outline, record.currentTopic, record.topic)
         LecturePart.TRANSCRIPT -> record.transcript
         LecturePart.REVIEW -> Triple(record.finalReview, record.finalReviewBy, record.finalReviewProvider)
         LecturePart.SHARING -> record.audioShared
@@ -104,7 +104,7 @@ internal object LectureRecords {
     /** [target] with this part of [from]. */
     private fun LecturePart.copy(target: LectureRecord, from: LectureRecord): LectureRecord = when (this) {
         LecturePart.RECORDING -> target.copy(documentTitle = from.documentTitle, durationMs = from.durationMs, status = from.status, pages = from.pages)
-        LecturePart.OUTLINE -> target.copy(outline = from.outline, currentTopic = from.currentTopic)
+        LecturePart.OUTLINE -> target.copy(outline = from.outline, currentTopic = from.currentTopic, topic = from.topic)
         LecturePart.TRANSCRIPT -> target.copy(transcript = from.transcript)
         LecturePart.REVIEW -> target.copy(finalReview = from.finalReview, finalReviewBy = from.finalReviewBy, finalReviewProvider = from.finalReviewProvider)
         LecturePart.SHARING -> target.copy(audioShared = from.audioShared)

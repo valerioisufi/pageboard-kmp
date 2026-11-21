@@ -42,6 +42,20 @@ final enum class io.github.valerioisufi.pageboard.export/ExportFormat : kotlin/E
     final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.export/ExportFormat> // io.github.valerioisufi.pageboard.export/ExportFormat.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.pageboard.export/RecordingNamePart : kotlin/Enum<io.github.valerioisufi.pageboard.export/RecordingNamePart> { // io.github.valerioisufi.pageboard.export/RecordingNamePart|null[0]
+    enum entry DATE // io.github.valerioisufi.pageboard.export/RecordingNamePart.DATE|null[0]
+    enum entry FOLDER // io.github.valerioisufi.pageboard.export/RecordingNamePart.FOLDER|null[0]
+    enum entry NOTE // io.github.valerioisufi.pageboard.export/RecordingNamePart.NOTE|null[0]
+    enum entry NUMBER // io.github.valerioisufi.pageboard.export/RecordingNamePart.NUMBER|null[0]
+    enum entry TOPIC // io.github.valerioisufi.pageboard.export/RecordingNamePart.TOPIC|null[0]
+
+    final val entries // io.github.valerioisufi.pageboard.export/RecordingNamePart.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.export/RecordingNamePart> // io.github.valerioisufi.pageboard.export/RecordingNamePart.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.export/RecordingNamePart // io.github.valerioisufi.pageboard.export/RecordingNamePart.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.export/RecordingNamePart> // io.github.valerioisufi.pageboard.export/RecordingNamePart.values|values#static(){}[0]
+}
+
 abstract fun interface io.github.valerioisufi.pageboard.export/DocumentRecordings { // io.github.valerioisufi.pageboard.export/DocumentRecordings|null[0]
     abstract suspend fun of(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.export/ExportedRecording> // io.github.valerioisufi.pageboard.export/DocumentRecordings.of|of(kotlin.String){}[0]
 }
@@ -264,7 +278,7 @@ final class io.github.valerioisufi.pageboard.export/ExportJobs { // io.github.va
 }
 
 final class io.github.valerioisufi.pageboard.export/ExportOptions { // io.github.valerioisufi.pageboard.export/ExportOptions|null[0]
-    constructor <init>(kotlin.collections/Set<kotlin/String>? = ..., kotlin/Boolean = ..., kotlin.collections/Set<kotlin/Int>? = ..., kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.export/ExportOptions.<init>|<init>(kotlin.collections.Set<kotlin.String>?;kotlin.Boolean;kotlin.collections.Set<kotlin.Int>?;kotlin.Boolean){}[0]
+    constructor <init>(kotlin.collections/Set<kotlin/String>? = ..., kotlin/Boolean = ..., kotlin.collections/Set<kotlin/Int>? = ..., kotlin/Boolean = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.export/RecordingNamePart> = ...) // io.github.valerioisufi.pageboard.export/ExportOptions.<init>|<init>(kotlin.collections.Set<kotlin.String>?;kotlin.Boolean;kotlin.collections.Set<kotlin.Int>?;kotlin.Boolean;kotlin.collections.List<io.github.valerioisufi.pageboard.export.RecordingNamePart>){}[0]
 
     final val backgroundPattern // io.github.valerioisufi.pageboard.export/ExportOptions.backgroundPattern|{}backgroundPattern[0]
         final fun <get-backgroundPattern>(): kotlin/Boolean // io.github.valerioisufi.pageboard.export/ExportOptions.backgroundPattern.<get-backgroundPattern>|<get-backgroundPattern>(){}[0]
@@ -274,6 +288,13 @@ final class io.github.valerioisufi.pageboard.export/ExportOptions { // io.github
         final fun <get-pageIds>(): kotlin.collections/Set<kotlin/String>? // io.github.valerioisufi.pageboard.export/ExportOptions.pageIds.<get-pageIds>|<get-pageIds>(){}[0]
     final val pageIndices // io.github.valerioisufi.pageboard.export/ExportOptions.pageIndices|{}pageIndices[0]
         final fun <get-pageIndices>(): kotlin.collections/Set<kotlin/Int>? // io.github.valerioisufi.pageboard.export/ExportOptions.pageIndices.<get-pageIndices>|<get-pageIndices>(){}[0]
+    final val recordingNameParts // io.github.valerioisufi.pageboard.export/ExportOptions.recordingNameParts|{}recordingNameParts[0]
+        final fun <get-recordingNameParts>(): kotlin.collections/List<io.github.valerioisufi.pageboard.export/RecordingNamePart> // io.github.valerioisufi.pageboard.export/ExportOptions.recordingNameParts.<get-recordingNameParts>|<get-recordingNameParts>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.export/ExportOptions.Companion|null[0]
+        final val DEFAULT_RECORDING_NAME_PARTS // io.github.valerioisufi.pageboard.export/ExportOptions.Companion.DEFAULT_RECORDING_NAME_PARTS|{}DEFAULT_RECORDING_NAME_PARTS[0]
+            final fun <get-DEFAULT_RECORDING_NAME_PARTS>(): kotlin.collections/List<io.github.valerioisufi.pageboard.export/RecordingNamePart> // io.github.valerioisufi.pageboard.export/ExportOptions.Companion.DEFAULT_RECORDING_NAME_PARTS.<get-DEFAULT_RECORDING_NAME_PARTS>|<get-DEFAULT_RECORDING_NAME_PARTS>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.pageboard.export/ExportOutcome { // io.github.valerioisufi.pageboard.export/ExportOutcome|null[0]
@@ -346,7 +367,7 @@ final class io.github.valerioisufi.pageboard.export/ExportWriters { // io.github
 }
 
 final class io.github.valerioisufi.pageboard.export/ExportedRecording { // io.github.valerioisufi.pageboard.export/ExportedRecording|null[0]
-    constructor <init>(kotlin/String, kotlin/Long, kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Function1<kotlin/Float, kotlin/Unit>, kotlin/Unit>) // io.github.valerioisufi.pageboard.export/ExportedRecording.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Boolean;kotlin.String?;kotlin.String?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Function1<kotlin.Float,kotlin.Unit>,kotlin.Unit>){}[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String = ..., kotlin.coroutines/SuspendFunction0<kotlin/String>? = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/Function1<kotlin/Float, kotlin/Unit>, kotlin/Unit>) // io.github.valerioisufi.pageboard.export/ExportedRecording.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Boolean;kotlin.String?;kotlin.String?;kotlin.String;kotlin.coroutines.SuspendFunction0<kotlin.String>?;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.Function1<kotlin.Float,kotlin.Unit>,kotlin.Unit>){}[0]
 
     final val fileName // io.github.valerioisufi.pageboard.export/ExportedRecording.fileName|{}fileName[0]
         final fun <get-fileName>(): kotlin/String // io.github.valerioisufi.pageboard.export/ExportedRecording.fileName.<get-fileName>|<get-fileName>(){}[0]
@@ -354,6 +375,10 @@ final class io.github.valerioisufi.pageboard.export/ExportedRecording { // io.gi
         final fun <get-hasAudio>(): kotlin/Boolean // io.github.valerioisufi.pageboard.export/ExportedRecording.hasAudio.<get-hasAudio>|<get-hasAudio>(){}[0]
     final val recordedAt // io.github.valerioisufi.pageboard.export/ExportedRecording.recordedAt|{}recordedAt[0]
         final fun <get-recordedAt>(): kotlin/Long // io.github.valerioisufi.pageboard.export/ExportedRecording.recordedAt.<get-recordedAt>|<get-recordedAt>(){}[0]
+    final val resolveTopic // io.github.valerioisufi.pageboard.export/ExportedRecording.resolveTopic|{}resolveTopic[0]
+        final fun <get-resolveTopic>(): kotlin.coroutines/SuspendFunction0<kotlin/String>? // io.github.valerioisufi.pageboard.export/ExportedRecording.resolveTopic.<get-resolveTopic>|<get-resolveTopic>(){}[0]
+    final val topic // io.github.valerioisufi.pageboard.export/ExportedRecording.topic|{}topic[0]
+        final fun <get-topic>(): kotlin/String // io.github.valerioisufi.pageboard.export/ExportedRecording.topic.<get-topic>|<get-topic>(){}[0]
     final val transcript // io.github.valerioisufi.pageboard.export/ExportedRecording.transcript|{}transcript[0]
         final fun <get-transcript>(): kotlin/String? // io.github.valerioisufi.pageboard.export/ExportedRecording.transcript.<get-transcript>|<get-transcript>(){}[0]
     final val transcriptFileName // io.github.valerioisufi.pageboard.export/ExportedRecording.transcriptFileName|{}transcriptFileName[0]
@@ -457,6 +482,7 @@ final val io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboa
 final val io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_PageImageExporter$stableprop // io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_PageImageExporter$stableprop|#static{}io_github_valerioisufi_pageboard_export_PageImageExporter$stableprop[0]
 final val io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_PdfExporter$stableprop // io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_PdfExporter$stableprop|#static{}io_github_valerioisufi_pageboard_export_PdfExporter$stableprop[0]
 
+final fun io.github.valerioisufi.pageboard.export/formatRecordingFileName(kotlin.collections/List<io.github.valerioisufi.pageboard.export/RecordingNamePart>, kotlin/String?, kotlin/String, kotlin/String, kotlin/String?, kotlin/Int, kotlin/Int = ...): kotlin/String // io.github.valerioisufi.pageboard.export/formatRecordingFileName|formatRecordingFileName(kotlin.collections.List<io.github.valerioisufi.pageboard.export.RecordingNamePart>;kotlin.String?;kotlin.String;kotlin.String;kotlin.String?;kotlin.Int;kotlin.Int){}[0]
 final fun io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveException$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveException$stableprop_getter|io_github_valerioisufi_pageboard_export_ArchiveException$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveExporter$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveExporter$stableprop_getter|io_github_valerioisufi_pageboard_export_ArchiveExporter$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveFormat$stableprop_getter(): kotlin/Int // io.github.valerioisufi.pageboard.export/io_github_valerioisufi_pageboard_export_ArchiveFormat$stableprop_getter|io_github_valerioisufi_pageboard_export_ArchiveFormat$stableprop_getter(){}[0]

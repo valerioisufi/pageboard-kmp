@@ -3,6 +3,21 @@ package io.github.valerioisufi.pageboard.lecture
 import io.github.valerioisufi.pageboard.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.pageboard.lecture.audio.RecordingFile
 import io.github.valerioisufi.pageboard.lecture.testing.MemorySecrets
+import io.github.valerioisufi.pageboard.ml.Accelerator
+import io.github.valerioisufi.pageboard.ml.Embedder
+import io.github.valerioisufi.pageboard.ml.EmbedderOptions
+import io.github.valerioisufi.pageboard.ml.GenerationRequest
+import io.github.valerioisufi.pageboard.ml.Generator
+import io.github.valerioisufi.pageboard.ml.GeneratorOptions
+import io.github.valerioisufi.pageboard.ml.InstalledModel
+import io.github.valerioisufi.pageboard.ml.InstalledModels
+import io.github.valerioisufi.pageboard.ml.LoadedModels
+import io.github.valerioisufi.pageboard.ml.ModelCatalog
+import io.github.valerioisufi.pageboard.ml.ModelDownloads
+import io.github.valerioisufi.pageboard.ml.ModelInput
+import io.github.valerioisufi.pageboard.ml.ModelKind
+import io.github.valerioisufi.pageboard.ml.ModelRuntime
+import io.github.valerioisufi.pageboard.ml.ModelSpec
 import java.io.File
 import java.nio.file.Files
 import java.time.Instant
@@ -251,5 +266,119 @@ class RecordingExportTest {
             while (File(exportable[0].directory).exists()) delay(10)
         }
         assertFalse(File(exportable[0].directory).exists())
+    }
+
+    @Test
+    fun lectureTitleGeneratorCleansSamplesAndPersistsWithLocalModel() = runBlocking<Unit> {
+        assertEquals("Limiti e continuità", LectureTitleGenerator.cleanTitle("Title: **\"Limiti   e continuità.\"**\nExtra line"))
+        assertEquals("Derivate parziali", LectureTitleGenerator.cleanTitle("## Argomento: Derivate parziali!"))
+
+        val recordWithHeading = LectureRecord(
+            id = "r1",
+            documentId = "doc",
+            documentTitle = "Analisi 1",
+            startedAt = 1_000L,
+            currentTopic = "Fallback topic",
+            finalReview = "# Serie numeriche\nDettagli",
+            transcript = List(12) { idx -> TranscriptSegment(idx * 1000L, (idx + 1) * 1000L, "Segment $idx: " + "parola ".repeat(50)) }
+        )
+        assertEquals("Serie numeriche", LectureTitleGenerator.fallbackTitle(recordWithHeading))
+        assertEquals("Fallback topic", LectureTitleGenerator.fallbackTitle(recordWithHeading.copy(finalReview = "Senza titolo")))
+        val promptInput = LectureTitleGenerator.buildPromptInput(recordWithHeading)
+        assertTrue("Course: Analisi 1" in promptInput)
+        assertTrue("Segment 0:" in promptInput)
+        assertTrue("Segment 11:" in promptInput)
+
+        // Without local model, generateAndSaveTopic falls back without persisting
+        val library = LectureLibrary(File(directory, "lectures-topic").absolutePath)
+        val noModelAssistant = newAssistant(library)
+        assertFalse(noModelAssistant.canGenerateLectureTitleLocally)
+        val noModelDir = library.newLectureDirectory("doc-fallback", 1_773_500_000_000L).also { File(it).mkdirs() }
+        writeLectureRecord(
+            noModelDir,
+            LectureRecord(
+                id = File(noModelDir).name,
+                documentId = "doc-fallback",
+                documentTitle = "Analisi",
+                startedAt = 1_773_500_000_000L,
+                currentTopic = "Integrali impropri",
+                transcript = listOf(TranscriptSegment(0L, 5_000L, "Oggi vediamo gli integrali impropri."))
+            )
+        )
+        assertEquals("Integrali impropri", noModelAssistant.generateAndSaveTopic(noModelDir))
+        assertEquals("", library.readRecord(noModelDir)?.topic)
+
+        // With installed local model, generates once, saves to lecture.json, and reuses cached topic
+        val spec = ModelSpec(
+            id = "fake-gemma",
+            name = "Fake Gemma",
+            kind = ModelKind.GENERATION,
+            inputs = setOf(ModelInput.TEXT),
+            fileName = "fake.litertlm",
+            url = "https://example.invalid/fake.litertlm",
+            sizeBytes = 4L,
+            sha256 = "0".repeat(64),
+            memoryBytes = 1024L
+        )
+        val installed = InstalledModels(ModelCatalog(listOf(spec)), File(directory, "models").absolutePath)
+        File(installed.pathOf(spec)).apply { parentFile.mkdirs(); writeBytes("fake".encodeToByteArray()) }
+        installed.refresh()
+
+        var calls = 0
+        val runtime = object : ModelRuntime {
+            override fun supports(spec: ModelSpec): Boolean = true
+            override suspend fun generator(model: InstalledModel, options: GeneratorOptions): Generator = object : Generator {
+                override val model = model
+                override val accelerator = Accelerator.CPU
+                override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String {
+                    calls++
+                    return "Topic: \"Teorema di Lagrange!\""
+                }
+                override fun close() {}
+            }
+            override suspend fun embedder(model: InstalledModel, options: EmbedderOptions): Embedder = error("unused")
+        }
+        val loaded = LoadedModels(runtime)
+        val deviceModels = DeviceModels(installed, loaded, ModelDownloads(installed), isAvailable = true)
+        val localAssistant = LectureAssistant(
+            settingsStore = AssistantSettingsStore(File(directory, "settings-local.json").absolutePath, MemorySecrets()),
+            captureFactory = { null },
+            audioOutput = null,
+            library = library,
+            stateContext = stateContext,
+            deviceModels = deviceModels
+        )
+        try {
+            assertTrue(localAssistant.canGenerateLectureTitleLocally)
+            val targetDir = library.newLectureDirectory("doc-ai", 1_773_500_000_000L).also { File(it).mkdirs() }
+            writeLectureRecord(
+                targetDir,
+                LectureRecord(
+                    id = File(targetDir).name,
+                    documentId = "doc-ai",
+                    documentTitle = "Analisi 1",
+                    startedAt = 1_773_500_000_000L,
+                    transcript = listOf(TranscriptSegment(0L, 10_000L, "Dimostriamo il teorema del valor medio di Lagrange."))
+                )
+            )
+            // Open it in memory to verify open Lecture.topic is updated as well
+            val openLecture = openLecture(localAssistant, library, "doc-ai")
+            assertEquals("", openLecture.topic)
+
+            val first = localAssistant.generateAndSaveTopic(targetDir)
+            assertEquals("Teorema di Lagrange", first)
+            assertEquals(1, calls)
+            assertEquals("Teorema di Lagrange", library.readRecord(targetDir)?.topic)
+            assertEquals("Teorema di Lagrange", library.list("doc-ai").single().topic)
+            assertEquals("Teorema di Lagrange", localAssistant.exportableRecordings("doc-ai").single().topic)
+            assertEquals("Teorema di Lagrange", withContext(stateContext) { openLecture.topic })
+
+            // Subsequent calls use persisted topic without invoking the local model again
+            val second = localAssistant.generateAndSaveTopic(targetDir)
+            assertEquals("Teorema di Lagrange", second)
+            assertEquals(1, calls)
+        } finally {
+            loaded.unloadAll()
+        }
     }
 }

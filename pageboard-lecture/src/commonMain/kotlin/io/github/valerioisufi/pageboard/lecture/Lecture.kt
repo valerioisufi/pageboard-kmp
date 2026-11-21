@@ -173,6 +173,10 @@ public class Lecture internal constructor(
     public var currentTopic: String by mutableStateOf(record?.currentTopic.orEmpty())
         internal set
 
+    /** Short generated title describing the lecture topic, if any. */
+    public var topic: String by mutableStateOf(record?.topic.orEmpty())
+        internal set
+
     /** Page the lecturer is talking about (last known). */
     public var professorPageIndex: Int? by mutableStateOf<Int?>(null)
         internal set
@@ -567,6 +571,7 @@ public class Lecture internal constructor(
         status = status,
         outline = outline,
         currentTopic = currentTopic,
+        topic = topic,
         transcript = transcript.toList(),
         suggestions = suggestions.toList(),
         finalReview = finalReview,
@@ -627,6 +632,7 @@ public class Lecture internal constructor(
         }
         outline = merged.outline
         currentTopic = merged.currentTopic
+        topic = merged.topic
         if (merged.transcript != mine.transcript) {
             transcript.clear()
             transcript.addAll(merged.transcript)

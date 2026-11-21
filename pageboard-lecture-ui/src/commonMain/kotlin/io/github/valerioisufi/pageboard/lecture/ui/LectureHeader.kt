@@ -115,8 +115,9 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
         }
         DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             for (summary in lectures) {
+                val base = lectureDate(summary.startedAt) + " · " + formatDuration(summary.durationMs)
                 MenuItem(
-                    text = lectureDate(summary.startedAt) + " · " + formatDuration(summary.durationMs),
+                    text = if (summary.topic.isNotBlank()) "${summary.topic} · $base" else base,
                     icon = rememberVectorPainter(PageboardIcons.Mic),
                     checked = summary.directory == lecture.directory,
                     onClick = {

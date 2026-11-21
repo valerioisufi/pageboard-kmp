@@ -80,4 +80,18 @@
     <string name="export_retry">Réessayer</string>
     <string name="export_stop">Arrêter</string>
     <string name="export_close">Fermer</string>
+    <string name="export_recording_names">Noms des fichiers</string>
+    <string name="export_name_part_folder">Dossier</string>
+    <string name="export_name_part_note">Note</string>
+    <string name="export_name_part_date">Date</string>
+    <string name="export_name_part_topic">Sujet</string>
+    <string name="export_name_part_number">Numéro</string>
+    <string name="export_name_part_move_up">Monter</string>
+    <string name="export_name_part_move_down">Descendre</string>
+    <string name="export_name_part_remove">Retirer</string>
+    <string name="export_name_part_topic_local_hint">Les sujets manquants seront générés sur cet appareil lors de l’export.</string>
+    <string name="export_name_part_topic_saved_hint">Inclut les sujets déjà enregistrés dans les cours (ou un repli si absent).</string>
+    <string name="export_name_part_sample_folder">Cours</string>
+    <string name="export_name_part_sample_note">Cours 1</string>
+    <string name="export_name_part_sample_topic">Limites et continuité</string>
 </resources>
