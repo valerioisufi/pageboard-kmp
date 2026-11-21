@@ -302,6 +302,18 @@ The formulas get a plan of their own after phase 0: a published model that may s
 trained on data we may use (formulas laid out by MicroTeX and written with permissive glyphs, the
 formulas of the maintainer), with its runtime on every platform.
 
+### PencilKit languages on the Mac (2026-11-21)
+
+`PKStrokeRecognizer.supportedLanguages`, `recognitionVersion` 9 on both:
+
+* macOS 27.2.1 (Xcode 27.2): ar, cs, da, de, en, es, fi, fr, hi, hi-Latn, id, it, ja, ko, mr, ms,
+  nb, nl, nn, no, pl, pt, ro, ru, sv, th, tr, uk, vi, yue, yue-CN, zh, zh-TW.
+* The simulator of iPadOS 27 (iPad Pro 11-inch, M5): cs, da, de, en, es, fi, fr, hi-Latn, id, it,
+  ms, nb, nl, nn, no, pl, pt, ro, sv, tr (the languages of the Latin script only).
+
+Italian is among them on both, so phase 3 goes ahead. Its numbers on the ink of the bench are still
+to measure.
+
 ## Checks
 
 * The checks of `CLAUDE.md` at every phase; `./consumer-checks/check.sh` for the phases that add
