@@ -13,8 +13,9 @@ public final class io/github/valerioisufi/pageboard/lecture/testing/FakeNotebook
 	public fun capture (Ljava/util/Set;IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getDocumentTitle ()Ljava/lang/String;
 	public fun inkBlocks (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun inkSample (Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pageIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun renderInk (Lio/github/valerioisufi/pageboard/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renderInk (Lio/github/valerioisufi/pageboard/model/ink/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun strokeIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
