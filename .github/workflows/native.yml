@@ -64,12 +64,12 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - uses: ./.github/actions/native-caches
         with:
           key: native-desktop-${{ matrix.platform }}
@@ -86,7 +86,7 @@ jobs:
       # The libraries of the same sources are not built again. Not for release.yml
       - name: Restore the JNI libraries
         id: libraries
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: build/nativeLibs/jvm
           key: native-libraries-${{ matrix.platform }}-${{ hashFiles('native/**', 'gradle/libs.versions.toml', 'build.gradle.kts') }}
@@ -97,7 +97,7 @@ jobs:
 
       - name: Save the JNI libraries
         if: steps.libraries.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: build/nativeLibs/jvm
           key: ${{ steps.libraries.outputs.cache-primary-key }}
@@ -111,12 +111,12 @@ jobs:
       # The logs show the name of an exception only: its message is in these
       - name: Keep the results of the tests
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.platform }}
           path: '*/build/test-results/jvmTest/*.xml'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-${{ matrix.platform }}
           path: build/nativeLibs/jvm
@@ -128,14 +128,14 @@ jobs:
     # macOS: the install name of the macOS libpdfium is fixed (and re-signed) during extraction
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: native-*
           path: build/nativeLibs/jvm
@@ -178,7 +178,7 @@ jobs:
           done
           exit $missing
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: desktop-jars
           path: pageboard-*/build/libs/*-jvm.jar
@@ -188,12 +188,12 @@ jobs:
     name: Android
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - uses: ./.github/actions/native-caches
         with:
           key: native-android
@@ -233,12 +233,12 @@ jobs:
     name: iOS
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - uses: ./.github/actions/native-caches
         with:
           key: native-ios
