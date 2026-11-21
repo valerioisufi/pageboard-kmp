@@ -332,14 +332,14 @@ val desktopBash: String = if (!System.getProperty("os.name").lowercase().startsW
 
 tasks.register<Exec>("buildDesktopNativeLibs") {
     group = "native"
-    description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp, iroh and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
+    description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp, iroh, trackpad and PencilKit (macOS) and ink recognizer (Windows) bridge JNI libraries for $desktopPlatform"
     val prebuilt = nativeLibsPrebuilt
     onlyIf { !prebuilt }
     val pdfium = extractPdfiumTasks.getValue(desktopPdfiumPackage)
     if (!prebuilt) dependsOn(pdfium, extractWhisperSource, "extractOpusSource", "extractAacSource")
     inputs.files(
         fileTree(nativeSourcesDir) {
-            include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "ink/LICENSE", "external/**", "scripts/build_desktop.sh")
+            include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "ink/LICENSE", "external/**", "scripts/build_desktop.sh", "scripts/build_pencilkit.sh")
             include("iroh-bridge/**")
             exclude("build/**", "iroh-bridge/target/**")
         }
@@ -351,7 +351,7 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     inputs.property("pdfium", "$pdfiumVersion/$desktopPdfiumPackage")
     inputs.property("appleToolchain", appleToolchainVersion())
     outputs.cacheIf { true }
-    listOf("pageboard-ink", "pageboard-canvas", "pageboard-latex", "pageboard-pdf", "pageboard-lecture", "pageboard-sync-iroh").forEach { module ->
+    listOf("pageboard-ink", "pageboard-canvas", "pageboard-latex", "pageboard-pdf", "pageboard-lecture", "pageboard-sync-iroh", "pageboard-handwriting-pencilkit", "pageboard-handwriting-windows").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
     environment("PAGEBOARD_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)

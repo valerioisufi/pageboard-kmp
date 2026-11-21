@@ -123,6 +123,7 @@ until the release (see the release checklist at the end).
 | `pageboard-ml-litert` | LiteRT-LM runtime of the local models (desktop, Android) | ml | no | LiteRT-LM |
 | `pageboard-handwriting` | the samples of the strokes, the ports of the readers, the lines of a block, the reading, InkML | model | no | — |
 | `pageboard-handwriting-mlkit` | ML Kit Digital Ink as the reader of Android | handwriting | no | ML Kit (Android) |
+| `pageboard-handwriting-pencilkit` | PencilKit as the reader of iOS, iPadOS and macOS 27 | handwriting, platform | no | Swift (cinterop on iOS, JNI on macOS) |
 | `pageboard-handwriting-windows` | the handwriting recognizers of Windows as the reader of the desktop | handwriting, platform | no | C++/WinRT (JNI, Windows) |
 | `pageboard-handwriting-ui` | "Convert to text" on a selection of strokes | handwriting, ui | yes | — |
 | `pageboard-search` | search index (FTS5 and vectors), sources, indexer, engine, `NotesAnswerer` | ml, store, handwriting | no | SQLite |

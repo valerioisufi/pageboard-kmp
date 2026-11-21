@@ -122,6 +122,11 @@ RUST_DIR="${PAGEBOARD_RUST_DIR:-$NATIVE_DIR/build/rust}"
 (cd "$NATIVE_DIR/iroh-bridge" && PATH="$(dirname "$CARGO"):$PATH" MACOSX_DEPLOYMENT_TARGET=13.0 CARGO_TARGET_DIR="$RUST_DIR" \
     "$CARGO" rustc --release --locked --lib --crate-type cdylib --target "$RUST_TARGET")
 
+# The PencilKit bridge (Swift, macOS): the handwriting recognizer of macOS 27
+if [[ "$PLATFORM" == darwin-* ]]; then
+    "$NATIVE_DIR/scripts/build_pencilkit.sh" "$PLATFORM" "$BUILD_DIR/pencilkit"
+fi
+
 OUT_DIR="$ROOT_DIR/build/nativeLibs/jvm"
 # The libraries this build installs only: none left behind by another layout of the modules
 for dir in "$OUT_DIR"/*/native/"$PLATFORM"; do
@@ -145,6 +150,9 @@ cp "$RUST_DIR/$RUST_TARGET/release/$IROH_FILE" "$OUT_DIR/pageboard-sync-iroh/nat
 echo "Installed $OUT_DIR/pageboard-sync-iroh/native/$PLATFORM/$IROH_FILE"
 if [[ "$PLATFORM" == darwin-* ]]; then
     install_lib trackpad_bridge pageboard-canvas
+    mkdir -p "$OUT_DIR/pageboard-handwriting-pencilkit/native/$PLATFORM"
+    cp "$BUILD_DIR/pencilkit/libpencilkit_bridge.dylib" "$OUT_DIR/pageboard-handwriting-pencilkit/native/$PLATFORM/libpencilkit_bridge.dylib"
+    echo "Installed $OUT_DIR/pageboard-handwriting-pencilkit/native/$PLATFORM/libpencilkit_bridge.dylib"
 fi
 if [[ "$PLATFORM" == windows-* ]]; then
     install_lib ink_recognizer_bridge pageboard-handwriting-windows

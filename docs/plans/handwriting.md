@@ -253,10 +253,10 @@ On `feat/handwriting`, one commit a phase, its status here in the same commit.
 
 | Phase | Content | Status |
 |---|---|---|
-| 0 | **Measure first, on ink that exists or is made, none written for the bench.** The formulas: the 60 of `FormulaBench` (MathWriting, real writers). English text: IAM-OnDB (real writers, for research only: it measures, never trains; the registration is the maintainer's), if obtained. Italian text: synthetic ink, the sentences of the typed notes (a copy of the database in a scratch directory) written with a single-stroke script font (Hershey) with random slant, size, spacing, wobble and times. Drawings: Quick, Draw! (CC BY 4.0), set into blocks beside lines of text, to measure `InkLines`. Everything as InkML with its text as the label, the format `FormulaBench` reads. The readers measured on it, each by a small program of its platform in `tools/handwriting-bench` (never shipped): ML Kit on an emulator with Google Play services; PencilKit on macOS 27 and in the simulator of iPadOS 27 (Italian among `supportedLanguages`?); Windows ink in a desktop process; Gemma 4 as today. Synthetic ink is cleaner than real writing: its numbers are an upper bound, said so with the results. The formulas also on the 60 of `FormulaBench`: PencilKit, and the published models on images (Pix2Text MFR, UniMERNet, PP-FormulaNet, Texo; PosFormer and CoMER as references that may not ship), each with the license of its weights and of its training data. The characters and words wrong, the formulas exact, the right word among the candidates, the drawings read as words, the time a line (on the emulator and the computers: no device of the bench runs ML Kit). The results and the choices here; the plan approved again: the readers, Windows, the rules of `InkLines`, the plan of the formulas | Done on Windows for text and drawings (results below); left for the Mac: PencilKit, the formulas (MathWriting and the published models), Gemma 4 on the same lines |
+| 0 | **Measure first, on ink that exists or is made, none written for the bench.** The formulas: the 60 of `FormulaBench` (MathWriting, real writers). English text: IAM-OnDB (real writers, for research only: it measures, never trains; the registration is the maintainer's), if obtained. Italian text: synthetic ink, the sentences of the typed notes (a copy of the database in a scratch directory) written with a single-stroke script font (Hershey) with random slant, size, spacing, wobble and times. Drawings: Quick, Draw! (CC BY 4.0), set into blocks beside lines of text, to measure `InkLines`. Everything as InkML with its text as the label, the format `FormulaBench` reads. The readers measured on it, each by a small program of its platform in `tools/handwriting-bench` (never shipped): ML Kit on an emulator with Google Play services; PencilKit on macOS 27 and in the simulator of iPadOS 27 (Italian among `supportedLanguages`?); Windows ink in a desktop process; Gemma 4 as today. Synthetic ink is cleaner than real writing: its numbers are an upper bound, said so with the results. The formulas also on the 60 of `FormulaBench`: PencilKit, and the published models on images (Pix2Text MFR, UniMERNet, PP-FormulaNet, Texo; PosFormer and CoMER as references that may not ship), each with the license of its weights and of its training data. The characters and words wrong, the formulas exact, the right word among the candidates, the drawings read as words, the time a line (on the emulator and the computers: no device of the bench runs ML Kit). The results and the choices here; the plan approved again: the readers, Windows, the rules of `InkLines`, the plan of the formulas | Done on Windows for text and drawings, on the Mac for PencilKit (text and the 60 formulas; results below); left: the published formula models and Gemma 4 on the same lines (they need downloads of models and runtimes, to agree on), then the plan of the formulas |
 | 1 | **The headless module and the samples.** `pageboard-handwriting` (`InkSample`, `InkReading`, the two ports, `InkLanguageModels`, `InkLines`, `HandwritingReading`, `HandwritingEngines`); `InkBlock`, `groupStrokes`, `blockKey`, `isHandwriting` moved to `pageboard-model` (`model.ink`); `DocumentStore.loadInk` in the stores, `checkInk`; tests on strokes drawn from shapes and on the InkML of phase 0; `Module.md`, `settings.gradle.kts`, the Dokka aggregate; the ABI of the new module, of model, store, store-room, store-testing, lecture and lecture-ui recorded on purpose | Done before phase 0, whose tools use it: `InkSample.retimed` gives one clock to the strokes (the recorded times start again in each session); `isHandwriting` is `StrokeTool.isHandwriting`; the lines of `InkLines` tested on strokes drawn from shapes, the InkML of phase 0 to come. On Windows: the klib dumps of store-room and lecture edited by hand (to check on the Mac), iOS not compiled |
 | 2 | **Android.** `pageboard-handwriting-mlkit`: ML Kit 19.0.0, `MlKitTextRecognizer`, `MlKitLanguageModels`; the license; run on an emulator with Google Play services, not only compiled; on a device without them the reader has no languages (a test) | Done: the models downloaded and HELLO read on an emulator of Android 15 (`MlKitBenchTest`, which is also the bench of phase 0); the packages of ML Kit 19 are `com.google.mlkit.vision.digitalink.recognition`; the samples given in tenths of a millimeter. A device without Google Play services not tried (none here) |
-| 3 | **Apple.** `pageboard-handwriting-pencilkit`: the Swift bridge built by Gradle into a static library for iOS (cinterop) and into the JNI library of macOS (`buildDesktopNativeLibs`); `PencilKitTextRecognizer` on the systems 27 and later, no languages before; a test reading block capitals drawn as strokes, on the Mac and in the simulator | Planned |
+| 3 | **Apple.** `pageboard-handwriting-pencilkit`: the Swift bridge built by Gradle into a static library for iOS (cinterop) and into the JNI library of macOS (`buildDesktopNativeLibs`); `PencilKitTextRecognizer` on the systems 27 and later, no languages before; a test reading block capitals drawn as strokes, on the Mac and in the simulator | Done: `native/bridge/pencilkit_bridge.swift` behind a plain C API (`pencilkit_bridge.h`), built by `native/scripts/build_pencilkit.sh` with the `swiftc` of Xcode (not CMake): a static library for cinterop (`buildPencilKitBridge-<sdk>` of the module), the JNI library of macOS with `pencilkit_bridge_jni.c` (`buildDesktopNativeLibs`); `PencilKitTextRecognizer` in commonMain (no languages on Android, Linux, Windows); PencilNotes gives it on iOS and macOS. **PencilKit reads only for an application in the foreground** (below): the recognizer has the languages of the system only while a word of its own is read, and the search keeps no block missed when it stops. HELLO read and converted by hand in PencilNotes in the simulator of iPadOS 27 (the text box in its place, one undo, found by the search), and read through JNI by a JVM launched as an application with a window on macOS 27.2; the tests of the module on the JVM and in the simulator (the system does not read for a test) |
 | 4 | **The search.** The table `handwriting`; `SearchChunk.extraWords`; `HandwritingSearchSource`; the threshold of the words of the handwriting in `NoteVocabulary`; the section of the settings (read or not, the languages of ML Kit); PencilNotes gives the readers of each platform, in the language of the system; tests (`HandwritingSearchSourceTest`, the index kept at format 1 with its vectors), the screenshots of the settings | Done: `handwriting` table at format 1 (`StoredHandwriting`, `handwriting`, `putHandwriting`, forgotten with its document), `SearchChunk.extraWords` (FTS5 only), `HandwritingSearchSource` (its version from the fingerprints of the pages, the reader and the language), `HandwritingSearch` (on or off, the language, the readers changed), the section of the settings (the switch, the model of the language of ML Kit to download or delete, English and Italian); PencilNotes gives ML Kit on Android and the ink of Windows on its desktop, in the language of the system (`Locale.current`), iOS none yet. `NoteVocabulary` counts the most likely readings only (the chunk text); a threshold of its own for the words seen only in the handwriting is not added: phase 0 gave no measure of it. Not done: the switch kept across restarts (on at every start), the screenshot of the section (to record in the Docker image), the klib dump of search-ui (edited by hand: the Compose dumps come out empty on Windows) |
 | 5 | **The lecture and the external models.** `HandwritingReader` reads with the readers first, from `NotebookSource.inkSample`; the model reads the blocks without samples, or all of them without a reader of the language; `handwriting.json` as today (a test that the same readings write the same bytes); `AgentEngines.handwriting` from the index for every notebook; tests | Done: `HandwritingReader` reads up to 200 blocks with the readers of the device (`DeviceHandwriting`, given through `LectureAssistant.handwritingReading` and `handwritingLanguage`), a block read as nothing kept empty; the model reads the rest as images, and the device reads even with no model; `NotebookSource.inkSample` from the editor (`ControllerNotebookSource`); `handwriting.json` written as before (`HandwritingReaderTest`); PencilNotes gives the assistant the readers of the search; the external models read the handwriting of the lectures, else `HandwritingSearch.pageText` of every notebook (from the index, a block not read yet read then). The klib dump of lecture edited by hand |
 | 6 | **Convert a selection.** `EditorEdits.selection` and `EditorExtension.selectionActions` (the ABI of canvas and ui); `pageboard-handwriting-ui`: "Convert to text" in the context menu of a selection of strokes, offered when the device reads the language; the sheet with the reading editable and the other readings; the text box at the place of the strokes, as wide as they are, at `PageTextSizes.handwriting`, in their color; one change to undo (`EditorDocument.group` of `RemoveElements` and `AddElements`, nothing new that travels); the strings in the seven languages; tests (`HandwritingConversionTest`), the screenshots; PencilNotes adds it; tried by hand where a reader runs (the simulator of iPadOS 27, an emulator with Google Play services, macOS 27) | Done in code: `EditorEdits.selection` (`ElementSelection`: the page, the strokes and the other elements), `EditorExtension.selectionActions` (in the context menu of a selection, after the stack); `pageboard-handwriting-ui` with `HandwritingConversion` (placed by the samples, not the ink around them; the size from the median height of the strokes; one change of `RemoveElements` and `AddElements`, nothing on a document that may only be read) and `handwritingEditorExtension` (the command, offered on strokes only when the device reads the language; the dialog with the reading to edit and up to five other readings); the strings in the seven languages; `HandwritingConversionTest`; PencilNotes adds it with the readers of the search. Not done: the screenshot, the klib dumps of canvas, ui and handwriting-ui edited by hand (to record on the Mac), and the conversion tried by hand in the applications |
@@ -311,8 +311,36 @@ formulas of the maintainer), with its runtime on every platform.
 * The simulator of iPadOS 27 (iPad Pro 11-inch, M5): cs, da, de, en, es, fi, fr, hi-Latn, id, it,
   ms, nb, nl, nn, no, pl, pt, ro, sv, tr (the languages of the Latin script only).
 
-Italian is among them on both, so phase 3 goes ahead. Its numbers on the ink of the bench are still
-to measure.
+Italian is among them on both, so phase 3 goes ahead.
+
+### Phase 0 results on the Mac (2026-11-21)
+
+The same ink as on Windows (`HandwritingBench`, `generate`, seed 2026), read by
+`tools/handwriting-bench/apple` (an application that calls the bridge of phase 3), the samples at
+5.2 points a millimeter (2.83 and 8 give the same errors, 8 is slower):
+
+| Reader | Where | Language | CER | WER | Words among the candidates | Lines exact | Time a line (median / p90) |
+|---|---|---|---|---|---|---|---|
+| PencilKit (recognition 9) | macOS 27.2.1, a Mac with Apple silicon | Italian | 0.4 % | 1.9 % | 98.6 % | 90 % | 141 / 201 ms |
+| PencilKit (recognition 9) | same | English | 0.1 % | 0.0 % | 100 % | 95 % | 132 / 175 ms |
+| PencilKit (recognition 9) | simulator of iPadOS 27 on the same Mac | Italian | 0.6 % | 2.8 % | 98.6 % | 83 % | 155 / 208 ms |
+| PencilKit (recognition 9) | same | English | 0.1 % | 0.0 % | 100 % | 95 % | 137 / 186 ms |
+
+* PencilKit is the best reader measured: it reads the `o` of the Hershey script that ML Kit and
+  Windows read as `a`. Its errors are the colons and some digits ("Weierstrassi" for
+  "Weierstrass:", "pil minore di T" for "pH minore di 7").
+* The time includes a recognizer made for each block; it reads a block whole, in lines of its own.
+* **It reads only for an application in the foreground.** `handwritingd` serves an application
+  launched as one (by LaunchServices: Finder, the Dock, `open`, or iOS) while it shows a window;
+  a command-line process, a JVM started from a terminal (`gradlew run`, the tests), an accessory
+  application or one in the background get nothing (`recognizedText()` is `nil`, the log of the
+  process says "Remote Recognition error"). An entitlement for the background exists
+  (`com.apple.handwritingd.allowBackgroundRecognition`), private to Apple.
+* **Formulas**: the 60 of `FormulaBench`, scaled to glyphs of 5 mm: PencilKit gives a reading of
+  the formula as LaTeX among its candidates, flat (`x 1 - x 2 + x 0 = 0` for `x_{1}-x_{2}+x_{0}=0`,
+  without subscripts, superscripts or fractions as structure): 2 of 60 exact (4 among the
+  candidates), 78 ms a formula. It is not the reader of the formulas; the published models are
+  still to measure.
 
 ## Checks
 
@@ -340,8 +368,19 @@ Taken alone, all revertible until the maintainer approves the plan:
 * Online recognition from the samples on every platform; no reader of images.
 * PencilKit on iOS, iPadOS and macOS 27, nothing on the systems before; ML Kit on Android, not on
   iOS.
-* One Swift bridge for iOS and macOS, built by Gradle. If linking Swift into the framework of iOS
-  costs too much, the iOS applications give the reader in Swift, on the same port.
+* One Swift bridge for iOS and macOS, built by Gradle with the `swiftc` of Xcode (the CMake of the
+  engines builds no Swift with its generator). The static library of iOS is built for iOS 16 without
+  the compatibility libraries of the toolchain (the linker of Kotlin/Native does not find them); the
+  application links the Swift runtime of the system through the autolink entries. With an SDK
+  without `PKStrokeRecognizer` the bridge is built empty and reads nothing.
+* PencilKit gets the samples at 5.2 points a millimeter (an iPad: 132 points an inch).
+* The languages of PencilKit are those of the system only while it reads, checked by reading HELLO
+  of its own (kept a minute while it reads, 5 s while it does not, forgotten when a block reads as
+  nothing); a block not read because the reader stopped reading is not kept by the search
+  (`HandwritingSearchSource`), and is read when the reader comes back. "Convert to text" checks
+  again at each selection.
+* The other readings of PencilKit are the other lines of its indexable content for a line, without
+  the readings as LaTeX.
 * Windows only if phase 0 measures it well; no reader on Linux.
 * The readings live in the search index, in a table added at format 1; nothing of them travels; the
   documents, the lecture records, the Room schema and the protocol do not change.
@@ -360,6 +399,11 @@ To be decided by the maintainer:
 ## Left for later
 
 * A reader for the Apple systems before 27 (Vision, or ML Kit through CocoaPods); Linux.
+* The rest of phase 0: the published formula models (Pix2Text MFR, UniMERNet, PP-FormulaNet, Texo)
+  and Gemma 4 on the same lines, which need models and runtimes downloaded; then the plan of the
+  formulas.
+* A recognizer of PencilKit kept between blocks, if the time a block matters (a new one each time
+  today, about 140 ms a line).
 * The readings shared with the other devices of the notebook (a change of what travels).
 * The handwriting read while the user writes (suggestions in the ink, a scratch to erase).
 * The word found highlighted on the page (PencilKit gives its bounds; ML Kit and Windows the
@@ -372,9 +416,10 @@ To be decided by the maintainer:
 * **Android without Google Play services** has no reader, by decision: some tablets, the one the
   maintainer writes on included.
 * **PencilKit**: a Swift actor, so the bridge is the only way in, and a Swift build is new to the
-  repository (Gradle for iOS, the native build of macOS); its languages may not include Italian; no
-  other readings; in the simulator only the languages written in Latin letters; only on the systems
-  27 and later.
+  repository (Gradle for iOS, the native build of macOS); in the simulator only the languages written
+  in Latin letters; only on the systems 27 and later; **only in the foreground**: on iOS the library
+  is read while PencilNotes is open, on macOS only by the packaged application (not by
+  `gradlew run`).
 * **Segmentation** is the hard part: lines that touch, a formula inside a sentence, arrows and
   diagrams between the words. The readers are only as good as the parts they are given.
 * **Misreadings** reach the search and the suggestions while writing.

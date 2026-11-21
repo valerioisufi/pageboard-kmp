@@ -1,0 +1,19 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <pageboard-kmp:pageboard-handwriting-pencilkit>
+final class io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer : io.github.valerioisufi.pageboard.handwriting/TextInkRecognizer { // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.<init>|<init>(){}[0]
+
+    final val readsBlocks // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.readsBlocks|{}readsBlocks[0]
+        final fun <get-readsBlocks>(): kotlin/Boolean // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.readsBlocks.<get-readsBlocks>|<get-readsBlocks>(){}[0]
+    final val version // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.version|{}version[0]
+        final fun <get-version>(): kotlin/String // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.version.<get-version>|<get-version>(){}[0]
+
+    final suspend fun languages(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.languages|languages(){}[0]
+    final suspend fun recognize(io.github.valerioisufi.pageboard.handwriting/InkSample, kotlin/String, kotlin/String): io.github.valerioisufi.pageboard.handwriting/InkReading? // io.github.valerioisufi.pageboard.handwriting.pencilkit/PencilKitTextRecognizer.recognize|recognize(io.github.valerioisufi.pageboard.handwriting.InkSample;kotlin.String;kotlin.String){}[0]
+}

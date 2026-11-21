@@ -2,7 +2,6 @@ package io.github.valerioisufi.pageboard.search
 
 import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
 import io.github.valerioisufi.pageboard.handwriting.InkSample
-import io.github.valerioisufi.pageboard.model.change.StrokeData
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.ink.blockKey
 import io.github.valerioisufi.pageboard.model.ink.groupStrokes
@@ -69,7 +68,8 @@ public class HandwritingSearchSource(
                 val key = blockKey(group.map { writing[it].id })
                 keys.add(key)
                 val stored = known[key]?.takeIf { it.reader == reader && it.language == language }
-                    ?: readBlock(key, group.map { samples[it] }, writing, reader, language).also { read.add(it) }
+                    ?: readBlock(key, group.map { samples[it] }, reader, language)?.also { read.add(it) }
+                    ?: continue
                 if (stored.text.isBlank()) continue
                 chunks.add(
                     SearchChunk(
@@ -105,15 +105,21 @@ public class HandwritingSearchSource(
         val texts = groupStrokes(bounds).map { group ->
             val key = blockKey(group.map { writing[it].id })
             val stored = known[key]?.takeIf { it.reader == reader && it.language == language }
-                ?: readBlock(key, group.map { samples[it] }, writing, reader, language)
-            stored.text
+                ?: readBlock(key, group.map { samples[it] }, reader, language)
+            stored?.text.orEmpty()
         }.filter { it.isNotBlank() }
         return texts.joinToString("\n").ifEmpty { null }
     }
 
-    private suspend fun readBlock(key: String, samples: List<InkSample>, writing: List<StrokeData>, reader: String, language: String): StoredHandwriting {
+    /**
+     * The reading of a block, `null` when the reader stopped reading the language while it read it
+     * (PencilKit, when the application leaves the foreground): such a block is not kept, and is read
+     * when the reader comes back.
+     */
+    private suspend fun readBlock(key: String, samples: List<InkSample>, reader: String, language: String): StoredHandwriting? {
         val ink = InkSample(samples.flatMap { it.strokes })
         val read = reading.readText(ink, language)
+        if (read == null && reading.version(language) != reader) return null
         // A block read as nothing (a drawing) is kept so, not read again
         return StoredHandwriting(key, reader, language, read?.text.orEmpty(), read?.searchText.orEmpty())
     }

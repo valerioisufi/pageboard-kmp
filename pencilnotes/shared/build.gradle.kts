@@ -66,8 +66,13 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
-            // The handwriting recognizers of Windows
+            // The handwriting recognizers of Windows, and of PencilKit on macOS 27
             implementation(project(":pageboard-handwriting-windows"))
+            implementation(project(":pageboard-handwriting-pencilkit"))
+        }
+        iosMain.dependencies {
+            // The handwriting recognizer of PencilKit, on iOS and iPadOS 27
+            implementation(project(":pageboard-handwriting-pencilkit"))
         }
         androidMain.dependencies {
             // ML Kit Digital Ink Recognition

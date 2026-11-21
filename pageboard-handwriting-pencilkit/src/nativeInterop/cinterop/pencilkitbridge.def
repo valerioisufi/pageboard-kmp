@@ -1,0 +1,5 @@
+package = io.github.valerioisufi.pageboard.handwriting.pencilkit.cinterop
+headers = pencilkit_bridge.h
+headerFilter = pencilkit_bridge.h
+staticLibraries = libpencilkit_bridge.a
+linkerOpts = -L/usr/lib/swift -framework PencilKit -framework UIKit

@@ -99,6 +99,36 @@ class HandwritingSearchSourceTest {
     }
 
     @Test
+    fun aBlockMissedWhenTheReaderStopsReadingIsReadWhenItComesBack() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val document = store.createDocument("Appunti")
+        val page = document.pages.single()
+        val blocks = word(10f, 20f, 3) + word(10f, 150f, 5)
+        blocks.forEach { page.add(it) }
+        store.saveStrokes(page, blocks)
+        store.flush()
+        // Reads the first block, then stops reading (an application leaving the foreground)
+        val reader = object : TextInkRecognizer {
+            var reading = true
+            override val version: String = "fake 1"
+            override suspend fun languages() = if (reading) setOf("it") else emptySet()
+            override suspend fun recognize(ink: InkSample, language: String, context: String): InkReading? =
+                if (reading) InkReading("riga ${ink.strokes.size}").also { reading = false } else null
+        }
+        val index = SearchIndex(SearchIndex.MEMORY_PATH)
+        val source = HandwritingSearchSource(store, index, HandwritingReading(HandwritingEngines(listOf(reader))), language = { "it" })
+        val summary = store.documents.first().single()
+
+        assertEquals(listOf("riga 3"), source.chunks(summary).map { it.text })
+        assertNull(source.version(summary), "no version while the reader does not read")
+
+        // Back: the block missed is read, not kept empty
+        reader.reading = true
+        assertEquals(listOf("riga 3", "riga 5"), source.chunks(summary).map { it.text })
+        index.close()
+    }
+
+    @Test
     fun withoutAReaderOfTheLanguageThereIsNothing() = runTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val document = store.createDocument("Notes")
