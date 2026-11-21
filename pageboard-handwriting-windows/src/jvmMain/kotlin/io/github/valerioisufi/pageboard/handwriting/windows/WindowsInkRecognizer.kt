@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
  * letters of its name in English, in itself and in the language of the system.
  */
 public class WindowsInkRecognizer : TextInkRecognizer {
-    override val version: String = "Windows ink ${System.getProperty("os.version").orEmpty()}"
+    override val version: String = "$WINDOWS_READER ${System.getProperty("os.version").orEmpty()}"
 
     override suspend fun languages(): Set<String> = withContext(dispatcher) {
         val names = recognizerNames()

@@ -35,7 +35,7 @@ public class MlKitTextRecognizer(
     private val lock = Mutex()
     private val recognizers = mutableMapOf<String, DigitalInkRecognizer>()
 
-    override val version: String = "ML Kit Digital Ink $LIBRARY_VERSION"
+    override val version: String = "$MLKIT_READER $LIBRARY_VERSION"
 
     override suspend fun languages(): Set<String> = models.downloaded()
 
