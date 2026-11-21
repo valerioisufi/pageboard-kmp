@@ -12,9 +12,9 @@ runs:
       id: rust
       shell: bash
       run: echo "toolchain=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' native/iroh-bridge/rust-toolchain.toml)" >> "$GITHUB_OUTPUT"
-    - uses: docker/setup-buildx-action@v3
+    - uses: docker/setup-buildx-action@v4
     - name: The image
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: tools/screenshots
         platforms: linux/amd64
@@ -24,7 +24,7 @@ runs:
         cache-from: type=gha,scope=screenshots
         cache-to: type=gha,scope=screenshots,mode=max
     # The dependencies and the build cache (the JNI libraries of the same sources among them)
-    - uses: actions/cache@v4
+    - uses: actions/cache@v6
       with:
         path: ${{ runner.temp }}/gradle-screenshots
         key: screenshots-gradle-${{ hashFiles('gradle/**', 'build-logic/**', 'native/**', 'tools/screenshots/Dockerfile') }}
