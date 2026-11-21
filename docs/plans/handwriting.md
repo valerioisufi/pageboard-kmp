@@ -356,6 +356,18 @@ PencilNotes desktop on a scratch directory, the strokes drawn with the mouse:
   the rules, so the readings made by other rules are made again. On the blocks of the bench: 32 of
   40 split into their lines (34 before), 35 doodles left out (36), no writing left out; FILE found.
 
+### Tried by hand on an Android emulator (2026-11-21)
+
+PencilNotes debug on an emulator of a Pixel Tablet with Google Play services, the strokes drawn by
+touch through adb:
+
+* The model of English downloaded from the settings of the search ("Download (21 MB)", then
+  "Remove"); the row shows a moment after the dialog opens, once ML Kit answers.
+* "Convert to text" in the context menu of a selection (a long press on it): HELLO read and the
+  strokes replaced by the text box (one `RemoveElements` and one `AddElements` in the log).
+* FILE in block capitals, written after the fix of `InkLines`, read by ML Kit in the index of the
+  search ("FILE", with "FiLE FICE FLE..." among the other readings).
+
 ## Checks
 
 * The checks of `CLAUDE.md` at every phase; `./consumer-checks/check.sh` for the phases that add
