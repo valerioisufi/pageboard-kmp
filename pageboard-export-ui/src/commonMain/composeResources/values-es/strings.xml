@@ -30,6 +30,8 @@
     <string name="export_format_markdown_hint">El texto, con las notas de las clases</string>
     <string name="export_format_archive">Archivo</string>
     <string name="export_format_archive_hint">Todo, para importarlo de nuevo</string>
+    <string name="export_format_recordings">Grabaciones</string>
+    <string name="export_format_recordings_hint">Audio en un ZIP, con sus carpetas</string>
     <string name="import_archive_action">Importar archivo…</string>
     <string name="import_archive_done_title">Importado</string>
     <plurals name="import_archive_done">
@@ -49,6 +51,8 @@
     <string name="export_background">Líneas y cuadrícula del fondo</string>
     <string name="export_background_hint">Desactivado, solo el color del papel</string>
     <string name="export_subfolders">Incluir subcarpetas</string>
+    <string name="export_include_transcripts">Incluir transcripciones</string>
+    <string name="export_include_transcripts_hint">Guardar también la transcripción de cada clase como texto</string>
     <string name="export_file_name">Nombre del archivo</string>
     <string name="export_problem_no_notes">Aquí no hay notas para exportar</string>
     <string name="export_problem_note_missing">Esta nota ya no existe</string>

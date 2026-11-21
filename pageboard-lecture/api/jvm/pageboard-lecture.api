@@ -187,6 +187,15 @@ public final class io/github/valerioisufi/pageboard/lecture/ExportResult {
 	public final fun getFileName ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/lecture/ExportableRecording {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;JZLjava/lang/String;)V
+	public final fun getDirectory ()Ljava/lang/String;
+	public final fun getHasAudio ()Z
+	public final fun getStartedAt ()J
+	public final fun getTranscript ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/lecture/GenerationLock {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/lecture/GenerationLock$Companion;
@@ -340,6 +349,10 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureArrival$Kind 
 	public static fun values ()[Lio/github/valerioisufi/pageboard/lecture/LectureArrival$Kind;
 }
 
+public final class io/github/valerioisufi/pageboard/lecture/LectureArrivalsKt {
+	public static final fun formatRecordingTimestamp (J)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public static final field $stable I
 	public fun <init> ()V
@@ -357,6 +370,7 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun declineGeneration (Lio/github/valerioisufi/pageboard/lecture/GenerationOffer;)V
 	public final fun delete (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/LectureSummary;)V
 	public final fun dismissArrival (Lio/github/valerioisufi/pageboard/lecture/LectureArrival;)V
+	public final fun dismissExportResult (Lio/github/valerioisufi/pageboard/lecture/ExportResult;)V
 	public final fun editContext (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun editorNotebook (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lio/github/valerioisufi/pageboard/lecture/NotebookSource;
 	public final fun estimateTextNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -364,6 +378,7 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun exportTranscript (Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun exportTranscript$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lio/github/valerioisufi/pageboard/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun exportableRecordings (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun finishRecording (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun forgetDocuments (Ljava/util/Set;)V
 	public final fun generate (Lio/github/valerioisufi/pageboard/lecture/Lecture;Lio/github/valerioisufi/pageboard/lecture/ModelProvider;)Z
@@ -380,7 +395,10 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun getDeviceModels ()Lio/github/valerioisufi/pageboard/lecture/DeviceModels;
 	public final fun getDocumentsWithLectures ()Ljava/util/Set;
 	public final fun getExportExtension ()Ljava/lang/String;
+	public final fun getExportProgress ()Ljava/lang/Float;
 	public final fun getExportResult ()Lio/github/valerioisufi/pageboard/lecture/ExportResult;
+	public final fun getExportResults ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
+	public final fun getExportingFileName ()Ljava/lang/String;
 	public final fun getGenerationOffers ()Landroidx/compose/runtime/snapshots/SnapshotStateList;
 	public final fun getHandwritingLanguage ()Ljava/lang/String;
 	public final fun getHandwritingReading ()Lio/github/valerioisufi/pageboard/handwriting/HandwritingReading;
@@ -391,6 +409,7 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun getMayGenerate ()Z
 	public final fun getMicrophoneDenied ()Z
 	public final fun getPlacingNote ()Lio/github/valerioisufi/pageboard/lecture/NoteSuggestion;
+	public final fun getQueuedExports ()I
 	public final fun getRecorder ()Lio/github/valerioisufi/pageboard/lecture/LectureRecorder;
 	public final fun getRequestMicrophone ()Lkotlin/jvm/functions/Function1;
 	public final fun getSettingsStore ()Lio/github/valerioisufi/pageboard/lecture/AssistantSettingsStore;
@@ -432,6 +451,8 @@ public final class io/github/valerioisufi/pageboard/lecture/LectureAssistant {
 	public final fun textNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun writeContext (Ljava/lang/String;Z)V
 	public static synthetic fun writeContext$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Ljava/lang/String;ZILjava/lang/Object;)V
+	public final fun writeRecordingAudio (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun writeRecordingAudio$default (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/lecture/LectureLibrary {

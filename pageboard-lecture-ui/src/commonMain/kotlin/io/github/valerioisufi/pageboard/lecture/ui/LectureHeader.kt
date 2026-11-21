@@ -136,7 +136,6 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                         icon = rememberVectorPainter(PageboardIcons.Download),
                         onClick = {
                             expanded = false
-                            assistant.clearImportAndExportMessages()
                             exported[0] = lecture
                             saveRecording("${exportName()}.${assistant.exportExtension}")
                         }
@@ -148,7 +147,6 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
                         icon = rememberVectorPainter(PageboardIcons.FileText),
                         onClick = {
                             expanded = false
-                            assistant.clearImportAndExportMessages()
                             exported[0] = lecture
                             saveTranscript("${exportName()}.${assistant.transcriptExportExtension}")
                         }
@@ -183,14 +181,40 @@ internal fun LectureHeader(assistant: LectureAssistant, documentId: String, lect
         }
     }
 
-    assistant.exportResult?.let { result ->
+    assistant.exportingFileName?.let { fileName ->
+        val progress = assistant.exportProgress
+        val queued = assistant.queuedExports
+        val title = stringResource(Res.string.lecture_export_running, fileName)
+        val text = if (queued > 0) "$title · ${stringResource(Res.string.lecture_export_queued, queued)}" else title
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(PageboardIcons.Download, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+            }
+            val track = MaterialTheme.colorScheme.surfaceContainerHighest
+            if (progress == null) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp)
+            } else {
+                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp, drawStopIndicator = {})
+            }
+        }
+    }
+
+    assistant.exportResults.forEach { result ->
         val isTranscript = result.fileName.endsWith(".${assistant.transcriptExportExtension}", ignoreCase = true)
+        val closeAction = stringResource(Res.string.lecture_action_close) to { assistant.dismissExportResult(result) }
         if (result.failure == null) {
             val message = if (isTranscript) Res.string.lecture_export_transcript_done else Res.string.lecture_export_done
-            LectureNotice(PageboardIcons.Download, stringResource(message, result.fileName), NoticeTone.Neutral)
+            LectureNotice(PageboardIcons.Download, stringResource(message, result.fileName), NoticeTone.Neutral, action = closeAction)
         } else {
             val message = if (isTranscript) Res.string.lecture_export_transcript_failed else Res.string.lecture_export_failed
-            LectureNotice(PageboardIcons.TriangleAlert, stringResource(message, result.failure.orEmpty()), NoticeTone.Error)
+            LectureNotice(PageboardIcons.TriangleAlert, stringResource(message, result.failure.orEmpty()), NoticeTone.Error, action = closeAction)
         }
     }
 

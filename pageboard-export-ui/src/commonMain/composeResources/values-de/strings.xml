@@ -30,6 +30,8 @@
     <string name="export_format_markdown_hint">Der Text, mit den Notizen der Vorlesungen</string>
     <string name="export_format_archive">Archiv</string>
     <string name="export_format_archive_hint">Alles, um es wieder zu importieren</string>
+    <string name="export_format_recordings">Aufnahmen</string>
+    <string name="export_format_recordings_hint">Audio in einer ZIP, mit ihren Ordnern</string>
     <string name="import_archive_action">Archiv importieren…</string>
     <string name="import_archive_done_title">Importiert</string>
     <plurals name="import_archive_done">
@@ -49,6 +51,8 @@
     <string name="export_background">Linien und Raster des Hintergrunds</string>
     <string name="export_background_hint">Wenn aus, nur die Farbe des Papiers</string>
     <string name="export_subfolders">Unterordner einbeziehen</string>
+    <string name="export_include_transcripts">Transkripte einschließen</string>
+    <string name="export_include_transcripts_hint">Auch das Transkript jeder Vorlesung als Text speichern</string>
     <string name="export_file_name">Dateiname</string>
     <string name="export_problem_no_notes">Hier gibt es keine Notizen zum Exportieren</string>
     <string name="export_problem_note_missing">Diese Notiz existiert nicht mehr</string>

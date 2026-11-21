@@ -275,4 +275,6 @@
     <string name="lecture_device_cancel">Cancel the download</string>
     <string name="lecture_markdown_lectures">Lectures</string>
     <string name="lecture_markdown_lecture">Lecture of %1$s (%2$s)</string>
+    <string name="lecture_export_running">Exporting %1$s…</string>
+    <string name="lecture_export_queued">%1$d waiting</string>
 </resources>

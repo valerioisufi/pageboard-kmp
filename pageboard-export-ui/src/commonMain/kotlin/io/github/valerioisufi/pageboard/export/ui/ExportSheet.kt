@@ -51,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.export.DocumentExport
+import io.github.valerioisufi.pageboard.export.DocumentRecordings
 import io.github.valerioisufi.pageboard.export.ExportFormat
 import io.github.valerioisufi.pageboard.export.ExportJobs
 import io.github.valerioisufi.pageboard.export.ExportRequest
@@ -60,6 +61,10 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_for
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_markdown
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_archive
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_archive_hint
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_recordings
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_format_recordings_hint
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_include_transcripts
+import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_include_transcripts_hint
 import io.github.valerioisufi.pageboard.export.MarkdownExporter
 import io.github.valerioisufi.pageboard.export.MarkdownAppendix
 import io.github.valerioisufi.pageboard.export.PageImageExporter
@@ -134,7 +139,8 @@ internal fun ExportSheet(
     appName: String?,
     thumbnail: (suspend () -> ImageBitmap?)?,
     onDismiss: () -> Unit,
-    markdownAppendix: MarkdownAppendix? = null
+    markdownAppendix: MarkdownAppendix? = null,
+    recordings: DocumentRecordings? = null
 ) {
     LaunchedEffect(state, state.includeSubfolders) {
         state.contents = export.resolve(state.scope, state.includeSubfolders)
@@ -158,7 +164,8 @@ internal fun ExportSheet(
                 writers = ExportWriters(
                     pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName, elements = engines.elements, formulas = engines.formulas),
                     image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images),
-                    markdown = MarkdownExporter(markdownAppendix)
+                    markdown = MarkdownExporter(markdownAppendix),
+                    recordings = recordings
                 ),
                 path = target.path,
                 fileName = state.fileName(fallbackName),
@@ -257,8 +264,8 @@ internal fun ExportSheetContent(
         }
 
         val pageChoices = state.pageChoices
-        // An archive holds the whole note
-        if (state.isSingleDocument && pageChoices.size > 1 && state.format != ExportFormat.ARCHIVE) {
+        // An archive and recordings hold the whole note
+        if (state.isSingleDocument && pageChoices.size > 1 && state.format != ExportFormat.ARCHIVE && state.format != ExportFormat.RECORDINGS) {
             Label(Res.string.export_pages)
             ChipRow {
                 for (choice in pageChoices) {
@@ -294,13 +301,21 @@ internal fun ExportSheetContent(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        // The paper is drawn on the pages, not in a text
-        if (state.format != ExportFormat.MARKDOWN && state.format != ExportFormat.ARCHIVE) {
+        // The paper is drawn on the pages, not in a text or audio recordings
+        if (state.format != ExportFormat.MARKDOWN && state.format != ExportFormat.ARCHIVE && state.format != ExportFormat.RECORDINGS) {
             SwitchRow(
                 text = stringResource(Res.string.export_background),
                 hint = stringResource(Res.string.export_background_hint),
                 checked = state.backgroundPattern,
                 onCheckedChange = { state.backgroundPattern = it }
+            )
+        }
+        if (state.format == ExportFormat.RECORDINGS) {
+            SwitchRow(
+                text = stringResource(Res.string.export_include_transcripts),
+                hint = stringResource(Res.string.export_include_transcripts_hint),
+                checked = state.includeTranscripts,
+                onCheckedChange = { state.includeTranscripts = it }
             )
         }
         if (state.hasFolders) {
@@ -411,6 +426,7 @@ private fun formatTexts(format: ExportFormat, pages: Int): Pair<StringResource, 
     ExportFormat.COMBINED_PDF -> Res.string.export_format_combined to Res.string.export_format_combined_hint
     ExportFormat.MARKDOWN -> Res.string.export_format_markdown to Res.string.export_format_markdown_hint
     ExportFormat.ARCHIVE -> Res.string.export_format_archive to Res.string.export_format_archive_hint
+    ExportFormat.RECORDINGS -> Res.string.export_format_recordings to Res.string.export_format_recordings_hint
 }
 
 private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
@@ -420,6 +436,7 @@ private fun formatIcon(format: ExportFormat): ImageVector = when (format) {
     ExportFormat.COMBINED_PDF -> PageboardIcons.BookOpen
     ExportFormat.MARKDOWN -> PageboardIcons.Hash
     ExportFormat.ARCHIVE -> PageboardIcons.Layers
+    ExportFormat.RECORDINGS -> PageboardIcons.Mic
 }
 
 /** The label of a group of choices. */

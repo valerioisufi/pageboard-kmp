@@ -85,4 +85,50 @@ class ExportSheetStateTest {
         assertEquals(false, next.backgroundPattern)
         assertEquals(ExportFormat.PDF_PER_DOCUMENT, ExportSheetState(ExportScope.Folder(null), preferences).format)
     }
+
+    @Test
+    fun recordingsFormatIsOfferedOnlyWhenSupportedAndPersistsTranscriptChoice() {
+        val withoutRecordings = ExportSheetState(ExportScope.Pages("lecture"), ExportPreferences(), hasRecordings = false)
+        assertEquals(
+            listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN, ExportFormat.ARCHIVE),
+            withoutRecordings.formats
+        )
+
+        val preferences = ExportPreferences()
+        val singleWithRecordings = ExportSheetState(
+            ExportScope.Pages("lecture"),
+            preferences,
+            hasRecordings = true
+        ).apply {
+            contents = ExportContents(scope, "Lecture 1", listOf(FolderDocumentItem(summary("Lecture 1", 4), "Lecture 1.pdf")), 4)
+        }
+        assertEquals(
+            listOf(ExportFormat.PDF, ExportFormat.IMAGES, ExportFormat.MARKDOWN, ExportFormat.ARCHIVE, ExportFormat.RECORDINGS),
+            singleWithRecordings.formats
+        )
+
+        // Invalid page range does not block RECORDINGS export
+        singleWithRecordings.pages = PageChoice.RANGE
+        singleWithRecordings.range = "bad"
+        assertEquals(ExportProblem.INVALID_RANGE, singleWithRecordings.problem)
+        singleWithRecordings.format = ExportFormat.RECORDINGS
+        assertNull(singleWithRecordings.problem)
+        assertEquals("Lecture 1.zip", singleWithRecordings.fileName("Notes"))
+        assertEquals("application/zip", singleWithRecordings.mimeType)
+
+        singleWithRecordings.includeTranscripts = true
+        singleWithRecordings.remember()
+        assertEquals(true, singleWithRecordings.options().includeTranscripts)
+
+        val folderWithRecordings = ExportSheetState(ExportScope.Folder(null), preferences, hasRecordings = true)
+        assertEquals(
+            listOf(ExportFormat.PDF_PER_DOCUMENT, ExportFormat.COMBINED_PDF, ExportFormat.ARCHIVE, ExportFormat.RECORDINGS),
+            folderWithRecordings.formats
+        )
+        assertEquals(true, folderWithRecordings.includeTranscripts)
+
+        // Saved RECORDINGS choice falls back to the default format when recordings are unavailable
+        val fallbackSingle = ExportSheetState(ExportScope.Pages("lecture"), preferences, hasRecordings = false)
+        assertEquals(ExportFormat.PDF, fallbackSingle.format)
+    }
 }

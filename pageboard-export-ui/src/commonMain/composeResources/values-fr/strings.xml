@@ -30,6 +30,8 @@
     <string name="export_format_markdown_hint">Le texte, avec les notes des cours</string>
     <string name="export_format_archive">Archive</string>
     <string name="export_format_archive_hint">Tout, pour l’importer à nouveau</string>
+    <string name="export_format_recordings">Enregistrements</string>
+    <string name="export_format_recordings_hint">Audio dans un ZIP, avec leurs dossiers</string>
     <string name="import_archive_action">Importer une archive…</string>
     <string name="import_archive_done_title">Importé</string>
     <plurals name="import_archive_done">
@@ -49,6 +51,8 @@
     <string name="export_background">Lignes et quadrillage du fond</string>
     <string name="export_background_hint">Désactivé, seulement la couleur du papier</string>
     <string name="export_subfolders">Inclure les sous-dossiers</string>
+    <string name="export_include_transcripts">Inclure les transcriptions</string>
+    <string name="export_include_transcripts_hint">Enregistrer aussi la transcription de chaque cours en texte</string>
     <string name="export_file_name">Nom du fichier</string>
     <string name="export_problem_no_notes">Il n’y a pas de notes à exporter ici</string>
     <string name="export_problem_note_missing">Cette note n’existe plus</string>

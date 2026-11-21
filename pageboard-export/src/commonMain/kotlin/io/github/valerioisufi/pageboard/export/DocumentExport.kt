@@ -5,7 +5,12 @@ import io.github.valerioisufi.pageboard.platform.newResourcePath
 import io.github.valerioisufi.pageboard.store.DocumentSummary
 import io.github.valerioisufi.pageboard.store.FolderSummary
 import io.github.valerioisufi.pageboard.store.OpenDocuments
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
+import kotlinx.io.files.Path
 
 /**
  * The use case "export a document" (the Controller of the export): copies the content of the
@@ -179,6 +184,7 @@ public class DocumentExport(private val documents: OpenDocuments) {
             ExportFormat.COMBINED_PDF -> exportCombined(contents, options, writers, path, progress)
             ExportFormat.MARKDOWN -> exportMarkdown(contents, options, writers, path, progress)
             ExportFormat.ARCHIVE -> exportArchive(contents, path, progress)
+            ExportFormat.RECORDINGS -> exportRecordings(contents, options, writers, path, progress)
         }
     }
 
@@ -294,7 +300,9 @@ public class DocumentExport(private val documents: OpenDocuments) {
                         skippedIn += name
                     }
                     val bytes = PlatformFiles.readBytes(temp) ?: throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot read $temp")
-                    addDirectories(zip, directorySegments(item.relativePath), contents.folders, directories)
+                    addDirectories(directorySegments(item.relativePath), contents.folders, directories) { dir, dirTimes ->
+                        zip.addDirectory(dir, dirTimes)
+                    }
                     zip.addEntry(item.relativePath, bytes, entryTimes(item.summary))
                     PlatformFiles.delete(temp)
                 }
@@ -305,6 +313,118 @@ public class DocumentExport(private val documents: OpenDocuments) {
         write(path, zip.toByteArray())
         progress(ExportProgress(1f, items.size, items.size, null))
         return ExportOutcome(items.size - missing.size, pages, skipped, skippedIn, missing)
+    }
+
+    /** The finished lecture recordings of [contents] as `.m4a` files (and optional transcripts), in a ZIP keeping their folders. */
+    private suspend fun exportRecordings(
+        contents: ExportContents,
+        options: ExportOptions,
+        writers: ExportWriters,
+        path: String,
+        progress: (ExportProgress) -> Unit
+    ): ExportOutcome {
+        val source = writers.recordings ?: throw ExportException(ExportFailure.NOTHING_TO_EXPORT)
+        val items = contents.documents.sortedWith(compareBy(DirectoryOrder) { directorySegments(it.relativePath) })
+        val entriesByItem = mutableListOf<Pair<FolderDocumentItem, List<ExportedRecording>>>()
+        for (item in items) {
+            currentCoroutineContext().ensureActive()
+            val recordings = source.of(item.summary.id)
+            if (recordings.isNotEmpty()) entriesByItem += item to recordings
+        }
+        val totalSteps = entriesByItem.sumOf { (_, recordings) ->
+            recordings.count { it.hasAudio || (options.includeTranscripts && !it.transcript.isNullOrBlank()) }
+        }
+        if (totalSteps == 0) throw ExportException(ExportFailure.NOTHING_TO_EXPORT)
+
+        val zip = try {
+            StreamingZipWriter(Path(path))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val failure = ExportFailure.of(e).takeIf { it != ExportFailure.UNKNOWN } ?: ExportFailure.NOT_WRITABLE
+            throw ExportException(failure, "Cannot write $path", e)
+        }
+        val addedDirectories = mutableSetOf<String>()
+        val usedPaths = mutableSetOf<String>()
+        val exportedDocIds = mutableSetOf<String>()
+        var skipped = 0
+        val skippedIn = LinkedHashSet<String>()
+        var completed = 0
+        try {
+            for ((item, recordings) in entriesByItem) {
+                val dirSegments = directorySegments(item.relativePath)
+                val noteBase = item.relativePath.substringAfterLast('/').removeSuffix(".pdf")
+                val dirPrefix = if (dirSegments.isEmpty()) "" else dirSegments.joinToString("/") + "/"
+                for (rec in recordings) {
+                    currentCoroutineContext().ensureActive()
+                    val dot = rec.fileName.lastIndexOf('.')
+                    val rawStem = if (dot > 0) rec.fileName.substring(0, dot) else rec.fileName
+                    val audioExt = if (dot > 0) rec.fileName.substring(dot + 1).ifBlank { "m4a" } else "m4a"
+                    val recStem = sanitizeFileName(rawStem)
+                    val txtExt = rec.transcriptFileName?.substringAfterLast('.', "")?.ifBlank { "txt" } ?: "txt"
+
+                    val baseStem = "$dirPrefix$noteBase - $recStem"
+                    var stem = baseStem
+                    var counter = 2
+                    while ("$stem.$audioExt" in usedPaths || "$stem.$txtExt" in usedPaths) {
+                        stem = "$baseStem ($counter)"
+                        counter++
+                    }
+
+                    val times = ZipEntryTimes(rec.recordedAt, rec.recordedAt)
+                    if (rec.hasAudio) {
+                        val temp = newResourcePath("export_recording", audioExt)
+                        try {
+                            progress(ExportProgress(completed.toFloat() / totalSteps, completed + 1, totalSteps, item.summary.name))
+                            rec.writeAudio(temp) { fraction ->
+                                progress(
+                                    ExportProgress(
+                                        (completed + fraction.coerceIn(0f, 1f)) / totalSteps,
+                                        completed + 1,
+                                        totalSteps,
+                                        item.summary.name
+                                    )
+                                )
+                            }
+                            addDirectories(dirSegments, contents.folders, addedDirectories) { dir, dirTimes ->
+                                zip.addDirectory(dir, dirTimes)
+                            }
+                            val context = currentCoroutineContext()
+                            zip.addFile("$stem.$audioExt", Path(temp), times) {
+                                if (!context.isActive) throw CancellationException("Export cancelled")
+                            }
+                            usedPaths += "$stem.$audioExt"
+                            exportedDocIds += item.summary.id
+                            completed++
+                        } finally {
+                            PlatformFiles.delete(temp)
+                        }
+                    } else {
+                        skipped++
+                        skippedIn += item.summary.name
+                    }
+                    val transcript = rec.transcript
+                    if (options.includeTranscripts && !transcript.isNullOrBlank()) {
+                        addDirectories(dirSegments, contents.folders, addedDirectories) { dir, dirTimes ->
+                            zip.addDirectory(dir, dirTimes)
+                        }
+                        zip.addEntry("$stem.$txtExt", transcript.encodeToByteArray(), times)
+                        usedPaths += "$stem.$txtExt"
+                        exportedDocIds += item.summary.id
+                        if (!rec.hasAudio) {
+                            completed++
+                            progress(ExportProgress(completed.toFloat() / totalSteps, completed, totalSteps, item.summary.name))
+                        }
+                    }
+                }
+            }
+            zip.finish()
+        } catch (e: Throwable) {
+            zip.cancel()
+            throw e
+        }
+        progress(ExportProgress(1f, totalSteps, totalSteps, null))
+        return ExportOutcome(documents = exportedDocIds.size, pages = 0, skipped = skipped, skippedIn = skippedIn.toList())
     }
 
     /** The notes of [contents] one after the other in one PDF. */
@@ -334,13 +454,18 @@ public class DocumentExport(private val documents: OpenDocuments) {
     }
 
     /**
-     * Adds to [zip] the directories of [segments] not [added] yet, parents first, dated by the
-     * [folders] they stand for.
+     * Adds through [onDirectory] the directories of [segments] not [added] yet, parents first,
+     * dated by the [folders] they stand for.
      */
-    private fun addDirectories(zip: ZipWriter, segments: List<String>, folders: Map<String, FolderSummary>, added: MutableSet<String>) {
+    private inline fun addDirectories(
+        segments: List<String>,
+        folders: Map<String, FolderSummary>,
+        added: MutableSet<String>,
+        onDirectory: (path: String, times: ZipEntryTimes?) -> Unit
+    ) {
         for (depth in 1..segments.size) {
             val path = segments.subList(0, depth).joinToString("/")
-            if (added.add(path)) zip.addDirectory(path, folders[path]?.let { ZipEntryTimes(it.modifiedAt, it.createdAt) })
+            if (added.add(path)) onDirectory(path, folders[path]?.let { ZipEntryTimes(it.modifiedAt, it.createdAt) })
         }
     }
 

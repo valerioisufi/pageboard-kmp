@@ -28,6 +28,8 @@
     <string name="export_format_markdown_hint">텍스트와 강의 노트</string>
     <string name="export_format_archive">보관 파일</string>
     <string name="export_format_archive_hint">다시 가져올 수 있도록 전부</string>
+    <string name="export_format_recordings">녹음</string>
+    <string name="export_format_recordings_hint">오디오를 ZIP으로, 폴더 구조 유지</string>
     <string name="import_archive_action">보관 파일 가져오기…</string>
     <string name="import_archive_done_title">가져옴</string>
     <plurals name="import_archive_done">
@@ -46,6 +48,8 @@
     <string name="export_background">배경의 줄과 격자</string>
     <string name="export_background_hint">끄면 종이 색만</string>
     <string name="export_subfolders">하위 폴더 포함</string>
+    <string name="export_include_transcripts">전사본 포함</string>
+    <string name="export_include_transcripts_hint">각 강의의 전사본도 텍스트로 저장</string>
     <string name="export_file_name">파일 이름</string>
     <string name="export_problem_no_notes">여기에는 내보낼 노트가 없습니다</string>
     <string name="export_problem_note_missing">이 노트는 더 이상 존재하지 않습니다</string>

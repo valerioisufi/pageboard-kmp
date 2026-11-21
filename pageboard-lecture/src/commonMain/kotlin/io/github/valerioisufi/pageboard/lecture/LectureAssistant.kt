@@ -1,12 +1,14 @@
 package io.github.valerioisufi.pageboard.lecture
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.github.valerioisufi.pageboard.lecture.audio.AudioCapture
 import io.github.valerioisufi.pageboard.lecture.audio.AudioOutput
+import io.github.valerioisufi.pageboard.lecture.audio.RecordingFile
 import io.github.valerioisufi.pageboard.lecture.audio.createAudioCapture
 import io.github.valerioisufi.pageboard.lecture.audio.createAudioOutput
 import io.github.valerioisufi.pageboard.lecture.audio.exportRecording
@@ -21,14 +23,19 @@ import io.github.valerioisufi.pageboard.lecture.transcription.Transcriber
 import io.github.valerioisufi.pageboard.lecture.transcription.WhisperTranscriber
 import io.github.valerioisufi.pageboard.model.DocumentAttachments
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
@@ -127,9 +134,29 @@ public class LectureAssistant(
     /** Why the last import failed (the file is not audio), if it did. */
     public val importError: String? get() = work.importError
 
-    /** The last export of an audio. */
-    public var exportResult: ExportResult? by mutableStateOf(null)
+    /** Completed exports (succeeded or failed), oldest first, until dismissed. */
+    public val exportResults: SnapshotStateList<ExportResult> = mutableStateListOf()
+
+    /** The last completed export of an audio or transcript, if any. */
+    public val exportResult: ExportResult? get() = exportResults.lastOrNull()
+
+    /** The file currently being exported, or `null` when idle. */
+    public var exportingFileName: String? by mutableStateOf(null)
         private set
+
+    /** Progress (0..1) of the active audio export, or `null` when indeterminate or idle. */
+    public var exportProgress: Float? by mutableStateOf(null)
+        private set
+
+    /** Number of exports waiting behind the active export. */
+    public var queuedExports: Int by mutableIntStateOf(0)
+        private set
+
+    private val exportQueue = Mutex()
+    private val exportingDirsLock = Mutex()
+    private val exportingDirCounts = mutableMapOf<String, Int>()
+    @Volatile
+    private var activeExportDirs: Set<String> = emptySet()
 
     /** Why the last recording could not start, if it could not. */
     public var startError: String? by mutableStateOf(null)
@@ -597,18 +624,16 @@ public class LectureAssistant(
 
     /** The audio of [lecture] saved at [path], as m4a, then given to [deliver] (e.g. where the student chose). */
     public fun exportAudio(lecture: Lecture, path: String, deliver: suspend (written: String) -> Unit = {}) {
-        exportResult = null
-        scope.launch {
-            val result = try {
-                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, path) }
-                deliver(saved)
-                ExportResult(Path(saved).name, failure = null)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
+        enqueueExport(lecture.directory, path, initialProgress = 0f, deliver = deliver) { isRunning ->
+            withContext(Dispatchers.IO) {
+                exportRecording(
+                    lecture.recording,
+                    path,
+                    onProgress = { progress ->
+                        scope.launch(stateContext) { if (isRunning()) exportProgress = progress }
+                    }
+                )
             }
-            withContext(stateContext) { exportResult = result }
         }
     }
 
@@ -617,19 +642,122 @@ public class LectureAssistant(
 
     /** The transcript of [lecture] saved at [path], as a text file, then given to [deliver] (e.g. where the student chose). */
     public fun exportTranscript(lecture: Lecture, path: String, deliver: suspend (written: String) -> Unit = {}) {
-        exportResult = null
+        enqueueExport(lecture.directory, path, initialProgress = null, deliver = deliver) {
+            val segments = withContext(stateContext) { lecture.transcript.toList() }
+            withContext(Dispatchers.IO) { exportTranscript(segments, path) }
+        }
+    }
+
+    private fun enqueueExport(
+        directory: String,
+        path: String,
+        initialProgress: Float?,
+        deliver: suspend (written: String) -> Unit,
+        write: suspend (isRunning: () -> Boolean) -> String
+    ) {
         scope.launch {
-            val result = try {
-                val segments = withContext(stateContext) { lecture.transcript.toList() }
-                val saved = withContext(Dispatchers.IO) { exportTranscript(segments, path) }
-                deliver(saved)
-                ExportResult(Path(saved).name, failure = null)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
+            withContext(stateContext) { queuedExports++ }
+            var decremented = false
+            try {
+                exportQueue.withLock {
+                    var active = true
+                    withContext(stateContext) {
+                        queuedExports = (queuedExports - 1).coerceAtLeast(0)
+                        decremented = true
+                        exportingFileName = Path(path).name
+                        exportProgress = initialProgress
+                    }
+                    try {
+                        val result = try {
+                            val saved = withExportingDirectory(directory) { write { active } }
+                            deliver(saved)
+                            ExportResult(Path(saved).name, failure = null)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Throwable) {
+                            ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
+                        }
+                        withContext(stateContext) { exportResults.add(result) }
+                    } finally {
+                        withContext(NonCancellable + stateContext) {
+                            active = false
+                            exportingFileName = null
+                            exportProgress = null
+                        }
+                    }
+                }
+            } finally {
+                if (!decremented) {
+                    withContext(NonCancellable + stateContext) {
+                        queuedExports = (queuedExports - 1).coerceAtLeast(0)
+                    }
+                }
             }
-            withContext(stateContext) { exportResult = result }
+        }
+    }
+
+    private suspend fun <T> withExportingDirectory(directory: String, block: suspend () -> T): T {
+        exportingDirsLock.withLock {
+            exportingDirCounts[directory] = (exportingDirCounts[directory] ?: 0) + 1
+            activeExportDirs = exportingDirCounts.keys.toSet()
+        }
+        return try {
+            block()
+        } finally {
+            withContext(NonCancellable) {
+                exportingDirsLock.withLock {
+                    val remaining = (exportingDirCounts[directory] ?: 1) - 1
+                    if (remaining <= 0) exportingDirCounts.remove(directory) else exportingDirCounts[directory] = remaining
+                    activeExportDirs = exportingDirCounts.keys.toSet()
+                }
+            }
+        }
+    }
+
+    /**
+     * Finished lectures of [documentId] (the oldest first) whose audio or transcript can be
+     * exported in bulk: excludes lectures still recording, active elsewhere, or currently in the
+     * transcription queue here.
+     */
+    public suspend fun exportableRecordings(documentId: String): List<ExportableRecording> {
+        val active = withContext(stateContext) {
+            transcribing.mapTo(mutableSetOf()) { it.directory }.apply {
+                activeRecorder?.lecture?.directory?.let(::add)
+            }
+        }
+        return withContext(Dispatchers.IO) {
+            library.list(documentId)
+                .filter { !it.wasRecording && !it.activeElsewhere && it.directory !in active }
+                .sortedBy { it.startedAt }
+                .mapNotNull { summary ->
+                    val record = library.readRecord(summary.directory) ?: return@mapNotNull null
+                    val hasAudio = RecordingFile(summary.directory).let { it.exists && it.samples() > 0 }
+                    val transcript = record.transcript.takeIf { it.isNotEmpty() }?.let(::formatTranscript)
+                    ExportableRecording(
+                        directory = summary.directory,
+                        startedAt = summary.startedAt,
+                        hasAudio = hasAudio,
+                        transcript = transcript
+                    )
+                }
+        }
+    }
+
+    /**
+     * Encodes the recording saved in [directory] into [target] as m4a, reporting [progress] (0..1)
+     * and honoring coroutine cancellation while keeping [directory] protected from deletion.
+     */
+    public suspend fun writeRecordingAudio(directory: String, target: String, progress: (Float) -> Unit = {}) {
+        withExportingDirectory(directory) {
+            withContext(Dispatchers.IO) {
+                val context = currentCoroutineContext()
+                exportRecording(
+                    RecordingFile(directory),
+                    target,
+                    onProgress = progress,
+                    isCancelled = { !context.isActive }
+                )
+            }
         }
     }
 
@@ -643,17 +771,27 @@ public class LectureAssistant(
     public suspend fun markdownOf(documentId: String, labels: LectureMarkdown.Labels, date: (Long) -> String): String =
         withContext(Dispatchers.IO) { LectureMarkdown.write(library.records(documentId), labels, date) }
 
+    /** Dismisses [result] from [exportResults]. */
+    public fun dismissExportResult(result: ExportResult) {
+        exportResults.remove(result)
+    }
+
     public fun clearImportAndExportMessages() {
         work.importError = null
-        exportResult = null
+        exportResults.clear()
     }
 
     /**
      * Deletes the lecture [summary] (audio included), here and on the devices working on the
-     * notebook; not the one being recorded (here or elsewhere).
+     * notebook; not the one being recorded (here or elsewhere), nor one currently being exported.
      */
     public fun delete(documentId: String, summary: LectureSummary) {
-        if (activeRecorder?.lecture?.directory == summary.directory || transcribing.any { it.directory == summary.directory } || summary.activeElsewhere) return
+        if (
+            activeRecorder?.lecture?.directory == summary.directory ||
+            transcribing.any { it.directory == summary.directory } ||
+            summary.directory in activeExportDirs ||
+            summary.activeElsewhere
+        ) return
         if (lectures.shown[documentId]?.directory == summary.directory) {
             lectures.shown[documentId]?.stopPlayback()
             lectures.shown.remove(documentId)

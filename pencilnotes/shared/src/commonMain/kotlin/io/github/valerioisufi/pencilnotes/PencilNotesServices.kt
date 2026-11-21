@@ -4,13 +4,16 @@ import androidx.compose.runtime.snapshotFlow
 import io.github.valerioisufi.pageboard.canvas.controller.PageTopics
 import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.ImageCache
+import io.github.valerioisufi.pageboard.export.DocumentRecordings
+import io.github.valerioisufi.pageboard.export.ExportedRecording
+import io.github.valerioisufi.pageboard.export.MarkdownAppendix
 import io.github.valerioisufi.pageboard.export.ui.DocumentExportUi
 import io.github.valerioisufi.pageboard.latex.LatexEngine
 import io.github.valerioisufi.pageboard.lecture.DeviceModels
 import io.github.valerioisufi.pageboard.lecture.LectureAssistant
+import io.github.valerioisufi.pageboard.lecture.formatRecordingTimestamp
 import io.github.valerioisufi.pageboard.lecture.ui.createLectureAssistant
 import io.github.valerioisufi.pageboard.lecture.ui.markdownInLanguage
-import io.github.valerioisufi.pageboard.export.MarkdownAppendix
 import io.github.valerioisufi.pageboard.lecture.ui.documentTag
 import io.github.valerioisufi.pageboard.lecture.ui.editorExtension
 import io.github.valerioisufi.pageboard.lecture.ui.onlineAnswerBackend
@@ -81,7 +84,20 @@ object PencilNotesServices {
     val export: DocumentExportUi = DocumentExportUi(
         PencilNotesData.documents,
         appName = "PencilNotes",
-        markdownAppendix = MarkdownAppendix { documentId -> lectureAssistant.markdownInLanguage(documentId) }
+        markdownAppendix = MarkdownAppendix { documentId -> lectureAssistant.markdownInLanguage(documentId) },
+        recordings = DocumentRecordings { documentId ->
+            lectureAssistant.exportableRecordings(documentId).map { rec ->
+                val stem = formatRecordingTimestamp(rec.startedAt)
+                ExportedRecording(
+                    fileName = "$stem.${lectureAssistant.exportExtension}",
+                    recordedAt = rec.startedAt,
+                    hasAudio = rec.hasAudio,
+                    transcriptFileName = rec.transcript?.let { "$stem.${lectureAssistant.transcriptExportExtension}" },
+                    transcript = rec.transcript,
+                    writeAudio = { path, progress -> lectureAssistant.writeRecordingAudio(rec.directory, path, progress) }
+                )
+            }
+        }
     )
 
     /**

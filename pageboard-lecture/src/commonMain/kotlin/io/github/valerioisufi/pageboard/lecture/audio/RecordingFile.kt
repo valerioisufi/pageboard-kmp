@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture.audio
 
+import kotlin.concurrent.Volatile
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -20,6 +21,7 @@ internal class RecordingFile(directory: String) {
     private var writer: OggOpusWriter? = null
 
     /** The pages of the file (by its size: the new ones read when it grew). */
+    @Volatile
     private var index: PageIndex? = null
 
     /** Starts a new recording (written as it goes). */

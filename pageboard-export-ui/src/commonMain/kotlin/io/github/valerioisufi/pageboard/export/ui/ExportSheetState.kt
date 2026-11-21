@@ -26,6 +26,7 @@ internal class ExportPreferences {
     var multipleFormat: ExportFormat = ExportFormat.PDF_PER_DOCUMENT
     var backgroundPattern: Boolean = true
     var includeSubfolders: Boolean = true
+    var includeTranscripts: Boolean = false
 }
 
 /**
@@ -45,13 +46,19 @@ internal class ExportSheetState(
     val scope: ExportScope,
     private val preferences: ExportPreferences,
     val pageOnScreen: PageOnScreen? = null,
-    val selectedPages: Set<String> = emptySet()
+    val selectedPages: Set<String> = emptySet(),
+    val hasRecordings: Boolean = false
 ) {
     /** What the scope gives, `null` while it is being read (again when the subfolders change). */
     var contents: ExportContents? by mutableStateOf(null)
 
+    /** The formats offered. */
+    val formats: List<ExportFormat> get() = if (hasRecordings) scope.formats + ExportFormat.RECORDINGS else scope.formats
+
     var format: ExportFormat by mutableStateOf(
-        if (scope.isSingleDocument) preferences.singleFormat else preferences.multipleFormat
+        (if (scope.isSingleDocument) preferences.singleFormat else preferences.multipleFormat).let { saved ->
+            if (saved in formats) saved else formats.first()
+        }
     )
 
     var pages: PageChoice by mutableStateOf(if (selectedPages.isNotEmpty()) PageChoice.SELECTED else PageChoice.ALL)
@@ -63,14 +70,13 @@ internal class ExportSheetState(
 
     var includeSubfolders: Boolean by mutableStateOf(preferences.includeSubfolders)
 
+    var includeTranscripts: Boolean by mutableStateOf(preferences.includeTranscripts)
+
     /** The name of the file without its extension, as edited by the user; `null` while untouched. */
     var editedName: String? by mutableStateOf(null)
 
     /** Whether the pages of one note are exported (they can be chosen). */
     val isSingleDocument: Boolean get() = scope.isSingleDocument
-
-    /** The formats offered. */
-    val formats: List<ExportFormat> get() = scope.formats
 
     /** The choices of pages offered for a note: all, the page on screen, the pages selected, a range. */
     val pageChoices: List<PageChoice>
@@ -100,7 +106,7 @@ internal class ExportSheetState(
             return when {
                 isSingleDocument && contents.documents.isEmpty() -> ExportProblem.NOTE_MISSING
                 contents.documents.isEmpty() -> ExportProblem.NO_NOTES
-                isSingleDocument && pages == PageChoice.RANGE && rangeIndices == null -> ExportProblem.INVALID_RANGE
+                isSingleDocument && pages == PageChoice.RANGE && rangeIndices == null && format != ExportFormat.ARCHIVE && format != ExportFormat.RECORDINGS -> ExportProblem.INVALID_RANGE
                 editedName?.isBlank() == true -> ExportProblem.NO_NAME
                 else -> null
             }
@@ -134,7 +140,8 @@ internal class ExportSheetState(
     /** The options of the export chosen. */
     fun options(): ExportOptions = ExportOptions(
         backgroundPattern = backgroundPattern,
-        pageIndices = if (isSingleDocument && pages == PageChoice.RANGE) rangeIndices else null
+        pageIndices = if (isSingleDocument && pages == PageChoice.RANGE) rangeIndices else null,
+        includeTranscripts = includeTranscripts
     )
 
     /** Keeps the choices of this export for the next one. */
@@ -142,6 +149,7 @@ internal class ExportSheetState(
         if (isSingleDocument) preferences.singleFormat = format else preferences.multipleFormat = format
         preferences.backgroundPattern = backgroundPattern
         if (!isSingleDocument) preferences.includeSubfolders = includeSubfolders
+        preferences.includeTranscripts = includeTranscripts
     }
 
     companion object {

@@ -28,6 +28,8 @@
     <string name="export_format_markdown_hint">テキストと講義のメモ</string>
     <string name="export_format_archive">アーカイブ</string>
     <string name="export_format_archive_hint">すべてを再インポート用に</string>
+    <string name="export_format_recordings">録音</string>
+    <string name="export_format_recordings_hint">音声を ZIP に、フォルダごと</string>
     <string name="import_archive_action">アーカイブを読み込む…</string>
     <string name="import_archive_done_title">読み込み完了</string>
     <plurals name="import_archive_done">
@@ -46,6 +48,8 @@
     <string name="export_background">背景の罫線と方眼</string>
     <string name="export_background_hint">オフのときは紙の色のみ</string>
     <string name="export_subfolders">サブフォルダを含める</string>
+    <string name="export_include_transcripts">文字起こしを含める</string>
+    <string name="export_include_transcripts_hint">各講義の文字起こしもテキストとして保存</string>
     <string name="export_file_name">ファイル名</string>
     <string name="export_problem_no_notes">ここには書き出すノートがありません</string>
     <string name="export_problem_note_missing">このノートはもう存在しません</string>

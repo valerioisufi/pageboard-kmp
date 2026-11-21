@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture.audio
 
+import kotlin.random.Random
 import kotlinx.io.Buffer
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -12,7 +13,7 @@ import kotlinx.io.readByteArray
  * then [finish] writes the m4a, its description (`moov`) first so that it plays as it downloads.
  */
 internal class M4aWriter(private val target: Path, private val sampleRate: Int, private val bitrate: Int) {
-    private val framesPath = Path("$target.frames")
+    private val framesPath = Path("$target.${Random.nextLong().toULong().toString(16)}.frames")
     private val frames = SystemFileSystem.sink(framesPath).buffered()
     private val sizes = mutableListOf<Int>()
     private var dataBytes = 0L

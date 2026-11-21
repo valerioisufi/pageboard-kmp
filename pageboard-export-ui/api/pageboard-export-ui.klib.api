@@ -7,7 +7,7 @@
 
 // Library unique name: <pageboard-kmp:pageboard-export-ui>
 final class io.github.valerioisufi.pageboard.export.ui/DocumentExportUi { // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, kotlin/String? = ..., io.github.valerioisufi.pageboard.export/MarkdownAppendix? = ...) // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;kotlin.String?;io.github.valerioisufi.pageboard.export.MarkdownAppendix?){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.store/OpenDocuments, kotlin/String? = ..., io.github.valerioisufi.pageboard.export/MarkdownAppendix? = ..., io.github.valerioisufi.pageboard.export/DocumentRecordings? = ...) // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.pageboard.store.OpenDocuments;kotlin.String?;io.github.valerioisufi.pageboard.export.MarkdownAppendix?;io.github.valerioisufi.pageboard.export.DocumentRecordings?){}[0]
 
     final val editorExtension // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.pageboard.ui.extension/EditorExtension // io.github.valerioisufi.pageboard.export.ui/DocumentExportUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]

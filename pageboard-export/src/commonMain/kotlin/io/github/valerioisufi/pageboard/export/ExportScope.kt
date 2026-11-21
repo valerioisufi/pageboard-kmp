@@ -86,13 +86,16 @@ public enum class ExportFormat {
     MARKDOWN,
 
     /** Notes with all their content, to import again (see [ArchiveFormat]). */
-    ARCHIVE;
+    ARCHIVE,
+
+    /** Lecture audio recordings (and optional transcripts) in a ZIP keeping their folders. */
+    RECORDINGS;
 
     /** The extension of the file written for [pages] pages, without the dot. */
     public fun extension(pages: Int): String = when (this) {
         PDF, COMBINED_PDF -> "pdf"
         IMAGES -> if (pages == 1) "png" else "zip"
-        PDF_PER_DOCUMENT -> "zip"
+        PDF_PER_DOCUMENT, RECORDINGS -> "zip"
         MARKDOWN -> "md"
         ARCHIVE -> ArchiveFormat.EXTENSION
     }
@@ -109,12 +112,13 @@ public enum class ExportFormat {
 
 /**
  * The exporters of the formats: [pdf] for the PDFs, [image] for the images of the pages, [markdown]
- * for the text.
+ * for the text, [recordings] for lecture audio recordings.
  */
 public class ExportWriters(
     public val pdf: PdfExporter,
     public val image: PageImageExporter? = null,
-    public val markdown: MarkdownExporter = MarkdownExporter()
+    public val markdown: MarkdownExporter = MarkdownExporter(),
+    public val recordings: DocumentRecordings? = null
 )
 
 /**

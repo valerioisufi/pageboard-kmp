@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.export.DocumentExport
+import io.github.valerioisufi.pageboard.export.DocumentRecordings
 import io.github.valerioisufi.pageboard.export.ExportJobs
 import io.github.valerioisufi.pageboard.export.ExportScope
 import io.github.valerioisufi.pageboard.export.ArchiveImporter
@@ -47,11 +48,14 @@ import org.jetbrains.compose.resources.stringResource
  * @param appName the name of the application, written in the PDFs as the one that made them.
  * @param markdownAppendix what the application adds to the Markdown of a note (e.g. the notes of
  *   its lectures), see [MarkdownAppendix].
+ * @param recordings lecture recordings of a note provided by the application for batch export, see
+ *   [DocumentRecordings].
  */
 public class DocumentExportUi(
     documents: OpenDocuments,
     private val appName: String? = null,
-    private val markdownAppendix: MarkdownAppendix? = null
+    private val markdownAppendix: MarkdownAppendix? = null,
+    private val recordings: DocumentRecordings? = null
 ) {
     private val export = DocumentExport(documents)
 
@@ -77,7 +81,7 @@ public class DocumentExportUi(
         val selected = if (selection.isActive) selection.pageIds.toSet() else emptySet()
         editorExport = EditorExport(
             context.documentId,
-            ExportSheetState(ExportScope.Pages(context.documentId), preferences, pageOnScreen, selected)
+            ExportSheetState(ExportScope.Pages(context.documentId), preferences, pageOnScreen, selected, hasRecordings = recordings != null)
         )
     }
 
@@ -115,11 +119,11 @@ public class DocumentExportUi(
                     is LibrarySelection.Items -> ExportScope.ofSelection(selection.documentIds, selection.folderIds)
                     is LibrarySelection.Folder -> ExportScope.Folder(selection.folderId)
                 }
-                ExportSheetState(scope, preferences)
+                ExportSheetState(scope, preferences, hasRecordings = recordings != null)
             }
             // The first page of the note, or of the first note among several
             val thumbnail = (selection as? LibrarySelection.Items)?.thumbnail
-            ExportSheet(state, export, jobs, appName, thumbnail = thumbnail, onDismiss = onDone, markdownAppendix = markdownAppendix)
+            ExportSheet(state, export, jobs, appName, thumbnail = thumbnail, onDismiss = onDone, markdownAppendix = markdownAppendix, recordings = recordings)
         }
     )
 
@@ -141,7 +145,7 @@ public class DocumentExportUi(
                     .padding(start = 16.dp, end = 16.dp, bottom = 64.dp)
             )
             editorExport?.takeIf { it.documentId == context.documentId }?.let {
-                ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null }, markdownAppendix = markdownAppendix)
+                ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null }, markdownAppendix = markdownAppendix, recordings = recordings)
             }
         }
         commands { context -> listOf(exportCommand(context)) }

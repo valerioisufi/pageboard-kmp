@@ -2,6 +2,10 @@ package io.github.valerioisufi.pageboard.lecture
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -10,6 +14,12 @@ import kotlinx.io.files.SystemFileSystem
 
 /** An audio or transcript exported: the name of the file, and why it failed, if it did. */
 public class ExportResult(public val fileName: String, public val failure: String?)
+
+/**
+ * Formats [segments] as plain text with timestamps (`[m:ss] text`), one segment per line.
+ */
+internal fun formatTranscript(segments: List<TranscriptSegment>): String =
+    segments.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" } + "\n"
 
 /**
  * Saves [segments] in [target] as a plain-text file with timestamps (`[m:ss] text`, the extension
@@ -21,9 +31,28 @@ internal fun exportTranscript(segments: List<TranscriptSegment>, target: String)
     require(segments.isNotEmpty()) { "the transcript is empty" }
     val base = target.substringBeforeLast('.').takeIf { Path(target).name.contains('.') } ?: target
     val txt = Path("$base.txt")
-    val content = segments.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" } + "\n"
+    val content = formatTranscript(segments)
     SystemFileSystem.sink(txt).buffered().use { it.write(content.encodeToByteArray()) }
     return txt.toString()
+}
+
+/**
+ * A finished lecture of a note whose audio (and optional transcript) can be exported into an
+ * archive (see [LectureAssistant.exportableRecordings]).
+ */
+public class ExportableRecording(
+    public val directory: String,
+    public val startedAt: Long,
+    public val hasAudio: Boolean,
+    public val transcript: String?
+)
+
+/** Formats [epochMs] as `yyyy-MM-dd HH.mm` in the local time zone, sortable in file names. */
+@OptIn(ExperimentalTime::class)
+public fun formatRecordingTimestamp(epochMs: Long): String {
+    val t = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    fun two(value: Int) = value.toString().padStart(2, '0')
+    return "${t.year}-${two(t.month.ordinal + 1)}-${two(t.day)} ${two(t.hour)}.${two(t.minute)}"
 }
 
 /**

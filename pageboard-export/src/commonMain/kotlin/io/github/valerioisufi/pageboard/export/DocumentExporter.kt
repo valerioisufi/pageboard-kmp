@@ -30,11 +30,14 @@ public interface DocumentExporter {
  *   color always is).
  * @param pageIndices the pages exported by their place in the document (from 0), as well as in
  *   [pageIds]; all of them when `null`.
+ * @param includeTranscripts whether batch recordings exports include plain-text transcripts alongside
+ *   audio files.
  */
 public class ExportOptions(
     public val pageIds: Set<String>? = null,
     public val backgroundPattern: Boolean = true,
-    public val pageIndices: Set<Int>? = null
+    public val pageIndices: Set<Int>? = null,
+    public val includeTranscripts: Boolean = false
 )
 
 /**

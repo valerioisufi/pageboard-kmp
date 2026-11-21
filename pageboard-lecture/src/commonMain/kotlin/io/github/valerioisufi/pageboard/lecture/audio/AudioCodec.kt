@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture.audio
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -153,12 +154,19 @@ internal const val EXPORT_BITRATE = 32_000
 
 /**
  * Saves [recording] in [target] as AAC in an m4a (the extension of [target] becomes .m4a), the same
- * on every platform ([AacEncoder], [M4aWriter]).
+ * on every platform ([AacEncoder], [M4aWriter]), reporting progress (0..1) through [onProgress] and
+ * stopping when [isCancelled] returns `true`.
  *
  * @return the path written.
  */
-internal fun exportRecording(recording: RecordingFile, target: String): String {
-    require(recording.samples() > 0) { "the recording is empty" }
+internal fun exportRecording(
+    recording: RecordingFile,
+    target: String,
+    onProgress: (Float) -> Unit = {},
+    isCancelled: () -> Boolean = { false }
+): String {
+    val total = recording.samples()
+    require(total > 0) { "the recording is empty" }
     val base = target.substringBeforeLast('.').takeIf { Path(target).name.contains('.') } ?: target
     val m4a = Path("$base.m4a")
     val encoder = AacEncoder(LECTURE_SAMPLE_RATE, EXPORT_BITRATE)
@@ -166,7 +174,10 @@ internal fun exportRecording(recording: RecordingFile, target: String): String {
     try {
         val frame = ShortArray(AAC_FRAME_SAMPLES)
         var filled = 0
+        var processed = 0L
+        var lastReported = -1f
         recording.decodeAll { block ->
+            if (isCancelled()) throw CancellationException("Export cancelled")
             var offset = 0
             while (offset < block.size) {
                 val copied = minOf(frame.size - filled, block.size - offset)
@@ -178,12 +189,20 @@ internal fun exportRecording(recording: RecordingFile, target: String): String {
                     filled = 0
                 }
             }
+            processed += block.size
+            val fraction = (processed.toFloat() / total).coerceIn(0f, 1f)
+            if (fraction - lastReported >= 0.01f) {
+                lastReported = fraction
+                onProgress(fraction)
+            }
         }
+        if (isCancelled()) throw CancellationException("Export cancelled")
         if (filled > 0) {
             frame.fill(0, filled)
             writer.add(encoder.encode(frame))
         }
         writer.finish()
+        onProgress(1f)
     } catch (e: Throwable) {
         writer.cancel()
         throw e

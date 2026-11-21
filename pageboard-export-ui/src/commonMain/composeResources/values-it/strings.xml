@@ -30,6 +30,8 @@
     <string name="export_format_markdown_hint">Il testo, con gli appunti delle lezioni</string>
     <string name="export_format_archive">Archivio</string>
     <string name="export_format_archive_hint">Tutto, da importare di nuovo</string>
+    <string name="export_format_recordings">Registrazioni</string>
+    <string name="export_format_recordings_hint">Audio in uno ZIP, con le loro cartelle</string>
     <string name="import_archive_action">Importa archivio…</string>
     <string name="import_archive_done_title">Importato</string>
     <plurals name="import_archive_done">
@@ -49,6 +51,8 @@
     <string name="export_background">Righe e quadretti dello sfondo</string>
     <string name="export_background_hint">Se disattivato, solo il colore della carta</string>
     <string name="export_subfolders">Includi le sottocartelle</string>
+    <string name="export_include_transcripts">Includi le trascrizioni</string>
+    <string name="export_include_transcripts_hint">Salva anche la trascrizione di ogni lezione come testo</string>
     <string name="export_file_name">Nome del file</string>
     <string name="export_problem_no_notes">Qui non ci sono note da esportare</string>
     <string name="export_problem_note_missing">Questa nota non esiste più</string>

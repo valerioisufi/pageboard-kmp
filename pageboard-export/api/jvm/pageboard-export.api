@@ -94,6 +94,10 @@ public final class io/github/valerioisufi/pageboard/export/DocumentExporter$Defa
 	public static synthetic fun export$default (Lio/github/valerioisufi/pageboard/export/DocumentExporter;Lio/github/valerioisufi/pageboard/export/DocumentContent;Lio/github/valerioisufi/pageboard/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract interface class io/github/valerioisufi/pageboard/export/DocumentRecordings {
+	public abstract fun of (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/pageboard/export/ExportContents {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/pageboard/export/ExportScope;Ljava/lang/String;Ljava/util/List;ILjava/util/Map;)V
@@ -139,6 +143,7 @@ public final class io/github/valerioisufi/pageboard/export/ExportFormat : java/l
 	public static final field MARKDOWN Lio/github/valerioisufi/pageboard/export/ExportFormat;
 	public static final field PDF Lio/github/valerioisufi/pageboard/export/ExportFormat;
 	public static final field PDF_PER_DOCUMENT Lio/github/valerioisufi/pageboard/export/ExportFormat;
+	public static final field RECORDINGS Lio/github/valerioisufi/pageboard/export/ExportFormat;
 	public final fun extension (I)Ljava/lang/String;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun mimeType (I)Ljava/lang/String;
@@ -207,9 +212,10 @@ public final class io/github/valerioisufi/pageboard/export/ExportJobs {
 public final class io/github/valerioisufi/pageboard/export/ExportOptions {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/util/Set;ZLjava/util/Set;)V
-	public synthetic fun <init> (Ljava/util/Set;ZLjava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/Set;ZLjava/util/Set;Z)V
+	public synthetic fun <init> (Ljava/util/Set;ZLjava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBackgroundPattern ()Z
+	public final fun getIncludeTranscripts ()Z
 	public final fun getPageIds ()Ljava/util/Set;
 	public final fun getPageIndices ()Ljava/util/Set;
 }
@@ -298,11 +304,24 @@ public final class io/github/valerioisufi/pageboard/export/ExportScope$Pages : i
 
 public final class io/github/valerioisufi/pageboard/export/ExportWriters {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/export/PdfExporter;Lio/github/valerioisufi/pageboard/export/PageImageExporter;Lio/github/valerioisufi/pageboard/export/MarkdownExporter;Lio/github/valerioisufi/pageboard/export/DocumentRecordings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getImage ()Lio/github/valerioisufi/pageboard/export/PageImageExporter;
 	public final fun getMarkdown ()Lio/github/valerioisufi/pageboard/export/MarkdownExporter;
 	public final fun getPdf ()Lio/github/valerioisufi/pageboard/export/PdfExporter;
+	public final fun getRecordings ()Lio/github/valerioisufi/pageboard/export/DocumentRecordings;
+}
+
+public final class io/github/valerioisufi/pageboard/export/ExportedRecording {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Ljava/lang/String;JZLjava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFileName ()Ljava/lang/String;
+	public final fun getHasAudio ()Z
+	public final fun getRecordedAt ()J
+	public final fun getTranscript ()Ljava/lang/String;
+	public final fun getTranscriptFileName ()Ljava/lang/String;
+	public final fun getWriteAudio ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/pageboard/export/FolderDocumentItem {

@@ -30,6 +30,8 @@
     <string name="export_format_markdown_hint">The text, with the notes of the lectures</string>
     <string name="export_format_archive">Archive</string>
     <string name="export_format_archive_hint">Everything, to import again</string>
+    <string name="export_format_recordings">Recordings</string>
+    <string name="export_format_recordings_hint">Audio in a ZIP, with their folders</string>
     <string name="import_archive_action">Import archive…</string>
     <string name="import_archive_done_title">Imported</string>
     <plurals name="import_archive_done">
@@ -49,6 +51,8 @@
     <string name="export_background">Background lines and grid</string>
     <string name="export_background_hint">When off, only the color of the paper</string>
     <string name="export_subfolders">Include subfolders</string>
+    <string name="export_include_transcripts">Include transcripts</string>
+    <string name="export_include_transcripts_hint">Also save each lecture’s transcript as text</string>
     <string name="export_file_name">File name</string>
     <string name="export_problem_no_notes">There are no notes to export here</string>
     <string name="export_problem_note_missing">This note no longer exists</string>

@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -23,7 +24,7 @@ public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (
     val suggested = remember { arrayOf("file") }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(mimeType)) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val directory = File(context.cacheDir, "export").apply { mkdirs() }
+        val directory = File(File(context.cacheDir, "export"), UUID.randomUUID().toString()).apply { mkdirs() }
         target(FileTarget(File(directory, suggested[0]).absolutePath) { written ->
             val file = File(written)
             try {
@@ -33,6 +34,7 @@ public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (
                 }
             } finally {
                 file.delete()
+                directory.deleteRecursively()
             }
         })
     }
@@ -43,8 +45,9 @@ public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (
 }
 
 /**
- * The share sheet of the system: the file is written in the cache (where the files shared before
- * are deleted first) and given to the application chosen through [PageboardFileProvider].
+ * The share sheet of the system: the file is written in a unique subdirectory of the cache (old
+ * directories are pruned after 24 hours) and given to the application chosen through
+ * [PageboardFileProvider].
  */
 @Composable
 public actual fun rememberFileSharer(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): ((suggestedName: String) -> Unit)? {
@@ -52,10 +55,12 @@ public actual fun rememberFileSharer(title: String, mimeType: String, onTarget: 
     val target by rememberUpdatedState(onTarget)
     return remember(context, title, mimeType) {
         { name ->
-            val directory = File(context.cacheDir, SHARED_DIRECTORY).apply {
-                deleteRecursively()
-                mkdirs()
+            val sharedRoot = File(context.cacheDir, SHARED_DIRECTORY).apply { mkdirs() }
+            val cutoff = System.currentTimeMillis() - SHARED_RETENTION_MS
+            sharedRoot.listFiles()?.forEach { child ->
+                if (child.lastModified() < cutoff) child.deleteRecursively()
             }
+            val directory = File(sharedRoot, UUID.randomUUID().toString()).apply { mkdirs() }
             target(FileTarget(File(directory, name.replace('/', '-')).absolutePath) { written ->
                 withContext(Dispatchers.Main) { share(context, File(written), title, mimeType) }
             })
@@ -78,3 +83,6 @@ public actual fun fileReveal(): FileReveal? = null
 
 /** The directory of the cache holding the files shared (see `res/xml/pageboard_shared_files.xml`). */
 private const val SHARED_DIRECTORY = "pageboard-shared"
+
+/** How long shared files stay in the cache before being pruned. */
+private const val SHARED_RETENTION_MS = 86_400_000L
