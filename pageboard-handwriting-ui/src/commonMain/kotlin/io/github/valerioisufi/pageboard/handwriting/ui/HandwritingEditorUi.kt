@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.handwriting.InkReading
 import io.github.valerioisufi.pageboard.handwriting.ui.generated.resources.Res
@@ -31,6 +32,7 @@ import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -47,6 +49,7 @@ public fun handwritingEditorExtension(conversion: HandwritingConversion): Editor
                 Command(
                     id = "handwriting.convertToText",
                     label = { stringResource(Res.string.handwriting_convert_to_text) },
+                    icon = { rememberVectorPainter(PageboardIcons.Text) },
                     group = CommandGroup.EDIT,
                     isEnabled = { state.readsText && !context.document.isReadOnly && context.edits.selection?.isStrokesOnly == true },
                     perform = { state.request(context) }
@@ -54,7 +57,8 @@ public fun handwritingEditorExtension(conversion: HandwritingConversion): Editor
             )
         }
         canvasOverlay { context ->
-            LaunchedEffect(conversion) { state.readsText = conversion.readsText() }
+            // Checked again at each selection: a reader may read only at times (PencilKit, in the foreground)
+            LaunchedEffect(conversion, context.edits.selection?.strokeIds) { state.readsText = conversion.readsText() }
             ConversionSheet(state, conversion, context)
         }
     }
@@ -87,8 +91,39 @@ private fun ConversionSheet(state: ConversionState, conversion: HandwritingConve
         read = true
     }
     val dismiss = { state.pending = null }
+    ConversionDialog(
+        read = read,
+        reading = reading,
+        text = text,
+        onTextChange = { text = it },
+        canConvert = page != null && strokes.isNotEmpty(),
+        onConvert = {
+            if (page != null) {
+                conversion.replace(context.document, page.id, strokes, conversion.textBox(strokes, text.trim()))
+                context.edits.clearSelection()
+            }
+            dismiss()
+        },
+        onDismiss = dismiss
+    )
+}
+
+/**
+ * The preview of a conversion: a wheel while the strokes are read, then the reading to edit (a
+ * word that nothing was read when so) and the other readings to choose.
+ */
+@Composable
+internal fun ConversionDialog(
+    read: Boolean,
+    reading: InkReading?,
+    text: String,
+    onTextChange: (String) -> Unit,
+    canConvert: Boolean,
+    onConvert: () -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
-        onDismissRequest = dismiss,
+        onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.handwriting_convert_to_text)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -100,31 +135,24 @@ private fun ConversionSheet(state: ConversionState, conversion: HandwritingConve
                     }
                     OutlinedTextField(
                         value = text,
-                        onValueChange = { text = it },
+                        onValueChange = onTextChange,
                         label = { Text(stringResource(Res.string.handwriting_reading)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     val others = reading?.alternatives.orEmpty().filter { it != text }.take(MAX_ALTERNATIVES)
                     if (others.isNotEmpty()) {
                         Text(stringResource(Res.string.handwriting_other_readings), style = MaterialTheme.typography.labelMedium)
-                        for (other in others) TextButton(onClick = { text = other }) { Text(other) }
+                        for (other in others) TextButton(onClick = { onTextChange(other) }) { Text(other) }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(
-                enabled = read && text.isNotBlank() && page != null && strokes.isNotEmpty(),
-                onClick = {
-                    if (page != null) {
-                        conversion.replace(context.document, page.id, strokes, conversion.textBox(strokes, text.trim()))
-                        context.edits.clearSelection()
-                    }
-                    dismiss()
-                }
-            ) { Text(stringResource(Res.string.handwriting_action_convert)) }
+            TextButton(enabled = read && text.isNotBlank() && canConvert, onClick = onConvert) {
+                Text(stringResource(Res.string.handwriting_action_convert))
+            }
         },
-        dismissButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.handwriting_action_cancel)) } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.handwriting_action_cancel)) } }
     )
 }
 

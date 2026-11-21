@@ -1,5 +1,6 @@
 plugins {
     id("pageboard.compose.library")
+    id("pageboard.screenshots")
 }
 
 description = "Handwriting converted into text in the Pageboard editor: the command on a selection of strokes, the preview, the text box in their place"
@@ -25,6 +26,11 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+        }
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
         }
     }
 }

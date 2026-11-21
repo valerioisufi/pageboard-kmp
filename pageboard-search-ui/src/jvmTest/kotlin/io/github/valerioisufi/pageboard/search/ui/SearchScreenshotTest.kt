@@ -1,5 +1,13 @@
 package io.github.valerioisufi.pageboard.search.ui
 
+import io.github.valerioisufi.pageboard.handwriting.HandwritingEngines
+import io.github.valerioisufi.pageboard.handwriting.HandwritingReading
+import io.github.valerioisufi.pageboard.handwriting.InkLanguageModel
+import io.github.valerioisufi.pageboard.handwriting.InkLanguageModels
+import io.github.valerioisufi.pageboard.handwriting.InkReading
+import io.github.valerioisufi.pageboard.handwriting.InkSample
+import io.github.valerioisufi.pageboard.handwriting.TextInkRecognizer
+import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -195,6 +203,40 @@ class SearchScreenshotTest {
                     }
                     waitForIdle()
                     captureToImage().captureRoboImage("screenshots/search-settings-${if (dark) "dark" else "light"}.png")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun searchSettingsWithHandwriting() {
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
+        // A reader of Italian whose model is downloaded on request (ML Kit), not downloaded yet
+        val reader = object : TextInkRecognizer {
+            override val version: String = "fake 1"
+            override suspend fun languages(): Set<String> = setOf("it")
+            override suspend fun recognize(ink: InkSample, language: String, context: String): InkReading? = null
+        }
+        val models = object : InkLanguageModels {
+            override suspend fun models(languages: Collection<String>) = languages.map { InkLanguageModel(it, isDownloaded = false, sizeBytes = 20_000_000L) }
+            override suspend fun download(language: String, wifiOnly: Boolean) = Unit
+            override suspend fun delete(language: String) = Unit
+        }
+        val handwriting = HandwritingSearch(HandwritingReading(HandwritingEngines(listOf(reader), languageModels = models)), language = "it")
+        SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
+            val indexer = SearchIndexer(catalog = store, index = index, sources = emptyList(), quietMillis = 0L)
+            val search = ContentSearch(index = index, indexer = indexer, engine = SearchEngine(index), handwriting = handwriting)
+            for (dark in listOf(false, true)) {
+                runDesktopComposeUiTest(width = 628, height = 1000) {
+                    setContent {
+                        PageboardTheme(darkTheme = dark, dynamicColor = false) {
+                            Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                            SearchSettingsDialog(search = search, onDismiss = {})
+                        }
+                    }
+                    waitForIdle()
+                    captureToImage().captureRoboImage("screenshots/search-settings-handwriting-${if (dark) "dark" else "light"}.png")
                 }
             }
         }
