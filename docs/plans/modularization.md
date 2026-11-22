@@ -86,7 +86,10 @@ until the release (see the release checklist at the end).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
    passed in (Creator, Low Coupling); a module may keep a default instance for convenience only
-   behind an explicit call.
+   behind an explicit call. The root of the platform is the one setting of a process: the
+   application gives it once at its start (the context of Android with `PageboardAndroid.init`, the
+   data directory of the desktop with `PageboardDesktop.init`), and it never changes after (see
+   [release-readiness.md](release-readiness.md)).
 5. The public API is declared (explicit API mode, strict), checked (ABI validation) and
    documented (KDoc, Dokka); the rest is `internal`.
 6. A third-party element type uses the same API as the built-in ones.

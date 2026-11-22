@@ -65,7 +65,16 @@ fun App() {
         DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
+
+// On the desktop the application names its data directory once, before anything reads it
+fun main() {
+    PageboardDesktop.init(PageboardDesktop.applicationDataDirectory("My Notes"))
+    application { Window(onCloseRequest = ::exitApplication, title = "My Notes") { App() } }
+}
 ```
+
+On Android the application gives its context first, once (`PageboardAndroid.init(applicationContext)`
+in `Application.onCreate`); iOS needs nothing.
 
 | Area | Modules |
 |---|---|

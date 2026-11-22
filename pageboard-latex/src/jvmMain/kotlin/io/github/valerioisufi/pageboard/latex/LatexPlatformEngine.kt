@@ -2,7 +2,7 @@ package io.github.valerioisufi.pageboard.latex
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import io.github.valerioisufi.pageboard.platform.pageboardDesktopDataDirectory
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
 import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import io.nano.tex.LatexNativeLoader
@@ -85,4 +85,4 @@ internal actual object LatexPlatformEngine {
 }
 
 internal actual fun texResourcesDirectory(): String =
-    File(pageboardDesktopDataDirectory, "tex").apply { mkdirs() }.absolutePath
+    File(PageboardDesktop.dataDirectory, "tex").apply { mkdirs() }.absolutePath

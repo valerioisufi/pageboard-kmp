@@ -1,7 +1,7 @@
 package io.github.valerioisufi.pageboard.platform
 
 import io.github.valerioisufi.pageboard.platform.SecureStore
-import io.github.valerioisufi.pageboard.platform.pageboardDesktopDataDirectory
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -21,7 +21,7 @@ class SecureStoreTest {
             assertEquals("s3cret", SecureStore.read(name))
             // The permissions where the file system has them (not on Windows)
             if ("posix" in FileSystems.getDefault().supportedFileAttributeViews()) {
-                val file = File(pageboardDesktopDataDirectory, "secure/$name")
+                val file = File(PageboardDesktop.dataDirectory, "secure/$name")
                 assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(file.toPath())))
             }
             assertTrue(SecureStore.write(name, null))

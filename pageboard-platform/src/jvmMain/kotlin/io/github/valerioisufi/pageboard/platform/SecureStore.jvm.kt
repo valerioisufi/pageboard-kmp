@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 
 public actual object SecureStore {
-    private val directory: File get() = File(pageboardDesktopDataDirectory, "secure").apply { mkdirs() }
+    private val directory: File get() = File(PageboardDesktop.dataDirectory, "secure").apply { mkdirs() }
 
     public actual fun read(name: String): String? = try {
         File(directory, fileName(name)).takeIf { it.exists() }?.readText()

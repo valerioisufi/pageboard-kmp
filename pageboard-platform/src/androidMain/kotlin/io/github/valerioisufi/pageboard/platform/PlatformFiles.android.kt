@@ -6,24 +6,33 @@ import java.io.File
 
 /**
  * Holds the application [Context] needed by the Android implementations of Pageboard
- * (files directory, database location, LaTeX resources).
+ * (files directory, database location, LaTeX resources), the counterpart of [PageboardDesktop].
  *
- * Must be initialized once, typically from `Application.onCreate()` or `Activity.onCreate()`.
+ * Given once by the application, typically from `Application.onCreate()` or
+ * `Activity.onCreate()`: the application context of the first call is kept, the same one again
+ * does nothing, and another one fails.
  */
 @SuppressLint("StaticFieldLeak")
 public object PageboardAndroid {
     private var appContext: Context? = null
 
     public fun init(context: Context) {
-        appContext = context.applicationContext
+        val application = context.applicationContext ?: context
+        synchronized(this) {
+            val current = appContext
+            check(current == null || current === application) {
+                "PageboardAndroid is given another context: an application gives its context once"
+            }
+            appContext = application
+        }
     }
 
     public val context: Context
-        get() = checkNotNull(appContext) {
+        get() = checkNotNull(synchronized(this) { appContext }) {
             "PageboardAndroid.init(context) must be called before using Pageboard on Android"
         }
 
-    public val isInitialized: Boolean get() = appContext != null
+    public val isInitialized: Boolean get() = synchronized(this) { appContext != null }
 }
 
 public actual object PlatformFiles {

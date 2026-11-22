@@ -85,7 +85,8 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
   Rust, built by Gradle with the cargo of `rust.cargo` in `local.properties` (or `~/.cargo/bin`,
   or the `PATH`) into `native/build/rust`.
 - **No global mutable state in the APIs.** Engines, stores and registries are instances passed
-  in.
+  in. The one setting of a process is the root of the platform, given once by the application at
+  its start (`PageboardAndroid.init`, `PageboardDesktop.init`).
 - **The public API is explicit and recorded:**
   - Explicit API mode is strict.
   - Each library records its ABI in `api/`, and `checkKotlinAbi` fails when it changes. Run

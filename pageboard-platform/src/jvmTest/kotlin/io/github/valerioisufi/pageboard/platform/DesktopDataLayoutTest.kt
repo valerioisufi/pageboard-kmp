@@ -94,7 +94,7 @@ class DesktopDataLayoutTest {
         val previous = System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY)
         System.setProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY, data.path)
         try {
-            assertEquals(data.absoluteFile, pageboardDesktopDataDirectory.absoluteFile)
+            assertEquals(data.absoluteFile, PageboardDesktop.dataDirectory.absoluteFile)
             assertEquals("lecture", read("lectures/doc-5/2026-10-01_10-00-00-a1b2c3/lecture.json"))
             assertEquals(data.absoluteFile, File(dataDirectory()).absoluteFile)
         } finally {

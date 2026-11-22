@@ -15,6 +15,14 @@ public final class io/github/valerioisufi/pageboard/platform/JvmNativeLibraries 
 	public final fun load (Ljava/lang/Class;[Ljava/lang/String;)Z
 }
 
+public final class io/github/valerioisufi/pageboard/platform/PageboardDesktop {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/PageboardDesktop;
+	public final fun applicationDataDirectory (Ljava/lang/String;)Ljava/io/File;
+	public final fun getDataDirectory ()Ljava/io/File;
+	public final fun init (Ljava/io/File;)V
+	public final fun isInitialized ()Z
+}
+
 public final class io/github/valerioisufi/pageboard/platform/PlatformFiles {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/PlatformFiles;
 	public final fun delete (Ljava/lang/String;)Z
@@ -32,8 +40,6 @@ public final class io/github/valerioisufi/pageboard/platform/PlatformFilesKt {
 
 public final class io/github/valerioisufi/pageboard/platform/PlatformFiles_jvmKt {
 	public static final field PAGEBOARD_DATA_DIRECTORY_PROPERTY Ljava/lang/String;
-	public static final fun checkDataDirectoryProperty ()V
-	public static final fun getPageboardDesktopDataDirectory ()Ljava/io/File;
 }
 
 public final class io/github/valerioisufi/pageboard/platform/SecureStore {

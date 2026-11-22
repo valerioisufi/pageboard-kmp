@@ -9,8 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.github.valerioisufi.pageboard.lecture.ui.LectureExitDialog
-import io.github.valerioisufi.pageboard.platform.PAGEBOARD_DATA_DIRECTORY_PROPERTY
-import io.github.valerioisufi.pageboard.platform.checkDataDirectoryProperty
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.PageboardMenuBar
 import io.github.valerioisufi.pageboard.ui.window.DesktopAppIcon
@@ -28,12 +27,9 @@ import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) {
     // PencilNotes keeps its notes apart from the other Pageboard applications (~/.pencilnotes),
-    // unless another directory is given with -Dpageboard.dataDir=...
-    checkDataDirectoryProperty()
-    if (System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY).isNullOrBlank()) {
-        System.setProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY, File(System.getProperty("user.home"), ".pencilnotes").absolutePath)
-    }
-    val dataDirectory = File(System.getProperty(PAGEBOARD_DATA_DIRECTORY_PROPERTY))
+    // unless another directory is given with -Dpageboard.dataDir=..., which wins
+    PageboardDesktop.init(File(System.getProperty("user.home"), ".pencilnotes"))
+    val dataDirectory = PageboardDesktop.dataDirectory
 
     // A command of the terminal: a client of the application, before anything of the interface starts
     if (args.firstOrNull() in AgentCli.COMMANDS) exitProcess(AgentCli(dataDirectory).run(args.toList()))

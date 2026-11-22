@@ -39,7 +39,21 @@ fun App() {
         DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
+
+// The desktop: the data directory of the application, named once before anything reads it
+fun main() {
+    PageboardDesktop.init(PageboardDesktop.applicationDataDirectory("My Notes"))
+    application { Window(onCloseRequest = ::exitApplication, title = "My Notes") { App() } }
+}
 ```
+
+The root of the platform is given once, at the start of the application: its data directory on
+the desktop (`PageboardDesktop.init`; `applicationDataDirectory(name)` is where the system keeps
+the data of an application: `~/Library/Application Support/<name>` on macOS, `%LOCALAPPDATA%\<name>`
+on Windows, `$XDG_DATA_HOME/<name>` on Linux), its context on Android
+(`PageboardAndroid.init(applicationContext)`, in `Application.onCreate`); iOS needs nothing. No
+directory is shared by default between two applications, and `-Dpageboard.dataDir=<directory>`,
+when given, wins over the one of the application (the checks and the tests use it).
 
 ### Using the libraries
 
