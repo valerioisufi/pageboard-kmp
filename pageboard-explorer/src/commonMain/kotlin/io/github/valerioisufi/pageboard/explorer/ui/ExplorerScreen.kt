@@ -51,6 +51,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
@@ -89,8 +90,6 @@ import io.github.valerioisufi.pageboard.ui.extension.DocumentTag
 import io.github.valerioisufi.pageboard.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.pageboard.ui.extension.LibrarySelection
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.pageboard.ui.platform.PickedFile
 import io.github.valerioisufi.pageboard.ui.platform.fileDropTarget
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
@@ -432,7 +431,7 @@ private fun LazyGridScope.libraryHeader(
 public fun aboutLibraryAction(): LibraryAction = remember {
     LibraryAction(
         icon = PageboardIcons.Info,
-        label = { stringResource(PageboardRes.string.about_dialog_title) }
+        label = { stringResource(PageboardStrings.aboutTitle) }
     ) { onDone -> AboutLicensesDialog(onDismiss = onDone) }
 }
 

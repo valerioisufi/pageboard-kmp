@@ -7,20 +7,20 @@
 extern "C" {
 #endif
 
-/** io/nano/tex/Rect */
+/** io/github/valerioisufi/pageboard/latex/microtex/Rect */
 extern jfieldID gFieldRectX, gFieldRectY, gFieldRectW, gFieldRectH;
 
-/** io/nano/tex/TextLayout */
+/** io/github/valerioisufi/pageboard/latex/microtex/TextLayout */
 extern jclass gClassTextLayout;
 extern jmethodID gMethodGetBounds;
 
-/** io/nano/tex/Font */
+/** io/github/valerioisufi/pageboard/latex/microtex/Font */
 extern jclass gClassFont;
 extern jmethodID gMethodDeriveFont;
 extern jmethodID gMethodCreateFontFromName;
 extern jmethodID gMethodCreateFontFromFile;
 
-/** io/nano/tex/ActionRecorder */
+/** io/github/valerioisufi/pageboard/latex/microtex/ActionRecorder */
 extern jmethodID gMethodRecord;
 
 #ifdef __cplusplus

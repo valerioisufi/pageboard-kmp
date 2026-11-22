@@ -74,9 +74,8 @@ import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -337,7 +336,7 @@ internal fun NewNoteDialog(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onDismiss)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardStrings.close), onDismiss)
             }
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(

@@ -58,10 +58,9 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_tr
 import io.github.valerioisufi.pageboard.store.TrashedItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -98,7 +97,7 @@ internal fun TrashPreview(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onDismiss, tint = colors.onSurface)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardStrings.close), onDismiss, tint = colors.onSurface)
                 Column(modifier = Modifier.weight(1f)) {
                     Text(item.name, style = MaterialTheme.typography.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     val days = daysLeft(item, LocalLibraryClock.current())

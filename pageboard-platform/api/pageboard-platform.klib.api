@@ -6,6 +6,10 @@
 // - Show declarations: true
 
 // Library unique name: <pageboard-kmp:pageboard-platform>
+open annotation class io.github.valerioisufi.pageboard.platform/InternalPageboardApi : kotlin/Annotation { // io.github.valerioisufi.pageboard.platform/InternalPageboardApi|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.platform/InternalPageboardApi.<init>|<init>(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.platform/Sha256 { // io.github.valerioisufi.pageboard.platform/Sha256|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.platform/Sha256.<init>|<init>(){}[0]
 

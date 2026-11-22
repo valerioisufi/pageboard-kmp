@@ -18,8 +18,7 @@ import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_m
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_tab_notes
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_tab_outline
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_tab_review
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as UiRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.getStringArray
@@ -53,6 +52,6 @@ public suspend fun lectureMarkdownLabels(): LectureMarkdown.Labels = LectureMark
  * [LectureAssistant.markdownOf]). Given to the export as what it adds to the Markdown of a note.
  */
 public suspend fun LectureAssistant.markdownInLanguage(documentId: String): String {
-    val months = getStringArray(UiRes.array.date_months_short)
+    val months = getStringArray(PageboardStrings.monthsShort)
     return markdownOf(documentId, lectureMarkdownLabels()) { formatShortDateTime(it, months) }
 }

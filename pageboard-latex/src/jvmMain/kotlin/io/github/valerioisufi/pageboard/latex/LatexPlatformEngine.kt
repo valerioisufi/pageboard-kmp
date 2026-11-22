@@ -3,10 +3,10 @@ package io.github.valerioisufi.pageboard.latex
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.valerioisufi.pageboard.platform.PageboardDesktop
-import io.nano.tex.Graphics2D
-import io.nano.tex.LaTeX
-import io.nano.tex.LatexNativeLoader
-import io.nano.tex.TeXRender
+import io.github.valerioisufi.pageboard.latex.microtex.Graphics2D
+import io.github.valerioisufi.pageboard.latex.microtex.LaTeX
+import io.github.valerioisufi.pageboard.latex.microtex.LatexNativeLoader
+import io.github.valerioisufi.pageboard.latex.microtex.TeXRender
 import java.io.File
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas

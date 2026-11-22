@@ -10,6 +10,9 @@ public final class io/github/valerioisufi/pageboard/platform/DeviceProfileKt {
 	public static final fun dataDirectory ()Ljava/lang/String;
 }
 
+public abstract interface annotation class io/github/valerioisufi/pageboard/platform/InternalPageboardApi : java/lang/annotation/Annotation {
+}
+
 public final class io/github/valerioisufi/pageboard/platform/JvmNativeLibraries {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/JvmNativeLibraries;
 	public final fun load (Ljava/lang/Class;[Ljava/lang/String;)Z

@@ -3,13 +3,10 @@ package io.github.valerioisufi.pageboard.explorer
 import io.github.valerioisufi.pageboard.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.pageboard.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.pageboard.explorer.FileExplorerViewModel.SortOption
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res
-import io.github.valerioisufi.pageboard.ui.generated.resources.name_error_empty
-import io.github.valerioisufi.pageboard.ui.generated.resources.name_error_exists
-import io.github.valerioisufi.pageboard.ui.generated.resources.name_error_invalid_chars
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -79,12 +76,12 @@ class FileExplorerViewModelTest {
         viewModel.createFile(FileType.FOLDER, "Math")
         var error: Any? = null
         viewModel.createFile(FileType.FILE, "Math", onError = { error = it })
-        assertEquals(Res.string.name_error_exists, error)
+        assertEquals(PageboardStrings.nameExists, error)
         assertEquals(listOf("Math"), viewModel.names)
 
-        assertEquals(Res.string.name_error_empty, viewModel.validateFileName("  "))
-        assertEquals(Res.string.name_error_invalid_chars, viewModel.validateFileName("a/b"))
-        assertEquals(Res.string.name_error_invalid_chars, viewModel.validateFileName("a\\b"))
+        assertEquals(PageboardStrings.nameEmpty, viewModel.validateFileName("  "))
+        assertEquals(PageboardStrings.nameInvalidChars, viewModel.validateFileName("a/b"))
+        assertEquals(PageboardStrings.nameInvalidChars, viewModel.validateFileName("a\\b"))
         assertNull(viewModel.validateFileName("Physics"))
         // An item can keep its own name when renamed
         assertNull(viewModel.validateFileName("Math", renamedFile = viewModel.item("Math")))

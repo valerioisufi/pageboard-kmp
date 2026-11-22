@@ -38,9 +38,8 @@ import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.command.Shortcut
 import io.github.valerioisufi.pageboard.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.pageboard.ui.extension.LibrarySelection
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -251,7 +250,7 @@ internal class LibraryCommands internal constructor(
 
     // ----- Help -----
 
-    val about = Command("about", label(PageboardRes.string.about_dialog_title), CommandGroup.HELP) {
+    val about = Command("about", label(PageboardStrings.aboutTitle), CommandGroup.HELP) {
         showDialog(LibraryDialog.About)
     }
 

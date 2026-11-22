@@ -96,8 +96,11 @@ abstract class CheckApiDependencies : DefaultTask() {
     }
 }
 
-/** Registers `checkApiDependencies` (part of `check`) for the JVM target of a library. */
-internal fun Project.checkApiDependencies() {
+/**
+ * Registers `checkApiDependencies` (part of `check`) for the JVM target of a library, whose dump is
+ * [dump] (`api/jvm/<module>.api` beside an Android target, `api/<module>.api` alone).
+ */
+internal fun Project.checkApiDependencies(dump: String) {
     val kotlin = extensions.getByType(KotlinMultiplatformExtension::class.java)
     val api = configurations.create("pageboardApiClasspath") {
         isCanBeConsumed = false
@@ -116,7 +119,7 @@ internal fun Project.checkApiDependencies() {
         group = "verification"
         description = "Checks that the types of the public API come with the api dependencies"
         module.set(project.name)
-        dump.set(layout.projectDirectory.file("api/jvm/${project.name}.api"))
+        this.dump.set(layout.projectDirectory.file(dump))
         classes.from(kotlin.jvm().compilations.getByName("main").output.classesDirs)
         apiClasspath.from(api)
         report.set(layout.buildDirectory.file("reports/api-dependencies/missing.txt"))

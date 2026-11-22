@@ -155,7 +155,7 @@ shared_ptr<TextLayout> TextLayout::create(const wstring& txt, const shared_ptr<F
 /******************************************* Graphics 2D ******************************************/
 
 /**
- * Keep in sync with io/nano/tex/ActionRecorder
+ * Keep in sync with io/github/valerioisufi/pageboard/latex/microtex/ActionRecorder
  */
 enum Action {
     ACT_setFont,

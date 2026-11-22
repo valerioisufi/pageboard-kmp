@@ -15,10 +15,10 @@ import io.github.valerioisufi.pageboard.latex.cinterop.tex_render_get_width
 import io.github.valerioisufi.pageboard.latex.cinterop.tex_set_callbacks
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.syncLock
-import io.nano.tex.ActionRecorder
-import io.nano.tex.Font
-import io.nano.tex.Graphics2D
-import io.nano.tex.TextLayout
+import io.github.valerioisufi.pageboard.latex.microtex.ActionRecorder
+import io.github.valerioisufi.pageboard.latex.microtex.Font
+import io.github.valerioisufi.pageboard.latex.microtex.Graphics2D
+import io.github.valerioisufi.pageboard.latex.microtex.TextLayout
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi

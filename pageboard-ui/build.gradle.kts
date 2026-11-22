@@ -53,6 +53,5 @@ kotlin {
 }
 
 compose.resources {
-    publicResClass = true
     packageOfResClass = "io.github.valerioisufi.pageboard.ui.generated.resources"
 }

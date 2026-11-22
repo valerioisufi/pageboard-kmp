@@ -246,11 +246,13 @@ Variations).
   `native/tex/port` and the keep rules move with them. iOS reaches MicroTeX through its C API and
   does not change.
 * The other declarations public only for another module, found by a reading of the dumps in the
-  phase, take the annotation.
+  phase, take the annotation: `SyncLock` and `syncLock`, `JvmNativeLibraries` (no application of
+  the repository uses them).
 * `pageboard.targets` in the `gradle.properties` of a module (read by `KmpLibraryConventionPlugin`;
   every target when it is not there): `android` for `-handwriting-mlkit`, `jvm` for
   `-handwriting-windows`, `jvm,ios` for `-handwriting-pencilkit` (its Android stub goes).
-  PencilNotes already takes them from the source set of their platform.
+  PencilNotes already takes them from the source set of their platform. Without an Android target
+  the JVM dump of a module is `api/<module>.api`, not `api/jvm/<module>.api`.
 
 ### The versions together
 
@@ -366,7 +368,7 @@ Windows machine the klib dumps of the Compose and Room modules are written by ha
 | 2 | Java 17 on the desktop (`jvmTarget`, `-Xjdk-release`, `org.gradle.jvm.version`, `model-jvm` on JDK 17); Android 10 to 14 (`removeAt`, `lintAndroidMain` of every library for `NewApi`) | Done: classes of version 61, `org.gradle.jvm.version` 17 in the metadata, every JVM source and test compiled against the JDK 17, `model-jvm` run on a JDK 17; `lintAndroidMain` found `removeLast()` before the fix and nothing after, in the 34 libraries. On Windows the known failures only (the klib dumps of the Compose and Room modules, `ExportScopeTest`, `TextHeightTest`, `LectureSharingTest`), and `RecordingsExportTest`, whose `/no/such/dir` is `D:\no\such\dir` there |
 | 3 | The data directory: `PageboardDesktop`, given once, no default; PencilNotes and the sample; the rule of `modularization.md` | Done: `PageboardDesktop` (`init`, `dataDirectory`, `applicationDataDirectory`), `PageboardAndroid.init` given once, the guard of `drawview.dataDir` internal; PencilNotes stopped with `-Ddrawview.dataDir` alone and opened its library on a scratch directory. The tests of the modules touched pass on Windows but for the known failures (`TextHeightTest`; three tests of `pencilnotes-desktop`, `AgentCliTest` and `DataDirectoryLockTest`, which fail there before the change too) |
 | 4 | The dependencies of the API: `api` where a type is in a signature; `checkApiDependencies`; the consumer check `library-desktop` | Done: `checkApiDependencies` found the four types expected and kotlinx.serialization in `pageboard-sync-protocol`, and passes in every library after the fix; the resources of `pageboard-explorer` internal, its klib dump written by hand (Windows). `library-desktop` runs with the consumer checks of `check.yml`: here the Compose modules cannot be published (their iOS metadata) |
-| 5 | The API between the modules: `@InternalPageboardApi`, the resources internal and `PageboardStrings`, MicroTeX in the package of Pageboard, the targets of the readers | To do |
+| 5 | The API between the modules: `@InternalPageboardApi`, the resources internal and `PageboardStrings`, MicroTeX in the package of Pageboard, the targets of the readers | Done: `LatexNativeTest` renders a formula through the JNI names of the new package (Windows libraries built again); the sample titles itself (it took the name of `pageboard-ui`); the klib dumps of `pageboard-ui` and `pageboard-latex` written by hand, the one of `pageboard-latex` equal to what Windows writes. On Windows the known failures only (`TextHeightTest`, the klib dumps of the Compose and Room modules) |
 | 6 | The interface: Material 3, `PageboardIcons` in place of the Material icons, the screenshots | To do |
 | 7 | The logs (`PageboardLog`, `checkNoPrints`) and the key of the environment given by PencilNotes | To do |
 | 8 | The versions together: `pageboard-bom` | To do |

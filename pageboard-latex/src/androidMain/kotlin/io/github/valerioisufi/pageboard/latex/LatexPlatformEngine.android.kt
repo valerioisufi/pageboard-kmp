@@ -8,8 +8,8 @@ import android.graphics.Typeface
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import io.github.valerioisufi.pageboard.platform.PageboardAndroid
-import io.nano.tex.Graphics2D
-import io.nano.tex.LaTeX
+import io.github.valerioisufi.pageboard.latex.microtex.Graphics2D
+import io.github.valerioisufi.pageboard.latex.microtex.LaTeX
 import java.io.File
 import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaDrawing
 

@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption
  * see `native/scripts/build_desktop.sh`) and extracted into a private temporary directory before being loaded, since the JVM cannot
  * load a shared library from inside a jar.
  */
+@InternalPageboardApi
 public object JvmNativeLibraries {
 
     /** Resource folder name of the running platform, e.g. `darwin-aarch64`. */
