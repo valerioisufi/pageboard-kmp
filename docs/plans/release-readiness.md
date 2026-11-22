@@ -377,12 +377,13 @@ Windows machine the klib dumps of the Compose and Room modules are written by ha
 | 11 | The release: the candidates, the release on validation, the actions pinned, no build cache, the signature required; the empty javadoc, the `sourceLink` of the version | Done: `release.yml` tells a candidate (`-rc.N`: `publishToMavenCentral`, no release of GitHub, no documentation) from a version (`publishAndReleaseToMavenCentral`); its actions pinned at the latest release of the majors of `native.yml`, with `cache-disabled` and `--no-build-cache`. The javadoc jars are empty (261 bytes for `pageboard-model`, 4.7 MB before); a release without `signingInMemoryKey` stops at `prepareMavenCentralPublishing`, before the upload (tried with `0.1.0-rc.1`). The workflow itself runs at the first tag |
 | 12 | The texts: the `Module.md` of the manifests, the README and the reference, `CHANGELOG.md`, `open-source.md`, `gradle.properties`, `CLAUDE.md` | Done: "On Android" in the pages of `pageboard-lecture`, `-sync-ui`, `-sync-lan` and `-ui`; the platforms, Kotlin 2.4, the BOM, the size of the desktop jars, Material 3 and the release in the README and the reference; the first release under `## Unreleased`; the tags `pageboard-v*` in `open-source.md`; the comment of `gradle.properties`; the writing suggestions in `CLAUDE.md`; the new checks in `CONTRIBUTING.md` and the template of the pull requests |
 | 13 | One platform per application: the variants of the JNI libraries, tried on `pageboard-ink` first | Left for later: the component of the JVM target of the Kotlin plugin (`KotlinTargetSoftwareComponentImpl`) is not an `AdhocComponentWithVariants`, so it takes no variant of its own (tried on `pageboard-ink`); the reference gives the size of the jars |
-| 14 | The checks on the Mac, then the candidate `pageboard-v0.1.0-rc.1`, checked in the Portal and dropped (with the maintainer); then `pageboard-v0.1.0` | To do |
+| 14 | The checks on the Mac, then the candidate `pageboard-v0.1.0-rc.1`, checked in the Portal and dropped (with the maintainer); then `pageboard-v0.1.0` | To do. On Windows, the checks of the whole branch fail on the known failures only: `AgentCliTest` and `DataDirectoryLockTest` of `pencilnotes-desktop`, `ExportScopeTest` and `RecordingsExportTest` (they write `/no/such/dir` as `D:
+o\such\dir`), three `LectureSharingTest`, `TextHeightTest`, the klib dumps of the Compose and Room modules. Left for `check.yml` and `native.yml` on the pull request: the klib dumps written by hand, `library-desktop`, `library-ios`, the Linux jobs in `manylinux_2_28`, `darwin-x86_64` under Rosetta 2 |
 
 Left to the maintainer: `main` fast-forwarded to `fix/ci-main`, which this branch starts from; the
 namespace `io.github.valerioisufi` verified on the Central Portal and the four secrets of the
-environment `maven-central` (phase 6 of [open-source.md](open-source.md)); the label
-`record-screenshots` on the pull request; the tags.
+environment `maven-central` (phase 6 of [open-source.md](open-source.md)); the tags. No screenshot
+changes (phase 6): the label `record-screenshots` is not needed.
 
 ## Decisions
 
