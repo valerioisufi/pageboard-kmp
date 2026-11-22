@@ -52,6 +52,12 @@ Until 0.1.0 is released, `./gradlew publishToMavenLocal` publishes `0.1.0-SNAPSH
 repository. A 0.x version is experimental: the public API is recorded and every change of it is
 written in the [changelog](CHANGELOG.md), but a minor version may break it.
 
+The libraries run on Android 10 (API 29) and later, on the desktop with Java 17 and later (macOS 13
+on Apple silicon and Intel, Linux with glibc 2.28 on x86_64 and arm64, Windows 10 on x86_64) and on
+iOS 15; an application needs Kotlin 2.4 or later. The desktop jars of the modules with native code
+carry the JNI libraries of the five desktop platforms (about 20 MB each). Material 3 is an alpha
+(`1.12.0-alpha03`): no stable release of it goes with Compose Multiplatform 1.12.
+
 A minimal application is a theme around `DocumentLibrary`:
 
 ```kotlin
@@ -104,6 +110,7 @@ iroh bridge. Gradle builds the native libraries on demand.
 ./gradlew :pencilnotes-desktop:run           # PencilNotes on the desktop
 ./gradlew :pencilnotes-android:assembleDebug # PencilNotes on Android
 ./gradlew jvmTest checkKotlinAbi             # the tests and the recorded API
+./gradlew checkApiDependencies checkNoPrints # the dependencies of the API, no prints
 ```
 
 iOS: open `pencilnotes/iosApp` in Xcode. More in the [reference](docs/reference.md#running-tests).

@@ -151,7 +151,8 @@ Each one gets its own plan.
     writing suggestions.
   - The lectures already recorded are user data: their format needs a migration.
 - **Completion and suggestions while writing.**
-  - This needs a new extension point in the editor: `EditorExtension` has no hook into the text
-    box (`TextBoxEditor`).
-  - `EditorExtension` is a class built from lambdas, so every new hook breaks binary
-    compatibility once it is published. Decide its shape before the first release.
+  - The hook is `EditorExtension.textSuggestions` (`docs/plans/text-box-hook.md`), and the words of
+    the notes suggest the end of a word (`docs/plans/writing-suggestions.md`). `EditorExtension` is
+    an abstract class: a new contribution is an open member with a default, so the extensions
+    compiled before keep working (`docs/plans/editor-ports.md`).
+  - Left: the next words from a local model, in a plan of its own.

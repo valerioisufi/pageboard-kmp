@@ -36,7 +36,7 @@ Your own notes stay safe while you check: run the desktop applications on a scra
 `JAVA_TOOL_OPTIONS="-Dpageboard.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`.
 
 ```bash
-./gradlew jvmTest checkKotlinAbi
+./gradlew jvmTest checkKotlinAbi checkApiDependencies checkNoPrints
 ./gradlew compileAndroidMain :pencilnotes-android:assembleDebug :sample-android:assembleDebug
 ```
 
