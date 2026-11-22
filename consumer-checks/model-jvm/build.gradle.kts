@@ -13,7 +13,9 @@ kotlin {
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-model:$pageboardVersion")
+    // The versions of the libraries from their platform, as the README shows
+    implementation(platform("io.github.valerioisufi:pageboard-bom:$pageboardVersion"))
+    implementation("io.github.valerioisufi:pageboard-model")
 }
 
 application {

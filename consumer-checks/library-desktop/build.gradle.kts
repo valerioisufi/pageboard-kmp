@@ -17,9 +17,11 @@ kotlin {
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-explorer:$pageboardVersion")
-    implementation("io.github.valerioisufi:pageboard-store-room:$pageboardVersion")
-    implementation("io.github.valerioisufi:pageboard-ink:$pageboardVersion")
+    // The versions of the libraries from their platform, as the README shows
+    implementation(platform("io.github.valerioisufi:pageboard-bom:$pageboardVersion"))
+    implementation("io.github.valerioisufi:pageboard-explorer")
+    implementation("io.github.valerioisufi:pageboard-store-room")
+    implementation("io.github.valerioisufi:pageboard-ink")
     implementation(compose.desktop.currentOs)
 }
 

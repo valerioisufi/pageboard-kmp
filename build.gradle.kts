@@ -30,7 +30,7 @@ plugins {
 
 // The documentation of every library together: ./gradlew :dokkaGenerate (build/dokka/html)
 dependencies {
-    for (library in subprojects.filter { it.name.startsWith("pageboard-") && !it.name.startsWith("pageboard-native-") }) {
+    for (library in subprojects.filter { it.name.startsWith("pageboard-") && !it.name.startsWith("pageboard-native-") && it.name != "pageboard-bom" }) {
         dokka(project(library.path))
     }
 }

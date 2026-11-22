@@ -104,6 +104,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             // The public API is declared: what is not part of it is internal
             explicitApi = ExplicitApiMode.Strict
 
+            // The versions of the libraries taken together: Gradle takes all of them at the highest
+            // version an application asks for (pageboard-bom)
+            sourceSets.named("commonMain") {
+                dependencies { api(project.dependencies.platform(project(":pageboard-bom"))) }
+            }
+
             // The licenses in the jars of the JVM and of Android
             val licenses = licensesTask().flatMap { it.output }
             if (JVM in platforms) sourceSets.named("jvmMain") { resources.srcDir(licenses) }

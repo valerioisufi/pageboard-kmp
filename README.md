@@ -40,10 +40,11 @@ are given by the application, and a feature degrades when its engine is missing.
 
 ```kotlin
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-explorer:0.1.0")   // the library and the editor
-    implementation("io.github.valerioisufi:pageboard-store-room:0.1.0") // the notes in SQLite
-    implementation("io.github.valerioisufi:pageboard-pdf:0.1.0")        // PDF pages, with PDFium
-    implementation("io.github.valerioisufi:pageboard-latex:0.1.0")      // formulas, with MicroTeX
+    implementation(platform("io.github.valerioisufi:pageboard-bom:0.1.0")) // every library at one version
+    implementation("io.github.valerioisufi:pageboard-explorer")   // the library and the editor
+    implementation("io.github.valerioisufi:pageboard-store-room") // the notes in SQLite
+    implementation("io.github.valerioisufi:pageboard-pdf")        // PDF pages, with PDFium
+    implementation("io.github.valerioisufi:pageboard-latex")      // formulas, with MicroTeX
 }
 ```
 

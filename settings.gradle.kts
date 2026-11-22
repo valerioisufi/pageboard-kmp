@@ -58,6 +58,7 @@ if (hasAndroidSdk) {
     include(":pageboard-native-audio")
     include(":pageboard-native-iroh")
 }
+include(":pageboard-bom")
 include(":pageboard-platform")
 include(":pageboard-model")
 include(":pageboard-html")
