@@ -177,7 +177,7 @@ The macOS application declares the local network as the iOS one does:
 | 2. The problems of the discovery | `DiscoveryProblem`, `LanDiscovery.problems` on the three platforms, the `Info.plist` checked on iOS; the codes of iOS verified on the iPhone (permission refused, key removed in a scratch build). Tests: JVM (create failing), the mapping of the codes of iOS and Android | done (the codes of iOS on the iPhone: left to the maintainer, see phase 5) |
 | 3. The devices that cannot be reached | `LanSync.reachability`, the failures of `open` kept and cleared, bounded; a device on another network. Tests with a `LanTransport` failing (timeout, refused), a device back | done (as `LanSync.devices` and `LanSync.check`; a device on another network: left for later) |
 | 4. Interface | `Collaboration.status` and `check()`, `SharingProblems` in the share and join dialogs, the check and its report; strings in the 7 languages; Roborazzi of each kind (recorded in the image of `tools/screenshots`), the desktop on a scratch directory | done |
-| 5. Real devices | The MacBook and the iPhone: the IP of the MacBook changed while sharing (the lease renewed), the permission refused on the iPhone and given back, the application in the background on the iPhone | to do |
+| 5. Real devices | The MacBook and the iPhone: the IP of the MacBook changed while sharing (the lease renewed), the permission refused on the iPhone and given back, the application in the background on the iPhone | in progress (the MacBook: done, 2026-11-22; the iPhone and a change of address while sharing: left to the maintainer, see below) |
 
 ### Phase 1 results
 
@@ -259,6 +259,35 @@ The macOS application declares the local network as the iOS one does:
   of it: their notices and screenshots stay as they were.
 * 29 strings in the 7 languages. Screenshots: `share-problems`, `share-joining-problems`; the ones
   of a shared document gain the button of the check. Tests: `SharingProblemsTest`.
+
+### Phase 5 results (first run, 2026-11-22)
+
+On the MacBook, without touching the application in use nor its data:
+
+* JmDNS of the branch, on the network of the machine (`JmdnsLanDiscoveryTest` with
+  `PAGEBOARD_MDNS_TESTS=1`, kept alive a few seconds): `dns-sd -L` finds `pageboard-test-one` at
+  `192-168-0-76.local.:40001`, the address of `en0` now. The PencilNotes in use, built before the
+  branch, still announces 192.168.0.248: it takes the new build, and a restart, to announce where it
+  is.
+* `JmdnsLanDiscoveryTest.twoDevicesFindEachOther` fails on this Mac (`t0` missing from the service
+  found: its TXT record not resolved yet when it is first found), on `main` too: not a change of
+  this branch. The test is opt-in; left as it is.
+* PencilNotes desktop on a scratch data directory (`-Dpageboard.dataDir`): it starts, nothing
+  failing in its output. The dialogs themselves are checked by the screenshots.
+
+Left to the maintainer, on the MacBook (the new build) and the iPhone:
+
+1. The MacBook announces its address now (`dns-sd -L <replica> _pageboard._tcp local.` gives the
+   address of `ipconfig getifaddr en0`), and the iPhone joins the library.
+2. The address of the MacBook changed while sharing (Wi-Fi off and on, or System Settings ›
+   Network › Wi-Fi › Details › TCP/IP › Renew DHCP Lease): within a few seconds the MacBook
+   announces the new one and the iPhone reconnects.
+3. On the iPhone, Settings › Privacy & Security › Local Network › PencilNotes off: the share dialog
+   says the local network is not allowed (or, if iOS stays silent, "nobody found" after 30 s
+   with the path to the setting). Note which of the two: it tells whether
+   `kDNSServiceErr_PolicyDenied` reaches `didNotSearch`.
+4. PencilNotes in the background on the iPhone: the Mac says nobody is found after 30 s, or that
+   the iPhone does not answer, and "Check the connection" lists it.
 
 ## Decisions
 
