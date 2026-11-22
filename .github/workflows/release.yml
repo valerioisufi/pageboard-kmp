@@ -21,10 +21,6 @@ jobs:
             runner: macos-26
           - platform: darwin-x86_64
             runner: macos-26
-          - platform: linux-x86_64
-            runner: ubuntu-24.04
-          - platform: linux-aarch64
-            runner: ubuntu-24.04-arm
           - platform: windows-x86_64
             runner: windows-2022
     runs-on: ${{ matrix.runner }}
@@ -45,8 +41,41 @@ jobs:
           name: natives-${{ matrix.platform }}
           path: build/nativeLibs/jvm
 
+  # The JNI libraries of Linux on the oldest system they promise (glibc 2.28), checked for it
+  natives-linux:
+    strategy:
+      matrix:
+        include:
+          - { platform: linux-x86_64, runner: ubuntu-24.04, image: manylinux_2_28_x86_64 }
+          - { platform: linux-aarch64, runner: ubuntu-24.04-arm, image: manylinux_2_28_aarch64 }
+    runs-on: ${{ matrix.runner }}
+    container: quay.io/pypa/${{ matrix.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: CMake and the toolchain of the iroh bridge
+        run: |
+          dnf install -y cmake
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: JNI libraries of ${{ matrix.platform }}
+        run: ./gradlew buildDesktopNativeLibs -Ppageboard.desktop.platform=${{ matrix.platform }}
+      - name: Check them against glibc 2.28
+        run: native/scripts/check_linux_libraries.sh build/nativeLibs/jvm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-${{ matrix.platform }}
+          path: build/nativeLibs/jvm
+
   publish:
-    needs: natives
+    needs: [natives, natives-linux]
     runs-on: macos-26
     # The secrets of Maven Central are kept in this environment, which only the tags pageboard-v*
     # may use

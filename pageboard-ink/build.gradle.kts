@@ -42,9 +42,7 @@ kotlin {
         }
         androidMain.dependencies {
             // libink_bridge.so built with the NDK
-            if (findProject(":pageboard-native-ink") != null) {
-                implementation(project(":pageboard-native-ink"))
-            }
+            androidNative(":pageboard-native-ink")
         }
     }
 }

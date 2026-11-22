@@ -56,9 +56,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             // The audio codecs (libaudio_bridge.so)
-            if (findProject(":pageboard-native-audio") != null) {
-                implementation(project(":pageboard-native-audio"))
-            }
+            androidNative(":pageboard-native-audio")
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)

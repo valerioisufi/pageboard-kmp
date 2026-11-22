@@ -47,9 +47,7 @@ kotlin {
         }
         androidMain.dependencies {
             // libpdfium_bridge.so + libpdfium.so built/packaged with the NDK
-            if (findProject(":pageboard-native-pdfium") != null) {
-                implementation(project(":pageboard-native-pdfium"))
-            }
+            androidNative(":pageboard-native-pdfium")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

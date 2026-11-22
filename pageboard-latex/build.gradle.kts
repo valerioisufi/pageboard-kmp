@@ -61,9 +61,7 @@ kotlin {
         }
         androidMain.dependencies {
             // libtex.so built with the NDK
-            if (findProject(":pageboard-native-tex") != null) {
-                implementation(project(":pageboard-native-tex"))
-            }
+            androidNative(":pageboard-native-tex")
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)

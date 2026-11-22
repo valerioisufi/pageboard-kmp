@@ -43,6 +43,13 @@ if(WIN32)
     add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
 endif()
 
+# Linux (the desktop JVM): the C++ runtime inside the JNI libraries, so that they run on every
+# distribution of glibc 2.28 and later whatever its libstdc++ (they are built on manylinux_2_28 and
+# checked by scripts/check_linux_libraries.sh)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_link_options(-static-libstdc++ -static-libgcc)
+endif()
+
 # ==============================================================================
 # Abseil
 # ==============================================================================
