@@ -3,6 +3,14 @@
 # the JNI libraries of every desktop platform built on its own runner, then published together
 # (-Ppageboard.native.prebuilt=true: a release without one of them fails), signed.
 #
+# A tag pageboard-vX.Y.Z-rc.N (VERSION_NAME X.Y.Z-rc.N) is a candidate: the same jobs upload it to the
+# Central Portal without releasing it, with no release of GitHub and no documentation; the
+# maintainer looks at the deployment in the Portal and drops it. A version is tagged after a
+# candidate that differs from it by VERSION_NAME alone, and is released when the Portal validates it.
+#
+# What is published is built from the sources of the tag only: no cache of Gradle, no build cache.
+# The actions are pinned by their commit (the version beside it, updated by Dependabot).
+#
 # Secrets, of the environment maven-central: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD (a token of the Central Portal),
 # SIGNING_KEY (an armored PGP key), SIGNING_KEY_PASSWORD.
 name: Release
@@ -28,15 +36,17 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          cache-disabled: true
       - name: JNI libraries of ${{ matrix.platform }}
-        run: ./gradlew buildDesktopNativeLibs -Ppageboard.desktop.platform=${{ matrix.platform }}
-      - uses: actions/upload-artifact@v4
+        run: ./gradlew buildDesktopNativeLibs --no-build-cache -Ppageboard.desktop.platform=${{ matrix.platform }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: natives-${{ matrix.platform }}
           path: build/nativeLibs/jvm
@@ -54,22 +64,24 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          cache-disabled: true
       - name: CMake and the toolchain of the iroh bridge
         run: |
           dnf install -y cmake
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - name: JNI libraries of ${{ matrix.platform }}
-        run: ./gradlew buildDesktopNativeLibs -Ppageboard.desktop.platform=${{ matrix.platform }}
+        run: ./gradlew buildDesktopNativeLibs --no-build-cache -Ppageboard.desktop.platform=${{ matrix.platform }}
       - name: Check them against glibc 2.28
         run: native/scripts/check_linux_libraries.sh build/nativeLibs/jvm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: natives-${{ matrix.platform }}
           path: build/nativeLibs/jvm
@@ -83,54 +95,67 @@ jobs:
     permissions:
       # The release of GitHub with the PDFium of the iOS applications
       contents: write
+    outputs:
+      candidate: ${{ steps.tag.outputs.candidate }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          cache-disabled: true
       - name: The tag is the version
+        id: tag
         run: |
           version=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2)
           if [ "${GITHUB_REF_NAME}" != "pageboard-v${version}" ]; then
             echo "The tag ${GITHUB_REF_NAME} does not match VERSION_NAME=${version}" >&2
             exit 1
           fi
-      - uses: actions/download-artifact@v4
+          if [[ "$version" == *-rc.* ]]; then echo "candidate=true" >> "$GITHUB_OUTPUT"; else echo "candidate=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: natives-*
           path: build/nativeLibs/jvm
           merge-multiple: true
+      # A candidate is uploaded and waits in the Portal; a version is released once validated
       - name: Publish on Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew publishToMavenCentral -Ppageboard.native.prebuilt=true -Ppageboard.pdfium.desktop=all
+          TASK: ${{ steps.tag.outputs.candidate == 'true' && 'publishToMavenCentral' || 'publishAndReleaseToMavenCentral' }}
+        run: ./gradlew "$TASK" --no-build-cache -Ppageboard.native.prebuilt=true -Ppageboard.pdfium.desktop=all
       - name: PDFium for the iOS applications
+        if: steps.tag.outputs.candidate != 'true'
         run: |
-          ./gradlew assemblePdfiumXcframework
+          ./gradlew assemblePdfiumXcframework --no-build-cache
           (cd build/pdfium && zip -qry PDFium.xcframework.zip PDFium.xcframework)
           # Its SHA-256 beside it: what an application checks, and the checksum of a binary target
           # of the Swift Package Manager
           (cd build/pdfium && shasum -a 256 PDFium.xcframework.zip | cut -d' ' -f1 > PDFium.xcframework.zip.sha256)
       - name: Documentation
-        run: ./gradlew :dokkaGenerate
-      - uses: actions/upload-pages-artifact@v3
+        if: steps.tag.outputs.candidate != 'true'
+        run: ./gradlew :dokkaGenerate --no-build-cache
+      - if: steps.tag.outputs.candidate != 'true'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: build/dokka/html
-      - uses: softprops/action-gh-release@v2
+      - if: steps.tag.outputs.candidate != 'true'
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: |
             build/pdfium/PDFium.xcframework.zip
             build/pdfium/PDFium.xcframework.zip.sha256
 
   # The documentation of the version released, on GitHub Pages (the source of the Pages of the
-  # repository set to GitHub Actions)
+  # repository set to GitHub Actions); none for a candidate
   documentation:
     needs: publish
+    if: needs.publish.outputs.candidate != 'true'
     runs-on: ubuntu-24.04
     permissions:
       pages: write
@@ -140,4 +165,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
