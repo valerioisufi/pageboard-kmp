@@ -19,6 +19,8 @@ kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.7.1"
 atomicfu = "0.28.0"
 navigationevent = "1.1.0"
+# No stable Material 3 goes with Compose Multiplatform 1.12 (the last one is 1.9.0): the libraries
+# bring this alpha to the applications, as the README says (docs/plans/release-readiness.md)
 material3 = "1.12.0-alpha03"
 room = "2.8.5"
 sqlite = "2.6.2"

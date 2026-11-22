@@ -23,7 +23,6 @@ kotlin {
             implementation(libs.compose.foundation)
             // The theme takes and gives the colors of Material 3 (ColorScheme)
             api(libs.compose.material3)
-            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             // The resources the other modules take from this one (StringResource)
             api(libs.compose.components.resources)
