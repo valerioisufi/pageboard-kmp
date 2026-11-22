@@ -9,6 +9,8 @@
 abstract interface io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery|null[0]
     abstract val services // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services|{}services[0]
         abstract fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/LanService>> // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.services.<get-services>|<get-services>(){}[0]
+    open val problems // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.problems|{}problems[0]
+        open fun <get-problems>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem>> // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.problems.<get-problems>|<get-problems>(){}[0]
 
     abstract fun close() // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.close|close(){}[0]
     abstract suspend fun advertise(kotlin/String, kotlin/Int, kotlin.collections/Map<kotlin/String, kotlin/String>) // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.advertise|advertise(kotlin.String;kotlin.Int;kotlin.collections.Map<kotlin.String,kotlin.String>){}[0]
@@ -17,9 +19,70 @@ abstract interface io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // i
     final object Companion // io.github.valerioisufi.pageboard.sync.lan/LanDiscovery.Companion|null[0]
 }
 
+sealed interface io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem|null[0]
+    final class AdvertiseFailed : io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed|null[0]
+        constructor <init>(kotlin/Int? = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.<init>|<init>(kotlin.Int?;kotlin.String?){}[0]
+
+        final val code // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.code|{}code[0]
+            final fun <get-code>(): kotlin/Int? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.code.<get-code>|<get-code>(){}[0]
+        final val message // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.message|{}message[0]
+            final fun <get-message>(): kotlin/String? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.message.<get-message>|<get-message>(){}[0]
+
+        final fun component1(): kotlin/Int? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.component2|component2(){}[0]
+        final fun copy(kotlin/Int? = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.copy|copy(kotlin.Int?;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.AdvertiseFailed.toString|toString(){}[0]
+    }
+
+    final class BrowseFailed : io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed|null[0]
+        constructor <init>(kotlin/Int? = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.<init>|<init>(kotlin.Int?;kotlin.String?){}[0]
+
+        final val code // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.code|{}code[0]
+            final fun <get-code>(): kotlin/Int? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.code.<get-code>|<get-code>(){}[0]
+        final val message // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.message|{}message[0]
+            final fun <get-message>(): kotlin/String? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.message.<get-message>|<get-message>(){}[0]
+
+        final fun component1(): kotlin/Int? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.component1|component1(){}[0]
+        final fun component2(): kotlin/String? // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.component2|component2(){}[0]
+        final fun copy(kotlin/Int? = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.copy|copy(kotlin.Int?;kotlin.String?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.BrowseFailed.toString|toString(){}[0]
+    }
+
+    final class MissingConfiguration : io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration|null[0]
+        constructor <init>(kotlin.collections/List<kotlin/String>) // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.<init>|<init>(kotlin.collections.List<kotlin.String>){}[0]
+
+        final val missing // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.missing|{}missing[0]
+            final fun <get-missing>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.missing.<get-missing>|<get-missing>(){}[0]
+
+        final fun component1(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.component1|component1(){}[0]
+        final fun copy(kotlin.collections/List<kotlin/String> = ...): io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.copy|copy(kotlin.collections.List<kotlin.String>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.MissingConfiguration.toString|toString(){}[0]
+    }
+
+    final object NoLocalNetwork : io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.NoLocalNetwork|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.NoLocalNetwork.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.NoLocalNetwork.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.NoLocalNetwork.toString|toString(){}[0]
+    }
+
+    final object PermissionDenied : io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem { // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.PermissionDenied|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.PermissionDenied.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.PermissionDenied.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem.PermissionDenied.toString|toString(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery : io.github.valerioisufi.pageboard.sync.lan/LanDiscovery { // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.<init>|<init>(){}[0]
 
+    final val problems // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.problems|{}problems[0]
+        final fun <get-problems>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/DiscoveryProblem>> // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.problems.<get-problems>|<get-problems>(){}[0]
     final val services // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.services|{}services[0]
         final fun <get-services>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.pageboard.sync.lan/LanService>> // io.github.valerioisufi.pageboard.sync.lan/BonjourLanDiscovery.services.<get-services>|<get-services>(){}[0]
 

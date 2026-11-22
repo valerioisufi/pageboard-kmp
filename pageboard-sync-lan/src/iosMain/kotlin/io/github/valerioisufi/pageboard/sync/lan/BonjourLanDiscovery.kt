@@ -10,11 +10,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSBundle
 import platform.Foundation.NSData
+import platform.Foundation.NSNetServicesErrorCode
+import platform.Foundation.NSNumber
 import platform.Foundation.NSNetService
 import platform.Foundation.NSNetServiceBrowser
 import platform.Foundation.NSNetServiceBrowserDelegateProtocol
@@ -34,10 +38,27 @@ import platform.posix.AF_INET
 @OptIn(BetaInteropApi::class)
 public class BonjourLanDiscovery : LanDiscovery {
     private var announced: NSNetService? = null
+    private val problemSet = DiscoveryProblems()
+
+    override val problems: StateFlow<List<DiscoveryProblem>> get() = problemSet.problems
+
+    /** The announcement published, or why not (kept here: the delegate of a service is a weak reference). */
+    private val publishDelegate = object : NSObject(), NSNetServiceDelegateProtocol {
+        override fun netServiceDidPublish(sender: NSNetService) {
+            problemSet.clear(DiscoveryProblem.AdvertiseFailed::class, DiscoveryProblem.PermissionDenied::class)
+        }
+
+        @ObjCSignatureOverride
+        override fun netService(sender: NSNetService, didNotPublish: Map<Any?, *>) {
+            problemSet.report(bonjourProblem(errorCodeOf(didNotPublish), announcing = true))
+        }
+    }
 
     override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>): Unit = withContext(Dispatchers.Main) {
+        checkConfiguration()
         announced?.stop()
         val service = NSNetService(domain = DOMAIN, type = TYPE, name = name, port = port)
+        service.delegate = publishDelegate
         val record: Map<Any?, *> = attributes.mapValues { (_, value) -> NSString.create(string = value).dataUsingEncoding(NSUTF8StringEncoding) }
         service.setTXTRecordData(NSNetService.dataFromTXTRecordDictionary(record))
         service.publish()
@@ -79,6 +100,15 @@ public class BonjourLanDiscovery : LanDiscovery {
             }
         }
         val browserDelegate = object : NSObject(), NSNetServiceBrowserDelegateProtocol {
+            override fun netServiceBrowserWillSearch(browser: NSNetServiceBrowser) {
+                problemSet.clear(DiscoveryProblem.BrowseFailed::class)
+            }
+
+            @ObjCSignatureOverride
+            override fun netServiceBrowser(browser: NSNetServiceBrowser, didNotSearch: Map<Any?, *>) {
+                problemSet.report(bonjourProblem(errorCodeOf(didNotSearch), announcing = false))
+            }
+
             @ObjCSignatureOverride
             override fun netServiceBrowser(browser: NSNetServiceBrowser, didFindService: NSNetService, moreComing: Boolean) {
                 present.remove(didFindService.name)?.forget()
@@ -96,6 +126,7 @@ public class BonjourLanDiscovery : LanDiscovery {
                 trySend(found.values.toList())
             }
         }
+        checkConfiguration()
         val browser = NSNetServiceBrowser()
         browser.delegate = browserDelegate
         browser.searchForServicesOfType(TYPE, inDomain = DOMAIN)
@@ -110,7 +141,21 @@ public class BonjourLanDiscovery : LanDiscovery {
 
     override fun close() {
         announced?.stop()
+        announced?.delegate = null
         announced = null
+        problemSet.clearAll()
+    }
+
+    /** The keys of the `Info.plist` iOS needs for the local network, reported when missing. */
+    private fun checkConfiguration() {
+        val bundle = NSBundle.mainBundle
+        val services = bundle.objectForInfoDictionaryKey(BONJOUR_SERVICES_KEY) as? List<*>
+        val missing = buildList {
+            if (services?.any { it?.toString()?.removeSuffix(".") == LanDiscovery.SERVICE_TYPE } != true) add("$BONJOUR_SERVICES_KEY: ${LanDiscovery.SERVICE_TYPE}")
+            if (bundle.objectForInfoDictionaryKey(LOCAL_NETWORK_USAGE_KEY) == null) add(LOCAL_NETWORK_USAGE_KEY)
+        }
+        if (missing.isEmpty()) problemSet.clear(DiscoveryProblem.MissingConfiguration::class)
+        else problemSet.report(DiscoveryProblem.MissingConfiguration(missing))
     }
 
     private companion object {
@@ -124,6 +169,13 @@ public class BonjourLanDiscovery : LanDiscovery {
             stopMonitoring()
             stop()
             delegate = null
+        }
+
+        /** The code of a failure of Bonjour, in its dictionary of error. */
+        fun errorCodeOf(error: Map<Any?, *>): Int? = when (val code = error[NSNetServicesErrorCode]) {
+            is Number -> code.toInt()
+            is NSNumber -> code.intValue
+            else -> null
         }
 
         fun attributesOf(record: NSData?): Map<String, String> =

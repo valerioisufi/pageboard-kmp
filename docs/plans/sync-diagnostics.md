@@ -174,7 +174,7 @@ The macOS application declares the local network as the iOS one does:
 | Phase | Content | Status |
 |---|---|---|
 | 1. The address follows the network | `LanDiscovery.refresh()`, `JmdnsLanDiscovery` creating `JmDNS` again on a new address, `LanSync` announcing again; no announcement on the loopback; the `Info.plist` keys of the macOS applications. Tests: a discovery given a fake list of addresses that changes (announced again, found again), no address | done |
-| 2. The problems of the discovery | `DiscoveryProblem`, `LanDiscovery.problems` on the three platforms, the `Info.plist` checked on iOS; the codes of iOS verified on the iPhone (permission refused, key removed in a scratch build). Tests: JVM (create failing), the mapping of the codes of iOS and Android | to do |
+| 2. The problems of the discovery | `DiscoveryProblem`, `LanDiscovery.problems` on the three platforms, the `Info.plist` checked on iOS; the codes of iOS verified on the iPhone (permission refused, key removed in a scratch build). Tests: JVM (create failing), the mapping of the codes of iOS and Android | done (the codes of iOS on the iPhone: left to the maintainer, see phase 5) |
 | 3. The devices that cannot be reached | `LanSync.reachability`, the failures of `open` kept and cleared, bounded; a device on another network. Tests with a `LanTransport` failing (timeout, refused), a device back | to do |
 | 4. Interface | `Collaboration.status` and `check()`, `SharingProblems` in the share and join dialogs, the check and its report; strings in the 7 languages; Roborazzi of each kind (recorded in the image of `tools/screenshots`), the desktop on a scratch directory | to do |
 | 5. Real devices | The MacBook and the iPhone: the IP of the MacBook changed while sharing (the lease renewed), the permission refused on the iPhone and given back, the application in the background on the iPhone | to do |
@@ -194,6 +194,27 @@ The macOS application declares the local network as the iOS one does:
 * Tests: `JmdnsAddressTest` (a new address: a new responder announcing the same, the devices found
   through it; no address until one comes; an address given stays; an unused discovery stays idle),
   `LanSyncTest.aDiscoveryOnANewAddressIsAnnouncedAgain`.
+
+### Phase 2 results
+
+* `DiscoveryProblem` (`-sync-lan`, common): `PermissionDenied`, `MissingConfiguration(missing)`,
+  `NoLocalNetwork`, `AdvertiseFailed(code, message)`, `BrowseFailed(code, message)`;
+  `LanDiscovery.problems` (a `StateFlow`, empty by default). `DiscoveryProblems` keeps one of each
+  kind, cleared once what failed works again (a search started, an announcement published).
+* Desktop: no address → `NoLocalNetwork`; JmDNS not created → `BrowseFailed` with the message of
+  the exception; an announcement failing → `AdvertiseFailed`.
+* iOS: `netServiceBrowser(_:didNotSearch:)` and `netService(_:didNotPublish:)` mapped by
+  `bonjourProblem` (`-65570` `kDNSServiceErr_PolicyDenied` → `PermissionDenied`, `-72008` →
+  `MissingConfiguration`, the other `NSNetServices…Error` by name); the `Info.plist` of the main
+  bundle checked at each announcement and search (`NSBonjourServices` with `_pageboard._tcp`,
+  `NSLocalNetworkUsageDescription`).
+* Android: `onStartDiscoveryFailed`, `onRegistrationFailed` with the name of the code; a
+  `SecurityException` of `NsdManager` (the local network not allowed, Android 17) →
+  `PermissionDenied`.
+* iOS may also stay silent when the permission is refused (nothing found, no failure): the
+  interface says it among the hints of "nobody found" (phase 4).
+* Tests: `DiscoveryProblemTest` (one of each kind, cleared; the codes of Bonjour),
+  `JmdnsAddressTest.withoutANetworkOrAResponderTheProblemIsSaidUntilItWorks`.
 
 ## Decisions
 

@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
@@ -51,10 +52,14 @@ public class JmdnsLanDiscovery internal constructor(
 
     private class Announcement(val name: String, val port: Int, val attributes: Map<String, String>)
 
+    private val problemSet = DiscoveryProblems()
+
+    override val problems: StateFlow<List<DiscoveryProblem>> get() = problemSet.problems
+
     override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>): Unit = withContext(Dispatchers.IO) {
         lock.withLock {
             announced = Announcement(name, port, attributes)
-            startLocked()?.advertise(name, port, attributes)
+            startLocked()?.let { announceOn(it, Announcement(name, port, attributes)) }
         }
     }
 
@@ -71,9 +76,10 @@ public class JmdnsLanDiscovery internal constructor(
             responder.value?.close()
             responder.value = null
             bound = now
-            responder.value = now?.let(::createOn)
+            responder.value = createOn(now)
             // Announced again by the caller ([LanSync]), and here for whoever does not
-            announced?.let { responder.value?.advertise(it.name, it.port, it.attributes) }
+            val announcement = announced
+            responder.value?.let { if (announcement != null) announceOn(it, announcement) }
             true
         }
     }
@@ -84,7 +90,8 @@ public class JmdnsLanDiscovery internal constructor(
         started = false
         bound = null
         announced = null
-        current?.close()
+        problemSet.clearAll()
+        runCatching { current?.close() }
     }
 
     /** The responder, created on the first use; `null` without an address. Called holding [lock]. */
@@ -92,15 +99,34 @@ public class JmdnsLanDiscovery internal constructor(
         if (!started) {
             started = true
             bound = address ?: localAddress()
-            responder.value = bound?.let(::createOn)
+            responder.value = createOn(bound)
         }
         return responder.value
     }
 
-    private fun createOn(address: InetAddress): MdnsResponder? = try {
-        createResponder(address)
-    } catch (_: Exception) {
-        null
+    /** A responder on [address], `null` without one or when it cannot be created (the problem reported). */
+    private fun createOn(address: InetAddress?): MdnsResponder? {
+        if (address == null) {
+            problemSet.report(DiscoveryProblem.NoLocalNetwork)
+            return null
+        }
+        problemSet.clear(DiscoveryProblem.NoLocalNetwork::class)
+        return try {
+            createResponder(address).also { problemSet.clear(DiscoveryProblem.BrowseFailed::class) }
+        } catch (e: Exception) {
+            // macOS refusing the local network shows as an IOException ("No route to host")
+            problemSet.report(DiscoveryProblem.BrowseFailed(message = e.message ?: e::class.simpleName))
+            null
+        }
+    }
+
+    private fun announceOn(responder: MdnsResponder, announcement: Announcement) {
+        try {
+            responder.advertise(announcement.name, announcement.port, announcement.attributes)
+            problemSet.clear(DiscoveryProblem.AdvertiseFailed::class)
+        } catch (e: Exception) {
+            problemSet.report(DiscoveryProblem.AdvertiseFailed(message = e.message ?: e::class.simpleName))
+        }
     }
 }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -24,6 +25,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 public class NsdLanDiscovery(context: Context) : LanDiscovery {
     private val nsd = context.applicationContext.getSystemService(NsdManager::class.java)
     private var registration: NsdManager.RegistrationListener? = null
+    private val problemSet = DiscoveryProblems()
+
+    override val problems: StateFlow<List<DiscoveryProblem>> get() = problemSet.problems
 
     override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) {
         registration?.let { runCatching { nsd.unregisterService(it) } }
@@ -34,13 +38,26 @@ public class NsdLanDiscovery(context: Context) : LanDiscovery {
             attributes.forEach { (key, value) -> setAttribute(key, value) }
         }
         val listener = object : NsdManager.RegistrationListener {
-            override fun onServiceRegistered(info: NsdServiceInfo) {}
-            override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {}
+            override fun onServiceRegistered(info: NsdServiceInfo) {
+                problemSet.clear(DiscoveryProblem.AdvertiseFailed::class, DiscoveryProblem.PermissionDenied::class)
+            }
+
+            override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {
+                problemSet.report(DiscoveryProblem.AdvertiseFailed(errorCode, failureName(errorCode)))
+            }
+
             override fun onServiceUnregistered(info: NsdServiceInfo) {}
             override fun onUnregistrationFailed(info: NsdServiceInfo, errorCode: Int) {}
         }
-        nsd.registerService(info, NsdManager.PROTOCOL_DNS_SD, listener)
-        registration = listener
+        try {
+            nsd.registerService(info, NsdManager.PROTOCOL_DNS_SD, listener)
+            registration = listener
+        } catch (_: SecurityException) {
+            // Android 17: the local network not allowed
+            problemSet.report(DiscoveryProblem.PermissionDenied)
+        } catch (e: IllegalArgumentException) {
+            problemSet.report(DiscoveryProblem.AdvertiseFailed(message = e.message))
+        }
     }
 
     override val services: Flow<List<LanService>> = callbackFlow {
@@ -107,12 +124,22 @@ public class NsdLanDiscovery(context: Context) : LanDiscovery {
         val listener = object : NsdManager.DiscoveryListener {
             override fun onServiceFound(info: NsdServiceInfo) = follow(info)
             override fun onServiceLost(info: NsdServiceInfo) = forget(info.serviceName)
-            override fun onDiscoveryStarted(serviceType: String) {}
+            override fun onDiscoveryStarted(serviceType: String) {
+                problemSet.clear(DiscoveryProblem.BrowseFailed::class, DiscoveryProblem.PermissionDenied::class)
+            }
+
             override fun onDiscoveryStopped(serviceType: String) {}
-            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {}
+            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
+                problemSet.report(DiscoveryProblem.BrowseFailed(errorCode, failureName(errorCode)))
+            }
+
             override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {}
         }
-        nsd.discoverServices(LanDiscovery.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
+        try {
+            nsd.discoverServices(LanDiscovery.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
+        } catch (_: SecurityException) {
+            problemSet.report(DiscoveryProblem.PermissionDenied)
+        }
         awaitClose {
             runCatching { nsd.stopServiceDiscovery(listener) }
             if (Build.VERSION.SDK_INT >= 34) followed.values.forEach { runCatching { nsd.unregisterServiceInfoCallback(it) } }
@@ -137,6 +164,7 @@ public class NsdLanDiscovery(context: Context) : LanDiscovery {
     override fun close() {
         registration?.let { runCatching { nsd.unregisterService(it) } }
         registration = null
+        problemSet.clearAll()
     }
 
     private companion object {
@@ -144,6 +172,14 @@ public class NsdLanDiscovery(context: Context) : LanDiscovery {
         const val RESOLVE_TIMEOUT_MS = 10_000L
         const val RETRY_MS = 2_000L
         const val MAX_RETRY_STEPS = 5
+
+        /** The name of a failure of `NsdManager`, for whoever reads the details. */
+        fun failureName(code: Int): String = when (code) {
+            NsdManager.FAILURE_INTERNAL_ERROR -> "FAILURE_INTERNAL_ERROR"
+            NsdManager.FAILURE_ALREADY_ACTIVE -> "FAILURE_ALREADY_ACTIVE"
+            NsdManager.FAILURE_MAX_LIMIT -> "FAILURE_MAX_LIMIT"
+            else -> "FAILURE_$code"
+        }
 
         @Suppress("DEPRECATION")
         fun NsdServiceInfo.toLanService(): LanService? {

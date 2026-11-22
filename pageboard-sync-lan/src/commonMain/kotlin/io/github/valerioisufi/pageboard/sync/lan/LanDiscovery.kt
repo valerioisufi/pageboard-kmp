@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.sync.lan
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /** A device announcing itself on the local network: its name, its address and its [attributes]. */
 public data class LanService(val name: String, val host: String, val port: Int, val attributes: Map<String, String>) {
@@ -27,6 +28,12 @@ public interface LanDiscovery {
      * `true` when this device must be announced again ([advertise]), as on a new network.
      */
     public suspend fun refresh(): Boolean = false
+
+    /**
+     * What keeps the devices from finding each other now (a permission refused, no local network,
+     * an announcement failed...), empty when nothing is known to be wrong.
+     */
+    public val problems: StateFlow<List<DiscoveryProblem>> get() = DiscoveryProblems.NONE
 
     public fun close()
 

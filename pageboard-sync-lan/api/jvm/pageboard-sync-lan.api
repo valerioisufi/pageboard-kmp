@@ -1,8 +1,67 @@
+public abstract interface class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$AdvertiseFailed : io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Integer;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Integer;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Integer;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$AdvertiseFailed;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$AdvertiseFailed;Ljava/lang/Integer;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$AdvertiseFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCode ()Ljava/lang/Integer;
+	public final fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$BrowseFailed : io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Integer;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Integer;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Integer;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$BrowseFailed;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$BrowseFailed;Ljava/lang/Integer;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$BrowseFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCode ()Ljava/lang/Integer;
+	public final fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$MissingConfiguration : io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$MissingConfiguration;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$MissingConfiguration;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$MissingConfiguration;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMissing ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$NoLocalNetwork : io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$NoLocalNetwork;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$PermissionDenied : io/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/lan/DiscoveryProblem$PermissionDenied;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/sync/lan/JmdnsLanDiscovery : io/github/valerioisufi/pageboard/sync/lan/LanDiscovery {
 	public fun <init> (Ljava/net/InetAddress;)V
 	public synthetic fun <init> (Ljava/net/InetAddress;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun close ()V
+	public fun getProblems ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun getServices ()Lkotlinx/coroutines/flow/Flow;
 	public fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -11,6 +70,7 @@ public abstract interface class io/github/valerioisufi/pageboard/sync/lan/LanDis
 	public static final field Companion Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery$Companion;
 	public abstract fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun close ()V
+	public fun getProblems ()Lkotlinx/coroutines/flow/StateFlow;
 	public abstract fun getServices ()Lkotlinx/coroutines/flow/Flow;
 	public fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -19,6 +79,7 @@ public final class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery$Compan
 }
 
 public final class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery$DefaultImpls {
+	public static fun getProblems (Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;)Lkotlinx/coroutines/flow/StateFlow;
 	public static fun refresh (Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

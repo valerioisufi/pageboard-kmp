@@ -105,6 +105,27 @@ class JmdnsAddressTest {
         fixed.close()
     }
 
+    @Test
+    fun withoutANetworkOrAResponderTheProblemIsSaidUntilItWorks() = runBlocking {
+        val machine = Machine(null)
+        var failing = true
+        val discovery = JmdnsLanDiscovery(null, { machine.address }) {
+            if (failing) throw java.io.IOException("No route to host") else FakeResponder(it)
+        }
+        discovery.advertise("mac", 1, emptyMap())
+        assertEquals(listOf<DiscoveryProblem>(DiscoveryProblem.NoLocalNetwork), discovery.problems.value)
+
+        machine.address = first
+        assertTrue(discovery.refresh())
+        assertEquals(listOf<DiscoveryProblem>(DiscoveryProblem.BrowseFailed(message = "No route to host")), discovery.problems.value)
+
+        failing = false
+        machine.address = second
+        assertTrue(discovery.refresh())
+        assertTrue(discovery.problems.value.isEmpty())
+        discovery.close()
+    }
+
     private fun kotlinx.coroutines.CoroutineScope.launchCollecting(discovery: LanDiscovery, into: MutableStateFlow<List<LanService>>) =
         launch(kotlinx.coroutines.Dispatchers.Default) { discovery.services.collect { into.value = it } }
 }
