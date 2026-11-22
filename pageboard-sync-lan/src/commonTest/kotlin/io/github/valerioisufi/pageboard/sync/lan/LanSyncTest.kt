@@ -17,6 +17,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -84,11 +85,14 @@ class LanSyncTest {
         var newAddress = false
         var announcements = 0
 
+        /** Whether its announcement stays as it is on the network (an old address left there). */
+        var frozen = false
+
         override suspend fun refresh(): Boolean = newAddress.also { newAddress = false }
 
         override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) {
             announcements++
-            if (!reaches) return
+            if (!reaches || frozen) return
             this.name = name
             network.announced.update { it + (name to LanService(name, "127.0.0.1", port, attributes)) }
         }
@@ -235,6 +239,63 @@ class LanSyncTest {
         assertEquals(before + 1, ada.discovery.announcements)
         ada.goOffline()
     }
+
+    @Test
+    fun aDeviceFoundWhereItIsNoMoreIsSaidNotToAnswer() = lanTest { scope ->
+        val network = FakeNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, scope, network) }
+        ada.goOnline()
+        val document = ada.store.createDocument("Lab")
+        val invitation = assertNotNull(ada.engine.invite(document.id, "Lab"))
+        ada.lan.announce()
+        // Ada announced on an address gone (a port nobody listens on), Bob only finds it there
+        val adaId = ada.store.replicaId()
+        val gone = closedPort(scope)
+        ada.discovery.frozen = true
+        network.announced.update { it + (adaId to it.getValue(adaId).copy(port = gone)) }
+        bob.goOnline()
+        bob.lan.join(invitation)
+        val failing = withTimeout(10_000) { bob.lan.devices.first { devices -> devices.any { it.id == adaId && it.failures > 0 } } }.single { it.id == adaId }
+        assertTrue(failing.shared)
+        assertEquals("ada", failing.name)
+        assertEquals("127.0.0.1:$gone", failing.address)
+        assertNotNull(failing.failure)
+        assertEquals(false, bob.lan.check(waitMs = 2_000).devices.single { it.device.id == adaId }.reachable)
+
+        // Announced where it is again: connected, the failures forgotten
+        ada.discovery.frozen = false
+        ada.lan.announce()
+        bob.awaitSame(document.id, ada)
+        withTimeout(10_000) { bob.lan.devices.first { devices -> devices.any { it.id == adaId && it.failures == 0 && it.connected } } }
+        listOf(ada, bob).forEach { it.goOffline() }
+    }
+
+    @Test
+    fun theCheckSaysWhetherThisDeviceAnswersWhereItIsAnnounced() = lanTest { scope ->
+        val network = FakeNetwork()
+        val ada = Device("ada", scope, network)
+        ada.goOnline()
+        val adaId = ada.store.replicaId()
+        val fine = ada.lan.check(waitMs = 2_000)
+        assertTrue(fine.listening)
+        assertEquals("127.0.0.1:${ada.transport.boundPort}", fine.announcedAt)
+        assertEquals(true, fine.announcedReachable)
+
+        // Its announcement left on an old address
+        val gone = closedPort(scope)
+        ada.discovery.frozen = true
+        network.announced.update { it + (adaId to it.getValue(adaId).copy(port = gone)) }
+        // Found there by its discovery
+        delay(500)
+        val stale = ada.lan.check(waitMs = 2_000)
+        assertEquals("127.0.0.1:$gone", stale.announcedAt)
+        assertEquals(false, stale.announcedReachable)
+        ada.goOffline()
+        assertEquals(false, ada.lan.check(waitMs = 100).listening)
+    }
+
+    /** A port of this machine nobody listens on. */
+    private suspend fun closedPort(scope: CoroutineScope): Int = LanTransport(scope, 0).let { free -> free.start().also { free.close() } }
 
     private suspend fun Device.awaitSame(documentId: String, other: Device) {
         while (true) {

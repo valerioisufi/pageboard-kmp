@@ -11,7 +11,14 @@ import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -61,6 +68,30 @@ public class LanSync(
     private val addresses = mutableMapOf<String, String>()
     private var job: Job? = null
 
+    /** The connections failed in a row, by device (or address of an invitation), with the last cause. */
+    private val failures = mutableMapOf<String, Failure>()
+
+    private class Failure(val count: Int, val cause: String)
+
+    /** The devices found sharing something with this one, and the addresses of invitations tried, at the last round. */
+    private var sharing: Set<String> = emptySet()
+    private var joinedAt: Set<String> = emptySet()
+
+    /** The devices found by the discovery last (this one included). */
+    private val lastFound = MutableStateFlow<List<LanService>>(emptyList())
+
+    private val devicesState = MutableStateFlow<List<LanDevice>>(emptyList())
+
+    /**
+     * The other devices of the network: found (or remembered a while, or joined by the address of
+     * an invitation), whether they share something with this device, whether the connections to
+     * them work. Updated as they are found and at each round.
+     */
+    public val devices: StateFlow<List<LanDevice>> = devicesState.asStateFlow()
+
+    /** What keeps the devices from finding each other (see [LanDiscovery.problems]). */
+    public val problems: StateFlow<List<DiscoveryProblem>> get() = discovery.problems
+
     /** Starts listening, announcing and connecting. */
     override suspend fun start() {
         if (job != null) return
@@ -69,6 +100,7 @@ public class LanSync(
             launch { transport.incoming.collect { engine.accept(it) } }
             launch {
                 discovery.services.collectLatest { found ->
+                    lastFound.value = found
                     remember(found)
                     connect(missingOnly = false)
                     // The other device connects first: this one if it has not done it yet
@@ -140,7 +172,12 @@ public class LanSync(
         mutex.withLock {
             connections.values.forEach { it.cancel() }
             connections.clear()
+            failures.clear()
+            sharing = emptySet()
+            joinedAt = emptySet()
         }
+        lastFound.value = emptyList()
+        devicesState.value = emptyList()
         engine.stop()
         transport.close()
         discovery.close()
@@ -164,24 +201,109 @@ public class LanSync(
             known.values.removeAll { !it.found && it.seen.elapsedNow() > FORGET_AFTER }
             known.values.map { it.service } to addresses.toMap()
         }
+        val sharing = mutableSetOf<String>()
         for (service in found) {
             if (service.attributes["v"] != PROTOCOL.toString()) continue
-            // One connection between two devices: the other one makes it first
-            if (!missingOnly && deviceId > service.name) continue
             val tags = service.attributes.filterKeys { it.startsWith("t") }.values.flatMap { it.split(',') }.toSet()
             // The current key of a document first: an older one for a device still on it
             for (documentId in keys.map { it.first }.distinct()) {
                 val viaSpace = announcedBy[documentId]?.let { it in tags } == true
                 val key = keys.firstOrNull { it.first == documentId && (viaSpace || it.second.tag.take(TAG_LENGTH) in tags) }?.second ?: continue
+                sharing += service.name
+                // One connection between two devices: the other one makes it first
+                if (!missingOnly && deviceId > service.name) continue
                 if (peers.any { it.replica == service.name && it.documentId == documentId }) continue
                 open(service.name, service.address, documentId, key)
             }
         }
         // The devices of the invitations, while nobody shares the document with this one
+        val joinedAt = mutableSetOf<String>()
         for ((documentId, address) in invited) {
             val key = keys.firstOrNull { it.first == documentId }?.second ?: continue
-            if (peers.none { it.documentId == documentId }) open(address, address, documentId, key)
+            if (peers.none { it.documentId == documentId }) {
+                joinedAt += address
+                open(address, address, documentId, key)
+            }
         }
+        mutex.withLock {
+            this.sharing = sharing
+            this.joinedAt = joinedAt
+        }
+        publishDevices()
+    }
+
+    /** Publishes [devices], from what the last round found and the outcomes of the connections. */
+    private suspend fun publishDevices() {
+        val connected = engine.peers.value.mapTo(HashSet()) { it.replica }
+        mutex.withLock {
+            val found = known.values.map { device ->
+                val service = device.service
+                val failure = failures[service.name]
+                LanDevice(
+                    id = service.name,
+                    name = service.attributes["n"].orEmpty().take(MAX_NAME_LENGTH),
+                    address = service.address,
+                    shared = service.name in sharing,
+                    otherVersion = service.attributes["v"] != PROTOCOL.toString(),
+                    connected = service.name in connected,
+                    failures = failure?.count ?: 0,
+                    failure = failure?.cause,
+                    found = device.found
+                )
+            }
+            val invited = joinedAt.filter { address -> found.none { it.address == address } }.map { address ->
+                val failure = failures[address]
+                LanDevice(address, "", address, shared = true, otherVersion = false, connected = false, failure?.count ?: 0, failure?.cause, found = false)
+            }
+            devicesState.value = found + invited
+        }
+    }
+
+    /**
+     * Checks the local network now, within [waitMs]: this device listening, its own announcement
+     * seen and answering at its address (the address of a device changed while it announced the
+     * old one), a connection to each device found. Nothing travels but the start of a connection,
+     * closed at once.
+     */
+    public suspend fun check(waitMs: Long = CHECK_WAIT_MS): LanCheck {
+        if (job == null) return LanCheck(false, null, null, null, emptyList(), discovery.problems.value)
+        refresh(networkChanged = true)
+        val listening = transport.isListening
+        val port = runCatching { transport.boundPort }.getOrNull()
+        val self = withTimeoutOrNull(waitMs) { lastFound.first { found -> found.any { it.name == deviceId } } }?.first { it.name == deviceId }
+        val selfReachable = self?.let { probe(it.address) == null }
+        connect(missingOnly = true)
+        val devices = coroutineScope {
+            devices.value.map { device ->
+                async {
+                    val failure = if (device.connected) null else probe(device.address)
+                    DeviceCheck(device, failure == null, failure)
+                }
+            }.awaitAll()
+        }
+        return LanCheck(listening, port, self?.address, selfReachable, devices, discovery.problems.value)
+    }
+
+    /** Opens a connection to [address] and closes it: `null` when it answered, else why not. */
+    private suspend fun probe(address: String): String? {
+        var failure: String? = TIMEOUT
+        withTimeoutOrNull(connectTimeoutMs) {
+            failure = try {
+                transport.connect(address).close()
+                null
+            } catch (e: SyncException) {
+                causeOf(e)
+            }
+        }
+        return failure
+    }
+
+    /** Keeps the outcome of a connection to [peer]: failed because of [cause], or made (`null`). */
+    private suspend fun noteConnection(peer: String, cause: String?) {
+        mutex.withLock {
+            if (cause == null) failures.remove(peer) else failures[peer] = Failure((failures[peer]?.count ?: 0) + 1, cause)
+        }
+        publishDevices()
     }
 
     /** Remembers the devices [found] on the network (the ones not found any more for a while). */
@@ -196,13 +318,17 @@ public class LanSync(
         val id = peer to documentId
         if (connections[id]?.isActive == true) return@withLock
         connections[id] = scope.launch {
+            var cause = TIMEOUT
             val channel = withTimeoutOrNull(connectTimeoutMs) {
                 try {
                     transport.connect(address)
-                } catch (_: SyncException) {
+                } catch (e: SyncException) {
+                    cause = causeOf(e)
                     null
                 }
-            } ?: return@launch
+            }
+            noteConnection(peer, if (channel == null) cause else null)
+            if (channel == null) return@launch
             // As long as the connection lasts
             engine.connect(channel, documentId, key).join()
         }
@@ -215,5 +341,16 @@ public class LanSync(
         const val TAG_LENGTH = 12
         const val TAGS_PER_ENTRY = 19
         const val MAX_NAME_LENGTH = 60
+        const val CHECK_WAIT_MS = 5_000L
+        const val TIMEOUT = "timeout"
+
+        /** Why a connection failed, for the details: the exception of the system under [e], else its message. */
+        fun causeOf(e: SyncException): String {
+            val cause = e.cause ?: return e.message ?: "SyncException"
+            val type = cause::class.simpleName ?: "Exception"
+            return cause.message?.let { "$type: ${it.take(MAX_CAUSE_LENGTH)}" } ?: type
+        }
+
+        const val MAX_CAUSE_LENGTH = 200
     }
 }

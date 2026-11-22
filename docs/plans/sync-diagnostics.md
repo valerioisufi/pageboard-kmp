@@ -175,7 +175,7 @@ The macOS application declares the local network as the iOS one does:
 |---|---|---|
 | 1. The address follows the network | `LanDiscovery.refresh()`, `JmdnsLanDiscovery` creating `JmDNS` again on a new address, `LanSync` announcing again; no announcement on the loopback; the `Info.plist` keys of the macOS applications. Tests: a discovery given a fake list of addresses that changes (announced again, found again), no address | done |
 | 2. The problems of the discovery | `DiscoveryProblem`, `LanDiscovery.problems` on the three platforms, the `Info.plist` checked on iOS; the codes of iOS verified on the iPhone (permission refused, key removed in a scratch build). Tests: JVM (create failing), the mapping of the codes of iOS and Android | done (the codes of iOS on the iPhone: left to the maintainer, see phase 5) |
-| 3. The devices that cannot be reached | `LanSync.reachability`, the failures of `open` kept and cleared, bounded; a device on another network. Tests with a `LanTransport` failing (timeout, refused), a device back | to do |
+| 3. The devices that cannot be reached | `LanSync.reachability`, the failures of `open` kept and cleared, bounded; a device on another network. Tests with a `LanTransport` failing (timeout, refused), a device back | done (as `LanSync.devices` and `LanSync.check`; a device on another network: left for later) |
 | 4. Interface | `Collaboration.status` and `check()`, `SharingProblems` in the share and join dialogs, the check and its report; strings in the 7 languages; Roborazzi of each kind (recorded in the image of `tools/screenshots`), the desktop on a scratch directory | to do |
 | 5. Real devices | The MacBook and the iPhone: the IP of the MacBook changed while sharing (the lease renewed), the permission refused on the iPhone and given back, the application in the background on the iPhone | to do |
 
@@ -216,6 +216,27 @@ The macOS application declares the local network as the iOS one does:
 * Tests: `DiscoveryProblemTest` (one of each kind, cleared; the codes of Bonjour),
   `JmdnsAddressTest.withoutANetworkOrAResponderTheProblemIsSaidUntilItWorks`.
 
+### Phase 3 results
+
+* `LanSync.devices: StateFlow<List<LanDevice>>`: each device found (or remembered, or the
+  address of an invitation joined), with its name (bounded, untrusted), its address, whether it
+  shares something with this device, whether it is on another version, connected, the connections
+  failed in a row and the cause of the last one (`ConnectException: Connection refused`,
+  `timeout`). The failures are kept per device of `known` (forgotten with it) and cleared at the
+  first connection made. Published from one place, under the lock, at each round and at each
+  outcome of a connection.
+* `LanSync.problems` passes on the ones of the discovery.
+* `LanSync.check(waitMs)`: announces again, waits for the announcement of this device, opens a
+  connection to its own address and to each device not connected, closed at once (the engine of
+  the other side reads the end before any frame); `LanCheck` with `DeviceCheck`s.
+* Named `devices` rather than `reachability`: it is what the interface lists.
+* A device on another network (another subnet, a self-assigned address) is not told apart: it
+  needs the addresses of this device on every platform; it shows as a device not answering, with
+  its address. Left for later.
+* Tests: `LanSyncTest.aDeviceFoundWhereItIsNoMoreIsSaidNotToAnswer` (the case of the MacBook: found
+  at an address gone, failures counted, connected and cleared once announced where it is),
+  `theCheckSaysWhetherThisDeviceAnswersWhereItIsAnnounced`.
+
 ## Decisions
 
 ### To be taken by the maintainer
@@ -242,6 +263,9 @@ The macOS application declares the local network as the iOS one does:
   `PolicyDenied`), but the move is a change of its own.
 
 ## Left for later
+
+* A device found on another network (another subnet, a self-assigned 169.254 address) told apart
+  from a device not answering.
 
 * `NWBrowser` / `NWListener` on iOS in place of `NSNetService` (and on macOS through cinterop, if
   the desktop ever gets a native discovery).
