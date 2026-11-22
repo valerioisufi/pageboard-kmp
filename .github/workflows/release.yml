@@ -32,15 +32,15 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: JNI libraries of ${{ matrix.platform }}
         run: ./gradlew buildDesktopNativeLibs -Ppageboard.desktop.platform=${{ matrix.platform }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: natives-${{ matrix.platform }}
           path: build/nativeLibs/jvm
@@ -55,12 +55,12 @@ jobs:
       # The release of GitHub with the PDFium of the iOS applications
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: The tag is the version
         run: |
           version=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2)
@@ -68,7 +68,7 @@ jobs:
             echo "The tag ${GITHUB_REF_NAME} does not match VERSION_NAME=${version}" >&2
             exit 1
           fi
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: natives-*
           path: build/nativeLibs/jvm
@@ -86,10 +86,10 @@ jobs:
           (cd build/pdfium && zip -qry PDFium.xcframework.zip PDFium.xcframework)
       - name: Documentation
         run: ./gradlew :dokkaGenerate
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build/dokka/html
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: build/pdfium/PDFium.xcframework.zip
 
@@ -106,4 +106,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
