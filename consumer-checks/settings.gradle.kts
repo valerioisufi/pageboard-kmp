@@ -31,4 +31,5 @@ rootProject.name = "pageboard-consumer-checks"
 include(":model-jvm")
 include(":ui-desktop")
 include(":library-desktop")
+include(":library-ios")
 include(":canvas-android")

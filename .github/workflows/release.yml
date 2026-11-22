@@ -113,6 +113,9 @@ jobs:
         run: |
           ./gradlew assemblePdfiumXcframework
           (cd build/pdfium && zip -qry PDFium.xcframework.zip PDFium.xcframework)
+          # Its SHA-256 beside it: what an application checks, and the checksum of a binary target
+          # of the Swift Package Manager
+          (cd build/pdfium && shasum -a 256 PDFium.xcframework.zip | cut -d' ' -f1 > PDFium.xcframework.zip.sha256)
       - name: Documentation
         run: ./gradlew :dokkaGenerate
       - uses: actions/upload-pages-artifact@v3
@@ -120,7 +123,9 @@ jobs:
           path: build/dokka/html
       - uses: softprops/action-gh-release@v2
         with:
-          files: build/pdfium/PDFium.xcframework.zip
+          files: |
+            build/pdfium/PDFium.xcframework.zip
+            build/pdfium/PDFium.xcframework.zip.sha256
 
   # The documentation of the version released, on GitHub Pages (the source of the Pages of the
   # repository set to GitHub Actions)

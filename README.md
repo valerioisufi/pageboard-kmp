@@ -75,7 +75,8 @@ fun main() {
 ```
 
 On Android the application gives its context first, once (`PageboardAndroid.init(applicationContext)`
-in `Application.onCreate`); iOS needs nothing.
+in `Application.onCreate`); iOS needs nothing, but an iOS application with `pageboard-pdf` embeds
+the PDFium framework of the release (see the page of [pageboard-pdf](pageboard-pdf/Module.md)).
 
 | Area | Modules |
 |---|---|

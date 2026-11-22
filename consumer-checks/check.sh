@@ -4,4 +4,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ./gradlew publishToMavenLocal
+# The PDFium of the iOS applications, which library-ios links (macOS only)
+if [[ "$(uname -s)" == "Darwin" ]]; then ./gradlew assemblePdfiumXcframework; fi
 ./gradlew -p consumer-checks check
