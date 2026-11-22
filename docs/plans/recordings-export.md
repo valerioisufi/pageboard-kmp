@@ -105,6 +105,12 @@ Taken on 2026-11-21, every one revertible:
 6. **Keep local Gemma 4 loaded across batch topic generation** (`keepLoadedMillis = 60_000L` via `LoadedModels.withGenerator`): avoids reloading the multi-gigabyte model for every lecture in a batch, and falls back to `finalReview` heading / `currentTopic` without overwriting `lecture.json` when no local model is installed.
 7. **Reorderable token rows with up/down buttons, addable chips, and live preview in `ExportSheet`**: works uniformly across mouse, touch, keyboard, and desktop/mobile without fragile drag-and-drop gestures or raw format strings.
 
+8. **The exports run in the order they were asked for** (2026-11-22, a fix after phase 2): a FIFO
+   `Channel` with one worker in `LectureAssistant` replaces the `Mutex`, which every export reached
+   from its own coroutine on `Dispatchers.Default`, so two exports asked one after the other could
+   swap (`RecordingExportTest` failed on CI now and then). The queued count is raised on the state
+   context before the worker takes the export, and lowered there when it starts.
+
 ## Left for later
 
 * ZIP64 support if a single recordings export ever exceeds 4 GiB.

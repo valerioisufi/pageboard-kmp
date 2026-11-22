@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.pageboard.lecture.audio.AudioOutput
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -110,7 +111,7 @@ internal class AssistantLectures(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot write the course context: ${e.message}")
+            PageboardLog.warn("Cannot write the course context", e)
             null
         }
         val context = text?.takeIf { it.isNotBlank() }?.let {

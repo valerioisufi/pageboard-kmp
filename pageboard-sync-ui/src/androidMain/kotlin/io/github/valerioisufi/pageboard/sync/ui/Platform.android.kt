@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import io.github.valerioisufi.pageboard.platform.PageboardAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
 import io.github.valerioisufi.pageboard.sync.lan.NsdLanDiscovery
 import kotlinx.coroutines.CompletableDeferred
@@ -61,7 +62,7 @@ internal actual object BackgroundSync {
             if (active) context.startForegroundService(intent) else context.stopService(intent)
         } catch (e: IllegalStateException) {
             // Not allowed from the background: the connections go on while the system lets them
-            println("Pageboard: cannot keep the synchronization in the background: ${e.message}")
+            PageboardLog.warn("Cannot keep the synchronization in the background", e)
         }
     }
 }

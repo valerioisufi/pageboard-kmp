@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.export
 
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -115,7 +116,7 @@ public class ExportJobs(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    println("Pageboard: cannot export ${request.fileName}: ${e.message}")
+                    PageboardLog.warn("Cannot export a document", e)
                     ExportJobState.Failed(ExportFailure.of(e))
                 }
                 setActive(id, result)

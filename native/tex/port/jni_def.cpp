@@ -3,20 +3,20 @@
 
 JavaVM* gJVM;
 
-/** io/nano/tex/Rect */
+/** io/github/valerioisufi/pageboard/latex/microtex/Rect */
 jfieldID gFieldRectX, gFieldRectY, gFieldRectW, gFieldRectH;
 
-/** io/nano/tex/TextLayout */
+/** io/github/valerioisufi/pageboard/latex/microtex/TextLayout */
 jclass gClassTextLayout;
 jmethodID gMethodGetBounds;
 
-/** io/nano/tex/Font */
+/** io/github/valerioisufi/pageboard/latex/microtex/Font */
 jclass gClassFont;
 jmethodID gMethodDeriveFont;
 jmethodID gMethodCreateFontFromName;
 jmethodID gMethodCreateFontFromFile;
 
-/** io/nano/tex/ActionRecorder */
+/** io/github/valerioisufi/pageboard/latex/microtex/ActionRecorder */
 jmethodID gMethodRecord;
 
 JNIEnv* getJNIEnv() {
@@ -40,36 +40,36 @@ JNIEnv* getJNIEnv() {
 }
 
 static void load(JNIEnv* env) {
-    // io/nano/tex/Rect
-    jclass rect = env->FindClass("io/nano/tex/Rect");
+    // io/github/valerioisufi/pageboard/latex/microtex/Rect
+    jclass rect = env->FindClass("io/github/valerioisufi/pageboard/latex/microtex/Rect");
     gFieldRectX = env->GetFieldID(rect, "x", "F");
     gFieldRectY = env->GetFieldID(rect, "y", "F");
     gFieldRectW = env->GetFieldID(rect, "w", "F");
     gFieldRectH = env->GetFieldID(rect, "h", "F");
-    // io/nano/tex/TextLayout
-    jclass layout = env->FindClass("io/nano/tex/TextLayout");
+    // io/github/valerioisufi/pageboard/latex/microtex/TextLayout
+    jclass layout = env->FindClass("io/github/valerioisufi/pageboard/latex/microtex/TextLayout");
     gMethodGetBounds = env->GetStaticMethodID(
         layout,
         "getBounds",
-        "(Ljava/lang/String;Lio/nano/tex/Font;)Lio/nano/tex/Rect;");
+        "(Ljava/lang/String;Lio/github/valerioisufi/pageboard/latex/microtex/Font;)Lio/github/valerioisufi/pageboard/latex/microtex/Rect;");
     gClassTextLayout = (jclass)env->NewGlobalRef(layout);
-    // io/nano/tex/Font
-    jclass font = env->FindClass("io/nano/tex/Font");
+    // io/github/valerioisufi/pageboard/latex/microtex/Font
+    jclass font = env->FindClass("io/github/valerioisufi/pageboard/latex/microtex/Font");
     gClassFont = (jclass)env->NewGlobalRef(font);
     gMethodDeriveFont = env->GetMethodID(
         gClassFont,
         "deriveFont",
-        "(I)Lio/nano/tex/Font;");
+        "(I)Lio/github/valerioisufi/pageboard/latex/microtex/Font;");
     gMethodCreateFontFromName = env->GetStaticMethodID(
         gClassFont,
         "create",
-        "(Ljava/lang/String;IF)Lio/nano/tex/Font;");
+        "(Ljava/lang/String;IF)Lio/github/valerioisufi/pageboard/latex/microtex/Font;");
     gMethodCreateFontFromFile = env->GetStaticMethodID(
         gClassFont,
         "create",
-        "(Ljava/lang/String;F)Lio/nano/tex/Font;");
-    // io/nano/tex/ActionRecorder
-    jclass recorder = env->FindClass("io/nano/tex/ActionRecorder");
+        "(Ljava/lang/String;F)Lio/github/valerioisufi/pageboard/latex/microtex/Font;");
+    // io/github/valerioisufi/pageboard/latex/microtex/ActionRecorder
+    jclass recorder = env->FindClass("io/github/valerioisufi/pageboard/latex/microtex/ActionRecorder");
     gMethodRecord = env->GetMethodID(
         recorder,
         "record",

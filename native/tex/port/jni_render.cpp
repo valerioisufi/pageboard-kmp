@@ -72,7 +72,7 @@ static void TeXRender_finalize(JNIEnv* env, jclass clazz, jlong ptr) {
 }
 
 static JNINativeMethod sMethods[] = {
-    {"nDraw", "(JLio/nano/tex/ActionRecorder;II)V", (void*)TeXRender_draw},
+    {"nDraw", "(JLio/github/valerioisufi/pageboard/latex/microtex/ActionRecorder;II)V", (void*)TeXRender_draw},
     {"nGetTextSize", "(J)F", (void*)TeXRender_getTextSize},
     {"nGetHeight", "(J)I", (void*)TeXRender_getHeight},
     {"nGetDepth", "(J)I", (void*)TeXRender_getDepth},
@@ -86,7 +86,7 @@ static JNINativeMethod sMethods[] = {
 
 int registerTeXRender(JNIEnv* env) {
     return jniRegisterNativeMethods(
-        env, "io/nano/tex/TeXRender", sMethods, NELEM(sMethods));
+        env, "io/github/valerioisufi/pageboard/latex/microtex/TeXRender", sMethods, NELEM(sMethods));
 }
 
 #endif  // __OS_Android__

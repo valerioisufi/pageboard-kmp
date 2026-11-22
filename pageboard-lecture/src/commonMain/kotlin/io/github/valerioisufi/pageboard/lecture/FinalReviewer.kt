@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -64,7 +65,7 @@ internal class FinalReviewer(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot read the handwriting: ${e.message}")
+            PageboardLog.warn("Cannot read the handwriting", e)
         }
     }
 }

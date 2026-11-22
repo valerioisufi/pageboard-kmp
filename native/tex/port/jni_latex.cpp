@@ -64,5 +64,5 @@ static JNINativeMethod sMethods[] = {
 
 int registerLaTeX(JNIEnv* env) {
     return jniRegisterNativeMethods(
-        env, "io/nano/tex/LaTeX", sMethods, NELEM(sMethods));
+        env, "io/github/valerioisufi/pageboard/latex/microtex/LaTeX", sMethods, NELEM(sMethods));
 }

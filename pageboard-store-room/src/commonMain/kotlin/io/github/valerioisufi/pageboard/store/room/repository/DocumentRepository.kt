@@ -30,6 +30,7 @@ import io.github.valerioisufi.pageboard.model.change.TextMarkupData
 import io.github.valerioisufi.pageboard.model.change.toData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.model.text.TextSizes
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.Sha256
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.store.DocumentInk
@@ -299,7 +300,7 @@ internal class DocumentRepository(
             json.decodeFromString<List<Float>>(entity.rects)
         } catch (e: Exception) {
             // Not shown, but kept in the database as it is
-            println("Pageboard: the text markup ${entity.id} cannot be read: ${e.message}")
+            PageboardLog.warn("The text markup ${entity.id} cannot be read", e)
             return null
         }
         return TextMarkupData(

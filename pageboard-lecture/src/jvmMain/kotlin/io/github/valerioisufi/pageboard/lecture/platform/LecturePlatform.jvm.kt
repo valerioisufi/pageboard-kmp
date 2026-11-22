@@ -4,8 +4,6 @@ import java.io.File
 
 public actual val isComputer: Boolean = true
 
-internal actual fun environmentApiKey(): String? = System.getenv("GEMINI_API_KEY")?.trim()?.takeIf { it.isNotEmpty() }
-
 internal actual fun restrictToOwner(path: String) {
     val file = File(path)
     if (!file.exists()) return

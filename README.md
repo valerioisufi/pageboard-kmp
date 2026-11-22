@@ -40,16 +40,23 @@ are given by the application, and a feature degrades when its engine is missing.
 
 ```kotlin
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-explorer:0.1.0")   // the library and the editor
-    implementation("io.github.valerioisufi:pageboard-store-room:0.1.0") // the notes in SQLite
-    implementation("io.github.valerioisufi:pageboard-pdf:0.1.0")        // PDF pages, with PDFium
-    implementation("io.github.valerioisufi:pageboard-latex:0.1.0")      // formulas, with MicroTeX
+    implementation(platform("io.github.valerioisufi:pageboard-bom:0.1.0")) // every library at one version
+    implementation("io.github.valerioisufi:pageboard-explorer")   // the library and the editor
+    implementation("io.github.valerioisufi:pageboard-store-room") // the notes in SQLite
+    implementation("io.github.valerioisufi:pageboard-pdf")        // PDF pages, with PDFium
+    implementation("io.github.valerioisufi:pageboard-latex")      // formulas, with MicroTeX
 }
 ```
 
 Until 0.1.0 is released, `./gradlew publishToMavenLocal` publishes `0.1.0-SNAPSHOT` to the local
 repository. A 0.x version is experimental: the public API is recorded and every change of it is
 written in the [changelog](CHANGELOG.md), but a minor version may break it.
+
+The libraries run on Android 10 (API 29) and later, on the desktop with Java 17 and later (macOS 13
+on Apple silicon and Intel, Linux with glibc 2.28 on x86_64 and arm64, Windows 10 on x86_64) and on
+iOS 15; an application needs Kotlin 2.4 or later. The desktop jars of the modules with native code
+carry the JNI libraries of the five desktop platforms (about 20 MB each). Material 3 is an alpha
+(`1.12.0-alpha03`): no stable release of it goes with Compose Multiplatform 1.12.
 
 A minimal application is a theme around `DocumentLibrary`:
 
@@ -65,7 +72,17 @@ fun App() {
         DocumentLibrary(title = { Text("My Notes") }, documents = MyNotes.documents, sessions = MyNotes.sessions, modifier = Modifier.fillMaxSize())
     }
 }
+
+// On the desktop the application names its data directory once, before anything reads it
+fun main() {
+    PageboardDesktop.init(PageboardDesktop.applicationDataDirectory("My Notes"))
+    application { Window(onCloseRequest = ::exitApplication, title = "My Notes") { App() } }
+}
 ```
+
+On Android the application gives its context first, once (`PageboardAndroid.init(applicationContext)`
+in `Application.onCreate`); iOS needs nothing, but an iOS application with `pageboard-pdf` embeds
+the PDFium framework of the release (see the page of [pageboard-pdf](pageboard-pdf/Module.md)).
 
 | Area | Modules |
 |---|---|
@@ -93,6 +110,7 @@ iroh bridge. Gradle builds the native libraries on demand.
 ./gradlew :pencilnotes-desktop:run           # PencilNotes on the desktop
 ./gradlew :pencilnotes-android:assembleDebug # PencilNotes on Android
 ./gradlew jvmTest checkKotlinAbi             # the tests and the recorded API
+./gradlew checkApiDependencies checkNoPrints # the dependencies of the API, no prints
 ```
 
 iOS: open `pencilnotes/iosApp` in Xcode. More in the [reference](docs/reference.md#running-tests).

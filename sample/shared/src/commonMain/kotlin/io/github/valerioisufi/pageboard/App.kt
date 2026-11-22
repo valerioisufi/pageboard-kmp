@@ -20,10 +20,7 @@ import io.github.valerioisufi.pageboard.session.DocumentEditorViewModel
 import io.github.valerioisufi.pageboard.session.EditorSessionScreen
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res
-import io.github.valerioisufi.pageboard.ui.generated.resources.app_name
 import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
-import org.jetbrains.compose.resources.stringResource
 
 /**
  * What is copied and pasted in the editors of the sample: one for the process, shared by the editors
@@ -60,7 +57,8 @@ fun App(
     PageboardTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
-                title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
+                // The name of the sample, the same in every language
+                title = { Text("Pageboard", style = MaterialTheme.typography.titleLarge) },
                 documents = documents,
                 sessions = SampleData.sessions,
                 engines = engines,

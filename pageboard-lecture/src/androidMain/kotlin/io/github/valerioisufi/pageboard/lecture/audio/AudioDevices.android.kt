@@ -24,6 +24,7 @@ import android.os.IBinder
 import android.os.Looper
 import io.github.valerioisufi.pageboard.lecture.R
 import io.github.valerioisufi.pageboard.platform.PageboardAndroid
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 
 internal actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(PageboardAndroid.context)
 
@@ -215,7 +216,7 @@ internal class AndroidAudioOutput(private val context: Context) : AudioOutput {
         follow(onStopped)
         true
     } catch (e: Exception) {
-        println("Pageboard: cannot play the recording: ${e.message}")
+        PageboardLog.warn("Cannot play the recording", e)
         false
     }
 

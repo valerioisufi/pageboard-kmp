@@ -65,10 +65,8 @@ import io.github.valerioisufi.pageboard.ui.components.IconButtonStyle
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.components.TonalButton
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
-import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.util.formatDate
 import io.github.valerioisufi.pageboard.ui.util.formatDateTime
 import org.jetbrains.compose.resources.pluralStringResource
@@ -101,7 +99,7 @@ internal fun LibraryDetailsPane(actions: ItemActions, commands: LibraryCommands,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onClose)
+                DesignIconButton(PageboardIcons.Close, stringResource(PageboardStrings.close), onClose)
             }
             Spacer(modifier = Modifier.height(18.dp))
             val itemCommands = remember(commands, item) { commands.forItem(item) }
@@ -143,7 +141,7 @@ internal fun ColumnScope.ItemDetails(item: FileItem, actions: ItemActions, previ
         }
     }
     Spacer(modifier = Modifier.height(18.dp))
-    val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
+    val monthNames = stringArrayResource(PageboardStrings.monthsShort)
     DetailRow(stringResource(Res.string.explorer_details_modified), remember(item.modifiedAt, monthNames) { formatDateTime(item.modifiedAt, monthNames).trimStart('0') })
     DetailRow(stringResource(Res.string.explorer_details_created), remember(item.createdAt, monthNames) { formatDate(item.createdAt, monthNames) })
     if (item.type == FileType.FILE) {
@@ -306,7 +304,7 @@ internal fun ItemSheet(item: FileItem, itemCommands: List<Command>, actions: Ite
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
+                val monthNames = stringArrayResource(PageboardStrings.monthsShort)
                 Text(
                     stringResource(Res.string.explorer_label_last_modified, remember(item.modifiedAt, monthNames) { formatDateTime(item.modifiedAt, monthNames).trimStart('0') }),
                     style = MaterialTheme.typography.bodySmall,

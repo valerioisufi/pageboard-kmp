@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.lecture
 import io.github.valerioisufi.pageboard.lecture.audio.RecordingFile
 import io.github.valerioisufi.pageboard.lecture.platform.lectureDataDirectory
 import io.github.valerioisufi.pageboard.platform.DeviceProfile
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import kotlin.random.Random
@@ -162,7 +163,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         val recordedMs = try {
             RecordingFile(directory).durationMs()
         } catch (e: Throwable) {
-            println("Pageboard: cannot read the recording $directory: ${e.message}")
+            PageboardLog.warn("Cannot read a recording", e)
             0L
         }
         val recovered = record.copy(status = LectureStatus.FINISHED, durationMs = maxOf(record.durationMs, recordedMs))
@@ -188,7 +189,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         deleteRecursively(Path(directory))
         true
     } catch (e: Throwable) {
-        println("Pageboard: cannot delete the lecture $directory: ${e.message}")
+        PageboardLog.warn("Cannot delete a lecture", e)
         false
     }
 
@@ -297,6 +298,6 @@ internal fun writeAtomically(path: String, bytes: ByteArray): Boolean = try {
         true
     }
 } catch (e: Throwable) {
-    println("Pageboard: cannot write $path: ${e.message}")
+    PageboardLog.warn("Cannot write a file of a lecture", e)
     false
 }

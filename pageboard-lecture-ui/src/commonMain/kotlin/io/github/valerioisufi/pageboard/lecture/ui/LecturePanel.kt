@@ -52,9 +52,8 @@ import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.EditorPanel
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as UiRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
@@ -316,7 +315,7 @@ private fun LectureRow(summary: LectureSummary, onClick: () -> Unit, onDelete: (
 
 /** "14 Sep · 10:15", the day and the hour of a lecture. */
 @Composable
-internal fun lectureDate(epochMs: Long): String = formatShortDateTime(epochMs, stringArrayResource(UiRes.array.date_months_short))
+internal fun lectureDate(epochMs: Long): String = formatShortDateTime(epochMs, stringArrayResource(PageboardStrings.monthsShort))
 
 /** Deleting a lecture, asked first: what goes, what stays. */
 @Composable

@@ -85,7 +85,8 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
   Rust, built by Gradle with the cargo of `rust.cargo` in `local.properties` (or `~/.cargo/bin`,
   or the `PATH`) into `native/build/rust`.
 - **No global mutable state in the APIs.** Engines, stores and registries are instances passed
-  in.
+  in. The one setting of a process is the root of the platform, given once by the application at
+  its start (`PageboardAndroid.init`, `PageboardDesktop.init`).
 - **The public API is explicit and recorded:**
   - Explicit API mode is strict.
   - Each library records its ABI in `api/`, and `checkKotlinAbi` fails when it changes. Run
@@ -102,7 +103,7 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
 ## Checks before committing a phase
 
 ```bash
-./gradlew jvmTest checkKotlinAbi
+./gradlew jvmTest checkKotlinAbi checkApiDependencies checkNoPrints
 ./gradlew compileAndroidMain compileKotlinIosSimulatorArm64 :pencilnotes-android:assembleDebug :sample-android:assembleDebug
 ./consumer-checks/check.sh   # when published APIs or dependencies change
 ```
@@ -150,7 +151,8 @@ Each one gets its own plan.
     writing suggestions.
   - The lectures already recorded are user data: their format needs a migration.
 - **Completion and suggestions while writing.**
-  - This needs a new extension point in the editor: `EditorExtension` has no hook into the text
-    box (`TextBoxEditor`).
-  - `EditorExtension` is a class built from lambdas, so every new hook breaks binary
-    compatibility once it is published. Decide its shape before the first release.
+  - The hook is `EditorExtension.textSuggestions` (`docs/plans/text-box-hook.md`), and the words of
+    the notes suggest the end of a word (`docs/plans/writing-suggestions.md`). `EditorExtension` is
+    an abstract class: a new contribution is an open member with a default, so the extensions
+    compiled before keep working (`docs/plans/editor-ports.md`).
+  - Left: the next words from a local model, in a plan of its own.

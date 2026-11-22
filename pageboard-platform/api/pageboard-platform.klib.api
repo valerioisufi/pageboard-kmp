@@ -6,6 +6,10 @@
 // - Show declarations: true
 
 // Library unique name: <pageboard-kmp:pageboard-platform>
+open annotation class io.github.valerioisufi.pageboard.platform/InternalPageboardApi : kotlin/Annotation { // io.github.valerioisufi.pageboard.platform/InternalPageboardApi|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.platform/InternalPageboardApi.<init>|<init>(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.platform/Sha256 { // io.github.valerioisufi.pageboard.platform/Sha256|null[0]
     constructor <init>() // io.github.valerioisufi.pageboard.platform/Sha256.<init>|<init>(){}[0]
 
@@ -34,6 +38,10 @@ final object io.github.valerioisufi.pageboard.platform/DeviceProfile { // io.git
         final fun <get-name>(): kotlinx.coroutines.flow/StateFlow<kotlin/String> // io.github.valerioisufi.pageboard.platform/DeviceProfile.name.<get-name>|<get-name>(){}[0]
 
     final fun rename(kotlin/String?) // io.github.valerioisufi.pageboard.platform/DeviceProfile.rename|rename(kotlin.String?){}[0]
+}
+
+final object io.github.valerioisufi.pageboard.platform/PageboardLog { // io.github.valerioisufi.pageboard.platform/PageboardLog|null[0]
+    final fun warn(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.pageboard.platform/PageboardLog.warn|warn(kotlin.String;kotlin.Throwable?){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.platform/PlatformFiles { // io.github.valerioisufi.pageboard.platform/PlatformFiles|null[0]

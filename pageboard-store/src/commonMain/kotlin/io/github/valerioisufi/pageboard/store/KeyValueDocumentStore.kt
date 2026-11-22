@@ -17,6 +17,7 @@ import io.github.valerioisufi.pageboard.model.change.DocumentPersistence
 import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.newElementId
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
@@ -463,7 +464,7 @@ public class KeyValueDocumentStore(
         syncLock(lock) {
             PlatformFiles.readBytes(resource.path)?.let { bytes ->
                 if (!storage.set(resourceKey(resource.path), Base64.encode(bytes))) {
-                    println("Pageboard: the storage quota does not allow saving the resource ${resource.path}")
+                    PageboardLog.warn("The storage quota does not allow saving a resource")
                 }
             }
         }
@@ -788,7 +789,7 @@ public class KeyValueDocumentStore(
         // What the library tells of the content (published with the next summaries)
         updateSummaryLocked(document.id) { it.copy(pageCount = pageCount, hasPdf = hasPdf) }
         val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))
-        if (!written) println("Pageboard: the storage quota does not allow saving the document ${document.id}")
+        if (!written) PageboardLog.warn("The storage quota does not allow saving the document ${document.id}")
     }
 
     @OptIn(ExperimentalEncodingApi::class)
@@ -798,7 +799,7 @@ public class KeyValueDocumentStore(
         try {
             PlatformFiles.writeBytes(path, Base64.decode(encoded))
         } catch (e: Throwable) {
-            println("Pageboard: cannot restore the resource $path: ${e.message}")
+            PageboardLog.warn("Cannot restore a resource", e)
         }
     }
 
@@ -809,7 +810,7 @@ public class KeyValueDocumentStore(
     private inline fun <reified T> decodeOrNull(value: String): T? = try {
         json.decodeFromString<T>(value)
     } catch (e: Throwable) {
-        println("Pageboard: unreadable stored value (${e.message})")
+        PageboardLog.warn("A stored value cannot be read", e)
         null
     }
 

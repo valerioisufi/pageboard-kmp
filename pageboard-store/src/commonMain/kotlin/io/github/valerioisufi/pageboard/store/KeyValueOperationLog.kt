@@ -2,6 +2,7 @@ package io.github.valerioisufi.pageboard.store
 
 import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.serialization.builtins.ListSerializer
@@ -70,7 +71,7 @@ internal class KeyValueOperationLog(private val storage: KeyValueStorage, privat
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Throwable) {
-        println("Pageboard: unreadable stored value (${e.message})")
+        PageboardLog.warn("A stored value cannot be read", e)
         null
     }
 

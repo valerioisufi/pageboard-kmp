@@ -40,6 +40,9 @@ class AndroidRustConventionPlugin : Plugin<Project> {
         }
 
         val components = extensions.getByType<LibraryAndroidComponentsExtension>()
+        // The versions of the libraries taken together (pageboard-bom)
+        dependencies.add("api", dependencies.platform(project(":pageboard-bom")))
+
         // The licenses of the crate (and of Pageboard) in the library: its Java resources
         val licenses = licensesTask()
         val debugAbis = debugAbis()

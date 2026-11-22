@@ -68,9 +68,7 @@ kotlin {
         }
         androidMain.dependencies {
             // libiroh_bridge.so built with the NDK
-            if (findProject(":pageboard-native-iroh") != null) {
-                implementation(project(":pageboard-native-iroh"))
-            }
+            androidNative(":pageboard-native-iroh")
         }
     }
 }

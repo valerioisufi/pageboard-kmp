@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.store
 
 import io.github.valerioisufi.pageboard.model.change.OperationId
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.store.space.CatalogItem
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.StoredSpace
@@ -79,7 +80,7 @@ internal class KeyValueSpaces(private val storage: KeyValueStorage, private val 
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Throwable) {
-        println("Pageboard: unreadable stored space (${e.message})")
+        PageboardLog.warn("A stored space cannot be read", e)
         null
     }
 

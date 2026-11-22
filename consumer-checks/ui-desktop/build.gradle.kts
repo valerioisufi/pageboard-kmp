@@ -7,14 +7,17 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    // The oldest Java the libraries run on
+    jvmToolchain(17)
 }
 
 /** The version of Pageboard checked (see the root build). */
 val pageboardVersion: String = rootProject.extra["pageboardVersion"] as String
 
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-ui:$pageboardVersion")
+    // The versions of the libraries from their platform, as the README shows
+    implementation(platform("io.github.valerioisufi:pageboard-bom:$pageboardVersion"))
+    implementation("io.github.valerioisufi:pageboard-ui")
     implementation(compose.desktop.currentOs)
 }
 

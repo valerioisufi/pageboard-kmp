@@ -28,10 +28,10 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_arc
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_failed_title
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_not_an_archive
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_too_new
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.ui.platform.PickerType
 import io.github.valerioisufi.pageboard.ui.platform.rememberFilePicker
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,7 +68,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
             } catch (e: ArchiveException) {
                 ImportState.Failed(e.reason)
             } catch (e: Throwable) {
-                println("Pageboard: cannot import ${file.name}: ${e.message}")
+                PageboardLog.warn("Cannot import an archive", e)
                 ImportState.Failed(null)
             }
         }
@@ -103,7 +103,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
             when (current) {
                 ImportState.Choosing -> Button(onClick = pick) { Text(stringResource(Res.string.import_archive_action)) }
                 ImportState.Importing -> Unit
-                else -> Button(onClick = onDone) { Text(stringResource(PageboardRes.string.common_action_close)) }
+                else -> Button(onClick = onDone) { Text(stringResource(PageboardStrings.close)) }
             }
         },
         dismissButton = {

@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
 import io.github.valerioisufi.pageboard.ui.command.CommandHost
 import io.github.valerioisufi.pageboard.ui.command.PageboardMenuBar
 import io.github.valerioisufi.pageboard.ui.window.DesktopAppIcon
@@ -16,9 +17,14 @@ import io.github.valerioisufi.pageboard.ui.window.WindowMinimumSize
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopIcon
 import io.github.valerioisufi.pageboard.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.pageboard.ui.window.rememberPageboardWindowState
+import java.io.File
 import kotlinx.coroutines.runBlocking
 
 fun main() {
+    // The data of the sample in ~/.pageboard, as before, unless another
+    // directory is given with -Dpageboard.dataDir=..., which wins
+    PageboardDesktop.init(File(System.getProperty("user.home"), ".pageboard"))
+
     // The menus in the bar of the system on macOS
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     // The native parts of the windows on macOS (title bar, menus, dialogs) light or dark as the

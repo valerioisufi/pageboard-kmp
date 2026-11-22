@@ -10,11 +10,20 @@ public final class io/github/valerioisufi/pageboard/platform/DeviceProfileKt {
 	public static final fun dataDirectory ()Ljava/lang/String;
 }
 
+public abstract interface annotation class io/github/valerioisufi/pageboard/platform/InternalPageboardApi : java/lang/annotation/Annotation {
+}
+
 public final class io/github/valerioisufi/pageboard/platform/PageboardAndroid {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/PageboardAndroid;
 	public final fun getContext ()Landroid/content/Context;
 	public final fun init (Landroid/content/Context;)V
 	public final fun isInitialized ()Z
+}
+
+public final class io/github/valerioisufi/pageboard/platform/PageboardLog {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/PageboardLog;
+	public final fun warn (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public static synthetic fun warn$default (Lio/github/valerioisufi/pageboard/platform/PageboardLog;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
 }
 
 public final class io/github/valerioisufi/pageboard/platform/PlatformFiles {

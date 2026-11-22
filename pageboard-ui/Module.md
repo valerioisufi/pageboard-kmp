@@ -12,3 +12,9 @@ see `pageboard-session` for the documents of a store.
 The texts of the pages are drawn by `ComposeTextTileAdapter` (Markdown, formulas, blocks of code
 laid out by `CodeBlockLayout`); `MarkdownText` shows the Markdown of a note out of the page as the
 page draws it.
+
+## On Android
+
+The library adds to the manifest of the application `PageboardFileProvider`, a `FileProvider` of
+the authority `<applicationId>.pageboard.files`, through which the editor shares the files it
+writes (an export, an image) with the other applications.

@@ -54,10 +54,9 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_ta
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
-import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
-import io.github.valerioisufi.pageboard.ui.generated.resources.date_months_short
 import io.github.valerioisufi.pageboard.ui.theme.PageboardElevation
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
 import io.github.valerioisufi.pageboard.ui.theme.elevation
 import io.github.valerioisufi.pageboard.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.pluralStringResource
@@ -377,7 +376,7 @@ private fun SearchMatchesList(
 @Composable
 internal fun itemSubtitle(item: FileItem): String {
     if (item.type == FileType.FOLDER) return pluralStringResource(Res.plurals.explorer_notes_count, item.noteCount, item.noteCount)
-    val monthNames = stringArrayResource(PageboardRes.array.date_months_short)
+    val monthNames = stringArrayResource(PageboardStrings.monthsShort)
     return remember(item.modifiedAt, monthNames) { formatShortDateTime(item.modifiedAt, monthNames) }
 }
 

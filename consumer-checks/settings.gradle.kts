@@ -21,8 +21,15 @@ dependencyResolutionManagement {
     }
 }
 
+// The JDK of a check (17 for the desktop: the oldest the libraries run on), found or downloaded
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 rootProject.name = "pageboard-consumer-checks"
 
 include(":model-jvm")
 include(":ui-desktop")
+include(":library-desktop")
+include(":library-ios")
 include(":canvas-android")

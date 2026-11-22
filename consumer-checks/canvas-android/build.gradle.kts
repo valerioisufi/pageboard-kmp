@@ -18,7 +18,9 @@ kotlin {
 }
 
 dependencies {
-    implementation("io.github.valerioisufi:pageboard-canvas:$pageboardVersion")
+    // The versions of the libraries from their platform, as the README shows
+    implementation(platform("io.github.valerioisufi:pageboard-bom:$pageboardVersion"))
+    implementation("io.github.valerioisufi:pageboard-canvas")
     implementation(libs.androidx.activity.compose)
 }
 

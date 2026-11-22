@@ -21,10 +21,11 @@ kotlin {
             implementation(libs.navigationevent.compose)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(compose.materialIconsExtended)
+            // The theme takes and gives the colors of Material 3 (ColorScheme)
+            api(libs.compose.material3)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+            // The resources the other modules take from this one (StringResource)
+            api(libs.compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
         }
@@ -51,6 +52,5 @@ kotlin {
 }
 
 compose.resources {
-    publicResClass = true
     packageOfResClass = "io.github.valerioisufi.pageboard.ui.generated.resources"
 }

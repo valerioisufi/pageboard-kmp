@@ -2,11 +2,12 @@ package io.github.valerioisufi.pageboard.latex
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import io.github.valerioisufi.pageboard.platform.pageboardDesktopDataDirectory
-import io.nano.tex.Graphics2D
-import io.nano.tex.LaTeX
-import io.nano.tex.LatexNativeLoader
-import io.nano.tex.TeXRender
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
+import io.github.valerioisufi.pageboard.latex.microtex.Graphics2D
+import io.github.valerioisufi.pageboard.latex.microtex.LaTeX
+import io.github.valerioisufi.pageboard.latex.microtex.LatexNativeLoader
+import io.github.valerioisufi.pageboard.latex.microtex.TeXRender
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.io.File
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
@@ -25,7 +26,7 @@ internal actual object LatexPlatformEngine {
                 latex.init(resourcesDirectory)
                 true
             } catch (e: Throwable) {
-                System.err.println("LatexPlatformEngine: init failed: ${e.message}")
+                PageboardLog.warn("MicroTeX cannot start", e)
                 false
             }
         }
@@ -85,4 +86,4 @@ internal actual object LatexPlatformEngine {
 }
 
 internal actual fun texResourcesDirectory(): String =
-    File(pageboardDesktopDataDirectory, "tex").apply { mkdirs() }.absolutePath
+    File(PageboardDesktop.dataDirectory, "tex").apply { mkdirs() }.absolutePath

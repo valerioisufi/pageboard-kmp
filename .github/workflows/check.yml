@@ -28,7 +28,7 @@ jobs:
           key: check
       # --continue: every failure in one run, not the first one only
       - name: Tests and public API
-        run: ./gradlew --continue jvmTest checkKotlinAbi
+        run: ./gradlew --continue jvmTest checkKotlinAbi checkApiDependencies checkNoPrints
       - name: Every platform
         run: ./gradlew --continue compileAndroidMain compileKotlinIosSimulatorArm64
       - name: The libraries as another developer uses them
@@ -64,3 +64,6 @@ jobs:
           df -h /
       - name: The applications
         run: ./gradlew :pencilnotes-android:assembleDebug :sample-android:assembleDebug -Ppageboard.android.debug.abis=arm64-v8a
+      # The members that API 29 does not have, in the Android target of every library
+      - name: The minimum API
+        run: ./gradlew --continue lintAndroidMain

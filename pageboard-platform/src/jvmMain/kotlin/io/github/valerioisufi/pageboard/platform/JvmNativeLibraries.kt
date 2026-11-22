@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption
  * see `native/scripts/build_desktop.sh`) and extracted into a private temporary directory before being loaded, since the JVM cannot
  * load a shared library from inside a jar.
  */
+@InternalPageboardApi
 public object JvmNativeLibraries {
 
     /** Resource folder name of the running platform, e.g. `darwin-aarch64`. */
@@ -66,7 +67,7 @@ public object JvmNativeLibraries {
                 System.load(target.absolutePath)
                 return true
             } catch (e: Throwable) {
-                System.err.println("Pageboard: failed to load bundled $fileName: ${e.message}")
+                PageboardLog.warn("Cannot load the bundled $fileName", e)
             }
         }
 
@@ -87,12 +88,12 @@ public object JvmNativeLibraries {
                     System.load(file.absolutePath)
                     return true
                 } catch (e: Throwable) {
-                    System.err.println("Pageboard: failed to load ${file.absolutePath}: ${e.message}")
+                    PageboardLog.warn("Cannot load ${file.name}", e)
                 }
             }
         }
 
-        System.err.println("Pageboard: native library '$name' not available for $platformFolder")
+        PageboardLog.warn("The native library '$name' is not available for $platformFolder")
         return false
     }
 }

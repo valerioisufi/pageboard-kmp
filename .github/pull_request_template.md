@@ -4,7 +4,7 @@
 
 ## Checks
 
-- [ ] `./gradlew jvmTest checkKotlinAbi`
+- [ ] `./gradlew jvmTest checkKotlinAbi checkApiDependencies checkNoPrints`
 - [ ] The public API changed on purpose: `./gradlew updateKotlinAbi`, said in the commit
 - [ ] The interface changed: the screenshots verified or recorded (see CONTRIBUTING.md)
 - [ ] A stored format or the Room schema changed: a migration, with its test

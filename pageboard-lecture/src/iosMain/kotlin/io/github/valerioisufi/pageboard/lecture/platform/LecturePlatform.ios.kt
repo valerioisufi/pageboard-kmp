@@ -9,8 +9,6 @@ import platform.UserNotifications.UNUserNotificationCenter
 
 public actual val isComputer: Boolean = false
 
-internal actual fun environmentApiKey(): String? = null
-
 // The files of the application are private to it
 internal actual fun restrictToOwner(path: String) {}
 

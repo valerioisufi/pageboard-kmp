@@ -54,7 +54,8 @@ internal class ChunkTranscript(val audio: RequestAudio, val segments: List<Trans
         for (segment in segments) {
             val last = groups.lastOrNull()
             groups += if (last != null && segment.endMs - last.startMs <= spanMs) {
-                groups.removeLast()
+                // Not removeLast(): on Android it is a member of API 35 (the minimum is 29)
+                groups.removeAt(groups.lastIndex)
                 last.copy(endMs = segment.endMs, text = last.text.trim() + " " + segment.text.trim())
             } else {
                 segment.copy(text = segment.text.trim())

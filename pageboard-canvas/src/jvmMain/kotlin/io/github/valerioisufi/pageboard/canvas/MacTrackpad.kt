@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.canvas
 
 import io.github.valerioisufi.pageboard.platform.JvmNativeLibraries
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.awt.EventQueue
 
 /**
@@ -32,7 +33,7 @@ internal object MacTrackpad {
                 nativeInstall()
                 true
             } catch (e: LinkageError) {
-                System.err.println("Pageboard: trackpad gestures not available: $e")
+                PageboardLog.warn("The trackpad gestures are not available", e)
                 false
             }
     }

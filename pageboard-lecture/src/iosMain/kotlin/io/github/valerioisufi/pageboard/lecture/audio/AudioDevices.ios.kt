@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture.audio
 
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlinx.atomicfu.atomic
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -206,7 +207,7 @@ internal class AvAudioOutput : AudioOutput {
 
     override fun open(onStopped: () -> Unit): Boolean {
         activateSession()?.let {
-            println("Pageboard: cannot play the recording: $it")
+            PageboardLog.warn("Cannot play the recording: $it")
             return false
         }
         val newEngine = AVAudioEngine()
@@ -216,7 +217,7 @@ internal class AvAudioOutput : AudioOutput {
         newEngine.prepare()
         val started = memScoped {
             val error = alloc<ObjCObjectVar<NSError?>>()
-            newEngine.startAndReturnError(error.ptr).also { if (!it) println("Pageboard: cannot play the recording: ${error.value?.localizedDescription}") }
+            newEngine.startAndReturnError(error.ptr).also { if (!it) PageboardLog.warn("Cannot play the recording: ${error.value?.localizedDescription}") }
         }
         if (!started) return false
         newPlayer.play()

@@ -10,6 +10,7 @@ import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PurgedContent
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -104,7 +105,7 @@ public class PersistenceQueue(
                 throw e
             } catch (e: Throwable) {
                 val last = attempt == RETRY_PAUSES_MS.size
-                println("Pageboard: persistence operation failed${if (last) ", its change is not stored" else ", tried again"}: ${e.message}")
+                PageboardLog.warn("A persistence operation failed${if (last) ", its change is not stored" else ", tried again"}", e)
             }
         }
     }

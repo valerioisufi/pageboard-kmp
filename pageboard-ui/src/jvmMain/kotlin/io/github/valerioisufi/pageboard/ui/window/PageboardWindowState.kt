@@ -12,7 +12,7 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
-import io.github.valerioisufi.pageboard.platform.pageboardDesktopDataDirectory
+import io.github.valerioisufi.pageboard.platform.PageboardDesktop
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
 import java.awt.Rectangle
@@ -85,7 +85,7 @@ internal class WindowStateStore(private val file: File) {
 @OptIn(FlowPreview::class)
 @Composable
 public fun rememberPageboardWindowState(name: String = "main", defaultSize: DpSize = DpSize(1280.dp, 860.dp)): WindowState {
-    val store = remember(name) { WindowStateStore(File(pageboardDesktopDataDirectory, "window-$name.properties")) }
+    val store = remember(name) { WindowStateStore(File(PageboardDesktop.dataDirectory, "window-$name.properties")) }
     val saved = remember(store) { store.read() }
     val state = rememberWindowState(
         placement = saved?.placement ?: WindowPlacement.Floating,

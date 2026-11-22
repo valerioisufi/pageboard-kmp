@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.ui.platform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.awt.Desktop
 import java.awt.FileDialog
 import java.awt.Frame
@@ -48,9 +49,9 @@ private val DesktopFileReveal = FileReveal(
                     Desktop.getDesktop().browseFileDirectory(File(path))
                 else -> Desktop.getDesktop().open(File(path).parentFile)
             }
-        }.onFailure { println("Pageboard: cannot show $path: ${it.message}") }
+        }.onFailure { PageboardLog.warn("Cannot show the file saved", it) }
     },
     open = { path ->
-        runCatching { Desktop.getDesktop().open(File(path)) }.onFailure { println("Pageboard: cannot open $path: ${it.message}") }
+        runCatching { Desktop.getDesktop().open(File(path)) }.onFailure { PageboardLog.warn("Cannot open the file saved", it) }
     }
 )

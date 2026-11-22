@@ -61,12 +61,12 @@ internal object DesktopDataLayout {
                 // A rename on the same volume; without options it never replaces a file there
                 Files.move(from.toPath(), to.toPath())
             } catch (e: IOException) {
-                println("Pageboard: cannot move $from to $to, moved at the next start: ${e.message}")
+                PageboardLog.warn("Cannot move ${from.name} beside the resources, moved at the next start", e)
             }
             return
         }
         if (!from.isDirectory || !to.isDirectory) {
-            println("Pageboard: $from stays where it is, $to is there already")
+            PageboardLog.warn("${from.name} stays among the resources: it is beside them already")
             return
         }
         from.listFiles()?.forEach { move(it, File(to, it.name)) }

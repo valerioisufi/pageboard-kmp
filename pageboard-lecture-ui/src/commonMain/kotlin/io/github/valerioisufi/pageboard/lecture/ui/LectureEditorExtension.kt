@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.pageboard.lecture.ArrivalNotification
+import io.github.valerioisufi.pageboard.lecture.AssistantSettingsStore
 import io.github.valerioisufi.pageboard.lecture.DeviceModels
 import io.github.valerioisufi.pageboard.lecture.LectureArrival
 import io.github.valerioisufi.pageboard.lecture.LectureAssistant
@@ -171,9 +171,12 @@ public fun LectureDialogs(assistant: LectureAssistant) {
  * windows, each binding the microphone with [LectureMicrophone].
  *
  * @param deviceModels the models of this device of the application (see [LectureAssistant]).
+ * @param environmentKey the key of Gemini of the environment of the application, used when the
+ * settings have none (see [AssistantSettingsStore]).
  */
-public fun createLectureAssistant(deviceModels: DeviceModels? = null): LectureAssistant =
-    LectureAssistant(deviceModels = deviceModels).apply { describeArrival = ::arrivalNotification }
+public fun createLectureAssistant(deviceModels: DeviceModels? = null, environmentKey: () -> String? = { null }): LectureAssistant =
+    LectureAssistant(deviceModels = deviceModels, settingsStore = AssistantSettingsStore(environmentKey = environmentKey))
+        .apply { describeArrival = ::arrivalNotification }
 
 /** Asks the permission of the microphone for [assistant] from the window or activity shown. */
 @Composable

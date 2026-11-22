@@ -10,6 +10,8 @@ kotlin {
         commonMain.dependencies {
             api(project(":pageboard-platform"))
             api(libs.kotlinx.coroutines.core)
+            // The serializers of the protocol are public (KSerializer, Encoder, Decoder)
+            api(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.cbor)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.cryptography.core)

@@ -51,7 +51,7 @@ Variations).
 | How to report a vulnerability | `SECURITY.md` (private reporting of GitHub) | Information Expert |
 | How to contribute | `CONTRIBUTING.md` (the plan first, the commits, never lose notes, the checks), `.github/ISSUE_TEMPLATE/` | Information Expert |
 | What changed between releases | `CHANGELOG.md` (libraries) | Information Expert |
-| Which tag releases what | `release.yml` on `drawview-v*`; the application on `pencilnotes-v*` (its own workflow later) | Protected Variations |
+| Which tag releases what | `release.yml` on `pageboard-v*` (`drawview-v*` before the rename); the application on `pencilnotes-v*` (its own workflow later) | Protected Variations |
 | The modules still changing | an opt-in annotation of the sync modules (`@ExperimentalSyncApi`) | Protected Variations |
 
 ### What is published on Maven
@@ -72,7 +72,7 @@ minor version may break.
 | 3 | `README.md` rewritten (screenshots from the Roborazzi images, the reference in `docs/`); `pencilnotes/TRADEMARK.md`; `SECURITY.md`, `CONTRIBUTING.md`, the issue templates, `CHANGELOG.md` | Done |
 | 4 | `release.yml` on the tags `drawview-v*`; `@ExperimentalSyncApi` on the sync modules (ABI recorded on purpose); Dokka on GitHub Pages | Done |
 | 5 | The repository made public and its settings: protection of `main`, Discussions, private vulnerability reporting, Dependabot, secret scanning; `dependabot.yml`, the template of the pull requests, `CODE_OF_CONDUCT.md`, the badges, the environment `maven-central` | Done |
-| 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the maintainer's); a release candidate uploaded without publishing, checked and dropped; then `drawview-v0.1.0` | To do |
+| 6 | Maven Central: the namespace `io.github.valerioisufi` verified, the PGP key and the four secrets (the maintainer's); a release candidate uploaded without publishing, checked and dropped (the tag `pageboard-v0.1.0-rc.1`, [release-readiness.md](release-readiness.md)); then `pageboard-v0.1.0` | To do |
 
 Open Collective and `FUNDING.yml` come after phase 5, on their own.
 
@@ -173,7 +173,7 @@ Left to the maintainer, in the interface of GitHub: the image of the social prev
   license.
 * **The history is published whole**, the email of the author included (with the maintainer, 2026-11-15:
   it is already public through other repositories). Rewriting it would change every hash.
-* **The tags are `drawview-vX.Y.Z` and `pencilnotes-vX.Y.Z`** (alone, revertible).
+* **The tags are `drawview-vX.Y.Z` and `pencilnotes-vX.Y.Z`** (alone, revertible): `pageboard-vX.Y.Z` since the rename ([pageboard.md](pageboard.md)), `pageboard-vX.Y.Z-rc.N` for the candidates.
 * **The repository becomes public before the first release on Maven**: the POM points to it.
 
 ## Left for later

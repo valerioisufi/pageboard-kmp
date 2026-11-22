@@ -19,6 +19,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.dataDirectory
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -95,7 +96,7 @@ public class DocumentThumbnails(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("Pageboard: cannot draw the thumbnail of $documentId: ${e.message}")
+                PageboardLog.warn("Cannot draw the thumbnail of $documentId", e)
                 null
             } finally {
                 rendering--
@@ -116,7 +117,7 @@ public class DocumentThumbnails(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot draw the page $index of $documentId: ${e.message}")
+            PageboardLog.warn("Cannot draw the page $index of $documentId", e)
             null
         } finally {
             rendering--

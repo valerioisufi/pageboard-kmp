@@ -4,6 +4,7 @@ import android.media.AudioFormat
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.io.File
 import java.nio.ByteOrder
 
@@ -72,7 +73,7 @@ internal object MediaCodecAudio : AudioCodec {
             }
             total
         } catch (e: Exception) {
-            println("Pageboard: cannot decode $input: ${e.message}")
+            PageboardLog.warn("Cannot decode a recording", e)
             -1
         } finally {
             try {
