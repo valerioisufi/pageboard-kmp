@@ -3,7 +3,6 @@ package io.github.valerioisufi.pageboard.lecture
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.pageboard.lecture.platform.environmentApiKey
 import io.github.valerioisufi.pageboard.lecture.platform.isComputer
 import io.github.valerioisufi.pageboard.lecture.platform.lectureDataDirectory
 import io.github.valerioisufi.pageboard.lecture.platform.restrictToOwner
@@ -226,23 +225,26 @@ public data class AssistantSettings(
 /**
  * Persists the [AssistantSettings] in `assistant-settings.json` of the [lectureDataDirectory], the
  * API key in [secrets]. [canTranscribe]: whether the speech is recognized on this device (see
- * [AssistantSettings.consistent]).
+ * [AssistantSettings.consistent]). [environmentKey]: the key of Gemini of the environment of the
+ * application, used when the settings have none; the application reads it where it has one (the
+ * library reads no environment).
  */
 public class AssistantSettingsStore(
     private val path: String = lectureDataDirectory() + "/assistant-settings.json",
     private val secrets: SecretStorage = SecretStorage.System,
-    private val canTranscribe: Boolean = WhisperTranscriber.isAvailable
+    private val canTranscribe: Boolean = WhisperTranscriber.isAvailable,
+    private val environmentKey: () -> String? = { null }
 ) {
     public var settings: AssistantSettings by mutableStateOf(load())
         private set
 
-    /** The configured key, or the `GEMINI_API_KEY` environment variable. */
-    internal val apiKey: String get() = settings.apiKey.trim().ifEmpty { environmentApiKey().orEmpty() }
+    /** The configured key, or the one of the environment. */
+    internal val apiKey: String get() = settings.apiKey.trim().ifEmpty { environmentKey()?.trim().orEmpty() }
 
     public val hasApiKey: Boolean get() = apiKey.isNotEmpty()
 
-    /** `true` when the key comes from the environment variable. */
-    public val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentApiKey().isNullOrEmpty()
+    /** `true` when the key comes from the environment ([environmentKey]). */
+    public val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentKey()?.trim().isNullOrEmpty()
 
     public fun update(newSettings: AssistantSettings) {
         val sanitized = newSettings.copy(

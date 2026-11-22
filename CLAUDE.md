@@ -103,7 +103,7 @@ These are in brief; the full version is in `docs/plans/modularization.md`.
 ## Checks before committing a phase
 
 ```bash
-./gradlew jvmTest checkKotlinAbi checkApiDependencies
+./gradlew jvmTest checkKotlinAbi checkApiDependencies checkNoPrints
 ./gradlew compileAndroidMain compileKotlinIosSimulatorArm64 :pencilnotes-android:assembleDebug :sample-android:assembleDebug
 ./consumer-checks/check.sh   # when published APIs or dependencies change
 ```

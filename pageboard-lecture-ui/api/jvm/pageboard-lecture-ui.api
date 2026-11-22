@@ -3,8 +3,8 @@ public final class io/github/valerioisufi/pageboard/lecture/ui/LectureEditorExte
 	public static final fun LectureExitDialog (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureMicrophone (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureRecordingIndicator (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public static final fun createLectureAssistant (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
-	public static synthetic fun createLectureAssistant$default (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
+	public static final fun createLectureAssistant (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;Lkotlin/jvm/functions/Function0;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
+	public static synthetic fun createLectureAssistant$default (Lio/github/valerioisufi/pageboard/lecture/DeviceModels;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;
 	public static final fun documentTag (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;)Lio/github/valerioisufi/pageboard/ui/extension/DocumentTag;
 	public static final fun editorExtension (Lio/github/valerioisufi/pageboard/lecture/LectureAssistant;)Lio/github/valerioisufi/pageboard/ui/extension/EditorExtension;
 }

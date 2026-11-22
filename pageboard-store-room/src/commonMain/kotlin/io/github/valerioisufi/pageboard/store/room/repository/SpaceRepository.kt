@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.store.room.repository
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
 import io.github.valerioisufi.pageboard.model.change.OperationId
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.store.space.CatalogChange
 import io.github.valerioisufi.pageboard.store.space.CatalogItem
@@ -109,7 +110,7 @@ internal class SpaceRepository(private val database: PageboardDatabase) : SpaceS
     private inline fun <T> decodeOrNull(decode: () -> T): T? = try {
         decode()
     } catch (e: Exception) {
-        println("Pageboard: unreadable stored change of a space (${e.message})")
+        PageboardLog.warn("A stored change of a space cannot be read", e)
         null
     }
 

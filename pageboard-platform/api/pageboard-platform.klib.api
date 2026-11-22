@@ -40,6 +40,10 @@ final object io.github.valerioisufi.pageboard.platform/DeviceProfile { // io.git
     final fun rename(kotlin/String?) // io.github.valerioisufi.pageboard.platform/DeviceProfile.rename|rename(kotlin.String?){}[0]
 }
 
+final object io.github.valerioisufi.pageboard.platform/PageboardLog { // io.github.valerioisufi.pageboard.platform/PageboardLog|null[0]
+    final fun warn(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.pageboard.platform/PageboardLog.warn|warn(kotlin.String;kotlin.Throwable?){}[0]
+}
+
 final object io.github.valerioisufi.pageboard.platform/PlatformFiles { // io.github.valerioisufi.pageboard.platform/PlatformFiles|null[0]
     final fun delete(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.platform/PlatformFiles.delete|delete(kotlin.String){}[0]
     final fun exists(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.platform/PlatformFiles.exists|exists(kotlin.String){}[0]

@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaImage
 import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,7 +67,7 @@ public class LatexEngine : FormulaRenderer {
             // Not a failure of the engine: initialized by the next call
             throw e
         } catch (e: Throwable) {
-            println("LatexEngine: initialization failed: ${e.message}")
+            PageboardLog.warn("The formula engine cannot start", e)
             false
         }
         _isReady.value = ready

@@ -7,6 +7,7 @@ import io.github.valerioisufi.pageboard.latex.microtex.Graphics2D
 import io.github.valerioisufi.pageboard.latex.microtex.LaTeX
 import io.github.valerioisufi.pageboard.latex.microtex.LatexNativeLoader
 import io.github.valerioisufi.pageboard.latex.microtex.TeXRender
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.io.File
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
@@ -25,7 +26,7 @@ internal actual object LatexPlatformEngine {
                 latex.init(resourcesDirectory)
                 true
             } catch (e: Throwable) {
-                System.err.println("LatexPlatformEngine: init failed: ${e.message}")
+                PageboardLog.warn("MicroTeX cannot start", e)
                 false
             }
         }

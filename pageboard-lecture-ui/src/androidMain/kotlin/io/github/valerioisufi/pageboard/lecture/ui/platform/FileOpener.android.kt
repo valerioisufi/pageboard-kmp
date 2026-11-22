@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import io.github.valerioisufi.pageboard.lecture.platform.ChosenFile
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,6 +48,6 @@ private fun copyToCache(context: Context, uri: Uri): ChosenFile? = try {
     resolver.openInputStream(uri)?.use { input -> file.outputStream().use { input.copyTo(it) } } ?: return null
     ChosenFile(file.absolutePath, name, lastModified, temporary = true)
 } catch (e: Exception) {
-    println("Pageboard: cannot read the file chosen: ${e.message}")
+    PageboardLog.warn("Cannot read the file chosen", e)
     null
 }

@@ -118,6 +118,9 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
         }
 
+        // What a library tells goes to the log of the platform, never to the standard output
+        checkNoPrints()
+
         if (ANDROID in platforms) {
             // The lint of the JVM target (com.android.lint, part of check) on the same check: the
             // members of a later API are a question of Android, so it finds nothing there

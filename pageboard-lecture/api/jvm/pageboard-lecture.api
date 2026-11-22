@@ -77,8 +77,8 @@ public final class io/github/valerioisufi/pageboard/lecture/AssistantSettings$Co
 public final class io/github/valerioisufi/pageboard/lecture/AssistantSettingsStore {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;ZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/lecture/SecretStorage;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getHasApiKey ()Z
 	public final fun getSettings ()Lio/github/valerioisufi/pageboard/lecture/AssistantSettings;
 	public final fun getUsesEnvironmentKey ()Z

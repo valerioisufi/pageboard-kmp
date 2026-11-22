@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.lecture.audio
 
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.DataLine
@@ -114,7 +115,7 @@ internal class JavaSoundAudioOutput : AudioOutput {
         line = newLine
         true
     } catch (e: Exception) {
-        println("Pageboard: cannot play the recording: ${e.message}")
+        PageboardLog.warn("Cannot play the recording", e)
         false
     }
 

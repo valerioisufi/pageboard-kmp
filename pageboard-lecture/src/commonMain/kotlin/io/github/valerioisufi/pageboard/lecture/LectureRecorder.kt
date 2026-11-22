@@ -14,6 +14,7 @@ import io.github.valerioisufi.pageboard.lecture.model.ModelUse
 import io.github.valerioisufi.pageboard.lecture.model.PromptCache
 import io.github.valerioisufi.pageboard.lecture.model.TaskBackend
 import io.github.valerioisufi.pageboard.lecture.transcription.Transcriber
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import kotlin.concurrent.Volatile
 import kotlin.math.min
 import kotlinx.atomicfu.atomic
@@ -361,7 +362,7 @@ public class LectureRecorder internal constructor(
         try {
             speech?.close()
         } catch (e: Throwable) {
-            println("Pageboard: cannot stop the transcription: ${e.message}")
+            PageboardLog.warn("Cannot stop the transcription", e)
         }
     }
 
@@ -388,7 +389,7 @@ public class LectureRecorder internal constructor(
         try {
             capture.stop()
         } catch (e: Throwable) {
-            println("Pageboard: cannot stop the microphone: ${e.message}")
+            PageboardLog.warn("Cannot stop the microphone", e)
         }
         audioBlocks.close()
     }
@@ -399,7 +400,7 @@ public class LectureRecorder internal constructor(
         try {
             lecture.recording.finish()
         } catch (e: Throwable) {
-            println("Pageboard: cannot finish the recording ${lecture.directory}: ${e.message}")
+            PageboardLog.warn("Cannot finish a recording", e)
         }
     }
 
@@ -603,7 +604,7 @@ public class LectureRecorder internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot capture the notebook: ${e.message}")
+            PageboardLog.warn("Cannot capture the notebook", e)
             null
         }
     }
@@ -629,7 +630,7 @@ public class LectureRecorder internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot read the handwriting: ${e.message}")
+            PageboardLog.warn("Cannot read the handwriting", e)
         }
     }
 

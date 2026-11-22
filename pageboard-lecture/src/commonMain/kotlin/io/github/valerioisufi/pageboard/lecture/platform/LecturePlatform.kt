@@ -5,9 +5,6 @@ import io.github.valerioisufi.pageboard.platform.dataDirectory
 /** Whether the microphone is the one of a computer (its access granted to the application launching it). */
 public expect val isComputer: Boolean
 
-/** The API key of the `GEMINI_API_KEY` environment variable (desktop), used when none is configured. */
-internal expect fun environmentApiKey(): String?
-
 /** Makes the file at [path] readable and writable by its owner only (where supported). */
 internal expect fun restrictToOwner(path: String)
 

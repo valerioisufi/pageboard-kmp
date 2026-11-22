@@ -594,7 +594,7 @@ final class io.github.valerioisufi.pageboard.lecture/AssistantSettings { // io.g
 }
 
 final class io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore { // io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore|null[0]
-    constructor <init>(kotlin/String = ..., io.github.valerioisufi.pageboard.lecture/SecretStorage = ..., kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.lecture.SecretStorage;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/String = ..., io.github.valerioisufi.pageboard.lecture/SecretStorage = ..., kotlin/Boolean = ..., kotlin/Function0<kotlin/String?> = ...) // io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.lecture.SecretStorage;kotlin.Boolean;kotlin.Function0<kotlin.String?>){}[0]
 
     final val hasApiKey // io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore.hasApiKey|{}hasApiKey[0]
         final fun <get-hasApiKey>(): kotlin/Boolean // io.github.valerioisufi.pageboard.lecture/AssistantSettingsStore.hasApiKey.<get-hasApiKey>|<get-hasApiKey>(){}[0]

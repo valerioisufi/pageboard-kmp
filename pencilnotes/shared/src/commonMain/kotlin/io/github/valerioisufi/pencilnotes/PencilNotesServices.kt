@@ -68,7 +68,7 @@ object PencilNotesServices {
      * closed; its local requests on the models of the search when the settings choose them.
      */
     val lectureAssistant: LectureAssistant =
-        createLectureAssistant(DeviceModels(installedModels, loadedModels, modelDownloads, isAvailable = liteRtRuntime.isAvailable))
+        createLectureAssistant(DeviceModels(installedModels, loadedModels, modelDownloads, isAvailable = liteRtRuntime.isAvailable), ::environmentGeminiKey)
 
     /**
      * The documents shared with the devices of the local network, with their lectures, and over
@@ -205,3 +205,6 @@ object PencilNotesServices {
 
 /** The readers of handwriting of this platform. */
 internal expect fun handwritingEngines(): HandwritingEngines
+
+/** The key of Gemini of the environment: `GEMINI_API_KEY` on the desktop, none elsewhere. */
+internal expect fun environmentGeminiKey(): String?

@@ -10,6 +10,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.EditorPreferences
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.syncLock
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -187,7 +188,7 @@ public class DocumentEditorViewModel(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            println("Pageboard: cannot load the document ${session.documentId}: ${e.message}")
+            PageboardLog.warn("Cannot load the document ${session.documentId}", e)
             null
         }
         if (open == null) {
@@ -280,7 +281,7 @@ public class EditorSessions(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("Pageboard: cannot save the document ${session.documentId}: ${e.message}")
+                PageboardLog.warn("Cannot save the document ${session.documentId}", e)
             } finally {
                 session.persistenceScope.cancel()
             }
@@ -310,7 +311,7 @@ public class EditorSessions(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                println("Pageboard: cannot save the document ${session.documentId}: ${e.message}")
+                PageboardLog.warn("Cannot save the document ${session.documentId}", e)
             }
         }
         jobs.forEach { it.join() }

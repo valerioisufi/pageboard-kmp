@@ -28,6 +28,7 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_arc
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_failed_title
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_not_an_archive
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_too_new
+import io.github.valerioisufi.pageboard.platform.PageboardLog
 import io.github.valerioisufi.pageboard.ui.platform.PickerType
 import io.github.valerioisufi.pageboard.ui.platform.rememberFilePicker
 import io.github.valerioisufi.pageboard.ui.theme.PageboardStrings
@@ -67,7 +68,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
             } catch (e: ArchiveException) {
                 ImportState.Failed(e.reason)
             } catch (e: Throwable) {
-                println("Pageboard: cannot import ${file.name}: ${e.message}")
+                PageboardLog.warn("Cannot import an archive", e)
                 ImportState.Failed(null)
             }
         }

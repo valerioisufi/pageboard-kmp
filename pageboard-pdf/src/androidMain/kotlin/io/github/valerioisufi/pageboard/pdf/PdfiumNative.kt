@@ -1,5 +1,7 @@
 package io.github.valerioisufi.pageboard.pdf
 
+import io.github.valerioisufi.pageboard.platform.PageboardLog
+
 /**
  * JNI entry points of libpdfium_bridge.so (native/bridge/pdfium_bridge_jni.cpp), built by
  * :pageboard-native-pdfium together with the prebuilt libpdfium.so.
@@ -12,7 +14,7 @@ internal object PdfiumNative {
             System.loadLibrary("pdfium_bridge")
             true
         } catch (e: UnsatisfiedLinkError) {
-            System.err.println("Pageboard: native PDFium libraries not available: ${e.message}")
+            PageboardLog.warn("The native libraries of PDFium are not available", e)
             false
         }
     }
