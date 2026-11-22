@@ -91,14 +91,17 @@ public class LanSync(
     /**
      * Makes again what was lost: the listener closed by the system, the announcement too when
      * [networkChanged] (e.g. when the application comes back to the foreground, the system may
-     * have stopped it), the connections with the devices sharing a document with this one.
+     * have stopped it) or when the discovery is on a new address ([LanDiscovery.refresh]), the
+     * connections with the devices sharing a document with this one.
      */
     override suspend fun refresh(networkChanged: Boolean) {
         if (job == null) return
+        // A new address (the desktop announces where it was otherwise): announced there
+        val renewed = discovery.refresh()
         if (!transport.isListening) {
             transport.start()
             announce()
-        } else if (networkChanged) {
+        } else if (networkChanged || renewed) {
             announce()
         }
         connect(missingOnly = true)

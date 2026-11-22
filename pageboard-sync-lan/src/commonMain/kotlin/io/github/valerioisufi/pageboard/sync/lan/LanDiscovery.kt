@@ -22,6 +22,12 @@ public interface LanDiscovery {
     /** The devices found (this one included), updated as they come and go, while collected. */
     public val services: Flow<List<LanService>>
 
+    /**
+     * Takes the network as it is now (an address of this device changed, a network came or went):
+     * `true` when this device must be announced again ([advertise]), as on a new network.
+     */
+    public suspend fun refresh(): Boolean = false
+
     public fun close()
 
     public companion object {

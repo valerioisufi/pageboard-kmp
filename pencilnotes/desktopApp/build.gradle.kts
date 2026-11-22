@@ -38,11 +38,18 @@ compose.desktop {
                 iconFile.set(project.file("src/main/resources/icons/icon.icns"))
                 entitlementsFile.set(project.file("entitlements.plist"))
                 runtimeEntitlementsFile.set(project.file("entitlements.plist"))
-                // Lecture assistant: recording of the lectures
+                // Lecture assistant: recording of the lectures. Shared documents: the devices of
+                // the local network, found with Bonjour (the permission of the local network)
                 infoPlist {
                     extraKeysRawXml = """
                         <key>NSMicrophoneUsageDescription</key>
                         <string>PencilNotes records the lectures for the lecture assistant.</string>
+                        <key>NSLocalNetworkUsageDescription</key>
+                        <string>PencilNotes finds the devices around you to work on the shared documents together.</string>
+                        <key>NSBonjourServices</key>
+                        <array>
+                            <string>_pageboard._tcp</string>
+                        </array>
                     """.trimIndent()
                 }
             }

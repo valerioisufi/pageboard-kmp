@@ -3,9 +3,14 @@ public abstract interface class io/github/valerioisufi/pageboard/sync/lan/LanDis
 	public abstract fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun close ()V
 	public abstract fun getServices ()Lkotlinx/coroutines/flow/Flow;
+	public fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery$Companion {
+}
+
+public final class io/github/valerioisufi/pageboard/sync/lan/LanDiscovery$DefaultImpls {
+	public static fun refresh (Lio/github/valerioisufi/pageboard/sync/lan/LanDiscovery;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/sync/lan/LanService {
@@ -55,5 +60,6 @@ public final class io/github/valerioisufi/pageboard/sync/lan/NsdLanDiscovery : i
 	public fun advertise (Ljava/lang/String;ILjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun close ()V
 	public fun getServices ()Lkotlinx/coroutines/flow/Flow;
+	public fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

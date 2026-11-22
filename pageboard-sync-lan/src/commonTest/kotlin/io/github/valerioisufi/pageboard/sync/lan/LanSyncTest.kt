@@ -80,7 +80,14 @@ class LanSyncTest {
     private class FakeDiscovery(private val network: FakeNetwork, private val reaches: Boolean = true) : LanDiscovery {
         private var name: String? = null
 
+        /** Whether the next [refresh] finds a new address; the announcements made. */
+        var newAddress = false
+        var announcements = 0
+
+        override suspend fun refresh(): Boolean = newAddress.also { newAddress = false }
+
         override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) {
+            announcements++
             if (!reaches) return
             this.name = name
             network.announced.update { it + (name to LanService(name, "127.0.0.1", port, attributes)) }
@@ -107,6 +114,7 @@ class LanSyncTest {
         val engine = SyncEngine(documents, shared, scope, { name }, NoFiles())
         lateinit var transport: LanTransport
         lateinit var lan: LanSync
+        lateinit var discovery: FakeDiscovery
 
         /**
          * Goes on the network, listening on [port] (0: a free one, not the default one that an
@@ -114,7 +122,8 @@ class LanSyncTest {
          */
         suspend fun goOnline(port: Int = 0, found: Boolean = true) {
             transport = LanTransport(scope, port)
-            lan = LanSync(engine, FakeDiscovery(network, found), scope, store.replicaId(), { name }, transport, retryMs = 200)
+            discovery = FakeDiscovery(network, found)
+            lan = LanSync(engine, discovery, scope, store.replicaId(), { name }, transport, retryMs = 200)
             lan.start()
         }
 
@@ -208,6 +217,22 @@ class LanSyncTest {
         // Announced where it listens now
         val replica = ada.store.replicaId()
         while (network.announced.value[replica]?.port != ada.transport.boundPort) delay(20)
+        ada.goOffline()
+    }
+
+    @Test
+    fun aDiscoveryOnANewAddressIsAnnouncedAgain() = lanTest { scope ->
+        val ada = Device("ada", scope, FakeNetwork())
+        ada.goOnline()
+        val before = ada.discovery.announcements
+        // Nothing changed: not announced again
+        ada.lan.refresh()
+        assertEquals(before, ada.discovery.announcements)
+        ada.discovery.newAddress = true
+        // By this refresh or the next round of its own
+        ada.lan.refresh()
+        while (ada.discovery.announcements == before) delay(20)
+        assertEquals(before + 1, ada.discovery.announcements)
         ada.goOffline()
     }
 
