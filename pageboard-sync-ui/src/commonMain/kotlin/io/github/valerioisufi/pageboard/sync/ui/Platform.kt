@@ -2,6 +2,7 @@ package io.github.valerioisufi.pageboard.sync.ui
 
 import androidx.compose.runtime.Composable
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
+import org.jetbrains.compose.resources.StringResource
 
 /** The discovery of the devices of the local network of this platform. */
 internal expect fun createLanDiscovery(): LanDiscovery
@@ -21,3 +22,9 @@ internal expect fun rememberLocalNetworkAccess(): suspend () -> Boolean
 internal expect object BackgroundSync {
     fun update(active: Boolean, documents: Int)
 }
+
+/**
+ * Where the user allows the local network on this platform (`null` where nothing has to be
+ * allowed: Windows, Linux).
+ */
+internal expect fun localNetworkSettings(): StringResource?

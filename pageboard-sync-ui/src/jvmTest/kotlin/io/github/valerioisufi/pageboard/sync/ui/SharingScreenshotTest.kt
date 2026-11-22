@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.pageboard.sync.JoinStatus
+import io.github.valerioisufi.pageboard.sync.lan.LanDevice
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
@@ -227,6 +228,48 @@ class SharingScreenshotTest {
             Row(horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
                 MemberAvatar("Marta’s iPad", InkPalette.Violet, ring = MaterialTheme.colorScheme.surface)
                 MemberAvatar("Luca’s phone", InkPalette.Blue, ring = MaterialTheme.colorScheme.surface)
+            }
+        }
+    }
+
+    /**
+     * Why the devices do not work together (docs/plans/sync-diagnostics.md): a member whose owner is
+     * found where it is no more, the search failed, and the check of the connection.
+     */
+    @Test
+    fun problems() = capture("share-problems", width = 608, height = 760) {
+        val mac = LanDevice("mac", "Valerio’s Mac", "192.168.0.248:28461", shared = true, otherVersion = false, connected = false, failures = 4, failure = "timeout")
+        Dialog(ShareDialogNarrowWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = true,
+                    isOwner = false,
+                    owner = "Valerio’s Mac",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = listOf(members[0], members[1].copy(me = true)),
+                    offline = false,
+                    otherVersion = false,
+                    problems = listOf(SharingProblem.DiscoveryFailed("NSNetServicesTimeoutError, -72007"), SharingProblem.NotAnswering(listOf(mac)))
+                ),
+                actions = noActions,
+                name = "Marta’s iPad",
+                deviceName = "Marta’s iPad",
+                onRename = {},
+                compact = false
+            )
+        }
+    }
+
+    /** Joining while the owner is looked for: nobody found after a while (with the check), the local network refused. */
+    @Test
+    fun joiningProblems() = capture("share-joining-problems", width = 900, height = 520) {
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            JoinCard {
+                JoinProgress(JoinStatus.LOOKING_FOR_OWNER, "Library", online = true, InvitationKind.LIBRARY, listOf(SharingProblem.NobodyFound(internetOff = true)), onCheck = {})
+            }
+            JoinCard {
+                JoinProgress(JoinStatus.LOOKING_FOR_OWNER, "Library", online = true, InvitationKind.LIBRARY, listOf(SharingProblem.PermissionDenied))
             }
         }
     }

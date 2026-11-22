@@ -36,6 +36,7 @@ import io.github.valerioisufi.pageboard.sync.SpaceRoot
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
+import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.launch
@@ -115,6 +116,8 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
     var intoLibrary by remember { mutableStateOf(false) }
     val online by collaboration.isOnline.collectAsState()
     val joining by collaboration.joining.collectAsState()
+    val problems by collaboration.problems.collectAsState(emptyList())
+    var check by remember { mutableStateOf<Pair<LanCheck?, Boolean>?>(null) }
     val parsed = remember(text) { Invitation.parse(text) }
     val join: () -> Unit = {
         scope.launch {
@@ -143,7 +146,10 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
         text = {
             val done = joined
             if (done != null) {
-                JoinProgress(status, done.title, online, done.kind)
+                JoinProgress(status, done.title, online, done.kind, problems, onCheck = {
+                    check = null to true
+                    scope.launch { check = collaboration.check() }
+                })
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -174,6 +180,7 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
             if (joined == null) TextButton(onClick = onDismiss) { Text(stringResource(Res.string.sync_cancel)) }
         }
     )
+    check?.let { (report, started) -> CheckDialog(report, started, onDismiss = { check = null }) }
 }
 
 /** Where a shared library joined goes: a new folder named [title], or this library ([intoLibrary]: both become one). */
@@ -196,12 +203,24 @@ internal fun LibraryRootChoice(title: String, intoLibrary: Boolean, onChange: (B
     }
 }
 
-/** How joining the document or the shared folder [title] goes ([status]), with its icon or its spinner. */
+/**
+ * How joining the document or the shared folder [title] goes ([status]), with its icon or its
+ * spinner; while the owner is looked for, the [problems] of the network and the check of the
+ * connection ([onCheck]).
+ */
 @Composable
-internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean, kind: InvitationKind = InvitationKind.DOCUMENT) {
+internal fun JoinProgress(
+    status: JoinStatus?,
+    title: String,
+    online: Boolean,
+    kind: InvitationKind = InvitationKind.DOCUMENT,
+    problems: List<SharingProblem> = emptyList(),
+    onCheck: (() -> Unit)? = null
+) {
     if (!online && status != JoinStatus.ADMITTED && status != JoinStatus.REFUSED) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Notice(PageboardIcons.WifiOff, stringResource(Res.string.sync_no_network))
+            ProblemNotices(problems.filter { it.blocksEverything })
             Text(stringResource(Res.string.sync_join_waiting, title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         return
@@ -225,5 +244,11 @@ internal fun JoinProgress(status: JoinStatus?, title: String, online: Boolean, k
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
+    }
+    if ((status == null || status == JoinStatus.LOOKING_FOR_OWNER) && (problems.isNotEmpty() || onCheck != null)) {
+        Column(modifier = Modifier.padding(top = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            ProblemNotices(problems)
+            if (onCheck != null) TextButton(onClick = onCheck) { Text(stringResource(Res.string.sync_check)) }
+        }
     }
 }

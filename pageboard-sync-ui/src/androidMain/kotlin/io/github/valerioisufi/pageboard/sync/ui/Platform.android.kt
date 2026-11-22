@@ -17,6 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import io.github.valerioisufi.pageboard.platform.PageboardAndroid
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
+import io.github.valerioisufi.pageboard.sync.ui.generated.resources.Res
+import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_settings_android
+import org.jetbrains.compose.resources.StringResource
 import io.github.valerioisufi.pageboard.sync.lan.NsdLanDiscovery
 import kotlinx.coroutines.CompletableDeferred
 
@@ -99,3 +102,6 @@ internal class SyncService : Service() {
         const val NOTIFICATION_ID = 4_212
     }
 }
+
+// The local network is a permission of the application from Android 17
+internal actual fun localNetworkSettings(): StringResource? = if (Build.VERSION.SDK_INT >= ANDROID_17) Res.string.sync_settings_android else null

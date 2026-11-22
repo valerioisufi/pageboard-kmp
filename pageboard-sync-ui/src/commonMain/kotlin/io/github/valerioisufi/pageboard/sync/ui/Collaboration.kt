@@ -24,6 +24,7 @@ import io.github.valerioisufi.pageboard.sync.SpaceRoot
 import io.github.valerioisufi.pageboard.sync.StoreSharedDocuments
 import io.github.valerioisufi.pageboard.sync.SyncEngine
 import io.github.valerioisufi.pageboard.sync.SyncNetwork
+import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
 import io.github.valerioisufi.pageboard.sync.lan.LanSync
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
@@ -39,7 +40,13 @@ import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_shared_
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,6 +62,9 @@ import io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi
 
 /** How long the devices of the local network are looked for (see [Collaboration.nearbyHosts]). */
 private const val NEARBY_WAIT_MS = 3_000L
+
+/** How long the devices are looked for before saying that nobody was found. */
+private const val NOBODY_FOUND_AFTER_MS = 30_000L
 
 /**
  * Working on the documents with the other devices (GRASP Controller of sharing and joining the
@@ -93,6 +103,11 @@ public class Collaboration(
     private val shared = StoreSharedDocuments(store, documents)
     private val mutex = Mutex()
     private var lan: LanSync? = null
+        set(value) {
+            field = value
+            lanState.value = value
+        }
+    private val lanState = MutableStateFlow<LanSync?>(null)
     private var internetNetwork: SyncNetwork? = null
     private val online = MutableStateFlow(false)
     private val settingsStore = InternetSettingsStore()
@@ -155,6 +170,36 @@ public class Collaboration(
 
     /** Whether this device works with the devices of the network (allowed to and started). */
     internal val isOnline: StateFlow<Boolean> = online.asStateFlow()
+
+    /**
+     * Why the devices do not work together yet, while this device looks for them: what the
+     * discovery reports, the devices that do not answer, nobody found after a while.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val problems: Flow<List<SharingProblem>> = lanState.flatMapLatest { lan ->
+        if (lan == null) {
+            flowOf(emptyList())
+        } else {
+            val lookedLong = flow {
+                emit(false)
+                delay(NOBODY_FOUND_AFTER_MS)
+                emit(true)
+            }
+            combine(lan.problems, lan.devices, engine.peers, lookedLong, internetSettingsState) { problems, devices, peers, long, internet ->
+                sharingProblems(problems, devices, connected = peers.isNotEmpty(), lookedLong = long, internetOff = isInternetAvailable && !internet.enabled)
+            }
+        }
+    }.distinctUntilChanged()
+
+    /**
+     * Checks the local network now (see [LanSync.check]), starting it if needed: the report, and
+     * whether the local network could be used (the permission of Android 17 refused: not).
+     */
+    internal suspend fun check(): Pair<LanCheck, Boolean> {
+        val lan = if (start()) mutex.withLock { lan } else null
+        lan ?: return LanCheck(false, null, null, null, emptyList(), discovery.problems.value) to false
+        return lan.check() to true
+    }
 
     init {
         // The shared folders follow the library from the start, their documents their sharing

@@ -37,6 +37,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
 import io.github.valerioisufi.pageboard.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.pageboard.platform.DeviceProfile
 import io.github.valerioisufi.pageboard.sync.InvitationGrant
+import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
@@ -197,6 +198,9 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     val isOwner = membership?.owner == collaboration.device
     val online by collaboration.isOnline.collectAsState()
     val otherVersion by collaboration.otherVersionMet.collectAsState()
+    val problems by collaboration.problems.collectAsState(emptyList())
+    // The check of the connection: running (no report yet) or done, and whether the network could be used
+    var check by remember { mutableStateOf<Pair<LanCheck?, Boolean>?>(null) }
     val requests by collaboration.joinRequests.collectAsState()
     val deviceName by DeviceProfile.name.collectAsState()
     var name by remember { mutableStateOf(DeviceProfile.chosenName.value.orEmpty()) }
@@ -235,7 +239,9 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         otherVersion = otherVersion,
         internet = internet.takeIf { collaboration.isInternetAvailable },
         kind = target.kind,
-        refused = refused
+        refused = refused,
+        // Before sharing only what stops everything
+        problems = if (membership != null) problems else problems.filter { it.blocksEverything }
     )
     val actions = remember(collaboration, documentId, target) {
         object : SharingActions {
@@ -282,6 +288,11 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
                 scope.launch { collaboration.setInternet(settings) }
             }
 
+            override fun check() {
+                check = null to true
+                scope.launch { check = collaboration.check() }
+            }
+
             override fun close() = onDismiss()
         }
     }
@@ -299,6 +310,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
             compact = currentAdaptiveInfo().window.isCompact
         )
     }
+
+    check?.let { (report, started) -> CheckDialog(report, started, onDismiss = { check = null }) }
 
     if (confirmStop) {
         StopSharingDialog(

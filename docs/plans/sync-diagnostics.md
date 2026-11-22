@@ -176,7 +176,7 @@ The macOS application declares the local network as the iOS one does:
 | 1. The address follows the network | `LanDiscovery.refresh()`, `JmdnsLanDiscovery` creating `JmDNS` again on a new address, `LanSync` announcing again; no announcement on the loopback; the `Info.plist` keys of the macOS applications. Tests: a discovery given a fake list of addresses that changes (announced again, found again), no address | done |
 | 2. The problems of the discovery | `DiscoveryProblem`, `LanDiscovery.problems` on the three platforms, the `Info.plist` checked on iOS; the codes of iOS verified on the iPhone (permission refused, key removed in a scratch build). Tests: JVM (create failing), the mapping of the codes of iOS and Android | done (the codes of iOS on the iPhone: left to the maintainer, see phase 5) |
 | 3. The devices that cannot be reached | `LanSync.reachability`, the failures of `open` kept and cleared, bounded; a device on another network. Tests with a `LanTransport` failing (timeout, refused), a device back | done (as `LanSync.devices` and `LanSync.check`; a device on another network: left for later) |
-| 4. Interface | `Collaboration.status` and `check()`, `SharingProblems` in the share and join dialogs, the check and its report; strings in the 7 languages; Roborazzi of each kind (recorded in the image of `tools/screenshots`), the desktop on a scratch directory | to do |
+| 4. Interface | `Collaboration.status` and `check()`, `SharingProblems` in the share and join dialogs, the check and its report; strings in the 7 languages; Roborazzi of each kind (recorded in the image of `tools/screenshots`), the desktop on a scratch directory | done |
 | 5. Real devices | The MacBook and the iPhone: the IP of the MacBook changed while sharing (the lease renewed), the permission refused on the iPhone and given back, the application in the background on the iPhone | to do |
 
 ### Phase 1 results
@@ -236,6 +236,29 @@ The macOS application declares the local network as the iOS one does:
 * Tests: `LanSyncTest.aDeviceFoundWhereItIsNoMoreIsSaidNotToAnswer` (the case of the MacBook: found
   at an address gone, failures counted, connected and cleared once announced where it is),
   `theCheckSaysWhetherThisDeviceAnswersWhereItIsAnnounced`.
+
+### Phase 4 results
+
+* `SharingProblem` (`-sync-ui`, internal): `PermissionDenied`, `MissingConfiguration`,
+  `NoLocalNetwork`, `DiscoveryFailed(detail)`, `NotAnswering(devices)`, `NobodyFound(internetOff)`;
+  `sharingProblems(...)` builds them in order from the problems of the discovery, the devices and
+  the peers: one failure of the discovery is enough, a device is said not to answer after 2
+  connections failed in a row, "nobody found" only after 30 s, with nothing connected (over any
+  network), nothing blocking, no device sharing found.
+* `Collaboration.problems` (named so rather than `status`: it is the list of problems) follows the
+  `LanSync` started; the 30 s count from when the dialog looks. `Collaboration.check()` starts the
+  network if needed and runs `LanSync.check`.
+* The share dialog shows the problems under the notices of before (before sharing, only what
+  blocks everything) and, once shared, "Check the connection"; the join dialog shows them while
+  the owner is looked for, with the check. The report of the check is a dialog, its lines copyable
+  as text.
+* Where the local network is allowed comes from the platform (`localNetworkSettings()`): Settings
+  of iOS, System Settings of macOS, the permissions of the application on Android 17, nothing on
+  Windows and Linux (the general text then).
+* `offline` and `otherVersion` stay fields of `SharingState` beside `problems`, rather than kinds
+  of it: their notices and screenshots stay as they were.
+* 29 strings in the 7 languages. Screenshots: `share-problems`, `share-joining-problems`; the ones
+  of a shared document gain the button of the check. Tests: `SharingProblemsTest`.
 
 ## Decisions
 

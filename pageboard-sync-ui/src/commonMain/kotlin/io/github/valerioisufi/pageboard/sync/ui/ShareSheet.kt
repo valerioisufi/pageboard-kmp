@@ -101,7 +101,9 @@ internal class SharingState(
     /** What is shared: a document, a folder or the library (see `docs/plans/shared-folders.md`). */
     val kind: InvitationKind = InvitationKind.DOCUMENT,
     /** Whether sharing the folder or the library was refused: it is in a shared folder, or holds one. */
-    val refused: Boolean = false
+    val refused: Boolean = false,
+    /** Why the devices do not work together yet (see [SharingProblem]). */
+    val problems: List<SharingProblem> = emptyList()
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -127,6 +129,9 @@ internal interface SharingActions {
 
     /** Works with the others over the internet or not, through the relay of [settings]. */
     fun setInternet(settings: InternetSettings) = Unit
+
+    /** Checks the connection with the other devices now, and shows what works and what does not. */
+    fun check() = Unit
 
     fun close()
 }
@@ -175,13 +180,13 @@ internal fun ShareContent(
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Box(modifier = Modifier.width(360.dp)) { invitation() }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            Notices(state)
+                            Notices(state, actions)
                             People(state, actions, name, deviceName, onRename)
                         }
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Notices(state)
+                        Notices(state, actions)
                         // Who asks to join before the invitation, seen first
                         Requests(state, actions)
                         if (state.invites) invitation()
@@ -231,9 +236,12 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Bool
     }
 }
 
-/** Why the devices may not work together, and who invites when it is not this device. */
+/**
+ * Why the devices may not work together, and who invites when it is not this device; once shared,
+ * the check of the connection.
+ */
 @Composable
-private fun Notices(state: SharingState) {
+private fun Notices(state: SharingState, actions: SharingActions) {
     if (state.refused) {
         Notice(
             PageboardIcons.TriangleAlert,
@@ -249,6 +257,10 @@ private fun Notices(state: SharingState) {
     }
     if (state.otherVersion) {
         Notice(PageboardIcons.TriangleAlert, stringResource(Res.string.sync_other_version), error = true)
+    }
+    ProblemNotices(state.problems)
+    if (state.shared && !state.offline) {
+        TextButton(onClick = actions::check) { Text(stringResource(Res.string.sync_check)) }
     }
 }
 

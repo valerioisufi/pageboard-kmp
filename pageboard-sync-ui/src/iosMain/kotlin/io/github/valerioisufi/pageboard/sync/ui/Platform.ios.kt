@@ -3,6 +3,9 @@ package io.github.valerioisufi.pageboard.sync.ui
 import androidx.compose.runtime.Composable
 import io.github.valerioisufi.pageboard.sync.lan.BonjourLanDiscovery
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
+import io.github.valerioisufi.pageboard.sync.ui.generated.resources.Res
+import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_settings_ios
+import org.jetbrains.compose.resources.StringResource
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.UIApplication
@@ -54,3 +57,5 @@ internal actual object BackgroundSync {
         task = UIBackgroundTaskInvalid
     }
 }
+
+internal actual fun localNetworkSettings(): StringResource? = Res.string.sync_settings_ios
