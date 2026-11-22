@@ -1,8 +1,10 @@
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import com.android.build.api.dsl.Lint
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.attributes.java.TargetJvmVersion
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
@@ -15,8 +17,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
 /**
- * A Kotlin Multiplatform library of Pageboard, published: Android, desktop JVM, iOS (device and
- * simulator).
+ * A Kotlin Multiplatform library of Pageboard, published: Android, the desktop JVM (Java 17 and
+ * later), iOS (device and simulator).
  *
  * The Android namespace follows the name of the module (`pageboard-sync-ui` →
  * `io.github.valerioisufi.pageboard.sync.ui`). The explicit API mode is strict: every public
@@ -29,13 +31,22 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("org.jetbrains.kotlin.multiplatform")
         pluginManager.apply("com.android.kotlin.multiplatform.library")
+        // The lint of the Android target (the Android-KMP plugin creates its tasks with this one)
+        pluginManager.apply("com.android.lint")
         pluginManager.apply("pageboard.publish")
         pluginManager.apply("pageboard.test.data")
         pluginManager.apply("pageboard.benchmarks")
 
         val module = name
         extensions.configure<KotlinMultiplatformExtension> {
-            jvm()
+            jvm {
+                compilerOptions {
+                    // Java 17 on the desktop, compiled against the API of the JDK 17: a member of a
+                    // later JDK is an error of the compiler, not of the machine of a user
+                    jvmTarget.set(JvmTarget.JVM_17)
+                    freeCompilerArgs.add("-Xjdk-release=$DESKTOP_JAVA")
+                }
+            }
             iosArm64()
             iosSimulatorArm64()
 
@@ -45,6 +56,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 minSdk = libs.version("android-minSdk").toInt()
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_11)
+                }
+                // The members that the minimum API does not have (lintAndroidMain): a call of one is
+                // an error here, not a NoSuchMethodError on the device of a user
+                lint {
+                    checkOnly += "NewApi"
+                    abortOnError = true
                 }
                 // The keep rules of what the native code of the module reaches by name, given to
                 // the applications that shrink their code with R8
@@ -85,6 +102,24 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 filters { exclude { byNames.add("**ComposableSingletons**") } }
             }
         }
+
+        // The lint of the JVM target (com.android.lint, part of check) on the same check: the members
+        // of a later API are a question of Android, so it finds nothing there
+        extensions.configure<Lint> {
+            checkOnly += "NewApi"
+            abortOnError = true
+        }
+
+        // The version of Java in the metadata of the desktop artifacts: an application on an older
+        // one fails when it resolves them, and says why, instead of when it loads their classes
+        configurations.matching { it.name == "jvmApiElements" || it.name == "jvmRuntimeElements" }.configureEach {
+            attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, DESKTOP_JAVA)
+        }
+    }
+
+    private companion object {
+        /** The oldest Java the desktop artifacts run on. */
+        const val DESKTOP_JAVA = 17
     }
 }
 

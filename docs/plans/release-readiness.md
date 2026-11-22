@@ -22,7 +22,7 @@ Variations).
   `java.util.List.removeLast()`, a member of API 35, so `RecordingTranscriber` fails with
   `NoSuchMethodError` on Android 10 to 14 (the minimum is API 29). `javap` of the Android classes
   of every library finds no other such call. No lint runs on the libraries: the Android-KMP plugin
-  gives them no lint task of their own.
+  creates its lint tasks only with `com.android.lint`, which they do not apply.
 
 ### The data of an application
 
@@ -77,8 +77,9 @@ Variations).
   `pageboard-lecture`), Material 3 (`ColorScheme`, `SnackbarData`, in `pageboard-ui`), the
   resources of Compose (the `Res` classes above). An application that closes the database or gives
   a builder declares Room itself, as the tests of `pageboard-explorer`, `-session`, `-search` and
-  `-sync` do. The other way round, `atomicfu` is `api` in `pageboard-platform` and
-  `pageboard-canvas` and in no signature.
+  `-sync` do. (`atomicfu`, `api` in `pageboard-platform` and `pageboard-canvas`, is in no JVM
+  signature but is in the API: the public typealias `SyncLock` and the inline `syncLock` reach it,
+  and on the JVM the typealias is `Any`.)
 * 39 artifacts share one version and nothing aligns them: an application may resolve `pageboard-ui`
   0.1.0 with `pageboard-canvas` 0.2.0, which a 0.x may break.
 * One opt-in annotation, `@ExperimentalSyncApi`; nothing marks what is public only for another
@@ -154,7 +155,7 @@ Variations).
 | Responsibility | Where | GRASP |
 |---|---|---|
 | The version of Java of the desktop | `KmpLibraryConventionPlugin`: `jvmTarget` 17, `-Xjdk-release=17`, `org.gradle.jvm.version` in the metadata | Protected Variations |
-| The members the minimum API has | `removeAt` in `ChunkTranscript.grouped()`; the lint of the applications on their libraries (`NewApi`) | Protected Variations |
+| The members the minimum API has | `removeAt` in `ChunkTranscript.grouped()`; `lintAndroidMain` of every library (`NewApi`) | Protected Variations |
 | Where the data of an application are | `PageboardDesktop.init(directory)` (`pageboard-platform`), called by the application like `PageboardAndroid.init` | Information Expert, Controller |
 | The type of each signature with its dependency | `api` where a type is in the API; `checkApiDependencies` (build-logic) | Information Expert, Protected Variations |
 | The API between the modules | `@InternalPageboardApi` (`pageboard-platform`), the resources internal, `PageboardStrings`, MicroTeX in the package of Pageboard | Protected Variations, Indirection |
@@ -183,12 +184,13 @@ Variations).
 ### Android 10 to 14
 
 * `groups.removeAt(groups.lastIndex)` in `ChunkTranscript.grouped()`.
-* The lint of `:pencilnotes-android` and `:sample-android` analyzes their libraries
-  (`checkDependencies = true`) for `NewApi` only (`checkOnly`), as an error; the job `android` of
-  `check.yml` runs it. It is shown to find `removeLast()` before the fix. If it does not reach the
-  classes of the Android-KMP libraries, the check is a task of build-logic reading the Android
-  classes of each library (ASM) for the members of `java.util` that API 29 does not have.
-* The libraries that neither application has on Android are named in the phase.
+* `KmpLibraryConventionPlugin` applies `com.android.lint`: the Android-KMP plugin then gives each
+  library `lintAndroidMain`, here for `NewApi` only (`checkOnly`), as an error. The job `android` of
+  `check.yml` runs it for every library, and `check` runs it too (the lint of the JVM target, on the
+  same check, finds nothing there).
+* It is shown to find `removeLast()` before the fix. The lint of the applications with
+  `checkDependencies` was tried first: it does not reach the Android-KMP libraries ("No issues
+  found" with the call still there).
 
 ### The data directory
 
@@ -219,7 +221,7 @@ Variations).
 
 * `api(libs.androidx.room.runtime)` in `pageboard-store-room`, `api(libs.ktor.client.core)` in
   `pageboard-lecture`, `api(libs.compose.material3)` and `api(libs.compose.components.resources)`
-  in `pageboard-ui`; `atomicfu` as `implementation` in `pageboard-platform` and `pageboard-canvas`.
+  in `pageboard-ui`. `atomicfu` stays `api`, for `SyncLock` and `syncLock`.
 * `checkApiDependencies` (build-logic, part of `check`): the classes named by the JVM dump of a
   library that are not of the library, of Kotlin or of the JDK are in the jars of what it declares
   `api`, transitively (the variant `jvmApiElements` of each). A type that comes through an
@@ -358,9 +360,9 @@ Windows machine the klib dumps of the Compose and Room modules are written by ha
 | Phase | Content | Status |
 |---|---|---|
 | 1 | This plan | Done |
-| 2 | Java 17 on the desktop (`jvmTarget`, `-Xjdk-release`, `org.gradle.jvm.version`, `model-jvm` on JDK 17); Android 10 to 14 (`removeAt`, the lint `NewApi` of the applications on their libraries) | To do |
+| 2 | Java 17 on the desktop (`jvmTarget`, `-Xjdk-release`, `org.gradle.jvm.version`, `model-jvm` on JDK 17); Android 10 to 14 (`removeAt`, `lintAndroidMain` of every library for `NewApi`) | Done: classes of version 61, `org.gradle.jvm.version` 17 in the metadata, every JVM source and test compiled against the JDK 17, `model-jvm` run on a JDK 17; `lintAndroidMain` found `removeLast()` before the fix and nothing after, in the 34 libraries. On Windows the known failures only (the klib dumps of the Compose and Room modules, `ExportScopeTest`, `TextHeightTest`, `LectureSharingTest`), and `RecordingsExportTest`, whose `/no/such/dir` is `D:\no\such\dir` there |
 | 3 | The data directory: `PageboardDesktop`, given once, no default; PencilNotes and the sample; the rule of `modularization.md` | To do |
-| 4 | The dependencies of the API: `api` where a type is in a signature, `atomicfu`; `checkApiDependencies`; the consumer check `library-desktop` | To do |
+| 4 | The dependencies of the API: `api` where a type is in a signature; `checkApiDependencies`; the consumer check `library-desktop` | To do |
 | 5 | The API between the modules: `@InternalPageboardApi`, the resources internal and `PageboardStrings`, MicroTeX in the package of Pageboard, the targets of the readers | To do |
 | 6 | The interface: Material 3, `PageboardIcons` in place of the Material icons, the screenshots | To do |
 | 7 | The logs (`PageboardLog`, `checkNoPrints`) and the key of the environment given by PencilNotes | To do |
@@ -401,8 +403,8 @@ environment `maven-central` (phase 6 of [open-source.md](open-source.md)); the l
   roam with a profile.
 * **`PageboardStrings`** for the four resources shared, instead of copies of their translations in
   each module.
-* **The lint of the applications checks the libraries** (`NewApi` only), instead of a lint of each
-  library, which the plugin does not give.
+* **The lint of each library, for `NewApi` only**: the other checks of lint would need a baseline
+  first.
 * **Candidates dropped, versions released on validation**: the candidate is the check by hand, and
   the version that follows it needs none.
 * **Empty javadoc jars**: no IDE reads them for Kotlin, and the documentation is on GitHub Pages.

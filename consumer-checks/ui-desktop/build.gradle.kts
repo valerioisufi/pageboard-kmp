@@ -7,7 +7,8 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    // The oldest Java the libraries run on
+    jvmToolchain(17)
 }
 
 /** The version of Pageboard checked (see the root build). */

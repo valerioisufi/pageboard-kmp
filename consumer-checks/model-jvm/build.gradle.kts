@@ -1,11 +1,12 @@
-// A JVM program using the document model alone: it runs, and no Compose (nor Skia) comes with it
+// A JVM program using the document model alone: it runs on Java 17, the oldest the libraries run
+// on, and no Compose (nor Skia) comes with it
 plugins {
     alias(libs.plugins.kotlinJvm)
     application
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 /** The version of Pageboard checked (see the root build). */
