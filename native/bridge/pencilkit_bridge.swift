@@ -158,7 +158,13 @@ private func makeDrawing(
             ))
         }
         index += count
-        let path = PKStrokePath(controlPoints: points, creationDate: origin.addingTimeInterval(start / 1000), id: UUID())
+        let created = origin.addingTimeInterval(start / 1000)
+        // The initializer with an id comes with the SDKs that have the recognizer
+        #if PAGEBOARD_STROKE_RECOGNIZER
+        let path = PKStrokePath(controlPoints: points, creationDate: created, id: UUID())
+        #else
+        let path = PKStrokePath(controlPoints: points, creationDate: created)
+        #endif
         strokes.append(PKStroke(ink: ink, path: path))
     }
     return PKDrawing(strokes: strokes)
