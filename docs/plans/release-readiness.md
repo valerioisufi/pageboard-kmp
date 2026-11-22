@@ -376,7 +376,7 @@ Windows machine the klib dumps of the Compose and Room modules are written by ha
 | 10 | iOS: PDFium in the documentation and in the release, the consumer check `ios` | Done: "On iOS" in the page of `pageboard-pdf` (Embed & Sign, `-lc++`, or `-F` for a dynamic framework), a line in the README and in the page of `pageboard-export`; the SHA-256 of `PDFium.xcframework.zip` beside it in the release; `library-ios` (a dynamic framework for the simulator, linked by `check.yml` on macOS after `assemblePdfiumXcframework`). Not run here: iOS links on macOS only |
 | 11 | The release: the candidates, the release on validation, the actions pinned, no build cache, the signature required; the empty javadoc, the `sourceLink` of the version | Done: `release.yml` tells a candidate (`-rc.N`: `publishToMavenCentral`, no release of GitHub, no documentation) from a version (`publishAndReleaseToMavenCentral`); its actions pinned at the latest release of the majors of `native.yml`, with `cache-disabled` and `--no-build-cache`. The javadoc jars are empty (261 bytes for `pageboard-model`, 4.7 MB before); a release without `signingInMemoryKey` stops at `prepareMavenCentralPublishing`, before the upload (tried with `0.1.0-rc.1`). The workflow itself runs at the first tag |
 | 12 | The texts: the `Module.md` of the manifests, the README and the reference, `CHANGELOG.md`, `open-source.md`, `gradle.properties`, `CLAUDE.md` | Done: "On Android" in the pages of `pageboard-lecture`, `-sync-ui`, `-sync-lan` and `-ui`; the platforms, Kotlin 2.4, the BOM, the size of the desktop jars, Material 3 and the release in the README and the reference; the first release under `## Unreleased`; the tags `pageboard-v*` in `open-source.md`; the comment of `gradle.properties`; the writing suggestions in `CLAUDE.md`; the new checks in `CONTRIBUTING.md` and the template of the pull requests |
-| 13 | One platform per application: the variants of the JNI libraries, tried on `pageboard-ink` first | To do |
+| 13 | One platform per application: the variants of the JNI libraries, tried on `pageboard-ink` first | Left for later: the component of the JVM target of the Kotlin plugin (`KotlinTargetSoftwareComponentImpl`) is not an `AdhocComponentWithVariants`, so it takes no variant of its own (tried on `pageboard-ink`); the reference gives the size of the jars |
 | 14 | The checks on the Mac, then the candidate `pageboard-v0.1.0-rc.1`, checked in the Portal and dropped (with the maintainer); then `pageboard-v0.1.0` | To do |
 
 Left to the maintainer: `main` fast-forwarded to `fix/ci-main`, which this branch starts from; the
@@ -419,6 +419,10 @@ environment `maven-central` (phase 6 of [open-source.md](open-source.md)); the l
 
 ## Left for later
 
+* **The JNI libraries of one platform per application** (phase 13): the component of the JVM target
+  of the Kotlin plugin takes no variants of its own. It needs an artifact per platform and module
+  (with a way for an application to leave out the others), or a component of the plugin that takes
+  them.
 * `SecureStore`, `PlatformFiles` and the data directory as instances, if a process ever needs two
   roots.
 * A lower `apiVersion` and `languageVersion`, for applications on an older Kotlin.
