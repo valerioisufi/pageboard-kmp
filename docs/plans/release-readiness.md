@@ -75,7 +75,8 @@ Variations).
 * Types of `implementation` dependencies in the API: Room (`RoomDatabase.Builder`,
   `PageboardDatabase : RoomDatabase`, in `pageboard-store-room`), Ktor (`HttpClient`, in
   `pageboard-lecture`), Material 3 (`ColorScheme`, `SnackbarData`, in `pageboard-ui`), the
-  resources of Compose (the `Res` classes above). An application that closes the database or gives
+  resources of Compose (the `Res` classes above), and kotlinx.serialization (`KSerializer`,
+  `Encoder`, `Decoder`, in `pageboard-sync-protocol`: found by `checkApiDependencies`, phase 4). An application that closes the database or gives
   a builder declares Room itself, as the tests of `pageboard-explorer`, `-session`, `-search` and
   `-sync` do. (`atomicfu`, `api` in `pageboard-platform` and `pageboard-canvas`, is in no JVM
   signature but is in the API: the public typealias `SyncLock` and the inline `syncLock` reach it,
@@ -221,7 +222,9 @@ Variations).
 
 * `api(libs.androidx.room.runtime)` in `pageboard-store-room`, `api(libs.ktor.client.core)` in
   `pageboard-lecture`, `api(libs.compose.material3)` and `api(libs.compose.components.resources)`
-  in `pageboard-ui`. `atomicfu` stays `api`, for `SyncLock` and `syncLock`.
+  in `pageboard-ui`, `api(libs.kotlinx.serialization.core)` in `pageboard-sync-protocol`; the
+  resources of `pageboard-explorer` internal (nothing outside takes them). `atomicfu` stays `api`,
+  for `SyncLock` and `syncLock`.
 * `checkApiDependencies` (build-logic, part of `check`): the classes named by the JVM dump of a
   library that are not of the library, of Kotlin or of the JDK are in the jars of what it declares
   `api`, transitively (the variant `jvmApiElements` of each). A type that comes through an
@@ -235,9 +238,9 @@ Variations).
 * `@InternalPageboardApi` in `pageboard-platform`: `@RequiresOptIn(level = ERROR)`, between the
   modules of Pageboard, may change in any version. The libraries opt in through the convention
   plugin, the applications of the repository where they use it.
-* `publicResClass = false` in `pageboard-ui` and `pageboard-explorer`. `pageboard-ui` gives the four
-  resources the others take through `PageboardStrings` (`@InternalPageboardApi`): `close`,
-  `aboutTitle`, `nameExists`, `monthsShort`; their translations stay in one place.
+* `publicResClass = false` in `pageboard-ui` (in `pageboard-explorer` with phase 4). `pageboard-ui`
+  gives the four resources the others take through `PageboardStrings` (`@InternalPageboardApi`):
+  `close`, `aboutTitle`, `nameExists`, `monthsShort`; their translations stay in one place.
 * MicroTeX moves to `io.github.valerioisufi.pageboard.latex.microtex`, its classes `internal` and
   their members public (JNI, and the names the JVM gives to `internal` members); the JNI names of
   `native/tex/port` and the keep rules move with them. iOS reaches MicroTeX through its C API and
@@ -362,7 +365,7 @@ Windows machine the klib dumps of the Compose and Room modules are written by ha
 | 1 | This plan | Done |
 | 2 | Java 17 on the desktop (`jvmTarget`, `-Xjdk-release`, `org.gradle.jvm.version`, `model-jvm` on JDK 17); Android 10 to 14 (`removeAt`, `lintAndroidMain` of every library for `NewApi`) | Done: classes of version 61, `org.gradle.jvm.version` 17 in the metadata, every JVM source and test compiled against the JDK 17, `model-jvm` run on a JDK 17; `lintAndroidMain` found `removeLast()` before the fix and nothing after, in the 34 libraries. On Windows the known failures only (the klib dumps of the Compose and Room modules, `ExportScopeTest`, `TextHeightTest`, `LectureSharingTest`), and `RecordingsExportTest`, whose `/no/such/dir` is `D:\no\such\dir` there |
 | 3 | The data directory: `PageboardDesktop`, given once, no default; PencilNotes and the sample; the rule of `modularization.md` | Done: `PageboardDesktop` (`init`, `dataDirectory`, `applicationDataDirectory`), `PageboardAndroid.init` given once, the guard of `drawview.dataDir` internal; PencilNotes stopped with `-Ddrawview.dataDir` alone and opened its library on a scratch directory. The tests of the modules touched pass on Windows but for the known failures (`TextHeightTest`; three tests of `pencilnotes-desktop`, `AgentCliTest` and `DataDirectoryLockTest`, which fail there before the change too) |
-| 4 | The dependencies of the API: `api` where a type is in a signature; `checkApiDependencies`; the consumer check `library-desktop` | To do |
+| 4 | The dependencies of the API: `api` where a type is in a signature; `checkApiDependencies`; the consumer check `library-desktop` | Done: `checkApiDependencies` found the four types expected and kotlinx.serialization in `pageboard-sync-protocol`, and passes in every library after the fix; the resources of `pageboard-explorer` internal, its klib dump written by hand (Windows). `library-desktop` runs with the consumer checks of `check.yml`: here the Compose modules cannot be published (their iOS metadata) |
 | 5 | The API between the modules: `@InternalPageboardApi`, the resources internal and `PageboardStrings`, MicroTeX in the package of Pageboard, the targets of the readers | To do |
 | 6 | The interface: Material 3, `PageboardIcons` in place of the Material icons, the screenshots | To do |
 | 7 | The logs (`PageboardLog`, `checkNoPrints`) and the key of the environment given by PencilNotes | To do |

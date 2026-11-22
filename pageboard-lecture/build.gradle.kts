@@ -44,7 +44,8 @@ kotlin {
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.datetime)
             implementation(libs.atomicfu)
-            implementation(libs.ktor.client.core)
+            // The clients of the models take the HttpClient of the application
+            api(libs.ktor.client.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

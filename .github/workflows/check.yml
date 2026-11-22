@@ -28,7 +28,7 @@ jobs:
           key: check
       # --continue: every failure in one run, not the first one only
       - name: Tests and public API
-        run: ./gradlew --continue jvmTest checkKotlinAbi
+        run: ./gradlew --continue jvmTest checkKotlinAbi checkApiDependencies
       - name: Every platform
         run: ./gradlew --continue compileAndroidMain compileKotlinIosSimulatorArm64
       - name: The libraries as another developer uses them

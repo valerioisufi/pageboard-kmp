@@ -115,6 +115,9 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         configurations.matching { it.name == "jvmApiElements" || it.name == "jvmRuntimeElements" }.configureEach {
             attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, DESKTOP_JAVA)
         }
+
+        // The types of the public API come with the api dependencies (part of check)
+        checkApiDependencies()
     }
 
     private companion object {

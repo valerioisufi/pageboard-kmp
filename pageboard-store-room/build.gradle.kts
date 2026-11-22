@@ -13,7 +13,8 @@ kotlin {
             api(project(":pageboard-store"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.room.runtime)
+            // The database is public: an application builds it and closes it (RoomDatabase)
+            api(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
         }
         commonTest.dependencies {
