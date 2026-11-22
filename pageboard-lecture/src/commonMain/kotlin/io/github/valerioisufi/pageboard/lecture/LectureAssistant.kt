@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
@@ -152,7 +153,21 @@ public class LectureAssistant(
     public var queuedExports: Int by mutableIntStateOf(0)
         private set
 
-    private val exportQueue = Mutex()
+    /** The exports waiting, run one at a time in the order they were asked for. */
+    private val exportQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        scope.launch {
+            for (export in exportQueue) {
+                try {
+                    export()
+                } catch (e: CancellationException) {
+                    // A cancellation of one export leaves the queue running, unless it is the assistant's
+                    if (!currentCoroutineContext().isActive) throw e
+                }
+            }
+        }
+    }
     private val exportingDirsLock = Mutex()
     private val exportingDirCounts = mutableMapOf<String, Int>()
     @Volatile
@@ -655,42 +670,31 @@ public class LectureAssistant(
         deliver: suspend (written: String) -> Unit,
         write: suspend (isRunning: () -> Boolean) -> String
     ) {
-        scope.launch {
-            withContext(stateContext) { queuedExports++ }
-            var decremented = false
+        // Counted on the state context before the worker can take it: both run there in order
+        scope.launch(stateContext) { queuedExports++ }
+        exportQueue.trySend {
+            var active = true
+            withContext(stateContext) {
+                queuedExports = (queuedExports - 1).coerceAtLeast(0)
+                exportingFileName = Path(path).name
+                exportProgress = initialProgress
+            }
             try {
-                exportQueue.withLock {
-                    var active = true
-                    withContext(stateContext) {
-                        queuedExports = (queuedExports - 1).coerceAtLeast(0)
-                        decremented = true
-                        exportingFileName = Path(path).name
-                        exportProgress = initialProgress
-                    }
-                    try {
-                        val result = try {
-                            val saved = withExportingDirectory(directory) { write { active } }
-                            deliver(saved)
-                            ExportResult(Path(saved).name, failure = null)
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (e: Throwable) {
-                            ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
-                        }
-                        withContext(stateContext) { exportResults.add(result) }
-                    } finally {
-                        withContext(NonCancellable + stateContext) {
-                            active = false
-                            exportingFileName = null
-                            exportProgress = null
-                        }
-                    }
+                val result = try {
+                    val saved = withExportingDirectory(directory) { write { active } }
+                    deliver(saved)
+                    ExportResult(Path(saved).name, failure = null)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
                 }
+                withContext(stateContext) { exportResults.add(result) }
             } finally {
-                if (!decremented) {
-                    withContext(NonCancellable + stateContext) {
-                        queuedExports = (queuedExports - 1).coerceAtLeast(0)
-                    }
+                withContext(NonCancellable + stateContext) {
+                    active = false
+                    exportingFileName = null
+                    exportProgress = null
                 }
             }
         }
