@@ -97,6 +97,7 @@ who uses the applications or the libraries.
 | [shapes](shapes.md) | Geometric shapes |
 | [shared-folders](shared-folders.md) | Shared folders and library |
 | [small-cleanups](small-cleanups.md) | The smaller ones: duplicates and translations |
+| [small-screen-modals](small-screen-modals.md) | Dialogs and sheets on small screens |
 | [store-explorer-split](store-explorer-split.md) | The key-value store and the library view model, by responsibility |
 | [store-listing](store-listing.md) | The store listing of PencilNotes and the images of the repository |
 | [sync-engine-split](sync-engine-split.md) | The sync engine split, the resources received on disk |
