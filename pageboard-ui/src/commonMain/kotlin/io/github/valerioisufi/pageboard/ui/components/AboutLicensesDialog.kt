@@ -6,25 +6,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -36,12 +32,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -134,9 +131,9 @@ private val THIRD_PARTY_LIBRARIES = listOf(
 
 /**
  * The information of the application (its mark, its name, its version, what it is) and the
- * licenses of the components it is made of, each opening its notice.
+ * licenses of the components it is made of, each opening its notice: a sheet on a phone, a dialog
+ * wider (an [AdaptiveSheet]), all of it in one scroll.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 public fun AboutLicensesDialog(
     onDismiss: () -> Unit,
@@ -144,17 +141,24 @@ public fun AboutLicensesDialog(
 ) {
     val appInfo = LocalAboutAppInfo.current
     val appName = appInfo?.name ?: stringResource(Res.string.app_name)
-    BasicAlertDialog(onDismissRequest = onDismiss, modifier = modifier.widthIn(max = 560.dp)) {
-        PopupSystemBarsEffect()
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            Column(modifier = Modifier.padding(28.dp)) {
+    AdaptiveSheet(
+        onDismissRequest = onDismiss,
+        actions = {
+            Button(onClick = onDismiss) { Text(stringResource(Res.string.about_dialog_close)) }
+        }
+    ) {
+        Column(modifier = modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
+            // The mark smaller where the name would not keep a line of its own (a 320 dp phone)
+            BoxWithConstraints {
+                val markSize = if (maxWidth < 300.dp) 48.dp else 64.dp
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Box(modifier = Modifier.size(64.dp).clip(RoundedCornerShape(20.dp))) {
+                    Box(modifier = Modifier.size(markSize).clip(RoundedCornerShape(markSize * 5 / 16))) {
                         val mark = appInfo?.mark
                         if (mark != null) {
-                            mark()
+                            // The mark of the application is drawn at 64 dp, scaled to the room
+                            Box(modifier = Modifier.requiredSize(64.dp).scale(markSize / 64.dp)) { mark() }
                         } else {
-                            Image(painter = painterResource(Res.drawable.logo), contentDescription = appName, modifier = Modifier.size(64.dp))
+                            Image(painter = painterResource(Res.drawable.logo), contentDescription = appName, modifier = Modifier.size(markSize))
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
@@ -172,69 +176,76 @@ public fun AboutLicensesDialog(
                     }
                     DesignIconButton(PageboardIcons.Close, stringResource(Res.string.about_dialog_close), onDismiss)
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = appInfo?.description ?: stringResource(Res.string.about_dialog_app_description),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = stringResource(Res.string.about_dialog_libraries_header),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 360.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                        .padding(vertical = 6.dp)
-                ) {
-                    items(THIRD_PARTY_LIBRARIES + appInfo?.additionalLicenses.orEmpty()) { item ->
-                        LicenseRow(item = item)
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
-                    Text(stringResource(Res.string.about_dialog_close))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = appInfo?.description ?: stringResource(Res.string.about_dialog_app_description),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = stringResource(Res.string.about_dialog_libraries_header),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            // About ten rows: a plain column in the scroll of the sheet, not a list scrolling inside it
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .padding(vertical = 6.dp)
+            ) {
+                for (item in THIRD_PARTY_LIBRARIES + appInfo?.additionalLicenses.orEmpty()) {
+                    LicenseRow(item = item)
                 }
             }
         }
     }
 }
 
-/** A component and its license: what it does here, opening its copyright and its notice. */
+/**
+ * A component and its license: its name and what it does here, its license beside them where
+ * they keep room enough, under them otherwise; it opens its copyright and its notice.
+ */
 @Composable
-private fun LicenseRow(item: ThirdPartyLicense) {
-    var expanded by remember { mutableStateOf(false) }
+internal fun LicenseRow(item: ThirdPartyLicense, initiallyExpanded: Boolean = false) {
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded }
             .padding(horizontal = 18.dp, vertical = 10.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.name, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
-                Text(item.purpose, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Text(
-                item.license,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(50))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            WrappingRow(
+                modifier = Modifier.weight(1f),
+                main = {
+                    Column {
+                        Text(item.name, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                        Text(item.purpose, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                side = {
+                    Text(
+                        item.license,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(50))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
             )
             Icon(
                 imageVector = if (expanded) PageboardIcons.ChevronDown else PageboardIcons.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.padding(top = 2.dp).size(18.dp)
             )
         }
         AnimatedVisibility(visible = expanded) {

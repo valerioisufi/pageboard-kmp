@@ -45,7 +45,10 @@ import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.geometry.Dimension
 import io.github.valerioisufi.pageboard.model.geometry.mm
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.InputHints
+import io.github.valerioisufi.pageboard.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.pageboard.ui.command.MenuDivider
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.command.MenuLabel
@@ -250,6 +253,36 @@ class ComponentScreenshotTest {
                 byTopic = true, page = 2, place = TextImportPlace.TOPIC, onPlace = {}, clean = true, onClean = {},
                 preview = previewOf(import, clean = true), asNotes = {}
             )
+        }
+    }
+
+    /**
+     * About & licenses where it used to break: a narrow desktop window (360 × 480), a small phone
+     * (a sheet, the license under the description) and a desktop (a dialog, the license beside).
+     */
+    @Test
+    fun aboutLicenses() {
+        listOf(Triple("about-narrow-window", 360, 480), Triple("about-dialog", 1000, 760)).forEach { (name, width, height) ->
+            runDesktopComposeUiTest(width = width, height = height) {
+                setContent {
+                    PageboardTheme(dynamicColor = false) {
+                        Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk)) { AboutLicensesDialog(onDismiss = {}) }
+                    }
+                }
+                waitForIdle()
+                captureToImage().captureRoboImage("screenshots/$name.png")
+            }
+        }
+        runDesktopComposeUiTest(width = 320, height = 640) {
+            setContent {
+                PageboardTheme(dynamicColor = false) {
+                    AdaptiveRoot(hints = InputHints.Touch) {
+                        Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk)) { AboutLicensesDialog(onDismiss = {}) }
+                    }
+                }
+            }
+            waitForIdle()
+            captureToImage().captureRoboImage("screenshots/about-phone.png")
         }
     }
 

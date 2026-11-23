@@ -258,7 +258,7 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 | Phase | Content | Status |
 |---|---|---|
 | 0. Plan | This document, with the inventory | approved |
-| 1. License rows and About | `LicenseRow` on lines (with `WrappingRow`); About on `AdaptiveSheet` with one scroll. Screenshots of About at 320 × 568, 360 × 480 and 1440 × 900, and on a phone | to do |
+| 1. License rows and About | `LicenseRow` on lines (with `WrappingRow`); About on `AdaptiveSheet` with one scroll. Screenshots of About in a 360 × 480 window, on a 320 × 640 phone and at 1000 × 760 | done |
 | 2. The frames | `ModalFrame` with its unit tests; `AdaptiveSheet` with `onClose`, `SheetBody`, sheet state, keyboard and `FullWindowDialog`; `AdaptiveDialog`; layout tests like `AdaptiveSheetWidthTest` (heights, wrapping buttons, 280 dp minimum dropped). ABI updated | to do |
 | 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | to do |
 | 4. The alerts | the 15 `AlertDialog`s and Text color on `AdaptiveDialog`. Screenshots of Join, Check and Conversion at 360 × 480 and 891 × 411 | to do |
@@ -268,6 +268,18 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 Each phase runs the checks of `CLAUDE.md` (`jvmTest checkKotlinAbi`, the Android and iOS
 compilations, both apps). The screenshot references are recorded only in the Docker image or with
 the `record-screenshots` label.
+
+### Phase 1 results
+
+* `WrappingRow` (`pageboard-ui/components`, internal) puts its side part beside the main one when
+  the main one keeps 160 dp, under it otherwise. `LicenseRow` is that row (name and description,
+  license chip) and the arrow. `LicenseRowTest` checks it at 264 dp (the chip under a description
+  at least 160 dp wide) and at 600 dp (beside).
+* About is an `AdaptiveSheet`: the header, the description and the licenses in one scroll, the
+  licenses a plain `Column`. Where the name would not keep a line (under 300 dp of content) the
+  mark is drawn at 48 dp, the one of the application scaled from its 64 dp.
+* The screenshot of a 320 dp phone showed the sheet opened half way, its Close button below the
+  edge: the half state of the sheets, removed in phase 2.
 
 ## Decisions
 
