@@ -30,7 +30,8 @@ The responsibilities are assigned following the GRASP principles.
 * **The presence.** In a shared document `CollaboratorsLayer` sends the presence up to 30 times a
   second, on the main thread: `toPresence` copies the whole stroke being drawn into a list of boxed
   floats every time (the engine sends only the inputs not sent yet). Each one also makes
-  `markWorkedOn` start a coroutine that waits 30 s: about a thousand of them while writing.
+  `markWorkedOn` start a coroutine that waits 30 s: about a thousand of them while writing. The
+  gestures copy the whole stroke into the activity at every input, shared or not.
 
 ## Requirements
 
@@ -67,7 +68,9 @@ The responsibilities are assigned following the GRASP principles.
 * **Controller (worked on).** `markWorkedOn` keeps when each document was last worked on; one job per
   document waits until it is left alone for 30 s, instead of one job per presence.
 * **Information Expert (the presence).** `CollaboratorsLayer` keeps the values of the stroke being
-  drawn and adds only the inputs that came since the last presence.
+  drawn and adds only the inputs that came since the last presence. `CollaboratorPresence` knows
+  whether someone follows its activity: the gestures copy the inputs of the stroke into it, at every
+  input, only then (a document not shared no longer pays it either).
 
 ## Phases
 
@@ -76,7 +79,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | The menus, the popovers and the dialogs bounded to the window (no crash in landscape, the dialogs scroll) | done |
 | 2 | The texts laid out on the main thread on iOS | done |
 | 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | done |
-| 4 | The presence built from what the stroke gained | planned |
+| 4 | The presence built from what the stroke gained, the stroke copied only for a document followed | done |
 
 ## Decisions
 

@@ -45,6 +45,12 @@ public class CollaboratorPresence internal constructor(
      */
     public val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
 
+    /**
+     * Whether someone follows [activity] (a shared document): the stroke being drawn is copied
+     * into it only then, since it is reported at every input.
+     */
+    internal val isFollowed: Boolean get() = currentActivity.subscriptionCount.value > 0
+
     /** Where the pointer is and the stroke being drawn (from the gestures). */
     internal fun reportActivity(activity: EditorActivity?) {
         pointerActivity = activity

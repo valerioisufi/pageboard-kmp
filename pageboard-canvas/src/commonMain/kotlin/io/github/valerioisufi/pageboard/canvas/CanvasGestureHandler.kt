@@ -1372,7 +1372,8 @@ internal class CanvasGestureHandler(
                 x = mm.x,
                 y = mm.y,
                 stroke = if (brush != null) strokeCount else 0,
-                ink = if (brush != null) engine.inputs.toList() else emptyList(),
+                // Copied for the others only: a document no one follows does not pay it at every input
+                ink = if (brush != null && controller.presence.isFollowed) engine.inputs.toList() else emptyList(),
                 brush = brush,
                 inputType = inkInputType,
                 strokeCancelled = strokeCancelled

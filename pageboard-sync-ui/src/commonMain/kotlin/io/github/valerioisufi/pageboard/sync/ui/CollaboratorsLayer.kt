@@ -15,6 +15,7 @@ import io.github.valerioisufi.pageboard.model.PageElement
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokeMesh
+import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.model.change.ChangeOrigin
@@ -54,8 +55,9 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
     LaunchedEffect(collaboration, documentId, document, presence) {
         var sent: EditorActivity? = null
         var sentAt = 0L
+        val ink = InkValues()
         suspend fun send(activity: EditorActivity?) {
-            collaboration.engine.updatePresence(activity.toPresence(documentId))
+            collaboration.engine.updatePresence(activity.toPresence(documentId, ink))
             sent = activity
             sentAt = currentTimeMillis()
         }
@@ -96,29 +98,53 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
     }
 }
 
-/** The presence of this device for `activity` (`null`: nothing). */
-private fun EditorActivity?.toPresence(documentId: String): Presence {
+/** The presence of this device for `activity` (`null`: nothing), the values of its stroke kept by [ink]. */
+private fun EditorActivity?.toPresence(documentId: String, ink: InkValues): Presence {
     if (this == null) return Presence(documentId)
     val brush = brush
     val work = Presence(documentId, pageId, x, y, inkCancelled = strokeCancelled, text = text, textPageId = textPageId, selection = selection)
-    if (stroke == 0L || brush == null || ink.isEmpty()) return work
-    // The times from the first input (from 1: 0 is no time)
-    val start = ink.first().timestampMs - 1
-    val values = ArrayList<Float>(ink.size * Presence.INK_VALUES)
-    for (input in ink) {
-        values.add(input.x)
-        values.add(input.y)
-        values.add(input.pressure)
-        values.add((input.timestampMs - start).toFloat())
-    }
+    if (stroke == 0L || brush == null || this.ink.isEmpty()) return work
     return work.copy(
         stroke = stroke,
-        ink = values,
+        ink = ink.of(stroke, this.ink),
         inkTool = brush.tool.name,
         inkColor = brush.color,
         inkSize = brush.size,
         inkInput = inputType.name
     )
+}
+
+/**
+ * The values of the stroke being drawn as a presence carries them ([Presence.INK_VALUES] by input:
+ * its position, its pressure, its time from the first input), kept from one presence to the next:
+ * the inputs of a stroke only grow, so only the ones that came are added (a presence goes up to 30
+ * times a second on the main thread, see docs/plans/ios-stability.md).
+ */
+private class InkValues {
+    private var stroke = 0L
+    private var start = 0L
+    private var inputs = 0
+    private val values = ArrayList<Float>()
+
+    /** The values of the inputs [ink] of the stroke [stroke]: a copy, the next inputs added apart. */
+    fun of(stroke: Long, ink: List<StrokePoint>): List<Float> {
+        if (stroke != this.stroke || ink.size < inputs) {
+            this.stroke = stroke
+            // The times from the first input (from 1: 0 is no time)
+            start = ink.first().timestampMs - 1
+            inputs = 0
+            values.clear()
+        }
+        for (index in inputs until ink.size) {
+            val input = ink[index]
+            values.add(input.x)
+            values.add(input.y)
+            values.add(input.pressure)
+            values.add((input.timestampMs - start).toFloat())
+        }
+        inputs = ink.size
+        return ArrayList(values)
+    }
 }
 
 /**
