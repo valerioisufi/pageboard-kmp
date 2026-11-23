@@ -287,6 +287,10 @@ class TextScreenshotTest {
         write(viewModels, 15f, 20f, (1..12).joinToString("\n") { "Line $it of a text wider than the window at this zoom, wrapped as on the page." }, drawnWidthMm = 180f)
         runOnIdle {
             val controller = viewModels.controller()
+            // Saved as a pause in the writing saves it, Undo on: the save of the editor waits on
+            // the real clock, and this long text took longer to write than that wait on some runs
+            controller.textEditorManager.saveWriting()
+            assertTrue(controller.canUndo, "the writing saved, undone in one step")
             val editor = controller.textEditorManager
             val corner = controller.viewport.pageMmToScreen(0)!!.mapPoint(editor.boxX, editor.boxY)
             controller.viewport.panBy(40f - corner.x, 40f - corner.y)

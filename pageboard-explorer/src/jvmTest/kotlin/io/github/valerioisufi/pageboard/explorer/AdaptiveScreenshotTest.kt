@@ -237,6 +237,8 @@ class AdaptiveScreenshotTest {
                 library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Physics" || it.name == "Lab report" })
                 library.showSection(FileExplorerViewModel.Section.TRASH)
             }
+            // The store moves them on its own scope, which waitForIdle does not wait for
+            waitUntil(timeoutMillis = 10_000) { viewModels.library().shownTrash.size == 2 }
             waitForIdle()
         }
     }
