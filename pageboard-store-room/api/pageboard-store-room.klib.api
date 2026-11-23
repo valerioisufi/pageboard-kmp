@@ -74,6 +74,7 @@ final class io.github.valerioisufi.pageboard.store.room/RoomDocumentStore : io.g
     final suspend fun trashFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.trashFolder|trashFolder(kotlin.String){}[0]
     final suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.updateLastOpened|updateLastOpened(kotlin.String){}[0]
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.versionVector|versionVector(kotlin.String){}[0]
+    final suspend fun versionVectors(kotlin.collections/Collection<kotlin/String>): kotlin.collections/Map<kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>> // io.github.valerioisufi.pageboard.store.room/RoomDocumentStore.versionVectors|versionVectors(kotlin.collections.Collection<kotlin.String>){}[0]
 }
 
 final fun io.github.valerioisufi.pageboard.store.room.db/createPageboardDatabase(androidx.room/RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase> = ...): io.github.valerioisufi.pageboard.store.room.db/PageboardDatabase // io.github.valerioisufi.pageboard.store.room.db/createPageboardDatabase|createPageboardDatabase(androidx.room.RoomDatabase.Builder<io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase>){}[0]

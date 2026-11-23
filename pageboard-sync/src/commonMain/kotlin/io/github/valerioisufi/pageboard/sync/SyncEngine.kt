@@ -1431,22 +1431,28 @@ public class SyncEngine(
         val library = spaces ?: return emptyMap()
         val store = documents.store
         val here = store.documents.first().mapTo(HashSet()) { it.id } + store.trash.first().flatMap { it.documentIds }
-        return library.view(spaceId).filter { it.kind == CatalogItemKind.DOCUMENT && it.id in here }.associate { entry ->
-            val vector = store.versionVector(entry.id).entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
-            val items = attachments?.versions(entry.id).orEmpty().entries.sortedBy { it.key }.joinToString(",") { "${it.key}=${it.value}" }
-            entry.id to Sha256.of("$vector|$items".encodeToByteArray())
+        val ids = library.view(spaceId).filter { it.kind == CatalogItemKind.DOCUMENT && it.id in here }.map { it.id }
+        // The vectors of all of them at once: a library has many documents (docs/plans/ios-stability.md)
+        val vectors = store.versionVectors(ids)
+        return ids.associateWith { id ->
+            val vector = vectors[id].orEmpty().entries.sortedBy { it.key }.joinToString(",") { "${it.key}:${it.value}" }
+            val items = attachments?.versions(id).orEmpty().entries.sortedBy { it.key }.joinToString(",") { "${it.key}=${it.value}" }
+            Sha256.of("$vector|$items".encodeToByteArray())
         }
     }
 
     /** Tells the members connected about each space the heads of its documents, when they changed. */
     private suspend fun tellHeads() {
         val library = spaces ?: return
+        val all = HashMap<String, Map<String, String>>()
         for (space in library.spaces()) {
             val heads = headsOf(space.id)
+            all[space.id] = heads
             val changed = mutex.withLock { (ownHeads[space.id] != heads).also { ownHeads[space.id] = heads } }
             if (changed) linksOf(space.id).filter { it.space && it.authorized && it.catalogCaughtUp }.forEach { it.trySend(DocumentHeads(heads)) }
         }
-        recomputeWanted()
+        // With the heads just computed, not computed again
+        recomputeWanted(all)
     }
 
     /** The heads of the documents of the space of [link], as its other device has them. */
@@ -1465,12 +1471,27 @@ public class SyncEngine(
             val count = ++presenceCount
             (workedOn.put(documentId, count) == null) to count
         }
-        if (first) recomputeWanted()
-        // No longer wanted once it is left alone for a while (no presence since this one)
+        if (!first) return
+        recomputeWanted()
+        // No longer wanted once it is left alone for a while (no presence for a whole wait): one
+        // job per document, not one per presence (they come many times a second)
         scope.launch {
-            delay(WORKED_ON_MS)
-            val left = mutex.withLock { (workedOn[documentId] == count).also { if (it) workedOn.remove(documentId) } }
-            if (left) recomputeWanted()
+            var seen = count
+            while (true) {
+                delay(WORKED_ON_MS)
+                val left = mutex.withLock {
+                    val last = workedOn[documentId]
+                    if (last == null || last == seen) {
+                        workedOn.remove(documentId)
+                        true
+                    } else {
+                        seen = last
+                        false
+                    }
+                }
+                if (left) break
+            }
+            recomputeWanted()
         }
     }
 
@@ -1479,11 +1500,11 @@ public class SyncEngine(
      * differ from the ones of a member connected about their space (or that one of the two has
      * not), the ones worked on here lately; the others tell the transports when it changes.
      */
-    private suspend fun recomputeWanted() {
+    private suspend fun recomputeWanted(computed: Map<String, Map<String, String>> = emptyMap()) {
         val library = spaces ?: return
         val wanted = HashSet<String>()
         for (space in library.spaces()) {
-            val mine = headsOf(space.id)
+            val mine = computed[space.id] ?: headsOf(space.id)
             val peers = mutex.withLock {
                 val connected = links.filter { it.space && it.authorized && it.documentId == space.id }.mapNotNullTo(HashSet()) { it.peerHello?.device }
                 remoteHeads[space.id].orEmpty().filterKeys { it in connected }

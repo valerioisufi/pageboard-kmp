@@ -139,6 +139,9 @@ public class RoomDocumentStore(
 
     override suspend fun versionVector(documentId: String): Map<String, Long> = repository.versionVector(documentId)
 
+    override suspend fun versionVectors(documentIds: Collection<String>): Map<String, Map<String, Long>> =
+        repository.versionVectors(documentIds)
+
     override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> =
         repository.operationsAfter(documentId, known)
 

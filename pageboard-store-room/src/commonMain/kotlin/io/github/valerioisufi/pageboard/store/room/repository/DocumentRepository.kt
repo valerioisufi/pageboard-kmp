@@ -39,6 +39,7 @@ import io.github.valerioisufi.pageboard.store.LoadedPage
 import io.github.valerioisufi.pageboard.store.PageOutline
 import io.github.valerioisufi.pageboard.store.room.db.CustomElementEntity
 import io.github.valerioisufi.pageboard.store.room.db.DocumentEntity
+import io.github.valerioisufi.pageboard.store.room.db.MAX_QUERY_IDS
 import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.ImageEntity
 import io.github.valerioisufi.pageboard.store.room.db.OperationBaseEntity
@@ -463,6 +464,19 @@ internal class DocumentRepository(
         val vector = operationDao.bases(documentId).associate { it.replica to it.sequence }.toMutableMap()
         for (last in operationDao.lastSequences(documentId)) vector[last.replica] = maxOf(vector[last.replica] ?: 0L, last.sequence)
         vector
+    }
+
+    /** [versionVector] of each of the documents [documentIds], a few queries for all of them. */
+    suspend fun versionVectors(documentIds: Collection<String>): Map<String, Map<String, Long>> = withContext(Dispatchers.IO) {
+        val vectors = HashMap<String, MutableMap<String, Long>>()
+        for (chunk in documentIds.distinct().chunked(MAX_QUERY_IDS)) {
+            for (base in operationDao.basesOf(chunk)) vectors.getOrPut(base.documentId) { HashMap() }[base.replica] = base.sequence
+            for (last in operationDao.lastSequencesOf(chunk)) {
+                val vector = vectors.getOrPut(last.documentId) { HashMap() }
+                vector[last.replica] = maxOf(vector[last.replica] ?: 0L, last.sequence)
+            }
+        }
+        documentIds.associateWith { vectors[it].orEmpty() }
     }
 
     suspend fun compactedOperations(documentId: String): Map<String, Long> = withContext(Dispatchers.IO) {

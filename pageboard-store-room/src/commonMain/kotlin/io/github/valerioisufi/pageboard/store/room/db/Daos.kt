@@ -353,6 +353,9 @@ internal interface SharedDocumentDao {
 /** The last operation of a replica (see [OperationDao.lastSequences]). */
 internal data class ReplicaSequence(val replica: String, val sequence: Long)
 
+/** The last operation of a replica in the log of a document (see [OperationDao.lastSequencesOf]). */
+internal data class DocumentReplicaSequence(val documentId: String, val replica: String, val sequence: Long)
+
 /**
  * Data Access Object for the log of the operations of the documents.
  */
@@ -364,6 +367,10 @@ internal interface OperationDao {
 
     @Query("SELECT replica, MAX(sequence) AS sequence FROM operations WHERE documentId = :documentId GROUP BY replica")
     suspend fun lastSequences(documentId: String): List<ReplicaSequence>
+
+    /** [lastSequences] of each of the documents [documentIds] (at most [MAX_QUERY_IDS] of them). */
+    @Query("SELECT documentId, replica, MAX(sequence) AS sequence FROM operations WHERE documentId IN (:documentIds) GROUP BY documentId, replica")
+    suspend fun lastSequencesOf(documentIds: List<String>): List<DocumentReplicaSequence>
 
     /** The operations of the replica [replica] after its operation [after], in their order. */
     @Query("SELECT * FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence > :after ORDER BY sequence")
@@ -384,6 +391,10 @@ internal interface OperationDao {
 
     @Query("SELECT replica, sequence FROM operation_bases WHERE documentId = :documentId")
     suspend fun bases(documentId: String): List<ReplicaSequence>
+
+    /** [bases] of each of the documents [documentIds] (at most [MAX_QUERY_IDS] of them). */
+    @Query("SELECT documentId, replica, sequence FROM operation_bases WHERE documentId IN (:documentIds)")
+    suspend fun basesOf(documentIds: List<String>): List<DocumentReplicaSequence>
 
     @Query("SELECT * FROM operation_bases WHERE documentId = :documentId")
     suspend fun baseEntities(documentId: String): List<OperationBaseEntity>
@@ -433,3 +444,6 @@ internal interface ReplicaDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(replica: ReplicaEntity)
 }
+
+/** The most identifiers a query takes at once: below the variables SQLite allows in one statement (999 before 3.32). */
+internal const val MAX_QUERY_IDS = 500

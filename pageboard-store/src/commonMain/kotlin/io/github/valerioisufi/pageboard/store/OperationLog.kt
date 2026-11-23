@@ -15,6 +15,14 @@ public interface OperationLog {
     /** The last operation of every replica in the log of the document [documentId]. */
     public suspend fun versionVector(documentId: String): Map<String, Long>
 
+    /**
+     * The [versionVector] of each of the documents [documentIds] (the ones not stored left out or
+     * empty): one by one by default, at once where the store can (e.g. the documents of a shared
+     * folder, see docs/plans/ios-stability.md).
+     */
+    public suspend fun versionVectors(documentIds: Collection<String>): Map<String, Map<String, Long>> =
+        documentIds.associateWith { versionVector(it) }
+
     /** The operations of the document [documentId] after [known] (a version vector), in stamp order. */
     public suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation>
 

@@ -26,6 +26,7 @@ import io.github.valerioisufi.pageboard.model.change.AddPage
 import io.github.valerioisufi.pageboard.model.change.DocumentSession
 import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
+import io.github.valerioisufi.pageboard.model.change.RenameDocument
 import io.github.valerioisufi.pageboard.model.change.RemoveElements
 import io.github.valerioisufi.pageboard.model.change.RemovePage
 import io.github.valerioisufi.pageboard.model.change.StrokeData
@@ -447,6 +448,29 @@ class PageboardDatabaseTest {
         }
         assertEquals(listOf(stroke.id), assertNotNull(store.loadDocument(document.id)).pages.single().strokes.map { it.id })
         assertEquals(modifiedAt + 1_000L, store.documents.first().single().modifiedAt)
+    }
+
+    @Test
+    fun theVersionVectorsOfManyDocumentsAreTheOnesOfEachOne() = runTest {
+        val store = RoomDocumentStore(database, InkStrokeModeller)
+        val logged = store.createDocument("Logged")
+        val compacted = store.createDocument("Compacted")
+        val empty = store.createDocument("Empty")
+        fun operation(replica: String, sequence: Long) = Operation(OperationId(replica, sequence), Stamp(sequence, 0, replica), RenameDocument("Title $sequence"))
+        for (sequence in 1L..3L) store.persistence.appendOperation(logged, operation("bob", sequence))
+        store.persistence.appendOperation(logged, operation("cy", 1L))
+        for (sequence in 1L..4L) store.persistence.appendOperation(compacted, operation("bob", sequence))
+        store.persistence.appendOperation(compacted, operation("cy", 2L))
+        // Some of its operations no longer in the log, still counted
+        store.compactOperations(compacted.id, mapOf("bob" to 3L, "cy" to 2L))
+        store.flush()
+
+        val ids = listOf(logged.id, compacted.id, empty.id, "missing")
+        val vectors = store.versionVectors(ids)
+        assertEquals(ids.associateWith { store.versionVector(it) }, vectors)
+        assertEquals(mapOf("bob" to 3L, "cy" to 1L), vectors[logged.id])
+        assertEquals(mapOf("bob" to 4L, "cy" to 2L), vectors[compacted.id])
+        assertEquals(emptyMap(), vectors[empty.id])
     }
 
     @Test

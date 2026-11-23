@@ -70,6 +70,7 @@ public final class io/github/valerioisufi/pageboard/store/DocumentStore$DefaultI
 	public static fun pageFingerprint (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun proofs (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun saveProofs (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun versionVectors (Lio/github/valerioisufi/pageboard/store/DocumentStore;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/store/DocumentSummary {
@@ -208,6 +209,7 @@ public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore 
 	public fun updateDocumentTitle (Lio/github/valerioisufi/pageboard/model/Document;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun versionVectors (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore$Companion {
@@ -297,11 +299,13 @@ public abstract interface class io/github/valerioisufi/pageboard/store/Operation
 	public abstract fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun versionVectors (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/store/OperationLog$DefaultImpls {
 	public static fun proofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun saveProofs (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun versionVectors (Lio/github/valerioisufi/pageboard/store/OperationLog;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/store/PageInk {

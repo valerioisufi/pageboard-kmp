@@ -75,7 +75,7 @@ The responsibilities are assigned following the GRASP principles.
 |------|---------|--------|
 | 1 | The menus, the popovers and the dialogs bounded to the window (no crash in landscape, the dialogs scroll) | done |
 | 2 | The texts laid out on the main thread on iOS | done |
-| 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | planned |
+| 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | done |
 | 4 | The presence built from what the stroke gained | planned |
 
 ## Decisions
@@ -89,6 +89,9 @@ Taken alone, revertible:
   but no crash of it is known; see "Left for later".
 * **`versionVectors` is a new member with a default**, so the stores of others keep building
   (`checkKotlinAbi` records it).
+* **A document worked on stays wanted between 30 and 60 s** after its last presence, where it was
+  30 s exactly: the one job of the document looks every 30 s whether a presence came meanwhile.
+  It only keeps a connection open a little longer.
 
 ## Left for later
 

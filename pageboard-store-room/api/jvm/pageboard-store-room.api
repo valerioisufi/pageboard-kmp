@@ -50,6 +50,7 @@ public final class io/github/valerioisufi/pageboard/store/room/RoomDocumentStore
 	public fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun versionVectors (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/store/room/db/DatabaseBuilderKt {
