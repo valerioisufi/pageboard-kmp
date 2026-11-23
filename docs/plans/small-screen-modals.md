@@ -262,7 +262,7 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 | 2. The frames | `ModalFrame` with its unit tests; `AdaptiveSheet` with `onClose`, `SheetBody`, sheet state, keyboard and `FullWindowDialog`; `AdaptiveDialog`; layout tests like `AdaptiveSheetWidthTest` (heights, wrapping buttons, 280 dp minimum dropped). ABI updated | done |
 | 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | done |
 | 4. The alerts | the 13 `AlertDialog`s and Text color on `AdaptiveDialog`. Screenshots of the conversion in a phone in landscape | done |
-| 5. The panels of the editor | `SheetDragConnection` on `PanelSheet`, with a test of the drag (tall before scrolling, short then closed from the top) | to do |
+| 5. The panels of the editor | `SheetDragConnection` on `PanelSheet`, with a test of the drag (tall before scrolling, short then closed from the top) | done |
 | 6. On the devices | desktop app on a scratch data directory at 360 × 480; Android emulator (small phone, landscape, keyboard); iPhone simulator (SE, landscape, keyboard); screenshots verified in Docker or by the workflow | to do |
 
 Each phase runs the checks of `CLAUDE.md` (`jvmTest checkKotlinAbi`, the Android and iOS
@@ -346,6 +346,20 @@ the `record-screenshots` label.
   scrolling above the buttons.
 * `LecturePanelQueueTest` failed once in the whole run and passed three times alone: a timing of
   the test under load, not of the dialogs.
+
+### Phase 5 results
+
+* `SheetDragConnection` (`pageboard-ui/screen`, internal), a `NestedScrollConnection` on the
+  sheet of the panels:
+  - dragged up while the sheet is short, the content makes it tall after 48 dp, and keeps its
+    place until then;
+  - pulled down past its top by more than 48 dp, it makes a tall sheet short, or closes a short
+    one, when the drag ends: one step per drag;
+  - a fling up while short makes the sheet tall.
+* The handle keeps its own gesture. A mouse wheel never closes the sheet, since a wheel has no end
+  of drag (the modal sheets do the same).
+* `SheetDragConnectionTest` checks the four cases: up while short, down twice from tall, a short
+  pull, the content scrolling back to its top before the pull.
 
 ## Decisions
 

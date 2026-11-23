@@ -48,6 +48,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -93,6 +95,9 @@ private const val SheetTallFraction = 0.85f
 
 /** A drag of the handle longer than this (in pixels, at once) moves the sheet. */
 private const val SheetDragThreshold = 8f
+
+/** How far the content of the sheet of the panels is dragged past its top, or up, to move the sheet. */
+private val SheetContentDragThreshold = 48.dp
 
 /**
  * The frame of the editor under its bars: the canvas and the panels of the extensions, placed by
@@ -192,8 +197,18 @@ private fun PanelSheet(open: List<EditorPanel>, fraction: Float, onTallChange: (
                 .fillMaxWidth()
                 .fillMaxHeight(fraction)
         ) {
+            // The content moves the sheet as the handle does, as in the modal sheets
+            val threshold = with(LocalDensity.current) { SheetContentDragThreshold.toPx() }
+            val connection = remember(threshold) {
+                SheetDragConnection(
+                    isTall = { currentTall },
+                    onTall = { setTall(it) },
+                    onClose = { currentShown.forEach { it.onClose() } },
+                    threshold = threshold
+                )
+            }
             // Above the bar of the system (the home indicator)
-            Column(modifier = Modifier.navigationBarsPadding()) {
+            Column(modifier = Modifier.navigationBarsPadding().nestedScroll(connection)) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
