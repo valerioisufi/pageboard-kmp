@@ -63,6 +63,7 @@ who uses the applications or the libraries.
 | [ink-latency](ink-latency.md) | Ink latency |
 | [instances](instances.md) | The store and the sessions as instances |
 | [internet-sync](internet-sync.md) | Synchronization over the internet |
+| [ios-stability](ios-stability.md) | The crashes and the lag of the iPhone |
 | [last-place](last-place.md) | The last place of a document |
 | [lecture-assistant](lecture-assistant.md) | Lecture assistant: the transcription model chosen, the review on request |
 | [lecture-backends](lecture-backends.md) | The lecture models behind one backend per provider |
