@@ -28,9 +28,9 @@ class ConversionScreenshotTest {
         Locale.setDefault(Locale.US)
     }
 
-    private fun capture(name: String, reading: InkReading?) {
-        for (dark in listOf(false, true)) {
-            runDesktopComposeUiTest(width = 560, height = 520) {
+    private fun capture(name: String, reading: InkReading?, width: Int = 560, height: Int = 520, themes: List<Boolean> = listOf(false, true)) {
+        for (dark in themes) {
+            runDesktopComposeUiTest(width = width, height = height) {
                 setContent {
                     PageboardTheme(darkTheme = dark, dynamicColor = false) {
                         Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
@@ -55,6 +55,17 @@ class ConversionScreenshotTest {
     fun aReadingWithItsOtherReadings() = capture(
         "convert-to-text",
         InkReading("a continuous function on a closed interval", listOf("a continuous function on a closed interual", "a continuous junction on a closed interval"))
+    )
+
+    /**
+     * A phone in landscape, 411 dp high: the readings scroll between the title and the buttons,
+     * which stay in sight.
+     */
+    @Test
+    fun inALowWindow() = capture(
+        "convert-to-text-low",
+        InkReading("a continuous function on a closed interval", listOf("a continuous function on a closed interual", "a continuous junction on a closed interval", "a continuous function on a cloud interval")),
+        width = 891, height = 411, themes = listOf(false)
     )
 
     @Test

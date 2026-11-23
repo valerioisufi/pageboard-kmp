@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -38,6 +37,7 @@ import io.github.valerioisufi.pageboard.ml.ModelSpec
 import io.github.valerioisufi.pageboard.search.HandwritingSearch
 import io.github.valerioisufi.pageboard.search.IndexingProgress
 import io.github.valerioisufi.pageboard.handwriting.InkLanguageModel
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.components.SwitchRow
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_description
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_handwriting_model
@@ -361,7 +361,7 @@ private fun ModelCard(
     // A model removed is downloaded again whole (gigabytes): the removal is confirmed first
     var confirmingDelete by remember { mutableStateOf(false) }
     if (confirmingDelete) {
-        AlertDialog(
+        AdaptiveDialog(
             onDismissRequest = { confirmingDelete = false },
             title = { Text(stringResource(Res.string.search_model_delete_title, spec.name)) },
             text = { Text(stringResource(Res.string.search_model_delete_confirm, formatBytes(spec.sizeBytes))) },

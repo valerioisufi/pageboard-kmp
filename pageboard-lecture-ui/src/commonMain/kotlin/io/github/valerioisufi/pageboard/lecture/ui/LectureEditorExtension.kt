@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +51,7 @@ import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_e
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_exit_title
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.lecture_title
 import io.github.valerioisufi.pageboard.lecture.ui.platform.rememberMicrophoneAccess
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.components.BadgeTone
@@ -141,7 +141,7 @@ private fun BoxScope.ArrivalsBanner(assistant: LectureAssistant, documentId: Str
 @Composable
 public fun LectureDialogs(assistant: LectureAssistant) {
     val offer = assistant.generationOffers.firstOrNull() ?: return
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = { assistant.declineGeneration(offer) },
         title = { Text(stringResource(if (offer.live) Res.string.lecture_offer_live_title else Res.string.lecture_offer_title)) },
         text = {
@@ -272,7 +272,7 @@ public fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
  */
 @Composable
 public fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.lecture_exit_title)) },
         text = { Text(stringResource(Res.string.lecture_exit_message)) },

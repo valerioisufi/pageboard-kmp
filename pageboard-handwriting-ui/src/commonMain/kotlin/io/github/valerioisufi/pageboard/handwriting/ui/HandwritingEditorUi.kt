@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +27,7 @@ import io.github.valerioisufi.pageboard.handwriting.ui.generated.resources.handw
 import io.github.valerioisufi.pageboard.handwriting.ui.generated.resources.handwriting_other_readings
 import io.github.valerioisufi.pageboard.handwriting.ui.generated.resources.handwriting_reading
 import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
@@ -122,7 +122,7 @@ internal fun ConversionDialog(
     onConvert: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.handwriting_convert_to_text)) },
         text = {

@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,6 +72,7 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_ro
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_untitled_note
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.store.FolderSummary
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
@@ -106,7 +106,7 @@ internal fun RequestNameDialog(
     var text by remember { mutableStateOf(initialText) }
     val shownError = inputError ?: error
 
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismissRequest,
         icon = { Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
         title = { Text(text = title) },
@@ -153,7 +153,7 @@ internal fun ConfirmActionDialog(
     onConfirm: () -> Unit,
     note: String? = null
 ) {
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismissRequest,
         icon = { Icon(PageboardIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(text = title, textAlign = TextAlign.Center) },

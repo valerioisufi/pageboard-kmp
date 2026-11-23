@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -42,6 +41,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.adaptive.ModalFrame
@@ -333,7 +333,7 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
 @Composable
 private fun StopSharingDialog(isOwner: Boolean, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     val label = stringResource(if (isOwner) Res.string.sync_end_sharing else Res.string.sync_leave)
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(PageboardIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(label, textAlign = TextAlign.Center) },

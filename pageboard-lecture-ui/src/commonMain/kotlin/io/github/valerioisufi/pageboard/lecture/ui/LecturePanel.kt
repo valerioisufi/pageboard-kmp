@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -46,6 +45,7 @@ import io.github.valerioisufi.pageboard.lecture.LectureSummary
 import io.github.valerioisufi.pageboard.lecture.audio.importableExtensions
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.lecture.ui.platform.rememberFileOpener
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
@@ -321,7 +321,7 @@ internal fun lectureDate(epochMs: Long): String = formatShortDateTime(epochMs, s
 /** Deleting a lecture, asked first: what goes, what stays. */
 @Composable
 internal fun DeleteLectureDialog(summary: LectureSummary, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(PageboardIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(stringResource(Res.string.lecture_delete_title), textAlign = TextAlign.Center) },

@@ -55,11 +55,7 @@ public fun AdaptiveDialog(
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
         modifier = modifier.imePadding().windowWidthLimit(DialogMargin).windowHeightLimit(DialogMargin).widthIn(max = DialogWidth),
-        properties = DialogProperties(
-            dismissOnBackPress = properties.dismissOnBackPress,
-            dismissOnClickOutside = properties.dismissOnClickOutside,
-            usePlatformDefaultWidth = false
-        )
+        properties = properties
     ) {
         PopupSystemBarsEffect()
         Surface(shape = RoundedCornerShape(28.dp), color = containerColor) {

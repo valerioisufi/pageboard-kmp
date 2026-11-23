@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.ui.screen
 
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.components.ToolSizes
 import io.github.valerioisufi.pageboard.ui.editor.TEXT_TO_NOTES_COMMAND_ID
 import io.github.valerioisufi.pageboard.ui.editor.TextImportSheet
@@ -26,7 +27,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -527,7 +527,7 @@ private fun DocumentScreenContent(
 
     // 3. Confirmation (overwrite the custom backgrounds?)
     pendingDocumentTemplate?.let { (dimension, background) ->
-        AlertDialog(
+        AdaptiveDialog(
             onDismissRequest = { pendingDocumentTemplate = null },
             icon = { Icon(PageboardIcons.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
             title = { Text(stringResource(Res.string.dialog_override_bg_title)) },

@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,6 +44,7 @@ import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_problem
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_problem_not_answering
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_problem_permission
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.sync_problem_permission_generic
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 
@@ -157,12 +155,13 @@ private fun deviceName(device: LanDevice): String = device.name.ifBlank { string
 @Composable
 internal fun CheckDialog(report: LanCheck?, started: Boolean, onDismiss: () -> Unit) {
     val lines = if (report == null) emptyList() else checkLines(report, started)
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.sync_check_title)) },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+                // The dialog scrolls the lines, its buttons in sight
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (report == null && started) {

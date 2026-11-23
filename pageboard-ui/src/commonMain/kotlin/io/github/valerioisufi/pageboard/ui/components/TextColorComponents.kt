@@ -14,13 +14,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
-import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Dialog for advanced color selection using ColorWheel.
+ * Dialog for advanced color selection using ColorWheel: the wheel as large as the window lets it
+ * be, up to 280 dp, the buttons in sight (an [AdaptiveDialog]).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TextColorPickerDialog(
     initialColor: Color,
@@ -28,48 +30,47 @@ internal fun TextColorPickerDialog(
     onColorConfirmed: (Color) -> Unit
 ) {
     var workingColor by remember(initialColor) { mutableStateOf(initialColor) }
-    BasicAlertDialog(onDismissRequest = onDismissRequest) {
-        PopupSystemBarsEffect()
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text(
-                    text = stringResource(Res.string.color_picker_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+    // The room of the window less what the dialog takes around the wheel (its margins, its title,
+    // the color and the buttons), so that the wheel is not scrolled out of sight in a low window
+    val windowHeight = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() }
+    AdaptiveDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(stringResource(Res.string.color_picker_title)) },
+        text = {
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                val wheel = minOf(280.dp, maxWidth, windowHeight - WheelChrome).coerceAtLeast(120.dp)
+                ColorWheel(
+                    modifier = Modifier.size(wheel),
+                    color = workingColor,
+                    onColorChanged = { workingColor = it },
+                    showAlphaSlider = false
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
-                    ColorWheel(
-                        modifier = Modifier.size(280.dp),
-                        color = workingColor,
-                        onColorChanged = { workingColor = it },
-                        showAlphaSlider = false
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(workingColor).border(1.dp, Color.Black.copy(alpha = 0.08f), CircleShape))
-                    Text(
-                        text = "#" + (workingColor.toArgb() and 0xFFFFFF).toString(16).uppercase().padStart(6, '0'),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .weight(1f)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
-                    TextButton(onClick = onDismissRequest) { Text(stringResource(Res.string.common_button_cancel)) }
-                    Button(onClick = {
-                        onColorConfirmed(workingColor)
-                        onDismissRequest()
-                    }) {
-                        Text(stringResource(Res.string.common_button_apply))
-                    }
-                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(workingColor).border(1.dp, Color.Black.copy(alpha = 0.08f), CircleShape))
+                Text(
+                    text = "#" + (workingColor.toArgb() and 0xFFFFFF).toString(16).uppercase().padStart(6, '0'),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .weight(1f)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                )
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismissRequest) { Text(stringResource(Res.string.common_button_cancel)) } },
+        confirmButton = {
+            Button(onClick = {
+                onColorConfirmed(workingColor)
+                onDismissRequest()
+            }) {
+                Text(stringResource(Res.string.common_button_apply))
             }
         }
-    }
+    )
 }
+
+/** What [TextColorPickerDialog] takes in height around its wheel. */
+private val WheelChrome = 300.dp

@@ -3,7 +3,6 @@ package io.github.valerioisufi.pageboard.export.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -28,6 +27,7 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_arc
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_failed_title
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_not_an_archive
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.import_archive_too_new
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res as PageboardRes
 import io.github.valerioisufi.pageboard.ui.generated.resources.common_action_close
 import io.github.valerioisufi.pageboard.ui.platform.PickerType
@@ -74,7 +74,7 @@ internal fun ImportArchiveDialog(importer: ArchiveImporter, onDone: () -> Unit) 
         }
     }
     val current = state
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = { if (current != ImportState.Importing) onDone() },
         title = {
             Text(

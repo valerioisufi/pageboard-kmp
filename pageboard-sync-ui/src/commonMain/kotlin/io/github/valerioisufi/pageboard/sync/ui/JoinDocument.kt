@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -37,6 +36,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.sync.lan.LanCheck
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.extension.LibraryAction
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import kotlinx.coroutines.launch
@@ -70,7 +70,7 @@ public fun CollaborationDialogs(collaboration: Collaboration) {
 private fun JoinRequestDialog(collaboration: Collaboration, request: JoinRequest) {
     val documents by collaboration.documentTitles.collectAsState(emptyMap())
     val role = stringResource(roleLabel(request.role))
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = {},
         icon = { Icon(PageboardIcons.UserPlus, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
         title = { Text(stringResource(Res.string.sync_request_title), textAlign = TextAlign.Center) },
@@ -129,7 +129,7 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
     }
     val status = joined?.let { joining[it.documentId] }
 
-    AlertDialog(
+    AdaptiveDialog(
         onDismissRequest = onDismiss,
         title = {
             val kind = joined?.kind ?: parsed?.kind
