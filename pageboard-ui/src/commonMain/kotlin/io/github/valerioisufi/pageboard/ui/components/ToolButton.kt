@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandTooltip
+import io.github.valerioisufi.pageboard.ui.adaptive.windowHeightLimit
 import io.github.valerioisufi.pageboard.ui.platform.UnfocusedPopupGuard
 import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
 import io.github.valerioisufi.pageboard.ui.platform.popupTakesFocus
@@ -167,7 +168,7 @@ internal fun ToolPopover(
     val focusable = takesText || popupTakesFocus()
     if (expanded && !focusable) UnfocusedPopupGuard(onDismissRequest)
     DropdownMenu(
-        modifier = Modifier.width(300.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.windowHeightLimit().width(300.dp).padding(horizontal = 16.dp, vertical = 8.dp),
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         offset = offset,

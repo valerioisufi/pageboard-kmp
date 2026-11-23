@@ -62,9 +62,9 @@ public fun AdaptiveSheet(
         BasicAlertDialog(
             onDismissRequest = onDismissRequest,
             modifier = if (wide) {
-                Modifier.padding(DialogMargin).widthIn(max = maxWidth).fillMaxWidth()
+                Modifier.padding(DialogMargin).windowHeightLimit(DialogMargin).widthIn(max = maxWidth).fillMaxWidth()
             } else {
-                Modifier.widthIn(max = maxWidth)
+                Modifier.windowHeightLimit(DialogMargin).widthIn(max = maxWidth)
             },
             properties = DialogProperties(usePlatformDefaultWidth = !wide)
         ) {

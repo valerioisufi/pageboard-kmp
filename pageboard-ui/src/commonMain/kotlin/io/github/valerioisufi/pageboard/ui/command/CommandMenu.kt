@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.pageboard.ui.adaptive.windowHeightLimit
 import io.github.valerioisufi.pageboard.ui.platform.UnfocusedPopupGuard
 import io.github.valerioisufi.pageboard.ui.platform.PopupSystemBarsEffect
 import io.github.valerioisufi.pageboard.ui.platform.popupTakesFocus
@@ -136,7 +137,7 @@ internal fun DesignMenu(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        modifier = modifier.padding(horizontal = 8.dp),
+        modifier = modifier.windowHeightLimit().padding(horizontal = 8.dp),
         offset = offset,
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,

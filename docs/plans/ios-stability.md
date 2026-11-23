@@ -49,7 +49,9 @@ The responsibilities are assigned following the GRASP principles.
 * **Protected Variations (the menus).** One modifier of `pageboard-ui`, `menuHeightLimit()`, bounds
   the height of a popup menu to the window (`LocalWindowInfo.containerSize`) less its margins;
   `DesignMenu` and `ToolPopover` give it to `DropdownMenu`, so the `verticalScroll` of Material is
-  always measured with a bounded height, whatever the popup of the platform gives it.
+  always measured with a bounded height, whatever the popup of the platform gives it. The dialog of
+  `AdaptiveSheet` takes it too: in landscape it was as tall as its content and cut by the window
+  ("New note" could not reach its button), now its content scrolls.
 * **Pure Fabrication (the thread of the texts).** `onTextLayoutThread { }`, `expect` in
   `pageboard-ui`: on iOS it runs its block on the main thread (directly there, else with
   `dispatch_sync` on the main queue), elsewhere in place. `ComposeTextTileAdapter` runs each of its
@@ -71,7 +73,7 @@ The responsibilities are assigned following the GRASP principles.
 
 | Step | Content | Status |
 |------|---------|--------|
-| 1 | The menus and the popovers bounded to the window (no crash in landscape) | planned |
+| 1 | The menus, the popovers and the dialogs bounded to the window (no crash in landscape, the dialogs scroll) | done |
 | 2 | The texts laid out on the main thread on iOS | planned |
 | 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | planned |
 | 4 | The presence built from what the stroke gained | planned |
@@ -96,6 +98,4 @@ Taken alone, revertible:
   between threads (to report to JetBrains).
 * Why the popup of Compose gives an infinite height in landscape on iOS (to report to JetBrains with
   a reproduction).
-* The dialog "New note" does not scroll in landscape on the iPhone, and its button "Create note"
-  cannot be reached.
 * A measure of the lag on the iPhone with Instruments, before and after phases 3 and 4.
