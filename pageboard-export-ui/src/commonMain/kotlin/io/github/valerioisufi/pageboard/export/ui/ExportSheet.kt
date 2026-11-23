@@ -126,6 +126,7 @@ import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_sha
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_subfolders
 import io.github.valerioisufi.pageboard.export.ui.generated.resources.export_title
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.components.ChipRow
 import io.github.valerioisufi.pageboard.ui.components.DesignFilterChip
 import io.github.valerioisufi.pageboard.ui.components.SwitchRow
@@ -200,6 +201,7 @@ internal fun ExportSheet(
     val primary: () -> Unit = { if (state.problem == null) (share ?: save)(state.fileName(fallbackName)) }
 
     AdaptiveSheet(
+        body = SheetBody.Fixed,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.export_title)) },
         actions = {

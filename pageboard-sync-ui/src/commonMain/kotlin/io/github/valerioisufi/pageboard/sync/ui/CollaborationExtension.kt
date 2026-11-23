@@ -43,6 +43,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
@@ -297,7 +298,7 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         }
     }
 
-    AdaptiveSheet(onDismissRequest = onDismiss, maxWidth = if (state.invites) ShareDialogWidth else ShareDialogNarrowWidth) {
+    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss, maxWidth = if (state.invites) ShareDialogWidth else ShareDialogNarrowWidth) {
         ShareContent(
             state = state,
             actions = actions,

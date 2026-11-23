@@ -36,6 +36,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.TextImport
 import io.github.valerioisufi.pageboard.canvas.controller.TextImportPlace
 import io.github.valerioisufi.pageboard.model.text.TextCleanup
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.components.MarkdownText
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
@@ -71,6 +72,7 @@ internal fun TextImportSheet(controller: PageboardController, asNotes: Command?)
     val close = { controller.pendingTextImport = null }
 
     AdaptiveSheet(
+        body = SheetBody.Fixed,
         onDismissRequest = close,
         title = { Text(stringResource(Res.string.import_text_title)) },
         actions = {

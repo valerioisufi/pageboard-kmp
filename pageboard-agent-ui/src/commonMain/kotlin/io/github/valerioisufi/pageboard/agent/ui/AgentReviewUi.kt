@@ -137,6 +137,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.components.SwitchRow
@@ -652,6 +653,7 @@ internal fun AccessSheet(
     onDismiss: () -> Unit
 ) {
     AdaptiveSheet(
+        body = SheetBody.Fixed,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.agent_access_title)) },
         actions = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.agent_close)) } }

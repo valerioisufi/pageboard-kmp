@@ -70,6 +70,7 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_un
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.store.FolderSummary
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
 import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
@@ -328,7 +329,7 @@ internal fun NewNoteDialog(
             onError = { error = it }
         )
     }
-    AdaptiveSheet(onDismissRequest = onDismiss) {
+    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

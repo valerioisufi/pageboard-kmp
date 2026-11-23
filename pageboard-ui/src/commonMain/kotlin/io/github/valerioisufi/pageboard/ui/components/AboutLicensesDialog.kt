@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -39,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.ModalFrame
+import io.github.valerioisufi.pageboard.ui.adaptive.currentModalFrame
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -143,14 +143,11 @@ public fun AboutLicensesDialog(
     val appName = appInfo?.name ?: stringResource(Res.string.app_name)
     AdaptiveSheet(
         onDismissRequest = onDismiss,
-        actions = {
-            Button(onClick = onDismiss) { Text(stringResource(Res.string.about_dialog_close)) }
-        }
-    ) {
-        Column(modifier = modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-            // The mark smaller where the name would not keep a line of its own (a 320 dp phone)
+        // The header and the close button in sight, the rest in the one scroll of the sheet
+        title = {
             BoxWithConstraints {
-                val markSize = if (maxWidth < 300.dp) 48.dp else 64.dp
+                // The mark smaller where the name would not keep a line of its own (a 320 dp phone)
+                val markSize = if (maxWidth < 250.dp) 48.dp else 64.dp
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Box(modifier = Modifier.size(markSize).clip(RoundedCornerShape(markSize * 5 / 16))) {
                         val mark = appInfo?.mark
@@ -174,10 +171,15 @@ public fun AboutLicensesDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    DesignIconButton(PageboardIcons.Close, stringResource(Res.string.about_dialog_close), onDismiss)
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+        },
+        onClose = onDismiss,
+        actions = if (currentModalFrame() == ModalFrame.BottomSheet) null else {
+            { Button(onClick = onDismiss) { Text(stringResource(Res.string.about_dialog_close)) } }
+        }
+    ) {
+        Column(modifier = modifier) {
             Text(
                 text = appInfo?.description ?: stringResource(Res.string.about_dialog_app_description),
                 style = MaterialTheme.typography.bodyLarge,
@@ -202,6 +204,7 @@ public fun AboutLicensesDialog(
                     LicenseRow(item = item)
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

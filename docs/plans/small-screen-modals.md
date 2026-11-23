@@ -259,7 +259,7 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 |---|---|---|
 | 0. Plan | This document, with the inventory | approved |
 | 1. License rows and About | `LicenseRow` on lines (with `WrappingRow`); About on `AdaptiveSheet` with one scroll. Screenshots of About in a 360 × 480 window, on a 320 × 640 phone and at 1000 × 760 | done |
-| 2. The frames | `ModalFrame` with its unit tests; `AdaptiveSheet` with `onClose`, `SheetBody`, sheet state, keyboard and `FullWindowDialog`; `AdaptiveDialog`; layout tests like `AdaptiveSheetWidthTest` (heights, wrapping buttons, 280 dp minimum dropped). ABI updated | to do |
+| 2. The frames | `ModalFrame` with its unit tests; `AdaptiveSheet` with `onClose`, `SheetBody`, sheet state, keyboard and `FullWindowDialog`; `AdaptiveDialog`; layout tests like `AdaptiveSheetWidthTest` (heights, wrapping buttons, 280 dp minimum dropped). ABI updated | done |
 | 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | to do |
 | 4. The alerts | the 15 `AlertDialog`s and Text color on `AdaptiveDialog`. Screenshots of Join, Check and Conversion at 360 × 480 and 891 × 411 | to do |
 | 5. The panels of the editor | `SheetDragConnection` on `PanelSheet`, with a test of the drag (tall before scrolling, short then closed from the top) | to do |
@@ -280,6 +280,29 @@ the `record-screenshots` label.
   mark is drawn at 48 dp, the one of the application scaled from its 64 dp.
 * The screenshot of a 320 dp phone showed the sheet opened half way, its Close button below the
   edge: the half state of the sheets, removed in phase 2.
+
+### Phase 2 results
+
+* `ModalFrame` (`BottomSheet`, `Dialog`, `FullWindowDialog`) and `currentModalFrame()`: a sheet
+  where the window is compact and touched (a finger or a stylus seen or reported), a dialog taking
+  the window less 8 dp where it is compact and reached only with a mouse, a dialog elsewhere.
+  `ModalFrameTest` checks the reference windows.
+* `AdaptiveSheet` takes `onClose` (a close button at the end of the header) and `body`
+  (`SheetBody.Scrolling`, the default: the sheet scrolls the content and gives it 24 dp at the
+  sides; `SheetBody.Fixed`: the room left, for lists and panes). The bottom sheet skips its half
+  state and pads for the keyboard; the actions go on a second line rather than being cut. The
+  sheets of the other modules are `SheetBody.Fixed` until phase 3 moves them.
+* `AdaptiveDialog`: the slots of `AlertDialog` (icon, title, text, confirm and dismiss buttons,
+  container color, properties). Its width is up to 560 dp and never more than the window less
+  24 dp, under the 280 dp of Material too; its height is bounded by the window; the text scrolls
+  between the title and the buttons, which wrap. `AdaptiveDialogTest` checks a 300 dp window, a
+  360 dp high one with a long text, and two long buttons at 320 dp.
+* `windowHeightLimit` leaves out the keyboard where it is drawn over the window (iOS), and the
+  dialogs pad for it.
+* About uses the header slot (its mark, name and version beside the close button, in sight) and
+  the scroll of the sheet; its Close button only where it is a dialog.
+* The ABI of `pageboard-ui` grows (`ModalFrame`, `SheetBody`, `AdaptiveDialog`,
+  `currentModalFrame`, the parameters of `AdaptiveSheet`), recorded with `updateKotlinAbi`.
 
 ## Decisions
 

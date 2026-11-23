@@ -61,6 +61,7 @@ import io.github.valerioisufi.pageboard.lecture.platform.isComputer
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
@@ -103,7 +104,7 @@ private enum class SettingsSection(val title: StringResource, val icon: ImageVec
 internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels: LocalModels, onDismiss: () -> Unit, deviceModels: DeviceModels? = null) {
     val compact = currentAdaptiveInfo().window.isCompact
     // A sheet on a phone, a dialog on a tablet and a desktop
-    AdaptiveSheet(onDismissRequest = onDismiss, maxWidth = 940.dp, padded = compact) {
+    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss, maxWidth = 940.dp, padded = compact) {
         AssistantSettingsContent(store, localModels, onDismiss, compact, deviceModels)
     }
 }

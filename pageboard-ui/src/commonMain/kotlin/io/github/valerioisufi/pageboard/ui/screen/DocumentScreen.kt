@@ -64,6 +64,7 @@ import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.geometry.Dimension
 import io.github.valerioisufi.pageboard.model.geometry.mm
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.RegisterCommands
@@ -480,7 +481,7 @@ private fun DocumentScreenContent(
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex
         val close = { showSinglePageConfigurator = false; configuredPageIds = null }
 
-        AdaptiveSheet(onDismissRequest = close, maxWidth = 760.dp) {
+        AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = close, maxWidth = 760.dp) {
             // The pages as they change, while the sheet is open
             controller.document.observeChanges()
             val targetPage = pageIds?.firstOrNull()?.let { controller.document.pageById(it) } ?: controller.document.pages.getOrNull(targetIndex)
@@ -508,7 +509,7 @@ private fun DocumentScreenContent(
     // 2. Whole document
     if (showDocumentConfigurator) {
         val document = controller.document
-        AdaptiveSheet(onDismissRequest = { showDocumentConfigurator = false }, maxWidth = 760.dp) {
+        AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = { showDocumentConfigurator = false }, maxWidth = 760.dp) {
             // The document as it changes, while the sheet is open
             document.observeChanges()
             PageTemplateConfigurator(

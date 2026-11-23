@@ -37,7 +37,7 @@ class AdaptiveSheetWidthTest {
         runDesktopComposeUiTest(width = windowWidth, height = 800) {
             setContent {
                 PageboardTheme(dynamicColor = false) {
-                    AdaptiveSheet(onDismissRequest = {}, maxWidth = maxWidth) { content() }
+                    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = {}, maxWidth = maxWidth) { content() }
                 }
             }
             // The box of the dialog of Material 3, which names its pane

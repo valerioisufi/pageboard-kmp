@@ -76,6 +76,7 @@ import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_set
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_semantic_title
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_title
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.components.BadgeTone
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
@@ -107,7 +108,7 @@ public fun SearchSettingsDialog(
     LaunchedEffect(search.installedModels) {
         search.installedModels?.refresh()
     }
-    AdaptiveSheet(onDismissRequest = onDismiss, maxWidth = 580.dp) {
+    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss, maxWidth = 580.dp) {
         SearchSettingsContent(search = search, onDismiss = onDismiss)
     }
 }

@@ -24,6 +24,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.theme.PageboardTheme
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
 import io.github.valerioisufi.pageboard.ui.theme.LocalCanvasColors
@@ -277,7 +278,7 @@ class SharingScreenshotTest {
     /** The dialog of a wide window, as the application opens it, [width] at most. */
     @Composable
     private fun Dialog(width: Dp, content: @Composable () -> Unit) {
-        AdaptiveSheet(onDismissRequest = {}, maxWidth = width) { content() }
+        AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = {}, maxWidth = width) { content() }
     }
 
     /** The sheet of a phone: the low container, its top rounded 28. */

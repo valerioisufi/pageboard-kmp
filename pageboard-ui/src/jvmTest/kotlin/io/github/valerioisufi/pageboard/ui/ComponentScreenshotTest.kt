@@ -47,6 +47,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Dimension
 import io.github.valerioisufi.pageboard.model.geometry.mm
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.adaptive.InputHints
 import io.github.valerioisufi.pageboard.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.pageboard.ui.command.MenuDivider
@@ -170,7 +171,7 @@ class ComponentScreenshotTest {
     fun pageConfigurator() {
         capture("page-configurator-dialog", width = 808, height = 640) {
             // As the editor opens it
-            AdaptiveSheet(onDismissRequest = {}, maxWidth = 760.dp) {
+            AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = {}, maxWidth = 760.dp) {
                 PageTemplateConfigurator(subtitle = "Page 3 of “Lecture 1 — Limits”", initialBackground = PageBackground.Ruled(lineColor = 0x6664B5F6), onApply = { _, _ -> }, onCancel = {})
             }
         }

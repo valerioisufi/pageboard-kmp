@@ -1,3 +1,7 @@
+public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveDialogKt {
+	public static final fun AdaptiveDialog-lmFMXvc (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;JLandroidx/compose/ui/window/DialogProperties;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/WindowLayout;Lio/github/valerioisufi/pageboard/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions;)V
@@ -20,7 +24,7 @@ public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfoKt {
 }
 
 public final class io/github/valerioisufi/pageboard/ui/adaptive/AdaptiveSheetKt {
-	public static final fun AdaptiveSheet-jIwJxvA (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;FZLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun AdaptiveSheet-aA_HZ9I (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;FZLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/ui/adaptive/SheetBody;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/valerioisufi/pageboard/ui/adaptive/HeightClass : java/lang/Enum {
@@ -67,6 +71,24 @@ public final class io/github/valerioisufi/pageboard/ui/adaptive/InputHints$Compa
 	public final fun getTouch ()Lio/github/valerioisufi/pageboard/ui/adaptive/InputHints;
 }
 
+public final class io/github/valerioisufi/pageboard/ui/adaptive/ModalFrame : java/lang/Enum {
+	public static final field BottomSheet Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+	public static final field Companion Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame$Companion;
+	public static final field Dialog Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+	public static final field FullWindowDialog Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/adaptive/ModalFrame$Companion {
+	public final fun of (Lio/github/valerioisufi/pageboard/ui/adaptive/AdaptiveInfo;)Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/adaptive/ModalFrameKt {
+	public static final fun currentModalFrame (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/pageboard/ui/adaptive/ModalFrame;
+}
+
 public final class io/github/valerioisufi/pageboard/ui/adaptive/PlatformConventions {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier;)V
@@ -98,6 +120,14 @@ public final class io/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow 
 	public final fun getWidth-D9Ej5fM ()F
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
 	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/ReferenceWindow;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/adaptive/SheetBody : java/lang/Enum {
+	public static final field Fixed Lio/github/valerioisufi/pageboard/ui/adaptive/SheetBody;
+	public static final field Scrolling Lio/github/valerioisufi/pageboard/ui/adaptive/SheetBody;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/ui/adaptive/SheetBody;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/ui/adaptive/SheetBody;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/adaptive/ShortcutModifier : java/lang/Enum {
