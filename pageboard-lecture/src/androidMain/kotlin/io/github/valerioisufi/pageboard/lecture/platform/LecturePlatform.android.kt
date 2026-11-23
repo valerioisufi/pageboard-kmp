@@ -14,6 +14,10 @@ public actual val isComputer: Boolean = false
 internal actual fun environmentApiKey(): String? = null
 
 // The files of the application are private to it
+internal actual fun pauseThread(millis: Long) {
+    Thread.sleep(millis)
+}
+
 internal actual fun restrictToOwner(path: String) {}
 
 internal actual fun showNotification(channel: String, title: String, text: String) {

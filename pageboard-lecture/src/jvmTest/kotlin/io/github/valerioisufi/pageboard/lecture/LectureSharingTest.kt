@@ -24,6 +24,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
@@ -184,9 +185,9 @@ class LectureSharingTest {
         val followed = await { computer.shownLecture("doc")?.takeIf { it.followedHere } }
         await { computer.library.readRecord(followed.directory)?.transcript?.isNotEmpty() }
         assertEquals(LectureStatus.RECORDING, followed.status)
-        meet(tablet.attachments, computer.attachments)
+        // The file written is told to the synchronization a moment later: they meet until it arrives
+        awaitMeeting(tablet, computer) { recorded.transcript.isNotEmpty() }
         assertEquals(LectureStatus.RECORDING, recorded.status)
-        await { recorded.transcript.isNotEmpty() }
         assertEquals(computer.library.deviceName, recorded.generatingElsewhere(System.currentTimeMillis())?.name)
 
         // Over on the tablet: the rest of its audio followed, then the review written on the computer
@@ -303,6 +304,15 @@ class LectureSharingTest {
             sent++
         }
         return sent
+    }
+
+    /**
+     * Waits for [value] as [await] does, [first] and [second] meeting before each look: what a
+     * device writes is told to the synchronization a moment after it is in the file.
+     */
+    private suspend fun <T : Any> awaitMeeting(first: LectureAssistant, second: LectureAssistant, value: suspend () -> T?): T = await {
+        withContext(Dispatchers.IO) { meet(first.attachments, second.attachments) }
+        value()
     }
 
     private suspend fun awaitFile(file: File) = await { file.exists() }

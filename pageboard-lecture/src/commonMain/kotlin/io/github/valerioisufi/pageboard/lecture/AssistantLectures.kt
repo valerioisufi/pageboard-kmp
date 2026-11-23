@@ -11,6 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
@@ -49,6 +50,9 @@ internal class AssistantLectures(
     val editorNotebooks = mutableMapOf<String, NotebookSource>()
     private val sharingSettings = mutableStateMapOf<String, LectureSharingSettings>()
 
+    /** The writes of the sharing settings, one at a time (see [changeSharing]). */
+    private val sharingWrites = Mutex()
+
     /** The documents with a lecture (see [LectureAssistant.documentsWithLectures]). */
     var documentsWithLectures: Set<String> by mutableStateOf(emptySet())
         private set
@@ -68,7 +72,11 @@ internal class AssistantLectures(
         val settings = transform(sharingOf(documentId))
         sharingSettings[documentId] = settings
         scope.launch {
-            library.saveSharing(documentId, settings)
+            // One write at a time, of the settings as they are then: two changes made one after the
+            // other are never saved in the other order
+            sharingWrites.withLock {
+                library.saveSharing(documentId, withContext(stateContext) { sharingOf(documentId) })
+            }
             // Maybe wanted now (e.g. received at once from now on)
             onSharingChanged(documentId)
         }

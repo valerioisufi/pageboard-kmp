@@ -240,6 +240,11 @@ Taken alone, revertible, unless they say otherwise.
    second model in memory for half a minute, if a lecture is being transcribed then. It happens once.
 8. **The SHA-256 of the encoders is written in the code**, the one Hugging Face gives for the files of
    whisper.cpp (2026-11-13): a new encoder published there is refused until the code knows it.
+9. **The conversions run in the order the imports were asked for** (2026-11-23, a fix): a FIFO
+   `Channel` with one worker in `AssistantWork` replaces the `Mutex`, which each import reached
+   from its own coroutine, so two imports asked one after the other could swap, and their
+   transcriptions with them (`TranscriptionQueueTest` failed on CI now and then). The same fix as
+   the exports (decision 8 of `recordings-export.md`).
 
 ## Left for later
 

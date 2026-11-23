@@ -12,6 +12,12 @@ internal expect fun environmentApiKey(): String?
 internal expect fun restrictToOwner(path: String)
 
 /**
+ * Blocks the calling thread for [millis]: between the attempts of a file replaced while another
+ * thread reads it, which Windows refuses (see `writeAtomically`).
+ */
+internal expect fun pauseThread(millis: Long)
+
+/**
  * Directory of the lecture recordings and of the assistant settings: `lectures`, next to the
  * resources directory of the Pageboard data.
  */

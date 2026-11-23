@@ -6,12 +6,17 @@ import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNUserNotificationCenter
+import platform.posix.usleep
 
 public actual val isComputer: Boolean = false
 
 internal actual fun environmentApiKey(): String? = null
 
 // The files of the application are private to it
+internal actual fun pauseThread(millis: Long) {
+    usleep((millis * 1_000).toUInt())
+}
+
 internal actual fun restrictToOwner(path: String) {}
 
 /** A notification of iOS (the permission asked the first time). */

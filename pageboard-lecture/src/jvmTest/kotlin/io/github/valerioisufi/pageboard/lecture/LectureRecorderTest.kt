@@ -614,6 +614,8 @@ class LectureRecorderTest {
     @Test
     fun theReviewIsWrittenOnRequest() = runBlocking<Unit> {
         val requests = Collections.synchronizedList(mutableListOf<String>())
+        // The review answered once the second request is tried: it runs until then
+        val reviewAnswered = CompletableDeferred<Unit>()
         val engine = MockEngine { request ->
             val path = request.url.encodedPath
             val body = request.body.toByteArray().decodeToString()
@@ -622,7 +624,10 @@ class LectureRecorderTest {
                     requests.add(body)
                     val answer = when {
                         body.contains("You transcribe the handwritten notes") -> """{"blocks":[{"image":1,"text":"lim f(x) = L"}]}"""
-                        body.contains("The lecture is over") -> """{"notesMarkdown":"# Limiti","missing":[]}"""
+                        body.contains("The lecture is over") -> {
+                            reviewAnswered.await()
+                            """{"notesMarkdown":"# Limiti","missing":[]}"""
+                        }
                         else -> plainChunkAnswer
                     }
                     respond(geminiAnswer(answer), HttpStatusCode.OK, jsonHeaders)
@@ -654,6 +659,7 @@ class LectureRecorderTest {
         assertTrue(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })
         // A second request while it runs is refused
         assertFalse(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })
+        reviewAnswered.complete(Unit)
         withTimeout(20_000) { while (lecture.reviewStatus != ReviewStatus.DONE) delay(20) }
         assertEquals("# Limiti", lecture.finalReview)
         val handwriting = requests.indexOfFirst { it.contains("You transcribe the handwritten notes") }

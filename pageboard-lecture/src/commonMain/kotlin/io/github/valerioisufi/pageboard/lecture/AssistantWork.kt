@@ -20,11 +20,12 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -49,8 +50,25 @@ internal class AssistantWork(
     /** The transcriptions of whole recordings, one at a time. */
     val queue = TranscriptionQueue(scope, stateContext)
 
-    /** The imports convert their audio one after the other. */
-    private val conversions = Mutex()
+    /**
+     * The conversions of the imports, run one at a time in the order they were asked for: a
+     * `Mutex` reached from the coroutine of each import let two imports asked one after the other
+     * swap, and their transcriptions with them.
+     */
+    private val conversions = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        scope.launch {
+            for (conversion in conversions) {
+                try {
+                    conversion()
+                } catch (e: CancellationException) {
+                    // A cancellation of one conversion leaves the others running, unless it is the assistant's
+                    if (!currentCoroutineContext().isActive) throw e
+                }
+            }
+        }
+    }
 
     /** The imports whose audio is being converted, before their transcription waits its turn. */
     private var converting: List<Lecture> by mutableStateOf(emptyList())
@@ -198,20 +216,19 @@ internal class AssistantWork(
         importError = null
         lectures.shown[documentId] = lecture
         val importer = LectureImporter(lecture, settingsStore, queue.gate) { models.transcribers.forRecording(settingsStore.settings) }
-        scope.launch {
+        // Taken in the order asked: the transcription of an import waits behind those asked before
+        conversions.trySend {
             val transcribed = canGenerate()
             val converted = try {
-                conversions.withLock {
-                    val pages = try {
-                        notebook.allPages()
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (_: Throwable) {
-                        emptyList()
-                    }
-                    val ids = withContext(stateContext) { pageIds() }
-                    importer.convert(file.path, pages, ids, transcribed)
+                val pages = try {
+                    notebook.allPages()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Throwable) {
+                    emptyList()
                 }
+                val ids = withContext(stateContext) { pageIds() }
+                importer.convert(file.path, pages, ids, transcribed)
                 true
             } catch (e: CancellationException) {
                 throw e

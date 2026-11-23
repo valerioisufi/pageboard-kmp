@@ -2,6 +2,7 @@ package io.github.valerioisufi.pageboard.lecture
 
 import io.github.valerioisufi.pageboard.lecture.audio.RecordingFile
 import io.github.valerioisufi.pageboard.lecture.platform.lectureDataDirectory
+import io.github.valerioisufi.pageboard.lecture.platform.pauseThread
 import io.github.valerioisufi.pageboard.platform.DeviceProfile
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
@@ -11,6 +12,7 @@ import kotlin.time.Instant
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.io.IOException
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.Serializable
@@ -293,10 +295,33 @@ public fun writeLectureRecord(directory: String, record: LectureRecord): Boolean
 internal fun writeAtomically(path: String, bytes: ByteArray): Boolean = try {
     val temporary = "$path.tmp"
     PlatformFiles.writeBytes(temporary, bytes) && run {
-        SystemFileSystem.atomicMove(Path(temporary), Path(path))
+        moveReplacing(temporary, path)
         true
     }
 } catch (e: Throwable) {
     println("Pageboard: cannot write $path: ${e.message}")
     false
 }
+
+/**
+ * Moves [from] over [to], tried again for a while when it is refused: Windows refuses to replace
+ * a file another thread is reading (the sharing settings read by a refresh while they are
+ * changed), where the other systems replace it at once.
+ */
+private fun moveReplacing(from: String, to: String) {
+    var attempt = 1
+    while (true) {
+        try {
+            SystemFileSystem.atomicMove(Path(from), Path(to))
+            return
+        } catch (e: IOException) {
+            if (attempt == MOVE_ATTEMPTS) throw e
+            attempt++
+            pauseThread(MOVE_PAUSE_MS)
+        }
+    }
+}
+
+/** How many times a file is moved over another before its write fails, [MOVE_PAUSE_MS] apart. */
+private const val MOVE_ATTEMPTS = 20
+private const val MOVE_PAUSE_MS = 25L
