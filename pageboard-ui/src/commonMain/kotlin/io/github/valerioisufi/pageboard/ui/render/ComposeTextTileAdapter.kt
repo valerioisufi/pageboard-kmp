@@ -70,7 +70,9 @@ import kotlin.math.roundToInt
  * on their lines, centered on a line of their own, its blocks of code on lines of their own (see
  * [CodeBlockLayout]) and its code in the line on a background.
  *
- * Thread-safe: the tiles are rasterized on background threads.
+ * Thread-safe: the tiles are rasterized on background threads. The text engine of Compose is not
+ * on iOS (its styles are kept in one global cache), so every call lays the text out on the thread
+ * of the interface there (see [onTextLayoutThread]).
  *
  * @param fontFamilyResolver resolver of the composition (`LocalFontFamilyResolver`).
  * @param fonts the fonts of the texts ([rememberNotesFonts] in the editor, the same on every
@@ -143,7 +145,7 @@ public class ComposeTextTileAdapter(
     override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) {
         val scale = mmToCanvas.scaleFactor
         if (scale <= 0f || text.width <= 0f) return
-        syncLock(lock) { drawRichText(canvas, inItsBox(text).first, mmToCanvas, scale, paperColor) }
+        onTextLayoutThread { syncLock(lock) { drawRichText(canvas, inItsBox(text).first, mmToCanvas, scale, paperColor) } }
     }
 
     /**
@@ -152,9 +154,11 @@ public class ComposeTextTileAdapter(
      */
     override fun measure(text: TextElement): TextBlockSize? {
         if (text.width <= 0f) return null
-        return syncLock(lock) {
-            val size = sizeOf(text)
-            if (!text.autoWidth) size else TextBlockSize(size.width, sizeOf(inItsBox(text).first).height)
+        return onTextLayoutThread {
+            syncLock(lock) {
+                val size = sizeOf(text)
+                if (!text.autoWidth) size else TextBlockSize(size.width, sizeOf(inItsBox(text).first).height)
+            }
         }
     }
 
@@ -205,63 +209,67 @@ public class ComposeTextTileAdapter(
 
     override fun lineMetrics(fontSize: Float): TextLineMetrics? {
         if (fontSize <= 0f) return null
-        return syncLock(lock) {
-            val fontPx = fontSize * PT_TO_MM * LAYOUT_PX_PER_MM
-            val line = measurer.measure(AnnotatedString(" "), baseStyle(Color.Black, fontPx, TextAlign.Start), skipCache = true)
-            TextLineMetrics(line.size.height / LAYOUT_PX_PER_MM, line.firstBaseline / LAYOUT_PX_PER_MM)
-        }
+        return onTextLayoutThread { lineMetricsOf(fontSize) }
+    }
+
+    private fun lineMetricsOf(fontSize: Float): TextLineMetrics = syncLock(lock) {
+        val fontPx = fontSize * PT_TO_MM * LAYOUT_PX_PER_MM
+        val line = measurer.measure(AnnotatedString(" "), baseStyle(Color.Black, fontPx, TextAlign.Start), skipCache = true)
+        TextLineMetrics(line.size.height / LAYOUT_PX_PER_MM, line.firstBaseline / LAYOUT_PX_PER_MM)
     }
 
     /** The words, the formulas and the backgrounds of a text, laid out as [drawRichText] does. */
     override fun layout(text: TextElement, paperColor: Int): TextBlockLayout? {
         if (text.width <= 0f || text.text.isBlank()) return null
-        return syncLock(lock) {
-            // At a resolution where the rounding of the width is negligible
-            val scale = LAYOUT_PX_PER_MM
-            val fontPx = text.fontSize * PT_TO_MM * scale
-            // In its box, from the corner of the text
-            val (placed, boxLeft) = inItsBox(text)
-            val left = boxLeft * scale
-            val prepared = prepare(placed, fontPx, (placed.width * scale).toInt().coerceAtLeast(1), paperColor)
-            val layout = prepared.layout
-            val words = mutableListOf<TextWord>()
-            val boxes = mutableListOf<TextBox>()
-            // The fill first, under the rest
-            text.background?.let { fill ->
-                boxes += fillRect(text, layout.size.width.toFloat(), layout.size.height.toFloat(), left)
-                    .toBox(TextBackground.radiusMm(text.fontSize) * scale, Color(fill), scale)
-            }
-            for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
-            for (bar in prepared.bars) boxes += bar.rect.translate(left, 0f).toBox(bar.radius, prepared.barColor, scale)
-            addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
-            val formulas = prepared.allFormulas.map { (formula, rect) ->
-                val box = rect.translate(left, 0f)
-                TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
-            }
-            for (table in prepared.tables) {
-                val origin = layout.tableOrigin(table) + Offset(left, 0f)
-                for ((rect, color) in table.layout.backgrounds()) boxes += rect.translate(origin).toBox(0f, color, scale)
-                for (cell in table.layout.cells) {
-                    addWords(cell.layout, CharStyles(cell.layout.layoutInput.text, text.color, fontPx, mono = false), scale, origin.x + cell.left, origin.y + cell.top, words)
-                }
-            }
-            for (codeBlock in prepared.codeBlocks) {
-                val origin = layout.codeBlockOrigin(codeBlock)
-                val rect = Rect(origin.x + left, origin.y, origin.x + left + codeBlock.layout.widthPx, origin.y + codeBlock.layout.heightPx)
-                val block = codeBlock.layout
-                boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
-                val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
-                addWords(block.code, code, scale, rect.left + block.codeLeftPx, rect.top + block.codeTopPx, words)
-                for (number in block.numbers) {
-                    val styles = CharStyles(number.layout.layoutInput.text, block.theme.label.toArgb(), block.fontPx, mono = true)
-                    addWords(number.layout, styles, scale, rect.left + number.left, rect.top + number.top, words)
-                }
-                val label = block.label ?: continue
-                val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
-                addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
-            }
-            TextBlockLayout(words, formulas, layout.size.height / scale, boxes)
+        return onTextLayoutThread { layoutOf(text, paperColor) }
+    }
+
+    private fun layoutOf(text: TextElement, paperColor: Int): TextBlockLayout = syncLock(lock) {
+        // At a resolution where the rounding of the width is negligible
+        val scale = LAYOUT_PX_PER_MM
+        val fontPx = text.fontSize * PT_TO_MM * scale
+        // In its box, from the corner of the text
+        val (placed, boxLeft) = inItsBox(text)
+        val left = boxLeft * scale
+        val prepared = prepare(placed, fontPx, (placed.width * scale).toInt().coerceAtLeast(1), paperColor)
+        val layout = prepared.layout
+        val words = mutableListOf<TextWord>()
+        val boxes = mutableListOf<TextBox>()
+        // The fill first, under the rest
+        text.background?.let { fill ->
+            boxes += fillRect(text, layout.size.width.toFloat(), layout.size.height.toFloat(), left)
+                .toBox(TextBackground.radiusMm(text.fontSize) * scale, Color(fill), scale)
         }
+        for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
+        for (bar in prepared.bars) boxes += bar.rect.translate(left, 0f).toBox(bar.radius, prepared.barColor, scale)
+        addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
+        val formulas = prepared.allFormulas.map { (formula, rect) ->
+            val box = rect.translate(left, 0f)
+            TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
+        }
+        for (table in prepared.tables) {
+            val origin = layout.tableOrigin(table) + Offset(left, 0f)
+            for ((rect, color) in table.layout.backgrounds()) boxes += rect.translate(origin).toBox(0f, color, scale)
+            for (cell in table.layout.cells) {
+                addWords(cell.layout, CharStyles(cell.layout.layoutInput.text, text.color, fontPx, mono = false), scale, origin.x + cell.left, origin.y + cell.top, words)
+            }
+        }
+        for (codeBlock in prepared.codeBlocks) {
+            val origin = layout.codeBlockOrigin(codeBlock)
+            val rect = Rect(origin.x + left, origin.y, origin.x + left + codeBlock.layout.widthPx, origin.y + codeBlock.layout.heightPx)
+            val block = codeBlock.layout
+            boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
+            val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
+            addWords(block.code, code, scale, rect.left + block.codeLeftPx, rect.top + block.codeTopPx, words)
+            for (number in block.numbers) {
+                val styles = CharStyles(number.layout.layoutInput.text, block.theme.label.toArgb(), block.fontPx, mono = true)
+                addWords(number.layout, styles, scale, rect.left + number.left, rect.top + number.top, words)
+            }
+            val label = block.label ?: continue
+            val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
+            addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
+        }
+        TextBlockLayout(words, formulas, layout.size.height / scale, boxes)
     }
 
     /**

@@ -74,7 +74,7 @@ The responsibilities are assigned following the GRASP principles.
 | Step | Content | Status |
 |------|---------|--------|
 | 1 | The menus, the popovers and the dialogs bounded to the window (no crash in landscape, the dialogs scroll) | done |
-| 2 | The texts laid out on the main thread on iOS | planned |
+| 2 | The texts laid out on the main thread on iOS | done |
 | 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | planned |
 | 4 | The presence built from what the stroke gained | planned |
 
