@@ -4,9 +4,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -34,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -210,83 +214,94 @@ internal fun MoveFileDialog(
     val currentFolderId = path.last().first
     val subFolders = getSubFolders(currentFolderId)
 
-    BasicAlertDialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text(title, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
-                if (subtitle != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                // The path: the root and the folders entered, each going back there
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp)) {
-                    path.forEachIndexed { index, (_, name) ->
-                        val last = index == path.lastIndex
-                        if (index > 0) Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(horizontal = 0.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(enabled = !last) { path = path.take(index + 1) }
-                                .padding(horizontal = 8.dp, vertical = 6.dp)
-                        ) {
-                            if (index == 0) Icon(PageboardIcons.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                            Text(
-                                name,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = if (last) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Box(
+    // The path scrolled to its end, the folder entered last in sight
+    val pathScroll = rememberScrollState()
+    LaunchedEffect(path.size) { pathScroll.animateScrollTo(pathScroll.maxValue) }
+    AdaptiveSheet(
+        onDismissRequest = onDismissRequest,
+        title = { Text(title) },
+        body = SheetBody.Fixed,
+        actions = {
+            TextButton(onClick = onDismissRequest) { Text(stringResource(Res.string.explorer_action_cancel)) }
+            Button(onClick = { onConfirm(currentFolderId) }, enabled = isValidMove(currentFolderId)) {
+                Text(stringResource(Res.string.explorer_move_here))
+            }
+        }
+    ) {
+        if (subtitle != null) {
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
+            )
+        }
+        // The path: the root and the folders entered, each going back there
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().horizontalScroll(pathScroll).padding(horizontal = 16.dp)
+        ) {
+            path.forEachIndexed { index, (_, name) ->
+                val last = index == path.lastIndex
+                if (index > 0) Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 148.dp, max = 320.dp)
-                        .background(MaterialTheme.colorScheme.surfaceContainerLowest, RoundedCornerShape(16.dp))
-                        .padding(6.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(enabled = !last) { path = path.take(index + 1) }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
                 ) {
-                    if (subFolders.isEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 36.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Icon(PageboardIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
-                            Text(stringResource(Res.string.explorer_move_empty_state), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    } else {
-                        LazyColumn {
-                            items(subFolders, key = { it.id }) { folder ->
-                                val enabled = !isFolderSelected(folder.id)
-                                val content = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable(enabled = enabled) { path = path + (folder.id to folder.name) }
-                                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Icon(PageboardIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
-                                    Text(folder.name, style = MaterialTheme.typography.labelLarge, color = content, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
-                                }
-                            }
-                        }
-                    }
+                    if (index == 0) Icon(PageboardIcons.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Text(
+                        name,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (last) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 200.dp)
+                    )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
-                    TextButton(onClick = onDismissRequest) { Text(stringResource(Res.string.explorer_action_cancel)) }
-                    Button(onClick = { onConfirm(currentFolderId) }, enabled = isValidMove(currentFolderId)) {
-                        Text(stringResource(Res.string.explorer_move_here))
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        // The folders take the room left in the window, scrolling in it
+        Box(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .heightIn(min = 120.dp, max = 420.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest, RoundedCornerShape(16.dp))
+                .padding(6.dp)
+        ) {
+            if (subFolders.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 36.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(PageboardIcons.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
+                    Text(stringResource(Res.string.explorer_move_empty_state), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                LazyColumn {
+                    items(subFolders, key = { it.id }) { folder ->
+                        val enabled = !isFolderSelected(folder.id)
+                        val content = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable(enabled = enabled) { path = path + (folder.id to folder.name) }
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(PageboardIcons.Folder, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+                            Text(folder.name, style = MaterialTheme.typography.labelLarge, color = content, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Icon(PageboardIcons.ChevronRight, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
+                        }
                     }
                 }
             }
@@ -329,18 +344,20 @@ internal fun NewNoteDialog(
             onError = { error = it }
         )
     }
-    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(Res.string.explorer_dialog_new_note),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                DesignIconButton(PageboardIcons.Close, stringResource(PageboardRes.string.common_action_close), onDismiss)
+    // The title and the button that makes the note in sight, the choices scrolling between them
+    AdaptiveSheet(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.explorer_dialog_new_note)) },
+        onClose = onDismiss,
+        actions = {
+            Button(onClick = create, enabled = name.isNotBlank() && error == null, modifier = Modifier.height(48.dp)) {
+                Icon(PageboardIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(stringResource(Res.string.explorer_create_note), style = MaterialTheme.typography.titleMedium)
             }
-            Spacer(modifier = Modifier.height(12.dp))
+        }
+    ) {
+        Column {
             OutlinedTextField(
                 value = name,
                 onValueChange = {
@@ -369,16 +386,17 @@ internal fun NewNoteDialog(
             }
             if (onImportPdf != null || onImportImage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                // On two lines rather than cut where they do not fit side by side
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (onImportPdf != null) {
-                        OutlineButton(onClick = { onDismiss(); onImportPdf() }, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = { onDismiss(); onImportPdf() }) {
                             Icon(PageboardIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_pdf_short), maxLines = 1)
                         }
                     }
                     if (onImportImage != null) {
-                        OutlineButton(onClick = { onDismiss(); onImportImage() }, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = { onDismiss(); onImportImage() }) {
                             Icon(PageboardIcons.Image, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_image), maxLines = 1)
@@ -386,17 +404,6 @@ internal fun NewNoteDialog(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = create,
-                enabled = name.isNotBlank() && error == null,
-                modifier = Modifier.fillMaxWidth().height(52.dp)
-            ) {
-                Icon(PageboardIcons.Pencil, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(stringResource(Res.string.explorer_create_note), style = MaterialTheme.typography.titleMedium)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

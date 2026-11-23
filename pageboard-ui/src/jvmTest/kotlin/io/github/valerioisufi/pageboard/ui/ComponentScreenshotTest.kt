@@ -175,6 +175,21 @@ class ComponentScreenshotTest {
                 PageTemplateConfigurator(subtitle = "Page 3 of “Lecture 1 — Limits”", initialBackground = PageBackground.Ruled(lineColor = 0x6664B5F6), onApply = { _, _ -> }, onCancel = {})
             }
         }
+        // A phone in landscape: a dialog too low for the large preview, the buttons in sight
+        runDesktopComposeUiTest(width = 891, height = 411) {
+            setContent {
+                PageboardTheme(dynamicColor = false) {
+                    AdaptiveRoot(hints = InputHints.Touch) {
+                        Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                        AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = {}, maxWidth = 760.dp) {
+                            PageTemplateConfigurator(subtitle = "Page 3 of “Lecture 1 — Limits”", initialBackground = PageBackground.Ruled(lineColor = 0x6664B5F6), onApply = { _, _ -> }, onCancel = {})
+                        }
+                    }
+                }
+            }
+            waitForIdle()
+            captureToImage().captureRoboImage("screenshots/page-configurator-landscape.png")
+        }
         capture("page-configurator-sheet", width = 411, height = 900) {
             Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(28.dp)).padding(vertical = 24.dp)) {
                 PageTemplateConfigurator(

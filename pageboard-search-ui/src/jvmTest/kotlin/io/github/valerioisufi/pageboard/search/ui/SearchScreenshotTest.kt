@@ -192,9 +192,11 @@ class SearchScreenshotTest {
                 downloads = downloads,
                 runtimeAvailable = true
             )
-            // The dialog as the application opens it
-            for (dark in listOf(false, true)) {
-                runDesktopComposeUiTest(width = 628, height = 840) {
+            // The dialog as the application opens it, and in a narrow desktop window: the title and
+            // the close button in sight above the settings that scroll
+            for ((name, size) in listOf("light" to (628 to 840), "dark" to (628 to 840), "narrow" to (360 to 480))) {
+                val dark = name == "dark"
+                runDesktopComposeUiTest(width = size.first, height = size.second) {
                     setContent {
                         PageboardTheme(darkTheme = dark, dynamicColor = false) {
                             Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
@@ -202,7 +204,7 @@ class SearchScreenshotTest {
                         }
                     }
                     waitForIdle()
-                    captureToImage().captureRoboImage("screenshots/search-settings-${if (dark) "dark" else "light"}.png")
+                    captureToImage().captureRoboImage("screenshots/search-settings-$name.png")
                 }
             }
         }

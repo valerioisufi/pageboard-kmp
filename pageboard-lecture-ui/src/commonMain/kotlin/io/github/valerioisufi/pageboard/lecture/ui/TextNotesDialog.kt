@@ -25,7 +25,6 @@ import io.github.valerioisufi.pageboard.lecture.TextNotes
 import io.github.valerioisufi.pageboard.lecture.TextNotesEstimate
 import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
-import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.editor.TEXT_TO_NOTES_COMMAND_ID
@@ -85,7 +84,6 @@ internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, ed
     val label = stringResource(Res.string.lecture_text_notes_title)
 
     AdaptiveSheet(
-        body = SheetBody.Fixed,
         onDismissRequest = { if (!running) backToText() },
         title = { Text(label) },
         actions = {
@@ -127,7 +125,7 @@ internal fun TextNotesDialog(assistant: LectureAssistant, documentId: String, ed
             }
         }
     ) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val current = estimate
             val notes = result
             when {

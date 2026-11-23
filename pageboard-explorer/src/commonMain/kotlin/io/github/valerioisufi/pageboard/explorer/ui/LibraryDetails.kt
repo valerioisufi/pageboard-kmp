@@ -56,7 +56,9 @@ import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_ro
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_selection_hint
 import io.github.valerioisufi.pageboard.explorer.generated.resources.explorer_selection_summary
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
+import io.github.valerioisufi.pageboard.ui.adaptive.ModalFrame
 import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
+import io.github.valerioisufi.pageboard.ui.adaptive.currentModalFrame
 import io.github.valerioisufi.pageboard.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.Command
@@ -292,7 +294,12 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
 @Composable
 internal fun ItemSheet(item: FileItem, itemCommands: List<Command>, actions: ItemActions, onDismiss: () -> Unit) {
     var details by remember { mutableStateOf(false) }
-    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss) {
+    // Its own header, the commands reaching the edges; a close button where it is not a sheet to drag
+    AdaptiveSheet(
+        body = SheetBody.Fixed,
+        onDismissRequest = onDismiss,
+        onClose = if (currentModalFrame() == ModalFrame.BottomSheet) null else onDismiss
+    ) {
         if (details) {
             DetailsSheetContent(item, itemCommands, actions, onCommand = onDismiss)
             return@AdaptiveSheet

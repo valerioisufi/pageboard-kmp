@@ -44,7 +44,9 @@ import io.github.valerioisufi.pageboard.sync.protocol.Route
 import io.github.valerioisufi.pageboard.sync.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
+import io.github.valerioisufi.pageboard.ui.adaptive.ModalFrame
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.pageboard.ui.adaptive.currentModalFrame
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandGroup
 import io.github.valerioisufi.pageboard.ui.extension.EditorExtension
@@ -308,7 +310,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
                 name = it.take(DeviceProfile.MAX_LENGTH)
                 scope.launch { collaboration.rename(name) }
             },
-            compact = currentAdaptiveInfo().window.isCompact
+            // A sheet on a phone; a dialog elsewhere, a narrow window too, with its close button
+            compact = currentModalFrame() == ModalFrame.BottomSheet
         )
     }
 

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -222,7 +224,9 @@ internal fun PageTemplateConfigurator(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val wide = maxWidth >= 600.dp
+        // The large preview beside the controls where there is room for it, also in height (not
+        // in a phone in landscape), in the header otherwise
+        val wide = maxWidth >= 600.dp && maxHeight >= 480.dp
         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
             // The title, what it changes and (narrow) the preview beside it
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -239,13 +243,14 @@ internal fun PageTemplateConfigurator(
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+            Row(modifier = Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.spacedBy(28.dp)) {
                 if (wide) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .width(260.dp)
-                            .height(360.dp)
+                            .heightIn(max = 360.dp)
+                            .fillMaxHeight()
                             .background(MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                             .padding(24.dp)
                     ) { preview() }
@@ -352,18 +357,18 @@ internal fun PageTemplateConfigurator(
                             DesignSlider(value = thicknessMm, onValueChange = { thicknessMm = it }, valueRange = 0.1f..1.5f, steps = 13)
                         }
                     }
-                    // The buttons: at the end of the controls wide, the whole width on a phone
-                    if (wide) {
-                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
-                            TextButton(onClick = onCancel) { Text(stringResource(Res.string.common_button_cancel)) }
-                            Button(enabled = !isDimensionInvalid, onClick = apply) { Text(stringResource(Res.string.common_button_apply)) }
-                        }
-                    } else {
-                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlineButton(onClick = onCancel, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_cancel)) }
-                            Button(enabled = !isDimensionInvalid, onClick = apply, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_apply)) }
-                        }
-                    }
+                }
+            }
+            // The buttons in sight under the controls that scroll: at the end wide, the whole width on a phone
+            if (wide) {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
+                    TextButton(onClick = onCancel) { Text(stringResource(Res.string.common_button_cancel)) }
+                    Button(enabled = !isDimensionInvalid, onClick = apply) { Text(stringResource(Res.string.common_button_apply)) }
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlineButton(onClick = onCancel, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_cancel)) }
+                    Button(enabled = !isDimensionInvalid, onClick = apply, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_apply)) }
                 }
             }
         }

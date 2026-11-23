@@ -260,7 +260,7 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 | 0. Plan | This document, with the inventory | approved |
 | 1. License rows and About | `LicenseRow` on lines (with `WrappingRow`); About on `AdaptiveSheet` with one scroll. Screenshots of About in a 360 × 480 window, on a 320 × 640 phone and at 1000 × 760 | done |
 | 2. The frames | `ModalFrame` with its unit tests; `AdaptiveSheet` with `onClose`, `SheetBody`, sheet state, keyboard and `FullWindowDialog`; `AdaptiveDialog`; layout tests like `AdaptiveSheetWidthTest` (heights, wrapping buttons, 280 dp minimum dropped). ABI updated | done |
-| 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | to do |
+| 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | done |
 | 4. The alerts | the 15 `AlertDialog`s and Text color on `AdaptiveDialog`. Screenshots of Join, Check and Conversion at 360 × 480 and 891 × 411 | to do |
 | 5. The panels of the editor | `SheetDragConnection` on `PanelSheet`, with a test of the drag (tall before scrolling, short then closed from the top) | to do |
 | 6. On the devices | desktop app on a scratch data directory at 360 × 480; Android emulator (small phone, landscape, keyboard); iPhone simulator (SE, landscape, keyboard); screenshots verified in Docker or by the workflow | to do |
@@ -303,6 +303,31 @@ the `record-screenshots` label.
   the scroll of the sheet; its Close button only where it is a dialog.
 * The ABI of `pageboard-ui` grows (`ModalFrame`, `SheetBody`, `AdaptiveDialog`,
   `currentModalFrame`, the parameters of `AdaptiveSheet`), recorded with `updateKotlinAbi`.
+
+### Phase 3 results
+
+* **New note**: its title and close button in the header, "Create" in the actions, both in sight
+  while the name, the paper and the folder scroll; the two imports on two lines when they do not
+  fit.
+* **Move to**: an `AdaptiveSheet` (a sheet on a phone, no longer a dialog there), its buttons in
+  the actions. The folders take the room left (120 to 420 dp) instead of a fixed box; the path
+  scrolls sideways, to its end when a folder is entered, each name at most 200 dp.
+* **Search settings**: the title and the close button in the header (they scrolled away), the
+  content in the scroll of the sheet.
+* **Lecture settings**: the chips above the settings also in a window low in height (a phone in
+  landscape), and the rail scrolls.
+* **Notes from a text**: in the scroll of the sheet.
+* **Page and document configurators**: the large preview only where the body keeps 480 dp of
+  height, shrinking to the room up to 360 dp; the buttons under the controls that scroll, in
+  sight.
+* **Share** and the **item sheet** keep their own header and body (the explanation of the sharing,
+  the commands reaching the edges), already pinned and in one scroll. In a narrow desktop window
+  they show their close button, since that dialog cannot be dragged.
+* **Export, agent access, import of a text** already had the parts in place: they stay
+  `SheetBody.Fixed` with their single scroll, so that their content (shared with their screenshot
+  tests) keeps its margins.
+* Screenshots: the configurator in a phone in landscape (`page-configurator-landscape`), the search
+  settings in a 360 × 480 window (`search-settings-narrow`).
 
 ## Decisions
 

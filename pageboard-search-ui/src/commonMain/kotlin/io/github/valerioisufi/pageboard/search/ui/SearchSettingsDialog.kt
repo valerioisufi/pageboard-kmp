@@ -70,13 +70,11 @@ import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_run
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_action
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_answer_description
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_answer_title
-import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_close
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_privacy
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_semantic_description
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_semantic_title
 import io.github.valerioisufi.pageboard.search.ui.generated.resources.search_settings_title
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
-import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
 import io.github.valerioisufi.pageboard.ui.components.BadgeTone
 import io.github.valerioisufi.pageboard.ui.components.LabelBadge
 import io.github.valerioisufi.pageboard.ui.components.OutlineButton
@@ -108,38 +106,28 @@ public fun SearchSettingsDialog(
     LaunchedEffect(search.installedModels) {
         search.installedModels?.refresh()
     }
-    AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss, maxWidth = 580.dp) {
-        SearchSettingsContent(search = search, onDismiss = onDismiss)
+    // The title and the close button in sight above the content, which scrolls: at the end of a
+    // long list of models the close button was below the edge of the dialog
+    AdaptiveSheet(
+        onDismissRequest = onDismiss,
+        maxWidth = 580.dp,
+        title = { Text(stringResource(Res.string.search_settings_title)) },
+        onClose = onDismiss
+    ) {
+        SearchSettingsContent(search = search)
     }
 }
 
 @Composable
-internal fun SearchSettingsContent(
-    search: ContentSearch,
-    onDismiss: () -> Unit
-) {
+internal fun SearchSettingsContent(search: ContentSearch) {
     val indexingProgress by search.indexingProgress.collectAsState()
     val installedModels = search.installedModels
     val downloads = search.downloads
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // The close button in sight above the content, as in the other dialogs: at the end of a long
-        // list of models it was below the edge of the dialog
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(Res.string.search_settings_title),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f)
-            )
-            DesignIconButton(PageboardIcons.Close, stringResource(Res.string.search_settings_close), onDismiss)
-        }
-
         PrivacyBanner(text = stringResource(Res.string.search_settings_privacy))
 
         IndexingStatusCard(progress = indexingProgress)

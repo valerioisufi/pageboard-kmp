@@ -62,6 +62,7 @@ import io.github.valerioisufi.pageboard.lecture.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.pageboard.ui.adaptive.SheetBody
+import io.github.valerioisufi.pageboard.ui.adaptive.HeightClass
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.DesignMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuItem
@@ -102,7 +103,9 @@ private enum class SettingsSection(val title: StringResource, val icon: ImageVec
  */
 @Composable
 internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels: LocalModels, onDismiss: () -> Unit, deviceModels: DeviceModels? = null) {
-    val compact = currentAdaptiveInfo().window.isCompact
+    // The sections as chips above the settings on a phone, and in a dialog too low for the rail
+    // beside them (a phone in landscape)
+    val compact = currentAdaptiveInfo().window.let { it.isCompact || it.heightClass == HeightClass.COMPACT }
     // A sheet on a phone, a dialog on a tablet and a desktop
     AdaptiveSheet(body = SheetBody.Fixed, onDismissRequest = onDismiss, maxWidth = 940.dp, padded = compact) {
         AssistantSettingsContent(store, localModels, onDismiss, compact, deviceModels)
@@ -171,6 +174,7 @@ internal fun ColumnScope.AssistantSettingsContent(
                     .width(240.dp)
                     .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 12.dp, vertical = 28.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
