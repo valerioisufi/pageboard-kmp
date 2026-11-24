@@ -37,6 +37,7 @@ who uses the applications or the libraries.
 | [archive](archive.md) | The archive of the application: export and import |
 | [ask-citations](ask-citations.md) | Citations of "Ask your notes" |
 | [auto-placement](auto-placement.md) | Automatic placement |
+| [brought-by](brought-by.md) | Who brought a document into a shared folder |
 | [build-speed](build-speed.md) | The speed of the build |
 | [camera-bounds](camera-bounds.md) | Camera bounds |
 | [checklists](checklists.md) | Checklists and the levels of the headings |
