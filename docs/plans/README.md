@@ -96,7 +96,7 @@ who uses the applications or the libraries.
 | [shape-adjust](shape-adjust.md) | Shapes: following the pen after the snap, lines joined to the boxes |
 | [shape-insertion](shape-insertion.md) | Inserting shapes |
 | [shapes](shapes.md) | Geometric shapes |
-| [shared-access](shared-access.md) | Shared access: a document shared on its own and through a folder |
+| [shared-access](shared-access.md) | Shared access: a document or a folder shared on its own and through a folder |
 | [shared-folders](shared-folders.md) | Shared folders and library |
 | [small-cleanups](small-cleanups.md) | The smaller ones: duplicates and translations |
 | [small-screen-modals](small-screen-modals.md) | Dialogs and sheets on small screens |
