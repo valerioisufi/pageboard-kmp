@@ -6,6 +6,7 @@ import io.github.valerioisufi.pageboard.model.change.snapshot
 import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
+import io.github.valerioisufi.pageboard.store.space.SharedAs
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.pageboard.sync.protocol.DocumentKey
@@ -16,6 +17,12 @@ import io.github.valerioisufi.pageboard.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.pageboard.sync.protocol.SecureChannel
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Role
+import io.github.valerioisufi.pageboard.sync.protocol.SpaceRef
+import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
+import io.github.valerioisufi.pageboard.sync.protocol.Membership
+import io.github.valerioisufi.pageboard.sync.protocol.Member
+import io.github.valerioisufi.pageboard.sync.protocol.Grant
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -278,6 +285,151 @@ class SharedAccessTest {
         ada.rename(notes, "Waves")
         exchange(ada, bob)
         assertEquals("Waves", bob.snapshot(notes).title, "through its own sharing")
+    }
+
+    /**
+     * Ada in both accesses, Bob in the folder only, Carl in the notes' own sharing only: each one
+     * checks the others' operations with the membership of the other access, given by Ada and
+     * anchored in what it trusts (the folder names the notes' own sharing, which names the folder).
+     */
+    @Test
+    fun theMembersOfEachAccessCheckTheOthersThroughTheDeviceInBoth() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, bob, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Notes", folderId = course).id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        val ofNotes = assertNotNull(ada.engine.invite(notes, "Notes", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        advanceUntilIdle()
+        // Ada names both ways: the folder names the notes' own sharing, the sharing names the folder
+        assertEquals(SharedAs(notes, ada.device), ada.library.view(spaceId).single { it.id == notes }.sharedAs)
+        assertEquals(listOf(SpaceRef(spaceId, ada.device)), ada.engine.memberships.value[notes]?.spaces)
+
+        bob.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        carl.join(ofNotes)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        exchange(ada, bob)
+        assertNull(bob.access(notes)?.own, "Bob is not in the notes' own sharing")
+        assertNull(carl.access(notes)?.of(spaceId), "Carl is not in the folder")
+        val carlReplica = carl.store.replicaId()
+        val bobReplica = bob.store.replicaId()
+        assertEquals(bob.device, carl.engine.unionOf(notes)?.deviceOf(bobReplica), "Carl learned the folder's membership")
+
+        // Carl's change reaches Bob through Ada (who gives Bob the notes' own membership first, on
+        // the connection about the notes), and Bob's Carl
+        carl.rename(notes, "From Carl")
+        exchange(ada, carl)
+        exchange(ada, bob)
+        assertEquals(carl.device, bob.engine.unionOf(notes)?.deviceOf(carlReplica), "Bob learned the notes' own membership")
+        assertEquals("From Carl", bob.snapshot(notes).title)
+        bob.rename(notes, "From Bob")
+        exchange(ada, bob)
+        exchange(ada, carl)
+        assertEquals("From Bob", carl.snapshot(notes).title)
+        assertEquals(ada.snapshot(notes), bob.snapshot(notes))
+        assertEquals(ada.snapshot(notes), carl.snapshot(notes))
+
+        // Not anchored: a membership of the notes made by Bob, naming the folder (the folder names Ada
+        // as the owner of their own sharing), and one of the folder made by Carl
+        val forgedOwn = Membership(notes, bob.device, version = 99, members = listOf(Member(bob.device, bobReplica, "Bob", Role.OWNER)), spaces = listOf(SpaceRef(spaceId, ada.device)))
+        assertTrue(!bob.engine.isAnchored(notes, null, forgedOwn, bob.device, null))
+        val realOwn = assertNotNull(ada.engine.memberships.value[notes])
+        assertTrue(bob.engine.isAnchored(notes, null, realOwn, ada.device, null))
+        val forgedSpace = Membership(spaceId, carl.device, version = 99, members = listOf(Member(carl.device, carlReplica, "Carl", Role.OWNER)), kind = MembershipKind.SPACE)
+        assertTrue(!carl.engine.isAnchored(notes, spaceId, forgedSpace, carl.device, null))
+
+        // Bob takes the notes out of the folder and puts them back: he brought them now, the anchor
+        // stays the folder's naming of their owner
+        val bobRoot = bob.library.spaces().single().rootFolderId
+        assertTrue(bob.store.moveDocument(notes, null))
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertTrue(bob.store.moveDocument(notes, bobRoot))
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(bobReplica, ada.library.view(spaceId).single { it.id == notes }.broughtBy)
+        assertEquals(SharedAs(notes, ada.device), bob.library.view(spaceId).single { it.id == notes }.sharedAs)
+        assertTrue(!bob.engine.isAnchored(notes, null, forgedOwn, bob.device, null))
+
+        // Bob removed from the folder: Carl learns it through Ada, and takes nothing more of Bob
+        ada.engine.removeMember(spaceId, bob.device)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        val union = assertNotNull(carl.engine.unionOf(notes))
+        assertTrue(union.mayWrite(bobReplica, 1), "what Bob wrote before stays")
+        assertTrue(!union.mayWrite(bobReplica, 10_000), "nothing after")
+    }
+
+    /** The notes leaving the folder: the members of their own sharing take nothing more of the folder's members after. */
+    @Test
+    fun theNotesLeavingTheFolderTheirOwnSharingSaysUpToWhere() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, bob, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Notes", folderId = course).id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        val ofNotes = assertNotNull(ada.engine.invite(notes, "Notes", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        carl.join(ofNotes)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        val bobReplica = bob.store.replicaId()
+        bob.rename(notes, "From Bob")
+        exchange(ada, bob)
+        exchange(ada, carl)
+        assertEquals("From Bob", carl.snapshot(notes).title)
+
+        assertTrue(ada.store.moveDocument(notes, null))
+        advanceUntilIdle()
+        exchange(ada, carl)
+        val named = assertNotNull(carl.engine.memberships.value[notes]?.spaces?.single())
+        val upTo = assertNotNull(named.writesUpTo, "the folder left, said by the owner")
+        assertTrue((upTo[bobReplica] ?: 0L) >= 1)
+        val union = assertNotNull(carl.engine.unionOf(notes))
+        assertTrue(union.mayWrite(bobReplica, upTo.getValue(bobReplica)))
+        assertTrue(!union.mayWrite(bobReplica, upTo.getValue(bobReplica) + 1), "nothing of Bob after the notes left the folder")
+    }
+
+    /** A document of a shared folder is shared on its own only by the owner of the folder or a member it granted. */
+    @Test
+    fun aDocumentOfAFolderIsSharedOnItsOwnAsTheFolderAllows() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        listOf(ada, bob).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Notes", folderId = course).id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertNull(bob.engine.invite(notes, "Notes", Role.EDITOR, addresses = mapOf(MEMORY to "bob")), "not granted")
+        assertNull(bob.access(notes)?.own)
+
+        ada.engine.setGrants(spaceId, listOf(Grant(Capability.SHARE_INSIDE, Role.EDITOR)))
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertNotNull(bob.engine.invite(notes, "Notes", Role.EDITOR, addresses = mapOf(MEMORY to "bob")), "granted to the editors")
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(SharedAs(notes, bob.device), ada.library.view(spaceId).single { it.id == notes }.sharedAs, "the folder names Bob's sharing")
     }
 
     private companion object {

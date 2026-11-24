@@ -45,7 +45,7 @@ plans written before keep the old names. Start from:
   while verifying.** Run the desktop apps on a scratch directory:
   `JAVA_TOOL_OPTIONS="-Dpageboard.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
   (the old `-Ddrawview.dataDir` alone stops the run).
-- **The sync protocol is live between devices** (`PROTOCOL_VERSION` in `OpenFrame.kt`: 3).
+- **The sync protocol is live between devices** (`PROTOCOL_VERSION` in `OpenFrame.kt`: 4).
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version
     with the maintainer.

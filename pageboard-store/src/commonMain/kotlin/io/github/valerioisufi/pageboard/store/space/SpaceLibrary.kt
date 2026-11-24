@@ -209,6 +209,19 @@ public class SpaceLibrary(
         changes.size
     }
 
+    /**
+     * Names in [spaceId] the sharing of its own of the item [itemId] ([sharing], owned by [owner],
+     * see [ShareItem]), a change of this device; nothing when it is named so already.
+     *
+     * @return whether a change was made.
+     */
+    public suspend fun shareItem(spaceId: String, itemId: String, sharing: String, owner: String): Boolean = mutex.withLock {
+        val space = sessions[spaceId] ?: return@withLock false
+        if (space.session.catalog[itemId]?.sharedAs == SharedAs(sharing, owner)) return@withLock false
+        submitLocked(space, listOf(ShareItem(itemId, sharing, owner)))
+        true
+    }
+
     /** Whether [operation] of another device may be received in [spaceId] (see [CatalogSession.admits]). */
     public suspend fun admits(spaceId: String, operation: CatalogOperation): Boolean =
         mutex.withLock { sessions[spaceId]?.session?.admits(operation) ?: false }

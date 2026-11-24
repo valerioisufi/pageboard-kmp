@@ -7,6 +7,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.DeviceAddress
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.pageboard.sync.protocol.Membership
 import io.github.valerioisufi.pageboard.sync.protocol.SealedOperation
+import io.github.valerioisufi.pageboard.sync.protocol.Placement
 import io.github.valerioisufi.pageboard.sync.protocol.SignedMembership
 import io.github.valerioisufi.pageboard.sync.protocol.SyncException
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -64,6 +65,16 @@ internal fun helloProof(nonce: ByteArray, tag: String, replica: String, device: 
 @Serializable
 @SerialName("membership")
 internal class MembershipMessage(val membership: SignedMembership) : SyncMessage
+
+/**
+ * The membership of another access of the document of the connection (its own sharing, or a
+ * shared folder it is in), signed by its [owner], for the devices not in that access to check the
+ * operations of its members (see `docs/plans/shared-access.md`). Taken only anchored in what the
+ * device trusts already, with the [placement] that put the item in the folder, when a member did.
+ */
+@Serializable
+@SerialName("accessMembership")
+internal class AccessMembership(val membership: SignedMembership, val owner: String, val placement: Placement? = null) : SyncMessage
 
 /** Asks for the membership, more recent than the [version] of this device (e.g. operations of a device it does not know). */
 @Serializable

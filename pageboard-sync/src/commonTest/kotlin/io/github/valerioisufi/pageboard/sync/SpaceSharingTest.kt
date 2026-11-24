@@ -8,10 +8,14 @@ import io.github.valerioisufi.pageboard.store.space.AddDocument
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.CompositeCatalogChange
 import io.github.valerioisufi.pageboard.store.space.ConfirmGiver
+import io.github.valerioisufi.pageboard.store.space.ShareItem
+import io.github.valerioisufi.pageboard.store.space.UnshareItem
 import io.github.valerioisufi.pageboard.store.space.MoveItem
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.pageboard.sync.protocol.Grant
 import io.github.valerioisufi.pageboard.sync.protocol.DocumentKey
 import io.github.valerioisufi.pageboard.sync.protocol.Membership
 import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
@@ -152,6 +156,21 @@ class SpaceSharingTest {
         assertTrue(ada.sharing.admitsChange(space.id, ofAda, OperationProof.signCatalog(ada.identity, space.id, adaReplica, 99, content)))
         // Bob's document, not here: confirmed once Ada has it
         assertEquals("", ada.library.view(space.id).single { it.id == "bobs" }.giver)
+
+        // A sharing of its own of an item named in the folder: from the owner, or a member it granted
+        // (see docs/plans/shared-access.md)
+        val share = CatalogOperation(OperationId(bobReplica, 3), Stamp(currentTimeMillis() + 3, 0, bobReplica), ShareItem("bobs", "bobs", bob.device))
+        val shareProof = OperationProof.signCatalog(bob.identity, space.id, bobReplica, 3, content)
+        assertFalse(ada.sharing.admitsChange(space.id, share, shareProof), "not granted")
+        assertFalse(ada.sharing.admitsChange(space.id, share.copy(change = UnshareItem("bobs")), shareProof), "nor its end")
+        assertNotNull(ada.sharing.spaces.setGrants(space.id, listOf(Grant(Capability.SHARE_INSIDE, Role.EDITOR)), mapOf(bobReplica to 2L)))
+        assertTrue(ada.sharing.admitsChange(space.id, share, shareProof), "granted to the editors")
+        // Taken back after Bob's third change: that one stays allowed, the next ones not
+        assertNotNull(ada.sharing.spaces.setGrants(space.id, emptyList(), mapOf(bobReplica to 3L)))
+        assertTrue(ada.sharing.admitsChange(space.id, share, shareProof), "made before")
+        val later = share.copy(id = OperationId(bobReplica, 4))
+        assertFalse(ada.sharing.admitsChange(space.id, later, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 4, content)), "made after")
+        assertEquals(mapOf(bobReplica to 3L), ada.sharing.spaces.membershipOf(space.id)?.grantsOf(Capability.SHARE_INSIDE)?.single()?.upTo)
 
         // Bob made reader: his changes after the second one refused, the documents read only
         assertNotNull(ada.sharing.spaces.setRole(space.id, bob.device, Role.READER, lastSequence = 2))

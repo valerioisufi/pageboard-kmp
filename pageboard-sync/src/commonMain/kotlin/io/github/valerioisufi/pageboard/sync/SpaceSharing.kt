@@ -1,6 +1,8 @@
 package io.github.valerioisufi.pageboard.sync
 
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.pageboard.sync.protocol.Membership
 import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
 import io.github.valerioisufi.pageboard.sync.protocol.OperationProof
 import io.github.valerioisufi.pageboard.sync.protocol.Role
@@ -8,6 +10,8 @@ import io.github.valerioisufi.pageboard.store.space.CatalogChange
 import io.github.valerioisufi.pageboard.store.space.CatalogItemKind
 import io.github.valerioisufi.pageboard.store.space.CompositeCatalogChange
 import io.github.valerioisufi.pageboard.store.space.ConfirmGiver
+import io.github.valerioisufi.pageboard.store.space.ShareItem
+import io.github.valerioisufi.pageboard.store.space.UnshareItem
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.space.StoredSpace
@@ -104,12 +108,28 @@ internal class SpaceSharing(
         val author = membership.deviceOf(id.replica) ?: return false
         if (!proof.isCatalogBy(author, spaceId, id.replica, id.sequence)) return false
         // Who gives a document: the owner's to confirm
-        if (operation.change.confirmsGiver() && author != membership.owner) return false
+        if (operation.change.has { it is ConfirmGiver } && author != membership.owner) return false
+        // A sharing of its own of an item of the space named: as the owner granted (see docs/plans/shared-access.md)
+        if (operation.change.has { it is ShareItem || it is UnshareItem } && !mayShareItem(membership, id.replica, id.sequence)) return false
         return membership.mayWrite(id.replica, id.sequence)
     }
 
-    private fun CatalogChange.confirmsGiver(): Boolean =
-        this is ConfirmGiver || this is CompositeCatalogChange && changes.any { it is ConfirmGiver }
+    private fun CatalogChange.has(kind: (CatalogChange) -> Boolean): Boolean =
+        kind(this) || this is CompositeCatalogChange && changes.any(kind)
+
+    private fun mayShareItem(membership: Membership, replica: String, sequence: Long): Boolean =
+        membership.holds(Capability.SHARE_INSIDE, replica, sequence) || membership.holds(Capability.BRING_SHARED, replica, sequence)
+
+    /**
+     * Whether this device may name in [spaceId] a sharing of its own of an item (share an item of
+     * it on its own, or bring in one that has one): its owner, or a member it granted
+     * [Capability.SHARE_INSIDE] or [Capability.BRING_SHARED].
+     */
+    suspend fun mayShareItem(spaceId: String): Boolean {
+        val membership = spaces.membershipOf(spaceId) ?: return false
+        val replica = membership.memberOf(device)?.replica ?: return false
+        return mayShareItem(membership, replica, Long.MAX_VALUE)
+    }
 
     /**
      * Whether [giver] may give the document [documentId] of [spaceId] to a device without it: the

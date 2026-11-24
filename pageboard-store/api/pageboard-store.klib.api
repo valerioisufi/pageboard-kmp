@@ -192,7 +192,7 @@ final class io.github.valerioisufi.pageboard.store.space/AddFolder : io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.store.space/CatalogEntry { // io.github.valerioisufi.pageboard.store.space/CatalogEntry|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind, kotlin/String, kotlin/String?, kotlin/Boolean, kotlin/String, kotlin/String = ...) // io.github.valerioisufi.pageboard.store.space/CatalogEntry.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind, kotlin/String, kotlin/String?, kotlin/Boolean, kotlin/String, kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/SharedAs? = ...) // io.github.valerioisufi.pageboard.store.space/CatalogEntry.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.store.space.SharedAs?){}[0]
 
     final val broughtBy // io.github.valerioisufi.pageboard.store.space/CatalogEntry.broughtBy|{}broughtBy[0]
         final fun <get-broughtBy>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.broughtBy.<get-broughtBy>|<get-broughtBy>(){}[0]
@@ -206,6 +206,8 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogEntry { // io.gi
         final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.name.<get-name>|<get-name>(){}[0]
     final val parent // io.github.valerioisufi.pageboard.store.space/CatalogEntry.parent|{}parent[0]
         final fun <get-parent>(): kotlin/String? // io.github.valerioisufi.pageboard.store.space/CatalogEntry.parent.<get-parent>|<get-parent>(){}[0]
+    final val sharedAs // io.github.valerioisufi.pageboard.store.space/CatalogEntry.sharedAs|{}sharedAs[0]
+        final fun <get-sharedAs>(): io.github.valerioisufi.pageboard.store.space/SharedAs? // io.github.valerioisufi.pageboard.store.space/CatalogEntry.sharedAs.<get-sharedAs>|<get-sharedAs>(){}[0]
     final val trashed // io.github.valerioisufi.pageboard.store.space/CatalogEntry.trashed|{}trashed[0]
         final fun <get-trashed>(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogEntry.trashed.<get-trashed>|<get-trashed>(){}[0]
 
@@ -216,7 +218,8 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogEntry { // io.gi
     final fun component5(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component5|component5(){}[0]
     final fun component6(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component6|component6(){}[0]
     final fun component7(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component7|component7(){}[0]
-    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/CatalogEntry // io.github.valerioisufi.pageboard.store.space/CatalogEntry.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String){}[0]
+    final fun component8(): io.github.valerioisufi.pageboard.store.space/SharedAs? // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component8|component8(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/SharedAs? = ...): io.github.valerioisufi.pageboard.store.space/CatalogEntry // io.github.valerioisufi.pageboard.store.space/CatalogEntry.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.store.space.SharedAs?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogEntry.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/CatalogEntry.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.toString|toString(){}[0]
@@ -561,6 +564,42 @@ final class io.github.valerioisufi.pageboard.store.space/RestoreItem : io.github
     }
 }
 
+final class io.github.valerioisufi.pageboard.store.space/ShareItem : io.github.valerioisufi.pageboard.store.space/CatalogChange { // io.github.valerioisufi.pageboard.store.space/ShareItem|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.store.space/ShareItem.<init>|<init>(kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.store.space/ShareItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.pageboard.store.space/ShareItem.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.store.space/ShareItem.ids.<get-ids>|<get-ids>(){}[0]
+    final val owner // io.github.valerioisufi.pageboard.store.space/ShareItem.owner|{}owner[0]
+        final fun <get-owner>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.owner.<get-owner>|<get-owner>(){}[0]
+    final val sharing // io.github.valerioisufi.pageboard.store.space/ShareItem.sharing|{}sharing[0]
+        final fun <get-sharing>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.sharing.<get-sharing>|<get-sharing>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.store.space/SpaceCatalog, io.github.valerioisufi.pageboard.model/Stamp): io.github.valerioisufi.pageboard.store.space/CatalogChange? // io.github.valerioisufi.pageboard.store.space/ShareItem.applyTo|applyTo(io.github.valerioisufi.pageboard.store.space.SpaceCatalog;io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/ShareItem // io.github.valerioisufi.pageboard.store.space/ShareItem.copy|copy(kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/ShareItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/ShareItem.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/ShareItem.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ShareItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.store.space/ShareItem> { // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.store.space/ShareItem // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.store.space/ShareItem) // io.github.valerioisufi.pageboard.store.space/ShareItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.store.space.ShareItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.store.space/ShareItem.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.store.space/ShareItem> // io.github.valerioisufi.pageboard.store.space/ShareItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.store.space/SharedAs { // io.github.valerioisufi.pageboard.store.space/SharedAs|null[0]
     constructor <init>(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.store.space/SharedAs.<init>|<init>(kotlin.String;kotlin.String){}[0]
 
@@ -601,6 +640,8 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceCatalog { // io.gi
     final fun view(): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogEntry> // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.view|view(){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion|null[0]
+        final const val MAX_DEVICE_LENGTH // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion.MAX_DEVICE_LENGTH|{}MAX_DEVICE_LENGTH[0]
+            final fun <get-MAX_DEVICE_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion.MAX_DEVICE_LENGTH.<get-MAX_DEVICE_LENGTH>|<get-MAX_DEVICE_LENGTH>(){}[0]
         final const val MAX_ID_LENGTH // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion.MAX_ID_LENGTH|{}MAX_ID_LENGTH[0]
             final fun <get-MAX_ID_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion.MAX_ID_LENGTH.<get-MAX_ID_LENGTH>|<get-MAX_ID_LENGTH>(){}[0]
         final const val MAX_NAME_LENGTH // io.github.valerioisufi.pageboard.store.space/SpaceCatalog.Companion.MAX_NAME_LENGTH|{}MAX_NAME_LENGTH[0]
@@ -629,6 +670,7 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceLibrary { // io.gi
     final suspend fun reconcile() // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.reconcile|reconcile(){}[0]
     final suspend fun saveProofs(kotlin/String, kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray>) // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.saveProofs|saveProofs(kotlin.String;kotlin.collections.Map<io.github.valerioisufi.pageboard.model.change.OperationId,kotlin.ByteArray>){}[0]
     final suspend fun share(kotlin/String?, kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/StoredSpace? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.share|share(kotlin.String?;kotlin.String){}[0]
+    final suspend fun shareItem(kotlin/String, kotlin/String, kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.shareItem|shareItem(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
     final suspend fun spaceOf(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.spaceOf|spaceOf(kotlin.String){}[0]
     final suspend fun spaces(): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/StoredSpace> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.spaces|spaces(){}[0]
     final suspend fun start() // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.start|start(){}[0]
@@ -702,6 +744,35 @@ final class io.github.valerioisufi.pageboard.store.space/TrashItem : io.github.v
 
     final object Companion { // io.github.valerioisufi.pageboard.store.space/TrashItem.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.store.space/TrashItem> // io.github.valerioisufi.pageboard.store.space/TrashItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.store.space/UnshareItem : io.github.valerioisufi.pageboard.store.space/CatalogChange { // io.github.valerioisufi.pageboard.store.space/UnshareItem|null[0]
+    constructor <init>(kotlin/String) // io.github.valerioisufi.pageboard.store.space/UnshareItem.<init>|<init>(kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.store.space/UnshareItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/UnshareItem.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.pageboard.store.space/UnshareItem.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.store.space/UnshareItem.ids.<get-ids>|<get-ids>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.store.space/SpaceCatalog, io.github.valerioisufi.pageboard.model/Stamp): io.github.valerioisufi.pageboard.store.space/CatalogChange? // io.github.valerioisufi.pageboard.store.space/UnshareItem.applyTo|applyTo(io.github.valerioisufi.pageboard.store.space.SpaceCatalog;io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.store.space/UnshareItem.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/UnshareItem // io.github.valerioisufi.pageboard.store.space/UnshareItem.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/UnshareItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/UnshareItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/UnshareItem.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.store.space/UnshareItem> { // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.store.space/UnshareItem // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.store.space/UnshareItem) // io.github.valerioisufi.pageboard.store.space/UnshareItem.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.store.space.UnshareItem){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.store.space/UnshareItem.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.store.space/UnshareItem> // io.github.valerioisufi.pageboard.store.space/UnshareItem.Companion.serializer|serializer(){}[0]
     }
 }
 

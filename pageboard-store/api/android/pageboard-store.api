@@ -455,8 +455,8 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogChange$De
 }
 
 public final class io/github/valerioisufi/pageboard/store/space/CatalogEntry {
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SharedAs;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SharedAs;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun component3 ()Ljava/lang/String;
@@ -464,8 +464,9 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogEntry {
 	public final fun component5 ()Z
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
+	public final fun component8 ()Lio/github/valerioisufi/pageboard/store/space/SharedAs;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SharedAs;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/SharedAs;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogEntry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBroughtBy ()Ljava/lang/String;
 	public final fun getGiver ()Ljava/lang/String;
@@ -473,6 +474,7 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogEntry {
 	public final fun getKind ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getParent ()Ljava/lang/String;
+	public final fun getSharedAs ()Lio/github/valerioisufi/pageboard/store/space/SharedAs;
 	public final fun getTrashed ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -798,6 +800,40 @@ public final class io/github/valerioisufi/pageboard/store/space/RestoreItem$Comp
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/pageboard/store/space/ShareItem : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/ShareItem$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/ShareItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/ShareItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/ShareItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public fun getIds ()Ljava/util/List;
+	public final fun getOwner ()Ljava/lang/String;
+	public final fun getSharing ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun isWellFormed ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/pageboard/store/space/ShareItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/ShareItem$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/ShareItem;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/ShareItem;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/store/space/ShareItem$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/pageboard/store/space/SharedAs {
 	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/SharedAs$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
@@ -829,6 +865,7 @@ public final class io/github/valerioisufi/pageboard/store/space/SharedAs$Compani
 
 public final class io/github/valerioisufi/pageboard/store/space/SpaceCatalog {
 	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog$Companion;
+	public static final field MAX_DEVICE_LENGTH I
 	public static final field MAX_ID_LENGTH I
 	public static final field MAX_NAME_LENGTH I
 	public fun <init> ()V
@@ -863,6 +900,7 @@ public final class io/github/valerioisufi/pageboard/store/space/SpaceLibrary {
 	public final fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun share (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun share$default (Lio/github/valerioisufi/pageboard/store/space/SpaceLibrary;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun shareItem (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun spaceOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -947,6 +985,36 @@ public final synthetic class io/github/valerioisufi/pageboard/store/space/TrashI
 }
 
 public final class io/github/valerioisufi/pageboard/store/space/TrashItem$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/store/space/UnshareItem : io/github/valerioisufi/pageboard/store/space/CatalogChange {
+	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/UnshareItem$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun applyTo (Lio/github/valerioisufi/pageboard/store/space/SpaceCatalog;Lio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/store/space/UnshareItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/UnshareItem;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/UnshareItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public fun getIds ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun isWellFormed ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/pageboard/store/space/UnshareItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/store/space/UnshareItem$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/store/space/UnshareItem;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/store/space/UnshareItem;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/store/space/UnshareItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

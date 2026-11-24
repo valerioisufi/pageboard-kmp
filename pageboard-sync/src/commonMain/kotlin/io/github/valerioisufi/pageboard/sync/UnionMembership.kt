@@ -14,7 +14,14 @@ import io.github.valerioisufi.pageboard.sync.protocol.Membership
  * access cannot make a replica of another access its own, to sign in its name. Its operations
  * wait, as the ones of a replica not known.
  */
-internal class UnionMembership(val memberships: List<Membership>) {
+internal class UnionMembership(
+    val memberships: List<Membership>,
+    /**
+     * For a membership of a shared folder the document left, the last operation of each replica of
+     * its members taken (see [io.github.valerioisufi.pageboard.sync.protocol.SpaceRef.writesUpTo]).
+     */
+    private val writesUpTo: Map<Membership, Map<String, Long>> = emptyMap()
+) {
     /** Whether [replica] is (or was) a member of some access: its operations can be decided on. */
     fun knows(replica: String): Boolean = memberships.any { it.knows(replica) }
 
@@ -25,7 +32,9 @@ internal class UnionMembership(val memberships: List<Membership>) {
     fun disagreesOn(replica: String): Boolean = memberships.mapNotNullTo(HashSet()) { it.deviceOf(replica) }.size > 1
 
     /** Whether the operation [sequence] of [replica] is taken: some access lets it write it. */
-    fun mayWrite(replica: String, sequence: Long): Boolean = memberships.any { it.mayWrite(replica, sequence) }
+    fun mayWrite(replica: String, sequence: Long): Boolean = memberships.any { membership ->
+        membership.mayWrite(replica, sequence) && writesUpTo[membership]?.let { sequence <= (it[replica] ?: 0L) } != false
+    }
 
     /** The members of every access, each device once (with its highest role). */
     val members: List<Member>

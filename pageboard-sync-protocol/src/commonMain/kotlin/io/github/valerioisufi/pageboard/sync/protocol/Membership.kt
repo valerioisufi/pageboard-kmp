@@ -65,7 +65,21 @@ public data class Membership(
     // Not written for a document: its memberships stay as they were, byte for byte
     @OptIn(ExperimentalSerializationApi::class)
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val kind: MembershipKind = MembershipKind.DOCUMENT
+    val kind: MembershipKind = MembershipKind.DOCUMENT,
+    /**
+     * What the owner allows some members beyond their roles ([Grant]; see
+     * `docs/plans/shared-access.md`). Not written when empty: a membership of before keeps its bytes.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val grants: List<Grant> = emptyList(),
+    /**
+     * The shared folders the item of this sharing is in, as its owner names them ([SpaceRef]): the
+     * members take the membership of each from its owner only. Not written when empty.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val spaces: List<SpaceRef> = emptyList()
 ) {
     public fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
 
@@ -78,6 +92,22 @@ public data class Membership(
         members.firstOrNull { it.replica == replica }?.let { return it.mayWrite(sequence) }
         return removed.lastOrNull { it.replica == replica }?.let { sequence <= (it.writesUpTo ?: 0L) } ?: false
     }
+
+    /**
+     * Whether the operation [sequence] of [replica] may use [capability]: the owner holds every
+     * one; a member holds it by a grant covering it now, or held it up to that operation
+     * ([Grant.upTo]).
+     */
+    public fun holds(capability: String, replica: String, sequence: Long): Boolean {
+        val member = members.firstOrNull { it.replica == replica }
+        if (member != null && member.device == owner) return true
+        return grants.any { grant ->
+            grant.capability == capability && (member != null && grant.covers(member) || grant.upTo[replica]?.let { sequence <= it } == true)
+        }
+    }
+
+    /** The grants of [capability]. */
+    public fun grantsOf(capability: String): List<Grant> = grants.filter { it.capability == capability }
 
     /** Whether [replica] is (or was) a member: its operations can be decided on. */
     public fun knows(replica: String): Boolean = members.any { it.replica == replica } || removed.any { it.replica == replica }

@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.sync
 import io.github.valerioisufi.pageboard.sync.protocol.DocumentKey
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Membership
+import io.github.valerioisufi.pageboard.sync.protocol.Placement
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.SignedMembership
 import kotlinx.serialization.EncodeDefault
@@ -59,7 +60,19 @@ public data class SharingState(
      */
     @OptIn(ExperimentalSerializationApi::class)
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val through: List<SharingState> = emptyList()
+    val through: List<SharingState> = emptyList(),
+    /**
+     * Not an access of this device: the membership of another access of the document (its owner
+     * and [membership] only, no key), learned to check the operations of its members (see
+     * `docs/plans/shared-access.md`). Not written when false.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val learned: Boolean = false,
+    /** What anchors a membership [learned] of a shared folder, when a member put the item there ([Placement]). */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val placement: Placement? = null
 ) {
     /** The current key. */
     val key: DocumentKey? get() = keys.maxByOrNull { it.epoch }?.documentKey

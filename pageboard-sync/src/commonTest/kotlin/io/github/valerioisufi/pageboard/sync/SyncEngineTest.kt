@@ -70,6 +70,11 @@ import io.github.valerioisufi.pageboard.sync.protocol.OpenFrame
 import io.github.valerioisufi.pageboard.sync.protocol.OperationProof
 import io.github.valerioisufi.pageboard.sync.protocol.OperationSeal
 import io.github.valerioisufi.pageboard.sync.protocol.PROTOCOL_VERSION
+import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
+import io.github.valerioisufi.pageboard.sync.protocol.SpaceRef
+import io.github.valerioisufi.pageboard.sync.protocol.Placement
+import io.github.valerioisufi.pageboard.sync.protocol.Grant
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.SealedOperation
 import io.github.valerioisufi.pageboard.sync.protocol.SecureChannel
@@ -1481,6 +1486,11 @@ class SyncEngineTest {
             Challenge(random.nextBytes(16)),
             Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true, device = identity.publicKey, proof = random.nextBytes(64), membershipVersion = 2, epoch = 1),
             MembershipMessage(signed),
+            AccessMembership(
+                Membership("space", identity.publicKey, members = listOf(Member(identity.publicKey, "ada", "Ada", Role.OWNER)), kind = MembershipKind.SPACE, grants = listOf(Grant(Capability.SHARE_INSIDE, Role.EDITOR, upTo = mapOf("bob" to 3L))), spaces = listOf(SpaceRef("outer", identity.publicKey))).signedBy(identity),
+                identity.publicKey,
+                Placement.sign(identity, "doc", SpaceRef("space", identity.publicKey))
+            ),
             MembershipQuery(1),
             Admission(1, key.encode(), signed),
             JoinRefused,

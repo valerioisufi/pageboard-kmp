@@ -155,6 +155,44 @@ final class io.github.valerioisufi.pageboard.sync.protocol/DocumentKey { // io.g
     }
 }
 
+final class io.github.valerioisufi.pageboard.sync.protocol/Grant { // io.github.valerioisufi.pageboard.sync.protocol/Grant|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.sync.protocol/Role? = ..., kotlin.collections/List<kotlin/String> = ..., kotlin.collections/Map<kotlin/String, kotlin/Long> = ...) // io.github.valerioisufi.pageboard.sync.protocol/Grant.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.Role?;kotlin.collections.List<kotlin.String>;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+
+    final val capability // io.github.valerioisufi.pageboard.sync.protocol/Grant.capability|{}capability[0]
+        final fun <get-capability>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Grant.capability.<get-capability>|<get-capability>(){}[0]
+    final val devices // io.github.valerioisufi.pageboard.sync.protocol/Grant.devices|{}devices[0]
+        final fun <get-devices>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.sync.protocol/Grant.devices.<get-devices>|<get-devices>(){}[0]
+    final val role // io.github.valerioisufi.pageboard.sync.protocol/Grant.role|{}role[0]
+        final fun <get-role>(): io.github.valerioisufi.pageboard.sync.protocol/Role? // io.github.valerioisufi.pageboard.sync.protocol/Grant.role.<get-role>|<get-role>(){}[0]
+    final val upTo // io.github.valerioisufi.pageboard.sync.protocol/Grant.upTo|{}upTo[0]
+        final fun <get-upTo>(): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.sync.protocol/Grant.upTo.<get-upTo>|<get-upTo>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Grant.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.pageboard.sync.protocol/Role? // io.github.valerioisufi.pageboard.sync.protocol/Grant.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.sync.protocol/Grant.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.sync.protocol/Grant.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/Role? = ..., kotlin.collections/List<kotlin/String> = ..., kotlin.collections/Map<kotlin/String, kotlin/Long> = ...): io.github.valerioisufi.pageboard.sync.protocol/Grant // io.github.valerioisufi.pageboard.sync.protocol/Grant.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.Role?;kotlin.collections.List<kotlin.String>;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final fun covers(io.github.valerioisufi.pageboard.sync.protocol/Member): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Grant.covers|covers(io.github.valerioisufi.pageboard.sync.protocol.Member){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Grant.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.protocol/Grant.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Grant.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.sync.protocol/Grant> { // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.sync.protocol/Grant // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.sync.protocol/Grant) // io.github.valerioisufi.pageboard.sync.protocol/Grant.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.sync.protocol.Grant){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.sync.protocol/Grant.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.pageboard.sync.protocol/Grant.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.sync.protocol/Grant> // io.github.valerioisufi.pageboard.sync.protocol/Grant.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.sync.protocol/InMemoryChannel : io.github.valerioisufi.pageboard.sync.protocol/SyncChannel { // io.github.valerioisufi.pageboard.sync.protocol/InMemoryChannel|null[0]
     final fun close() // io.github.valerioisufi.pageboard.sync.protocol/InMemoryChannel.close|close(){}[0]
     final suspend fun receive(kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.pageboard.sync.protocol/InMemoryChannel.receive|receive(kotlin.Int){}[0]
@@ -256,7 +294,7 @@ final class io.github.valerioisufi.pageboard.sync.protocol/Member { // io.github
 }
 
 final class io.github.valerioisufi.pageboard.sync.protocol/Membership { // io.github.valerioisufi.pageboard.sync.protocol/Membership|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/MembershipKind = ...) // io.github.valerioisufi.pageboard.sync.protocol/Membership.<init>|<init>(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.MembershipKind){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/MembershipKind = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> = ...) // io.github.valerioisufi.pageboard.sync.protocol/Membership.<init>|<init>(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.MembershipKind;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Grant>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.SpaceRef>){}[0]
 
     final val documentId // io.github.valerioisufi.pageboard.sync.protocol/Membership.documentId|{}documentId[0]
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.documentId.<get-documentId>|<get-documentId>(){}[0]
@@ -264,6 +302,8 @@ final class io.github.valerioisufi.pageboard.sync.protocol/Membership { // io.gi
         final fun <get-ended>(): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.ended.<get-ended>|<get-ended>(){}[0]
     final val epoch // io.github.valerioisufi.pageboard.sync.protocol/Membership.epoch|{}epoch[0]
         final fun <get-epoch>(): kotlin/Int // io.github.valerioisufi.pageboard.sync.protocol/Membership.epoch.<get-epoch>|<get-epoch>(){}[0]
+    final val grants // io.github.valerioisufi.pageboard.sync.protocol/Membership.grants|{}grants[0]
+        final fun <get-grants>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> // io.github.valerioisufi.pageboard.sync.protocol/Membership.grants.<get-grants>|<get-grants>(){}[0]
     final val keyHash // io.github.valerioisufi.pageboard.sync.protocol/Membership.keyHash|{}keyHash[0]
         final fun <get-keyHash>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.keyHash.<get-keyHash>|<get-keyHash>(){}[0]
     final val kind // io.github.valerioisufi.pageboard.sync.protocol/Membership.kind|{}kind[0]
@@ -274,10 +314,14 @@ final class io.github.valerioisufi.pageboard.sync.protocol/Membership { // io.gi
         final fun <get-owner>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.owner.<get-owner>|<get-owner>(){}[0]
     final val removed // io.github.valerioisufi.pageboard.sync.protocol/Membership.removed|{}removed[0]
         final fun <get-removed>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> // io.github.valerioisufi.pageboard.sync.protocol/Membership.removed.<get-removed>|<get-removed>(){}[0]
+    final val spaces // io.github.valerioisufi.pageboard.sync.protocol/Membership.spaces|{}spaces[0]
+        final fun <get-spaces>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> // io.github.valerioisufi.pageboard.sync.protocol/Membership.spaces.<get-spaces>|<get-spaces>(){}[0]
     final val version // io.github.valerioisufi.pageboard.sync.protocol/Membership.version|{}version[0]
         final fun <get-version>(): kotlin/Long // io.github.valerioisufi.pageboard.sync.protocol/Membership.version.<get-version>|<get-version>(){}[0]
 
     final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.component1|component1(){}[0]
+    final fun component10(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> // io.github.valerioisufi.pageboard.sync.protocol/Membership.component10|component10(){}[0]
+    final fun component11(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> // io.github.valerioisufi.pageboard.sync.protocol/Membership.component11|component11(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.component2|component2(){}[0]
     final fun component3(): kotlin/Long // io.github.valerioisufi.pageboard.sync.protocol/Membership.component3|component3(){}[0]
     final fun component4(): kotlin/Int // io.github.valerioisufi.pageboard.sync.protocol/Membership.component4|component4(){}[0]
@@ -286,11 +330,13 @@ final class io.github.valerioisufi.pageboard.sync.protocol/Membership { // io.gi
     final fun component7(): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.component7|component7(){}[0]
     final fun component8(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Membership.component8|component8(){}[0]
     final fun component9(): io.github.valerioisufi.pageboard.sync.protocol/MembershipKind // io.github.valerioisufi.pageboard.sync.protocol/Membership.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/MembershipKind = ...): io.github.valerioisufi.pageboard.sync.protocol/Membership // io.github.valerioisufi.pageboard.sync.protocol/Membership.copy|copy(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.MembershipKind){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Member> = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/MembershipKind = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> = ...): io.github.valerioisufi.pageboard.sync.protocol/Membership // io.github.valerioisufi.pageboard.sync.protocol/Membership.copy|copy(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Member>;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.MembershipKind;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.Grant>;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.protocol.SpaceRef>){}[0]
     final fun deviceOf(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.sync.protocol/Membership.deviceOf|deviceOf(kotlin.String){}[0]
     final fun encode(): kotlin/ByteArray // io.github.valerioisufi.pageboard.sync.protocol/Membership.encode|encode(){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.equals|equals(kotlin.Any?){}[0]
+    final fun grantsOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> // io.github.valerioisufi.pageboard.sync.protocol/Membership.grantsOf|grantsOf(kotlin.String){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.protocol/Membership.hashCode|hashCode(){}[0]
+    final fun holds(kotlin/String, kotlin/String, kotlin/Long): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.holds|holds(kotlin.String;kotlin.String;kotlin.Long){}[0]
     final fun knows(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.knows|knows(kotlin.String){}[0]
     final fun mayWrite(kotlin/String, kotlin/Long): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Membership.mayWrite|mayWrite(kotlin.String;kotlin.Long){}[0]
     final fun memberOf(kotlin/String): io.github.valerioisufi.pageboard.sync.protocol/Member? // io.github.valerioisufi.pageboard.sync.protocol/Membership.memberOf|memberOf(kotlin.String){}[0]
@@ -377,6 +423,36 @@ final class io.github.valerioisufi.pageboard.sync.protocol/OperationSeal { // io
     final fun seal(kotlin/String, kotlin/Long, io.github.valerioisufi.pageboard.sync.protocol/OperationProof): io.github.valerioisufi.pageboard.sync.protocol/SealedOperation // io.github.valerioisufi.pageboard.sync.protocol/OperationSeal.seal|seal(kotlin.String;kotlin.Long;io.github.valerioisufi.pageboard.sync.protocol.OperationProof){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.sync.protocol/Placement { // io.github.valerioisufi.pageboard.sync.protocol/Placement|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.sync.protocol/SpaceRef, kotlin/String, kotlin/ByteArray) // io.github.valerioisufi.pageboard.sync.protocol/Placement.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.SpaceRef;kotlin.String;kotlin.ByteArray){}[0]
+
+    final val device // io.github.valerioisufi.pageboard.sync.protocol/Placement.device|{}device[0]
+        final fun <get-device>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Placement.device.<get-device>|<get-device>(){}[0]
+    final val itemId // io.github.valerioisufi.pageboard.sync.protocol/Placement.itemId|{}itemId[0]
+        final fun <get-itemId>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Placement.itemId.<get-itemId>|<get-itemId>(){}[0]
+    final val ref // io.github.valerioisufi.pageboard.sync.protocol/Placement.ref|{}ref[0]
+        final fun <get-ref>(): io.github.valerioisufi.pageboard.sync.protocol/SpaceRef // io.github.valerioisufi.pageboard.sync.protocol/Placement.ref.<get-ref>|<get-ref>(){}[0]
+    final val signature // io.github.valerioisufi.pageboard.sync.protocol/Placement.signature|{}signature[0]
+        final fun <get-signature>(): kotlin/ByteArray // io.github.valerioisufi.pageboard.sync.protocol/Placement.signature.<get-signature>|<get-signature>(){}[0]
+
+    final fun isAllowedBy(io.github.valerioisufi.pageboard.sync.protocol/Membership): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Placement.isAllowedBy|isAllowedBy(io.github.valerioisufi.pageboard.sync.protocol.Membership){}[0]
+    final fun isSigned(): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/Placement.isSigned|isSigned(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.sync.protocol/Placement> { // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.sync.protocol/Placement // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.sync.protocol/Placement) // io.github.valerioisufi.pageboard.sync.protocol/Placement.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.sync.protocol.Placement){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.sync.protocol/Placement.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.sync.protocol/Placement> // io.github.valerioisufi.pageboard.sync.protocol/Placement.Companion.serializer|serializer(){}[0]
+        final fun sign(io.github.valerioisufi.pageboard.sync.protocol/DeviceIdentity, kotlin/String, io.github.valerioisufi.pageboard.sync.protocol/SpaceRef): io.github.valerioisufi.pageboard.sync.protocol/Placement // io.github.valerioisufi.pageboard.sync.protocol/Placement.Companion.sign|sign(io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.SpaceRef){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.sync.protocol/SealedOperation { // io.github.valerioisufi.pageboard.sync.protocol/SealedOperation|null[0]
     constructor <init>(kotlin/String, kotlin/Long, kotlin/ByteArray, kotlin/ByteArray) // io.github.valerioisufi.pageboard.sync.protocol/SealedOperation.<init>|<init>(kotlin.String;kotlin.Long;kotlin.ByteArray;kotlin.ByteArray){}[0]
 
@@ -438,8 +514,51 @@ final class io.github.valerioisufi.pageboard.sync.protocol/SignedMembership { //
     }
 }
 
+final class io.github.valerioisufi.pageboard.sync.protocol/SpaceRef { // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>? = ...) // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>?){}[0]
+
+    final val owner // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.owner|{}owner[0]
+        final fun <get-owner>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.owner.<get-owner>|<get-owner>(){}[0]
+    final val space // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.space|{}space[0]
+        final fun <get-space>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.space.<get-space>|<get-space>(){}[0]
+    final val writesUpTo // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.writesUpTo|{}writesUpTo[0]
+        final fun <get-writesUpTo>(): kotlin.collections/Map<kotlin/String, kotlin/Long>? // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.writesUpTo.<get-writesUpTo>|<get-writesUpTo>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/Map<kotlin/String, kotlin/Long>? // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/Map<kotlin/String, kotlin/Long>? = ...): io.github.valerioisufi.pageboard.sync.protocol/SpaceRef // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.copy|copy(kotlin.String;kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> { // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.sync.protocol/SpaceRef // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.sync.protocol/SpaceRef) // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.sync.protocol.SpaceRef){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.sync.protocol/SpaceRef> // io.github.valerioisufi.pageboard.sync.protocol/SpaceRef.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.sync.protocol/SyncException : kotlin/Exception { // io.github.valerioisufi.pageboard.sync.protocol/SyncException|null[0]
     constructor <init>(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.pageboard.sync.protocol/SyncException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
+}
+
+final object io.github.valerioisufi.pageboard.sync.protocol/Capability { // io.github.valerioisufi.pageboard.sync.protocol/Capability|null[0]
+    final const val BRING_SHARED // io.github.valerioisufi.pageboard.sync.protocol/Capability.BRING_SHARED|{}BRING_SHARED[0]
+        final fun <get-BRING_SHARED>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Capability.BRING_SHARED.<get-BRING_SHARED>|<get-BRING_SHARED>(){}[0]
+    final const val PLACE_IN_SPACES // io.github.valerioisufi.pageboard.sync.protocol/Capability.PLACE_IN_SPACES|{}PLACE_IN_SPACES[0]
+        final fun <get-PLACE_IN_SPACES>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Capability.PLACE_IN_SPACES.<get-PLACE_IN_SPACES>|<get-PLACE_IN_SPACES>(){}[0]
+    final const val SHARE_INSIDE // io.github.valerioisufi.pageboard.sync.protocol/Capability.SHARE_INSIDE|{}SHARE_INSIDE[0]
+        final fun <get-SHARE_INSIDE>(): kotlin/String // io.github.valerioisufi.pageboard.sync.protocol/Capability.SHARE_INSIDE.<get-SHARE_INSIDE>|<get-SHARE_INSIDE>(){}[0]
 }
 
 final const val io.github.valerioisufi.pageboard.sync.protocol/MAX_FRAME_SIZE // io.github.valerioisufi.pageboard.sync.protocol/MAX_FRAME_SIZE|{}MAX_FRAME_SIZE[0]

@@ -26,7 +26,9 @@ class SerialNamesTest {
                 "removeFromSpace",
                 "renameFolder",
                 "restoreItem",
-                "trashItem"
+                "shareItem",
+                "trashItem",
+                "unshareItem"
             ),
             subclassNames(serializer<CatalogChange>()),
         )

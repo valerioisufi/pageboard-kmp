@@ -3,12 +3,15 @@ package io.github.valerioisufi.pageboard.sync
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.pageboard.sync.protocol.DocumentKey
+import io.github.valerioisufi.pageboard.sync.protocol.Grant
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Member
 import io.github.valerioisufi.pageboard.sync.protocol.Membership
+import io.github.valerioisufi.pageboard.sync.protocol.Placement
 import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.SignedMembership
+import io.github.valerioisufi.pageboard.sync.protocol.SpaceRef
 import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,6 +66,9 @@ internal class DocumentSharing(
     /** The memberships of every access of each document (under [mutex]), each signature checked once, when it changes. */
     private val opened = mutableMapOf<String, Map<String?, Membership>>()
 
+    /** The memberships learned of the accesses this device is not in (under [mutex]), checked once too. */
+    private val learnedOpened = mutableMapOf<String, Map<String?, Membership>>()
+
     private val membershipsState = MutableStateFlow<Map<String, Membership>>(emptyMap())
 
     /**
@@ -89,6 +95,8 @@ internal class DocumentSharing(
     private fun open(documentId: String, access: DocumentAccess?) {
         val memberships = access?.all?.mapNotNull { state -> state.members?.let { state.space to it } }?.toMap().orEmpty()
         if (memberships.isEmpty()) opened.remove(documentId) else opened[documentId] = memberships
+        val learned = access?.learned?.mapNotNull { state -> state.members?.let { state.space to it } }?.toMap().orEmpty()
+        if (learned.isEmpty()) learnedOpened.remove(documentId) else learnedOpened[documentId] = learned
     }
 
     /** Every access of [documentId], `null` when it is not shared. */
@@ -122,10 +130,44 @@ internal class DocumentSharing(
         membershipsState.value[documentId]
     }
 
-    /** What the memberships of every access of [documentId] allow together, `null` when it has none. */
+    /**
+     * What the memberships of every access of [documentId] allow together, the ones learned of the
+     * accesses this device is not in included; `null` when it has none.
+     */
     suspend fun unionOf(documentId: String): UnionMembership? = mutex.withLock {
         accesses()
-        opened[documentId]?.values?.toList()?.let(::UnionMembership)
+        val mine = opened[documentId] ?: return null
+        val learned = learnedOpened[documentId].orEmpty()
+        // A shared folder the document left: its members' operations taken up to where its owner said
+        val own = mine[null] ?: learned[null]
+        val ended = learned.mapNotNull { (via, membership) -> own?.spaces?.firstOrNull { it.space == via }?.writesUpTo?.let { membership to it } }.toMap()
+        UnionMembership(mine.values.toList() + learned.values, ended)
+    }
+
+    /** The membership learned of the access of [documentId] through [via] this device is not in. */
+    suspend fun learnedOf(documentId: String, via: String?): Membership? = mutex.withLock {
+        accesses()
+        learnedOpened[documentId]?.get(via)
+    }
+
+    /**
+     * Keeps [signed] (by [owner]) as the membership of the access of [documentId] through [via]
+     * this device is not in, when it is more recent than the one learned: what is learned is
+     * anchored by the caller (see `SyncEngine.isAnchored`). Nothing for an access of this device.
+     *
+     * @return whether it was kept.
+     */
+    suspend fun learn(documentId: String, via: String?, owner: String, signed: SignedMembership, placement: Placement? = null): Boolean {
+        val membership = signed.open(owner) ?: return false
+        var kept = false
+        edit(documentId) { access ->
+            if (access.isEmpty || access.of(via) != null) return@edit access
+            val before = access.learnedOf(via)?.members?.version ?: 0
+            if (membership.version <= before) return@edit access
+            kept = true
+            access.with(SharingState(owner = owner, membership = signed, space = via, learned = true, placement = placement))
+        }
+        return kept
     }
 
     /** The membership of every access of every document. */
@@ -138,11 +180,20 @@ internal class DocumentSharing(
      * Changes the access of [documentId] through [via] by [transform] (`null`: that access no
      * more); the new one. The document is shared no more once it has no access left.
      */
-    private suspend fun update(documentId: String, via: String?, transform: (SharingState?) -> SharingState?): SharingState? = mutex.withLock {
+    private suspend fun update(documentId: String, via: String?, transform: (SharingState?) -> SharingState?): SharingState? {
+        var updated: SharingState? = null
+        edit(documentId) { before ->
+            updated = transform(before.of(via))?.let { if (it.space == via && !it.learned) it else it.copy(space = via, learned = false) }
+            updated?.let { before.with(it) } ?: before.without(via)
+        }
+        return updated
+    }
+
+    /** Changes the accesses of [documentId] by [transform], and keeps them (the document shared no more once it has none). */
+    private suspend fun edit(documentId: String, transform: (DocumentAccess) -> DocumentAccess): Unit = mutex.withLock {
         val accesses = accesses()
         val before = accesses[documentId] ?: DocumentAccess()
-        val updated = transform(before.of(via))?.let { if (it.space == via) it else it.copy(space = via) }
-        val access = if (updated == null) before.without(via) else before.with(updated)
+        val access = transform(before)
         // The memberships of this document only checked again
         open(documentId, access)
         val memberships = opened[documentId]
@@ -158,7 +209,6 @@ internal class DocumentSharing(
             val role = memberships?.values?.mapNotNull { it.memberOf(device)?.role }?.minByOrNull { it.ordinal }
             shared.save(documentId, kept, readOnly = role == Role.READER)
         }
-        updated
     }.also { changedFlow.tryEmit(documentId) }
 
     /** Saves every access of [documentId] again (e.g. the document received: kept with it). */
@@ -218,7 +268,50 @@ internal class DocumentSharing(
             members = membership.members.map {
                 if (it.device != target) it else it.copy(role = role, writesUpTo = if (role == Role.READER) lastSequence else null)
             }
-        )
+        ).keepingGrantsOf(membership) { lastSequence }
+    }
+
+    /**
+     * Gives [grants] to the members of [documentId] (this device is its owner). A member losing a
+     * capability keeps what it did with it up to its last operation this device has
+     * ([lastSequences], by replica: see [Grant.upTo]).
+     */
+    suspend fun setGrants(documentId: String, grants: List<Grant>, lastSequences: Map<String, Long>): SharingState? = ownerChange(documentId) { membership ->
+        membership.copy(grants = grants).keepingGrantsOf(membership) { lastSequences[it.replica] ?: 0L }
+    }
+
+    /**
+     * Names [ref] among the shared folders the item of [documentId] is in (this device is the owner
+     * of its own sharing, see [Membership.spaces]): in place of the one of the same folder.
+     */
+    suspend fun nameSpace(documentId: String, ref: SpaceRef): SharingState? = ownerChange(documentId) { membership ->
+        if (ref in membership.spaces) return@ownerChange null
+        membership.copy(spaces = membership.spaces.filter { it.space != ref.space } + ref)
+    }
+
+    /**
+     * The members of [this] that held a capability in [before] and no longer do keep what they did
+     * with it, up to their last operation ([lastSequenceOf]): its [Grant.upTo], the ones of before
+     * kept.
+     */
+    private fun Membership.keepingGrantsOf(before: Membership, lastSequenceOf: (Member) -> Long): Membership {
+        var kept = grants
+        for (capability in (before.grants + grants).map { it.capability }.distinct()) {
+            val old = before.grantsOf(capability)
+            val now = kept.filter { it.capability == capability }
+            val lost = before.members.filter { member ->
+                member.device != before.owner && old.any { it.covers(member) } &&
+                    (members.firstOrNull { it.device == member.device }?.let { current -> now.none { it.covers(current) } } ?: true)
+            }
+            if (lost.isEmpty() && old.none { it.upTo.isNotEmpty() }) continue
+            val upTo = mutableMapOf<String, Long>()
+            for (grant in old + now) for ((replica, sequence) in grant.upTo) upTo[replica] = maxOf(upTo[replica] ?: 0L, sequence)
+            for (member in lost) upTo[member.replica] = maxOf(upTo[member.replica] ?: 0L, lastSequenceOf(member))
+            // Kept on the first grant of the capability, or on one of its own when none is left
+            val withUpTo = if (now.isEmpty()) listOf(Grant(capability, upTo = upTo)) else listOf(now.first().copy(upTo = upTo)) + now.drop(1).map { it.copy(upTo = emptyMap()) }
+            kept = kept.filter { it.capability != capability } + withUpTo
+        }
+        return copy(grants = kept)
     }
 
     /**
@@ -234,7 +327,7 @@ internal class DocumentSharing(
                 epoch = membership.epoch + 1,
                 members = membership.members - member,
                 removed = membership.removed + member.copy(writesUpTo = lastSequence)
-            )
+            ).keepingGrantsOf(membership) { lastSequence }
         }
     }
 

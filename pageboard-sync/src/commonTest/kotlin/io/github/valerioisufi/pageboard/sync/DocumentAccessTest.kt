@@ -115,6 +115,27 @@ class DocumentAccessTest {
         assertEquals(false, store.isReadOnly(notes.id))
     }
 
+    @Test
+    fun theMembershipsOfTheAccessesAreTakenTogether() {
+        val own = Membership("d", "ada", members = listOf(Member("ada", "ra", "Ada", Role.OWNER), Member("carl", "rc", "Carl", Role.EDITOR), Member("x", "shared", "X", Role.EDITOR)))
+        val space = Membership("s", "ada", members = listOf(Member("ada", "ra", "Ada", Role.OWNER), Member("bob", "rb", "Bob", Role.EDITOR), Member("y", "shared", "Y", Role.EDITOR)), kind = MembershipKind.SPACE)
+        val union = UnionMembership(listOf(own, space))
+        assertEquals("carl", union.deviceOf("rc"))
+        assertEquals("bob", union.deviceOf("rb"))
+        assertTrue(union.mayWrite("rc", 9) && union.mayWrite("rb", 9))
+        // A replica the two accesses name for different devices: no device, its operations wait
+        assertTrue(union.knows("shared"))
+        assertTrue(union.disagreesOn("shared"))
+        assertNull(union.deviceOf("shared"))
+        assertFalse(union.knows("other"))
+        assertEquals(setOf("ada", "carl", "x", "bob", "y"), union.members.map { it.device }.toSet())
+        // The folder the document left: its members' operations up to where its owner said
+        val left = UnionMembership(listOf(own, space), mapOf(space to mapOf("rb" to 4L)))
+        assertTrue(left.mayWrite("rb", 4))
+        assertFalse(left.mayWrite("rb", 5))
+        assertTrue(left.mayWrite("rc", 5), "the members of the document's own sharing as before")
+    }
+
     /** [SharingState] as a build of before decodes it. */
     @Serializable
     private data class SharingStateOfBefore(

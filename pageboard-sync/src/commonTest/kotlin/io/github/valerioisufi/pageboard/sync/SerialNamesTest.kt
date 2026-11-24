@@ -18,6 +18,7 @@ class SerialNamesTest {
     fun syncMessage() {
         assertEquals(
             setOf(
+                "accessMembership",
                 "addresses",
                 "admission",
                 "attachmentPart",

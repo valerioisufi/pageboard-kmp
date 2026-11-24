@@ -111,6 +111,43 @@ public data class RestoreItem(val id: String) : CatalogChange {
 }
 
 /**
+ * Names the sharing of its own the item [id] has besides the space ([sharing]: the identifier of
+ * the document for its own sharing, or of the shared folder inside; [owner]: the device owning it,
+ * see [SharedAs] and `docs/plans/shared-access.md`). The members of the space take that sharing's
+ * membership from [owner] only. Taken from the owner of the space or from a member it granted
+ * `pageboard.share-inside` or `pageboard.bring-shared` (the sharing of `pageboard-sync` decides it).
+ */
+@Serializable
+@SerialName("shareItem")
+public data class ShareItem(val id: String, val sharing: String, val owner: String) : CatalogChange {
+    override val ids: List<String> get() = listOf(id)
+
+    override fun applyTo(catalog: SpaceCatalog, stamp: Stamp): CatalogChange? {
+        val item = catalog.itemOrNew(id)
+        if (stamp <= item.sharedAsVersion) return null
+        catalog.put(item.copy(sharedAs = SharedAs(sharing, owner), sharedAsVersion = stamp))
+        return item.sharedAs?.let { ShareItem(id, it.sharing, it.owner) } ?: UnshareItem(id)
+    }
+
+    override fun isWellFormed(): Boolean =
+        super.isWellFormed() && sharing.isNotEmpty() && sharing.length <= SpaceCatalog.MAX_ID_LENGTH && owner.isNotEmpty() && owner.length <= SpaceCatalog.MAX_DEVICE_LENGTH
+}
+
+/** The item [id] names no sharing of its own any more (see [ShareItem]). */
+@Serializable
+@SerialName("unshareItem")
+public data class UnshareItem(val id: String) : CatalogChange {
+    override val ids: List<String> get() = listOf(id)
+
+    override fun applyTo(catalog: SpaceCatalog, stamp: Stamp): CatalogChange? {
+        val item = catalog.itemOrNew(id)
+        if (stamp <= item.sharedAsVersion) return null
+        catalog.put(item.copy(sharedAs = null, sharedAsVersion = stamp))
+        return item.sharedAs?.let { ShareItem(id, it.sharing, it.owner) } ?: UnshareItem(id)
+    }
+}
+
+/**
  * Confirms [replica] as the one giving the item [id] to a device without it (see
  * [CatalogItem.giver] and `docs/plans/brought-by.md`): the replica that brought it, confirmed by the
  * owner of the space once it has the item. Taken from the owner only (the sharing of the space

@@ -695,7 +695,7 @@ From then on the grants let the protocol grow:
 | 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications; brought up to `main` after the fix of who gives a document (protocol 3) (2026-11-24) | done (approved with the proposed choices, 2026-11-24) |
 | 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | done |
 | 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | done |
-| 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | to do |
+| 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | done |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | to do |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | to do |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | to do |
@@ -803,6 +803,81 @@ From then on the grants let the protocol grow:
 * Until phase 3, a device in one access only cannot check the operations of a member of the
   other one: they wait, as the operations of a replica not known do.
 
+### Phase 3 results
+
+* `pageboard-sync-protocol`:
+  * `Grant` (a capability, the members of at least a role, devices named one by one, `upTo`) and
+    `Capability` (`SHARE_INSIDE`, `BRING_SHARED`, `PLACE_IN_SPACES`);
+  * `Membership.grants` and `Membership.spaces` (`SpaceRef`: a shared folder, its owner,
+    `writesUpTo` once the item left it). Neither is written when empty, so the memberships of
+    before keep their bytes and signatures;
+  * `Membership.holds(capability, replica, sequence)`: the owner holds every capability, a member
+    the ones a grant covers now, or covered up to that operation (`upTo`);
+  * `Placement`: a member putting the item into a folder of its own, signed by its device. It is
+    taken (`isAllowedBy`) from a member the item's membership grants `PLACE_IN_SPACES`.
+* `pageboard-store`: `ShareItem` and `UnshareItem` (the piece `sharedAs`, last-writer-wins, with
+  inverses), `CatalogEntry.sharedAs`, and `SpaceLibrary.shareItem`.
+* `pageboard-sync`:
+  * `DocumentSharing.setGrants`; `setRole`, `remove` and `setGrants` keep, for a member losing a
+    capability, its last operation in the grant's `upTo`; `nameSpace` names a folder in the own
+    sharing's membership;
+  * the memberships of the accesses a device is not in are learned (`SharingState.learned`, with
+    its `placement`), kept apart from its own accesses, and counted in `unionOf`. The members of a
+    folder the item left are held to the `writesUpTo` its own sharing names;
+  * `AccessMembership` (membership, owner, placement): sent on a connection about a document after
+    authorization, before its operations, for every other access, the learned ones too, and again
+    when a membership changes. It is given on to the other connections of the document once
+    learned, and the operations waiting for it are taken again;
+  * `isAnchored`: the document's own sharing is taken by a member of a folder when that folder
+    names it as owned by its signer (`sharedAs`), and it names the folder (`spaces`, or a
+    placement). A folder's membership is taken by a member of the document's own sharing when
+    that sharing names the folder and its owner;
+  * a membership not signed by the owner it names, or of another document, closes the
+    connection. One not anchored (yet) is left, and comes again at the next connection;
+  * the owner of a document's own sharing names each folder it is in (`SpaceRef`), and has each
+    folder name its sharing (`ShareItem`) when it may. A document leaving a folder gets the
+    `writesUpTo` of that folder's members;
+  * `SpaceSharing.admitsChange` takes `ShareItem` and `UnshareItem` from the owner of the space or
+    a member it granted `SHARE_INSIDE` or `BRING_SHARED`. `SyncEngine.invite` refuses to share on
+    its own a document of a folder this device may not share inside (decision 5);
+  * `SyncEngine.setGrants(id, grants)` (public) for a document or a shared folder;
+  * `PROTOCOL_VERSION` 4, so the ALPN of iroh is `pageboard/sync/4`. `ProtocolFormats` records
+    format 4 beside 1 to 3, and `CLAUDE.md` names protocol 4.
+* Tests:
+  * `GrantsTest` (`pageboard-sync-protocol`): the owner holds every capability and a member what
+    is granted (by role, by device, never another capability). A grant taken back keeps what it
+    allowed up to `upTo`. A capability not known allows nothing, and one of an application is
+    carried and signed. A membership of before keeps its bytes. A placement is taken from a
+    member granted only, and not once its folder is changed or from a device not a member.
+  * `SpaceSharingTest`: a `ShareItem` from an editor refused, then taken once the editors are
+    granted `SHARE_INSIDE`. With the grant taken back, the change made before stays taken and the
+    next one is refused, the grant keeping its `upTo`.
+  * `DocumentAccessTest`: the union of two memberships, a replica named for two devices left
+    without a device, and the members of a folder the document left held to its `writesUpTo`.
+  * `SharedAccessTest`, three devices through their engines (Ada in both, Bob in the folder only,
+    Carl in the notes' own sharing only):
+    * Ada names both ways. Carl learns the folder's membership, and Bob the notes' own on the
+      first connection about them. Carl's change reaches Bob through Ada and Bob's reaches Carl,
+      the three documents the same;
+    * a membership of the notes made by Bob, and one of the folder made by Carl, are not
+      anchored. The real one is;
+    * Bob takes the notes out of the folder and puts them back: he brought them now, and the
+      anchor is still the folder's naming of their owner;
+    * Bob removed from the folder: Carl learns it through Ada, keeps what Bob wrote before, and
+      takes nothing after;
+    * the notes leaving the folder: Carl learns the `writesUpTo` from their own sharing, and
+      takes nothing of Bob after it;
+    * an editor of the folder cannot share a document of it on its own until the owner grants it
+      `SHARE_INSIDE`. Then the folder names its sharing.
+  * Without the learned memberships in the union, or without the `writesUpTo` of a folder left,
+    those tests fail (checked by removing them).
+  * `whatADeviceSendsNeverMakesTheDecodingFail`: an `AccessMembership` with grants, folders and a
+    placement among the messages changed at random. `SerialNamesTest` records `accessMembership`,
+    `shareItem` and `unshareItem`.
+* The ABI of `pageboard-store`, `pageboard-sync-protocol` and `pageboard-sync` is recorded again.
+  Meant: the constructors of `Membership`, `SharingState`, `CatalogItem` and `CatalogEntry` take
+  the new fields. The rest are additions.
+
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
 simulator. One commit per phase on `feat/shared-access`, the status updated with it.
@@ -864,6 +939,18 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
     protocol.
 
 ### Taken by me (revertible)
+
+* Phase 3: the memberships of the other accesses sent once after each authorization and again as
+  they change, rather than `Hello.otherMemberships` with the versions of each one. It costs a few
+  hundred bytes per connection, and leaves `Hello` as it was.
+* Phase 3: an `AccessMembership` not anchored (yet) is left rather than closing the connection.
+  The catalog naming a sharing may arrive after the connection about the document. One not signed
+  by the owner it names still closes it.
+* Phase 3: `ShareItem` and `UnshareItem` admitted from a member holding either `SHARE_INSIDE` or
+  `BRING_SHARED`, rather than telling an item shared inside from one brought in. That would depend
+  on the order the changes of the catalog arrived in.
+* Phase 3: a folder's member learns the document's own membership on the first connection about
+  the document, which opens once it changes. That is when its operations come.
 
 * The accesses of a document as a list of spaces next to its own sharing, rather than two fields:
   with nested folders a document may be in several spaces.

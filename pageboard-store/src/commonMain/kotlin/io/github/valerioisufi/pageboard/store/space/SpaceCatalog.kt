@@ -96,7 +96,9 @@ public data class CatalogEntry(
     val trashed: Boolean,
     val broughtBy: String,
     /** The replica the owner confirmed as the one giving the item ("": none yet, see [CatalogItem.giver]). */
-    val giver: String = ""
+    val giver: String = "",
+    /** The sharing of its own the item has besides the space (see [CatalogItem.sharedAs]). */
+    val sharedAs: SharedAs? = null
 )
 
 /**
@@ -165,7 +167,7 @@ public class SpaceCatalog(items: Collection<CatalogItem> = emptyList()) {
             if (!item.inSpace) return@mapNotNull null
             val parent = if (kind == CatalogItemKind.FOLDER) parents[item.id] else item.parent
             if (parent != null && !reachesRoot(parent)) return@mapNotNull null
-            CatalogEntry(item.id, kind, item.name, parent, item.trashed, item.broughtBy, item.giver)
+            CatalogEntry(item.id, kind, item.name, parent, item.trashed, item.broughtBy, item.giver, item.sharedAs)
         }.sortedBy { it.id }
     }
 
@@ -199,5 +201,8 @@ public class SpaceCatalog(items: Collection<CatalogItem> = emptyList()) {
 
         /** The longest identifier of an item taken from another device. */
         public const val MAX_ID_LENGTH: Int = 64
+
+        /** The longest identity of a device taken from another device (a public key, see [SharedAs.owner]). */
+        public const val MAX_DEVICE_LENGTH: Int = 512
     }
 }
