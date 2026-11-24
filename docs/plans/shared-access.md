@@ -41,7 +41,7 @@ The maintainer then asked, the same day:
   `pageboard-sync-protocol` and `pageboard-sync-ui` are published on Maven Central as
   `io.github.valerioisufi:pageboard-*`, for other applications in other contexts.
 
-What is there today (`main` at `aef52037`, protocol 2, Room schema 25):
+What is there today (`main` at `a366e7ec`, protocol 3, Room schema 25):
 
 * **One sharing per document.** `SharingState` holds one owner, one signed membership, one set of
   keys (an `EpochKey` for each epoch) and the versions the members have. It is kept by
@@ -79,13 +79,19 @@ What is there today (`main` at `aef52037`, protocol 2, Room schema 25):
   * `SpaceLibrary` compares the library with the tree of each space. What differs under a root is
     a local change, and the changes received are written into the library.
   * An item gone from a space is moved to the folder holding that space's root.
-* **Found while writing this plan: `broughtBy` can be rewritten.**
-  * The presence of an item is written whole by an addition with a later stamp, `broughtBy`
-    included (`add` in `CatalogChange.kt`).
-  * So an editor who submits `AddDocument` for a document already in the space becomes the device
-    the others take that document from (`SpaceSharing.mayGive`).
-  * This plan does not anchor anything on `broughtBy` (see "The other memberships, anchored"). The
-    weakness itself is left to a fix of its own (see Left for later).
+* **Who gives a document of a space** ([brought-by.md](brought-by.md), on `main` since
+  2026-11-24). Found while writing this plan, and fixed on its own:
+  * `broughtBy` is the first addition after the latest removal (`CatalogItem.arrivals`). A
+    member adding an item again while it is in the space no longer becomes the one it is taken
+    from.
+  * The owner of a space confirms the giver of each document once it has it (`ConfirmGiver`, the
+    piece `giver`, protocol 3). After that, taking a document out and adding it back gives
+    nothing either.
+  * A device without a document waits for the owner's snapshot while the owner is connected and
+    has it.
+  * This plan still anchors nothing on `broughtBy` (see "The other memberships, anchored"). It
+    says who brought an item, not who owns its own sharing, and it changes when the item is
+    taken out and added back.
 * **A connection is about one tag, decided by one `DocumentSharing`.**
   * `SyncEngine.matchOf(tag)` finds the document and its `DocumentSharing`: the documents', or the
     spaces' (`spaceSharing.spaces`).
@@ -106,8 +112,8 @@ What is there today (`main` at `aef52037`, protocol 2, Room schema 25):
   operations of a tag without reading them ([internet-sync.md](internet-sync.md)).
 * The rules of [untrusted-members.md](untrusted-members.md) hold for one membership: an operation
   is taken only signed by the device its membership names for the replica, a key only as the
-  owner named it, a document from its owner (or, in a space, from the device that brought it,
-  `SpaceSharing.mayGive`).
+  owner named it, a document from its owner (or, in a space, from the owner of the space or the
+  giver it confirmed, else the device that brought it: `SpaceSharing.mayGive`).
 
 ## Requirements
 
@@ -298,8 +304,8 @@ rules of [untrusted-members.md](untrusted-members.md):
   * `roleOf(device)`: the highest role among the accesses;
   * `readOnly`: no access lets this device write;
   * `members`: the devices of every membership, each with where its access comes from;
-  * `mayGive(device)`: the owner of the own sharing, or, for each space, its owner or the device
-    that brought the document into it;
+  * `mayGive(device)`: the owner of the own sharing, or, for each space, its owner or the giver
+    it confirmed (until then, the device that brought the document into it);
   * `compactedWith`: the versions of the members of every access. The log is compacted only once
     every one of them has the operations.
 * `DocumentSharing` keeps `DocumentAccess` values instead of `SharingState` values:
@@ -471,7 +477,8 @@ Each side checks the other against what it has.
     item that had one, brought in).
   * `UnshareItem(itemId)` clears it, from the same devices or from the owner of the inner
     sharing.
-  * The anchor is `sharedAs`, not `broughtBy`, which an editor can rewrite (see Starting point).
+  * The anchor is `sharedAs`, not `broughtBy`: who brought an item is not who owns its own
+    sharing, and it changes when the item is taken out and added back (see Starting point).
   * `sharedAs` also gives the badge of a shared folder to the members of S1 who are not in S2.
 * **The inner sharing: `SpaceRef` or `Placement`.**
   * The membership of a document's own sharing, and the membership of a space, get
@@ -685,10 +692,10 @@ From then on the grants let the protocol grow:
 
 | Phase | Content | Status |
 |---|---|---|
-| 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications (2026-11-24) | done (to approve) |
+| 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications; brought up to `main` after the fix of who gives a document (protocol 3) (2026-11-24) | done (to approve) |
 | 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | to do |
 | 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | to do |
-| 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an `AddDocument` rewriting `broughtBy` anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | to do |
+| 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | to do |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | to do |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | to do |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | to do |
@@ -710,14 +717,18 @@ simulator. One commit per phase on `feat/shared-access`, the status updated with
 
 ### For the maintainer
 
-1. **`PROTOCOL_VERSION`: 3 or stays 2.** Phases 3 and 5 change what travels (`Membership.grants`
+1. **`PROTOCOL_VERSION`: 4 or stays 3.** Phases 3 and 5 change what travels (`Membership.grants`
    and `spaces`, `AccessMembership`, `Hello`, `ShareItem`), and what a device takes changes from
-   phase 2.
-   * **3 (proposed),** once for the whole plan: a device on protocol 2 meets a device on 3, is
+   phase 2. Version 3 is taken by [brought-by.md](brought-by.md) (`ConfirmGiver`).
+   * **4 (proposed),** once for the whole plan: a device on protocol 3 meets a device on 4, is
      told so by `otherVersionMet`, and the two do not sync until both are updated. The ALPN of
-     iroh becomes `pageboard/sync/3` (it follows the number).
-   * **Stays 2:** possible only if every device (the MacBook, the iPhone, the others) is updated
+     iroh becomes `pageboard/sync/4` (it follows the number). `ProtocolFormats` records format 4
+     beside 1 to 3.
+   * **Stays 3:** possible only if every device (the MacBook, the iPhone, the others) is updated
      together. A device of before then fails the connections where the new messages come.
+   * The maintainer said on 2026-11-24 that devices on builds of before need not be supported (the
+     applications are not in production). So nothing is lost to either choice now; 4 says it to a
+     device not updated.
    * Once the modules are on Maven Central, other applications' devices are on the network too.
      Changing the format without changing the number is no longer something the maintainer can
      settle by updating their own devices.
@@ -783,7 +794,8 @@ simulator. One commit per phase on `feat/shared-access`, the status updated with
 * Three capabilities, not one: sharing out, bringing in and placing are different trust given to
   different people. An application may offer them together.
 * The anchor of an inner sharing in the outer catalog is a piece of its own (`sharedAs`, set by
-  `ShareItem` under the grants), not `broughtBy`, which an editor can rewrite.
+  `ShareItem` under the grants), not `broughtBy`: who brought an item is not who owns its own
+  sharing, and it changes when the item is taken out and added back.
 * The catalogs of nested spaces kept apart, each complete for its own members, rather than an
   inner space delegating its items to the outer one: a member of one space needs no catalog of the
   other.
@@ -810,11 +822,6 @@ simulator. One commit per phase on `feat/shared-access`, the status updated with
 
 ## Left for later
 
-* **`broughtBy` rewritten by an editor** (found here, from before this plan). An `AddDocument` for
-  an item already in the space makes its author the device the others take the document from
-  (`mayGive`), so it could give a wrong snapshot to a device without the document. It needs a fix
-  of its own: the presence kept, `broughtBy` included, when an item already in the space is added
-  again, with tests in `SpaceSharingTest` and `SharedFoldersSyncTest`.
 * Owner decisions delegated by signature: an editor inviting, admitting or removing (Drive's
   "editors can change permissions"). The membership is signed by the owner only, so this needs a
   chain of signatures. The grants are shaped to carry it (`pageboard.invite`, …) once it exists.
