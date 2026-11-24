@@ -50,6 +50,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
 import androidx.navigationevent.NavigationEventInfo
@@ -132,7 +133,8 @@ internal fun ExplorerScreen(
     onImportImage: (() -> Unit)? = null,
     onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
     onOpenDocumentWithPlace: DocumentOpener = DocumentOpener { id, _ -> onOpenDocument(id) },
-    gridState: LazyGridState = rememberLibraryGridState(fileExplorerViewModel)
+    gridState: LazyGridState = rememberLibraryGridState(fileExplorerViewModel),
+    overlayBottomReach: Dp = 0.dp
 ) {
     val viewModel = fileExplorerViewModel
     LaunchedEffect(viewModel, tags) { viewModel.tags = tags }
@@ -240,7 +242,7 @@ internal fun ExplorerScreen(
             val newNote = { commands.newNote.perform() }
             Row(modifier = Modifier.fillMaxSize()) {
                 if (layout == LibraryLayout.PANES) {
-                    LibraryNavigationPane(viewModel, commands, title, actions, onAction = { libraryAction = it })
+                    LibraryNavigationPane(viewModel, commands, title, actions, onAction = { libraryAction = it }, overlayBottomReach = overlayBottomReach)
                 }
                 Column(
                     modifier = Modifier

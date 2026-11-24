@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -95,7 +96,8 @@ internal fun LibraryNavigationPane(
     brand: @Composable () -> Unit,
     actions: List<LibraryAction>,
     onAction: (LibraryAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    overlayBottomReach: Dp = 0.dp
 ) {
     val rootFolder = viewModel.currentRootFolderId
     // A search of the whole library is not in any of them
@@ -112,7 +114,7 @@ internal fun LibraryNavigationPane(
                 start = 12.dp,
                 end = 12.dp,
                 top = decorTopPad.coerceAtLeast(20.dp),
-                bottom = 16.dp
+                bottom = PaneBottomPadding
             )
     ) {
         Box(modifier = Modifier.padding(horizontal = 8.dp).height(40.dp), contentAlignment = Alignment.CenterStart) { brand() }
@@ -195,10 +197,17 @@ internal fun LibraryNavigationPane(
                 for (action in others) PaneAction(action, onClick = { onAction(action) })
             }
         }
-        // Room for what the application draws over the bottom of the library (a recording)
-        Spacer(modifier = Modifier.height(64.dp))
+        // Room for what the application draws over the bottom of the pane (a recording), while it
+        // does: its height above the padding and the insets of the pane (its own padding is the gap)
+        if (overlayBottomReach > 0.dp) {
+            val bottomInset = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+            Spacer(modifier = Modifier.height((overlayBottomReach - PaneBottomPadding - bottomInset).coerceAtLeast(0.dp)))
+        }
     }
 }
+
+/** The padding under the content of the navigation pane. */
+private val PaneBottomPadding = 16.dp
 
 /** An action of the application at the bottom of the pane: its icon and its name, 40 dp high. */
 @Composable

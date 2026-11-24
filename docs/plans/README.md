@@ -81,6 +81,7 @@ who uses the applications or the libraries.
 | [page-grid-updates](page-grid-updates.md) | The page grid following the document |
 | [page-selection](page-selection.md) | Selecting several pages |
 | [pageboard](pageboard.md) | The libraries named Pageboard |
+| [pane-bottom-room](pane-bottom-room.md) | The room at the bottom of the navigation pane |
 | [performance](performance.md) | Performance |
 | [phone-toolbar](phone-toolbar.md) | The floating tools of a phone |
 | [placement-text-size](placement-text-size.md) | The size of the text placed |

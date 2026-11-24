@@ -6,14 +6,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
 import io.github.valerioisufi.pageboard.canvas.controller.MediaManager
 import io.github.valerioisufi.pageboard.canvas.render.PageboardEngines
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.explorer.ui.ExplorerScreen
+import io.github.valerioisufi.pageboard.explorer.ui.LibraryLayout
+import io.github.valerioisufi.pageboard.explorer.ui.LibraryOverlayLayout
 import io.github.valerioisufi.pageboard.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.pageboard.explorer.ui.rememberLibraryGridState
 import io.github.valerioisufi.pageboard.session.DocumentEditorViewModel
@@ -124,6 +130,8 @@ public fun DocumentLibrary(
                     }
                     val pdfPicker = rememberFilePicker(PickerType.PDF) { file -> importFiles(listOf(file)) }
                     val imagePicker = rememberFilePicker(PickerType.IMAGE) { file -> importFiles(listOf(file)) }
+                    // How high what the application draws reaches over the navigation pane: the room it keeps
+                    var overlayReach by remember { mutableStateOf(0.dp) }
                     Box {
                         ExplorerScreen(
                             fileExplorerViewModel = fileExplorerViewModel,
@@ -142,9 +150,16 @@ public fun DocumentLibrary(
                             onImportImage = imagePicker,
                             onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
                             gridState = gridState,
+                            overlayBottomReach = overlayReach,
                             modifier = Modifier.fillMaxSize()
                         )
-                        libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
+                        LibraryOverlayLayout(
+                            bandWidth = LibraryLayout.NavigationWidth,
+                            onBottomReach = { overlayReach = it },
+                            modifier = Modifier.matchParentSize()
+                        ) {
+                            libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
+                        }
                     }
                 } else {
                     EditorSessionScreen(
