@@ -75,8 +75,8 @@
     <string name="sync_join_folder_admitted">Sei dentro: «%1$s» arriva nella tua libreria.</string>
     <string name="sync_join_folder">Partecipa a una cartella condivisa</string>
     <string name="sync_join_library">Partecipa a una libreria condivisa</string>
-    <string name="sync_share_folder_refused">Questa cartella non si può condividere: è in una cartella condivisa, o ne contiene una. Prima smetti di condividere quella.</string>
-    <string name="sync_share_library_refused">La libreria non si può condividere finché una sua cartella è condivisa. Prima smetti di condividere quella cartella.</string>
+    <string name="sync_share_folder_refused">Questa cartella non si può condividere: è già condivisa, o è dentro troppe cartelle condivise.</string>
+    <string name="sync_share_library_refused">La libreria non si può condividere: è già condivisa.</string>
     <string name="sync_problem_permission">La rete locale non è consentita a questa applicazione: consentila in %1$s.</string>
     <string name="sync_problem_permission_generic">La rete locale non è consentita a questa applicazione: consentila nelle impostazioni del sistema.</string>
     <string name="sync_problem_configuration">L’applicazione non dichiara l’uso della rete locale (%1$s): i dispositivi non possono trovarsi. Il suo sviluppatore può aggiungerlo.</string>
@@ -106,4 +106,13 @@
     <string name="sync_check_nobody">Nessun altro dispositivo trovato su questa rete.</string>
     <string name="sync_check_not_started">Non è stato possibile usare la rete locale.</string>
     <string name="sync_check_copy">Copia</string>
+    <string name="sync_share_inside_refused">Solo il proprietario di %1$s, o le persone a cui lo permette, possono condividere ciò che contiene.</string>
+    <string name="sync_through_folder">Tramite la cartella %1$s</string>
+    <string name="sync_through_library">Tramite la libreria</string>
+    <string name="sync_the_library">la libreria</string>
+    <string name="sync_also_through">anche tramite %1$s</string>
+    <string name="sync_who_shares_inside">Chi può condividere ciò che contiene</string>
+    <string name="sync_only_me">Solo io</string>
+    <string name="sync_editors_too">Anche gli editor</string>
+    <string name="sync_keeps_access">%1$s mantiene l’accesso tramite %2$s: viene rimosso solo da qui.</string>
 </resources>

@@ -72,8 +72,17 @@ internal data class SharingPerson(
     val role: Role,
     val color: Color,
     val me: Boolean = false,
-    val route: Route? = null
+    val route: Route? = null,
+    /** The other sources it has the item through besides the one shown (see [SharingSource]), named. */
+    val alsoThrough: List<String> = emptyList()
 )
+
+/**
+ * Another source of the access to the item besides the one the dialog manages (see
+ * `docs/plans/shared-access.md`): a shared folder around it ([title], `null` for the library), or,
+ * for the dialog of a folder, the folders around it; its [people], read only here.
+ */
+internal data class SharingSource(val title: String?, val people: List<SharingPerson>)
 
 /** The invitation of a document: its [link] (and its QR code), the [role] of who joins with it, whether the owner approves them first. */
 internal data class SharingInvitation(val link: String, val role: Role, val approval: Boolean)
@@ -103,7 +112,18 @@ internal class SharingState(
     /** Whether sharing the folder or the library was refused: it is in a shared folder, or holds one. */
     val refused: Boolean = false,
     /** Why the devices do not work together yet (see [SharingProblem]). */
-    val problems: List<SharingProblem> = emptyList()
+    val problems: List<SharingProblem> = emptyList(),
+    /** The other sources of the access to the item, innermost first (see [SharingSource]). */
+    val sources: List<SharingSource> = emptyList(),
+    /**
+     * For the owner of a shared folder: whether its editors may share what is inside it too
+     * (`null`: not asked here, see `docs/plans/shared-access.md`).
+     */
+    val editorsShareInside: Boolean? = null,
+    /** Sharing was refused because the folder around it does not allow it: the name of that folder (`null` for the library). */
+    val refusedBy: String? = null,
+    /** Whether [refusedBy] is said (a refusal by the folder around it). */
+    val refusedByOwner: Boolean = false
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -132,6 +152,9 @@ internal interface SharingActions {
 
     /** Checks the connection with the other devices now, and shows what works and what does not. */
     fun check() = Unit
+
+    /** The owner of a shared folder lets its editors share what is inside it too, or not. */
+    fun setEditorsShareInside(editors: Boolean) = Unit
 
     fun close()
 }
@@ -243,11 +266,12 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Bool
 @Composable
 private fun Notices(state: SharingState, actions: SharingActions) {
     if (state.refused) {
-        Notice(
-            PageboardIcons.TriangleAlert,
-            stringResource(if (state.kind == InvitationKind.LIBRARY) Res.string.sync_share_library_refused else Res.string.sync_share_folder_refused),
-            error = true
-        )
+        val text = when {
+            state.refusedByOwner -> stringResource(Res.string.sync_share_inside_refused, state.refusedBy ?: stringResource(Res.string.sync_the_library))
+            state.kind == InvitationKind.LIBRARY -> stringResource(Res.string.sync_share_library_refused)
+            else -> stringResource(Res.string.sync_share_folder_refused)
+        }
+        Notice(PageboardIcons.TriangleAlert, text, error = true)
     }
     if (state.shared && !state.isOwner) {
         Notice(PageboardIcons.Info, stringResource(Res.string.sync_invite_owner_only, state.owner))
@@ -422,9 +446,21 @@ private fun People(
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             for (member in state.members) MemberRow(member, ownerView = state.isOwner, actions = actions)
         }
-        if (state.members.size <= 1) {
+        if (state.members.size <= 1 && state.sources.all { it.people.isEmpty() }) {
             Text(stringResource(Res.string.sync_nobody), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        // The other sources of the access, read only here: managed in their own dialogs
+        for (source in state.sources) {
+            Text(
+                source.title?.let { stringResource(Res.string.sync_through_folder, it) } ?: stringResource(Res.string.sync_through_library),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                for (person in source.people) MemberRow(person, ownerView = false, actions = actions)
+            }
+        }
+        state.editorsShareInside?.let { editors -> InsideChoice(editors, actions::setEditorsShareInside) }
     }
     OutlinedTextField(
         value = name,
@@ -547,8 +583,9 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
                 overflow = TextOverflow.Ellipsis
             )
             val route = member.route?.let { routeLabel(it) }?.let { stringResource(it) }
+            val also = member.alsoThrough.takeIf { it.isNotEmpty() }?.let { stringResource(Res.string.sync_also_through, it.joinToString()) }
             Text(
-                listOfNotNull(stringResource(roleLabel(member.role)), route).joinToString(" · "),
+                listOfNotNull(stringResource(roleLabel(member.role)), also, route).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -565,6 +602,19 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
             ownerView && !member.me -> MemberMenu(member, actions)
         }
     }
+}
+
+/** The choice of the owner of a shared folder: who may share what is inside it, besides itself. */
+@Composable
+private fun InsideChoice(editors: Boolean, onChange: (Boolean) -> Unit) {
+    Text(stringResource(Res.string.sync_who_shares_inside), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    SegmentedChoice(
+        options = listOf(false, true),
+        selected = editors,
+        label = { stringResource(if (it) Res.string.sync_editors_too else Res.string.sync_only_me) },
+        onSelect = onChange,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 /** The menu of a member for the owner: reading only or editing, removing it from the document. */

@@ -157,6 +157,92 @@ class SharingScreenshotTest {
         }
     }
 
+    /**
+     * A note shared on its own and in a shared folder (docs/plans/shared-access.md): its own people,
+     * one of them also through the folder, and the people of the folder, read only here.
+     */
+    @Test
+    fun twoSources() = capture("share-two-sources", width = 608, height = 900) {
+        Dialog(ShareDialogNarrowWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = true,
+                    isOwner = false,
+                    owner = "Valerio’s Mac",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = listOf(members[0], members[1].copy(me = true, alsoThrough = listOf("Physics"))),
+                    offline = false,
+                    otherVersion = false,
+                    sources = listOf(SharingSource("Physics", listOf(members[0], members[1].copy(me = true), members[2])))
+                ),
+                actions = noActions,
+                name = "Marta’s iPad",
+                deviceName = "Marta’s iPad",
+                onRename = {},
+                compact = false
+            )
+        }
+    }
+
+    /**
+     * The owner of a shared folder inside the shared library: the people through the library, and
+     * who besides the owner can share what is inside it.
+     */
+    @Test
+    fun folderInside() = capture("share-folder-inside", width = 908, height = 900) {
+        Dialog(ShareDialogWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = true,
+                    isOwner = true,
+                    owner = "Valerio’s Mac",
+                    invitation = SharingInvitation("pageboard://join?s=7F3K-Q9PL-2MXA&n=folder&k=c2VjcmV0&o=bWFj", Role.EDITOR, approval = false),
+                    requests = emptyList(),
+                    members = listOf(members[0].copy(me = true), members[1]),
+                    offline = false,
+                    otherVersion = false,
+                    kind = InvitationKind.FOLDER,
+                    sources = listOf(SharingSource(null, listOf(members[0].copy(me = true), SharingPerson("phone2", "Valerio’s phone", Role.EDITOR, InkPalette.Orange)))),
+                    editorsShareInside = false
+                ),
+                actions = noActions,
+                name = "Valerio’s Mac",
+                deviceName = "Valerio’s Mac",
+                onRename = {},
+                compact = false
+            )
+        }
+    }
+
+    /** Sharing a folder inside a shared folder whose owner does not allow it: who decides, told. */
+    @Test
+    fun insideRefused() = capture("share-inside-refused", width = 908, height = 640) {
+        Dialog(ShareDialogWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = false,
+                    isOwner = true,
+                    owner = "",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = emptyList(),
+                    offline = false,
+                    otherVersion = false,
+                    kind = InvitationKind.FOLDER,
+                    refused = true,
+                    refusedBy = "Physics",
+                    refusedByOwner = true
+                ),
+                actions = noActions,
+                name = "Marta’s iPad",
+                deviceName = "Marta’s iPad",
+                onRename = {},
+                compact = false
+            )
+        }
+    }
+
     /** Joining a shared library: into a new folder, or into this library. */
     @Test
     fun joinLibrary() = capture("join-library", width = 520, height = 420) {

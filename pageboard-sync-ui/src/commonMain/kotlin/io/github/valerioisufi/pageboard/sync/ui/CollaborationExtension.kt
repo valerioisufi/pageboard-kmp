@@ -1,5 +1,8 @@
 package io.github.valerioisufi.pageboard.sync.ui
 
+import androidx.compose.runtime.rememberUpdatedState
+import io.github.valerioisufi.pageboard.sync.ItemAccess
+import io.github.valerioisufi.pageboard.sync.AccessSource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -210,6 +213,12 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     var invitations by remember { mutableStateOf<List<Pair<InvitationGrant, Invitation>>>(emptyList()) }
     var version by remember { mutableStateOf(0) }
     var confirmStop by remember { mutableStateOf(false) }
+    // Who has the item through what (its own sharing, the folders around it), and their names
+    var access by remember { mutableStateOf<ItemAccess?>(null) }
+    var titles by remember { mutableStateOf<Map<String, String?>>(emptyMap()) }
+    // A member to remove who keeps an access through another source: asked first
+    var confirmRemove by remember { mutableStateOf<Pair<SharingPerson, List<String>>?>(null) }
+    var refusedBy by remember(target) { mutableStateOf<Result<String?>?>(null) }
     // Sharing the folder refused (it is in a shared folder or holds one): told in the dialog
     var refused by remember(target) { mutableStateOf(false) }
     val internet by collaboration.internetSettings.collectAsState()
@@ -227,6 +236,17 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         }
     }
     val current = invitations.lastOrNull()
+    LaunchedEffect(documentId, membership, version) {
+        val found = if (documentId.isEmpty()) null else collaboration.accessOf(documentId)
+        access = found
+        titles = found?.sources.orEmpty().filterIsInstance<AccessSource.Space>().associate { it.spaceId to collaboration.titleOfSpace(it.spaceId) }
+    }
+    // The source the dialog manages: the item's own sharing, else its innermost folder; the others read only
+    val sources = access?.sources.orEmpty()
+    val managed = sources.firstOrNull()
+    fun titleOf(source: AccessSource): String? = (source as? AccessSource.Space)?.let { titles[it.spaceId] }
+    val libraryName = stringResource(Res.string.sync_the_library)
+    fun nameOf(source: AccessSource): String = titleOf(source) ?: libraryName
 
     val state = SharingState(
         shared = membership != null,
@@ -236,8 +256,18 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         requests = requests.filter { it.documentId == documentId }.map { SharingPerson(it.device, it.name, it.role, colorOf(it.device)) },
         members = membership?.members.orEmpty().map { member ->
             val me = member.device == collaboration.device
-            SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me, route = routes[member.device])
+            val also = sources.drop(1).filter { it.membership.memberOf(member.device) != null }.map(::nameOf)
+            SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me, route = routes[member.device], alsoThrough = also)
         },
+        sources = sources.drop(1).filter { managed != null }.map { source ->
+            SharingSource(titleOf(source), source.membership.members.map { member ->
+                val me = member.device == collaboration.device
+                SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me)
+            })
+        },
+        editorsShareInside = if (folder != null && isOwner && shareId != null) collaboration.editorsShareInside(documentId) else null,
+        refusedBy = refusedBy?.getOrNull(),
+        refusedByOwner = refusedBy != null,
         offline = !online,
         otherVersion = otherVersion,
         internet = internet.takeIf { collaboration.isInternetAvailable },
@@ -246,6 +276,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
         // Before sharing only what stops everything
         problems = if (membership != null) problems else problems.filter { it.blocksEverything }
     )
+    // The state as it is now, for the actions made once
+    val latestState = rememberUpdatedState(state)
     val actions = remember(collaboration, documentId, target) {
         object : SharingActions {
             override fun invite(role: Role, approval: Boolean) {
@@ -254,6 +286,7 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
                     invitations.lastOrNull()?.let { (grant, _) -> collaboration.revokeInvitation(documentId, grant) }
                     if (folder != null) {
                         refused = collaboration.shareFolder(folder.folderId, title, role, approval) == null
+                        refusedBy = if (refused) folder.folderId?.let { collaboration.refusedInside(it) } else null
                         shareId = collaboration.spaceOf(folder.folderId)
                     } else {
                         collaboration.share(documentId, title, role, approval)
@@ -280,7 +313,20 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
             }
 
             override fun remove(device: String) {
+                // Still in another source: told first that they keep the item through it
+                val person = latestState.value.members.firstOrNull { it.device == device }
+                if (person != null && person.alsoThrough.isNotEmpty()) {
+                    confirmRemove = person to person.alsoThrough
+                    return
+                }
                 scope.launch { collaboration.removeMember(documentId, device) }
+            }
+
+            override fun setEditorsShareInside(editors: Boolean) {
+                scope.launch {
+                    collaboration.setEditorsShareInside(documentId, editors)
+                    version++
+                }
             }
 
             override fun stop() {
@@ -316,6 +362,23 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     }
 
     check?.let { (report, started) -> CheckDialog(report, started, onDismiss = { check = null }) }
+
+    confirmRemove?.let { (person, through) ->
+        AdaptiveDialog(
+            onDismissRequest = { confirmRemove = null },
+            title = { Text(stringResource(Res.string.sync_remove), textAlign = TextAlign.Center) },
+            text = {
+                Text(stringResource(Res.string.sync_keeps_access, person.name, through.joinToString()), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            },
+            confirmButton = {
+                Button(onClick = {
+                    confirmRemove = null
+                    scope.launch { collaboration.removeMember(documentId, person.device) }
+                }) { Text(stringResource(Res.string.sync_remove)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmRemove = null }) { Text(stringResource(Res.string.sync_cancel)) } }
+        )
+    }
 
     if (confirmStop) {
         StopSharingDialog(

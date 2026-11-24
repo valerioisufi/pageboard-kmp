@@ -75,8 +75,8 @@
     <string name="sync_join_folder_admitted">参加しました：「%1$s」はあなたのライブラリに届きます。</string>
     <string name="sync_join_folder">共有フォルダに参加</string>
     <string name="sync_join_library">共有ライブラリに参加</string>
-    <string name="sync_share_folder_refused">このフォルダは共有できません：共有フォルダの中にあるか、共有フォルダを含んでいます。先にそちらの共有を終了してください。</string>
-    <string name="sync_share_library_refused">ライブラリ内のフォルダが共有されている間は、ライブラリを共有できません。先にそのフォルダの共有を終了してください。</string>
+    <string name="sync_share_folder_refused">このフォルダは共有できません：すでに共有されているか、共有フォルダの中に深くありすぎます。</string>
+    <string name="sync_share_library_refused">ライブラリは共有できません：すでに共有されています。</string>
     <string name="sync_problem_permission">このアプリにはローカルネットワークが許可されていません。%1$s で許可してください。</string>
     <string name="sync_problem_permission_generic">このアプリにはローカルネットワークが許可されていません。システムの設定で許可してください。</string>
     <string name="sync_problem_configuration">このアプリはローカルネットワークの使用を宣言していません（%1$s）。デバイス同士が見つかりません。開発者が追加できます。</string>
@@ -106,4 +106,13 @@
     <string name="sync_check_nobody">このネットワークにほかのデバイスは見つかりませんでした。</string>
     <string name="sync_check_not_started">ローカルネットワークを使用できませんでした。</string>
     <string name="sync_check_copy">コピー</string>
+    <string name="sync_share_inside_refused">%1$s の中にあるものを共有できるのは、その所有者と、所有者が許可した人だけです。</string>
+    <string name="sync_through_folder">フォルダ %1$s 経由</string>
+    <string name="sync_through_library">ライブラリ経由</string>
+    <string name="sync_the_library">ライブラリ</string>
+    <string name="sync_also_through">%1$s 経由でも</string>
+    <string name="sync_who_shares_inside">中にあるものを共有できる人</string>
+    <string name="sync_only_me">自分だけ</string>
+    <string name="sync_editors_too">編集者も</string>
+    <string name="sync_keeps_access">%1$s は %2$s 経由でアクセスできます：ここからのみ削除されます。</string>
 </resources>

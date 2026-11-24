@@ -699,7 +699,7 @@ From then on the grants let the protocol grow:
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | done |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | done (the trash through two spaces at random, and cycles across catalogs at a larger scale: left for later) |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | done (`share` with grants and `leave` per access: `setGrants` after `shareSpace` or `invite`, and `unshare` of the document or of the folder, cover them) |
-| 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | to do |
+| 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | done ("Leave" per access, and the join in place offered in the join dialog: left for later) |
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
 
 ### Phase 1 results
@@ -1027,6 +1027,43 @@ From then on the grants let the protocol grow:
   what is not shared.
 * The ABI of `pageboard-sync` is recorded again: additions only.
 
+### Phase 7 results
+
+* The sharing dialog (`pageboard-sync-ui`) shows where each person's access comes from:
+  * the people of the source it manages (the item's own sharing, else its innermost folder), each
+    with the other sources it is also in ("Can edit · also through Physics");
+  * below them, the people of each other source, read only, under "Through the folder Physics"
+    or "Through the library" (`SharingSource`, from `SyncEngine.accessOf` through
+    `Collaboration.accessOf` and `titleOfSpace`).
+* The owner of a shared folder chooses "Who can share what is inside": "Only me" or "Editors too"
+  (`Collaboration.setEditorsShareInside`). It grants or takes back `SHARE_INSIDE` and
+  `BRING_SHARED` to the editors together (decision 3), and keeps the other grants.
+* Sharing a folder inside a folder that does not allow it is refused, and the dialog says who
+  decides: "Only the owner of Physics, or the people they allow, can share what is inside it"
+  (`Collaboration.refusedInside`). The refusals of before, a space in a space, no longer happen.
+  Their texts now say what is left: the folder shared already, or too deep.
+* Removing someone who keeps the item through another source is asked first: "Marta keeps access
+  through Physics: they are removed from here only."
+* Strings in the 7 languages (English, German, Spanish, French, Italian, Japanese, Korean).
+* Screenshots (`SharingScreenshotTest`):
+  * `share-two-sources`: a note shared on its own and through a folder;
+  * `share-folder-inside`: the owner of a folder inside the library, with the people of the library
+    and the choice;
+  * `share-inside-refused`: the refusal saying who decides.
+
+  They were looked at here (`compareRoborazziJvm`), and their references recorded in the Docker
+  image of `tools/screenshots`, for `pageboard-sync-ui` only. The references of before came out
+  unchanged.
+* PencilNotes desktop ran on a scratch data directory: it started, made its database there, and
+  printed no error. Its dialogs were not driven from here: the screenshots show them.
+* The ABI of `pageboard-sync-ui` is recorded again: additions only (`Collaboration.accessOf`,
+  `titleOfSpace`, `editorsShareInside`, `setEditorsShareInside`, `refusedInside`).
+* Left for later:
+  * "Leave" per access in the dialog (leaving the folder is in the folder's dialog, and a note's
+    own sharing in the note's);
+  * the join dialog offering "where it already is" for a folder of the library
+    (`SpaceRoot.InPlace` is in the engine).
+
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
 simulator. One commit per phase on `feat/shared-access`, the status updated with it.
@@ -1156,3 +1193,11 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
   not anchored, a grant missing, a reader that cannot relay) in the interface.
 * A member of an inner space told that parts of the outer space disagree with it, when no device
   in both relays their changes (a reader of the outer space only).
+* Found by the random test of phase 5 at a larger scale:
+  * folders placed differently across devices after cycles across two nested catalogs (nothing
+    lost);
+  * the library's trash after a folder is put in the trash in one catalog and restored in the
+    other.
+* In the interface: "Leave" per access, and the join dialog offering a folder of the library
+  where it already is.
+* The test on real devices (phase 8), by the maintainer.

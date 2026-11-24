@@ -75,8 +75,8 @@
     <string name="sync_join_folder_admitted">You are in: “%1$s” arrives in your library.</string>
     <string name="sync_join_folder">Join a shared folder</string>
     <string name="sync_join_library">Join a shared library</string>
-    <string name="sync_share_folder_refused">This folder cannot be shared: it is in a shared folder, or holds one. Stop sharing that one first.</string>
-    <string name="sync_share_library_refused">The library cannot be shared while a folder in it is shared. Stop sharing that folder first.</string>
+    <string name="sync_share_folder_refused">This folder cannot be shared: it is shared already, or inside too many shared folders.</string>
+    <string name="sync_share_library_refused">The library cannot be shared: it is shared already.</string>
     <string name="sync_problem_permission">The local network is not allowed for this application: allow it in %1$s.</string>
     <string name="sync_problem_permission_generic">The local network is not allowed for this application: allow it in the settings of the system.</string>
     <string name="sync_problem_configuration">The application does not declare the use of the local network (%1$s): the devices cannot find each other. Its developer can add it.</string>
@@ -106,4 +106,13 @@
     <string name="sync_check_nobody">No other device was found on this network.</string>
     <string name="sync_check_not_started">The local network could not be used.</string>
     <string name="sync_check_copy">Copy</string>
+    <string name="sync_share_inside_refused">Only the owner of %1$s, or the people they allow, can share what is inside it.</string>
+    <string name="sync_through_folder">Through the folder %1$s</string>
+    <string name="sync_through_library">Through the library</string>
+    <string name="sync_the_library">the library</string>
+    <string name="sync_also_through">also through %1$s</string>
+    <string name="sync_who_shares_inside">Who can share what is inside</string>
+    <string name="sync_only_me">Only me</string>
+    <string name="sync_editors_too">Editors too</string>
+    <string name="sync_keeps_access">%1$s keeps access through %2$s: they are removed from here only.</string>
 </resources>

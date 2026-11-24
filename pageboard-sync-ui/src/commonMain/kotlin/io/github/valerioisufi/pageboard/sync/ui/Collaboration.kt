@@ -23,6 +23,9 @@ import io.github.valerioisufi.pageboard.sync.Presence
 import io.github.valerioisufi.pageboard.sync.SpaceRoot
 import io.github.valerioisufi.pageboard.sync.StoreSharedDocuments
 import io.github.valerioisufi.pageboard.sync.SyncEngine
+import io.github.valerioisufi.pageboard.sync.protocol.Grant
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
+import io.github.valerioisufi.pageboard.sync.ItemAccess
 import io.github.valerioisufi.pageboard.sync.SyncNetwork
 import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.sync.lan.LanDiscovery
@@ -142,6 +145,49 @@ public class Collaboration(
         addressBook = (store as? PreferenceStore)?.let(::PreferenceAddressBook) ?: InMemoryAddressBook(),
         spaces = library
     )
+
+    /**
+     * Who has the document or the shared folder [id], and through what (see [ItemAccess] and
+     * `docs/plans/shared-access.md`).
+     */
+    public suspend fun accessOf(id: String): ItemAccess? = engine.accessOf(id)
+
+    /** The name of the shared folder [spaceId] in this library: the name of its root, `null` for the library. */
+    public suspend fun titleOfSpace(spaceId: String): String? {
+        val root = library?.spaces()?.firstOrNull { it.id == spaceId }?.rootFolderId ?: return null
+        return store.folders.first().firstOrNull { it.id == root }?.name
+    }
+
+    /** Whether the editors of the shared folder [spaceId] may share what is inside it too (see [Capability.SHARE_INSIDE]). */
+    public fun editorsShareInside(spaceId: String): Boolean =
+        engine.spaceMemberships.value[spaceId]?.grantsOf(Capability.SHARE_INSIDE)?.any { it.role == Role.EDITOR } == true
+
+    /**
+     * Lets the editors of the shared folder [spaceId] share what is inside it too, or not (this
+     * device is its owner): one choice for sharing an item of it on its own and bringing in one
+     * shared on its own (decided by the maintainer, see `docs/plans/shared-access.md`). The other
+     * grants are kept.
+     */
+    public suspend fun setEditorsShareInside(spaceId: String, editors: Boolean) {
+        val membership = engine.spaceMemberships.value[spaceId] ?: return
+        val inside = setOf(Capability.SHARE_INSIDE, Capability.BRING_SHARED)
+        val kept = membership.grants.filter { it.capability !in inside }
+        engine.setGrants(spaceId, kept + if (editors) inside.map { Grant(it, Role.EDITOR) } else emptyList())
+    }
+
+    /**
+     * The shared folder around [folderId] that does not let this device share what is inside it,
+     * named (`null` for the library); nothing when every one does.
+     */
+    public suspend fun refusedInside(folderId: String): Result<String?>? {
+        val library = library ?: return null
+        val refusing = library.spacesOf(folderId).firstOrNull { space ->
+            val membership = engine.spaceMemberships.value[space.id] ?: return@firstOrNull false
+            val replica = membership.memberOf(device)?.replica ?: return@firstOrNull true
+            !membership.holds(Capability.SHARE_INSIDE, replica, Long.MAX_VALUE)
+        } ?: return null
+        return Result.success(titleOfSpace(refusing.id))
+    }
 
     /** Whether folders and the library can be shared here (the store keeps spaces). */
     public val sharesFolders: Boolean get() = library != null

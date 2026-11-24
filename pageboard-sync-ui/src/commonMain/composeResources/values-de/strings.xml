@@ -75,8 +75,8 @@
     <string name="sync_join_folder_admitted">Du bist dabei: „%1$s“ erscheint in deiner Bibliothek.</string>
     <string name="sync_join_folder">Einem geteilten Ordner beitreten</string>
     <string name="sync_join_library">Einer geteilten Bibliothek beitreten</string>
-    <string name="sync_share_folder_refused">Dieser Ordner kann nicht geteilt werden: Er liegt in einem geteilten Ordner oder enthält einen. Beende zuerst dessen Freigabe.</string>
-    <string name="sync_share_library_refused">Die Bibliothek kann nicht geteilt werden, solange ein Ordner darin geteilt ist. Beende zuerst die Freigabe dieses Ordners.</string>
+    <string name="sync_share_folder_refused">Dieser Ordner kann nicht geteilt werden: Er ist schon geteilt oder liegt in zu vielen geteilten Ordnern.</string>
+    <string name="sync_share_library_refused">Die Bibliothek kann nicht geteilt werden: Sie ist schon geteilt.</string>
     <string name="sync_problem_permission">Das lokale Netzwerk ist für diese App nicht erlaubt: Erlaube es unter %1$s.</string>
     <string name="sync_problem_permission_generic">Das lokale Netzwerk ist für diese App nicht erlaubt: Erlaube es in den Einstellungen des Systems.</string>
     <string name="sync_problem_configuration">Die App gibt die Nutzung des lokalen Netzwerks nicht an (%1$s): Die Geräte können sich nicht finden. Ihr Entwickler kann es ergänzen.</string>
@@ -106,4 +106,13 @@
     <string name="sync_check_nobody">In diesem Netzwerk wurde kein anderes Gerät gefunden.</string>
     <string name="sync_check_not_started">Das lokale Netzwerk konnte nicht verwendet werden.</string>
     <string name="sync_check_copy">Kopieren</string>
+    <string name="sync_share_inside_refused">Nur der Eigentümer von %1$s oder die Personen, denen er es erlaubt, können teilen, was darin liegt.</string>
+    <string name="sync_through_folder">Über den Ordner %1$s</string>
+    <string name="sync_through_library">Über die Bibliothek</string>
+    <string name="sync_the_library">die Bibliothek</string>
+    <string name="sync_also_through">auch über %1$s</string>
+    <string name="sync_who_shares_inside">Wer teilen darf, was darin liegt</string>
+    <string name="sync_only_me">Nur ich</string>
+    <string name="sync_editors_too">Auch Bearbeiter</string>
+    <string name="sync_keeps_access">%1$s behält den Zugriff über %2$s: Die Person wird nur hier entfernt.</string>
 </resources>
