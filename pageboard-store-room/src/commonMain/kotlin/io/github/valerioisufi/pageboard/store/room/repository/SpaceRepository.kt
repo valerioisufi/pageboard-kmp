@@ -55,6 +55,15 @@ internal class SpaceRepository(private val database: PageboardDatabase) : SpaceS
             }
         }
 
+    override suspend fun saveCatalogItems(spaceId: String, items: Collection<CatalogItem>): Unit = withContext(Dispatchers.IO) {
+        database.useWriterConnection { transactor ->
+            transactor.immediateTransaction {
+                if (spaceDao.space(spaceId) == null) return@immediateTransaction
+                spaceDao.upsertItems(items.map { CatalogItemEntity(spaceId, it.id, json.encodeToString(CatalogItem.serializer(), it)) })
+            }
+        }
+    }
+
     override suspend fun catalogVersionVector(spaceId: String): Map<String, Long> = withContext(Dispatchers.IO) {
         spaceDao.lastSequences(spaceId).associate { it.replica to it.sequence }
     }

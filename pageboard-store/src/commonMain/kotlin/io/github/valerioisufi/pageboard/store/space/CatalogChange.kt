@@ -121,14 +121,23 @@ public data class RemoveFromSpace(val id: String) : CatalogChange {
 
     override fun applyTo(catalog: SpaceCatalog, stamp: Stamp): CatalogChange? {
         val item = catalog.itemOrNew(id)
-        if (stamp <= item.presence) return null
-        // The whole presence, as one piece: a removal leaves no kind nor replica of an addition
-        catalog.put(item.copy(kind = null, inSpace = false, broughtBy = "", presence = stamp))
-        return when {
-            !item.inSpace -> RemoveFromSpace(id)
-            item.kind == CatalogItemKind.FOLDER -> AddFolder(id, item.name, item.parent)
-            else -> AddDocument(id, item.parent)
+        var after = item
+        // The latest removal: the additions up to it brought the item no more (an addition of this
+        // operation, with the same stamp, came first: it counts, not this removal)
+        if (stamp > item.removed && stamp !in item.arrivals) after = after.copy(removed = stamp, arrivals = item.arrivals.filter { it > stamp })
+        var inverse: CatalogChange? = null
+        if (stamp > item.presence) {
+            // The whole presence, as one piece: a removal leaves no kind of an addition
+            after = after.copy(kind = null, inSpace = false, presence = stamp)
+            inverse = when {
+                !item.inSpace -> RemoveFromSpace(id)
+                item.kind == CatalogItemKind.FOLDER -> AddFolder(id, item.name, item.parent)
+                else -> AddDocument(id, item.parent)
+            }
         }
+        after = after.withBringer()
+        if (after != item) catalog.put(after)
+        return inverse
     }
 }
 
@@ -162,15 +171,22 @@ public data class CompositeCatalogChange(val changes: List<CatalogChange>) : Cat
 @Serializable
 public data class CatalogOperation(val id: OperationId, val stamp: Stamp, val change: CatalogChange)
 
-/** An addition: the presence (kind, replica bringing it), the name of a folder and the place, each piece when the stamp is more recent. */
+/**
+ * An addition: the presence (kind), the name of a folder and the place, each piece when the stamp
+ * is more recent; an arrival when it is after the latest removal (who brought the item: the first
+ * arrival, see [CatalogItem.arrivals]).
+ */
 private fun add(catalog: SpaceCatalog, stamp: Stamp, id: String, kind: CatalogItemKind, name: String?, parent: String?): CatalogChange? {
     val before = catalog.itemOrNew(id)
     var item = before
     val undo = mutableListOf<CatalogChange>()
+    // Not after a removal of this operation (the same stamp): the removal came first
+    if (stamp > item.removed && stamp !in item.arrivals) item = item.copy(arrivals = (item.arrivals + stamp).sorted())
     if (stamp > item.presence) {
-        item = item.copy(kind = kind, inSpace = true, broughtBy = stamp.replica, presence = stamp)
+        item = item.copy(kind = kind, inSpace = true, presence = stamp)
         undo.add(if (before.inSpace) before.addition() else RemoveFromSpace(id))
     }
+    item = item.withBringer()
     if (name != null && stamp > item.named) {
         item = item.copy(name = name, named = stamp)
         undo.add(RenameFolder(id, before.name))
@@ -179,8 +195,9 @@ private fun add(catalog: SpaceCatalog, stamp: Stamp, id: String, kind: CatalogIt
         item = item.copy(parent = parent, placed = stamp)
         undo.add(MoveItem(id, before.parent))
     }
+    if (item != before) catalog.put(item)
+    // An arrival alone changes no piece the library shows: nothing to undo
     if (undo.isEmpty()) return null
-    catalog.put(item)
     return undo.singleOrNull() ?: CompositeCatalogChange(undo.asReversed())
 }
 

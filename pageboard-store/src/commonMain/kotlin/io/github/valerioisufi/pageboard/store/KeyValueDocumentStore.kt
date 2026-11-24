@@ -615,6 +615,14 @@ public class KeyValueDocumentStore(
         spaceValues.write(spaceId, value.copy(items = kept + added, operations = value.operations + operation))
     }
 
+    override suspend fun saveCatalogItems(spaceId: String, items: Collection<CatalogItem>): Unit = syncLock(lock) {
+        val value = spaceValues.valueOf(spaceId) ?: return@syncLock
+        val changed = items.associateBy { it.id }
+        val kept = value.items.map { changed[it.id] ?: it }
+        val added = changed.values.filter { item -> value.items.none { it.id == item.id } }
+        spaceValues.write(spaceId, value.copy(items = kept + added))
+    }
+
     override suspend fun catalogVersionVector(spaceId: String): Map<String, Long> = syncLock(lock) {
         spaceValues.valueOf(spaceId)?.operations.orEmpty().groupBy { it.id.replica }.mapValues { (_, ops) -> ops.maxOf { it.id.sequence } }
     }

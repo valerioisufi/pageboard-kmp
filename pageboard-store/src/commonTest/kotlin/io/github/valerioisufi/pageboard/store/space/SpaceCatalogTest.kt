@@ -11,6 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 
 class SpaceCatalogTest {
@@ -123,6 +124,84 @@ class SpaceCatalogTest {
     }
 
     @Test
+    fun anItemAddedAgainKeepsWhoBroughtIt() {
+        val a = session("a")
+        val e = session("e")
+        e.receive(a.submit(AddDocument("d", null))!!.operation)
+        now += 1
+        // Eve adds it again while it is in the space: Ada still brought it
+        a.receive(e.submit(AddDocument("d", null))!!.operation)
+        for (catalog in listOf(a.catalog, e.catalog)) assertEquals("a", catalog.entry("d")?.broughtBy)
+        // Taken out and added again: brought by the one adding it then, who has it
+        now += 1
+        val out = e.submit(RemoveFromSpace("d"))!!.operation
+        now += 1
+        val back = e.submit(AddDocument("d", null))!!.operation
+        a.receive(out)
+        a.receive(back)
+        for (catalog in listOf(a.catalog, e.catalog)) assertEquals("e", catalog.entry("d")?.broughtBy)
+        assertEquals(a.catalog.items, e.catalog.items)
+    }
+
+    @Test
+    fun whoBroughtAnItemIsTheSameInEveryOrder() {
+        fun op(replica: String, time: Long, change: CatalogChange) = CatalogOperation(OperationId(replica, time), Stamp(time, 0, replica), change)
+        val operations = listOf(
+            // Added by Ada, taken out by Carl, added by Eve then by Fay, made apart: Eve brought it
+            // (the first addition after the latest removal)
+            op("a", 1, AddDocument("d", null)),
+            op("c", 2, RemoveFromSpace("d")),
+            op("e", 3, AddDocument("d", null)),
+            op("f", 4, AddDocument("d", null)),
+            // One operation adding and taking out: its first change counts, the item is in
+            op("g", 5, CompositeCatalogChange(listOf(AddDocument("k", null), RemoveFromSpace("k")))),
+            // Taking out then adding: out
+            op("h", 6, AddDocument("m", null)),
+            op("i", 7, CompositeCatalogChange(listOf(RemoveFromSpace("m"), AddDocument("m", null))))
+        )
+        fun permutations(list: List<CatalogOperation>): List<List<CatalogOperation>> =
+            if (list.size <= 1) listOf(list) else list.flatMap { first -> permutations(list - first).map { listOf(first) + it } }
+        val catalogs = permutations(operations).map { order ->
+            SpaceCatalog().also { catalog -> order.forEach { it.change.applyTo(catalog, it.stamp) } }
+        }
+        val first = catalogs.first()
+        for (catalog in catalogs) assertEquals(first.items, catalog.items)
+        val view = first.view().associateBy { it.id }
+        assertEquals("e", view["d"]?.broughtBy)
+        assertEquals("g", view["k"]?.broughtBy)
+        assertNull(view["m"])
+        assertEquals(listOf(Stamp(3, 0, "e"), Stamp(4, 0, "f")), first["d"]?.arrivals)
+        assertEquals(Stamp(2, 0, "c"), first["d"]?.removed)
+    }
+
+    @Test
+    fun anItemOfBeforeIsCompletedFromTheLog() = runTest {
+        // As a build of before kept it: Eve added again the document Ada brought
+        val text = """{"id":"d","kind":"DOCUMENT","inSpace":true,"broughtBy":"e","presence":"000000000003.00000000.e","placed":"000000000003.00000000.e"}"""
+        val stored = Json.decodeFromString(CatalogItem.serializer(), text)
+        assertTrue(stored.isOfBefore)
+        val log = listOf(
+            CatalogOperation(OperationId("a", 1), Stamp(1, 0, "a"), AddDocument("d", null)),
+            CatalogOperation(OperationId("e", 1), Stamp(3, 0, "e"), AddDocument("d", null))
+        )
+        val completed = CatalogMigration.complete(listOf(stored)) { log }
+        val item = completed.items.single()
+        assertEquals("a", item.broughtBy)
+        assertEquals(listOf(Stamp(1, 0, "a"), Stamp(3, 0, "e")), item.arrivals)
+        assertFalse(item.isOfBefore)
+        assertEquals(listOf(item), completed.changed)
+        assertEquals(emptySet(), completed.unexplained)
+        // Without its operations: as it was, told
+        val alone = CatalogMigration.complete(listOf(stored)) { emptyList() }
+        assertEquals("e", alone.items.single().broughtBy)
+        assertEquals(listOf(Stamp(3, 0, "e")), alone.items.single().arrivals)
+        assertEquals(setOf("d"), alone.unexplained)
+        // Nothing of before: the log is not read
+        val none = CatalogMigration.complete(listOf(item)) { error("not read") }
+        assertEquals(listOf(item), none.items)
+    }
+
+    @Test
     fun anOperationNotAdmittedIsRefused() {
         val a = session("a")
         fun op(replica: String, stampReplica: String = replica, time: Long = now, change: CatalogChange = AddFolder("f", "F", null)) =
@@ -176,14 +255,16 @@ class SpaceCatalogTest {
         fun randomChange(session: CatalogSession): CatalogChange {
             val id = ids.random(random)
             val parent = if (random.nextInt(3) == 0) null else ids.random(random).takeIf { it != id }
-            return when (random.nextInt(9)) {
+            return when (random.nextInt(11)) {
                 0 -> AddFolder(id, "n${random.nextInt(4)}", parent)
-                1 -> AddDocument(id, parent)
+                1, 9 -> AddDocument(id, parent)
                 2 -> RenameFolder(id, "n${random.nextInt(4)}")
                 3, 4 -> MoveItem(id, parent)
                 5 -> TrashItem(id)
                 6 -> RestoreItem(id)
                 7 -> RemoveFromSpace(id)
+                // Adding and taking out the same item in one operation, in either order
+                10 -> CompositeCatalogChange(listOf(AddDocument(id, parent), RemoveFromSpace(id)).shuffled(random))
                 else -> undo.getValue(session.replica).removeLastOrNull() ?: AddFolder(id, "n0", parent)
             }
         }

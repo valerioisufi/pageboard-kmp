@@ -42,6 +42,12 @@ public interface SpaceStore {
      */
     public suspend fun saveCatalogChange(spaceId: String, items: Collection<CatalogItem>, operation: CatalogOperation)
 
+    /**
+     * Keeps [items] of the catalog of [spaceId] as they are, without an operation: the items of a
+     * catalog of before, completed (see `docs/plans/brought-by.md`). Nothing for a space not kept.
+     */
+    public suspend fun saveCatalogItems(spaceId: String, items: Collection<CatalogItem>)
+
     /** The last operation kept of every replica, for [spaceId]. */
     public suspend fun catalogVersionVector(spaceId: String): Map<String, Long>
 

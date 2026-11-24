@@ -47,6 +47,9 @@ public class SpaceLibrary(
 ) {
     private val mutex = Mutex()
     private val sessions = mutableMapOf<String, Space>()
+
+    /** The items of each space whose log did not explain who brought them (see [CatalogMigration]). */
+    private val unexplained = mutableMapOf<String, Set<String>>()
     private var follow: Job? = null
     private var replica = ""
 
@@ -146,6 +149,7 @@ public class SpaceLibrary(
     /** Forgets the space [spaceId] (left, removed, ended): the library keeps everything it holds. */
     public suspend fun leave(spaceId: String): Unit = mutex.withLock {
         sessions.remove(spaceId) ?: return@withLock
+        unexplained.remove(spaceId)
         spaces.removeSpace(spaceId)
     }
 
@@ -177,6 +181,12 @@ public class SpaceLibrary(
         spaces.putFolder(id, name, null)
         return id
     }
+
+    /**
+     * The items of [spaceId] kept before who brought an item followed its arrivals, whose log did
+     * not explain it: they keep who brought them as it was kept (see `docs/plans/brought-by.md`).
+     */
+    public suspend fun unexplainedItems(spaceId: String): Set<String> = mutex.withLock { unexplained[spaceId].orEmpty() }
 
     /** What the space [spaceId] holds, as the library shows it. */
     public suspend fun view(spaceId: String): List<CatalogEntry> = mutex.withLock { sessions[spaceId]?.session?.catalog?.view().orEmpty() }
@@ -228,7 +238,11 @@ public class SpaceLibrary(
     }
 
     private suspend fun open(stored: StoredSpace): Space {
-        val items = spaces.catalogItems(stored.id)
+        // A catalog of before: who brought each item recomputed from the log, and kept so
+        val completed = CatalogMigration.complete(spaces.catalogItems(stored.id)) { spaces.catalogOperationsAfter(stored.id, emptyMap()) }
+        if (completed.changed.isNotEmpty()) spaces.saveCatalogItems(stored.id, completed.changed)
+        unexplained[stored.id] = completed.unexplained
+        val items = completed.items
         val vector = spaces.catalogVersionVector(stored.id)
         val session = CatalogSession(stored.id, SpaceCatalog(items), replica, vector, wallClock)
         session.isReadOnly = stored.readOnly

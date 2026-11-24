@@ -160,9 +160,12 @@ needed, and would change what it does to the place.
 * Every device has the whole log of the spaces it is in, so every device recomputes the same.
   Items rewritten by re-additions in the past get back the device that brought them, on every
   device at once.
-* The key-value store: `StoredSpaceValue` goes to format 2 after the items are completed. A value
-  of format 1 is completed the same way when read.
-* Room: no schema change. `catalog_items` keeps each item as JSON, and the new fields are in it.
+* An item of before is told by its fields, not by a number of format: a presence with neither
+  arrivals nor a removal. Every item written since has one of them. So both stores are completed
+  the same way, with no format number to raise.
+  * The key-value store: `StoredSpaceValue` keeps format 1, the items in it gaining two fields.
+  * Room: no schema change. `catalog_items` keeps each item as JSON, and the new fields are in it
+    (not written when empty, as the other defaults).
 
 ### What is left: taking an item out and adding it again
 
@@ -211,9 +214,69 @@ further, for the maintainer to choose:
 | Phase | Content | Status |
 |---|---|---|
 | 0. This plan | Written, the decisions below for the maintainer | done (to approve) |
-| 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; `StoredSpaceValue` format 2; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | to do |
+| 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | done (the copy of the maintainer's database: to do, by the maintainer) |
 | 2. The owner preferred (if chosen) | `onSnapshot` waiting for the owner while it is connected and lists the document. Tests: Eve and Ada both connected, Ada's snapshot taken; Ada away, Bob's taken | to do |
 | 3. The giver confirmed (if chosen) | `ConfirmGiver` admitted from the owner only, the piece `giver`, `mayGive` by it, the owner confirming on receipt; `ProtocolFormatTest`; with the protocol change of shared-access if both are taken. Tests: a confirmation from an editor refused; once confirmed, a removal and re-addition by Eve leaving her no giver; random `ConfirmGiver` bytes to the decoder; the sync modules on the iOS simulator | to do |
+
+### Phase 1 results
+
+* `CatalogItem` (`pageboard-store`) gains `removed` (the latest removal) and `arrivals` (the stamps
+  of the additions after it, in their order). `broughtBy` is the replica of the first arrival
+  while the item is in the space, written with every change of the presence
+  (`CatalogItem.withBringer`).
+* `add` keeps the stamp of an addition after the latest removal, and changes the presence as
+  before. `RemoveFromSpace` keeps the latest removal and drops the arrivals up to it, even when a
+  later addition keeps the item in the space. An addition that changes only the arrivals has no
+  inverse (nothing the library shows changed).
+* Within one operation the first change of the presence of an item counts, for the arrivals as for
+  the presence: an addition after a removal of the same stamp is no arrival, and a removal after
+  an arrival of the same stamp is no removal.
+* `CatalogMigration` completes the items of before when `SpaceLibrary` opens a space. It replays
+  the additions and removals of the whole log, and checks that the replayed presence is the stored
+  one.
+  * Completed items are kept with `SpaceStore.saveCatalogItems` (new: the items without an
+    operation, in both stores).
+  * An item the log does not explain keeps who brought it as it was kept, with its presence as its
+    only arrival. It is told by `SpaceLibrary.unexplainedItems` at the start that completes it.
+* Tests:
+  * `SpaceCatalogTest.anItemAddedAgainKeepsWhoBroughtIt`: Eve adding Ada's document again, Ada
+    still brought it; taken out and added again by Eve, Eve did.
+  * `whoBroughtAnItemIsTheSameInEveryOrder`: seven operations in all 5 040 orders give the same
+    items. They are the example of the design, an operation adding then removing, and one removing
+    then adding.
+  * `anItemOfBeforeIsCompletedFromTheLog`: an item as a build of before wrote it (JSON), completed
+    from its log, kept as it was without it, the log not read when nothing is of before.
+  * `devicesConvergeOnRandomChangesAndOrders` now also adds documents again, and adds and removes
+    the same item in one operation, in either order. It passed on 40 seeds in the build, and was
+    checked on 5 000 seeds of 400 steps.
+  * `checkCatalogOfBefore` (`pageboard-store-testing`), on both stores
+    (`KeyValueDocumentStoreTest`, `PageboardDatabaseTest`): a catalog of before opened by a
+    `SpaceLibrary`. The document Eve added again goes back to Bob, an item taken out is completed
+    as out, and an item whose addition is not in the log is kept and told. All of it is kept,
+    read again by a new store, and not completed again at the next start.
+  * `SpaceSharingTest`: Bob adding again the notes Ada brought may not give them, and Ada still
+    may.
+  * Each check has a test failing without it (checked by changing it): `broughtBy` from the
+    latest arrival fails three tests. A removal counting after an addition of its own operation
+    fails the test of every order.
+* The ABI of `pageboard-store`, `pageboard-store-testing` and `pageboard-store-room` is recorded
+  again. Meant: the constructor and `copy` of `CatalogItem` take the two fields, and `SpaceStore`
+  gains `saveCatalogItems`. The rest are additions.
+* An engine-level test of the silent re-addition needs an application of its own (an honest
+  `SpaceLibrary` adds an item already in the space only while it is hidden): it is covered by the
+  catalog and sharing tests. The engine is tested in phase 3, with the visible way round.
+* `CatalogsOfACopyCheck` (`pageboard-store-room`, never run by `jvmTest`) opens a copy of a
+  database and completes its catalogs as a `SpaceLibrary` does, with an empty library beside them
+  so that nothing else changes. It prints, for each space, the items of before, the ones whose
+  `broughtBy` changes (from whom to whom), and the ones the log does not explain. It refuses a path
+  in the data directories of the applications.
+
+  ```bash
+  ./gradlew :pageboard-store-room:jvmTest --tests '*CatalogsOfACopyCheck*' -Ppageboard.catalogCopy=<copy of the database file>
+  ```
+
+* Still to do, by the maintainer: that check on a copy of the PencilNotes database (`CLAUDE.md`:
+  `~/.pencilnotes` is not touched while verifying). It was run here without a copy only.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh`, since
 `pageboard-store` is published) and the tests of the sync modules on the iOS simulator. One commit
@@ -221,21 +284,28 @@ per phase on `feat/brought-by`, the status updated with it.
 
 ## Decisions
 
-### For the maintainer
+### Taken by the maintainer (2026-11-24)
 
-1. **How far: phase 1 only, phases 1 and 2, or 1 and 3 (proposed: 1 now, 3 with the protocol
-   change of [shared-access.md](shared-access.md)).**
+* Every phase, implemented at once, the open decisions taken by me.
+* The devices on builds of before need not be supported: the applications are not in production,
+  and the maintainer updates every device. So phase 3 does not wait for the protocol change of
+  [shared-access.md](shared-access.md).
+
+### Taken by me, on the maintainer's word (revertible)
+
+1. **Phases 1, 2 and 3.**
    * Phase 1 stops the silent takeover, the one nobody sees.
-   * Phase 2 costs no protocol change, but leaves the times the owner is away.
-   * Phase 3 closes the way round once the owner has confirmed. It is a protocol change, and it
-     is cheapest bundled with the next version.
-2. **`PROTOCOL_VERSION` stays 2 for phases 1 and 2 (proposed).** Nothing that travels changes, and
-   the devices on two builds sync. Phase 3 goes with the version of shared-access.
-3. **The past rewritten by recomputation (proposed),** or the stored `broughtBy` kept as it is.
+   * Phase 2 costs no protocol change, and covers the window before a confirmation reaches a
+     device.
+   * Phase 3 closes the way round once the owner has confirmed.
+2. **`PROTOCOL_VERSION` 3 with phase 3.** `ConfirmGiver` travels, so the format changes. A device
+   still on 2 is told so (`otherVersionMet`) rather than failing on a change it does not know.
+   The ALPN of iroh follows (`pageboard/sync/3`). Phases 1 and 2 change nothing that travels.
+3. **The past rewritten by recomputation.**
    * Recomputing gives every item back the device that really brought it, the same on every
      device, since every device has the whole log.
    * Keeping it would leave a takeover made before this change in place.
-   * Either way the maintainer sees, on the copy of their database, how many items change.
+   * The maintainer sees, on the copy of their database, how many items change.
 
 ### Taken by me (revertible)
 

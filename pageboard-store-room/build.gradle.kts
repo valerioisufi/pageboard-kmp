@@ -40,3 +40,15 @@ dependencies {
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }
+
+// Who brought the items of the shared folders of a copy of a database (docs/plans/brought-by.md),
+// never run by jvmTest:
+//   ./gradlew :pageboard-store-room:jvmTest --tests '*CatalogsOfACopyCheck*' -Ppageboard.catalogCopy=<copy of the database file>
+val catalogCopy = providers.gradleProperty("pageboard.catalogCopy")
+tasks.withType<Test>().configureEach {
+    if (catalogCopy.isPresent) {
+        systemProperty("pageboard.catalogCopy", catalogCopy.get())
+        testLogging { showStandardStreams = true }
+        outputs.upToDateWhen { false }
+    }
+}

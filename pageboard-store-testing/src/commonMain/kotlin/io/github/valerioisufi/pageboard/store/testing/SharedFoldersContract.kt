@@ -9,6 +9,7 @@ import io.github.valerioisufi.pageboard.store.space.AddFolder
 import io.github.valerioisufi.pageboard.store.space.CatalogItem
 import io.github.valerioisufi.pageboard.store.space.CatalogItemKind
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
+import io.github.valerioisufi.pageboard.store.space.RemoveFromSpace
 import io.github.valerioisufi.pageboard.store.space.RenameFolder
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.space.SpaceStore
@@ -97,6 +98,58 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     assertTrue(store.folders.first().none { it.isShared }, "shared no more")
     assertNotNull(store.documents.first().singleOrNull { it.id == document.id })
     assertEquals(emptyList(), reopened().spaces())
+}
+
+/**
+ * A catalog kept before who brought an item followed its arrivals (see `docs/plans/brought-by.md`),
+ * opened by a [SpaceLibrary]: who brought each item recomputed from the log and kept so, an item a
+ * member added again given back to the one who brought it, an item the log does not explain kept as
+ * it was and told. [reopened]: the same storage, a new store. Run on an empty store.
+ */
+public suspend fun <S> checkCatalogOfBefore(store: S, scope: CoroutineScope, reopened: suspend () -> S) where S : DocumentStore, S : SpaceStore {
+    assertTrue(store.createFolder("Course", null))
+    val course = store.folders.first().single()
+    store.saveSpace(StoredSpace("space", course.id))
+    val bob = Stamp(1, 0, "bob")
+    val eve = Stamp(3, 0, "eve")
+    // As a build of before kept them: the presence of the latest addition, its replica as the one
+    // who brought it (Eve adding again the document Bob brought)
+    store.saveCatalogChange("space", listOf(CatalogItem("d", CatalogItemKind.DOCUMENT, true, "bob", bob, placed = bob)), CatalogOperation(OperationId("bob", 1), bob, AddDocument("d", null)))
+    store.saveCatalogChange("space", listOf(CatalogItem("d", CatalogItemKind.DOCUMENT, true, "eve", eve, placed = eve)), CatalogOperation(OperationId("eve", 1), eve, AddDocument("d", null)))
+    // Taken out by Bob, its addition and its removal both in the log
+    val added = Stamp(4, 0, "bob")
+    val removed = Stamp(5, 0, "bob")
+    store.saveCatalogChange("space", listOf(CatalogItem("g", CatalogItemKind.DOCUMENT, true, "bob", added, placed = added)), CatalogOperation(OperationId("bob", 2), added, AddDocument("g", null)))
+    store.saveCatalogChange("space", listOf(CatalogItem("g", presence = removed, placed = added)), CatalogOperation(OperationId("bob", 3), removed, RemoveFromSpace("g")))
+    // An item whose addition is not in the log
+    val zed = Stamp(6, 0, "zed")
+    store.saveCatalogItems("space", listOf(CatalogItem("x", CatalogItemKind.DOCUMENT, true, "zed", zed, placed = zed)))
+    store.saveCatalogItems("missing", listOf(CatalogItem("x", CatalogItemKind.DOCUMENT, true, "zed", zed, placed = zed)))
+    assertEquals(emptyList(), store.catalogItems("missing"), "nothing kept for a space not kept")
+
+    val library = SpaceLibrary(store, store, scope)
+    library.start()
+    library.stop()
+    val view = library.view("space").associateBy { it.id }
+    assertEquals("bob", view.getValue("d").broughtBy, "Eve adding it again did not bring it")
+    assertEquals("zed", view.getValue("x").broughtBy, "kept as it was")
+    assertNull(view["g"], "out of the space")
+    assertEquals(setOf("x"), library.unexplainedItems("space"))
+
+    // Kept completed: read again as such, nothing more to complete
+    for (kept in listOf(store, reopened())) {
+        val items = kept.catalogItems("space").associateBy { it.id }
+        assertEquals(listOf(bob, eve), items.getValue("d").arrivals)
+        assertEquals("bob", items.getValue("d").broughtBy)
+        assertEquals(removed, items.getValue("g").removed)
+        assertEquals(emptyList(), items.getValue("g").arrivals)
+        assertEquals(listOf(zed), items.getValue("x").arrivals)
+    }
+    val again = SpaceLibrary(store, store, scope)
+    again.start()
+    again.stop()
+    assertEquals(emptySet(), again.unexplainedItems("space"), "completed once")
+    assertEquals("bob", again.view("space").single { it.id == "d" }.broughtBy)
 }
 
 /**

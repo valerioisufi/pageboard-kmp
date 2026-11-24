@@ -15,6 +15,7 @@ import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.store.testing.checkCatalogOfBefore
 import io.github.valerioisufi.pageboard.store.testing.checkFolderOperations
 import io.github.valerioisufi.pageboard.store.testing.checkInk
 import io.github.valerioisufi.pageboard.store.testing.checkOutline
@@ -297,6 +298,12 @@ class KeyValueDocumentStoreTest {
     fun theSpacesAreKept() = runTest {
         val storage = InMemoryKeyValueStorage()
         checkSpaceStore(KeyValueDocumentStore(storage, scope = backgroundScope)) { KeyValueDocumentStore(storage, scope = backgroundScope) }
+    }
+
+    @Test
+    fun aCatalogOfBeforeIsCompletedFromItsLog() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        checkCatalogOfBefore(KeyValueDocumentStore(storage, scope = backgroundScope), backgroundScope) { KeyValueDocumentStore(storage, scope = backgroundScope) }
     }
 
     @Test

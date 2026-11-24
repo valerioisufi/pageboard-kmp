@@ -39,6 +39,7 @@ import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.room.db.*
 import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
 import io.github.valerioisufi.pageboard.store.room.repository.FileRepository
+import io.github.valerioisufi.pageboard.store.testing.checkCatalogOfBefore
 import io.github.valerioisufi.pageboard.store.testing.checkFolderOperations
 import io.github.valerioisufi.pageboard.store.testing.checkOperationProofs
 import io.github.valerioisufi.pageboard.store.testing.checkSharedFolders
@@ -481,6 +482,11 @@ class PageboardDatabaseTest {
     @Test
     fun theSpacesAreKept() = runTest {
         checkSpaceStore(RoomDocumentStore(database, InkStrokeModeller)) { RoomDocumentStore(database, InkStrokeModeller) }
+    }
+
+    @Test
+    fun aCatalogOfBeforeIsCompletedFromItsLog() = runTest {
+        checkCatalogOfBefore(RoomDocumentStore(database, InkStrokeModeller), backgroundScope) { RoomDocumentStore(database, InkStrokeModeller) }
     }
 
     @Test

@@ -186,6 +186,7 @@ public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore 
 	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun restore (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCatalogItems (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCatalogProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCustomElement (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/CustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveImage (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/ImageElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -476,11 +477,13 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogEntry {
 
 public final class io/github/valerioisufi/pageboard/store/space/CatalogItem {
 	public static final field Companion Lio/github/valerioisufi/pageboard/store/space/CatalogItem$Companion;
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Z
 	public final fun component11 ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun component12 ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun component13 ()Ljava/util/List;
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;
 	public final fun component3 ()Z
 	public final fun component4 ()Ljava/lang/String;
@@ -489,9 +492,10 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogItem {
 	public final fun component7 ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Lio/github/valerioisufi/pageboard/model/Stamp;
-	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogItem;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/util/List;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/store/space/CatalogItem;Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogItemKind;ZLjava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/Stamp;ZLio/github/valerioisufi/pageboard/model/Stamp;Lio/github/valerioisufi/pageboard/model/Stamp;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/store/space/CatalogItem;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getArrivals ()Ljava/util/List;
 	public final fun getBroughtBy ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getInSpace ()Z
@@ -501,6 +505,7 @@ public final class io/github/valerioisufi/pageboard/store/space/CatalogItem {
 	public final fun getParent ()Ljava/lang/String;
 	public final fun getPlaced ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getPresence ()Lio/github/valerioisufi/pageboard/model/Stamp;
+	public final fun getRemoved ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public final fun getTrashed ()Z
 	public final fun getTrashedVersion ()Lio/github/valerioisufi/pageboard/model/Stamp;
 	public fun hashCode ()I
@@ -789,6 +794,7 @@ public final class io/github/valerioisufi/pageboard/store/space/SpaceLibrary {
 	public final fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop ()V
+	public final fun unexplainedItems (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun update (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun view (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -817,6 +823,7 @@ public abstract interface class io/github/valerioisufi/pageboard/store/space/Spa
 	public abstract fun putTrashed (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun removeSpace (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun saveCatalogChange (Ljava/lang/String;Ljava/util/Collection;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveCatalogItems (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun saveCatalogProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun saveSpace (Lio/github/valerioisufi/pageboard/store/space/StoredSpace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun spaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

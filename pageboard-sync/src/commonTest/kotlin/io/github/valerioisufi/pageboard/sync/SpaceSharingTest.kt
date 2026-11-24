@@ -131,11 +131,19 @@ class SpaceSharingTest {
         assertFalse(ada.sharing.mayGive(space.id, notes.id, bob.device), "brought by Ada")
         assertFalse(ada.sharing.mayGive(space.id, "bobs", carl.publicKey))
 
-        // Bob made reader: his changes after the first one refused, the documents read only
-        assertNotNull(ada.sharing.spaces.setRole(space.id, bob.device, Role.READER, lastSequence = 1))
+        // Bob adding again the notes Ada brought, while they are in the space: Ada still brought
+        // them, and Bob may not give them (see docs/plans/brought-by.md)
+        val again = CatalogOperation(OperationId(bobReplica, 2), Stamp(currentTimeMillis() + 1, 0, bobReplica), AddDocument(notes.id, null))
+        ada.library.receive(space.id, listOf(again))
+        assertFalse(ada.sharing.mayGive(space.id, notes.id, bob.device), "added again by Bob, brought by Ada")
+        assertTrue(ada.sharing.mayGive(space.id, notes.id, ada.device))
+        assertTrue(ada.sharing.mayGive(space.id, "bobs", bob.device))
+
+        // Bob made reader: his changes after the second one refused, the documents read only
+        assertNotNull(ada.sharing.spaces.setRole(space.id, bob.device, Role.READER, lastSequence = 2))
         ada.sharing.follow(space.id)
-        val second = change.copy(id = OperationId(bobReplica, 2))
-        assertFalse(ada.sharing.admitsChange(space.id, second, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 2, content)))
+        val second = change.copy(id = OperationId(bobReplica, 3))
+        assertFalse(ada.sharing.admitsChange(space.id, second, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 3, content)))
         assertTrue(ada.sharing.admitsChange(space.id, change, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 1, content)))
         assertEquals(Role.READER, ada.documents.membershipOf(notes.id)?.memberOf(bob.device)?.role)
 

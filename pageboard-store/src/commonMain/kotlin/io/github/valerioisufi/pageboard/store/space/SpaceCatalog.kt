@@ -11,8 +11,12 @@ public enum class CatalogItemKind { FOLDER, DOCUMENT }
  * An item of a shared folder (a space, see `docs/plans/shared-folders.md`) with every piece of it and
  * the stamp of its last change (last-writer-wins, as the pieces of a document):
  *
- * * its presence in the space ([inSpace], [kind], [broughtBy]: the replica that added it, the one
- *   the others take a document from), changed by [AddFolder], [AddDocument] and [RemoveFromSpace];
+ * * its presence in the space ([inSpace], [kind]), changed by [AddFolder], [AddDocument] and
+ *   [RemoveFromSpace];
+ * * who brought it into the space ([broughtBy], the device the others take a document from): the
+ *   replica of the first of the additions after its latest removal ([removed], [arrivals]). An
+ *   addition while the item is in the space (a member adding it again) does not change it, so a
+ *   member cannot make itself the one a document is taken from (see `docs/plans/brought-by.md`);
  * * its [name] (a folder: the title of a document stays in the document), changed by
  *   [RenameFolder] and [AddFolder];
  * * its [parent] (a folder of the space, `null` for the root of the space), changed by [MoveItem]
@@ -21,7 +25,13 @@ public enum class CatalogItemKind { FOLDER, DOCUMENT }
  *
  * An item a change names before its addition arrives (the changes of two devices travel apart)
  * is kept with the pieces it changed: [kind] is `null` until it is added, and it is not shown. An
- * item out of the space has no [kind] nor [broughtBy] either: the presence is one piece.
+ * item out of the space has no [kind] nor [broughtBy] either.
+ *
+ * Who brought an item is a function of the additions and removals, whatever the order they arrive
+ * in: the latest removal is the greatest of their stamps, and the item keeps every addition after
+ * it (another removal arriving later may fall between them). Within one operation (a
+ * [CompositeCatalogChange], every change with the same stamp), the first change of the presence
+ * of an item counts, as for the other pieces.
  */
 @Serializable
 public data class CatalogItem(
@@ -35,8 +45,22 @@ public data class CatalogItem(
     val parent: String? = null,
     val placed: Stamp = Stamp.ZERO,
     val trashed: Boolean = false,
-    val trashedVersion: Stamp = Stamp.ZERO
-)
+    val trashedVersion: Stamp = Stamp.ZERO,
+    /** The latest removal of the item from the space ([Stamp.ZERO]: never removed). */
+    val removed: Stamp = Stamp.ZERO,
+    /** The stamps of the additions after [removed], in their order: the first one brought the item. */
+    val arrivals: List<Stamp> = emptyList()
+) {
+    /**
+     * An item kept before who brought it followed its arrivals: a presence without arrivals nor
+     * removal (every item changed since has one of them). It is completed from the log (see
+     * [CatalogMigration]).
+     */
+    internal val isOfBefore: Boolean get() = presence != Stamp.ZERO && removed == Stamp.ZERO && arrivals.isEmpty()
+
+    /** This item with [broughtBy] as its [arrivals] say. */
+    internal fun withBringer(): CatalogItem = copy(broughtBy = if (inSpace) arrivals.firstOrNull()?.replica.orEmpty() else "")
+}
 
 /**
  * An item as the library shows it: in the space, its [parent] as the tree of the space puts it
