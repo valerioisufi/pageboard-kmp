@@ -163,9 +163,9 @@ class SpaceSharingTest {
 
         // The sharing of a document of the space is the space's to change
         assertNull(ada.documents.admit(notes.id, carl.publicKey, "carl", "Carl", Role.EDITOR))
-        assertFalse(ada.documents.adoptKey(notes.id, 2, DocumentKey.generate().encode()))
+        assertFalse(ada.documents.adoptKey(notes.id, space.id, 2, DocumentKey.generate().encode()))
         val ownMembership = Membership(notes.id, owner = ada.device, version = 99).signedBy(ada.identity)
-        assertNull(ada.documents.adopt(notes.id, ownMembership), "a membership of the document, not of its space")
+        assertNull(ada.documents.adopt(notes.id, space.id, ownMembership), "a membership of the document, not of its space")
 
         // Bob removed: a new key for the space, so for every document
         val removed = assertNotNull(ada.sharing.spaces.remove(space.id, bob.device, lastSequence = 1))
@@ -176,7 +176,7 @@ class SpaceSharingTest {
         assertNull(ada.documents.membershipOf(notes.id)?.memberOf(bob.device))
 
         // The newer membership of the space, given on a document of it: taken
-        assertNotNull(bob.documents.adopt(notes.id, removed.membership!!))
+        assertNotNull(bob.documents.adopt(notes.id, space.id, removed.membership!!))
 
         // The notes moved out of the course: shared no more, kept
         assertTrue(ada.store.moveDocument(notes.id, null))

@@ -128,17 +128,18 @@ public class IrohSync(
      */
     private suspend fun connect(missingOnly: Boolean) {
         val me = engine.device
-        val keys = engine.connectionKeys()
         val connected = engine.peers.value.mapTo(HashSet()) { it.documentId to it.device }
         val connectedDocuments = engine.peers.value.mapTo(HashSet()) { it.documentId }
-        // Of the documents and of the shared folders (their connections are made as the documents')
-        val memberships = engine.memberships.value + engine.spaceMemberships.value
         val addresses = engine.addresses.value
         val owners = mutex.withLock { owners.toMap() }
-        for (documentId in keys.map { it.first }.distinct()) {
-            // The current key of the document first (an older one is for a device still on it)
-            val key = keys.first { it.first == documentId }.second
-            val membership = memberships[documentId]
+        // Of the documents and of the shared folders (their connections are made as the documents'),
+        // by access: the members of each one with its key (a document through a shared folder and
+        // through its own sharing reaches the members of both)
+        for (access in engine.connectionAccesses()) {
+            val documentId = access.documentId
+            // The current key first (an older one is for a device still on it)
+            val key = access.keys.firstOrNull() ?: continue
+            val membership = access.membership
             if (membership == null) {
                 // Joining: through the owner only
                 val owner = owners[documentId] ?: continue

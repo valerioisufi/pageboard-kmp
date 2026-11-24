@@ -694,7 +694,7 @@ From then on the grants let the protocol grow:
 |---|---|---|
 | 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications; brought up to `main` after the fix of who gives a document (protocol 3) (2026-11-24) | done (approved with the proposed choices, 2026-11-24) |
 | 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | done |
-| 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | to do |
+| 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | done |
 | 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | to do |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | to do |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | to do |
@@ -739,6 +739,69 @@ From then on the grants let the protocol grow:
 * The ABI of `pageboard-store`, `pageboard-store-testing` and `pageboard-sync` is recorded again:
   the constructors of `CatalogItem` and `SharingState` take the new fields (meant), the rest
   additions.
+
+### Phase 2 results
+
+* `DocumentSharing` keeps a `DocumentAccess` per document, and every change is of one access
+  (`via`: the shared folder, `null` for the document's own sharing):
+  * `stateOf(documentId, via)`, `membershipOf(documentId, via)`, `adopt`, `adoptKey` (refused for
+    an access through a folder: its keys come from the folder), `forget(documentId, via)` and
+    `recordVersions` work on one access;
+  * the owner's changes (`share`, `invite`, `admit`, `setRole`, `remove`, `end`), joining and
+    being admitted work on the document's own sharing. Sharing a document of a space on its own
+    gives it an own access beside the folder's: it no longer finds the folder's sharing and stops
+    there;
+  * `follow` writes the access through the folder next to the document's own sharing, rather
+    than skipping a document shared on its own;
+  * the memberships of every access are checked once, when they change. `unionOf`,
+    `allMemberships` and `through(spaceId)` read them. `memberships` keeps one per document (its
+    own sharing, else its innermost folder) for the interface;
+  * the read only of a document is written as the union, from the memberships checked.
+* `TagMatch.via`: `match` and `reachable` give the keys of every access, each with the access it
+  is of. A joining is of the own sharing, offered while that one has no membership, even when the
+  document is already in a shared folder.
+* `UnionMembership`: `knows`, `deviceOf` (the device every membership naming the replica agrees
+  on, none when they disagree), `disagreesOn`, `mayWrite` (some access allows it), `members` (each
+  device once, with its highest role).
+* `SyncEngine`:
+  * a connection is about one access (`Link.via`). It is authorized by the membership of that
+    access only, and its hello, membership, key updates, departure and admission are of that
+    access;
+  * a key update is given on to the connections of the same access only. A membership changed is
+    given to the connections of its access, closing the ones of devices no longer members of it.
+    This device removed from one access forgets that access only;
+  * the operations are checked by the union. The ones of a replica the accesses disagree on wait
+    with the ones of a replica not known, and at most `MAX_DEFERRED` (20 000) wait on a connection;
+  * a document is given by the owner of its own sharing, or as any shared folder it is in allows
+    (`mayGive`). The owner of any of its folders is preferred while connected and naming it
+    (`ownerGivesInstead`), and each owner confirms its giver once the document arrives;
+  * the log is compacted once the members of every access have the operations, what each one
+    said being read across the accesses;
+  * a connection through a folder is the one closed once idle and not wanted. The keys of a
+    document's own sharing are always given to the transports, and the ones through a folder only
+    while wanted;
+  * `connectionAccesses()` (public, new) gives the keys, the members and the announced tag of
+    each access. `announcedTagOf(documentId, key)` gives the folder's tag for a key through it.
+* `LanSync` picks, for each document, the key of the first access the other device announces (its
+  own tag, or its folder's). `IrohSync` connects to the members of each access with that access's
+  key.
+* Tests (`SharedAccessTest`, two devices in both accesses through their engines; the library
+  keeps the documents shared on their own in the folder, as phase 4 makes it):
+  * the notes synced through their own sharing alone, then through the folder alone;
+  * Bob removed from the folder: the notes still shared with him on their own and synced, and none
+    of his keys is the new one of the folder. A device speaking as Bob with the key of the folder
+    of before gets no key update from Ada, and Ada does not work with it. Without the
+    authorization per access, that check fails (checked by authorizing by the union);
+  * Bob removed from the notes: still synced through the folder, his changes taken as an editor
+    of it;
+  * the own sharing ended by Ada: the folder goes on, on both devices;
+  * the notes moved out of the folder: their own sharing goes on, Bob keeps them.
+* Every test of the sync modules passes as before (the engine, the shared folders, the local
+  network, iroh), on the JVM and on the iOS simulator.
+* The ABI of `pageboard-sync` is recorded again: additions only (`ConnectionAccess`,
+  `connectionAccesses`, `announcedTagOf` by key).
+* Until phase 3, a device in one access only cannot check the operations of a member of the
+  other one: they wait, as the operations of a replica not known do.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS

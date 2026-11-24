@@ -189,9 +189,9 @@ public class LanSync(
      * this device is the one to connect first.
      */
     private suspend fun connect(missingOnly: Boolean) {
-        val keys = engine.connectionKeys()
-        // A document of a shared folder is found by the tag of its folder (its own is not announced)
-        val announcedBy = keys.map { it.first }.distinct().associateWith { engine.announcedTagOf(it)?.take(TAG_LENGTH) }
+        // By access: a document through a shared folder is found by the tag of its folder (it is not
+        // announced itself), through its own sharing by its own tag
+        val accesses = engine.connectionAccesses()
         val peers = engine.peers.value
         val (found, invited) = mutex.withLock {
             // Forgotten a while after they are gone (and not connected)
@@ -205,10 +205,13 @@ public class LanSync(
         for (service in found) {
             if (service.attributes["v"] != PROTOCOL.toString()) continue
             val tags = service.attributes.filterKeys { it.startsWith("t") }.values.flatMap { it.split(',') }.toSet()
-            // The current key of a document first: an older one for a device still on it
-            for (documentId in keys.map { it.first }.distinct()) {
-                val viaSpace = announcedBy[documentId]?.let { it in tags } == true
-                val key = keys.firstOrNull { it.first == documentId && (viaSpace || it.second.tag.take(TAG_LENGTH) in tags) }?.second ?: continue
+            // The current key of a document first: an older one for a device still on it; of the
+            // accesses of a document, the first one the device announces
+            for (documentId in accesses.map { it.documentId }.distinct()) {
+                val key = accesses.filter { it.documentId == documentId }.firstNotNullOfOrNull { access ->
+                    val viaSpace = access.announcedTag?.take(TAG_LENGTH)?.let { it in tags } == true
+                    access.keys.firstOrNull { viaSpace || it.tag.take(TAG_LENGTH) in tags }
+                } ?: continue
                 sharing += service.name
                 // One connection between two devices: the other one makes it first
                 if (!missingOnly && deviceId > service.name) continue
@@ -219,7 +222,7 @@ public class LanSync(
         // The devices of the invitations, while nobody shares the document with this one
         val joinedAt = mutableSetOf<String>()
         for ((documentId, address) in invited) {
-            val key = keys.firstOrNull { it.first == documentId }?.second ?: continue
+            val key = accesses.firstOrNull { it.documentId == documentId }?.keys?.firstOrNull() ?: continue
             if (peers.none { it.documentId == documentId }) {
                 joinedAt += address
                 open(address, address, documentId, key)

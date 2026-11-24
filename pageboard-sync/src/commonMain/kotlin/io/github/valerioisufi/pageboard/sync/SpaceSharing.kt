@@ -19,8 +19,8 @@ import io.github.valerioisufi.pageboard.store.space.StoredSpace
  * * each space has a key with its epochs, an owner, a membership signed by the owner
  *   ([MembershipKind.SPACE]) and invitations, kept with the space ([StoredSpace.sharing]) and
  *   decided as for a document ([spaces]: a [DocumentSharing] of spaces);
- * * each document of a space gets its sharing from the space ([follow]): its keys derived from the
- *   ones of the space ([io.github.valerioisufi.pageboard.sync.protocol.DocumentKey.forDocument]),
+ * * each document of a space gets an access through the space ([follow], beside its own sharing
+ *   if it has one, see `docs/plans/shared-access.md`): its keys derived from the ones of the space ([io.github.valerioisufi.pageboard.sync.protocol.DocumentKey.forDocument]),
  *   the owner and the membership of the space, so that the engine works on it as on a document
  *   shared on its own, and a member admitted, made reader or removed is so for every document;
  * * a change of the catalog is taken signed by the device of its replica ([admitsChange]), a
@@ -70,8 +70,9 @@ internal class SpaceSharing(
             val state = documentState(spaceId, documentId) ?: break
             documents.follow(documentId, state)
         }
-        for ((documentId, state) in documents.all()) {
-            if (state.space == spaceId && documentId !in inSpace) documents.forget(documentId)
+        // The documents that left the space: reached through it no more (their other accesses kept)
+        for (documentId in documents.through(spaceId).keys) {
+            if (documentId !in inSpace) documents.forget(documentId, spaceId)
         }
         if (view.any { it.kind == CatalogItemKind.DOCUMENT && it.giver.isEmpty() }) confirmGivers(spaceId)
     }
@@ -87,9 +88,7 @@ internal class SpaceSharing(
 
     /** This device leaves [spaceId] (left, removed, the sharing ended): neither the space nor its documents are shared anymore. */
     suspend fun forget(spaceId: String) {
-        for ((documentId, state) in documents.all()) {
-            if (state.space == spaceId) documents.forget(documentId)
-        }
+        for (documentId in documents.through(spaceId).keys) documents.forget(documentId, spaceId)
         spaces.forget(spaceId)
     }
 

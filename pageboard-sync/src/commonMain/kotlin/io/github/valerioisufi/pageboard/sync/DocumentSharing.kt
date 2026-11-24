@@ -23,8 +23,14 @@ internal sealed interface TagMatch {
     val documentId: String
     val key: DocumentKey
 
-    /** A key of the document (of any epoch): between members. */
-    data class Member(override val documentId: String, override val key: DocumentKey) : TagMatch
+    /**
+     * The access of the document the connection is about (see [DocumentAccess]): the shared folder
+     * it goes through, `null` for the document's own sharing (or the own sharing of a shared folder).
+     */
+    val via: String? get() = null
+
+    /** A key of the document (of any epoch) through [via]: between members of that access. */
+    data class Member(override val documentId: String, override val key: DocumentKey, override val via: String? = null) : TagMatch
 
     /** An invitation of this device, the owner: a device joining. */
     data class Grant(override val documentId: String, override val key: DocumentKey, val grant: InvitationGrant) : TagMatch
@@ -38,6 +44,11 @@ internal sealed interface TagMatch {
  * them): their keys, owners, memberships and invitations, kept by [shared]. The decisions of the
  * owner (admitting a device, its role, removing it, ending the sharing) are written and signed
  * here with [identity]; the memberships received are accepted only when signed by the owner.
+ *
+ * A document may be reached several ways ([DocumentAccess], see `docs/plans/shared-access.md`):
+ * its own sharing and the shared folders it is in. Each change is of one access ([via]: the shared
+ * folder, `null` for its own sharing), the others left as they are; what they give together (the
+ * role of a device, who may write an operation) is their union ([unionOf]).
  */
 internal class DocumentSharing(
     private val shared: SharedDocuments,
@@ -46,12 +57,18 @@ internal class DocumentSharing(
     private val kind: MembershipKind = MembershipKind.DOCUMENT
 ) {
     private val mutex = Mutex()
-    private var cache: MutableMap<String, SharingState>? = null
+    private var cache: MutableMap<String, DocumentAccess>? = null
     private val joiningInvitations = mutableMapOf<String, Invitation>()
+
+    /** The memberships of every access of each document (under [mutex]), each signature checked once, when it changes. */
+    private val opened = mutableMapOf<String, Map<String?, Membership>>()
 
     private val membershipsState = MutableStateFlow<Map<String, Membership>>(emptyMap())
 
-    /** The memberships of the shared documents, by document. */
+    /**
+     * The memberships of the shared documents, by document: of its own sharing, else of its
+     * innermost shared folder (every one: [unionOf], [allMemberships]).
+     */
     val memberships: StateFlow<Map<String, Membership>> = membershipsState.asStateFlow()
 
     private val changedFlow = MutableSharedFlow<String>(extraBufferCapacity = 64)
@@ -61,43 +78,98 @@ internal class DocumentSharing(
 
     val device: String get() = identity.publicKey
 
-    private suspend fun states(): MutableMap<String, SharingState> =
-        cache ?: shared.all().toMutableMap().also {
-            cache = it
-            publish(it)
+    private suspend fun accesses(): MutableMap<String, DocumentAccess> =
+        cache ?: shared.all().mapValuesTo(mutableMapOf()) { DocumentAccess.decode(it.value) }.also { all ->
+            cache = all
+            for ((documentId, access) in all) open(documentId, access)
+            membershipsState.value = opened.mapNotNull { (id, memberships) -> memberships.values.firstOrNull()?.let { id to it } }.toMap()
         }
 
-    suspend fun stateOf(documentId: String): SharingState? = mutex.withLock { states()[documentId] }
+    /** The memberships of the accesses of [documentId] checked (each one is a signature to check). */
+    private fun open(documentId: String, access: DocumentAccess?) {
+        val memberships = access?.all?.mapNotNull { state -> state.members?.let { state.space to it } }?.toMap().orEmpty()
+        if (memberships.isEmpty()) opened.remove(documentId) else opened[documentId] = memberships
+    }
 
-    suspend fun all(): Map<String, SharingState> = mutex.withLock { states().toMap() }
+    /** Every access of [documentId], `null` when it is not shared. */
+    suspend fun accessOf(documentId: String): DocumentAccess? = mutex.withLock { accesses()[documentId] }
 
-    /** The membership of [documentId] (signed by its owner), its signature checked once (see [memberships]). */
+    /** The access of [documentId] through [via] (`null`: its own sharing). */
+    suspend fun stateOf(documentId: String, via: String?): SharingState? = mutex.withLock { accesses()[documentId]?.of(via) }
+
+    /** The first access of [documentId]: its own sharing, else its innermost shared folder (the only one of a shared folder's own sharing). */
+    suspend fun stateOf(documentId: String): SharingState? = mutex.withLock { accesses()[documentId]?.all?.firstOrNull() }
+
+    /** Every document shared, with its accesses. */
+    suspend fun allAccesses(): Map<String, DocumentAccess> = mutex.withLock { accesses().toMap() }
+
+    /** The first access of every document shared (see [stateOf]). */
+    suspend fun all(): Map<String, SharingState> = mutex.withLock { accesses().mapNotNull { (id, access) -> access.all.firstOrNull()?.let { id to it } }.toMap() }
+
+    /** The accesses through the shared folder [spaceId], by document. */
+    suspend fun through(spaceId: String): Map<String, SharingState> =
+        mutex.withLock { accesses().mapNotNull { (id, access) -> access.of(spaceId)?.let { id to it } }.toMap() }
+
+    /** The membership of the access of [documentId] through [via] (signed by its owner), its signature checked once. */
+    suspend fun membershipOf(documentId: String, via: String?): Membership? = mutex.withLock {
+        accesses()
+        opened[documentId]?.get(via)
+    }
+
+    /** The membership of the first access of [documentId] (see [memberships]). */
     suspend fun membershipOf(documentId: String): Membership? = mutex.withLock {
-        states()
+        accesses()
         membershipsState.value[documentId]
     }
 
-    /** Changes the sharing of [documentId] by [transform] (`null`: not shared anymore); the new one. */
-    private suspend fun update(documentId: String, transform: (SharingState?) -> SharingState?): SharingState? = mutex.withLock {
-        val states = states()
-        val updated = transform(states[documentId])
-        // The membership of this document only checked again (each one is a signature to check)
-        val members = updated?.members
-        membershipsState.value = if (members == null) membershipsState.value - documentId else membershipsState.value + (documentId to members)
-        if (updated == null) {
-            states.remove(documentId)
+    /** What the memberships of every access of [documentId] allow together, `null` when it has none. */
+    suspend fun unionOf(documentId: String): UnionMembership? = mutex.withLock {
+        accesses()
+        opened[documentId]?.values?.toList()?.let(::UnionMembership)
+    }
+
+    /** The membership of every access of every document. */
+    suspend fun allMemberships(): List<Membership> = mutex.withLock {
+        accesses()
+        opened.values.flatMap { it.values }
+    }
+
+    /**
+     * Changes the access of [documentId] through [via] by [transform] (`null`: that access no
+     * more); the new one. The document is shared no more once it has no access left.
+     */
+    private suspend fun update(documentId: String, via: String?, transform: (SharingState?) -> SharingState?): SharingState? = mutex.withLock {
+        val accesses = accesses()
+        val before = accesses[documentId] ?: DocumentAccess()
+        val updated = transform(before.of(via))?.let { if (it.space == via) it else it.copy(space = via) }
+        val access = if (updated == null) before.without(via) else before.with(updated)
+        // The memberships of this document only checked again
+        open(documentId, access)
+        val memberships = opened[documentId]
+        val first = memberships?.values?.firstOrNull()
+        membershipsState.value = if (first == null) membershipsState.value - documentId else membershipsState.value + (documentId to first)
+        val kept = access.encode()
+        if (kept == null) {
+            accesses.remove(documentId)
             shared.remove(documentId)
         } else {
-            states[documentId] = updated
-            // Read only when no access lets this device write (see DocumentAccess)
-            val readOnly = if (updated.through.isEmpty()) members?.memberOf(device)?.role == Role.READER else DocumentAccess.decode(updated).isReadOnly(device)
-            shared.save(documentId, updated, readOnly = readOnly)
+            accesses[documentId] = access
+            // Read only when no access lets this device write
+            val role = memberships?.values?.mapNotNull { it.memberOf(device)?.role }?.minByOrNull { it.ordinal }
+            shared.save(documentId, kept, readOnly = role == Role.READER)
         }
         updated
     }.also { changedFlow.tryEmit(documentId) }
 
-    private fun publish(states: Map<String, SharingState>) {
-        membershipsState.value = states.mapNotNull { (id, state) -> state.members?.let { id to it } }.toMap()
+    /** Saves every access of [documentId] again (e.g. the document received: kept with it). */
+    suspend fun saveAgain(documentId: String) {
+        mutex.withLock {
+            val access = accesses()[documentId] ?: return
+            val kept = access.encode() ?: return
+            val role = opened[documentId]?.values?.mapNotNull { it.memberOf(device)?.role }?.minByOrNull { it.ordinal }
+            shared.save(documentId, kept, readOnly = role == Role.READER)
+        }
+        changedFlow.tryEmit(documentId)
     }
 
     // ==========================================================
@@ -105,7 +177,7 @@ internal class DocumentSharing(
     // ==========================================================
 
     /** Shares [documentId] (this device becomes its owner), unless it is shared already. */
-    suspend fun share(documentId: String, replica: String, name: String): SharingState = update(documentId) { state ->
+    suspend fun share(documentId: String, replica: String, name: String): SharingState = update(documentId, null) { state ->
         if (state?.members != null) return@update state
         val key = DocumentKey.generate()
         val membership = Membership(documentId, owner = device, members = listOf(Member(device, replica, name, Role.OWNER)), keyHash = key.hash, kind = kind)
@@ -119,13 +191,13 @@ internal class DocumentSharing(
     /** A new invitation to [documentId] (this device is its owner): devices joining as [role], approved first when [approval]. */
     suspend fun invite(documentId: String, role: Role, approval: Boolean): InvitationGrant? {
         val grant = InvitationGrant(newId(), DocumentKey.generate().encode(), role, approval, currentTimeMillis())
-        val state = update(documentId) { state -> if (state?.owner != device) state else state.copy(invitations = state.invitations + grant) }
+        val state = update(documentId, null) { state -> if (state?.owner != device) state else state.copy(invitations = state.invitations + grant) }
         return grant.takeIf { state?.invitations?.contains(grant) == true }
     }
 
     /** Revokes the invitation [grantId]: nobody joins with it anymore. */
     suspend fun revoke(documentId: String, grantId: String) {
-        update(documentId) { state -> state?.copy(invitations = state.invitations.filter { it.id != grantId }) }
+        update(documentId, null) { state -> state?.copy(invitations = state.invitations.filter { it.id != grantId }) }
     }
 
     /** Admits the device [newDevice] (of [replica], named [name]) as [role]: the membership signed again. */
@@ -169,10 +241,10 @@ internal class DocumentSharing(
     /** Ends the sharing of [documentId] for every device (each one keeps its copy). */
     suspend fun end(documentId: String): SharingState? = ownerChange(documentId) { it.copy(ended = true) }
 
-    /** A change of the membership by its owner, signed: [newKey] for the new epoch it makes. */
+    /** A change of the membership of the own sharing of [documentId] by its owner, signed: [newKey] for the new epoch it makes. */
     private suspend fun ownerChange(documentId: String, newKey: String? = null, transform: (Membership) -> Membership?): SharingState? {
         var changed = false
-        val state = update(documentId) { state ->
+        val state = update(documentId, null) { state ->
             // The membership of a document of a shared folder is the folder's: changed there only
             val membership = state?.members?.takeIf { state.owner == device && state.space == null } ?: return@update state
             val changedMembership = transform(membership)?.copy(version = membership.version + 1) ?: return@update state
@@ -190,10 +262,10 @@ internal class DocumentSharing(
     // Received
     // ==========================================================
 
-    /** Keeps [signed] if it is more recent and signed by the owner: the new membership, otherwise `null`. */
-    suspend fun adopt(documentId: String, signed: SignedMembership): Membership? {
+    /** Keeps [signed] for the access through [via] if it is more recent and signed by its owner: the new membership, otherwise `null`. */
+    suspend fun adopt(documentId: String, via: String?, signed: SignedMembership): Membership? {
         var adopted: Membership? = null
-        update(documentId) { state ->
+        update(documentId, via) { state ->
             val membership = signed.open(state?.owner ?: return@update state) ?: return@update state
             if (!isOf(membership, documentId, state) || membership.version <= (state.members?.version ?: 0)) return@update state
             adopted = membership
@@ -203,14 +275,15 @@ internal class DocumentSharing(
     }
 
     /**
-     * Keeps the key of [epoch] (given by a member: up to the epoch of the membership); when the
-     * membership names its key ([Membership.keyHash]), that one only.
+     * Keeps the key of [epoch] of the own sharing of [documentId] (given by a member: up to the
+     * epoch of the membership); when the membership names its key ([Membership.keyHash]), that one
+     * only. The keys of an access through a shared folder come from the folder.
      */
-    suspend fun adoptKey(documentId: String, epoch: Int, key: String): Boolean {
+    suspend fun adoptKey(documentId: String, via: String?, epoch: Int, key: String): Boolean {
+        if (via != null) return false
         var adopted = false
-        update(documentId) { state ->
+        update(documentId, null) { state ->
             val decoded = DocumentKey.decode(key)
-            // The keys of a document of a shared folder come from the folder
             if (state == null || state.space != null || decoded == null || state.keys.any { it.epoch == epoch }) return@update state
             val members = state.members
             if (epoch > (members?.epoch ?: 0)) return@update state
@@ -221,39 +294,33 @@ internal class DocumentSharing(
         return adopted
     }
 
-    /** Joins [invitation]: the owner admits this device when it reaches it. */
+    /** Joins [invitation] (the own sharing of its document): the owner admits this device when it reaches it. */
     suspend fun startJoining(invitation: Invitation) {
         mutex.withLock { joiningInvitations[invitation.documentId] = invitation }
-        update(invitation.documentId) { state -> if (state?.members != null) state else SharingState(joining = invitation.toLink()) }
+        update(invitation.documentId, null) { state -> if (state?.members != null) state else SharingState(joining = invitation.toLink()) }
     }
 
-    /** The owner [owner] admitted this device to [documentId]: its key and the membership. */
+    /** The owner [owner] admitted this device to the own sharing of [documentId]: its key and the membership. */
     suspend fun admitted(documentId: String, owner: String, epoch: Int, key: String, signed: SignedMembership): Membership? {
         val membership = signed.open(owner)?.takeIf { it.documentId == documentId && it.kind == kind && it.memberOf(device) != null } ?: return null
         if (DocumentKey.decode(key) == null) return null
         mutex.withLock { joiningInvitations.remove(documentId) }
-        update(documentId) { SharingState(keys = listOf(EpochKey(epoch, key)), owner = owner, membership = signed) }
+        update(documentId, null) { SharingState(keys = listOf(EpochKey(epoch, key)), owner = owner, membership = signed) }
         return membership
     }
 
     /**
-     * Keeps [state] for [documentId], a document of the shared folder [SharingState.space] (its keys,
-     * owner and membership the folder's), with what this device knows of its members' operations
-     * ([SharingState.versions]) kept; `null` when the document is shared on its own (its sharing is
-     * not the folder's to change).
+     * Keeps [state] as the access of [documentId] through the shared folder [SharingState.space]
+     * (its keys, owner and membership the folder's), with what this device knows of its members'
+     * operations ([SharingState.versions]) kept; the document's other accesses as they are.
      */
     suspend fun follow(documentId: String, state: SharingState): SharingState? {
+        val via = state.space ?: return null
         // The same already (most of the time): nothing written
-        stateOf(documentId)?.let { previous ->
+        stateOf(documentId, via)?.let { previous ->
             if (previous == state.copy(versions = previous.versions)) return previous
         }
-        var followed = false
-        update(documentId) { previous ->
-            if (previous != null && previous.space == null && previous.members != null) return@update previous
-            followed = true
-            state.copy(versions = previous?.versions.orEmpty())
-        }
-        return if (followed) stateOf(documentId) else null
+        return update(documentId, via) { previous -> state.copy(versions = previous?.versions.orEmpty(), through = emptyList()) }
     }
 
     /** Whether [membership] is the one of [documentId]: its own, or the one of its shared folder. */
@@ -262,20 +329,27 @@ internal class DocumentSharing(
         else -> membership.documentId == space && membership.kind == MembershipKind.SPACE
     }
 
-    /** Saves the sharing of [documentId] again (e.g. the document received: kept with it). */
-    suspend fun saveAgain(documentId: String) {
-        update(documentId) { it }
+    /** This device does not reach [documentId] through [via] anymore (it left, was removed, the sharing ended, the document left the folder). */
+    suspend fun forget(documentId: String, via: String?) {
+        if (via == null) mutex.withLock { joiningInvitations.remove(documentId) }
+        update(documentId, via) { null }
     }
 
-    /** This device does not share [documentId] anymore (it left, was removed, the sharing ended). */
+    /** This device does not share [documentId] anymore, through any access. */
     suspend fun forget(documentId: String) {
-        mutex.withLock { joiningInvitations.remove(documentId) }
-        update(documentId) { null }
+        val access = accessOf(documentId) ?: run {
+            mutex.withLock { joiningInvitations.remove(documentId) }
+            return
+        }
+        for (state in access.all) forget(documentId, state.space)
     }
 
-    /** Remembers the operations the members have ([versions], by device): the log is compacted with them. */
-    suspend fun recordVersions(documentId: String, versions: Map<String, Map<String, Long>>) {
-        update(documentId) { state ->
+    /**
+     * Remembers the operations the members of the access through [via] have ([versions], by
+     * device): the log is compacted with them.
+     */
+    suspend fun recordVersions(documentId: String, via: String?, versions: Map<String, Map<String, Long>>) {
+        update(documentId, via) { state ->
             val members = state?.members ?: return@update state
             val known = state.versions.toMutableMap()
             var changed = false
@@ -299,32 +373,43 @@ internal class DocumentSharing(
 
     /** What the connection of tag [tag] is about, `null` when it is about nothing this device has. */
     suspend fun match(tag: String): TagMatch? = mutex.withLock {
-        for ((documentId, state) in states()) {
-            if (state.closed) continue
-            state.keys.mapNotNull { it.documentKey }.firstOrNull { it.tag == tag }?.let { return TagMatch.Member(documentId, it) }
-            for (grant in state.invitations) {
-                val key = DocumentKey.decode(grant.key) ?: continue
-                if (key.tag == tag) return TagMatch.Grant(documentId, key, grant)
+        for ((documentId, access) in accesses()) {
+            for (state in access.all) {
+                if (state.closed) continue
+                state.keys.mapNotNull { it.documentKey }.firstOrNull { it.tag == tag }?.let { return TagMatch.Member(documentId, it, state.space) }
+                if (state.space != null) continue
+                for (grant in state.invitations) {
+                    val key = DocumentKey.decode(grant.key) ?: continue
+                    if (key.tag == tag) return TagMatch.Grant(documentId, key, grant)
+                }
             }
-            val joining = joiningInvitations[documentId] ?: state.joining?.let(Invitation::parse)
-            joining?.takeIf { documentId !in membershipsState.value && it.key.tag == tag }?.let { return TagMatch.Joining(documentId, it.key, it) }
+            joiningOf(documentId, access)?.takeIf { it.key.tag == tag }?.let { return TagMatch.Joining(documentId, it.key, it) }
         }
         null
     }
 
+    /** The invitation this device joins the own sharing of [documentId] with, while it is not admitted. */
+    private fun joiningOf(documentId: String, access: DocumentAccess): Invitation? {
+        val own = access.own
+        if (own?.members != null) return null
+        return joiningInvitations[documentId] ?: own?.joining?.let(Invitation::parse)
+    }
+
     /**
-     * What this device can connect with: the keys of the documents (the current one first) and the
-     * invitations it joins with; [announced] also the invitations it gives (the owner).
+     * What this device can connect with: the keys of every access of the documents (the current one
+     * first) and the invitations it joins with; [announced] also the invitations it gives (the
+     * owner).
      */
     suspend fun reachable(announced: Boolean): List<TagMatch> = mutex.withLock {
-        val states = states()
+        val accesses = accesses()
         buildList {
-            for ((documentId, state) in states) {
-                if (state.closed) continue
-                state.keys.sortedByDescending { it.epoch }.mapNotNull { it.documentKey }.forEach { add(TagMatch.Member(documentId, it)) }
-                if (announced) state.invitations.forEach { grant -> DocumentKey.decode(grant.key)?.let { add(TagMatch.Grant(documentId, it, grant)) } }
-                val joining = joiningInvitations[documentId] ?: state.joining?.let(Invitation::parse)
-                if (joining != null && documentId !in membershipsState.value) add(TagMatch.Joining(documentId, joining.key, joining))
+            for ((documentId, access) in accesses) {
+                for (state in access.all) {
+                    if (state.closed) continue
+                    state.keys.sortedByDescending { it.epoch }.mapNotNull { it.documentKey }.forEach { add(TagMatch.Member(documentId, it, state.space)) }
+                    if (announced && state.space == null) state.invitations.forEach { grant -> DocumentKey.decode(grant.key)?.let { add(TagMatch.Grant(documentId, it, grant)) } }
+                }
+                joiningOf(documentId, access)?.let { add(TagMatch.Joining(documentId, it.key, it)) }
             }
         }
     }

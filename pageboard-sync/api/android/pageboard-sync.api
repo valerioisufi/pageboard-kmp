@@ -3,6 +3,13 @@ public abstract interface class io/github/valerioisufi/pageboard/sync/AddressBoo
 	public abstract fun save (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/pageboard/sync/ConnectionAccess {
+	public final fun getAnnouncedTag ()Ljava/lang/String;
+	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun getKeys ()Ljava/util/List;
+	public final fun getMembership ()Lio/github/valerioisufi/pageboard/sync/protocol/Membership;
+}
+
 public final class io/github/valerioisufi/pageboard/sync/EpochKey {
 	public static final field Companion Lio/github/valerioisufi/pageboard/sync/EpochKey$Companion;
 	public fun <init> (ILjava/lang/String;)V
@@ -319,10 +326,12 @@ public final class io/github/valerioisufi/pageboard/sync/SyncEngine {
 	public fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/sync/ResourceFiles;JLio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/pageboard/sync/AddressBook;Lio/github/valerioisufi/pageboard/store/space/SpaceLibrary;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/OpenDocuments;Lio/github/valerioisufi/pageboard/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/pageboard/sync/ResourceFiles;JLio/github/valerioisufi/pageboard/model/DocumentAttachments;Lio/github/valerioisufi/pageboard/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/pageboard/sync/AddressBook;Lio/github/valerioisufi/pageboard/store/space/SpaceLibrary;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun accept (Lio/github/valerioisufi/pageboard/sync/protocol/SyncChannel;)Lkotlinx/coroutines/Job;
+	public final fun announcedTagOf (Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/DocumentKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun announcedTagOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun announcedTags (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun answer (Lio/github/valerioisufi/pageboard/sync/JoinRequest;Z)V
 	public final fun connect (Lio/github/valerioisufi/pageboard/sync/protocol/SyncChannel;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/DocumentKey;)Lkotlinx/coroutines/Job;
+	public final fun connectionAccesses (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun connectionKeys (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun followSpaces (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getAddresses ()Lkotlinx/coroutines/flow/StateFlow;
