@@ -11,6 +11,7 @@ import io.github.valerioisufi.pageboard.store.space.CatalogItemKind
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.RemoveFromSpace
 import io.github.valerioisufi.pageboard.store.space.RenameFolder
+import io.github.valerioisufi.pageboard.store.space.SharedAs
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.space.SpaceStore
 import io.github.valerioisufi.pageboard.store.space.StoredSpace
@@ -45,7 +46,9 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     val ofAda = CatalogOperation(OperationId("ada", 1), Stamp(2, 0, "ada"), AddDocument("d", "f"))
     store.saveCatalogChange("space", listOf(item), first)
     store.saveCatalogChange("space", listOf(item.copy(name = "Week one", named = Stamp(3, 0, "bob"))), second)
-    store.saveCatalogChange("space", listOf(CatalogItem("d", CatalogItemKind.DOCUMENT, true, "ada", Stamp(2, 0, "ada"), parent = "f", placed = Stamp(2, 0, "ada"))), ofAda)
+    // The document names a sharing of its own besides the space (see docs/plans/shared-access.md)
+    val ofAdaItem = CatalogItem("d", CatalogItemKind.DOCUMENT, true, "ada", Stamp(2, 0, "ada"), parent = "f", placed = Stamp(2, 0, "ada"), sharedAs = SharedAs("d", "ada"), sharedAsVersion = Stamp(2, 0, "ada"))
+    store.saveCatalogChange("space", listOf(ofAdaItem), ofAda)
     // Logged once: an operation kept already changes nothing
     store.saveCatalogChange("space", listOf(item.copy(name = "Other")), first)
     store.saveCatalogChange("missing", listOf(item), first)
@@ -58,6 +61,7 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
         assertEquals(listOf(second), store.catalogOperationsAfter("space", mapOf("bob" to 1L, "ada" to 1L)))
         assertEquals("Week one", store.catalogItems("space").single { it.id == "f" }.name)
         assertEquals("f", store.catalogItems("space").single { it.id == "d" }.parent)
+        assertEquals(SharedAs("d", "ada"), store.catalogItems("space").single { it.id == "d" }.sharedAs)
         assertContentEquals(byteArrayOf(1, 2, 3), store.catalogProofs("space", listOf(OperationId("ada", 1), OperationId("bob", 1)))[OperationId("ada", 1)])
         assertEquals(1, store.catalogProofs("space", listOf(OperationId("ada", 1), OperationId("bob", 1))).size)
         assertEquals(emptyList(), store.catalogItems("missing"))
@@ -87,6 +91,15 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     store.saveSpace(space.copy(sharing = "other", readOnly = true))
     assertEquals(listOf(space.copy(sharing = "other", readOnly = true)), store.spaces())
     assertEquals(mapOf("bob" to 2L, "ada" to 1L), store.catalogVersionVector("space"), "the log stays")
+
+    // A space inside another one (a folder of it shared on its own): kept beside it, forgotten alone
+    val inner = StoredSpace("inner", "f", sharing = "inner secret")
+    store.saveSpace(inner)
+    assertEquals(setOf("space", "inner"), reopened().spaces().map { it.id }.toSet())
+    assertTrue(store.folders.first().single { it.id == "f" }.isShared)
+    store.removeSpace("inner")
+    assertEquals(listOf(space.copy(sharing = "other", readOnly = true)), store.spaces())
+    assertEquals(mapOf("bob" to 2L, "ada" to 1L), store.catalogVersionVector("space"), "the outer space as it was")
 
     // Forgotten: its catalog, log and proofs, never the library
     store.removeSpace("space")

@@ -89,7 +89,9 @@ internal class DocumentSharing(
             shared.remove(documentId)
         } else {
             states[documentId] = updated
-            shared.save(documentId, updated, readOnly = members?.memberOf(device)?.role == Role.READER)
+            // Read only when no access lets this device write (see DocumentAccess)
+            val readOnly = if (updated.through.isEmpty()) members?.memberOf(device)?.role == Role.READER else DocumentAccess.decode(updated).isReadOnly(device)
+            shared.save(documentId, updated, readOnly = readOnly)
         }
         updated
     }.also { changedFlow.tryEmit(documentId) }

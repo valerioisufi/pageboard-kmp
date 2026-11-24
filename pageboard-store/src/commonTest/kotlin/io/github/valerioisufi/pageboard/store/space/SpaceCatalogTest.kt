@@ -180,6 +180,7 @@ class SpaceCatalogTest {
         val text = """{"id":"d","kind":"DOCUMENT","inSpace":true,"broughtBy":"e","presence":"000000000003.00000000.e","placed":"000000000003.00000000.e"}"""
         val stored = Json.decodeFromString(CatalogItem.serializer(), text)
         assertTrue(stored.isOfBefore)
+        assertNull(stored.sharedAs, "no sharing of its own named")
         val log = listOf(
             CatalogOperation(OperationId("a", 1), Stamp(1, 0, "a"), AddDocument("d", null)),
             CatalogOperation(OperationId("e", 1), Stamp(3, 0, "e"), AddDocument("d", null))
@@ -262,6 +263,10 @@ class SpaceCatalogTest {
         assertEquals(operation, Json.decodeFromString(CatalogOperation.serializer(), text))
         val item = a.catalog["f"]!!
         assertEquals(item, Json.decodeFromString(CatalogItem.serializer(), Json.encodeToString(CatalogItem.serializer(), item)))
+        // A sharing of its own named: kept; not written when there is none
+        val named = item.copy(sharedAs = SharedAs("inner", "ada"), sharedAsVersion = Stamp(9, 0, "ada"))
+        assertEquals(named, Json.decodeFromString(CatalogItem.serializer(), Json.encodeToString(CatalogItem.serializer(), named)))
+        assertFalse("sharedAs" in Json.encodeToString(CatalogItem.serializer(), item))
     }
 
     /**

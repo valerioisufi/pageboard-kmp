@@ -50,7 +50,16 @@ public data class SharingState(
     // Not written for a document shared on its own: its state stays as it was
     @OptIn(ExperimentalSerializationApi::class)
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val space: String? = null
+    val space: String? = null,
+    /**
+     * The other accesses of the document, when it has several (see [DocumentAccess] and
+     * `docs/plans/shared-access.md`): this state is the first one (its own sharing, else its
+     * innermost shared folder), the others are here. Not written when empty: a state of a
+     * document with one access stays as it was, and a build of before reads the first access.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val through: List<SharingState> = emptyList()
 ) {
     /** The current key. */
     val key: DocumentKey? get() = keys.maxByOrNull { it.epoch }?.documentKey

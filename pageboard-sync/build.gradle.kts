@@ -39,3 +39,15 @@ kotlin {
         languageSettings.optIn("io.github.valerioisufi.pageboard.sync.protocol.ExperimentalSyncApi")
     }
 }
+
+// The sharing states of a copy of a database read as accesses (docs/plans/shared-access.md),
+// never run by jvmTest:
+//   ./gradlew :pageboard-sync:jvmTest --tests '*SharingOfACopyCheck*' -Ppageboard.sharingCopy=<file of document<TAB>secret lines>
+val sharingCopy = providers.gradleProperty("pageboard.sharingCopy")
+tasks.withType<Test>().configureEach {
+    if (sharingCopy.isPresent) {
+        systemProperty("pageboard.sharingCopy", sharingCopy.get())
+        testLogging { showStandardStreams = true }
+        outputs.upToDateWhen { false }
+    }
+}

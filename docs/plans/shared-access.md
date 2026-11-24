@@ -692,8 +692,8 @@ From then on the grants let the protocol grow:
 
 | Phase | Content | Status |
 |---|---|---|
-| 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications; brought up to `main` after the fix of who gives a document (protocol 3) (2026-11-24) | done (to approve) |
-| 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | to do |
+| 0. This plan | Written, the decisions below for the maintainer; folders inside shared folders included, grants chosen by the owner, the modules as a library for other applications; brought up to `main` after the fix of who gives a document (protocol 3) (2026-11-24) | done (approved with the proposed choices, 2026-11-24) |
+| 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | done |
 | 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | to do |
 | 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | to do |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | to do |
@@ -701,6 +701,44 @@ From then on the grants let the protocol grow:
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | to do |
 | 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | to do |
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
+
+### Phase 1 results
+
+* `SharingState.through` (`pageboard-sync`): the other accesses of a document, not written when
+  empty. A state with one access is written byte for byte as before.
+* `DocumentAccess` (internal): its own sharing and the sharing of each shared folder it is in,
+  kept whole.
+  * `of`, `with` and `without` work on one access.
+  * `roleOf` gives the highest role among the accesses, and `isReadOnly` holds when no access
+    lets the device write.
+  * `encode` writes its own sharing first (else its innermost folder), the others in its
+    `through`. `decode` reads a state of before as one access, and keeps one access per sharing.
+* `DocumentSharing` writes the read only of a document as the union of its accesses (the same as
+  before for a document with one access).
+* `CatalogItem.sharedAs` (`SharedAs`: the sharing of its own and its owner) and its stamp
+  `sharedAsVersion` (`pageboard-store`), not written when missing. `latestStamp` counts it. They
+  are written by `ShareItem` in phase 3.
+* Tests:
+  * `DocumentAccessTest` (`pageboard-sync`): the three states written by the build of before
+    (fixtures recorded from `main`: a document shared on its own, one of a shared folder, a
+    sharing closed) read as one access each, and written again byte for byte. Several accesses
+    are kept both ways, replaced by sharing, and removed one at a time. A decoder of before (a
+    copy of `SharingState` as it was) reads the first access of a new value. A reader through
+    its own sharing and an editor through the folder may write. Two accesses are kept by
+    `StoreSharedDocuments` and read again by a new one.
+  * `SpaceCatalogTest`: an item with `sharedAs` read back, not written when missing, and absent
+    from an item of before.
+  * `checkSpaceStore` (both stores): an item naming a sharing of its own kept and read again; a
+    space inside another one kept beside it and forgotten alone.
+  * `SharingOfACopyCheck` (`pageboard-sync`, never run by `jvmTest`): the sharing states of a
+    copy of a database read as accesses, and written again as they were.
+* Checked on the copy of the PencilNotes database of the MacBook (2026-11-24, see
+  [brought-by.md](brought-by.md)): its 40 sharing states read and written again byte for byte.
+  38 are through the shared library and 2 are shared on their own (each with the MacBook as its
+  only member). None has several accesses yet.
+* The ABI of `pageboard-store`, `pageboard-store-testing` and `pageboard-sync` is recorded again:
+  the constructors of `CatalogItem` and `SharingState` take the new fields (meant), the rest
+  additions.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
@@ -715,67 +753,52 @@ simulator. One commit per phase on `feat/shared-access`, the status updated with
 * The sharing modules are published for other applications: their capabilities are not limited to
   what PencilNotes offers, and the rules of PencilNotes are its own defaults and choices.
 
-### For the maintainer
+### Taken by the maintainer, as proposed (2026-11-24)
 
-1. **`PROTOCOL_VERSION`: 4 or stays 3.** Phases 3 and 5 change what travels (`Membership.grants`
-   and `spaces`, `AccessMembership`, `Hello`, `ShareItem`), and what a device takes changes from
-   phase 2. Version 3 is taken by [brought-by.md](brought-by.md) (`ConfirmGiver`).
-   * **4 (proposed),** once for the whole plan: a device on protocol 3 meets a device on 4, is
-     told so by `otherVersionMet`, and the two do not sync until both are updated. The ALPN of
-     iroh becomes `pageboard/sync/4` (it follows the number). `ProtocolFormats` records format 4
-     beside 1 to 3.
-   * **Stays 3:** possible only if every device (the MacBook, the iPhone, the others) is updated
-     together. A device of before then fails the connections where the new messages come.
-   * The maintainer said on 2026-11-24 that devices on builds of before need not be supported (the
-     applications are not in production). So nothing is lost to either choice now; 4 says it to a
-     device not updated.
-   * Once the modules are on Maven Central, other applications' devices are on the network too.
-     Changing the format without changing the number is no longer something the maintainer can
-     settle by updating their own devices.
-2. **The defaults.**
-   * The library: a new sharing has no grants (only the owner), unless the application gives
-     some (proposed).
-   * PencilNotes: "Only me" in the dialog of a new shared folder (proposed), "Editors too" one tap
-     away.
-3. **PencilNotes's one choice or two.** It offers `share-inside` and `bring-shared` together as
-   "Who can share what is inside" (proposed), or as two choices. The library keeps them apart in
-   any case: one gives the space's content to new people, the other brings other people's
-   writing in.
-4. **Items owned by others in PencilNotes's shared library: still kept apart (proposed),** as
-   decided on 2026-11-14, now by PencilNotes's `keptApart` rather than by the library. The library
-   allows them with the consent of both owners (`SpaceRef` or `Placement`, and `bring-shared`).
-   Revisit for PencilNotes?
-5. **Sharing a document of a space on its own without `share-inside`: refused (proposed).** The
+The maintainer approved the plan with every proposed choice ("Implementa, scelte proposte"):
+
+1. **`PROTOCOL_VERSION` 4**, once for the whole plan. A device on protocol 3 meets a device on 4,
+   is told so by `otherVersionMet`, and the two do not sync until both are updated. The ALPN of
+   iroh becomes `pageboard/sync/4`, and `ProtocolFormats` records format 4 beside 1 to 3.
+   Version 3 is the one of [brought-by.md](brought-by.md) (`ConfirmGiver`). Devices on builds of
+   before need not be supported: the applications are not in production. Once the modules are
+   on Maven Central, other applications' devices are on the network too, and a change of format
+   always changes the number.
+2. **The defaults.** In the library, a new sharing has no grants (only the owner) unless the
+   application gives some. In PencilNotes, "Only me" in the dialog of a new shared folder, with
+   "Editors too" one tap away.
+3. **PencilNotes offers one choice,** "Who can share what is inside", for `share-inside` and
+   `bring-shared` together. The library keeps them apart: one gives the space's content to new
+   people, the other brings other people's writing in.
+4. **Items owned by others stay out of PencilNotes's shared library,** as decided on 2026-11-14,
+   now by PencilNotes's `keptApart` rather than by the library. The library allows them with the
+   consent of both owners (`SpaceRef` or `Placement`, and `bring-shared`).
+5. **Sharing a document of a space on its own without `share-inside` is refused.** The
    application may offer to move it out first, as today. The alternative, sharing it and taking
    it out of the space silently, is what happened to the three documents.
-6. **The role: the highest of the accesses (proposed).** An item cannot be limited below what the
-   spaces around it give (Drive's "limited access" folders). Left for later, and it is a
+6. **The role is the highest of the accesses.** An item cannot be limited below what the spaces
+   around it give (Drive's "limited access" folders). That is left for later, and it is a
    restriction, so it needs a new protocol version when it comes (grants only allow).
-7. **Who sees whom.** To check the authors, the members of each access learn the members of the
-   others (names, devices, roles, grants), never their keys nor the catalogs. This is what makes
-   the union work. It is also what Drive shows ("People with access"). Accept, or the dialog of
-   the other side shows only "and 3 through a folder"? The devices still need the full
-   memberships in either case.
-8. **The value of a piece held by nested catalogs: the latest stamp across them (proposed).**
-   The alternative is the innermost space always winning, which is simpler. But then a rename
-   made by a member of the outer space only would be undone by the next device in both.
-9. **An item moved out of an inner folder by one of its members only: it goes to the folder's
-   parent in the outer space (proposed),** as an item leaving a space does today. The alternative
-   is to leave it where it was for the outer space, but then the two spaces disagree on where it
-   is.
-10. **Storage: one value with `through` (proposed) or a table of accesses.**
-    * One value: no Room migration, and a build of before still reads the first access.
-    * A table (schema 26): one row per access, queried directly, with a `MigrationTestHelper`
-      migration.
-11. **A replica named for two devices: its operations wait (proposed),** and the conflict shows
-    in the diagnostics. Closing the connection would let the owner of one access cut a device off
-    from the others.
-12. **`maxNesting`: a parameter of the engine, 8 by default (proposed).** Deeper chains are
-    refused when made here and when read from others. A shared library holding shared folders
-    holding shared folders is 3.
-13. **The grants of applications: signed and carried by the engine, enforced by the application
-    (proposed),** or only the library's capabilities for now. Carrying them costs one field and
-    saves every application a fork of the protocol.
+7. **The members of each access learn the members of the others** (names, devices, roles,
+   grants), never their keys nor the catalogs: what makes the union work, and what Drive shows
+   ("People with access").
+8. **The value of a piece held by nested catalogs is the latest stamp across them.** With the
+   innermost space always winning, a rename made by a member of the outer space only would be
+   undone by the next device in both.
+9. **An item moved out of an inner folder by one of its members only goes to the folder's parent
+   in the outer space,** as an item leaving a space does today, so the two spaces agree on where
+   it is.
+10. **Storage: one value with `through`.** No Room migration, and a build of before still reads
+    the first access.
+11. **A replica named for two devices: its operations wait,** and the conflict shows in the
+    diagnostics. Closing the connection would let the owner of one access cut a device off from
+    the others.
+12. **`maxNesting` is a parameter of the engine, 8 by default.** Deeper chains are refused when
+    made here and when read from others. A shared library holding shared folders holding shared
+    folders is 3.
+13. **The grants of applications are signed and carried by the engine, and enforced by the
+    application.** Carrying them costs one field and saves every application a fork of the
+    protocol.
 
 ### Taken by me (revertible)
 

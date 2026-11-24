@@ -55,7 +55,14 @@ public data class CatalogItem(
     /** The replica the owner of the space confirmed as the one giving the item ("": none yet). */
     val giver: String = "",
     /** The stamp of [giver]. */
-    val confirmed: Stamp = Stamp.ZERO
+    val confirmed: Stamp = Stamp.ZERO,
+    /**
+     * The sharing of its own the item has besides the space (`null`: none), as the space names it
+     * (see [SharedAs] and `docs/plans/shared-access.md`).
+     */
+    val sharedAs: SharedAs? = null,
+    /** The stamp of [sharedAs]. */
+    val sharedAsVersion: Stamp = Stamp.ZERO
 ) {
     /**
      * An item kept before who brought it followed its arrivals: a presence without arrivals nor
@@ -67,6 +74,15 @@ public data class CatalogItem(
     /** This item with [broughtBy] as its [arrivals] say. */
     internal fun withBringer(): CatalogItem = copy(broughtBy = if (inSpace) arrivals.firstOrNull()?.replica.orEmpty() else "")
 }
+
+/**
+ * A sharing of its own an item of a space has besides the space (see `docs/plans/shared-access.md`):
+ * the document's own sharing ([sharing]: the identifier of the document), or, for a folder, the
+ * shared folder inside the space ([sharing]: the identifier of that space), and the device that
+ * owns it ([owner]). The members of the space take that sharing's membership from [owner] only.
+ */
+@Serializable
+public data class SharedAs(val sharing: String, val owner: String)
 
 /**
  * An item as the library shows it: in the space, its [parent] as the tree of the space puts it
@@ -107,7 +123,7 @@ public class SpaceCatalog(items: Collection<CatalogItem> = emptyList()) {
     }
 
     /** The latest stamp of the catalog: a session stamps its next changes after it. */
-    public fun latestStamp(): Stamp = byId.values.maxOfOrNull { maxOf(maxOf(it.presence, it.named, it.placed), maxOf(it.trashedVersion, it.confirmed)) } ?: Stamp.ZERO
+    public fun latestStamp(): Stamp = byId.values.maxOfOrNull { maxOf(maxOf(it.presence, it.named, it.placed), maxOf(it.trashedVersion, it.confirmed, it.sharedAsVersion)) } ?: Stamp.ZERO
 
     /**
      * The items in the space as the library shows them, the same on every device with the same
