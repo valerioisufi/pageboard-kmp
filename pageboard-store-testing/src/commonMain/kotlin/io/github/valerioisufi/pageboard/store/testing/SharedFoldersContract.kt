@@ -192,8 +192,16 @@ public suspend fun <S> checkSharedFolders(ada: S, bob: S, scope: CoroutineScope)
     val both = ada.createDocument("Both", folderId = course)
     ada.setSharingSecret(both.id, "its own too")
     val space = assertNotNull(adaLibrary.share(course))
-    assertNull(adaLibrary.share(week), "a space in a space")
-    assertNull(adaLibrary.share(null), "the library holds a space")
+    assertNull(adaLibrary.share(course), "the same root twice")
+    // A space in a space, and the library holding them (see docs/plans/shared-access.md): left
+    // again, the rest of the check is about the course
+    val inner = assertNotNull(adaLibrary.share(week), "a space in a space")
+    assertEquals(listOf(inner.id, space.id), adaLibrary.spacesOf(notes.id).map { it.id }, "innermost first")
+    val whole = assertNotNull(adaLibrary.share(null), "the library holding them")
+    assertEquals(listOf(inner.id, space.id, whole.id), adaLibrary.spacesOf(notes.id).map { it.id })
+    adaLibrary.leave(whole.id)
+    adaLibrary.leave(inner.id)
+    assertEquals(listOf(space.id), adaLibrary.spacesOf(notes.id).map { it.id })
     assertEquals(setOf(week, notes.id, both.id), adaLibrary.view(space.id).map { it.id }.toSet(), "not the document kept apart")
     // In the space already: a sharing of its own and a rule keeping it apart take it out no more
     ada.setSharingSecret(notes.id, "shared on its own later")

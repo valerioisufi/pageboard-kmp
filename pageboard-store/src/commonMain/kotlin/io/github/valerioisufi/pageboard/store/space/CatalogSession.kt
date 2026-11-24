@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.store.space
 
+import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.HybridClock
 import io.github.valerioisufi.pageboard.model.change.OperationId
 
@@ -56,14 +57,18 @@ public class CatalogSession(
     }
 
     /**
-     * Applies [change], made on this device, and tells the observers.
+     * Applies [change], made on this device, and tells the observers. [at]: the stamp of a change of
+     * another catalog this one takes in (a shared folder inside another one, see `SpaceLibrary`):
+     * its time is kept, with the replica of this device, so that a change made after it in this
+     * catalog still wins over it.
      *
      * @return the operation, to log and send, or `null` when the space is read only here or the
      *   change is not well formed.
      */
-    public fun submit(change: CatalogChange): CommittedCatalogChange? {
+    public fun submit(change: CatalogChange, at: Stamp? = null): CommittedCatalogChange? {
         if (isReadOnly || !change.isWellFormed()) return null
-        val stamp = clock.next()
+        // A change of another catalog taken in (see SpaceLibrary): stamped as it was made there
+        val stamp = at?.let { Stamp(it.time, it.counter, replica) } ?: clock.next()
         val inverse = change.applyTo(catalog, stamp)
         val sequence = (applied[replica] ?: 0L) + 1
         applied[replica] = sequence

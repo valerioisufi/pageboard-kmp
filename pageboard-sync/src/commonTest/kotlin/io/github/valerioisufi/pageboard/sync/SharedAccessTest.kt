@@ -498,6 +498,95 @@ class SharedAccessTest {
         assertEquals(listOf(spaceId), carl.access(notes)?.spaces?.map { it.space })
     }
 
+    /**
+     * The library shared between Ada's two devices, and one of its folders shared with Carl (a
+     * shared folder inside the shared library, see the plan, phase 5): Ada's computer in both,
+     * her phone in the library only, Carl in the folder only.
+     */
+    @Test
+    fun aFolderOfTheSharedLibrarySharedWithAThirdDevice() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val phone = Device("phone", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, phone, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Lab", null))
+        val lab = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Measures", folderId = lab).id
+        val library = assertNotNull(ada.engine.shareSpace(null))
+        val ofLibrary = assertNotNull(ada.engine.invite(library, "Library", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        phone.join(ofLibrary, SpaceRoot.Library)
+        advanceUntilIdle()
+        exchange(ada, phone)
+        assertTrue(phone.store.documents.first().any { it.id == notes })
+
+        // The lab shared with Carl, inside the library: the library names it, it names the library
+        val labSpace = assertNotNull(ada.engine.shareSpace(lab), "a folder of the shared library shared on its own")
+        advanceUntilIdle()
+        assertEquals(SharedAs(labSpace, ada.device), ada.library.view(library).single { it.id == lab }.sharedAs)
+        assertEquals(listOf(SpaceRef(library, ada.device)), ada.engine.spaceMemberships.value[labSpace]?.spaces)
+        val ofLab = assertNotNull(ada.engine.invite(labSpace, "Lab", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        carl.join(ofLab, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        exchange(ada, phone)
+        assertEquals(ada.snapshot(notes), carl.snapshot(notes))
+
+        // Carl's change reaches the phone through Ada, the phone's reaches Carl
+        carl.rename(notes, "From Carl")
+        exchange(ada, carl)
+        exchange(ada, phone)
+        assertEquals("From Carl", phone.snapshot(notes).title)
+        phone.rename(notes, "From the phone")
+        exchange(ada, phone)
+        exchange(ada, carl)
+        assertEquals("From the phone", carl.snapshot(notes).title)
+
+        // A folder Carl makes in the lab reaches the phone, through both catalogs
+        val carlRoot = carl.library.spaces().single().rootFolderId
+        assertTrue(carl.store.createFolder("Week 1", carlRoot))
+        val week = carl.store.folders.first().single { it.name == "Week 1" }.id
+        advanceUntilIdle()
+        exchange(ada, carl)
+        exchange(ada, phone)
+        assertEquals(lab, phone.store.folders.first().singleOrNull { it.id == week }?.parentId, "in the lab on the phone")
+
+        // The phone joins the lab where it is: no new folder
+        val folders = phone.store.folders.first().size
+        val forPhone = assertNotNull(ada.engine.invite(labSpace, "Lab", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        phone.join(forPhone, SpaceRoot.InPlace)
+        advanceUntilIdle()
+        exchange(ada, phone)
+        assertEquals(lab, phone.library.spaces().single { it.id == labSpace }.rootFolderId, "its root where the library has it")
+        assertEquals(folders, phone.store.folders.first().size)
+    }
+
+    /** An editor of a shared folder shares a folder inside it only as the owner allows. */
+    @Test
+    fun aFolderIsSharedInsideAsTheOwnerAllows() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        listOf(ada, bob).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        assertTrue(ada.store.createFolder("Lab", course))
+        val lab = ada.store.folders.first().single { it.name == "Lab" }.id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertNull(bob.engine.shareSpace(lab), "Only the owner of the course decides")
+        ada.engine.setGrants(spaceId, listOf(Grant(Capability.SHARE_INSIDE, Role.EDITOR)))
+        advanceUntilIdle()
+        exchange(ada, bob)
+        val inner = assertNotNull(bob.engine.shareSpace(lab), "the editors may now")
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(SharedAs(inner, bob.device), ada.library.view(spaceId).single { it.id == lab }.sharedAs, "the course names Bob's folder")
+    }
+
     private companion object {
         const val MEMORY = "memory"
     }

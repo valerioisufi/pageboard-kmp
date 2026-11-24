@@ -99,6 +99,13 @@ public sealed interface SpaceRoot {
     public data object Library : SpaceRoot
 
     public data class Folder(val folderId: String) : SpaceRoot
+
+    /**
+     * Where the folder already is, a shared folder inside another one this device is in (see
+     * `docs/plans/shared-access.md`): the folder the other one names as its root; a new folder when
+     * none does.
+     */
+    public data object InPlace : SpaceRoot
 }
 
 /** Where this device is in joining a document with an invitation. */
@@ -621,9 +628,33 @@ public class SyncEngine(
     public suspend fun shareSpace(rootFolderId: String?): String? {
         val library = spaces ?: return null
         val spaceSharing = spaceSharing ?: return null
+        // Inside other shared folders: as each one allows (its owner, or a member it granted)
+        val around = rootFolderId?.let { library.spacesOf(it) }.orEmpty()
+        if (around.any { !spaceSharing.mayShareItem(it.id) }) return null
         val space = library.share(rootFolderId) ?: return null
         spaceSharing.share(space.id, replica(), deviceName())
+        nameSpacesAround(space.id)
         return space.id
+    }
+
+    /**
+     * The shared folder [spaceId] inside other ones: each one names it ([ShareItem] of its root,
+     * when this device may), and it names each one ([SpaceRef], when this device owns it), so that
+     * the members of each take the membership of the other (see `docs/plans/shared-access.md`).
+     */
+    private suspend fun nameSpacesAround(spaceId: String) {
+        val library = spaces ?: return
+        val spaceSharing = spaceSharing ?: return
+        val root = library.spaces().firstOrNull { it.id == spaceId }?.rootFolderId ?: return
+        val owner = spaceSharing.spaces.stateOf(spaceId)?.owner ?: return
+        for (outer in library.spacesOf(root)) {
+            val outerOwner = spaceSharing.spaces.stateOf(outer.id)?.owner ?: continue
+            if (spaceSharing.mayShareItem(outer.id)) library.shareItem(outer.id, root, spaceId, owner)
+            if (owner != device) continue
+            val named = spaceSharing.spaces.membershipOf(spaceId)?.spaces?.firstOrNull { it.space == outer.id }
+            if (named?.owner == outerOwner && named.writesUpTo == null) continue
+            spaceSharing.spaces.nameSpace(spaceId, SpaceRef(outer.id, outerOwner))?.let { onMembershipChanged(spaceId, it, from = null, access = spaceSharing.spaces) }
+        }
     }
 
     /**
@@ -634,6 +665,7 @@ public class SyncEngine(
         val library = spaces ?: return
         val spaceSharing = spaceSharing ?: return
         for (space in library.spaces()) spaceSharing.follow(space.id)
+        for (space in library.spaces()) nameSpacesAround(space.id)
     }
 
     /**
@@ -1437,9 +1469,30 @@ public class SyncEngine(
             }
         }
         if (membership.kind != MembershipKind.SPACE || membership.documentId != via) return false
-        val own = sharing.membershipOf(documentId, null) ?: sharing.learnedOf(documentId, null) ?: return false
-        return own.spaces.any { it.space == via && it.owner == owner } ||
-            placement != null && placement.ref.space == via && placement.ref.owner == owner && placement.isAllowedBy(own)
+        val own = sharing.membershipOf(documentId, null) ?: sharing.learnedOf(documentId, null)
+        if (own != null && (own.spaces.any { it.space == via && it.owner == owner } ||
+                placement != null && placement.ref.space == via && placement.ref.owner == owner && placement.isAllowedBy(own))
+        ) return true
+        // A folder around or inside one the document is reached through here (see docs/plans/shared-access.md)
+        val spaces = spaceSharing?.spaces ?: return false
+        val library = this.spaces ?: return false
+        for (state in access.spaces) {
+            val space = state.space ?: continue
+            // Around it: the folder of this device names it, with its owner
+            if (spaces.membershipOf(space)?.spaces?.any { it.space == via && it.owner == owner } == true) return true
+            // Inside it: the folder of this device names the root of the other as shared by its owner,
+            // above the document, and the other names it
+            if (membership.spaces.none { it.space == space }) continue
+            val view = library.view(space).associateBy { it.id }
+            var current = view[documentId]?.parent
+            var steps = 0
+            while (current != null && steps++ <= view.size) {
+                val folder = view[current] ?: break
+                if (folder.sharedAs == SharedAs(via, owner)) return true
+                current = folder.parent
+            }
+        }
+        return false
     }
 
     /** What the memberships of every access of [documentId] allow together (for the tests). */
@@ -1669,6 +1722,7 @@ public class SyncEngine(
             SpaceRoot.Library -> null
             is SpaceRoot.Folder -> root.folderId
             SpaceRoot.NewFolder -> library.newRootFolder(invitation.title)
+            SpaceRoot.InPlace -> library.namedRootOf(spaceId) ?: library.newRootFolder(invitation.title)
         }
         library.join(spaceId, rootFolder, readOnly)
         // The sharing waiting for the space, kept with it now that it is in the library

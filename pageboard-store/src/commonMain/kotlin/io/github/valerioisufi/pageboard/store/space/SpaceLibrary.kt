@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.store.space
 
+import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.DocumentStore
@@ -37,6 +38,12 @@ import kotlinx.coroutines.sync.withLock
  * Nothing of the library is deleted: an item leaving a shared folder on another device goes, here,
  * to the folder holding the root of the space; an item deleted for good here (not in the library)
  * changes nothing of the space.
+ *
+ * A shared folder may be inside another one (see `docs/plans/shared-access.md`), up to [maxNesting]
+ * spaces around an item: what it holds is in the catalog of each, a change of the library is a
+ * change of each, and a change received in one is written into the library with, for each piece of
+ * an item (name, place, trash), the latest stamp of the catalogs holding it, so that the others
+ * take it in turn and nothing moves back and forth.
  */
 public class SpaceLibrary(
     private val store: DocumentStore,
@@ -44,7 +51,9 @@ public class SpaceLibrary(
     private val scope: CoroutineScope,
     private val wallClock: (() -> Long)? = null,
     private val settleMs: Long = 200L,
-    private val keptApart: suspend (spaceId: String, documentId: String, secret: String) -> Boolean = { _, _, _ -> false }
+    private val keptApart: suspend (spaceId: String, documentId: String, secret: String) -> Boolean = { _, _, _ -> false },
+    /** The most spaces around an item: a space deeper is refused (see `docs/plans/shared-access.md`). */
+    private val maxNesting: Int = MAX_NESTING
 ) {
     private val mutex = Mutex()
     private val sessions = mutableMapOf<String, Space>()
@@ -112,12 +121,12 @@ public class SpaceLibrary(
      * Shares [rootFolderId] (a folder, `null`: the library) as a new space: what it holds becomes
      * the catalog, a change made by this device.
      *
-     * @return the space, or `null` when the folder is in a space already or holds one (a space in
-     *   a space is refused).
+     * @return the space, or `null` when the folder is the root of a space already, or the spaces
+     *   around an item would be more than [maxNesting].
      */
     public suspend fun share(rootFolderId: String?, spaceId: String = newElementId()): StoredSpace? = mutex.withLock {
         if (replica.isEmpty()) replica = store.replicaId()
-        if (overlapsLocked(rootFolderId)) return@withLock null
+        if (refusedLocked(rootFolderId)) return@withLock null
         val stored = StoredSpace(spaceId, rootFolderId)
         spaces.saveSpace(stored)
         val space = open(stored)
@@ -132,7 +141,7 @@ public class SpaceLibrary(
     public suspend fun join(spaceId: String, rootFolderId: String?, readOnly: Boolean = false): StoredSpace? = mutex.withLock {
         if (replica.isEmpty()) replica = store.replicaId()
         sessions[spaceId]?.let { return@withLock it.stored }
-        if (overlapsLocked(rootFolderId)) return@withLock null
+        if (refusedLocked(rootFolderId)) return@withLock null
         val stored = StoredSpace(spaceId, rootFolderId, readOnly = readOnly)
         spaces.saveSpace(stored)
         open(stored)
@@ -281,16 +290,37 @@ public class SpaceLibrary(
         return Space(stored, session).also { sessions[stored.id] = it }
     }
 
-    /** Whether a space with its root at [rootFolderId] would be in another one or hold one. */
-    private suspend fun overlapsLocked(rootFolderId: String?): Boolean {
-        if (sessions.isEmpty()) return false
-        if (rootFolderId == null) return true
+    /**
+     * Whether a space with its root at [rootFolderId] is refused: another one has the same root, or
+     * an item would be in more than [maxNesting] spaces.
+     */
+    private suspend fun refusedLocked(rootFolderId: String?): Boolean {
+        if (sessions.values.any { it.stored.rootFolderId == rootFolderId }) return true
         val parents = libraryParents()
-        for (space in sessions.values) {
-            val other = space.stored.rootFolderId ?: return true
-            if (isUnder(rootFolderId, other, parents) || isUnder(other, rootFolderId, parents)) return true
+        val roots = sessions.values.map { it.stored.rootFolderId } + rootFolderId
+        // The spaces around the root of each one, itself included
+        return roots.any { root -> roots.count { other -> isUnder(root, other, parents) } > maxNesting }
+    }
+
+    /**
+     * The spaces holding the item [itemId] of the library (a folder or a document): the ones whose
+     * root is above it, innermost first; a folder that is the root of a space is held by the ones
+     * around it, not by its own.
+     */
+    public suspend fun spacesOf(itemId: String): List<StoredSpace> = mutex.withLock {
+        val items = libraryItems()
+        val parents = items.filterValues { it.kind == CatalogItemKind.FOLDER }.mapValues { it.value.parent }
+        val parent = items[itemId]?.parent
+        sessions.values.map { it.stored }
+            .filter { isUnder(parent, it.rootFolderId, parents) }
+            .sortedByDescending { space -> sessions.values.count { other -> isUnder(space.rootFolderId, other.stored.rootFolderId, parents) } }
+    }
+
+    /** The folder that is the root of the space [spaceId] inside another space of this library, as that one names it ([ShareItem]); `null` when none does. */
+    public suspend fun namedRootOf(spaceId: String): String? = mutex.withLock {
+        sessions.values.firstNotNullOfOrNull { space ->
+            space.session.catalog.view().firstOrNull { it.kind == CatalogItemKind.FOLDER && it.sharedAs?.sharing == spaceId }?.id
         }
-        return false
     }
 
     /** The items of the catalog [change] names, as they are now (to keep with the operation). */
@@ -350,6 +380,19 @@ public class SpaceLibrary(
         val secrets = store.sharingSecrets()
         val apart = secrets.filter { (id, secret) -> id !in view && keptApart(space.stored.id, id, secret) }.keys
         val changes = mutableListOf<CatalogChange>()
+        // A piece the library has from another space holding the item, newer there: taken in with its stamp
+        val others = sessions.values.filter { it !== space }.map { NestedPieces.Held(it.stored.rootFolderId, it.session.catalog) }
+        val relayed = mutableListOf<Pair<CatalogChange, Stamp>>()
+        fun relay(id: String, piece: (CatalogItem) -> Stamp, holds: (NestedPieces.Held, CatalogEntry) -> Boolean): Stamp? {
+            val mine = catalog[id]?.let(piece) ?: Stamp.ZERO
+            val source = others.mapNotNull { held -> held.view[id]?.takeIf { holds(held, it) }?.let { held.catalog[id]?.let(piece) } }.filter { it > mine }.maxOrNull() ?: return null
+            // With the replica of this device: still after the piece it replaces (or it would change nothing, again and again)
+            val stamp = Stamp(source.time, source.counter, replica)
+            return if (stamp > mine) stamp else Stamp(mine.time, mine.counter + 1, replica)
+        }
+        fun change(change: CatalogChange, at: Stamp?) {
+            if (at == null) changes += change else relayed += change to at
+        }
 
         val inSpace = local.values.filter { item ->
             item.id != root && isUnder(item.parent, root, parents) && !(item.kind == CatalogItemKind.DOCUMENT && item.id in apart)
@@ -362,9 +405,13 @@ public class SpaceLibrary(
                 if (item.trashed != (catalog[item.id]?.trashed ?: false)) changes += if (item.trashed) TrashItem(item.id) else RestoreItem(item.id)
                 continue
             }
-            if (item.kind == CatalogItemKind.FOLDER && entry.name != item.name) changes += RenameFolder(item.id, item.name)
-            if (entry.parent != parent) changes += MoveItem(item.id, parent)
-            if (entry.trashed != item.trashed) changes += if (item.trashed) TrashItem(item.id) else RestoreItem(item.id)
+            if (item.kind == CatalogItemKind.FOLDER && entry.name != item.name) {
+                change(RenameFolder(item.id, item.name), relay(item.id, { it.named }) { _, other -> other.name == item.name })
+            }
+            if (entry.parent != parent) change(MoveItem(item.id, parent), relay(item.id, { it.placed }) { held, other -> (other.parent ?: held.root) == item.parent })
+            if (entry.trashed != item.trashed) {
+                change(if (item.trashed) TrashItem(item.id) else RestoreItem(item.id), relay(item.id, { it.trashedVersion }) { _, other -> other.trashed == item.trashed })
+            }
         }
         // Moved out of the shared folder here: out of the space (an item not in the library, deleted
         // for good here or never received, changes nothing)
@@ -373,12 +420,14 @@ public class SpaceLibrary(
             changes += RemoveFromSpace(entry.id)
         }
         submitLocked(space, changes)
+        // Taken in from another space: each with the stamp it has there
+        for ((change, at) in relayed.sortedBy { it.second }) submitLocked(space, listOf(change), at)
     }
 
-    private suspend fun submitLocked(space: Space, changes: List<CatalogChange>) {
+    private suspend fun submitLocked(space: Space, changes: List<CatalogChange>, at: Stamp? = null) {
         for (chunk in changes.chunked(CompositeCatalogChange.MAX_CHANGES)) {
             val change = chunk.singleOrNull() ?: CompositeCatalogChange(chunk)
-            val committed = space.session.submit(change) ?: continue
+            val committed = space.session.submit(change, at) ?: continue
             spaces.saveCatalogChange(space.stored.id, changedItems(space, change), committed.operation)
             operations.emit(SpaceOperation(space.stored.id, committed.operation))
         }
@@ -396,6 +445,8 @@ public class SpaceLibrary(
         val view = space.session.catalog.view()
         val local = libraryItems()
         fun local(parent: String?) = parent ?: root
+        // Each piece of an item held by other spaces too: the latest of their catalogs
+        val nested = NestedPieces((listOf(space) + sessions.values.filter { it !== space }).map { NestedPieces.Held(it.stored.rootFolderId, it.session.catalog) })
         // Folders from the top down, so that each one goes into a folder there already
         val folders = view.filter { it.kind == CatalogItemKind.FOLDER }.associateBy { it.id }
         fun depth(entry: CatalogEntry): Int {
@@ -407,20 +458,28 @@ public class SpaceLibrary(
             }
             return depth
         }
+        // The places of the folders of the library as they are written, to refuse a cycle
+        val placed = local.filterValues { it.kind == CatalogItemKind.FOLDER }.mapValuesTo(HashMap()) { it.value.parent }
         for (entry in folders.values.sortedBy(::depth)) {
             val item = local[entry.id]
-            if (item == null || item.name != entry.name || item.parent != local(entry.parent)) {
-                spaces.putFolder(entry.id, entry.name, local(entry.parent))
-            }
+            val name = nested.name(entry)
+            var parent = nested.parent(entry)
+            // Two catalogs placing a folder inside itself (one moved the root of the other, the other
+            // moved a folder of it): where it is, which they take in turn from the library
+            if (item != null && (parent == entry.id || isUnder(parent, entry.id, placed))) parent = item.parent
+            if (item == null || item.name != name || item.parent != parent) spaces.putFolder(entry.id, name, parent)
+            placed[entry.id] = parent
         }
         for (entry in view.filter { it.kind == CatalogItemKind.DOCUMENT }) {
             val item = local[entry.id]
-            if (item == null || item.parent != local(entry.parent)) spaces.putDocumentFolder(entry.id, local(entry.parent))
+            val parent = nested.parent(entry)
+            if (item == null || item.parent != parent) spaces.putDocumentFolder(entry.id, parent)
         }
         val trashed = libraryItems()
         for (entry in view) {
             val item = trashed[entry.id] ?: continue
-            if (item.trashed != entry.trashed) spaces.putTrashed(entry.id, entry.trashed)
+            val inTrash = nested.trashed(entry)
+            if (item.trashed != inTrash) spaces.putTrashed(entry.id, inTrash)
         }
         if (root == null) return
         // Out of the space: kept, out of its root (the items above first, what they hold follows)
@@ -438,6 +497,36 @@ public class SpaceLibrary(
             }
         }
     }
+
+    public companion object {
+        /** The most spaces around an item, by default (see `docs/plans/shared-access.md`). */
+        public const val MAX_NESTING: Int = 8
+    }
+}
+
+/**
+ * The value the library takes for each piece of an item held by several spaces (GRASP Pure
+ * Fabrication, see `docs/plans/shared-access.md`): the one of the catalog with the latest stamp for
+ * that piece, the place read as a folder of the library (the root of a space for an item at its
+ * root). The other catalogs take it in turn, from the library, with stamps of their own.
+ */
+private class NestedPieces(held: List<Held>) {
+    /** A catalog of a space, its root in the library ([root]: `null` for the library itself). */
+    class Held(val root: String?, val catalog: SpaceCatalog) {
+        val view: Map<String, CatalogEntry> = catalog.view().associateBy { it.id }
+    }
+
+    private val all = held
+
+    /** The catalogs showing the item [id], with their item. */
+    private fun holding(id: String): List<Pair<Held, CatalogItem>> = all.mapNotNull { held -> held.catalog[id]?.takeIf { id in held.view }?.let { held to it } }
+
+    fun name(entry: CatalogEntry): String = holding(entry.id).maxByOrNull { it.second.named }?.let { (held, _) -> held.view.getValue(entry.id).name } ?: entry.name
+
+    /** The folder of the library the item goes in: `null` for the root of the library. */
+    fun parent(entry: CatalogEntry): String? = holding(entry.id).maxByOrNull { it.second.placed }?.let { (held, _) -> held.view.getValue(entry.id).parent ?: held.root }
+
+    fun trashed(entry: CatalogEntry): Boolean = holding(entry.id).maxByOrNull { it.second.trashedVersion }?.let { (held, _) -> held.view.getValue(entry.id).trashed } ?: entry.trashed
 }
 
 /** A change of the space [spaceId] made on this device (see [SpaceLibrary.localOperations]). */

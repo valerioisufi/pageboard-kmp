@@ -358,7 +358,7 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogSession { // io.
     final fun lastApplied(kotlin/String): kotlin/Long // io.github.valerioisufi.pageboard.store.space/CatalogSession.lastApplied|lastApplied(kotlin.String){}[0]
     final fun receive(io.github.valerioisufi.pageboard.store.space/CatalogOperation): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogSession.receive|receive(io.github.valerioisufi.pageboard.store.space.CatalogOperation){}[0]
     final fun removeObserver(io.github.valerioisufi.pageboard.store.space/CatalogObserver) // io.github.valerioisufi.pageboard.store.space/CatalogSession.removeObserver|removeObserver(io.github.valerioisufi.pageboard.store.space.CatalogObserver){}[0]
-    final fun submit(io.github.valerioisufi.pageboard.store.space/CatalogChange): io.github.valerioisufi.pageboard.store.space/CommittedCatalogChange? // io.github.valerioisufi.pageboard.store.space/CatalogSession.submit|submit(io.github.valerioisufi.pageboard.store.space.CatalogChange){}[0]
+    final fun submit(io.github.valerioisufi.pageboard.store.space/CatalogChange, io.github.valerioisufi.pageboard.model/Stamp? = ...): io.github.valerioisufi.pageboard.store.space/CommittedCatalogChange? // io.github.valerioisufi.pageboard.store.space/CatalogSession.submit|submit(io.github.valerioisufi.pageboard.store.space.CatalogChange;io.github.valerioisufi.pageboard.model.Stamp?){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store.space/CommittedCatalogChange { // io.github.valerioisufi.pageboard.store.space/CommittedCatalogChange|null[0]
@@ -650,7 +650,7 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceCatalog { // io.gi
 }
 
 final class io.github.valerioisufi.pageboard.store.space/SpaceLibrary { // io.github.valerioisufi.pageboard.store.space/SpaceLibrary|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.store.space/SpaceStore, kotlinx.coroutines/CoroutineScope, kotlin/Function0<kotlin/Long>? = ..., kotlin/Long = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/String, kotlin/Boolean> = ...) // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.<init>|<init>(io.github.valerioisufi.pageboard.store.DocumentStore;io.github.valerioisufi.pageboard.store.space.SpaceStore;kotlinx.coroutines.CoroutineScope;kotlin.Function0<kotlin.Long>?;kotlin.Long;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.String,kotlin.Boolean>){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.store/DocumentStore, io.github.valerioisufi.pageboard.store.space/SpaceStore, kotlinx.coroutines/CoroutineScope, kotlin/Function0<kotlin/Long>? = ..., kotlin/Long = ..., kotlin.coroutines/SuspendFunction3<kotlin/String, kotlin/String, kotlin/String, kotlin/Boolean> = ..., kotlin/Int = ...) // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.<init>|<init>(io.github.valerioisufi.pageboard.store.DocumentStore;io.github.valerioisufi.pageboard.store.space.SpaceStore;kotlinx.coroutines.CoroutineScope;kotlin.Function0<kotlin.Long>?;kotlin.Long;kotlin.coroutines.SuspendFunction3<kotlin.String,kotlin.String,kotlin.String,kotlin.Boolean>;kotlin.Int){}[0]
 
     final val localOperations // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.localOperations|{}localOperations[0]
         final fun <get-localOperations>(): kotlinx.coroutines.flow/SharedFlow<io.github.valerioisufi.pageboard.store.space/SpaceOperation> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.localOperations.<get-localOperations>|<get-localOperations>(){}[0]
@@ -663,6 +663,7 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceLibrary { // io.gi
     final suspend fun join(kotlin/String, kotlin/String?, kotlin/Boolean = ...): io.github.valerioisufi.pageboard.store.space/StoredSpace? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.join|join(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
     final suspend fun lastApplied(kotlin/String, kotlin/String): kotlin/Long // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.lastApplied|lastApplied(kotlin.String;kotlin.String){}[0]
     final suspend fun leave(kotlin/String) // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.leave|leave(kotlin.String){}[0]
+    final suspend fun namedRootOf(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.namedRootOf|namedRootOf(kotlin.String){}[0]
     final suspend fun newRootFolder(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.newRootFolder|newRootFolder(kotlin.String){}[0]
     final suspend fun operationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogOperation> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.operationsAfter|operationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun proofs(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.pageboard.model.change/OperationId>): kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.proofs|proofs(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.change.OperationId>){}[0]
@@ -673,11 +674,17 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceLibrary { // io.gi
     final suspend fun shareItem(kotlin/String, kotlin/String, kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.shareItem|shareItem(kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
     final suspend fun spaceOf(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.spaceOf|spaceOf(kotlin.String){}[0]
     final suspend fun spaces(): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/StoredSpace> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.spaces|spaces(){}[0]
+    final suspend fun spacesOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/StoredSpace> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.spacesOf|spacesOf(kotlin.String){}[0]
     final suspend fun start() // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.start|start(){}[0]
     final suspend fun unexplainedItems(kotlin/String): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.unexplainedItems|unexplainedItems(kotlin.String){}[0]
     final suspend fun update(io.github.valerioisufi.pageboard.store.space/StoredSpace) // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.update|update(io.github.valerioisufi.pageboard.store.space.StoredSpace){}[0]
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.versionVector|versionVector(kotlin.String){}[0]
     final suspend fun view(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogEntry> // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.view|view(kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.Companion|null[0]
+        final const val MAX_NESTING // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.Companion.MAX_NESTING|{}MAX_NESTING[0]
+            final fun <get-MAX_NESTING>(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.Companion.MAX_NESTING.<get-MAX_NESTING>|<get-MAX_NESTING>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.pageboard.store.space/SpaceOperation { // io.github.valerioisufi.pageboard.store.space/SpaceOperation|null[0]

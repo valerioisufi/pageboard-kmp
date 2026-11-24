@@ -72,6 +72,12 @@ sealed interface io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.
         final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync/SpaceRoot.Folder.toString|toString(){}[0]
     }
 
+    final object InPlace : io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.valerioisufi.pageboard.sync/SpaceRoot.InPlace|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync/SpaceRoot.InPlace.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync/SpaceRoot.InPlace.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync/SpaceRoot.InPlace.toString|toString(){}[0]
+    }
+
     final object Library : io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.valerioisufi.pageboard.sync/SpaceRoot.Library|null[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.sync/SpaceRoot.Library.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync/SpaceRoot.Library.hashCode|hashCode(){}[0]

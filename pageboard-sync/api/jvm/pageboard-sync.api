@@ -303,6 +303,13 @@ public final class io/github/valerioisufi/pageboard/sync/SpaceRoot$Folder : io/g
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/sync/SpaceRoot$InPlace : io/github/valerioisufi/pageboard/sync/SpaceRoot {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/SpaceRoot$InPlace;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/sync/SpaceRoot$Library : io/github/valerioisufi/pageboard/sync/SpaceRoot {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/sync/SpaceRoot$Library;
 	public fun equals (Ljava/lang/Object;)Z
