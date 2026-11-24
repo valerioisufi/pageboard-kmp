@@ -698,7 +698,7 @@ From then on the grants let the protocol grow:
 | 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | done |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | done |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | done (the trash through two spaces at random, and cycles across catalogs at a larger scale: left for later) |
-| 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | to do |
+| 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | done (`share` with grants and `leave` per access: `setGrants` after `shareSpace` or `invite`, and `unshare` of the document or of the folder, cover them) |
 | 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | to do |
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
 
@@ -997,6 +997,35 @@ From then on the grants let the protocol grow:
   `SpaceLibrary` with `maxNesting`, `CatalogSession.submit(at)`) and `pageboard-sync`
   (`SpaceRoot.InPlace`) is recorded again: the constructor and `submit` changes are meant, the
   rest additions.
+
+### Phase 6 results
+
+* `SyncEngine.accessOf(itemId)` (public): an `ItemAccess` of a document or a shared folder.
+  * Its `sources` (`AccessSource`, sealed): its own sharing (`Own`), then the shared folders
+    around it (`Space`), innermost first, the memberships learned of the accesses this device is
+    not in included. Each source has its membership, owner and grants.
+  * Its `members`, each device once with its highest role and its sources; the `role` and
+    `isReadOnly` of this device.
+  * `withoutSource(device, source)`: what a person keeps without one source.
+
+  The classes are not data classes, and their constructors are internal, so that fields can be
+  added without breaking the callers.
+* The engine's private chooser of a sharing is renamed `sharingOf`, the name `accessOf` given to
+  the public function.
+* `setGrants`, `place` and `keepsApart` (phases 3 and 4) are the rest of the API. Sharing with
+  grants is `shareSpace` or `invite`, then `setGrants`. Ending one access is `unshare` of the
+  document (its own sharing) or of the folder.
+* The `Module.md` of `pageboard-sync` and `pageboard-sync-protocol` explain the accesses, the
+  union, the anchors and the grants to applications that do not read the plans.
+* `consumer-checks/sync-jvm`: a JVM program, outside the build, sharing a folder between two
+  engines on the in-memory network, with the store and the synchronization alone (no Compose).
+  It gives a grant of its own, reads it back on the other device through `accessOf`, and gets the
+  document of the folder.
+* Test (`SharedAccessTest.whoHasTheDocumentAndThroughWhat`): the notes through their own sharing
+  and the folder, its own sharing first, Bob through both and still an editor without his own
+  sharing, the same from Bob's side, the folder's own sharing alone for the folder, nothing for
+  what is not shared.
+* The ABI of `pageboard-sync` is recorded again: additions only.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS

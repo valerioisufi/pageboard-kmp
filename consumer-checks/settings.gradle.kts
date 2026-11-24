@@ -24,5 +24,6 @@ dependencyResolutionManagement {
 rootProject.name = "pageboard-consumer-checks"
 
 include(":model-jvm")
+include(":sync-jvm")
 include(":ui-desktop")
 include(":canvas-android")

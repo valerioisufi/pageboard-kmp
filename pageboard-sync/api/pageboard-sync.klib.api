@@ -58,6 +58,27 @@ abstract interface io.github.valerioisufi.pageboard.sync/SyncNetwork { // io.git
     abstract suspend fun stop() // io.github.valerioisufi.pageboard.sync/SyncNetwork.stop|stop(){}[0]
 }
 
+sealed interface io.github.valerioisufi.pageboard.sync/AccessSource { // io.github.valerioisufi.pageboard.sync/AccessSource|null[0]
+    abstract val membership // io.github.valerioisufi.pageboard.sync/AccessSource.membership|{}membership[0]
+        abstract fun <get-membership>(): io.github.valerioisufi.pageboard.sync.protocol/Membership // io.github.valerioisufi.pageboard.sync/AccessSource.membership.<get-membership>|<get-membership>(){}[0]
+    open val grants // io.github.valerioisufi.pageboard.sync/AccessSource.grants|{}grants[0]
+        open fun <get-grants>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync.protocol/Grant> // io.github.valerioisufi.pageboard.sync/AccessSource.grants.<get-grants>|<get-grants>(){}[0]
+    open val owner // io.github.valerioisufi.pageboard.sync/AccessSource.owner|{}owner[0]
+        open fun <get-owner>(): kotlin/String // io.github.valerioisufi.pageboard.sync/AccessSource.owner.<get-owner>|<get-owner>(){}[0]
+
+    final class Own : io.github.valerioisufi.pageboard.sync/AccessSource { // io.github.valerioisufi.pageboard.sync/AccessSource.Own|null[0]
+        final val membership // io.github.valerioisufi.pageboard.sync/AccessSource.Own.membership|{}membership[0]
+            final fun <get-membership>(): io.github.valerioisufi.pageboard.sync.protocol/Membership // io.github.valerioisufi.pageboard.sync/AccessSource.Own.membership.<get-membership>|<get-membership>(){}[0]
+    }
+
+    final class Space : io.github.valerioisufi.pageboard.sync/AccessSource { // io.github.valerioisufi.pageboard.sync/AccessSource.Space|null[0]
+        final val membership // io.github.valerioisufi.pageboard.sync/AccessSource.Space.membership|{}membership[0]
+            final fun <get-membership>(): io.github.valerioisufi.pageboard.sync.protocol/Membership // io.github.valerioisufi.pageboard.sync/AccessSource.Space.membership.<get-membership>|<get-membership>(){}[0]
+        final val spaceId // io.github.valerioisufi.pageboard.sync/AccessSource.Space.spaceId|{}spaceId[0]
+            final fun <get-spaceId>(): kotlin/String // io.github.valerioisufi.pageboard.sync/AccessSource.Space.spaceId.<get-spaceId>|<get-spaceId>(){}[0]
+    }
+}
+
 sealed interface io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.valerioisufi.pageboard.sync/SpaceRoot|null[0]
     final class Folder : io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.valerioisufi.pageboard.sync/SpaceRoot.Folder|null[0]
         constructor <init>(kotlin/String) // io.github.valerioisufi.pageboard.sync/SpaceRoot.Folder.<init>|<init>(kotlin.String){}[0]
@@ -89,6 +110,17 @@ sealed interface io.github.valerioisufi.pageboard.sync/SpaceRoot { // io.github.
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.sync/SpaceRoot.NewFolder.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.sync/SpaceRoot.NewFolder.toString|toString(){}[0]
     }
+}
+
+final class io.github.valerioisufi.pageboard.sync/AccessMember { // io.github.valerioisufi.pageboard.sync/AccessMember|null[0]
+    final val device // io.github.valerioisufi.pageboard.sync/AccessMember.device|{}device[0]
+        final fun <get-device>(): kotlin/String // io.github.valerioisufi.pageboard.sync/AccessMember.device.<get-device>|<get-device>(){}[0]
+    final val name // io.github.valerioisufi.pageboard.sync/AccessMember.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.sync/AccessMember.name.<get-name>|<get-name>(){}[0]
+    final val role // io.github.valerioisufi.pageboard.sync/AccessMember.role|{}role[0]
+        final fun <get-role>(): io.github.valerioisufi.pageboard.sync.protocol/Role // io.github.valerioisufi.pageboard.sync/AccessMember.role.<get-role>|<get-role>(){}[0]
+    final val sources // io.github.valerioisufi.pageboard.sync/AccessMember.sources|{}sources[0]
+        final fun <get-sources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync/AccessSource> // io.github.valerioisufi.pageboard.sync/AccessMember.sources.<get-sources>|<get-sources>(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.sync/ConnectionAccess { // io.github.valerioisufi.pageboard.sync/ConnectionAccess|null[0]
@@ -187,6 +219,21 @@ final class io.github.valerioisufi.pageboard.sync/InvitationGrant { // io.github
 
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.sync/InvitationGrant> // io.github.valerioisufi.pageboard.sync/InvitationGrant.Companion.serializer|serializer(){}[0]
     }
+}
+
+final class io.github.valerioisufi.pageboard.sync/ItemAccess { // io.github.valerioisufi.pageboard.sync/ItemAccess|null[0]
+    final val isReadOnly // io.github.valerioisufi.pageboard.sync/ItemAccess.isReadOnly|{}isReadOnly[0]
+        final fun <get-isReadOnly>(): kotlin/Boolean // io.github.valerioisufi.pageboard.sync/ItemAccess.isReadOnly.<get-isReadOnly>|<get-isReadOnly>(){}[0]
+    final val itemId // io.github.valerioisufi.pageboard.sync/ItemAccess.itemId|{}itemId[0]
+        final fun <get-itemId>(): kotlin/String // io.github.valerioisufi.pageboard.sync/ItemAccess.itemId.<get-itemId>|<get-itemId>(){}[0]
+    final val members // io.github.valerioisufi.pageboard.sync/ItemAccess.members|{}members[0]
+        final fun <get-members>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync/AccessMember> // io.github.valerioisufi.pageboard.sync/ItemAccess.members.<get-members>|<get-members>(){}[0]
+    final val role // io.github.valerioisufi.pageboard.sync/ItemAccess.role|{}role[0]
+        final fun <get-role>(): io.github.valerioisufi.pageboard.sync.protocol/Role? // io.github.valerioisufi.pageboard.sync/ItemAccess.role.<get-role>|<get-role>(){}[0]
+    final val sources // io.github.valerioisufi.pageboard.sync/ItemAccess.sources|{}sources[0]
+        final fun <get-sources>(): kotlin.collections/List<io.github.valerioisufi.pageboard.sync/AccessSource> // io.github.valerioisufi.pageboard.sync/ItemAccess.sources.<get-sources>|<get-sources>(){}[0]
+
+    final fun withoutSource(kotlin/String, io.github.valerioisufi.pageboard.sync/AccessSource): io.github.valerioisufi.pageboard.sync.protocol/Role? // io.github.valerioisufi.pageboard.sync/ItemAccess.withoutSource|withoutSource(kotlin.String;io.github.valerioisufi.pageboard.sync.AccessSource){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.sync/JoinRequest { // io.github.valerioisufi.pageboard.sync/JoinRequest|null[0]
@@ -423,6 +470,7 @@ final class io.github.valerioisufi.pageboard.sync/SyncEngine { // io.github.vale
     final fun answer(io.github.valerioisufi.pageboard.sync/JoinRequest, kotlin/Boolean) // io.github.valerioisufi.pageboard.sync/SyncEngine.answer|answer(io.github.valerioisufi.pageboard.sync.JoinRequest;kotlin.Boolean){}[0]
     final fun connect(io.github.valerioisufi.pageboard.sync.protocol/SyncChannel, kotlin/String, io.github.valerioisufi.pageboard.sync.protocol/DocumentKey): kotlinx.coroutines/Job // io.github.valerioisufi.pageboard.sync/SyncEngine.connect|connect(io.github.valerioisufi.pageboard.sync.protocol.SyncChannel;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.DocumentKey){}[0]
     final fun invitationOf(kotlin/String, kotlin/String, io.github.valerioisufi.pageboard.sync/InvitationGrant, kotlin.collections/Map<kotlin/String, kotlin/String> = ..., io.github.valerioisufi.pageboard.sync.protocol/InvitationKind = ...): io.github.valerioisufi.pageboard.sync.protocol/Invitation // io.github.valerioisufi.pageboard.sync/SyncEngine.invitationOf|invitationOf(kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.sync.InvitationGrant;kotlin.collections.Map<kotlin.String,kotlin.String>;io.github.valerioisufi.pageboard.sync.protocol.InvitationKind){}[0]
+    final suspend fun accessOf(kotlin/String): io.github.valerioisufi.pageboard.sync/ItemAccess? // io.github.valerioisufi.pageboard.sync/SyncEngine.accessOf|accessOf(kotlin.String){}[0]
     final suspend fun announcedTagOf(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.sync/SyncEngine.announcedTagOf|announcedTagOf(kotlin.String){}[0]
     final suspend fun announcedTagOf(kotlin/String, io.github.valerioisufi.pageboard.sync.protocol/DocumentKey): kotlin/String? // io.github.valerioisufi.pageboard.sync/SyncEngine.announcedTagOf|announcedTagOf(kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.DocumentKey){}[0]
     final suspend fun announcedTags(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.sync/SyncEngine.announcedTags|announcedTags(){}[0]

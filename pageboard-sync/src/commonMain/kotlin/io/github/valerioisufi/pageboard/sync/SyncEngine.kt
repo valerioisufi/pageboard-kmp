@@ -365,7 +365,7 @@ public class SyncEngine(
         approval: Boolean = false,
         addresses: Map<String, String> = ownAddressesByTransport()
     ): Invitation? {
-        val access = accessOf(documentId)
+        val access = sharingOf(documentId)
         val state = access.stateOf(documentId, null)
         if (state?.members == null && access === sharing) {
             // A document of a shared folder: shared on its own only as the folder allows (its owner, or a member it granted)
@@ -381,7 +381,7 @@ public class SyncEngine(
     }
 
     /** The invitations of the document [documentId] (this device is its owner). */
-    public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = accessOf(documentId).stateOf(documentId, null)?.invitations.orEmpty()
+    public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharingOf(documentId).stateOf(documentId, null)?.invitations.orEmpty()
 
     /** What an invitation to [id] is to: a document, a folder or the library (see `docs/plans/shared-folders.md`). */
     private suspend fun kindOf(id: String): InvitationKind {
@@ -402,7 +402,7 @@ public class SyncEngine(
 
     /** Revokes the invitation [grantId] of [documentId]: nobody joins with it anymore (the devices joined stay). */
     public suspend fun revokeInvitation(documentId: String, grantId: String) {
-        accessOf(documentId).revoke(documentId, grantId)
+        sharingOf(documentId).revoke(documentId, grantId)
         linksOf(documentId).filter { (it.match as? TagMatch.Grant)?.grant?.id == grantId && !it.authorized }.forEach { it.channel.close() }
     }
 
@@ -414,10 +414,38 @@ public class SyncEngine(
 
     /** Gives the member [target] of [documentId] the role [role] (this device is the owner). */
     public suspend fun setRole(documentId: String, target: String, role: Role) {
-        val access = accessOf(documentId)
+        val access = sharingOf(documentId)
         val member = access.membershipOf(documentId, null)?.memberOf(target) ?: return
         val state = access.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
         onMembershipChanged(documentId, state, from = null, access = access)
+    }
+
+    /**
+     * Who has the document or the shared folder [itemId], and through what (see [ItemAccess]): its
+     * own sharing, the shared folders around it (innermost first), the memberships learned of the
+     * ones this device is not in too; `null` when it is shared none of these ways.
+     */
+    public suspend fun accessOf(itemId: String): ItemAccess? {
+        val library = spaces
+        val spaces = spaceSharing?.spaces
+        val sources = mutableListOf<AccessSource>()
+        if (spaces?.stateOf(itemId) != null) {
+            spaces.membershipOf(itemId)?.let { sources += AccessSource.Own(it) }
+            val root = library?.spaces()?.firstOrNull { it.id == itemId }?.rootFolderId
+            if (root != null) {
+                for (outer in library.spacesOf(root)) spaces.membershipOf(outer.id)?.let { sources += AccessSource.Space(outer.id, it) }
+            }
+        } else {
+            val access = sharing.accessOf(itemId) ?: return null
+            (sharing.membershipOf(itemId, null) ?: sharing.learnedOf(itemId, null))?.let { sources += AccessSource.Own(it) }
+            val around = library?.spacesOf(itemId)?.map { it.id }.orEmpty()
+            val reached = (access.spaces + access.learned).mapNotNull { it.space }.distinct()
+            for (space in reached.sortedBy { around.indexOf(it).takeIf { index -> index >= 0 } ?: Int.MAX_VALUE }) {
+                val membership = spaces?.membershipOf(space) ?: sharing.learnedOf(itemId, space) ?: continue
+                sources += AccessSource.Space(space, membership)
+            }
+        }
+        return if (sources.isEmpty()) null else ItemAccess(itemId, sources, device)
     }
 
     /**
@@ -467,7 +495,7 @@ public class SyncEngine(
      * operation this device has.
      */
     public suspend fun setGrants(id: String, grants: List<Grant>) {
-        val access = accessOf(id)
+        val access = sharingOf(id)
         val membership = access.membershipOf(id, null) ?: return
         val lastSequences = membership.members.associate { it.replica to lastSequenceOf(id, it.replica) }
         val state = access.setGrants(id, grants, lastSequences) ?: return
@@ -479,7 +507,7 @@ public class SyncEngine(
      * new key, given to the other members; the device removed cannot follow it anymore.
      */
     public suspend fun removeMember(documentId: String, target: String) {
-        val access = accessOf(documentId)
+        val access = sharingOf(documentId)
         val member = access.membershipOf(documentId, null)?.memberOf(target) ?: return
         val state = access.remove(documentId, target, lastSequenceOf(documentId, member.replica)) ?: return
         onMembershipChanged(documentId, state, from = null, access = access)
@@ -490,7 +518,7 @@ public class SyncEngine(
      * keeps its copy), another device leaves it (the owner removes it). Its connections are closed.
      */
     public suspend fun unshare(documentId: String) {
-        val access = accessOf(documentId)
+        val access = sharingOf(documentId)
         val state = access.stateOf(documentId, null)
         // The own sharing only: a document in shared folders stays reached through them
         val own = linksOf(documentId).filter { it.access === access && it.via == null }
@@ -747,7 +775,7 @@ public class SyncEngine(
     }
 
     /** The sharing [id] is decided by: of a shared folder when it is one, of a document otherwise. */
-    private suspend fun accessOf(id: String): DocumentSharing =
+    private suspend fun sharingOf(id: String): DocumentSharing =
         spaceSharing?.spaces?.takeIf { it.stateOf(id) != null } ?: sharing
 
     /** Closes every connection. */

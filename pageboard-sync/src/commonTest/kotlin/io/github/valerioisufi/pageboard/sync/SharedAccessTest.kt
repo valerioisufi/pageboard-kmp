@@ -181,6 +181,26 @@ class SharedAccessTest {
     }
 
     @Test
+    fun whoHasTheDocumentAndThroughWhat() = syncTest { work ->
+        val (ada, bob, spaceId, notes) = shareBoth(work, InMemoryNetwork())
+        val access = assertNotNull(ada.engine.accessOf(notes))
+        assertEquals(2, access.sources.size)
+        assertTrue(access.sources[0] is AccessSource.Own, "its own sharing first")
+        assertEquals(spaceId, (access.sources[1] as AccessSource.Space).spaceId)
+        assertEquals(Role.OWNER, access.role)
+        val bobThere = access.members.single { it.device == bob.device }
+        assertEquals(Role.EDITOR, bobThere.role)
+        assertEquals(2, bobThere.sources.size, "Bob through both")
+        assertEquals(Role.EDITOR, access.withoutSource(bob.device, access.sources[0]), "still an editor through the folder")
+        // From Bob's side, the same; and the folder's own sharing alone for the folder
+        assertEquals(2, assertNotNull(bob.engine.accessOf(notes)).sources.size)
+        val folder = assertNotNull(ada.engine.accessOf(spaceId))
+        assertTrue(folder.sources.single() is AccessSource.Own)
+        assertEquals(setOf(ada.device, bob.device), folder.members.map { it.device }.toSet())
+        assertNull(ada.engine.accessOf("not shared"))
+    }
+
+    @Test
     fun removedFromTheFolderTheDocumentGoesOnThroughItsOwnSharing() = syncTest { work ->
         val (ada, bob, spaceId, notes) = shareBoth(work, InMemoryNetwork())
         val oldState = assertNotNull(bob.shared.stateOf(notes)).encode()
