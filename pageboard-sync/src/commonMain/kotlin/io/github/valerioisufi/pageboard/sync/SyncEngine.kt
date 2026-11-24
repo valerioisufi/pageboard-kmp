@@ -1392,6 +1392,22 @@ public class SyncEngine(
         return spaceSharing?.mayGive(space, documentId, giver) ?: false
     }
 
+    /**
+     * Whether the document [documentId] of a shared folder is taken from its owner rather than from
+     * [giver] (see `docs/plans/brought-by.md`): the owner is connected about the folder and its heads
+     * name the document. The owner gives it then, on its own connection about the document; another
+     * device is believed only while the owner cannot give it, and its connection is closed.
+     */
+    private suspend fun ownerGivesInstead(documentId: String, giver: String): Boolean {
+        val space = sharing.stateOf(documentId)?.space ?: return false
+        val owner = spaceSharing?.spaces?.stateOf(space)?.owner ?: return false
+        if (giver == owner) return false
+        return mutex.withLock {
+            remoteHeads[space]?.get(owner)?.containsKey(documentId) == true &&
+                links.any { it.space && it.documentId == space && it.authorized && !it.closed && it.peerHello?.device == owner }
+        }
+    }
+
     /** The shared folder [spaceId] admitted this device: kept in the library where the user chose to put it. */
     private suspend fun joinLibrary(spaceId: String, invitation: Invitation, readOnly: Boolean) = spaceJoins.withLock {
         val library = spaces ?: return@withLock
@@ -1660,6 +1676,8 @@ public class SyncEngine(
         // From its owner only (a member could give anything), or, in a shared folder, from the device that brought it
         val giver = link.peerHello?.device ?: return
         if (!mayGive(link.documentId, giver)) return
+        // Closed rather than kept without the document: its operations would be dropped
+        if (ownerGivesInstead(link.documentId, giver)) return link.channel.close()
         val sync = adopt(snapshot, base)
         link.sync = sync
         // Kept with the document now that it is here

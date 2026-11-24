@@ -178,6 +178,45 @@ class SharedFoldersSyncTest {
     }
 
     @Test
+    fun aDocumentIsTakenFromTheOwnerWhenTheOwnerIsThere() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, bob, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        // Bob's notes, given to Ada
+        val notes = bob.store.createDocument("Bob's", folderId = bob.library.spaces().single().rootFolderId)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(bob.snapshot(notes.id), ada.snapshot(notes.id))
+
+        // Carl joins through Ada, then meets Bob: Ada has the notes and is connected, so Carl waits for hers
+        carl.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(carl, bob)
+        assertTrue(carl.store.documents.first().none { it.id == notes.id }, "not taken from Bob while Ada is there")
+        exchange(carl, ada)
+        assertEquals(ada.snapshot(notes.id), carl.snapshot(notes.id))
+
+        // Dan joins while Ada is away: the notes from Bob, who brought them
+        val dan = Device("dan", work, this, network)
+        dan.library.start()
+        dan.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        ada.engine.stop()
+        advanceUntilIdle()
+        exchange(dan, bob)
+        assertEquals(bob.snapshot(notes.id), dan.snapshot(notes.id))
+    }
+
+    @Test
     fun theLibraryJoinedIntoTheLibraryBringsBothTogether() = syncTest { work ->
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)

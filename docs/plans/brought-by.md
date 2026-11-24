@@ -215,7 +215,7 @@ further, for the maintainer to choose:
 |---|---|---|
 | 0. This plan | Written, the decisions below for the maintainer | done (to approve) |
 | 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | done (the copy of the maintainer's database: to do, by the maintainer) |
-| 2. The owner preferred (if chosen) | `onSnapshot` waiting for the owner while it is connected and lists the document. Tests: Eve and Ada both connected, Ada's snapshot taken; Ada away, Bob's taken | to do |
+| 2. The owner preferred | `onSnapshot` waiting for the owner while it is connected and lists the document. Tests: Bob and Ada both connected, Ada's snapshot taken; Ada away, Bob's taken | done |
 | 3. The giver confirmed (if chosen) | `ConfirmGiver` admitted from the owner only, the piece `giver`, `mayGive` by it, the owner confirming on receipt; `ProtocolFormatTest`; with the protocol change of shared-access if both are taken. Tests: a confirmation from an editor refused; once confirmed, a removal and re-addition by Eve leaving her no giver; random `ConfirmGiver` bytes to the decoder; the sync modules on the iOS simulator | to do |
 
 ### Phase 1 results
@@ -277,6 +277,25 @@ further, for the maintainer to choose:
 
 * Still to do, by the maintainer: that check on a copy of the PencilNotes database (`CLAUDE.md`:
   `~/.pencilnotes` is not touched while verifying). It was run here without a copy only.
+
+### Phase 2 results
+
+* `SyncEngine.onSnapshot`: a snapshot of a document of a shared folder, from a device that is not
+  the owner of the folder, is refused while the owner is connected about the folder and its heads
+  (`DocumentHeads`) name the document (`ownerGivesInstead`). The owner gives it then, on its own
+  connection about the document.
+* The connection carrying the refused snapshot is closed, rather than kept without the document:
+  the operations it carries would be dropped, and they count as activity, so it would never be
+  closed as idle. Its device connects again later, and is believed once the owner cannot give the
+  document.
+* Nothing that travels changes: the rule is what this device takes.
+* Test (`SharedFoldersSyncTest.aDocumentIsTakenFromTheOwnerWhenTheOwnerIsThere`): Bob's notes,
+  given to Ada.
+  * Carl joins through Ada and meets Bob first. He does not take Bob's snapshot while Ada is
+    connected, and takes Ada's.
+  * Dan joins while Ada is away (her engine stopped). He takes the notes from Bob, who brought
+    them.
+  * Without the rule the test fails (checked by removing it).
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh`, since
 `pageboard-store` is published) and the tests of the sync modules on the iOS simulator. One commit
