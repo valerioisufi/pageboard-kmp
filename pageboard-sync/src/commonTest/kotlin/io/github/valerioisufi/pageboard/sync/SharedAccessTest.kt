@@ -51,13 +51,13 @@ import kotlinx.coroutines.test.runTest
  */
 class SharedAccessTest {
 
-    /** A device keeping spaces, whose library keeps the documents shared on their own in the spaces too. */
+    /** A device keeping spaces, whose library takes the documents shared on their own into the spaces as the sharing allows. */
     private class Device(val name: String, scope: CoroutineScope, test: TestScope, network: InMemoryNetwork, val identity: DeviceIdentity = DeviceIdentity.generate()) {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
         val shared = StoreSharedDocuments(store, documents)
-        val library = SpaceLibrary(store, store, scope, sharedApart = { _, _ -> false })
-        val engine = SyncEngine(documents, shared, scope, { name }, identity = identity, keepAliveMs = 0, spaces = library)
+        val library: SpaceLibrary = SpaceLibrary(store, store, scope, keptApart = { spaceId, documentId, _ -> engine.keepsApart(spaceId, documentId) })
+        val engine: SyncEngine = SyncEngine(documents, shared, scope, { name }, identity = identity, keepAliveMs = 0, spaces = library)
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
 
@@ -430,6 +430,72 @@ class SharedAccessTest {
         advanceUntilIdle()
         exchange(ada, bob)
         assertEquals(SharedAs(notes, bob.device), ada.library.view(spaceId).single { it.id == notes }.sharedAs, "the folder names Bob's sharing")
+    }
+
+    /** A document of Carl's, shared with Ada and moved into her folder: out until Carl names the folder. */
+    @Test
+    fun aDocumentOwnedByAnotherDeviceComesInWithItsOwnersConsent() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, bob, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+
+        val lab = carl.store.createDocument("Lab").id
+        val ofLab = assertNotNull(carl.engine.invite(lab, "Lab", Role.EDITOR, addresses = mapOf(MEMORY to "carl")))
+        ada.join(ofLab)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        assertTrue(ada.store.documents.first().any { it.id == lab })
+        assertTrue(ada.store.moveDocument(lab, course))
+        advanceUntilIdle()
+        assertTrue(ada.library.view(spaceId).none { it.id == lab }, "Carl's: out of Ada's folder without his consent")
+
+        // Carl names Ada's folder: it comes in, named as his sharing
+        assertTrue(carl.engine.place(lab, spaceId, ada.device))
+        advanceUntilIdle()
+        exchange(ada, carl)
+        assertTrue(ada.library.view(spaceId).any { it.id == lab }, "in with its owner's consent")
+        assertEquals(SharedAs(lab, carl.device), ada.library.view(spaceId).single { it.id == lab }.sharedAs)
+        exchange(ada, bob)
+        assertNotNull(bob.access(lab)?.of(spaceId), "Bob reaches it through the folder")
+        assertTrue(bob.store.documents.first().any { it.id == lab }, "Bob has it")
+        assertTrue(bob.engine.isAnchored(lab, null, assertNotNull(carl.engine.memberships.value[lab]), carl.device, null), "Carl's own sharing anchored for Bob")
+    }
+
+    /** Carl had the notes directly, then joins the folder holding them: they go where the folder has them, still in it. */
+    @Test
+    fun aDocumentHadDirectlyThenThroughTheFolderStaysInIt() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val carl = Device("carl", work, this, network)
+        listOf(ada, carl).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Notes", folderId = course).id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val ofNotes = assertNotNull(ada.engine.invite(notes, "Notes", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        carl.join(ofNotes)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        assertTrue(carl.store.documents.first().any { it.id == notes })
+
+        val ofFolder = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        carl.join(ofFolder, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, carl)
+        val carlRoot = carl.library.spaces().single().rootFolderId
+        assertEquals(carlRoot, carl.store.documents.first().single { it.id == notes }.folderId, "where the folder has it")
+        assertTrue(ada.library.view(spaceId).any { it.id == notes }, "never taken out of the folder")
+        assertNotNull(carl.access(notes)?.own)
+        assertEquals(listOf(spaceId), carl.access(notes)?.spaces?.map { it.space })
     }
 
     private companion object {

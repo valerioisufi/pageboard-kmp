@@ -172,8 +172,10 @@ public suspend fun <S> checkCatalogOfBefore(store: S, scope: CoroutineScope, reo
  * space left with the library untouched.
  */
 public suspend fun <S> checkSharedFolders(ada: S, bob: S, scope: CoroutineScope) where S : DocumentStore, S : SpaceStore {
-    val adaLibrary = SpaceLibrary(ada, ada, scope)
-    val bobLibrary = SpaceLibrary(bob, bob, scope)
+    // What the application keeps out of the spaces when it would be brought in (see docs/plans/shared-access.md)
+    val keptApart = mutableSetOf<String>()
+    val adaLibrary = SpaceLibrary(ada, ada, scope, keptApart = { _, documentId, _ -> documentId in keptApart })
+    val bobLibrary = SpaceLibrary(bob, bob, scope, keptApart = { _, documentId, _ -> documentId in keptApart })
     adaLibrary.start()
     bobLibrary.start()
 
@@ -185,10 +187,20 @@ public suspend fun <S> checkSharedFolders(ada: S, bob: S, scope: CoroutineScope)
     val notes = ada.createDocument("Notes", folderId = week)
     val apart = ada.createDocument("Apart", folderId = course)
     ada.setSharingSecret(apart.id, "its own")
+    keptApart += apart.id
+    // Shared on its own too, and not kept apart: in the space besides its own sharing
+    val both = ada.createDocument("Both", folderId = course)
+    ada.setSharingSecret(both.id, "its own too")
     val space = assertNotNull(adaLibrary.share(course))
     assertNull(adaLibrary.share(week), "a space in a space")
     assertNull(adaLibrary.share(null), "the library holds a space")
-    assertEquals(setOf(week, notes.id), adaLibrary.view(space.id).map { it.id }.toSet(), "not the document shared on its own")
+    assertEquals(setOf(week, notes.id, both.id), adaLibrary.view(space.id).map { it.id }.toSet(), "not the document kept apart")
+    // In the space already: a sharing of its own and a rule keeping it apart take it out no more
+    ada.setSharingSecret(notes.id, "shared on its own later")
+    keptApart += notes.id
+    adaLibrary.reconcile()
+    assertTrue(adaLibrary.view(space.id).any { it.id == notes.id }, "still in the space")
+    keptApart -= notes.id
 
     // Bob joins into a folder of his
     assertTrue(bob.createFolder("From Ada", null))

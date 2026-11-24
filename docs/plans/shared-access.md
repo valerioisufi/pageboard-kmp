@@ -696,7 +696,7 @@ From then on the grants let the protocol grow:
 | 1. Stored accesses | `DocumentAccess` and its encoding (`through`, a list), `SharedDocuments` keeping it, `readOnly` as the union; `sharedAs` in the catalog items; no change in behaviour (an item still has one access). Tests: the values of before read, the new values both ways, the decoders of before on new values, both stores, the copy of the maintainer's database | done |
 | 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | done |
 | 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | done |
-| 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | to do |
+| 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | done |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | to do |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | to do |
 | 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | to do |
@@ -877,6 +877,50 @@ From then on the grants let the protocol grow:
 * The ABI of `pageboard-store`, `pageboard-sync-protocol` and `pageboard-sync` is recorded again.
   Meant: the constructors of `Membership`, `SharingState`, `CatalogItem` and `CatalogEntry` take
   the new fields. The rest are additions.
+
+### Phase 4 results
+
+* `SpaceLibrary(keptApart)` replaces `sharedApart`. The predicate gets the folder, the document
+  and its secret. By default nothing is kept apart, so a document shared on its own is in the
+  folder it is in, with its own sharing besides.
+  * It is asked only for a document that would be brought in (not in the catalog yet). A document
+    already in a folder is never taken out for having a sharing of its own.
+* `SyncEngine.keepsApart(spaceId, documentId)` (public): a document shared on its own stays out of
+  a folder that does not let this device bring it in, or when its own sharing is another device's
+  and does not name the folder (by a `SpaceRef` of its owner, or a placement).
+* `SyncEngine.place(documentId, spaceId, spaceOwner)` (public): the owner of a document's own
+  sharing names a folder (its consent), or a member it granted `PLACE_IN_SPACES` signs a
+  placement, kept with its own access and given with its membership to that folder.
+* A document owned by another device and brought in with its consent: the folder names its
+  sharing (`ShareItem`) as owned by that device, so its members take its membership from it.
+* A change of a document's own membership makes the library compare again, so that a document
+  consented to comes in at once.
+* `Collaboration` (PencilNotes) keeps apart the documents owned by others (`isOwnedByOthers`,
+  decision 4), and what `keepsApart` keeps apart.
+* Found and fixed, from before this plan: a document coming into a folder without a change in the
+  library (brought in by a consent, or a change of a catalog received) kept its heads untold, so
+  the others did not ask for it until it changed. A change of a catalog, made here or received,
+  now tells the heads again.
+* Tests:
+  * `checkSharedFolders` (both stores): a document shared on its own in the folder is in the
+    space, one kept apart is not, and a document of the space shared on its own later, even kept
+    apart by the rule, stays in.
+  * `PageboardDatabaseMigrationTest`: the library of schema 24 with its document shared on its own,
+    which a library keeping it apart leaves out and the default takes in.
+  * `SharedAccessTest`:
+    * Carl's document, shared with Ada and moved into her folder, stays out until Carl names the
+      folder. Then it comes in, named as Carl's sharing, reaches Bob through the folder, and
+      Carl's own sharing is anchored for Bob. Without telling the heads again after a change of a
+      catalog, Bob never gets it (checked by removing it);
+    * Carl had the notes directly, then joins the folder holding them: they go where the folder
+      has them, and stay in it on Ada's catalog.
+  * `SharedFoldersSyncTest.aDocumentMovedIntoTheFolderReachesTheOthers`: a document of before
+    moved into the folder reaches Bob.
+  * `OwnedByOthersTest` (`pageboard-sync-ui`): PencilNotes's rule on states of one and of several
+    accesses, what was learned not counting.
+  * The other tests of the libraries take the new predicate, with the meaning they had.
+* The ABI of `pageboard-store` (the constructor of `SpaceLibrary`, meant) and `pageboard-sync`
+  (`keepsApart`, `place`: additions) is recorded again.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS

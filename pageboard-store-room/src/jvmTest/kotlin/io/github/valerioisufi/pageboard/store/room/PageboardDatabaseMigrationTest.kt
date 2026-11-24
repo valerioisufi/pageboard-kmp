@@ -436,14 +436,20 @@ class PageboardDatabaseMigrationTest {
             assertEquals(mapOf(DOCUMENT to "secret"), store.sharingSecrets())
             assertEquals(emptyList(), store.spaces(), "no space before")
 
-            // A folder of before shared: a new document in it goes into the space, the one shared on its own does not
+            // A folder of before shared: a new document in it goes into the space, and so does the one
+            // shared on its own (besides its own sharing, see docs/plans/shared-access.md), unless the
+            // application keeps it apart
+            val apart = SpaceLibrary(store, store, backgroundScope, keptApart = { _, documentId, _ -> documentId == DOCUMENT })
+            apart.start()
+            val space = assertNotNull(apart.share(FOLDER))
+            assertEquals(emptyList(), apart.view(space.id), "the document shared on its own kept apart")
+            val notes = store.createDocument("Notes", folderId = FOLDER)
+            apart.reconcile()
+            assertEquals(listOf(notes.id), apart.view(space.id).map { it.id })
+            apart.stop()
             val library = SpaceLibrary(store, store, backgroundScope)
             library.start()
-            val space = assertNotNull(library.share(FOLDER))
-            assertEquals(emptyList(), library.view(space.id), "the document shared on its own stays apart")
-            val notes = store.createDocument("Notes", folderId = FOLDER)
-            library.reconcile()
-            assertEquals(listOf(notes.id), library.view(space.id).map { it.id })
+            assertEquals(setOf(notes.id, DOCUMENT), library.view(space.id).map { it.id }.toSet(), "shared on its own and in the space")
             assertEquals(listOf(space), store.spaces())
             library.stop()
         } finally {

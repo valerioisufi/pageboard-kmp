@@ -356,6 +356,8 @@ public final class io/github/valerioisufi/pageboard/sync/SyncEngine {
 	public static synthetic fun invite$default (Lio/github/valerioisufi/pageboard/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/pageboard/sync/protocol/Role;ZLjava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun join (Lio/github/valerioisufi/pageboard/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun joinSpace (Lio/github/valerioisufi/pageboard/sync/protocol/Invitation;Lio/github/valerioisufi/pageboard/sync/SpaceRoot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun keepsApart (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun place (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun publishAddress (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

@@ -28,10 +28,11 @@ import kotlinx.coroutines.sync.withLock
  *   and the others), so that it shows what the space holds.
  *
  * Both directions compare the library with the tree of the catalog ([SpaceCatalog.view]), so that
- * a write of one is no change of the other. The documents shared on their own (a secret of their
- * own in [DocumentStore.sharingSecrets], owned by this device or by others) stay out of the spaces:
- * [sharedApart] tells them from the documents shared through a space, which have a secret too (by
- * default every secret is of a document shared on its own).
+ * a write of one is no change of the other. A document shared on its own (a secret in
+ * [DocumentStore.sharingSecrets]) is in the space as any other, with its own sharing besides (see
+ * `docs/plans/shared-access.md`), unless [keptApart] keeps it out when it would be brought in (the
+ * application's choice, or what the sharing does not allow): a document in the space already is
+ * never taken out for having a sharing of its own.
  *
  * Nothing of the library is deleted: an item leaving a shared folder on another device goes, here,
  * to the folder holding the root of the space; an item deleted for good here (not in the library)
@@ -43,7 +44,7 @@ public class SpaceLibrary(
     private val scope: CoroutineScope,
     private val wallClock: (() -> Long)? = null,
     private val settleMs: Long = 200L,
-    private val sharedApart: suspend (documentId: String, secret: String) -> Boolean = { _, _ -> true }
+    private val keptApart: suspend (spaceId: String, documentId: String, secret: String) -> Boolean = { _, _, _ -> false }
 ) {
     private val mutex = Mutex()
     private val sessions = mutableMapOf<String, Space>()
@@ -343,13 +344,15 @@ public class SpaceLibrary(
         val local = libraryItems()
         val parents = local.filterValues { it.kind == CatalogItemKind.FOLDER }.mapValues { it.value.parent }
         if (root != null && root !in local) return // The root is gone (deleted, or in a folder in the trash): nothing to compare
-        val ownSharing = store.sharingSecrets().filter { (id, secret) -> sharedApart(id, secret) }.keys
         val catalog = space.session.catalog
         val view = catalog.view().associateBy { it.id }
+        // Kept out when they would be brought in only: in the space, a sharing of its own changes nothing
+        val secrets = store.sharingSecrets()
+        val apart = secrets.filter { (id, secret) -> id !in view && keptApart(space.stored.id, id, secret) }.keys
         val changes = mutableListOf<CatalogChange>()
 
         val inSpace = local.values.filter { item ->
-            item.id != root && isUnder(item.parent, root, parents) && !(item.kind == CatalogItemKind.DOCUMENT && item.id in ownSharing)
+            item.id != root && isUnder(item.parent, root, parents) && !(item.kind == CatalogItemKind.DOCUMENT && item.id in apart)
         }.associateBy { it.id }
         for (item in inSpace.values) {
             val parent = if (item.parent == root) null else item.parent
@@ -363,8 +366,8 @@ public class SpaceLibrary(
             if (entry.parent != parent) changes += MoveItem(item.id, parent)
             if (entry.trashed != item.trashed) changes += if (item.trashed) TrashItem(item.id) else RestoreItem(item.id)
         }
-        // Moved out of the shared folder here, or shared on its own: out of the space (an item not
-        // in the library, deleted for good here or never received, changes nothing)
+        // Moved out of the shared folder here: out of the space (an item not in the library, deleted
+        // for good here or never received, changes nothing)
         for (entry in view.values) {
             if (entry.id in inSpace || entry.id !in local) continue
             changes += RemoveFromSpace(entry.id)

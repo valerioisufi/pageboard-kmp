@@ -38,7 +38,7 @@ class SpaceSharingTest {
     private class Device(scope: CoroutineScope, val name: String) {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val identity = DeviceIdentity.generate()
-        val library = SpaceLibrary(store, store, scope, sharedApart = { _, secret -> SharingState.decode(secret)?.space == null })
+        val library = SpaceLibrary(store, store, scope, keptApart = { _, _, secret -> SharingState.decode(secret)?.let { DocumentAccess.decode(it).own } != null })
         val documents = DocumentSharing(StoreSharedDocuments(store), identity)
         val sharing = SpaceSharing(library, identity, documents)
         val device: String get() = identity.publicKey

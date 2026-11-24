@@ -41,7 +41,7 @@ class SharedFoldersSyncTest {
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
         val shared = StoreSharedDocuments(store, documents)
         val identity = DeviceIdentity.generate()
-        val library = SpaceLibrary(store, store, scope, sharedApart = { _, secret -> SharingState.decode(secret)?.space == null })
+        val library = SpaceLibrary(store, store, scope, keptApart = { _, _, secret -> SharingState.decode(secret)?.let { DocumentAccess.decode(it).own } != null })
         val engine = SyncEngine(documents, shared, scope, { name }, identity = identity, keepAliveMs = 0, spaces = library)
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
@@ -264,6 +264,30 @@ class SharedFoldersSyncTest {
         assertTrue(carl.store.documents.first().none { it.id == notes.id }, "not from Eve")
         exchange(carl, bob)
         assertEquals(bob.snapshot(notes.id), carl.snapshot(notes.id))
+    }
+
+    /** A document of before moved into the folder: the others get it. */
+    @Test
+    fun aDocumentMovedIntoTheFolderReachesTheOthers() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        ada.library.start()
+        bob.library.start()
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val old = ada.store.createDocument("Old notes")
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        bob.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertTrue(bob.store.documents.first().none { it.id == old.id })
+
+        assertTrue(ada.store.moveDocument(old.id, course))
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(ada.snapshot(old.id), bob.snapshot(old.id))
     }
 
     @Test

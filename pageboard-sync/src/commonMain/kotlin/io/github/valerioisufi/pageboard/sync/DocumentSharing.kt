@@ -289,6 +289,11 @@ internal class DocumentSharing(
         membership.copy(spaces = membership.spaces.filter { it.space != ref.space } + ref)
     }
 
+    /** Keeps [placement], made by this device, with the own sharing of [documentId] (given with its membership to the folder it names). */
+    suspend fun keepPlacement(documentId: String, placement: Placement) {
+        update(documentId, null) { state -> state?.copy(placement = placement) }
+    }
+
     /**
      * The members of [this] that held a capability in [before] and no longer do keep what they did
      * with it, up to their last operation ([lastSequenceOf]): its [Grant.upTo], the ones of before

@@ -122,9 +122,17 @@ public class Collaboration(
     /** Asks for the permission to use the local network (set by [CollaborationAccess]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
-    /** The shared folders of this device, kept in step with the library, when the store keeps them. */
+    /**
+     * The shared folders of this device, kept in step with the library, when the store keeps them.
+     * A document shared on its own is taken into the folder it is in, besides its own sharing (see
+     * `docs/plans/shared-access.md`), but for PencilNotes's rule: the documents owned by others stay
+     * out of the shared folders and of the shared library ([isOwnedByOthers]); and what the sharing
+     * does not allow ([SyncEngine.keepsApart]).
+     */
     private val library: SpaceLibrary? = (store as? SpaceStore)?.let { spaces ->
-        SpaceLibrary(store, spaces, scope, sharedApart = { _, secret -> io.github.valerioisufi.pageboard.sync.SharingState.decode(secret)?.space == null })
+        SpaceLibrary(store, spaces, scope, keptApart = { spaceId, documentId, secret ->
+            isOwnedByOthers(secret, identity.publicKey) || engine.keepsApart(spaceId, documentId)
+        })
     }
 
     public val engine: SyncEngine = SyncEngine(
@@ -442,4 +450,16 @@ public object InvitationLinks {
     internal fun consume() {
         pending.value = null
     }
+}
+
+/**
+ * Whether the document of [secret] (its sharing, see `SharingState`) is shared with this device
+ * ([device]) by another one: its own sharing is owned by another device. PencilNotes keeps such
+ * documents out of its shared folders and library (decided by the maintainer on 2026-11-14, see
+ * `docs/plans/shared-access.md`): they reach the user's other devices only if those join them.
+ */
+internal fun isOwnedByOthers(secret: String, device: String): Boolean {
+    val state = io.github.valerioisufi.pageboard.sync.SharingState.decode(secret) ?: return false
+    val own = (listOf(state) + state.through).firstOrNull { it.space == null && !it.learned } ?: return false
+    return own.owner.isNotEmpty() && own.owner != device
 }

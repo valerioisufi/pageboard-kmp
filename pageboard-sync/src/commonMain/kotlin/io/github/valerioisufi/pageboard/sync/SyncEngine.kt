@@ -36,6 +36,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
 import io.github.valerioisufi.pageboard.sync.protocol.SpaceRef
 import io.github.valerioisufi.pageboard.sync.protocol.Placement
+import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import io.github.valerioisufi.pageboard.sync.protocol.Grant
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
@@ -168,6 +169,9 @@ public class SyncEngine(
     /** The heads of the documents of each space, as each member connected said them (under [mutex]): space, device, heads. */
     private val remoteHeads = mutableMapOf<String, MutableMap<String, Map<String, String>>>()
 
+    /** What a shared folder holds changed (here or received): its heads to tell again (see [tellHeads]). */
+    private val catalogChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     /** The heads of the documents of each space as this device last said them (under [mutex]). */
     private val ownHeads = mutableMapOf<String, Map<String, String>>()
 
@@ -253,11 +257,13 @@ public class SyncEngine(
             // The changes of the folders made here: to the members connected
             scope.launch { spaces?.localOperations?.collect { onLocalCatalogOperation(it.spaceId, it.operation) } }
             scope.launch { followSpaces() }
-            // The documents changed (here or received): their heads told again, once they settle
+            // The documents changed (here or received), or what a folder holds (a document moved in
+            // keeps its time of change): their heads told again, once they settle
             scope.launch {
                 val changes = merge(
                     documents.store.documents.map { list -> list.map { it.id to it.modifiedAt } }.distinctUntilChanged().map { },
-                    attachments?.changes?.map { } ?: emptyFlow()
+                    attachments?.changes?.map { } ?: emptyFlow(),
+                    catalogChanged
                 )
                 @OptIn(FlowPreview::class)
                 changes.debounce(HEADS_SETTLE_MS).collect { tellHeads() }
@@ -405,6 +411,47 @@ public class SyncEngine(
         val member = access.membershipOf(documentId, null)?.memberOf(target) ?: return
         val state = access.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
         onMembershipChanged(documentId, state, from = null, access = access)
+    }
+
+    /**
+     * Whether the document [documentId], shared on its own, stays out of the shared folder
+     * [spaceId] when it would be brought in (see `SpaceLibrary` and `docs/plans/shared-access.md`):
+     * the folder does not let this device bring it in (its owner, or a member it granted
+     * [Capability.BRING_SHARED] or [Capability.SHARE_INSIDE]), or its own sharing is another
+     * device's and does not name the folder (its owner's consent). A document not shared on its own
+     * is not kept out.
+     */
+    public suspend fun keepsApart(spaceId: String, documentId: String): Boolean {
+        val own = sharing.stateOf(documentId, null) ?: return false
+        if (own.members == null) return false
+        val spaceSharing = spaceSharing ?: return true
+        if (!spaceSharing.mayShareItem(spaceId)) return true
+        if (own.owner == device) return false
+        val membership = sharing.membershipOf(documentId, null) ?: return true
+        return membership.spaces.none { it.space == spaceId && it.writesUpTo == null } && own.placement?.ref?.space != spaceId
+    }
+
+    /**
+     * Puts the document [documentId] into the shared folder [spaceId] of [spaceOwner], as far as its
+     * own sharing goes (see `docs/plans/shared-access.md`): its owner names the folder
+     * ([SpaceRef]); a member it granted [Capability.PLACE_IN_SPACES] signs a [Placement]. The
+     * folder takes it in when its library brings it there.
+     *
+     * @return whether the own sharing of the document names the folder now.
+     */
+    public suspend fun place(documentId: String, spaceId: String, spaceOwner: String): Boolean {
+        val own = sharing.stateOf(documentId, null) ?: return false
+        val membership = own.members ?: return false
+        val ref = SpaceRef(spaceId, spaceOwner)
+        if (own.owner == device) {
+            sharing.nameSpace(documentId, ref)?.let { onMembershipChanged(documentId, it, from = null) }
+        } else {
+            val replica = membership.memberOf(device)?.replica ?: return false
+            if (!membership.holds(Capability.PLACE_IN_SPACES, replica, Long.MAX_VALUE)) return false
+            sharing.keepPlacement(documentId, Placement.sign(identity, documentId, ref))
+        }
+        spaces?.reconcile()
+        return true
     }
 
     /**
@@ -1256,6 +1303,8 @@ public class SyncEngine(
         state.key?.let { key -> targets.forEach { it.send(KeyUpdate(state.epoch, key.encode())) } }
         // A shared folder: its documents follow it, their connections told
         if (access !== sharing) followSpace(documentId)
+        // A document's own sharing naming other folders: their libraries may take it in now
+        if (access === sharing && via == null) spaces?.reconcile()
     }
 
     /**
@@ -1290,7 +1339,17 @@ public class SyncEngine(
         val spaceSharing = spaceSharing ?: return
         val library = spaces ?: return
         val own = sharing.stateOf(documentId, null) ?: return
-        if (own.owner != device || own.members == null || own.members?.ended == true) return
+        if (own.members == null || own.members?.ended == true) return
+        if (own.owner != device) {
+            // Owned by another device, brought in with its consent: the folder names its sharing
+            val membership = sharing.membershipOf(documentId, null) ?: return
+            for (state in sharing.accessOf(documentId)?.spaces.orEmpty()) {
+                val space = state.space ?: continue
+                val consented = membership.spaces.any { it.space == space && it.writesUpTo == null } || own.placement?.ref?.space == space
+                if (consented && spaceSharing.mayShareItem(space)) library.shareItem(space, documentId, documentId, own.owner)
+            }
+            return
+        }
         for (state in sharing.accessOf(documentId)?.spaces.orEmpty()) {
             val space = state.space ?: continue
             val spaceOwner = spaceSharing.spaces.stateOf(space)?.owner ?: continue
@@ -1323,7 +1382,9 @@ public class SyncEngine(
         for (state in access.all + access.learned) {
             if (!state.learned && state.space == link.via) continue
             val signed = state.membership ?: continue
-            link.send(AccessMembership(signed, state.owner, state.placement))
+            // The placement this device made, to the folder it names
+            val placement = state.placement?.takeIf { state.learned || it.ref.space == link.via }
+            link.send(AccessMembership(signed, state.owner, placement))
         }
     }
 
@@ -1763,6 +1824,7 @@ public class SyncEngine(
     private suspend fun onLocalCatalogOperation(spaceId: String, operation: CatalogOperation) {
         // A document added or taken out: shared through the space or not
         followSpace(spaceId)
+        catalogChanged.tryEmit(Unit)
         for (link in linksOf(spaceId).filter { it.space && it.authorized }) {
             link.catalogLock.withLock { if (link.catalogCaughtUp) sendCatalog(link, listOf(operation)) }
         }
@@ -1851,6 +1913,7 @@ public class SyncEngine(
         val operations = batch.map { it.first }
         library.receive(spaceId, operations)
         followSpace(spaceId)
+        catalogChanged.tryEmit(Unit)
         // To the other members connected about the folder (never back)
         for (other in linksOf(spaceId).filter { it !== link && it.space && it.authorized }) {
             other.catalogLock.withLock { if (other.catalogCaughtUp) sendCatalog(other, operations) }

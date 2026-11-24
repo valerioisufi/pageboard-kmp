@@ -881,8 +881,8 @@ public final class io/github/valerioisufi/pageboard/store/space/SpaceCatalog$Com
 }
 
 public final class io/github/valerioisufi/pageboard/store/space/SpaceLibrary {
-	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function4;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/store/DocumentStore;Lio/github/valerioisufi/pageboard/store/space/SpaceStore;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;JLkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun admits (Ljava/lang/String;Lio/github/valerioisufi/pageboard/store/space/CatalogOperation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun confirmGivers (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun folderOf-YNEx5aM (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
