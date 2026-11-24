@@ -214,7 +214,7 @@ further were put to the maintainer, who chose phases 2 and 3 both (see Decisions
 | Phase | Content | Status |
 |---|---|---|
 | 0. This plan | Written, the decisions below for the maintainer | done (approved 2026-11-24) |
-| 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | done (the copy of the maintainer's database: to do, by the maintainer) |
+| 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | done |
 | 2. The owner preferred | `onSnapshot` waiting for the owner while it is connected and lists the document. Tests: Bob and Ada both connected, Ada's snapshot taken; Ada away, Bob's taken | done |
 | 3. The giver confirmed | `ConfirmGiver` admitted from the owner only, the piece `giver`, `mayGive` by it, the owner confirming on receipt; `PROTOCOL_VERSION` 3, `ProtocolFormatTest`. Tests: a confirmation from an editor refused; once confirmed, a removal and re-addition by Eve leaving her no giver; random `ConfirmGiver` bytes to the decoder; the sync modules on the iOS simulator | done |
 
@@ -275,8 +275,15 @@ further were put to the maintainer, who chose phases 2 and 3 both (see Decisions
   ./gradlew :pageboard-store-room:jvmTest --tests '*CatalogsOfACopyCheck*' -Ppageboard.catalogCopy=<copy of the database file>
   ```
 
-* Still to do, by the maintainer: that check on a copy of the PencilNotes database (`CLAUDE.md`:
-  `~/.pencilnotes` is not touched while verifying). It was run here without a copy only.
+* Checked on a copy of the PencilNotes database of the MacBook (2026-11-24, asked by the
+  maintainer). The database, its journal and its index were copied while only the MCP server of
+  PencilNotes was running, and the copy's integrity checked. The original was only read.
+  * Schema 25, one space (the shared library): 44 items (38 documents, 6 folders), 5 operations in
+    its log.
+  * All 44 were of before, and all were completed from the log. Every one was brought by the
+    replica of the MacBook, with one arrival and no removal, so no `broughtBy` changed and none
+    was unexplained.
+  * The other device made one change, a folder put in the trash.
 
 ### Phase 2 results
 
