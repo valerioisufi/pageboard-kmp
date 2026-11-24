@@ -4,7 +4,9 @@ import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.AES
 import dev.whyoleg.cryptography.operations.AuthenticatedCipher
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.ByteString
 
 /**
  * An operation of a document as it travels: its identity in clear (the [replica] that made it and
@@ -15,12 +17,14 @@ import kotlinx.serialization.Serializable
  * content, so that it cannot be changed on the way (see [OperationSeal]), and a member cannot make
  * one pass for another member's.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 public class SealedOperation(
     public val replica: String,
     public val sequence: Long,
-    public val content: ByteArray,
-    public val signature: ByteArray
+    // Byte strings since protocol 2 (arrays of numbers before, decoded one at a time)
+    @ByteString public val content: ByteArray,
+    @ByteString public val signature: ByteArray
 )
 
 /**

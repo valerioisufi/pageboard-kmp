@@ -13,6 +13,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.cbor.ByteString
 import kotlinx.serialization.cbor.Cbor
 
 /**
@@ -140,8 +141,9 @@ internal data class ResourceRequest(val asks: List<ResourceAsk>) : SyncMessage
 
 /**
  * A part of the file of the resource [id] ([total] bytes, named with [extension]): its bytes from
- * [offset].
+ * [offset], as a byte string (since protocol 2: an array of numbers before, decoded one at a time).
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @SerialName("resourceChunk")
 internal class ResourceChunk(
@@ -149,7 +151,7 @@ internal class ResourceChunk(
     val extension: String,
     val offset: Long,
     val total: Long,
-    val bytes: ByteArray
+    @ByteString val bytes: ByteArray
 ) : SyncMessage
 
 /** The file of the resource [id] is not on the device asked for it. */
@@ -188,7 +190,11 @@ internal data class AttachmentAsk(val key: String, val version: String, val from
 @SerialName("attachmentRequest")
 internal data class AttachmentRequest(val asks: List<AttachmentAsk>) : SyncMessage
 
-/** A part of the item [key] beside the document at [version] ([size] bytes): its bytes from [offset]. */
+/**
+ * A part of the item [key] beside the document at [version] ([size] bytes): its bytes from
+ * [offset], as a byte string (since protocol 2).
+ */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @SerialName("attachmentPart")
 internal class AttachmentPart(
@@ -196,7 +202,7 @@ internal class AttachmentPart(
     val version: String,
     val offset: Long,
     val size: Long,
-    val bytes: ByteArray
+    @ByteString val bytes: ByteArray
 ) : SyncMessage
 
 /**

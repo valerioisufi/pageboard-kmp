@@ -8,6 +8,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.PROTOCOL_VERSION
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.ByteString
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
@@ -67,8 +68,10 @@ class ProtocolFormatTest {
             }
             val fields = (0 until descriptor.elementsCount).joinToString { i ->
                 val field = descriptor.getElementName(i) + if (descriptor.isElementOptional(i)) "?" else ""
+                // Bytes travel as a byte string or as an array of numbers (protocol 1)
+                val type = if (descriptor.getElementAnnotations(i).any { it is ByteString }) "ByteString" else typeOf(descriptor.getElementDescriptor(i))
                 // The entries of an enumeration are their names
-                if (descriptor.kind == SerialKind.ENUM) field else "$field: ${typeOf(descriptor.getElementDescriptor(i))}"
+                if (descriptor.kind == SerialKind.ENUM) field else "$field: $type"
             }
             lines.add("${descriptor.serialName.removeSuffix("?")} ${descriptor.kind}($fields)")
             if (descriptor.kind != SerialKind.ENUM) descriptor.elementDescriptors.forEach(::visit)

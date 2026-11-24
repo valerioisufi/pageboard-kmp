@@ -5,11 +5,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 
 /**
- * The version of the protocol of the synchronization. Still 1: its format is recorded again while
- * the applications are on the devices of their author only (the addresses of the devices,
- * [DeviceAddress], and the signed operations, [OperationProof], came so).
+ * The version of the protocol of the synchronization. 2: the files and the sealed operations travel
+ * as byte strings (docs/plans/ios-stability.md). Version 1 had the addresses of the devices
+ * ([DeviceAddress]) and the signed operations ([OperationProof]), its format recorded again while
+ * the applications were on the devices of their author only.
  */
-public const val PROTOCOL_VERSION: Int = 1
+public const val PROTOCOL_VERSION: Int = 2
 
 /**
  * The first frame of a connection, in clear: the version of the protocol and the document the

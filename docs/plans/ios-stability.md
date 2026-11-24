@@ -54,9 +54,11 @@ The responsibilities are assigned following the GRASP principles.
    once per change.
 4. The presence costs on the main thread what the stroke gained since the last one, and one timer
    per document worked on.
-5. Nothing changes in what is stored or what travels: no migration, no protocol change.
+5. Nothing changes in what is stored: no migration. What travels changes in phase 6 only.
 6. The search indexes off the main thread, and a document it cannot read never stops the
    application.
+7. The bytes of a file and of an operation travel as they are (protocol 2, agreed with the
+   maintainer on 2026-11-24): no stored data changes, and what is signed stays the same.
 
 ## Design
 
@@ -91,6 +93,16 @@ The responsibilities are assigned following the GRASP principles.
   `SearchIndex` makes the table of the handwriting again when its columns are not the ones it
   writes: the readings are a cache of the strokes, read again.
 
+* **Protected Variations (protocol 2).** `@ByteString` on the bytes that travel only:
+  `ResourceChunk.bytes`, `AttachmentPart.bytes` (the files), `SealedOperation.content` and
+  `.signature` (every operation, sealed). Not `alwaysUseByteString`: the same `Cbor` encodes the
+  operations the proofs sign (`SyncCodec.encodeOperation`), and the proofs kept would no longer
+  match; what is stored (the memberships, the addresses) is JSON, which the annotation leaves alone.
+  `PROTOCOL_VERSION` goes to 2, and with it the associated data of the channels and of the sealed
+  operations and the ALPN of iroh: a device of version 1 is refused at the first frame and told
+  (`otherVersionMet`) on the local network, and does not meet the others over iroh.
+  `ProtocolFormatTest` describes the byte strings (`ByteString`), and records format 2.
+
 ## Phases
 
 | Step | Content | Status |
@@ -100,6 +112,7 @@ The responsibilities are assigned following the GRASP principles.
 | 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | done |
 | 4 | The presence built from what the stroke gained, the stroke copied only for a document followed | done |
 | 5 | The search indexed off the main thread; a document it cannot read and an older table of the handwriting never stop the application | done |
+| 6 | Protocol 2: the files and the operations as CBOR byte strings | done |
 
 ## Decisions
 
@@ -119,6 +132,11 @@ Taken alone, revertible:
 * **The table of the handwriting is made again** when its columns differ, rather than migrated:
   it only holds what the readers read from the strokes, and the strokes are kept.
 
+* **No compatibility with protocol 1** (the decision of the maintainer, 2026-11-24): the
+  applications are on the devices of the maintainer, updated together.
+* **The small bytes of the handshake stay arrays** (`Challenge.nonce`, `Hello.proof`): a few
+  dozen bytes, not worth a wider change.
+
 ## Left for later
 
 * The desktop (JVM) races the same cache of Compose (`WeakHashMap`): `onTextLayoutThread` on the
@@ -127,9 +145,6 @@ Taken alone, revertible:
   between threads (to report to JetBrains).
 * Why the popup of Compose gives an infinite height in landscape on iOS (to report to JetBrains with
   a reproduction).
-* The chunks of the files as CBOR byte strings (`@ByteString` on `ResourceChunk.bytes` and
-  `AttachmentPart.bytes`): half the bytes and a fast decoding, but a protocol change (every device
-  updated together, `PROTOCOL_VERSION`, `ProtocolFormatTest`), to agree on first.
 * The list of the documents (`RoomDocumentStore.documents`) mapped again on the main thread at
   every document arriving, the advertisement of Bonjour and the duration of a lecture whose audio
   arrives (`Lecture.audioReceived`, reading the new pages of the file) on the main thread: small in
