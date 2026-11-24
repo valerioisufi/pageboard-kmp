@@ -111,6 +111,27 @@ public data class RestoreItem(val id: String) : CatalogChange {
 }
 
 /**
+ * Confirms [replica] as the one giving the item [id] to a device without it (see
+ * [CatalogItem.giver] and `docs/plans/brought-by.md`): the replica that brought it, confirmed by the
+ * owner of the space once it has the item. Taken from the owner only (the sharing of the space
+ * says who it is). Adding the item again, or taking it out, does not change it.
+ */
+@Serializable
+@SerialName("confirmGiver")
+public data class ConfirmGiver(val id: String, val replica: String) : CatalogChange {
+    override val ids: List<String> get() = listOf(id)
+
+    override fun applyTo(catalog: SpaceCatalog, stamp: Stamp): CatalogChange? {
+        val item = catalog.itemOrNew(id)
+        if (stamp <= item.confirmed) return null
+        catalog.put(item.copy(giver = replica, confirmed = stamp))
+        return ConfirmGiver(id, item.giver)
+    }
+
+    override fun isWellFormed(): Boolean = super.isWellFormed() && replica.length <= SpaceCatalog.MAX_ID_LENGTH
+}
+
+/**
  * Takes the item [id] out of the space, with what it holds: every device keeps its copy, no longer
  * shared (see `docs/plans/shared-folders.md`).
  */

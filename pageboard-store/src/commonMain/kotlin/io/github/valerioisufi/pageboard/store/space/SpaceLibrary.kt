@@ -191,6 +191,24 @@ public class SpaceLibrary(
     /** What the space [spaceId] holds, as the library shows it. */
     public suspend fun view(spaceId: String): List<CatalogEntry> = mutex.withLock { sessions[spaceId]?.session?.catalog?.view().orEmpty() }
 
+    /**
+     * Confirms who gives each document of [spaceId] that this device has and that has no giver yet:
+     * the replica that brought it (see [ConfirmGiver]), a change of this device. Made by the owner of
+     * the space only (the sharing of `pageboard-sync` decides it): the other devices refuse it from
+     * anyone else.
+     *
+     * @return how many documents were confirmed.
+     */
+    public suspend fun confirmGivers(spaceId: String): Int = mutex.withLock {
+        val space = sessions[spaceId] ?: return@withLock 0
+        val unconfirmed = space.session.catalog.view().filter { it.kind == CatalogItemKind.DOCUMENT && it.giver.isEmpty() && it.broughtBy.isNotEmpty() }
+        if (unconfirmed.isEmpty()) return@withLock 0
+        val here = libraryItems()
+        val changes = unconfirmed.filter { it.id in here }.map { ConfirmGiver(it.id, it.broughtBy) }
+        submitLocked(space, changes)
+        changes.size
+    }
+
     /** Whether [operation] of another device may be received in [spaceId] (see [CatalogSession.admits]). */
     public suspend fun admits(spaceId: String, operation: CatalogOperation): Boolean =
         mutex.withLock { sessions[spaceId]?.session?.admits(operation) ?: false }

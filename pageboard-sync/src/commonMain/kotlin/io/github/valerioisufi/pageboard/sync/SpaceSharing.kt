@@ -4,7 +4,10 @@ import io.github.valerioisufi.pageboard.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.pageboard.sync.protocol.MembershipKind
 import io.github.valerioisufi.pageboard.sync.protocol.OperationProof
 import io.github.valerioisufi.pageboard.sync.protocol.Role
+import io.github.valerioisufi.pageboard.store.space.CatalogChange
 import io.github.valerioisufi.pageboard.store.space.CatalogItemKind
+import io.github.valerioisufi.pageboard.store.space.CompositeCatalogChange
+import io.github.valerioisufi.pageboard.store.space.ConfirmGiver
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.space.StoredSpace
@@ -21,7 +24,11 @@ import io.github.valerioisufi.pageboard.store.space.StoredSpace
  *   the owner and the membership of the space, so that the engine works on it as on a document
  *   shared on its own, and a member admitted, made reader or removed is so for every document;
  * * a change of the catalog is taken signed by the device of its replica ([admitsChange]), a
- *   document from the device that brought it or from the owner ([mayGive]).
+ *   document from the owner, or from the device the owner confirmed as its giver, or, until the
+ *   owner confirmed one, from the device that brought it ([mayGive]);
+ * * the owner confirms who gives each document once it has it ([confirmGivers], see
+ *   `docs/plans/brought-by.md`): a member adding a document again, or taking it out and adding it
+ *   again, does not make itself the one it is taken from.
  */
 internal class SpaceSharing(
     private val library: SpaceLibrary,
@@ -57,7 +64,8 @@ internal class SpaceSharing(
      * through it anymore (each device keeps its copy).
      */
     suspend fun follow(spaceId: String) {
-        val inSpace = library.view(spaceId).filter { it.kind == CatalogItemKind.DOCUMENT }.map { it.id }.toSet()
+        val view = library.view(spaceId)
+        val inSpace = view.filter { it.kind == CatalogItemKind.DOCUMENT }.map { it.id }.toSet()
         for (documentId in inSpace) {
             val state = documentState(spaceId, documentId) ?: break
             documents.follow(documentId, state)
@@ -65,6 +73,16 @@ internal class SpaceSharing(
         for ((documentId, state) in documents.all()) {
             if (state.space == spaceId && documentId !in inSpace) documents.forget(documentId)
         }
+        if (view.any { it.kind == CatalogItemKind.DOCUMENT && it.giver.isEmpty() }) confirmGivers(spaceId)
+    }
+
+    /**
+     * The owner of [spaceId] confirms who gives each document of it that it has (the device that
+     * brought it, see [SpaceLibrary.confirmGivers]); nothing on another device.
+     */
+    suspend fun confirmGivers(spaceId: String) {
+        if (spaces.stateOf(spaceId)?.owner != device) return
+        library.confirmGivers(spaceId)
     }
 
     /** This device leaves [spaceId] (left, removed, the sharing ended): neither the space nor its documents are shared anymore. */
@@ -86,20 +104,28 @@ internal class SpaceSharing(
         val id = operation.id
         val author = membership.deviceOf(id.replica) ?: return false
         if (!proof.isCatalogBy(author, spaceId, id.replica, id.sequence)) return false
+        // Who gives a document: the owner's to confirm
+        if (operation.change.confirmsGiver() && author != membership.owner) return false
         return membership.mayWrite(id.replica, id.sequence)
     }
 
+    private fun CatalogChange.confirmsGiver(): Boolean =
+        this is ConfirmGiver || this is CompositeCatalogChange && changes.any { it is ConfirmGiver }
+
     /**
      * Whether [giver] may give the document [documentId] of [spaceId] to a device without it: the
-     * owner of the space, or the member whose replica brought it into the space (see
+     * owner of the space, or the member whose replica the owner confirmed as its giver (see
+     * [io.github.valerioisufi.pageboard.store.space.CatalogItem.giver]), or, until it confirmed one,
+     * the member whose replica brought it into the space (see
      * [io.github.valerioisufi.pageboard.store.space.CatalogItem.broughtBy]).
      */
     suspend fun mayGive(spaceId: String, documentId: String, giver: String): Boolean {
         val state = spaces.stateOf(spaceId) ?: return false
         if (giver == state.owner) return true
         val membership = state.members ?: return false
-        val broughtBy = library.view(spaceId).firstOrNull { it.id == documentId && it.kind == CatalogItemKind.DOCUMENT }?.broughtBy ?: return false
-        return membership.deviceOf(broughtBy) == giver
+        val entry = library.view(spaceId).firstOrNull { it.id == documentId && it.kind == CatalogItemKind.DOCUMENT } ?: return false
+        val replica = entry.giver.ifEmpty { entry.broughtBy }
+        return replica.isNotEmpty() && membership.deviceOf(replica) == giver
     }
 
     /** The role of this device in [spaceId], `null` when it is not a member. */

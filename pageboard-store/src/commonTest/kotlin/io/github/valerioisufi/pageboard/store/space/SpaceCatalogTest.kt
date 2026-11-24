@@ -202,6 +202,34 @@ class SpaceCatalogTest {
     }
 
     @Test
+    fun theGiverConfirmedStaysWhateverIsAddedLater() {
+        val a = session("a")
+        val e = session("e")
+        e.receive(a.submit(AddDocument("d", null))!!.operation)
+        now += 1
+        val confirm = assertNotNull(a.submit(ConfirmGiver("d", "a")))
+        e.receive(confirm.operation)
+        // Taken out and added again by Eve: she brought it, Ada still gives it
+        now += 1
+        a.receive(e.submit(RemoveFromSpace("d"))!!.operation)
+        now += 1
+        a.receive(e.submit(AddDocument("d", null))!!.operation)
+        for (catalog in listOf(a.catalog, e.catalog)) {
+            assertEquals("e", catalog.entry("d")?.broughtBy)
+            assertEquals("a", catalog.entry("d")?.giver)
+        }
+        // The most recent confirmation wins, and undoes
+        now += 1
+        val again = assertNotNull(a.submit(ConfirmGiver("d", "e")))
+        assertEquals("e", a.catalog.entry("d")?.giver)
+        now += 1
+        a.submit(again.inverse!!)
+        assertEquals("a", a.catalog.entry("d")?.giver)
+        assertTrue(a.catalog.latestStamp() >= a.catalog["d"]!!.confirmed)
+        assertFalse(ConfirmGiver("d", "x".repeat(SpaceCatalog.MAX_ID_LENGTH + 1)).isWellFormed(), "a replica too long")
+    }
+
+    @Test
     fun anOperationNotAdmittedIsRefused() {
         val a = session("a")
         fun op(replica: String, stampReplica: String = replica, time: Long = now, change: CatalogChange = AddFolder("f", "F", null)) =

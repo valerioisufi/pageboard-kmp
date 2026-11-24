@@ -1682,6 +1682,8 @@ public class SyncEngine(
         link.sync = sync
         // Kept with the document now that it is here
         sharing.saveAgain(link.documentId)
+        // The owner of its folder, having it now, confirms who gives it
+        sharing.stateOf(link.documentId)?.space?.let { spaceSharing?.confirmGivers(it) }
         link.peerHello?.let { catchUp(link, sync, it) }
     }
 

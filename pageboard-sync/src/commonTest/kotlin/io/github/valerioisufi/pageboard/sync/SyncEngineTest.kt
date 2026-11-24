@@ -51,6 +51,7 @@ import io.github.valerioisufi.pageboard.store.space.AddDocument
 import io.github.valerioisufi.pageboard.store.space.AddFolder
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
 import io.github.valerioisufi.pageboard.store.space.CompositeCatalogChange
+import io.github.valerioisufi.pageboard.store.space.ConfirmGiver
 import io.github.valerioisufi.pageboard.store.space.MoveItem
 import io.github.valerioisufi.pageboard.store.space.RemoveFromSpace
 import io.github.valerioisufi.pageboard.store.space.RenameFolder
@@ -1504,7 +1505,7 @@ class SyncEngineTest {
     /** Changes of a shared folder of every kind, as a device makes them. */
     private fun catalogOperations(): List<CatalogOperation> = listOf(
         AddFolder("f", "Week 1", null), AddDocument("d", "f"), RenameFolder("f", "Week one"), MoveItem("d", null),
-        TrashItem("f"), RestoreItem("f"), RemoveFromSpace("d"),
+        TrashItem("f"), RestoreItem("f"), RemoveFromSpace("d"), ConfirmGiver("d", "ada"),
         CompositeCatalogChange(listOf(AddFolder("g", "Week 2", "f"), AddDocument("e", "g")))
     ).mapIndexed { i, change -> CatalogOperation(OperationId("ada", i + 1L), Stamp(1_000L + i, 0, "ada"), change) }
 

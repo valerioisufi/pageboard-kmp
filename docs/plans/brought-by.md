@@ -172,7 +172,7 @@ needed, and would change what it does to the place.
 After phase 1, an editor can still take an item out (`RemoveFromSpace`) and add it again. Every
 device sees it: the item leaves the shared folder (each device keeps its copy, moved to the folder
 holding the root) and comes back. The editor then brought it, and can give it. Three ways to go
-further, for the maintainer to choose:
+further were put to the maintainer, who chose phases 2 and 3 both (see Decisions):
 
 * **Nothing more.** The takeover is visible. The editor could also make a new document of its own
   with the same content. What it gains is the identifier of `d`, and with it the operations the
@@ -213,10 +213,10 @@ further, for the maintainer to choose:
 
 | Phase | Content | Status |
 |---|---|---|
-| 0. This plan | Written, the decisions below for the maintainer | done (to approve) |
+| 0. This plan | Written, the decisions below for the maintainer | done (approved 2026-11-24) |
 | 1. Who brought it | `CatalogItem.arrivals` and `removed`; `add` keeping the arrivals and leaving `broughtBy` to them; `RemoveFromSpace` dropping the ones before it; `CatalogMigration` completing the items of before from the log; the ABI of `pageboard-store` recorded again (additions). Tests: `SpaceCatalogTest`: a re-addition keeping who brought it; the three operations of the example in every order; random additions, re-additions and removals by three devices in random orders giving the same `broughtBy` (with the convergence tests of today); an undo of a removal. `SpaceSharingTest`: Eve re-adding Bob's document is not a giver, Bob still is. `SharedFoldersSyncTest`: Carol joining gets the document from Bob or Ada and never takes Eve's snapshot, and taking it out and adding it again makes Eve the giver, on every device. `checkSpaceStore` on both stores: an item of before completed from the log; an item whose log does not explain it kept and reported; a value of format 1 read. The copy of the maintainer's database: the items whose `broughtBy` changes counted and listed, the original untouched | done (the copy of the maintainer's database: to do, by the maintainer) |
 | 2. The owner preferred | `onSnapshot` waiting for the owner while it is connected and lists the document. Tests: Bob and Ada both connected, Ada's snapshot taken; Ada away, Bob's taken | done |
-| 3. The giver confirmed (if chosen) | `ConfirmGiver` admitted from the owner only, the piece `giver`, `mayGive` by it, the owner confirming on receipt; `ProtocolFormatTest`; with the protocol change of shared-access if both are taken. Tests: a confirmation from an editor refused; once confirmed, a removal and re-addition by Eve leaving her no giver; random `ConfirmGiver` bytes to the decoder; the sync modules on the iOS simulator | to do |
+| 3. The giver confirmed | `ConfirmGiver` admitted from the owner only, the piece `giver`, `mayGive` by it, the owner confirming on receipt; `PROTOCOL_VERSION` 3, `ProtocolFormatTest`. Tests: a confirmation from an editor refused; once confirmed, a removal and re-addition by Eve leaving her no giver; random `ConfirmGiver` bytes to the decoder; the sync modules on the iOS simulator | done |
 
 ### Phase 1 results
 
@@ -296,6 +296,50 @@ further, for the maintainer to choose:
   * Dan joins while Ada is away (her engine stopped). He takes the notes from Bob, who brought
     them.
   * Without the rule the test fails (checked by removing it).
+
+### Phase 3 results
+
+* `ConfirmGiver(id, replica)` (`pageboard-store`): a catalog change setting the pieces `giver` and
+  `confirmed` of an item (last-writer-wins, with an inverse), never touched by an addition or a
+  removal. `CatalogEntry.giver` carries it to the view, and `latestStamp` counts it.
+* `SpaceSharing.admitsChange` takes a `ConfirmGiver` (alone, or in a composite) from the owner of
+  the space only: from another member it closes the connection, as any change not admitted.
+* `SpaceSharing.mayGive`: the owner, or the device of the confirmed giver, or, while none is
+  confirmed, the device of the one who brought the document.
+* Who confirms, and when: the owner of the space, for every document of it that it has and that
+  has no giver yet, the giver being the one who brought it (`SpaceLibrary.confirmGivers`).
+  * It runs after each change of the catalog, of the membership or of the keys
+    (`SpaceSharing.follow`), and after a document of the folder arrives (`SyncEngine.onSnapshot`).
+  * So the owner's own documents are confirmed as soon as they are in the folder, and a member's
+    as soon as the owner has them.
+  * A catalog of before gets its confirmations at the first start of the owner.
+* `PROTOCOL_VERSION` 3, so the ALPN of iroh is `pageboard/sync/3`. `ProtocolFormats` records
+  format 3: format 2 with `confirmGiver`. A device on 2 meets the other version and is told so
+  (`otherVersionMet`).
+* Tests:
+  * `SpaceCatalogTest.theGiverConfirmedStaysWhateverIsAddedLater`: Eve taking a document out and
+    adding it again brought it, and Ada still gives it. The most recent confirmation wins and is
+    undone, and a replica too long is refused.
+  * `SpaceSharingTest`: Ada's notes confirmed as hers. Bob confirming, alone or in a composite, is
+    refused, and Ada confirming is admitted. Bob's document, which Ada does not have, has no giver
+    yet.
+  * `SharedFoldersSyncTest.aMemberTakingADocumentOutAndBackDoesNotGiveIt`, through the engines:
+    * Bob's notes reach Ada, who confirms Bob.
+    * Eve takes them out of the folder and puts them back: she brought them, and Bob still gives
+      them.
+    * Carl joins while Ada is away and meets Eve first: he gets nothing from her, then the notes
+      from Bob.
+    * Without the confirmation the test fails (checked by removing it from `mayGive`). A
+      confirmation admitted from any member fails `SpaceSharingTest`.
+  * `whatADeviceSendsNeverMakesTheDecodingFail` decodes the catalog changes changed at random,
+    `confirmGiver` now among the operations it changes.
+  * `SerialNamesTest` records the serial name `confirmGiver`.
+  * The tests of the sync modules on the iOS simulator.
+* The ABI of `pageboard-store` is recorded again. Meant: the constructor and `copy` of
+  `CatalogItem` and `CatalogEntry` take the new fields. The rest are additions (`ConfirmGiver`,
+  `SpaceLibrary.confirmGivers`). The ABI of `pageboard-sync-protocol` records no value of a
+  constant, so `PROTOCOL_VERSION` 3 leaves it as it was.
+* `CLAUDE.md` names protocol 3.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh`, since
 `pageboard-store` is published) and the tests of the sync modules on the iOS simulator. One commit

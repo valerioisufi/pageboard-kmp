@@ -192,10 +192,12 @@ final class io.github.valerioisufi.pageboard.store.space/AddFolder : io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.store.space/CatalogEntry { // io.github.valerioisufi.pageboard.store.space/CatalogEntry|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind, kotlin/String, kotlin/String?, kotlin/Boolean, kotlin/String) // io.github.valerioisufi.pageboard.store.space/CatalogEntry.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind, kotlin/String, kotlin/String?, kotlin/Boolean, kotlin/String, kotlin/String = ...) // io.github.valerioisufi.pageboard.store.space/CatalogEntry.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String){}[0]
 
     final val broughtBy // io.github.valerioisufi.pageboard.store.space/CatalogEntry.broughtBy|{}broughtBy[0]
         final fun <get-broughtBy>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.broughtBy.<get-broughtBy>|<get-broughtBy>(){}[0]
+    final val giver // io.github.valerioisufi.pageboard.store.space/CatalogEntry.giver|{}giver[0]
+        final fun <get-giver>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.giver.<get-giver>|<get-giver>(){}[0]
     final val id // io.github.valerioisufi.pageboard.store.space/CatalogEntry.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.id.<get-id>|<get-id>(){}[0]
     final val kind // io.github.valerioisufi.pageboard.store.space/CatalogEntry.kind|{}kind[0]
@@ -213,19 +215,24 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogEntry { // io.gi
     final fun component4(): kotlin/String? // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component4|component4(){}[0]
     final fun component5(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component5|component5(){}[0]
     final fun component6(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component6|component6(){}[0]
-    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/CatalogEntry // io.github.valerioisufi.pageboard.store.space/CatalogEntry.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String){}[0]
+    final fun component7(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/CatalogEntry // io.github.valerioisufi.pageboard.store.space/CatalogEntry.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind;kotlin.String;kotlin.String?;kotlin.Boolean;kotlin.String;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogEntry.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/CatalogEntry.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogEntry.toString|toString(){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.store.space/CatalogItem { // io.github.valerioisufi.pageboard.store.space/CatalogItem|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> = ...) // io.github.valerioisufi.pageboard.store.space/CatalogItem.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String?;io.github.valerioisufi.pageboard.model.Stamp;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.Stamp>){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ...) // io.github.valerioisufi.pageboard.store.space/CatalogItem.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String?;io.github.valerioisufi.pageboard.model.Stamp;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.Stamp>;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp){}[0]
 
     final val arrivals // io.github.valerioisufi.pageboard.store.space/CatalogItem.arrivals|{}arrivals[0]
         final fun <get-arrivals>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.store.space/CatalogItem.arrivals.<get-arrivals>|<get-arrivals>(){}[0]
     final val broughtBy // io.github.valerioisufi.pageboard.store.space/CatalogItem.broughtBy|{}broughtBy[0]
         final fun <get-broughtBy>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.broughtBy.<get-broughtBy>|<get-broughtBy>(){}[0]
+    final val confirmed // io.github.valerioisufi.pageboard.store.space/CatalogItem.confirmed|{}confirmed[0]
+        final fun <get-confirmed>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.confirmed.<get-confirmed>|<get-confirmed>(){}[0]
+    final val giver // io.github.valerioisufi.pageboard.store.space/CatalogItem.giver|{}giver[0]
+        final fun <get-giver>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.giver.<get-giver>|<get-giver>(){}[0]
     final val id // io.github.valerioisufi.pageboard.store.space/CatalogItem.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.id.<get-id>|<get-id>(){}[0]
     final val inSpace // io.github.valerioisufi.pageboard.store.space/CatalogItem.inSpace|{}inSpace[0]
@@ -254,6 +261,8 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogItem { // io.git
     final fun component11(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.component11|component11(){}[0]
     final fun component12(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.component12|component12(){}[0]
     final fun component13(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.store.space/CatalogItem.component13|component13(){}[0]
+    final fun component14(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.component14|component14(){}[0]
+    final fun component15(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.component15|component15(){}[0]
     final fun component2(): io.github.valerioisufi.pageboard.store.space/CatalogItemKind? // io.github.valerioisufi.pageboard.store.space/CatalogItem.component2|component2(){}[0]
     final fun component3(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogItem.component3|component3(){}[0]
     final fun component4(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.component4|component4(){}[0]
@@ -262,7 +271,7 @@ final class io.github.valerioisufi.pageboard.store.space/CatalogItem { // io.git
     final fun component7(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.component7|component7(){}[0]
     final fun component8(): kotlin/String? // io.github.valerioisufi.pageboard.store.space/CatalogItem.component8|component8(){}[0]
     final fun component9(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.store.space/CatalogItem.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> = ...): io.github.valerioisufi.pageboard.store.space/CatalogItem // io.github.valerioisufi.pageboard.store.space/CatalogItem.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String?;io.github.valerioisufi.pageboard.model.Stamp;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.Stamp>){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.store.space/CatalogItemKind? = ..., kotlin/Boolean = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/String? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/Stamp> = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/Stamp = ...): io.github.valerioisufi.pageboard.store.space/CatalogItem // io.github.valerioisufi.pageboard.store.space/CatalogItem.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogItemKind?;kotlin.Boolean;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp;kotlin.String?;io.github.valerioisufi.pageboard.model.Stamp;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.Stamp>;kotlin.String;io.github.valerioisufi.pageboard.model.Stamp){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/CatalogItem.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/CatalogItem.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/CatalogItem.toString|toString(){}[0]
@@ -386,6 +395,39 @@ final class io.github.valerioisufi.pageboard.store.space/CompositeCatalogChange 
         final val $childSerializers // io.github.valerioisufi.pageboard.store.space/CompositeCatalogChange.Companion.$childSerializers|{}$childSerializers[0]
 
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.store.space/CompositeCatalogChange> // io.github.valerioisufi.pageboard.store.space/CompositeCatalogChange.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.store.space/ConfirmGiver : io.github.valerioisufi.pageboard.store.space/CatalogChange { // io.github.valerioisufi.pageboard.store.space/ConfirmGiver|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.id.<get-id>|<get-id>(){}[0]
+    final val ids // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.ids.<get-ids>|<get-ids>(){}[0]
+    final val replica // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.replica.<get-replica>|<get-replica>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.store.space/SpaceCatalog, io.github.valerioisufi.pageboard.model/Stamp): io.github.valerioisufi.pageboard.store.space/CatalogChange? // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.applyTo|applyTo(io.github.valerioisufi.pageboard.store.space.SpaceCatalog;io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.store.space/ConfirmGiver // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.copy|copy(kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.hashCode|hashCode(){}[0]
+    final fun isWellFormed(): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.isWellFormed|isWellFormed(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.store.space/ConfirmGiver> { // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.store.space/ConfirmGiver // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.store.space/ConfirmGiver) // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.store.space.ConfirmGiver){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.store.space/ConfirmGiver> // io.github.valerioisufi.pageboard.store.space/ConfirmGiver.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -539,6 +581,7 @@ final class io.github.valerioisufi.pageboard.store.space/SpaceLibrary { // io.gi
 
     final fun stop() // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.stop|stop(){}[0]
     final suspend fun admits(kotlin/String, io.github.valerioisufi.pageboard.store.space/CatalogOperation): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.admits|admits(kotlin.String;io.github.valerioisufi.pageboard.store.space.CatalogOperation){}[0]
+    final suspend fun confirmGivers(kotlin/String): kotlin/Int // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.confirmGivers|confirmGivers(kotlin.String){}[0]
     final suspend fun folderOf(kotlin/String): kotlin/Result<kotlin/String?>? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.folderOf|folderOf(kotlin.String){}[0]
     final suspend fun has(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.has|has(kotlin.String){}[0]
     final suspend fun join(kotlin/String, kotlin/String?, kotlin/Boolean = ...): io.github.valerioisufi.pageboard.store.space/StoredSpace? // io.github.valerioisufi.pageboard.store.space/SpaceLibrary.join|join(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]

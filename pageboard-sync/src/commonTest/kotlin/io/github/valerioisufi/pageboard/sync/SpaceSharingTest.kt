@@ -6,6 +6,8 @@ import io.github.valerioisufi.pageboard.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.pageboard.store.KeyValueDocumentStore
 import io.github.valerioisufi.pageboard.store.space.AddDocument
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
+import io.github.valerioisufi.pageboard.store.space.CompositeCatalogChange
+import io.github.valerioisufi.pageboard.store.space.ConfirmGiver
 import io.github.valerioisufi.pageboard.store.space.MoveItem
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
@@ -138,6 +140,18 @@ class SpaceSharingTest {
         assertFalse(ada.sharing.mayGive(space.id, notes.id, bob.device), "added again by Bob, brought by Ada")
         assertTrue(ada.sharing.mayGive(space.id, notes.id, ada.device))
         assertTrue(ada.sharing.mayGive(space.id, "bobs", bob.device))
+
+        // Who gives a document: the owner confirms it (its notes, which it has), and only the owner
+        assertEquals(ada.replica(), ada.library.view(space.id).single { it.id == notes.id }.giver)
+        val confirm = CatalogOperation(OperationId(bobReplica, 3), Stamp(currentTimeMillis() + 2, 0, bobReplica), ConfirmGiver("bobs", bobReplica))
+        assertFalse(ada.sharing.admitsChange(space.id, confirm, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 3, content)), "not the owner")
+        val inside = confirm.copy(change = CompositeCatalogChange(listOf(MoveItem("bobs", null), ConfirmGiver("bobs", bobReplica))))
+        assertFalse(ada.sharing.admitsChange(space.id, inside, OperationProof.signCatalog(bob.identity, space.id, bobReplica, 3, content)), "in a composite")
+        val adaReplica = ada.replica()
+        val ofAda = CatalogOperation(OperationId(adaReplica, 99), Stamp(currentTimeMillis() + 2, 0, adaReplica), ConfirmGiver("bobs", bobReplica))
+        assertTrue(ada.sharing.admitsChange(space.id, ofAda, OperationProof.signCatalog(ada.identity, space.id, adaReplica, 99, content)))
+        // Bob's document, not here: confirmed once Ada has it
+        assertEquals("", ada.library.view(space.id).single { it.id == "bobs" }.giver)
 
         // Bob made reader: his changes after the second one refused, the documents read only
         assertNotNull(ada.sharing.spaces.setRole(space.id, bob.device, Role.READER, lastSequence = 2))

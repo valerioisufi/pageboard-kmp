@@ -17,6 +17,8 @@ public enum class CatalogItemKind { FOLDER, DOCUMENT }
  *   replica of the first of the additions after its latest removal ([removed], [arrivals]). An
  *   addition while the item is in the space (a member adding it again) does not change it, so a
  *   member cannot make itself the one a document is taken from (see `docs/plans/brought-by.md`);
+ * * who gives it ([giver]: the replica the owner of the space confirmed, changed by [ConfirmGiver]
+ *   only), the one a document is taken from once set, whatever is added later;
  * * its [name] (a folder: the title of a document stays in the document), changed by
  *   [RenameFolder] and [AddFolder];
  * * its [parent] (a folder of the space, `null` for the root of the space), changed by [MoveItem]
@@ -49,7 +51,11 @@ public data class CatalogItem(
     /** The latest removal of the item from the space ([Stamp.ZERO]: never removed). */
     val removed: Stamp = Stamp.ZERO,
     /** The stamps of the additions after [removed], in their order: the first one brought the item. */
-    val arrivals: List<Stamp> = emptyList()
+    val arrivals: List<Stamp> = emptyList(),
+    /** The replica the owner of the space confirmed as the one giving the item ("": none yet). */
+    val giver: String = "",
+    /** The stamp of [giver]. */
+    val confirmed: Stamp = Stamp.ZERO
 ) {
     /**
      * An item kept before who brought it followed its arrivals: a presence without arrivals nor
@@ -72,7 +78,9 @@ public data class CatalogEntry(
     val name: String,
     val parent: String?,
     val trashed: Boolean,
-    val broughtBy: String
+    val broughtBy: String,
+    /** The replica the owner confirmed as the one giving the item ("": none yet, see [CatalogItem.giver]). */
+    val giver: String = ""
 )
 
 /**
@@ -99,7 +107,7 @@ public class SpaceCatalog(items: Collection<CatalogItem> = emptyList()) {
     }
 
     /** The latest stamp of the catalog: a session stamps its next changes after it. */
-    public fun latestStamp(): Stamp = byId.values.maxOfOrNull { maxOf(it.presence, it.named, it.placed, it.trashedVersion) } ?: Stamp.ZERO
+    public fun latestStamp(): Stamp = byId.values.maxOfOrNull { maxOf(maxOf(it.presence, it.named, it.placed), maxOf(it.trashedVersion, it.confirmed)) } ?: Stamp.ZERO
 
     /**
      * The items in the space as the library shows them, the same on every device with the same
@@ -141,7 +149,7 @@ public class SpaceCatalog(items: Collection<CatalogItem> = emptyList()) {
             if (!item.inSpace) return@mapNotNull null
             val parent = if (kind == CatalogItemKind.FOLDER) parents[item.id] else item.parent
             if (parent != null && !reachesRoot(parent)) return@mapNotNull null
-            CatalogEntry(item.id, kind, item.name, parent, item.trashed, item.broughtBy)
+            CatalogEntry(item.id, kind, item.name, parent, item.trashed, item.broughtBy, item.giver)
         }.sortedBy { it.id }
     }
 

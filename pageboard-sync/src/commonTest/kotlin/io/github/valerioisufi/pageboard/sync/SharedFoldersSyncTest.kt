@@ -217,6 +217,56 @@ class SharedFoldersSyncTest {
     }
 
     @Test
+    fun aMemberTakingADocumentOutAndBackDoesNotGiveIt() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val eve = Device("eve", work, this, network)
+        listOf(ada, bob, eve).forEach { it.library.start() }
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        for (member in listOf(bob, eve)) {
+            member.join(invitation, SpaceRoot.NewFolder)
+            advanceUntilIdle()
+            exchange(ada, member)
+        }
+        // Bob's notes: Ada, the owner, has them from Bob and confirms him as their giver
+        val notes = bob.store.createDocument("Bob's", folderId = bob.library.spaces().single().rootFolderId)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        exchange(ada, eve)
+        val bobReplica = bob.store.replicaId()
+        assertEquals(bobReplica, ada.library.view(spaceId).single { it.id == notes.id }.giver)
+        assertEquals(bob.snapshot(notes.id), eve.snapshot(notes.id))
+
+        // Eve takes them out of the folder and puts them back: she brought them now, Bob still gives them
+        val eveRoot = eve.library.spaces().single().rootFolderId
+        assertTrue(eve.store.moveDocument(notes.id, null))
+        advanceUntilIdle()
+        exchange(ada, eve)
+        assertTrue(eve.store.moveDocument(notes.id, eveRoot))
+        advanceUntilIdle()
+        exchange(ada, eve)
+        val entry = ada.library.view(spaceId).single { it.id == notes.id }
+        assertEquals(eve.store.replicaId(), entry.broughtBy)
+        assertEquals(bobReplica, entry.giver)
+
+        // Carl joins while Ada is away, and meets Eve first: nothing from her; then Bob gives them
+        val carl = Device("carl", work, this, network)
+        carl.library.start()
+        carl.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        ada.engine.stop()
+        advanceUntilIdle()
+        exchange(carl, eve)
+        assertTrue(carl.store.documents.first().none { it.id == notes.id }, "not from Eve")
+        exchange(carl, bob)
+        assertEquals(bob.snapshot(notes.id), carl.snapshot(notes.id))
+    }
+
+    @Test
     fun theLibraryJoinedIntoTheLibraryBringsBothTogether() = syncTest { work ->
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)

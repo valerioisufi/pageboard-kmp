@@ -21,6 +21,7 @@ class SerialNamesTest {
                 "addDocument",
                 "addFolder",
                 "catalogComposite",
+                "confirmGiver",
                 "moveItem",
                 "removeFromSpace",
                 "renameFolder",
