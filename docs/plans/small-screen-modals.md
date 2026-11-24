@@ -263,7 +263,7 @@ The work goes on a branch `feat/small-screen-modals`, with one commit per phase.
 | 3. The sheets | New note, Item sheet, Move to, Search settings, Share, Lecture settings, Text notes, Page and Document configurators moved onto the slots, with their own scrolls and headers removed. Screenshots at 360 × 480 and 891 × 411 | done |
 | 4. The alerts | the 13 `AlertDialog`s and Text color on `AdaptiveDialog`. Screenshots of the conversion in a phone in landscape | done |
 | 5. The panels of the editor | `SheetDragConnection` on `PanelSheet`, with a test of the drag (tall before scrolling, short then closed from the top) | done |
-| 6. On the devices | desktop app on a scratch data directory at 360 × 480; Android emulator (small phone, landscape, keyboard); iPhone simulator (SE, landscape, keyboard); screenshots verified in Docker or by the workflow | to do |
+| 6. On the devices | desktop app on a scratch data directory at 360 × 480; Android emulator (small phone, landscape, keyboard); iPhone simulator (SE, landscape, keyboard); screenshots verified in Docker or by the workflow | done, the emulator and the simulator left to the maintainer |
 
 Each phase runs the checks of `CLAUDE.md` (`jvmTest checkKotlinAbi`, the Android and iOS
 compilations, both apps). The screenshot references are recorded only in the Docker image or with
@@ -360,6 +360,27 @@ the `record-screenshots` label.
   of drag (the modal sheets do the same).
 * `SheetDragConnectionTest` checks the four cases: up while short, down twice from tall, a short
   pull, the content scrolling back to its top before the pull.
+
+### Phase 6 results
+
+* The checks of `CLAUDE.md` pass: `jvmTest checkKotlinAbi`, `compileAndroidMain`,
+  `compileKotlinIosSimulatorArm64`, both Android apps, and `consumer-checks/check.sh`.
+  `LecturePanelQueueTest` failed once under load and passed three times alone: it is flaky, and
+  this branch does not touch it.
+* The desktop app starts on a scratch data directory (`-Dpageboard.dataDir`). Its windows could
+  not be captured from the session (no screen recording permission), so the narrow window is
+  checked by the screenshots of the tests.
+* The references were recorded in the Docker image (`tools/screenshots/run.sh record`):
+  - new: About in a 360 × 480 window, on a 320 × 640 phone and at 1000 × 760; the Page
+    configurator on a phone in landscape (891 × 411); Search settings at 360 × 480; the
+    conversion in a low window;
+  - changed: the sheets now open at their content height (Page configurator, Search settings),
+    with the close button in the header; the alerts on `AdaptiveDialog` differ in antialiasing
+    only;
+  - a second Docker build next to another needs its own Gradle volume (`SCREENSHOTS_GRADLE_HOME`),
+    and with 8 GB two builds together ran out of memory once.
+* Not run here: the Android emulator and the iPhone simulator (small phone, landscape, keyboard).
+  They are left to the maintainer before merging.
 
 ## Decisions
 
