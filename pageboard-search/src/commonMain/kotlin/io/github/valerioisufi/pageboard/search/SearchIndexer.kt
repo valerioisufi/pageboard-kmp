@@ -123,7 +123,15 @@ public class SearchIndexer(
                             }
                         } else if (currentVersion != indexedVersion) {
                             conditions.canIndex.first { it }
-                            val chunks = source.chunks(document)
+                            // A document a source cannot read stays out of the index (tried again at
+                            // its next change), never stopping the indexer or the application
+                            val chunks = try {
+                                source.chunks(document)
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: Exception) {
+                                continue
+                            }
                             index.replaceChunks(document.id, source.id, currentVersion, chunks)
                         }
                     }

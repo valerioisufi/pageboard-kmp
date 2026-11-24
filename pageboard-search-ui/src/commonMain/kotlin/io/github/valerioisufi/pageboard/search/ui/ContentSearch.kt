@@ -215,12 +215,14 @@ public class ContentSearch(
 
     /**
      * Starts the background indexer and reacts to query and index updates in [scope], until
-     * [scope] is cancelled: cancel it before closing the index.
+     * [scope] is cancelled: cancel it before closing the index. The indexer works off the thread of
+     * [scope] (on `Dispatchers.Default`): it reads every document changed, and a library shared
+     * with other devices changes all the time (docs/plans/ios-stability.md).
      */
     public fun start(scope: CoroutineScope) {
         activeScope = scope
         vocabulary = NoteVocabulary(index, scope)
-        indexer.start(scope)
+        indexer.start(CoroutineScope(scope.coroutineContext + Dispatchers.Default))
         scope.launchSearchCollector()
     }
 

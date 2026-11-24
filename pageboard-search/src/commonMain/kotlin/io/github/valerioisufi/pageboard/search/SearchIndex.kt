@@ -799,7 +799,11 @@ public class SearchIndex(
             "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(" +
                 "text, tokenize = 'unicode61 remove_diacritics 2')"
         )
-        // Added at format 1: an index made before gets it at its first open, its vectors kept
+        // Added at format 1: an index made before gets it at its first open, its vectors kept. A
+        // table of a build made while the feature was written (the same format, other columns)
+        // is made again: its readings are read again from the strokes
+        val handwritingColumns = columnsOf(conn, "handwriting")
+        if (handwritingColumns.isNotEmpty() && handwritingColumns != HANDWRITING_COLUMNS) conn.execSQL("DROP TABLE handwriting")
         conn.execSQL(
             "CREATE TABLE IF NOT EXISTS handwriting (" +
                 "documentId TEXT NOT NULL, " +
@@ -817,6 +821,12 @@ public class SearchIndex(
                 "bytes BLOB NOT NULL)"
         )
     }
+
+    /** The columns of the table [table] (none: no such table). */
+    private fun columnsOf(conn: SQLiteConnection, table: String): Set<String> =
+        conn.prepare("PRAGMA table_info($table)").use { stmt ->
+            buildSet { while (stmt.step()) add(stmt.getText(1)) }
+        }
 
     private fun readMeta(conn: SQLiteConnection): Map<String, String> {
         val map = LinkedHashMap<String, String>()
@@ -863,6 +873,9 @@ public class SearchIndex(
         private const val META_EMBEDDING_MODEL = "embedding_model"
         private const val META_DIMENSIONS = "dimensions"
         private const val META_PROMPT_VERSION = "prompt_version"
+
+        /** The columns of the table of the handwriting read (see [createSchema]). */
+        private val HANDWRITING_COLUMNS = setOf("documentId", "blockKey", "reader", "language", "text", "searchText")
 
         private const val ANCHOR_DOCUMENT = "DOCUMENT"
         private const val ANCHOR_PAGE = "PAGE"

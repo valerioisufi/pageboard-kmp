@@ -33,6 +33,17 @@ The responsibilities are assigned following the GRASP principles.
   `markWorkedOn` start a coroutine that waits 30 s: about a thousand of them while writing. The
   gestures copy the whole stroke into the activity at every input, shared or not.
 
+* **The download of a shared library (measured).** A simulator joining the real library of the
+  user, sampled every few seconds: the application took up to 3 cores of a Mac. Most of the work of
+  the synchronization is decoding the chunks of the files (`ResourceChunk`, `AttachmentPart`):
+  their `bytes` have no `@ByteString`, so every byte of a PDF, an image or the audio of a lecture
+  travels as a CBOR integer of its own, decoded one at a time. The search indexer of PencilNotes
+  runs on the main thread (`PencilNotesServices` starts it in its `Dispatchers.Main` scope), and
+  runs again at every change of the library: the documents arriving one by one. The download then
+  stopped the application: the index of the handwriting had the table of a build made while the
+  feature was written (the same format, other columns), `no such column: reader`, and the failure
+  of the indexer was not caught.
+
 ## Requirements
 
 1. No menu, popover or sheet stops the application in landscape: it is as tall as the window lets
@@ -44,6 +55,8 @@ The responsibilities are assigned following the GRASP principles.
 4. The presence costs on the main thread what the stroke gained since the last one, and one timer
    per document worked on.
 5. Nothing changes in what is stored or what travels: no migration, no protocol change.
+6. The search indexes off the main thread, and a document it cannot read never stops the
+   application.
 
 ## Design
 
@@ -72,6 +85,12 @@ The responsibilities are assigned following the GRASP principles.
   whether someone follows its activity: the gestures copy the inputs of the stroke into it, at every
   input, only then (a document not shared no longer pays it either).
 
+* **Pure Fabrication (the indexer).** `ContentSearch.start` runs the indexer on
+  `Dispatchers.Default`, whatever the scope it is given (its queries stay in that scope).
+  `SearchIndexer` skips a document a source fails on (read again at its next change).
+  `SearchIndex` makes the table of the handwriting again when its columns are not the ones it
+  writes: the readings are a cache of the strokes, read again.
+
 ## Phases
 
 | Step | Content | Status |
@@ -80,6 +99,7 @@ The responsibilities are assigned following the GRASP principles.
 | 2 | The texts laid out on the main thread on iOS | done |
 | 3 | The heads of a space: the vectors at once, computed once per change; one timer per document worked on | done |
 | 4 | The presence built from what the stroke gained, the stroke copied only for a document followed | done |
+| 5 | The search indexed off the main thread; a document it cannot read and an older table of the handwriting never stop the application | done |
 
 ## Decisions
 
@@ -96,6 +116,9 @@ Taken alone, revertible:
   30 s exactly: the one job of the document looks every 30 s whether a presence came meanwhile.
   It only keeps a connection open a little longer.
 
+* **The table of the handwriting is made again** when its columns differ, rather than migrated:
+  it only holds what the readers read from the strokes, and the strokes are kept.
+
 ## Left for later
 
 * The desktop (JVM) races the same cache of Compose (`WeakHashMap`): `onTextLayoutThread` on the
@@ -104,4 +127,12 @@ Taken alone, revertible:
   between threads (to report to JetBrains).
 * Why the popup of Compose gives an infinite height in landscape on iOS (to report to JetBrains with
   a reproduction).
-* A measure of the lag on the iPhone with Instruments, before and after phases 3 and 4.
+* The chunks of the files as CBOR byte strings (`@ByteString` on `ResourceChunk.bytes` and
+  `AttachmentPart.bytes`): half the bytes and a fast decoding, but a protocol change (every device
+  updated together, `PROTOCOL_VERSION`, `ProtocolFormatTest`), to agree on first.
+* The list of the documents (`RoomDocumentStore.documents`) mapped again on the main thread at
+  every document arriving, the advertisement of Bonjour and the duration of a lecture whose audio
+  arrives (`Lecture.audioReceived`, reading the new pages of the file) on the main thread: small in
+  the samples.
+* Instruments could not record on the iPhone (the device "disconnected" at every start, over the
+  cable too): the measures are from the simulator.

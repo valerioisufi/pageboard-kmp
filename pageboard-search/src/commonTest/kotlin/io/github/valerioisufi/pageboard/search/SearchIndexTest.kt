@@ -1,5 +1,7 @@
 package io.github.valerioisufi.pageboard.search
 
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.sqlite.execSQL
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import kotlin.math.abs
 import kotlin.test.Test
@@ -198,6 +200,43 @@ class SearchIndexTest {
         } finally {
             runCatching { SystemFileSystem.delete(Path(dbPath), mustExist = false) }
             runCatching { SystemFileSystem.delete(Path("$dbPath.new"), mustExist = false) }
+            runCatching { SystemFileSystem.delete(tempDir, mustExist = false) }
+        }
+    }
+
+    @Test
+    fun aHandwritingTableOfAnOlderBuildIsMadeAgainKeepingTheRest() {
+        val tempDir = Path("/tmp/pageboard-search-test-${kotlin.random.Random.nextLong().toULong().toString(16)}")
+        SystemFileSystem.createDirectories(tempDir)
+        val dbPath = "$tempDir/index.db"
+        try {
+            SearchIndex(path = dbPath, formatVersion = 1, dimensions = 512).use { index ->
+                index.replaceChunks(
+                    documentId = "doc",
+                    sourceId = "document",
+                    version = "v1",
+                    chunks = listOf(SearchChunk("document", SearchChunkKind.TEXT, SearchAnchor.Document("doc"), "Titolo", "Contenuto conservato"))
+                )
+            }
+            // The table as a build made while the feature was written had it, at the same format
+            BundledSQLiteDriver().open(dbPath).use { conn ->
+                conn.execSQL("DROP TABLE handwriting")
+                conn.execSQL("CREATE TABLE handwriting (blockKey TEXT PRIMARY KEY NOT NULL, documentId TEXT NOT NULL, pageId TEXT NOT NULL, text TEXT NOT NULL)")
+                conn.execSQL("INSERT INTO handwriting VALUES ('block', 'doc', 'page', 'ciao')")
+            }
+
+            SearchIndex(path = dbPath, formatVersion = 1, dimensions = 512).use { index ->
+                assertFalse(index.isRebuilding)
+                // Read again from the strokes: nothing kept, nothing failing
+                assertTrue(index.handwriting("doc").isEmpty())
+                val reading = StoredHandwriting("block", "reader 1", "it", "ciao", "ciao")
+                index.putHandwriting("doc", listOf(reading), setOf("block"))
+                assertEquals(mapOf("block" to reading), index.handwriting("doc"))
+                // The rest of the index is kept
+                assertEquals(1, index.searchWords("conservato").size)
+            }
+        } finally {
+            runCatching { SystemFileSystem.delete(Path(dbPath), mustExist = false) }
             runCatching { SystemFileSystem.delete(tempDir, mustExist = false) }
         }
     }
