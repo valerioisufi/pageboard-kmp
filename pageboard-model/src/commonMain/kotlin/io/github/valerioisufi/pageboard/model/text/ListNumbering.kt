@@ -93,7 +93,8 @@ public object ListNumbering {
             if (span.ordered) {
                 val numberedAbove = open.count { result[it].span.ordered }
                 numbering = group.style?.numbering ?: BY_LEVEL[numberedAbove % BY_LEVEL.size]
-                label = format(ordinal, numbering) + (group.style?.delimiter ?: '.')
+                val ordinalLabel = format(ordinal, numbering) + (group.style?.delimiter ?: '.')
+                label = if (span.checked != null) "$ordinalLabel ${boxGlyphOf(span.checked)}" else ordinalLabel
             } else if (span.checked != null) {
                 label = boxGlyphOf(span.checked)
             } else {
@@ -144,6 +145,37 @@ public object ListNumbering {
      * font of the notes (see [TextSymbols]).
      */
     public fun boxGlyphOf(checked: Boolean): String = if (checked) "☑" else "☐"
+
+    /**
+     * Number of completed items and total items across every checklist item in [text] (`(completed, total)`).
+     */
+    public fun checklistCounts(text: String, spans: List<Span> = RichTextParser.parse(text)): Pair<Int, Int> {
+        var done = 0
+        var total = 0
+        for (span in spans) {
+            if (span.kind == Kind.LIST_ITEM && span.checked != null) {
+                total++
+                if (span.checked) done++
+            }
+        }
+        return done to total
+    }
+
+    /**
+     * Completed and total checklist item counts (`(completed, total)`) for the checklist run
+     * containing [offset], falling back to the whole text's checklist counts if [offset] is not on
+     * a checklist run. Returns `0 to 0` when [text] contains no checklist items.
+     */
+    public fun checklistCountsAt(text: String, offset: Int, spans: List<Span> = RichTextParser.parse(text)): Pair<Int, Int> {
+        val items = items(text, spans)
+        val tasks = items.filter { it.checked != null }
+        if (tasks.isEmpty()) return 0 to 0
+        val current = items.firstOrNull { offset >= it.span.start && offset <= it.span.end }
+        val inRun = current?.let { target -> tasks.filter { it.run == target.run } }.orEmpty()
+        val scope = if (inRun.isNotEmpty()) inRun else tasks
+        val done = scope.count { it.checked == true }
+        return done to scope.size
+    }
 
     /** [number] written in [numbering]: `3`, `c`, `C`, `iii`, `III`; a number below 1 as a number. */
     public fun format(number: Int, numbering: Numbering): String = when {

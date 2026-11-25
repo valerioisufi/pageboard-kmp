@@ -330,4 +330,10 @@
     <string name="text_font_jakarta">Jakarta</string>
     <string name="text_font_mono">Mono</string>
     <string name="text_font_serif">Serif</string>
+    <string name="text_editor_action_numbered_checklist">Nummerierte Checkliste</string>
+    <string name="text_editor_action_move_completed">Erledigte nach unten verschieben</string>
+    <string name="text_editor_action_checklist_options">Checklisten-Optionen…</string>
+    <string name="checklist_keep_completed_below">Erledigte unten halten</string>
+    <string name="checklist_keep_completed_below_hint">Ein abgehakter Eintrag rückt unter die noch offenen</string>
+    <string name="checklist_progress">%1$d von %2$d erledigt</string>
 </resources>

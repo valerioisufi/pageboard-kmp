@@ -115,6 +115,9 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_actio
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbering
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_checklist
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_move_completed
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_checklist_options
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_quote
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_strikethrough
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_table
@@ -658,6 +661,30 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.inChecklist == true }
     ) { textTarget?.toggleChecklist() }
 
+    /** Makes the lines of the selection items of a numbered checklist (`1. [ ] `), or plain text again. */
+    val numberedChecklist = Command(
+        "format-numbered-checklist", label(Res.string.text_editor_action_numbered_checklist), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(PageboardIcons.ListOrdered) },
+        isEnabled = { formatsText && textTarget?.inTable == false && textTarget?.inCodeBlock == false },
+        isChecked = { textTarget.let { it != null && it.inChecklist && it.inNumberedList } }
+    ) { textTarget?.toggleNumberedChecklist() }
+
+    /** Moves the items done of the checklist of the caret below the others. */
+    val moveCompletedChecklists = Command(
+        "format-move-completed", label(Res.string.text_editor_action_move_completed), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(PageboardIcons.ArrowDownToLine) },
+        isEnabled = { formatsText && textTarget.let { it != null && it.inChecklist && it.checklistProgress.first > 0 } }
+    ) { textTarget?.moveCompletedChecklistsToBottom() }
+
+    /** Whether the options of the checklists are open, in the formatting bar. */
+    var checklistOptionsOpen: Boolean by mutableStateOf(false)
+
+    /** Opens the options of the checklists (numbered, the items done below the others). */
+    val checklistOptions = Command(
+        "format-checklist-options", label(Res.string.text_editor_action_checklist_options), CommandGroup.FORMAT,
+        isEnabled = { formatsText && textTarget?.inTable == false }
+    ) { checklistOptionsOpen = true }
+
     /** Checks the items of a checklist of the selection, or unchecks them (⌘↩). */
     val checkItem = Command(
         "format-check-item", label(Res.string.text_editor_action_check_item), CommandGroup.FORMAT,
@@ -745,7 +772,7 @@ internal class EditorCommands internal constructor(
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
         bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, heading2, heading3, normalText, headingLevels,
-        bulletList, numberedList, numbering, checklist, checkItem, quote, formula, table,
+        bulletList, numberedList, numbering, checklist, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 

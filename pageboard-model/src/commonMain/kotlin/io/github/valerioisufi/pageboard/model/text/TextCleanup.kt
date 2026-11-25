@@ -95,12 +95,42 @@ public object TextCleanup {
             "$previous $line"
         }
 
-    /** [line] as an item of a list ("- …", "1. …"), or `null` when it is not one. */
+    /** Whether [line] (already trimmed) represents a checkbox item copied from another app. */
+    public fun isCheckboxLine(line: String): Boolean =
+        NUMBERED_CHECKBOX.matches(line) || BULLET_OR_BARE_CHECKBOX.matches(line)
+
+    /**
+     * [line] as a Markdown checklist item (`- [ ] …`, `- [x] …`, `1. [ ] …`, `1. [x] …`) if it
+     * uses unicode boxes (`☐`, `☑`, `☒`, `✅`, `✓`, `✔`, `□`) or ASCII brackets (`[ ]`, `[x]`),
+     * or `null` if it is not a convertible checkbox line.
+     */
+    internal fun checkboxItemOf(line: String): String? {
+        NUMBERED_CHECKBOX.matchEntire(line)?.let { match ->
+            val number = match.groupValues[1]
+            val box = match.groupValues[2]
+            val content = match.groupValues[3]
+            val mark = if (isCheckedGlyph(box)) "x" else " "
+            return if (content.isEmpty()) "$number. [$mark] " else "$number. [$mark] $content"
+        }
+        BULLET_OR_BARE_CHECKBOX.matchEntire(line)?.let { match ->
+            val box = match.groupValues[1]
+            val content = match.groupValues[2]
+            val mark = if (isCheckedGlyph(box)) "x" else " "
+            return if (content.isEmpty()) "- [$mark] " else "- [$mark] $content"
+        }
+        return null
+    }
+
+    /** [line] as an item of a list ("- …", "1. …", "- [ ] …"), or `null` when it is not one. */
     internal fun itemOf(line: String): String? {
+        checkboxItemOf(line)?.let { return it }
         BULLET.matchEntire(line)?.let { return "- " + it.groupValues[1] }
         NUMBERED_ITEM.matchEntire(line)?.let { return it.groupValues[1] + ". " + it.groupValues[2] }
         return null
     }
+
+    private fun isCheckedGlyph(box: String): Boolean =
+        box == "☑" || box == "☒" || box == "✅" || box == "✓" || box == "✔" || box.equals("[x]", ignoreCase = true)
 
     private fun isItem(line: String) = line.startsWith("- ") || NUMBERED_ITEM.matches(line)
 
@@ -130,6 +160,8 @@ public object TextCleanup {
     private val INLINE_FORMULA = Regex("""\$[^\s$][^$\n]*\$""")
     private val BULLET = Regex("""^[•◦▪‣·–—*\-]\s+(.+)$""")
     private val NUMBERED_ITEM = Regex("""^(\d{1,3})[).]\s+(.+)$""")
+    private val NUMBERED_CHECKBOX = Regex("""^(\d{1,3})[).]\s+(☐|☑|☒|✅|✓|✔|□|\[ \]|\[[xX]\])(?:\s+(.*))?$""")
+    private val BULLET_OR_BARE_CHECKBOX = Regex("""^(?:[•◦▪‣·–—*\-]\s+)?(☐|☑|☒|✅|✓|✔|□|\[ \]|\[[xX]\])(?:\s+(.*))?$""")
     private val NUMBERED_TITLE = Regex("""^(\d{1,2}(?:\.\d{1,2})+|\d{1,2})\s+\p{Lu}.*$""")
     private const val ENDING_SIGNS = ".,;:!?"
 }

@@ -83,7 +83,62 @@ class ChecklistEditingTest {
     }
 
     @Test
-    fun aNumberedItemKeepsBracketsAsText() {
+    fun bracketsWithNoMarkerStayText() {
         assertNull(RichTextEditing.handleEnter(value("[ ] text")))
+    }
+
+    @Test
+    fun linesBecomeANumberedChecklistKeepingTheirBoxes() {
+        val text = "milk\n- [x] eggs\nbread"
+        val made = RichTextEditing.toggleNumberedChecklist(TextFieldValue(text, TextRange(0, text.length)))
+        assertEquals("1. [ ] milk\n2. [x] eggs\n3. [ ] bread", made.text)
+        assertTrue(RichTextEditing.inChecklist(made))
+        assertTrue(RichTextEditing.inNumberedList(made))
+        assertEquals("milk\neggs\nbread", RichTextEditing.toggleNumberedChecklist(made).text)
+    }
+
+    @Test
+    fun enterAfterANumberedItemOfAChecklistGivesTheNextNumberAnEmptyBox() {
+        val next = RichTextEditing.handleEnter(value("1. [x] milk"))!!
+        assertEquals("1. [x] milk\n2. [ ] ", next.text)
+        assertEquals(TextRange(next.text.length), next.selection)
+    }
+
+    @Test
+    fun anotherNumberingKeepsTheBoxes() {
+        val text = "1. [ ] a\n2. [x] b"
+        val bullets = RichTextEditing.toggleBulletList(TextFieldValue(text, TextRange(0, text.length)))
+        assertEquals("- [ ] a\n- [x] b", bullets.text)
+    }
+
+    @Test
+    fun theItemsDoneGoBelowTheOthersWithWhatTheyHold() {
+        val text = "- [x] a\n  - under a\n- [ ] b\n- [x] c\n- [ ] d"
+        val moved = RichTextEditing.moveCompletedToEnd(value(text, 0))
+        assertEquals("- [ ] b\n- [ ] d\n- [x] a\n  - under a\n- [x] c", moved.text)
+        // The caret goes with its item
+        assertEquals(TextRange(moved.text.indexOf("- [x] a")), moved.selection)
+    }
+
+    @Test
+    fun aNumberedChecklistSortedKeepsCountingFromItsStart() {
+        val moved = RichTextEditing.moveCompletedToEnd(value("3. [x] a\n4. [ ] b\n5. [ ] c", 0))
+        assertEquals("3. [ ] b\n4. [ ] c\n5. [x] a", moved.text)
+    }
+
+    @Test
+    fun everyChecklistIsSortedOutOfAList() {
+        // The first already in order: the second is sorted all the same
+        val text = "- [ ] a\n- [x] b\n\ntext\n\n- [x] c\n- [ ] d"
+        val moved = RichTextEditing.moveCompletedToEnd(value(text, text.indexOf("text")))
+        assertEquals("- [ ] a\n- [x] b\n\ntext\n\n- [ ] d\n- [x] c", moved.text)
+        // In a checklist: that one only
+        val only = RichTextEditing.moveCompletedToEnd(value("- [x] a\n- [ ] b\n\ntext\n\n- [x] c\n- [ ] d", 0))
+        assertEquals("- [ ] b\n- [x] a\n\ntext\n\n- [x] c\n- [ ] d", only.text)
+    }
+
+    @Test
+    fun theProgressIsOfTheChecklistOfTheCaret() {
+        assertEquals(1 to 3, RichTextEditing.checklistProgressOf(value("- [x] a\n- [ ] b\n- [ ] c", 0)))
     }
 }

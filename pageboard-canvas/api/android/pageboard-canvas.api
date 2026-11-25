@@ -325,10 +325,11 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPref
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZ)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZZ)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component10 ()Z
+	public final fun component11 ()Z
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
 	public final fun component4 ()Z
@@ -337,12 +338,13 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPref
 	public final fun component7 ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;
 	public final fun component8 ()Z
 	public final fun component9 ()Z
-	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZ)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
+	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZZ)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZZZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAreTextSuggestionsEnabled ()Z
 	public final fun getLastSelectedTool ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
+	public final fun getMoveCompletedChecklistsToBottom ()Z
 	public final fun getPresets ()Ljava/util/Map;
 	public final fun getShapeTool ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;
 	public final fun getSnapToEditableShape ()Z
@@ -509,6 +511,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun getLockedElementForMenu ()Lkotlin/Pair;
 	public final fun getMediaManager ()Lio/github/valerioisufi/pageboard/canvas/controller/MediaManager;
 	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun getMoveCompletedChecklistsToBottom ()Z
 	public final fun getOnOpenLink ()Lkotlin/jvm/functions/Function1;
 	public final fun getPageManager ()Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;
 	public final fun getPendingTextImport ()Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;
@@ -562,6 +565,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun togglePageGrid ()V
 	public final fun toggleQuickPan ()V
 	public final fun undo ()V
+	public final fun updateMoveCompletedChecklistsToBottom (Z)V
 	public final fun updateQuickPanEnabled (Z)V
 	public final fun updateScrollAxisLockEnabled (Z)V
 	public final fun updateStylusOnlyMode (Z)V
@@ -881,6 +885,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getBoxY ()F
 	public final fun getChainComesFrom ()Z
 	public final fun getChainGoesOn ()Z
+	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
 	public fun getColor ()I
 	public fun getFontFamily ()Ljava/lang/String;
@@ -896,6 +901,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun getInNumberedList ()Z
 	public fun getInQuote ()Z
 	public fun getInTable ()Z
+	public fun getMoveCompletedToBottom ()Z
 	public fun getNumberingStart ()I
 	public fun getNumberingStyle ()Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public final fun getRotation ()F
@@ -910,6 +916,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun isEditing ()Z
 	public final fun lineBreakInItem ()Z
 	public final fun moveBy (FF)V
+	public fun moveCompletedChecklistsToBottom ()V
 	public final fun moveInChain (Z)Z
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
@@ -923,6 +930,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun saveWriting ()V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setHeading (I)V
+	public fun setMoveCompletedToBottom (Z)V
 	public fun setNumbering (Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
 	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
 	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/pageboard/model/TextElement;ILandroidx/compose/ui/geometry/Offset;)V
@@ -942,6 +950,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
 	public fun toggleLineNumbers ()V
+	public fun toggleNumberedChecklist ()V
 	public fun toggleNumberedList ()V
 	public fun toggleQuote ()V
 	public final fun typedBeforeFlow (ILjava/lang/String;Landroidx/compose/ui/text/input/TextFieldValue;)V
@@ -958,6 +967,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public abstract fun changeFontSize (F)V
 	public abstract fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public fun getBackground ()Ljava/lang/Integer;
+	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
 	public fun getFontFamily ()Ljava/lang/String;
@@ -971,14 +981,17 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun getInNumberedList ()Z
 	public fun getInQuote ()Z
 	public fun getInTable ()Z
+	public fun getMoveCompletedToBottom ()Z
 	public fun getNumberingStart ()I
 	public fun getNumberingStyle ()Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public fun getTakesBackground ()Z
 	public fun indent ()V
 	public fun insertTable (II)V
 	public fun isActive (Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Z
+	public fun moveCompletedChecklistsToBottom ()V
 	public fun outdent ()V
 	public fun setHeading (I)V
+	public fun setMoveCompletedToBottom (Z)V
 	public fun setNumbering (Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
 	public fun toggle (Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
@@ -987,6 +1000,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
 	public fun toggleLineNumbers ()V
+	public fun toggleNumberedChecklist ()V
 	public fun toggleNumberedList ()V
 	public fun toggleQuote ()V
 }
@@ -996,6 +1010,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun changeBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/Integer;)V
 	public static fun changeFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/String;)V
 	public static fun getBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
+	public static fun getChecklistProgress (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lkotlin/Pair;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/String;
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
@@ -1007,14 +1022,17 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun getInNumberedList (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getInQuote (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getInTable (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
+	public static fun getMoveCompletedToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getNumberingStart (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)I
 	public static fun getNumberingStyle (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public static fun getTakesBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun insertTable (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;II)V
 	public static fun isActive (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Z
+	public static fun moveCompletedChecklistsToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun outdent (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun setHeading (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;I)V
+	public static fun setMoveCompletedToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
 	public static fun setNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
 	public static fun toggle (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)V
 	public static fun toggleBulletList (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
@@ -1023,6 +1041,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun toggleCodeBlock (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun toggleHeading (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun toggleLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
+	public static fun toggleNumberedChecklist (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun toggleNumberedList (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun toggleQuote (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 }
@@ -1751,6 +1770,7 @@ public final class io/github/valerioisufi/pageboard/canvas/snap/SnapGuide {
 public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing;
+	public final fun checklistProgressOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lkotlin/Pair;
 	public final fun codeBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;
 	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
@@ -1766,6 +1786,8 @@ public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing 
 	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun lineBreakInItem (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun listFromTypedMarker (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun moveCompletedToEnd (Landroidx/compose/ui/text/input/TextFieldValue;Ljava/lang/Integer;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public static synthetic fun moveCompletedToEnd$default (Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing;Landroidx/compose/ui/text/input/TextFieldValue;Ljava/lang/Integer;ILjava/lang/Object;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun numberingStartOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
 	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
@@ -1779,6 +1801,7 @@ public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing 
 	public final fun toggleCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleLineNumbers (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleNumberedChecklist (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleQuote (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun withListsRenumbered (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

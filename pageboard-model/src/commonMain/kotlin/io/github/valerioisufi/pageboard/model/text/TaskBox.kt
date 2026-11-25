@@ -1,10 +1,9 @@
 package io.github.valerioisufi.pageboard.model.text
 
 /**
- * The box of an item of a checklist, written after the marker of a bulleted item as in GitHub
- * Flavored Markdown: `- [ ] to do`, `- [x] done` (`X` read as `x`). The box is followed by a space,
- * a tab or the end of its line, so that `- [x]y` stays text. Only the bulleted items take a box: a
- * numbered item keeps `[ ]` as text.
+ * The box of an item of a checklist, written after the marker of a bulleted or numbered item as
+ * in GitHub Flavored Markdown: `- [ ] to do`, `- [x] done`, `1. [ ] first` (`X` read as `x`).
+ * The box is followed by a space, a tab or the end of its line, so that `- [x]y` stays text.
  */
 public object TaskBox {
 

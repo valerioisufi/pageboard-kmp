@@ -3917,6 +3917,10 @@ public final class io/github/valerioisufi/pageboard/model/text/ListMarker$Read {
 public final class io/github/valerioisufi/pageboard/model/text/ListNumbering {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/ListNumbering;
 	public final fun boxGlyphOf (Z)Ljava/lang/String;
+	public final fun checklistCounts (Ljava/lang/String;Ljava/util/List;)Lkotlin/Pair;
+	public static synthetic fun checklistCounts$default (Lio/github/valerioisufi/pageboard/model/text/ListNumbering;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lkotlin/Pair;
+	public final fun checklistCountsAt (Ljava/lang/String;ILjava/util/List;)Lkotlin/Pair;
+	public static synthetic fun checklistCountsAt$default (Lio/github/valerioisufi/pageboard/model/text/ListNumbering;Ljava/lang/String;ILjava/util/List;ILjava/lang/Object;)Lkotlin/Pair;
 	public final fun continuationIndentAt (Ljava/lang/String;I)Lkotlin/ranges/IntRange;
 	public final fun format (ILio/github/valerioisufi/pageboard/model/text/ListNumbering$Numbering;)Ljava/lang/String;
 	public final fun glyphOf (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)Ljava/lang/String;
@@ -4120,6 +4124,7 @@ public final class io/github/valerioisufi/pageboard/model/text/TextChains$Compan
 public final class io/github/valerioisufi/pageboard/model/text/TextCleanup {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/TextCleanup;
 	public static final field MAX_HEADING_CHARS I
+	public final fun isCheckboxLine (Ljava/lang/String;)Z
 	public final fun looksLikeMarkdown (Ljava/lang/String;)Z
 	public final fun toMarkdown (Ljava/lang/String;)Ljava/lang/String;
 }

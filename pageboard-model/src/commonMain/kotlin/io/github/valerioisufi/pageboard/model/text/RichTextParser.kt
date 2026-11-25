@@ -49,8 +49,8 @@ public object RichTextParser {
      *   opening fence (see [LINE_NUMBERS]).
      * @property listItem the list item a block of code belongs to (its fence indented under the
      *   text of the item), or `null`.
-     * @property checked for a bulleted list item, whether it is an item of a checklist checked
-     *   (`- [x] text`) or not (`- [ ] text`), its content after the box; `null` for any other item.
+     * @property checked for an item of a checklist (bulleted `- [ ] text` or numbered `1. [ ] text`),
+     *   whether it is checked (`true`), unchecked (`false`), or `null` for a plain list item.
      */
     public data class Span(
         val kind: Kind,
@@ -125,8 +125,13 @@ public object RichTextParser {
             val start = lineStart + quoteMarkerOf(text, lineStart, quotes)
             val indent = match.groupValues[1]
             val marker = ListMarker.at(unquoted, lineStart + indent.length) ?: continue
-            val contentStart = lineStart + indent.length + marker.length
-            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = indentLevel(indent.substring(start - lineStart)), ordered = true, number = marker.number, style = marker.style)
+            var contentStart = lineStart + indent.length + marker.length
+            val checked = TaskBox.at(text, contentStart, end)
+            if (checked != null) {
+                contentStart += TaskBox.LENGTH
+                while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
+            }
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = indentLevel(indent.substring(start - lineStart)), ordered = true, number = marker.number, style = marker.style, checked = checked)
         }
         withContinuations(text, candidates, verbatim, quotes)
         candidates += tables(text, masked)
@@ -406,11 +411,16 @@ public object RichTextParser {
                 if (text.getOrNull(marker) != ' ' && text.getOrNull(marker) != '\t') return
                 while (marker < text.length && (text[marker] == ' ' || text[marker] == '\t')) marker++
             }
+            val lineEnd = text.indexOf('\n', i).let { if (it < 0) text.length else it }
+            val checked = TaskBox.at(text, marker, lineEnd)
+            if (checked != null) {
+                marker += TaskBox.LENGTH
+                while (marker < lineEnd && (text[marker] == ' ' || text[marker] == '\t')) marker++
+            }
             val contentStart = marker
             val column = indent + RichTextParser.columnOf(text, i, contentStart)
-            val lineEnd = text.indexOf('\n', i).let { if (it < 0) text.length else it }
             columns += column
-            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = numbered != null, number = numbered?.number ?: 0, style = numbered?.style)
+            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = numbered != null, number = numbered?.number ?: 0, style = numbered?.style, checked = checked)
         }
     }
 

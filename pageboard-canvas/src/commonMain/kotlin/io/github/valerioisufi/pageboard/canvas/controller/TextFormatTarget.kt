@@ -69,6 +69,12 @@ public interface TextFormatTarget {
     /** Whether the lines of the selection are items of a checklist (`- [ ] `). */
     public val inChecklist: Boolean get() = false
 
+    /** Completed and total checklist item counts (`(completed, total)`), or `0 to 0` if none. */
+    public val checklistProgress: Pair<Int, Int> get() = 0 to 0
+
+    /** Whether completed checklist items automatically move to the bottom when checked. */
+    public val moveCompletedToBottom: Boolean get() = false
+
     /** Whether the lines of the selection are numbered list items. */
     public val inNumberedList: Boolean get() = false
 
@@ -107,6 +113,15 @@ public interface TextFormatTarget {
 
     /** Checks the items of a checklist of the selection, or unchecks them when they are all checked. */
     public fun toggleChecked() {}
+
+    /** Makes the lines of the selection numbered checklist items (`1. [ ] `), or plain text again. */
+    public fun toggleNumberedChecklist() {}
+
+    /** Moves completed checklist items to the bottom of their list. */
+    public fun moveCompletedChecklistsToBottom() {}
+
+    /** Enables or disables automatically moving completed checklist items to the bottom when checked. */
+    public fun setMoveCompletedToBottom(enabled: Boolean) {}
 
     /** Makes the lines of the selection lines of a block quote, or takes them out of it. */
     public fun toggleQuote() {}

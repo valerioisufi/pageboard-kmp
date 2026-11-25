@@ -191,7 +191,8 @@ public object ListRenumbering {
     private fun write(text: String, item: Span, style: NumberingStyle?, number: Int, spans: List<Span>, replacements: MutableList<Replacement>) {
         if (item.number == number && item.style == style) return
         val marker = ListNumbering.markerStart(text, item)
-        val written = ListMarker.write(style, number)
+        val box = if (item.checked != null) TaskBox.write(item.checked) + " " else ""
+        val written = ListMarker.write(style, number) + box
         val length = item.contentStart - marker
         replacements += Replacement(marker, length, written)
         if (written.length != length) moveLines(text, item, written.length - length, spans, replacements)

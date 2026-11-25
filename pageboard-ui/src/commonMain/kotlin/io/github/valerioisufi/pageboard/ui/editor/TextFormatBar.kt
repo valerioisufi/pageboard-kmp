@@ -52,7 +52,7 @@ internal fun TextFormatBar(
             HeadingButton(commands)
             FormatButton(commands.bulletList, PageboardIcons.List)
             NumberedListButton(target, commands)
-            FormatButton(commands.checklist, PageboardIcons.ListChecks)
+            ChecklistButton(target, commands)
             FormatButton(commands.quote, PageboardIcons.Quote)
             TableButton(target, commands)
             FormatButton(commands.formula, PageboardIcons.Sigma)

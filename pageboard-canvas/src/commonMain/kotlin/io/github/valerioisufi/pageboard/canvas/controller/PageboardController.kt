@@ -351,6 +351,19 @@ public class PageboardController(
         preferencesChanged()
     }
 
+    /**
+     * Whether checking an item in a checklist automatically moves completed items to the bottom of
+     * the list (`docs/plans/checklists-and-lists.md`). Off by default.
+     */
+    public var moveCompletedChecklistsToBottom: Boolean by mutableStateOf(false)
+        private set
+
+    public fun updateMoveCompletedChecklistsToBottom(enabled: Boolean) {
+        if (moveCompletedChecklistsToBottom == enabled) return
+        moveCompletedChecklistsToBottom = enabled
+        preferencesChanged()
+    }
+
     public fun updateStylusOnlyMode(enabled: Boolean) {
         if (isStylusOnlyMode == enabled) return
         isStylusOnlyMode = enabled
@@ -415,6 +428,7 @@ public class PageboardController(
         isStylusOnlyMode = preferences.isStylusOnlyMode
         isScrollAxisLockEnabled = preferences.isScrollAxisLockEnabled
         areTextSuggestionsEnabled = preferences.areTextSuggestionsEnabled
+        moveCompletedChecklistsToBottom = preferences.moveCompletedChecklistsToBottom
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
         shapeSnapper.applyPreferences(preferences)
@@ -438,7 +452,8 @@ public class PageboardController(
         shapeTool = ShapeToolPreferences.of(shapeInserter.style),
         areTextSuggestionsEnabled = areTextSuggestionsEnabled,
         snapToEditableShape = shapeSnapper.snapToEditableShape,
-        isScrollAxisLockEnabled = isScrollAxisLockEnabled
+        isScrollAxisLockEnabled = isScrollAxisLockEnabled,
+        moveCompletedChecklistsToBottom = moveCompletedChecklistsToBottom
     )
 
     // ==========================================================

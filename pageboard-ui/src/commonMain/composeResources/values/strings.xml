@@ -331,4 +331,10 @@
     <string name="text_font_jakarta">Jakarta</string>
     <string name="text_font_mono">Mono</string>
     <string name="text_font_serif">Serif</string>
+    <string name="text_editor_action_numbered_checklist">Numbered checklist</string>
+    <string name="text_editor_action_move_completed">Move completed to the bottom</string>
+    <string name="text_editor_action_checklist_options">Checklist options…</string>
+    <string name="checklist_keep_completed_below">Keep completed at the bottom</string>
+    <string name="checklist_keep_completed_below_hint">An item checked goes below the ones still to do</string>
+    <string name="checklist_progress">%1$d of %2$d done</string>
 </resources>

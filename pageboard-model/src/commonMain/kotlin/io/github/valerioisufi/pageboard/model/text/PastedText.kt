@@ -32,10 +32,10 @@ public object PastedText {
     /** [text] as it goes in a text of the notebook. */
     public fun clean(text: String): String {
         val normal = normalized(text)
-        if (TextCleanup.looksLikeMarkdown(normal)) return normal
+        if (TextCleanup.looksLikeMarkdown(normal)) return convertCheckboxesInMarkdown(normal)
         val lines = normal.split('\n')
         val items = lines.filter { TextCleanup.itemOf(it.trim()) != null }
-        val isList = items.size >= 2
+        val isList = items.size >= 2 || lines.any { TextCleanup.isCheckboxLine(it.trim()) }
         // The depths of the items, by the indents they have
         val indents = items.map { indentOf(it) }.distinct().sorted()
         val out = mutableListOf<String>()
@@ -55,6 +55,27 @@ public object PastedText {
             }
         }
         return out.joinToString("\n")
+    }
+
+    /**
+     * Converts non-Markdown checkbox markers (e.g. `1. ☐ item` or `- ☑ item`) inside text that
+     * already contains Markdown line prefixes, leaving valid `- [ ]` / `1. [ ]` items unchanged.
+     */
+    private fun convertCheckboxesInMarkdown(text: String): String {
+        val lines = text.split('\n')
+        var changed = false
+        val out = lines.map { line ->
+            val indent = line.takeWhile { it == ' ' || it == '\t' }
+            val trimmed = line.substring(indent.length)
+            val converted = TextCleanup.checkboxItemOf(trimmed)
+            if (converted != null && converted != trimmed) {
+                changed = true
+                indent + converted
+            } else {
+                line
+            }
+        }
+        return if (changed) out.joinToString("\n") else text
     }
 
     /**

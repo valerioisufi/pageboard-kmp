@@ -28,7 +28,7 @@ class ChecklistParsingTest {
 
     @Test
     fun whatIsNotABoxStaysText() {
-        for (text in listOf("- [x]y", "- [y] no", "- [] no", "- [  ] no", "1. [ ] numbered", "[ ] no marker")) {
+        for (text in listOf("- [x]y", "- [y] no", "- [] no", "- [  ] no", "1. [y] no", "[ ] no marker")) {
             val item = items(text).singleOrNull()
             assertNull(item?.checked, text)
         }
@@ -56,5 +56,27 @@ class ChecklistParsingTest {
     fun theBoxesAreSymbolsOfTheFont() {
         assertEquals(true, TextSymbols.isAt("☐", 0))
         assertEquals(true, TextSymbols.isAt("☑", 0))
+    }
+
+    @Test
+    fun aBoxAfterTheNumberOfAnItemMakesANumberedChecklist() {
+        val text = "1. [ ] first\n2. [x] second\n3. plain"
+        val spans = items(text)
+        assertEquals(listOf(false, true, null), spans.map { it.checked })
+        assertEquals(listOf(true, true, true), spans.map { it.ordered })
+        assertEquals(listOf("first", "second", "plain"), spans.map { text.substring(it.contentStart, it.contentEnd) })
+        val labels = ListNumbering.items(text, RichTextParser.parse(text)).map { it.label }
+        assertEquals(listOf("1. ☐", "2. ☑", "3."), labels)
+    }
+
+    @Test
+    fun theItemsDoneAreCountedInTheChecklistOfTheCaret() {
+        val text = "- [x] a\n- [ ] b\n- [x] c\n\ntext\n\n1. [ ] d\n2. [ ] e"
+        assertEquals(2 to 5, ListNumbering.checklistCounts(text))
+        assertEquals(2 to 3, ListNumbering.checklistCountsAt(text, 0))
+        assertEquals(0 to 2, ListNumbering.checklistCountsAt(text, text.length))
+        // Out of a checklist: all of them
+        assertEquals(2 to 5, ListNumbering.checklistCountsAt(text, text.indexOf("text")))
+        assertEquals(0 to 0, ListNumbering.checklistCountsAt("- a\n- b", 0))
     }
 }

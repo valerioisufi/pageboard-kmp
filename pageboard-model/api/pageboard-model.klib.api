@@ -4521,6 +4521,8 @@ final object io.github.valerioisufi.pageboard.model.text/ListMarker { // io.gith
 
 final object io.github.valerioisufi.pageboard.model.text/ListNumbering { // io.github.valerioisufi.pageboard.model.text/ListNumbering|null[0]
     final fun boxGlyphOf(kotlin/Boolean): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListNumbering.boxGlyphOf|boxGlyphOf(kotlin.Boolean){}[0]
+    final fun checklistCounts(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/RichTextParser.Span> = ...): kotlin/Pair<kotlin/Int, kotlin/Int> // io.github.valerioisufi.pageboard.model.text/ListNumbering.checklistCounts|checklistCounts(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.RichTextParser.Span>){}[0]
+    final fun checklistCountsAt(kotlin/String, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/RichTextParser.Span> = ...): kotlin/Pair<kotlin/Int, kotlin/Int> // io.github.valerioisufi.pageboard.model.text/ListNumbering.checklistCountsAt|checklistCountsAt(kotlin.String;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.RichTextParser.Span>){}[0]
     final fun continuationIndentAt(kotlin/String, kotlin/Int): kotlin.ranges/IntRange? // io.github.valerioisufi.pageboard.model.text/ListNumbering.continuationIndentAt|continuationIndentAt(kotlin.String;kotlin.Int){}[0]
     final fun format(kotlin/Int, io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListNumbering.format|format(kotlin.Int;io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering){}[0]
     final fun glyphOf(io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListNumbering.glyphOf|glyphOf(io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet){}[0]
@@ -4719,6 +4721,7 @@ final object io.github.valerioisufi.pageboard.model.text/TextCleanup { // io.git
     final const val MAX_HEADING_CHARS // io.github.valerioisufi.pageboard.model.text/TextCleanup.MAX_HEADING_CHARS|{}MAX_HEADING_CHARS[0]
         final fun <get-MAX_HEADING_CHARS>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TextCleanup.MAX_HEADING_CHARS.<get-MAX_HEADING_CHARS>|<get-MAX_HEADING_CHARS>(){}[0]
 
+    final fun isCheckboxLine(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/TextCleanup.isCheckboxLine|isCheckboxLine(kotlin.String){}[0]
     final fun looksLikeMarkdown(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/TextCleanup.looksLikeMarkdown|looksLikeMarkdown(kotlin.String){}[0]
     final fun toMarkdown(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.model.text/TextCleanup.toMarkdown|toMarkdown(kotlin.String){}[0]
 }

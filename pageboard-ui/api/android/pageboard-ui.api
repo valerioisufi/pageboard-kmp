@@ -573,6 +573,9 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getAbout_dialog_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getAbout_dialog_version (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getApp_name (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getChecklist_keep_completed_below (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getChecklist_keep_completed_below_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getChecklist_progress (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getColor_picker_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_bring_forward (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_bring_to_front (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -664,12 +667,12 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getEditor_page_indicator (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getFind_count (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getFind_next (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_placeholder (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getFind_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/generated/resources/String1_commonMainKt {
+	public static final fun getFind_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_placeholder (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getFind_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_as_notes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_as_notes_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_at_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -767,12 +770,12 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getShape_angle (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_arc (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_arrow (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_axes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_diamond (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getShape_double_arrow (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/generated/resources/String2_commonMainKt {
+	public static final fun getShape_axes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_diamond (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getShape_double_arrow (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_ellipse (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_fill (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_fill_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -828,6 +831,7 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getText_editor_action_bullet_list (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_check_item (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_checklist (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_checklist_options (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_code (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_code_block (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -836,7 +840,9 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_line_numbers (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_math (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_move_completed (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_normal_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_numbered_checklist (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_numbering (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_quote (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -867,6 +873,9 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getTool_settings_shapes_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_shapes_tool_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_settings_size (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/String3_commonMainKt {
 	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_shapes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }

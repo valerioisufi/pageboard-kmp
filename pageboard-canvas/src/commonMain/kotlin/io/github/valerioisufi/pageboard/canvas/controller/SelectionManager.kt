@@ -906,6 +906,18 @@ public class SelectionManager internal constructor(private val controller: Pageb
             get() = texts.map { RichTextEditing.headingLevelOf(fullValue(it)) }.distinct().singleOrNull() ?: 0
         override val inBulletList: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inBulletList(fullValue(it)) }
         override val inChecklist: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inChecklist(fullValue(it)) }
+        override val checklistProgress: Pair<Int, Int>
+            get() {
+                var done = 0
+                var total = 0
+                for (t in texts) {
+                    val (d, n) = RichTextEditing.checklistProgressOf(fullValue(t))
+                    done += d
+                    total += n
+                }
+                return done to total
+            }
+        override val moveCompletedToBottom: Boolean get() = controller.moveCompletedChecklistsToBottom
         override val inNumberedList: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inNumberedList(fullValue(it)) }
         override val inQuote: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inQuote(fullValue(it)) }
         override val numberingStyle: NumberingStyle?
@@ -986,8 +998,33 @@ public class SelectionManager internal constructor(private val controller: Pageb
                 val tasks = RichTextParser.parse(value.text).filter { it.kind == RichTextParser.Kind.LIST_ITEM && it.checked != null }
                 if (tasks.isEmpty()) return@updateSelectedTextsContent value
                 val hasUnchecked = tasks.any { it.checked == false }
-                if (allChecked || hasUnchecked) RichTextEditing.toggleChecked(value) else value
+                val toggled = if (allChecked || hasUnchecked) RichTextEditing.toggleChecked(value) else value
+                if (controller.moveCompletedChecklistsToBottom) RichTextEditing.moveCompletedToEnd(toggled) else toggled
             }
+        }
+
+        override fun toggleNumberedChecklist() {
+            val turnOff = texts.isNotEmpty() && texts.all {
+                val items = RichTextParser.parse(it.text).filter { s -> s.kind == RichTextParser.Kind.LIST_ITEM }
+                items.isNotEmpty() && items.all { s -> s.ordered && s.checked != null }
+            }
+            updateSelectedTextsContent { value ->
+                if (turnOff) RichTextEditing.toggleNumberedChecklist(value)
+                else {
+                    val items = RichTextParser.parse(value.text).filter { s -> s.kind == RichTextParser.Kind.LIST_ITEM }
+                    if (items.isNotEmpty() && items.all { s -> s.ordered && s.checked != null }) value
+                    else RichTextEditing.toggleNumberedChecklist(value)
+                }
+            }
+        }
+
+        override fun moveCompletedChecklistsToBottom() {
+            updateSelectedTextsContent { RichTextEditing.moveCompletedToEnd(it) }
+        }
+
+        override fun setMoveCompletedToBottom(enabled: Boolean) {
+            controller.updateMoveCompletedChecklistsToBottom(enabled)
+            if (enabled) moveCompletedChecklistsToBottom()
         }
 
         override fun toggleQuote() {

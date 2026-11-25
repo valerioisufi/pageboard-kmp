@@ -51,7 +51,9 @@ public data class EditorPreferences(
     /** Whether holding a stroke still converts it directly into an editable shape element instead of a stroke. */
     val snapToEditableShape: Boolean = false,
     /** Whether wheel and trackpad scrolling locks onto the predominant axis at the start of a gesture. */
-    val isScrollAxisLockEnabled: Boolean = true
+    val isScrollAxisLockEnabled: Boolean = true,
+    /** Whether checking a checklist item automatically moves completed items to the bottom of the list. */
+    val moveCompletedChecklistsToBottom: Boolean = false
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
     public fun encode(): String = json.encodeToString(serializer(), this)

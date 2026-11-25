@@ -195,6 +195,12 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     override val inChecklist: Boolean get() = isEditing && RichTextEditing.inChecklist(value)
 
+    override val checklistProgress: Pair<Int, Int>
+        get() = if (isEditing) RichTextEditing.checklistProgressOf(value) else 0 to 0
+
+    override val moveCompletedToBottom: Boolean
+        get() = controller.moveCompletedChecklistsToBottom
+
     override val inNumberedList: Boolean get() = isEditing && RichTextEditing.inNumberedList(value)
 
     override val inQuote: Boolean get() = isEditing && RichTextEditing.inQuote(value)
@@ -669,7 +675,8 @@ public class TextEditorManager internal constructor(private val controller: Page
             if (placed == pasted) return null
             return TextFieldValue(value.text.substring(0, start) + placed + rest, TextRange(start + placed.length))
         }
-        if ('\n' !in pasted && '\r' !in pasted) return null
+        val checkboxLine = TextCleanup.isCheckboxLine(pasted.trim())
+        if ('\n' !in pasted && '\r' !in pasted && !checkboxLine) return null
         val clean = if (selectedCodeBlock != null) PastedText.normalized(pasted) else PastedText.clean(pasted)
         if (clean == pasted) return null
         return TextFieldValue(value.text.substring(0, start) + clean + rest, TextRange(start + clean.length))
@@ -816,12 +823,33 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     /** Checks the items of a checklist of the selection, or unchecks them when they are all checked. */
     override fun toggleChecked() {
-        if (!inTable) updateValue(RichTextEditing.toggleChecked(value), smartNewline = false)
+        if (inTable) return
+        val toggled = RichTextEditing.toggleChecked(value)
+        val sorted = if (controller.moveCompletedChecklistsToBottom) RichTextEditing.moveCompletedToEnd(toggled) else toggled
+        updateValue(sorted, smartNewline = false)
     }
 
     /** Checks or unchecks the item of a checklist starting at [itemStart] of the text (a tap on its box). */
     public fun toggleCheckedAt(itemStart: Int) {
-        updateValue(RichTextEditing.toggleCheckedAt(value, itemStart), smartNewline = false)
+        val toggled = RichTextEditing.toggleCheckedAt(value, itemStart)
+        val sorted = if (controller.moveCompletedChecklistsToBottom) RichTextEditing.moveCompletedToEnd(toggled, onlyItemStart = itemStart) else toggled
+        updateValue(sorted, smartNewline = false)
+    }
+
+    /** Makes the lines of the selection numbered checklist items (`1. [ ] `), or plain text again. */
+    override fun toggleNumberedChecklist() {
+        if (!inTable) updateValue(RichTextEditing.toggleNumberedChecklist(value), smartNewline = false)
+    }
+
+    /** Moves completed checklist items to the bottom of their list. */
+    override fun moveCompletedChecklistsToBottom() {
+        if (!inTable) updateValue(RichTextEditing.moveCompletedToEnd(value), smartNewline = false)
+    }
+
+    /** Enables or disables automatically moving completed checklist items to the bottom when checked. */
+    override fun setMoveCompletedToBottom(enabled: Boolean) {
+        controller.updateMoveCompletedChecklistsToBottom(enabled)
+        if (enabled && isEditing && checklistProgress.first > 0) moveCompletedChecklistsToBottom()
     }
 
     /** Makes the lines of the selection numbered list items, or plain text again. */

@@ -568,8 +568,8 @@ internal object RichTextPresenter {
         for ((range, item) in labels) {
             if (item.bullet != null) out.addStyle(SpanStyle(fontFamily = p.monospace, fontSize = bulletSize), range.first, range.last + 1)
             if (item.checked != null) {
-                // The box in the symbols font, the text of an item done struck through and faded
-                p.symbols?.let { out.addStyle(SpanStyle(fontFamily = it), range.first, range.last + 1) }
+                // The box in the symbols font (last glyph when prefixed by an ordinal), done struck through and faded
+                p.symbols?.let { out.addStyle(SpanStyle(fontFamily = it), range.last, range.last + 1) }
                 if (item.checked) {
                     val from = mapping.originalToTransformed(item.span.contentStart)
                     val to = mapping.originalToTransformed(item.span.end)
@@ -600,7 +600,7 @@ internal object RichTextPresenter {
                 }
             }
         }
-        val boxes = labels.mapNotNull { (range, item) -> item.checked?.let { PresentedBox(range, item.span.start, it) } }
+        val boxes = labels.mapNotNull { (range, item) -> item.checked?.let { PresentedBox(range.last..range.last, item.span.start, it) } }
         val links = mutableListOf<PresentedLink>()
         var linkAtCaret: String? = null
         var nextTableEnd = -1
@@ -704,12 +704,15 @@ internal object RichTextPresenter {
     private fun listLayout(text: String, spans: List<Span>, p: Presentation<*>): ListLayout {
         val items = ListNumbering.items(text, spans)
         if (items.isEmpty()) return ListLayout.EMPTY
-        fun widthOf(item: ListNumbering.Item): Float = if (item.bullet != null) {
-            BULLET_ADVANCE * bulletScale(p) * p.fontSizePx
-        } else if (item.checked != null) {
-            BOX_ADVANCE * p.fontSizePx
-        } else {
-            p.measurePrefix?.invoke(item.label) ?: (item.label.length * ORDINAL_ADVANCE * p.fontSizePx)
+        fun widthOf(item: ListNumbering.Item): Float = when {
+            item.bullet != null -> BULLET_ADVANCE * bulletScale(p) * p.fontSizePx
+            item.checked != null && item.numbering == null -> BOX_ADVANCE * p.fontSizePx
+            item.checked != null -> {
+                val ordinalPrefix = item.label.dropLast(1)
+                val ordinalWidth = p.measurePrefix?.invoke(ordinalPrefix) ?: (ordinalPrefix.length * ORDINAL_ADVANCE * p.fontSizePx)
+                ordinalWidth + BOX_ADVANCE * p.fontSizePx
+            }
+            else -> p.measurePrefix?.invoke(item.label) ?: (item.label.length * ORDINAL_ADVANCE * p.fontSizePx)
         }
         val widths = FloatArray(items.size) { widthOf(items[it]) }
         // The column of the labels of each list: its widest label

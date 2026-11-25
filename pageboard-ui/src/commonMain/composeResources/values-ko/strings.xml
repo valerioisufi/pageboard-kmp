@@ -325,4 +325,10 @@
     <string name="text_font_jakarta">Jakarta</string>
     <string name="text_font_mono">Mono</string>
     <string name="text_font_serif">Serif</string>
+    <string name="text_editor_action_numbered_checklist">번호 매기기 체크리스트</string>
+    <string name="text_editor_action_move_completed">완료된 항목을 아래로 이동</string>
+    <string name="text_editor_action_checklist_options">체크리스트 옵션…</string>
+    <string name="checklist_keep_completed_below">완료된 항목을 항상 아래에</string>
+    <string name="checklist_keep_completed_below_hint">체크한 항목은 아직 할 항목 아래로 이동합니다</string>
+    <string name="checklist_progress">%2$d개 중 %1$d개 완료</string>
 </resources>

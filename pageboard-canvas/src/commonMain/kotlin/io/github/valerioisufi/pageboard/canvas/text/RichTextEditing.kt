@@ -317,6 +317,180 @@ public object RichTextEditing {
         return withBoxes(value, listOf(item), item.checked != true)
     }
 
+    /**
+     * Makes the lines of the selection numbered checklist items (`1. [ ] `), or plain text again if
+     * they are all numbered checklist items already. Preserves existing checked state.
+     */
+    public fun toggleNumberedChecklist(value: TextFieldValue): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val text = value.text
+        val (firstLineStart, lastLineEnd) = selectedLines(text, value.selection)
+        val items = RichTextParser.parse(text).filter { it.kind == RichTextParser.Kind.LIST_ITEM }
+        val edits = ArrayList<Triple<Int, Int, String>>()
+        val selectedStarts = mutableListOf<RichTextParser.Span>()
+        var lineStart = firstLineStart
+        var nonContinuationAllOrderedTasks = true
+        while (lineStart <= lastLineEnd) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+            val textStart = lineStart + BlockQuote.markerLength(text, lineStart)
+            val item = items.firstOrNull { it.start == textStart || it.start == lineStart }
+            val continuation = item == null && items.any { it.start < lineStart && lineStart <= it.end }
+            if (!continuation) {
+                if (item == null || !item.ordered || item.checked == null) nonContinuationAllOrderedTasks = false
+                if (item != null) selectedStarts += item
+            }
+            if (lineEnd >= text.length) break
+            lineStart = lineEnd + 1
+        }
+        val remove = nonContinuationAllOrderedTasks
+        val numbers = LinkedHashMap<Int, Int>()
+        lineStart = firstLineStart
+        while (lineStart <= lastLineEnd) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+            val textStart = lineStart + BlockQuote.markerLength(text, lineStart)
+            val item = items.firstOrNull { it.start == textStart || it.start == lineStart }
+            val continuation = item == null && items.any { it.start < lineStart && lineStart <= it.end }
+            var indentEnd = textStart
+            while (indentEnd < lineEnd && (text[indentEnd] == ' ' || text[indentEnd] == '\t')) indentEnd++
+            if (!continuation) {
+                if (remove && item != null) {
+                    edits += Triple(indentEnd, item.contentStart, "")
+                } else {
+                    val depth = indentEnd - textStart
+                    numbers.keys.removeAll { it > depth }
+                    val number = (numbers[depth] ?: 0) + 1
+                    numbers[depth] = number
+                    val box = TaskBox.write(item?.checked ?: false) + " "
+                    val marker = ListMarker.write(item?.style, number) + box
+                    if (item != null) {
+                        edits += Triple(indentEnd, item.contentStart, marker)
+                    } else {
+                        val heading = HEADING_MARKER.find(text.substring(indentEnd, lineEnd))?.value?.length ?: 0
+                        edits += Triple(indentEnd, indentEnd + heading, marker)
+                    }
+                }
+            }
+            if (lineEnd >= text.length) break
+            lineStart = lineEnd + 1
+        }
+        return applied(value, edits)
+    }
+
+    /**
+     * Completed and total checklist item counts (`(completed, total)`) for the checklist run
+     * at the caret/selection of [value] (or across the whole text if the caret is outside a list).
+     */
+    public fun checklistProgressOf(value: TextFieldValue): Pair<Int, Int> =
+        ListNumbering.checklistCountsAt(value.text, min(value.selection.start, value.selection.end))
+
+    /**
+     * Moves completed items (`[x]`) to the bottom of their checklist sibling group, keeping
+     * nested children, continuation lines, and indented code blocks attached to each item and
+     * keeping numbered checklist ordinals sequential.
+     *
+     * When [onlyItemStart] is non-negative, only the checklist run containing the item starting at
+     * [onlyItemStart] is reordered; otherwise if the caret/selection is inside a checklist run, only
+     * that run is reordered, else every checklist run in [value] is reordered.
+     */
+    public fun moveCompletedToEnd(value: TextFieldValue, onlyItemStart: Int? = null): TextFieldValue {
+        if ('[' !in value.text) return value
+        var curText = value.text
+        var selStart = value.selection.start
+        var selEnd = value.selection.end
+        val initialSpans = RichTextParser.parse(curText)
+        val initialItems = ListNumbering.items(curText, initialSpans)
+        if (initialItems.none { it.checked != null }) return value
+        val targetRun = when {
+            onlyItemStart != null -> initialItems.firstOrNull { it.span.start == onlyItemStart }?.run
+            else -> initialItems.firstOrNull { min(selStart, selEnd) in it.span.start..it.span.end && it.checked != null }?.run
+        }
+        val maxDepth = initialItems.maxOfOrNull { it.depth } ?: 0
+        for (depth in maxDepth downTo 0) {
+            // Each round sorts one group of siblings, never to be taken again: as many rounds at most as items
+            for (round in 0..initialItems.size) {
+                val spans = RichTextParser.parse(curText)
+                val items = ListNumbering.items(curText, spans)
+                val codeBlocks = spans.filter { it.kind == RichTextParser.Kind.CODE_BLOCK }
+                val group = items.indices
+                    .filter { items[it].depth == depth && (targetRun == null || items[it].run == targetRun) }
+                    .groupBy { items[it].list }
+                    .values
+                    .firstOrNull { siblings -> completedLast(siblings, items) != siblings }
+                    ?: break
+                val reordered = completedLast(group, items)
+                val subStarts = IntArray(group.size)
+                val subEnds = IntArray(group.size)
+                for ((pos, itemIdx) in group.withIndex()) {
+                    val head = items[itemIdx]
+                    subStarts[pos] = curText.lastIndexOf('\n', head.span.start - 1) + 1
+                    var lastIdx = itemIdx
+                    while (lastIdx + 1 < items.size && items[lastIdx + 1].run == head.run && items[lastIdx + 1].depth > depth) {
+                        lastIdx++
+                    }
+                    val memberStarts = (itemIdx..lastIdx).map { items[it].span.start }.toSet()
+                    var end = items[lastIdx].span.end
+                    for (cb in codeBlocks) {
+                        if (cb.listItem?.start in memberStarts) end = max(end, cb.end)
+                    }
+                    subEnds[pos] = end
+                }
+                val groupStart = subStarts.first()
+                val groupEnd = subEnds.last()
+                val slotByItem = HashMap<Int, Int>(group.size)
+                for ((pos, itemIdx) in group.withIndex()) slotByItem[itemIdx] = pos
+                val seps = Array(group.size - 1) { pos -> curText.substring(subEnds[pos], subStarts[pos + 1]) }
+                val slices = Array(group.size) { pos -> curText.substring(subStarts[pos], subEnds[pos]) }
+                val rebuilt = StringBuilder()
+                val newSubStarts = IntArray(group.size)
+                for (newPos in reordered.indices) {
+                    if (newPos > 0) rebuilt.append(seps[newPos - 1])
+                    val oldPos = slotByItem.getValue(reordered[newPos])
+                    newSubStarts[newPos] = groupStart + rebuilt.length
+                    rebuilt.append(slices[oldPos])
+                }
+                var groupBlock = rebuilt.toString()
+                val firstItem = items[group.first()]
+                if (firstItem.span.ordered) {
+                    val blockSpans = RichTextParser.parse(groupBlock)
+                    val blockItems = ListNumbering.items(groupBlock, blockSpans)
+                    val topLevel = blockItems.filter { it.depth == 0 && it.span.ordered }.map { it.span }
+                    if (topLevel.size == reordered.size) {
+                        val baseStyle = firstItem.style
+                        val startOrdinal = firstItem.ordinal
+                        val renumbered = ListRenumbering.withMarkers(groupBlock, topLevel) { pos ->
+                            val item = topLevel[pos]
+                            val box = item.checked?.let { TaskBox.write(it) + " " }.orEmpty()
+                            ListMarker.write(item.style ?: baseStyle, startOrdinal + pos) + box
+                        }
+                        groupBlock = renumbered.text
+                    }
+                }
+                val nextText = curText.substring(0, groupStart) + groupBlock + curText.substring(groupEnd)
+                val shiftAfter = groupBlock.length - (groupEnd - groupStart)
+                fun mapCaret(offset: Int): Int {
+                    if (offset < groupStart) return offset
+                    if (offset > groupEnd) return offset + shiftAfter
+                    for (oldPos in group.indices) {
+                        if (offset in subStarts[oldPos]..subEnds[oldPos]) {
+                            val newPos = reordered.indexOf(group[oldPos])
+                            val mapped = newSubStarts[newPos] + (offset - subStarts[oldPos])
+                            return mapped.coerceIn(groupStart, groupStart + groupBlock.length)
+                        }
+                    }
+                    return (offset + shiftAfter).coerceIn(groupStart, groupStart + groupBlock.length)
+                }
+                selStart = mapCaret(selStart)
+                selEnd = mapCaret(selEnd)
+                curText = nextText
+            }
+        }
+        return TextFieldValue(curText, TextRange(selStart, selEnd))
+    }
+
+    /** The items [group] of [items] with the ones done after the others, each part in its order. */
+    private fun completedLast(group: List<Int>, items: List<ListNumbering.Item>): List<Int> =
+        group.filter { items[it].checked != true } + group.filter { items[it].checked == true }
+
     /** [value] with the boxes of the items of a checklist [items] written [checked]: one character each, the selection where it was. */
     private fun withBoxes(value: TextFieldValue, items: List<RichTextParser.Span>, checked: Boolean): TextFieldValue {
         val chars = value.text.toCharArray()
@@ -502,7 +676,10 @@ public object RichTextEditing {
         val madeCaret = min(made.selection.start, made.selection.end)
         val item = items.firstOrNull { madeCaret >= it.span.start && madeCaret <= it.span.end } ?: return value
         val level = items.filter { it.list == item.list }.map { it.span }
-        return withMarkersOf(made, level) { position -> ListMarker.write(style, start + position) }
+        return withMarkersOf(made, level) { position ->
+            val box = level[position].checked?.let { TaskBox.write(it) + " " }.orEmpty()
+            ListMarker.write(style, start + position) + box
+        }
     }
 
     /**
@@ -517,7 +694,10 @@ public object RichTextEditing {
         val item = items.firstOrNull { caret >= it.span.start && caret <= it.span.end } ?: return null
         if (item.span.ordered == ordered) return null
         val level = items.filter { it.list == item.list }.map { it.span }
-        return withMarkersOf(value, level) { position -> if (ordered) "${position + 1}. " else BULLET_PREFIX }
+        return withMarkersOf(value, level) { position ->
+            val box = level[position].checked?.let { TaskBox.write(it) + " " }.orEmpty()
+            (if (ordered) "${position + 1}. " else BULLET_PREFIX) + box
+        }
     }
 
     /** [value] with the markers of [items] replaced, its selection following them. */
@@ -596,7 +776,7 @@ public object RichTextEditing {
             var markerStart = continued.start
             while (text[markerStart] == ' ' || text[markerStart] == '\t') markerStart++
             val box = if (continued.checked != null) TaskBox.UNCHECKED + " " else ""
-            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) else text[markerStart] + " " + box
+            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) + box else text[markerStart] + " " + box
             var after = cursor
             while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
             // At the start of the line: the next item takes the whole line
@@ -618,10 +798,11 @@ public object RichTextEditing {
         }
 
         // The box of an item of a checklist goes with its marker: the next item takes an empty one
-        if (markerType == MarkerType.BULLET && TaskBox.at(rest, markerLen) != null) {
+        var boxSuffix = ""
+        if ((markerType == MarkerType.BULLET || markerType == MarkerType.NUMBERED) && TaskBox.at(rest, markerLen) != null) {
             markerLen += TaskBox.LENGTH
             while (markerLen < rest.length && (rest[markerLen] == ' ' || rest[markerLen] == '\t')) markerLen++
-            bulletMarker += TaskBox.UNCHECKED + " "
+            boxSuffix = TaskBox.UNCHECKED + " "
         }
 
         if (markerType == MarkerType.NONE) {
@@ -650,9 +831,9 @@ public object RichTextEditing {
         val beforeCursor = line.substring(0, cursorInLine)
         val afterCursor = line.substring(cursorInLine).trimStart()
         val nextPrefix = if (markerType == MarkerType.NUMBERED) {
-            indent + ListMarker.write(numbered?.style, numValue + 1)
+            indent + ListMarker.write(numbered?.style, numValue + 1) + boxSuffix
         } else {
-            "$indent$bulletMarker"
+            "$indent$bulletMarker$boxSuffix"
         }
 
         val newLineBlock = beforeCursor + "\n" + quote + nextPrefix + afterCursor

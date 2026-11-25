@@ -76,4 +76,15 @@ class PastedTextTest {
     fun theLineBreakAtTheEndStays() {
         assertEquals("- uno\n- due\n", PastedText.clean("• uno\n• due\n"))
     }
+
+    @Test
+    fun theBoxesOfAnotherAppBecomeAChecklist() {
+        assertEquals("- [ ] latte\n- [x] uova", PastedText.clean("☐ latte\n☑ uova"))
+        assertEquals("- [ ] latte\n- [x] uova", PastedText.clean("• [ ] latte\n• [x] uova"))
+        assertEquals("1. [ ] latte\n2. [x] uova", PastedText.clean("1. ☐ latte\n2) ✔ uova"))
+        // A single line too
+        assertEquals("- [x] fatto", PastedText.clean("☑ fatto"))
+        // In Markdown, only the boxes of another app change
+        assertEquals("# Spesa\n- [ ] latte\n- [x] uova", PastedText.clean("# Spesa\n- [ ] latte\n- ☑ uova"))
+    }
 }
