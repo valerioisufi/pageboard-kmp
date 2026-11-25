@@ -884,11 +884,14 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getBoxX ()F
 	public final fun getBoxY ()F
 	public fun getBulletStyle ()Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
+	public fun getCanContinueNumbering ()Z
 	public final fun getChainComesFrom ()Z
 	public final fun getChainGoesOn ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
 	public fun getColor ()I
+	public final fun getContinuedListStart ()Ljava/lang/Integer;
+	public fun getContinuesNumbering ()Z
 	public fun getFontFamily ()Ljava/lang/String;
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
@@ -930,6 +933,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun reportLayoutHeight (F)V
 	public final fun saveWriting ()V
 	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public fun setContinuesNumbering (Z)V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setHeading (I)V
 	public fun setMoveCompletedToBottom (Z)V
@@ -970,9 +974,11 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public abstract fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public fun getBackground ()Ljava/lang/Integer;
 	public fun getBulletStyle ()Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
+	public fun getCanContinueNumbering ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
+	public fun getContinuesNumbering ()Z
 	public fun getFontFamily ()Ljava/lang/String;
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
@@ -994,6 +1000,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun moveCompletedChecklistsToBottom ()V
 	public fun outdent ()V
 	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public fun setContinuesNumbering (Z)V
 	public fun setHeading (I)V
 	public fun setMoveCompletedToBottom (Z)V
 	public fun setNumbering (Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
@@ -1015,8 +1022,10 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun changeFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/String;)V
 	public static fun getBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
 	public static fun getBulletStyle (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
+	public static fun getCanContinueNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getChecklistProgress (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lkotlin/Pair;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
+	public static fun getContinuesNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/String;
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getHeadingLevel (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)I
@@ -1037,6 +1046,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun moveCompletedChecklistsToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun outdent (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun setBullet (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public static fun setContinuesNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
 	public static fun setHeading (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;I)V
 	public static fun setMoveCompletedToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
 	public static fun setNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V

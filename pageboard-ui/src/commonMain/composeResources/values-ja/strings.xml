@@ -337,4 +337,6 @@
     <string name="bullet_circle">白丸</string>
     <string name="bullet_square">四角</string>
     <string name="bullet_dash">ダッシュ</string>
+    <string name="numbering_continue">前のリストから続ける</string>
+    <string name="numbering_continue_hint">前のテキストの番号に続けます</string>
 </resources>

@@ -343,4 +343,6 @@
     <string name="bullet_circle">Circle</string>
     <string name="bullet_square">Square</string>
     <string name="bullet_dash">Dash</string>
+    <string name="numbering_continue">Continue the previous list</string>
+    <string name="numbering_continue_hint">Its numbers go on from the text before it</string>
 </resources>

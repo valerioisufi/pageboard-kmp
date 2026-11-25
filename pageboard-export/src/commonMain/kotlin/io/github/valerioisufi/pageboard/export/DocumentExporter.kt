@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.export
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
+import io.github.valerioisufi.pageboard.model.text.ListContinuation
 
 /**
  * A format the documents are exported in (see `docs/plans/export.md`): [PdfExporter],
@@ -81,6 +82,8 @@ public class DocumentContent(
          * `null`) in their order. Called on the thread of the document (see `OpenDocument.edit`).
          */
         public fun of(document: Document, pageIds: Set<String>? = null, pageIndices: Set<Int>? = null): DocumentContent {
+            // The lists going on from another text count from it, also from a page not exported
+            ListContinuation.apply(document)
             val pages = document.pages.filterIndexed { index, page ->
                 (pageIds == null || page.id in pageIds) && (pageIndices == null || index in pageIndices)
             }

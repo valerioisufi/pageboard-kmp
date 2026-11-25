@@ -342,4 +342,6 @@
     <string name="bullet_circle">Kreis</string>
     <string name="bullet_square">Quadrat</string>
     <string name="bullet_dash">Strich</string>
+    <string name="numbering_continue">Vorherige Liste fortsetzen</string>
+    <string name="numbering_continue_hint">Die Nummern setzen den Text davor fort</string>
 </resources>

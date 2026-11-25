@@ -995,6 +995,7 @@ public final class io/github/valerioisufi/pageboard/model/TextElement : io/githu
 	public final fun getColor ()I
 	public final fun getContentVersions ()Lio/github/valerioisufi/pageboard/model/Versions;
 	public final fun getContinueNumberingFrom ()Ljava/lang/String;
+	public final fun getContinuedListStart ()Ljava/lang/Integer;
 	public final fun getContinuesLine ()Z
 	public final fun getFontFamily ()Ljava/lang/String;
 	public final fun getFontSize ()F
@@ -1028,6 +1029,7 @@ public final class io/github/valerioisufi/pageboard/model/TextElement : io/githu
 	public final fun setColor (I)V
 	public final fun setContentVersions (Lio/github/valerioisufi/pageboard/model/Versions;)V
 	public final fun setContinueNumberingFrom (Ljava/lang/String;)V
+	public final fun setContinuedListStart (Ljava/lang/Integer;)V
 	public final fun setContinuesLine (Z)V
 	public final fun setFontFamily (Ljava/lang/String;)V
 	public final fun setFontSize (F)V
@@ -3891,6 +3893,16 @@ public final class io/github/valerioisufi/pageboard/model/text/LatexCommands$Mat
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/model/text/ListContinuation {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/ListContinuation;
+	public final fun apply (Lio/github/valerioisufi/pageboard/model/Document;)Ljava/util/List;
+	public final fun lastNumberOf (Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Integer;
+	public static synthetic fun lastNumberOf$default (Lio/github/valerioisufi/pageboard/model/text/ListContinuation;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Ljava/lang/Integer;
+	public final fun previousListText (Lio/github/valerioisufi/pageboard/model/Document;Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;F)Lio/github/valerioisufi/pageboard/model/TextElement;
+	public final fun startOf (Lio/github/valerioisufi/pageboard/model/TextElement;Lkotlin/jvm/functions/Function1;)Ljava/lang/Integer;
+	public final fun startOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Integer;
+}
+
 public final class io/github/valerioisufi/pageboard/model/text/ListMarker {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/ListMarker;
 	public final fun at (Ljava/lang/CharSequence;I)Lio/github/valerioisufi/pageboard/model/text/ListMarker$Read;
@@ -3931,7 +3943,8 @@ public final class io/github/valerioisufi/pageboard/model/text/ListNumbering {
 	public final fun continuationIndentAt (Ljava/lang/String;I)Lkotlin/ranges/IntRange;
 	public final fun format (ILio/github/valerioisufi/pageboard/model/text/ListNumbering$Numbering;)Ljava/lang/String;
 	public final fun glyphOf (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)Ljava/lang/String;
-	public final fun items (Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
+	public final fun items (Ljava/lang/String;Ljava/util/List;Ljava/lang/Integer;)Ljava/util/List;
+	public static synthetic fun items$default (Lio/github/valerioisufi/pageboard/model/text/ListNumbering;Ljava/lang/String;Ljava/util/List;Ljava/lang/Integer;ILjava/lang/Object;)Ljava/util/List;
 	public final fun markerColumnOf (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)I
 	public final fun outlineParents (Ljava/util/List;I)Ljava/util/List;
 	public final fun textColumnOf (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)I

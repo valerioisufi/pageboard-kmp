@@ -56,6 +56,7 @@ import io.github.valerioisufi.pageboard.model.change.PersistenceQueue
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
+import io.github.valerioisufi.pageboard.model.text.ListContinuation
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextDefaults
 import io.github.valerioisufi.pageboard.model.text.TextSizes
@@ -298,6 +299,7 @@ public class PageboardController(
         tileManager.tileRenderer.elements = engines.elements
         if (storesChanges) session.addObserver(ChangePersister(::persist))
         session.addObserver(changeObserver)
+        ListContinuation.apply(document)
         viewport.updatePageLayout()
         // A document always shows a page: added by a change, so that the other devices get it too
         if (document.pages.isEmpty()) pageManager.addNewPageAtBottom()
@@ -652,6 +654,8 @@ public class PageboardController(
         if (!changeAlreadyDrawn) {
             for ((page, rect) in effects.dirtyRegions) invalidatePageContent(page, rect)
         }
+        // The lists going on from another text follow it: drawn again when their start changed
+        for ((page, _) in ListContinuation.apply(document)) invalidatePageContent(page, null)
         requestRedraw()
     }
 

@@ -48,6 +48,9 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_delimit
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_lower_alpha
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_lower_roman
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_outline
+import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_continue
+import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_continue_hint
+import io.github.valerioisufi.pageboard.ui.components.SwitchRow
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start_earlier
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start_later
@@ -134,6 +137,15 @@ private fun NumberingPicker(target: TextFormatTarget) {
                 modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 28.dp)
             )
             Chip("+", selected = false, enabled = later != null, description = stringResource(Res.string.numbering_start_later)) { later?.let { target.setNumbering(style, it) } }
+        }
+        if (target.canContinueNumbering) {
+            SwitchRow(
+                text = stringResource(Res.string.numbering_continue),
+                hint = stringResource(Res.string.numbering_continue_hint),
+                checked = target.continuesNumbering,
+                onCheckedChange = target::setContinuesNumbering,
+                modifier = Modifier.padding(horizontal = 10.dp)
+            )
         }
     }
 }

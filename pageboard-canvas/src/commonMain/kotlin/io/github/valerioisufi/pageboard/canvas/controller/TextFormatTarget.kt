@@ -133,6 +133,15 @@ public interface TextFormatTarget {
     /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
     public fun setNumbering(style: NumberingStyle?, start: Int) {}
 
+    /** Whether the first numbered list of the text goes on from the list of another text (see `ListContinuation`). */
+    public val continuesNumbering: Boolean get() = false
+
+    /** Whether the first numbered list of the text may go on from the list of another text: there is one before it. */
+    public val canContinueNumbering: Boolean get() = false
+
+    /** The first numbered list of the text going on from the list of the text before it ([continues]), or counting on its own. */
+    public fun setContinuesNumbering(continues: Boolean) {}
+
     /** The bulleted list of the selection with [bullet] (`null`: the bullet of its level), made a bulleted list if it is not one. */
     public fun setBullet(bullet: ListNumbering.Bullet?) {}
 

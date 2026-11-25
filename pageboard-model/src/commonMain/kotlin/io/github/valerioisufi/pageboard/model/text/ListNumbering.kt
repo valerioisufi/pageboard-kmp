@@ -50,8 +50,12 @@ public object ListNumbering {
         public val chosenBullet: Bullet? = null
     )
 
-    /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
-    public fun items(text: String, spans: List<Span>): List<Item> {
+    /**
+     * The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order; the
+     * first numbered list of the first level counts from [firstListStart] when it goes on from the
+     * list of another text (see [ListContinuation]), from its first number otherwise.
+     */
+    public fun items(text: String, spans: List<Span>, firstListStart: Int? = null): List<Item> {
         val listItems = spans.filter { it.kind == Kind.LIST_ITEM }
         if (listItems.isEmpty()) return emptyList()
         // What belongs to a list besides its items: the blocks of code under them
@@ -64,6 +68,7 @@ public object ListNumbering {
         class Siblings(val list: Int, val ordered: Boolean, val first: Int, val style: NumberingStyle?, val bullet: Bullet?, var count: Int)
         val siblings = HashMap<Int, Siblings>()
         var lists = 0
+        var firstListTaken = firstListStart == null
         var previousEnd = -1
         var run = 0
         for ((index, span) in listItems.withIndex()) {
@@ -87,7 +92,10 @@ public object ListNumbering {
                 previous.count++
                 previous
             } else {
-                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, span.style, span.bullet, 0).also { siblings[parent] = it }
+                val continued = span.ordered && parent < 0 && !firstListTaken
+                if (span.ordered && parent < 0) firstListTaken = true
+                val first = if (continued) firstListStart!! else if (span.ordered) span.number else 0
+                Siblings(lists++, span.ordered, first, span.style, span.bullet, 0).also { siblings[parent] = it }
             }
             val depth = open.size
             val label: String

@@ -195,7 +195,9 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     // kept while what is typed cannot be rendered
     val writing = remember { FormulaBeingWritten() }
     val bodyFont = remember(notesFonts, editor.fontFamily) { notesFonts.familyFor(editor.fontFamily) }
-    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont) {
+    // A list going on from another text counts from it (see ListContinuation)
+    val listStart = editor.continuedListStart
+    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont, listStart) {
         formulaSizes.clear()
         val selection = value.selection
         val atCaret = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.FORMULA && selection.min > it.start && selection.max < it.end }
@@ -217,6 +219,7 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             fontSizePx = fontSizePx,
             color = textColor,
             struts = struts,
+            listStart = listStart,
             density = unscaledDensity.density,
             lineWidthPx = widthPx.toFloat(),
             monospace = notesFonts.monospace,

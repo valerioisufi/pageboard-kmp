@@ -63,7 +63,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | Numbered checklists, the count in the bar and its options (numbered, the items done below, the preference), the boxes of other applications pasted; tests; ABI recorded | Done |
 | 2 | A box checked from the page: `checkBoxAt` on the adapters, `toggleCheckBoxAt`, the tap in `CanvasGestureHandler`; tests | Done |
 | 3 | Numbers by level (`1.1`), `(a)` `(1)` `(i)`, the bullets chosen; the picker; the notation kept readable; tests | Done |
-| 4 | A list going on in another box (`continueNumberingFrom`): `ListContinuation`, the page, the editor, the PDF, the toggle in the picker; tests | Pending |
+| 4 | A list going on in another box (`continueNumberingFrom`): `ListContinuation`, the page, the editor, the PDF, the toggle in the picker; tests | Done |
 
 ## Decisions
 
@@ -99,6 +99,19 @@ Taken alone, revertible:
      `-`, `*` and `+` keep the bullet of their level. The automatic bullets stay the three of the
      levels; the dash is only chosen. In another Markdown viewer these lines are text, readable.
 8. **`(a) `, `(i) ` and `(1) ` typed at the start of a line start such a list**, as `a. ` does.
+9. **A list continued keeps its source as written; only its labels count on** (`ListNumbering.items`
+   with the start of its first list, `TextElement.continuedListStart` computed by `ListContinuation`
+   and never stored nor sent). Writing the numbers into its source would make a change of one text
+   rewrite another, a change sent to the other devices that nobody made. The copy, the search and
+   the agents read the numbers as written.
+10. **The first numbered list of the first level goes on, after the last such list of the text
+    named**: the text before it in the order of reading with a numbered list, out of its chain
+    (above it on its page, then on the pages before), chosen by the switch of the picker.
+11. **A name from another device is checked**: a text not in the document, or a cycle of texts
+    naming each other, continues nothing; at most 64 texts are followed, a start at most a million.
+12. **The editor keeps what it does not change**: writing a text used to save it without its
+    `continueNumberingFrom` and `maxHeight` (stage A added them to `TextData`, not to the draft of
+    the editor), which took them away.
 
 ## Left for later
 

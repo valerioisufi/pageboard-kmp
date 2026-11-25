@@ -44,6 +44,7 @@ import io.github.valerioisufi.pageboard.model.text.TextDefaults
 import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import io.github.valerioisufi.pageboard.model.text.ListNumbering
+import io.github.valerioisufi.pageboard.model.text.ListContinuation
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import kotlin.math.abs
 
@@ -233,6 +234,9 @@ public class TextEditorManager internal constructor(private val controller: Page
      */
     private var editedFrom: TextData? = null
 
+    /** The text whose list the list of the text being written goes on from (see [ListContinuation]), or `null`. */
+    private var continueNumberingFrom: String? by mutableStateOf(null)
+
     /**
      * Whether the writing began on a new text: saved meanwhile (see [saveWriting]) and emptied, it
      * leaves nothing to undo.
@@ -339,6 +343,7 @@ public class TextEditorManager internal constructor(private val controller: Page
         caretRequest = caretAt
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
+        continueNumberingFrom = item?.continueNumberingFrom
         sessionId++
 
         if (item != null) {
@@ -912,6 +917,34 @@ public class TextEditorManager internal constructor(private val controller: Page
         reportDraft()
     }
 
+    /** The number the first numbered list of the text being written starts from, going on from another text; `null` for none. */
+    public val continuedListStart: Int?
+        get() {
+            val from = continueNumberingFrom ?: return null
+            val texts = controller.document.pages.asSequence().flatMap { it.texts }
+            return ListContinuation.startOf(from, activeTextItem?.id ?: newTextId) { id -> texts.firstOrNull { it.id == id } }
+        }
+
+    override val continuesNumbering: Boolean get() = isEditing && continueNumberingFrom != null
+
+    override val canContinueNumbering: Boolean
+        get() = isEditing && (continueNumberingFrom != null || previousListText() != null)
+
+    /** The first numbered list of the text being written going on from the list of the text before it, or counting on its own. */
+    override fun setContinuesNumbering(continues: Boolean) {
+        if (!isEditing) return
+        val from = if (continues) previousListText()?.id ?: return else null
+        if (from == continueNumberingFrom) return
+        continueNumberingFrom = from
+        reportDraft()
+    }
+
+    /** The text before the one being written with a numbered list, which its list may go on from. */
+    private fun previousListText(): TextElement? {
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return null
+        return ListContinuation.previousListText(controller.document, page, activeTextItem?.id ?: newTextId, boxY)
+    }
+
     override fun changeFontFamily(fontFamily: String?) {
         val normalized = TextFonts.byId(fontFamily).id
         if (!isEditing || normalized == this.fontFamily) return
@@ -1307,6 +1340,9 @@ public class TextEditorManager internal constructor(private val controller: Page
         next = chainNext,
         continuesLine = chainContinuesLine,
         fontFamily = fontFamily,
+        // What the editor does not change is kept as it was
+        continueNumberingFrom = continueNumberingFrom,
+        maxHeight = editedFrom?.maxHeight,
         versions = versions
     )
 

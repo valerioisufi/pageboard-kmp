@@ -122,11 +122,12 @@ public class ComposeTextTileAdapter(
         val color: Int,
         val alignment: TextAlignment,
         val paper: Int,
-        val fontFamily: String? = null
+        val fontFamily: String? = null,
+        val listStart: Int? = null
     )
 
     /** What the size of a text depends on (see [measure]). */
-    private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment, val fontFamily: String? = null)
+    private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment, val fontFamily: String? = null, val listStart: Int? = null)
 
     /**
      * A text laid out: its [layout], its [formulas] and [codeBlocks] over their characters, the
@@ -174,7 +175,7 @@ public class ComposeTextTileAdapter(
     }
 
     private fun sizeOf(text: TextElement): TextBlockSize =
-        sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment, TextFonts.byId(text.fontFamily).id)) { measureLayout(text) }
+        sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment, TextFonts.byId(text.fontFamily).id, text.continuedListStart)) { measureLayout(text) }
 
     /**
      * [text] as it is laid out and drawn, with where its box is along its lines: a text following
@@ -516,7 +517,8 @@ public class ComposeTextTileAdapter(
             color = text.color,
             alignment = text.alignment,
             paper = paperColor,
-            fontFamily = TextFonts.byId(text.fontFamily).id
+            fontFamily = TextFonts.byId(text.fontFamily).id,
+            listStart = text.continuedListStart
         )
         val prepared = layouts.getOrPut(key) { prepare(text, fontPx, widthPx, paperColor) }
 
@@ -598,6 +600,7 @@ public class ComposeTextTileAdapter(
             },
             measureText = { cell, cellWidth, alignment -> TableLayout.measureCell(measurer, cell, baseStyle, cellWidth, alignment) },
             paperColor = paperColor,
+            listStart = text.continuedListStart,
             symbols = fonts.symbols
         ) { latex, sizePx ->
             formulaImages.formula(latex, sizePx, text.color)?.also { formulaSizes[it.image] = sizePx }

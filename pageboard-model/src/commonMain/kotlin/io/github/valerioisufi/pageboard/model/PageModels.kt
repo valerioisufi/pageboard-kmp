@@ -332,6 +332,13 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
     /** Manual height limit in millimeters for a box in a chain, or `null` to use page margin. */
     @Volatile public var maxHeight: Float? = null
 
+    /**
+     * The number its first numbered list starts from when it goes on from the list of the text
+     * [continueNumberingFrom] names, as `ListContinuation` found it in its document; `null` when it
+     * goes on from none. Computed, never stored nor sent.
+     */
+    @Volatile public var continuedListStart: Int? = null
+
     /** How far its [background] goes out of its box, in millimeters (0 without one). */
     public val backgroundOutset: Float get() = if (background == null) 0f else TextBackground.outsetMm(fontSize)
 
@@ -384,6 +391,7 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
         fontFamily = other.fontFamily
         continueNumberingFrom = other.continueNumberingFrom
         maxHeight = other.maxHeight
+        continuedListStart = other.continuedListStart
         markDirty()
     }
 }

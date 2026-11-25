@@ -157,6 +157,8 @@ internal data class Presentation<T>(
     val paperColor: Int = 0,
     val symbols: FontFamily? = null,
     val quotes: Boolean = true,
+    /** The number the first numbered list starts from when it goes on from another text (see `ListContinuation`). */
+    val listStart: Int? = null,
     val renderFormula: (latex: String, fontSizePx: Float) -> MarkdownTextUtil.RenderedFormula<T>?
 )
 
@@ -702,7 +704,7 @@ internal object RichTextPresenter {
      * parent.
      */
     private fun listLayout(text: String, spans: List<Span>, p: Presentation<*>): ListLayout {
-        val items = ListNumbering.items(text, spans)
+        val items = ListNumbering.items(text, spans, p.listStart)
         if (items.isEmpty()) return ListLayout.EMPTY
         fun widthOf(item: ListNumbering.Item): Float = when {
             item.bullet != null -> BULLET_ADVANCE * bulletScale(p) * p.fontSizePx
