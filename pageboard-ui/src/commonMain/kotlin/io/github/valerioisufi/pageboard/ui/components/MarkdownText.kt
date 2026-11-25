@@ -162,7 +162,7 @@ private fun markdownContent(
         monospace = fonts.monospace,
         symbols = fonts.symbols,
         highlighter = engines.code,
-        layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER, textFont) },
+        layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER, textFont, fonts.symbols) },
         measurePrefix = { prefix ->
             measurer.measure(AnnotatedString(prefix), prefixStyle, softWrap = false, skipCache = true).getHorizontalPosition(prefix.length, usePrimaryDirection = true)
         },

@@ -127,4 +127,31 @@ class TextBoxLargeTest {
         waitForIdle()
         assertTrue(controller.textEditorManager.boxWidth < width, "the handle taken: the box ${controller.textEditorManager.boxWidth} wide, $width before")
     }
+
+    @Test
+    fun aSelectionDraggedPastTheBottomOfTheWindowScrollsTheCanvasAndGrows() = textBoxScene { controller ->
+        startBox(controller, 30f, 30f, widthMm = 100f)
+        type((1..40).joinToString("\n") { "Line $it" })
+        bringBoxTo(controller, 200f, 100f)
+        val editor = controller.textEditorManager
+        val before = cornerOnScreen(controller)
+        val field = fieldBounds()
+        val from = Offset(field.left + 20f, field.top + 10f)
+        // The canvas scrolls at each frame while the mouse is held: the frames given by hand
+        mainClock.autoAdvance = false
+        onRoot().performMouseInput {
+            moveTo(from)
+            press()
+            moveTo(from + Offset(0f, 300f))
+            // Past the bottom of the canvas, held there
+            moveTo(Offset(from.x, 899f))
+        }
+        mainClock.advanceTimeBy(500)
+        val selected = editor.value.selection
+        onRoot().performMouseInput { release() }
+        mainClock.autoAdvance = true
+        waitForIdle()
+        assertTrue(cornerOnScreen(controller).y < before.y - 20f, "the canvas scrolled: ${before.y} then ${cornerOnScreen(controller).y}")
+        assertTrue(selected.length > 0 && selected.end > selected.start, "the selection grew downward: $selected")
+    }
 }

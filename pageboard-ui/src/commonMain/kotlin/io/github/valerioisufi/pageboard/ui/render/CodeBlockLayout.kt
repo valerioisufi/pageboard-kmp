@@ -16,6 +16,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextPainter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import io.github.valerioisufi.pageboard.model.text.TextSymbols
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
@@ -244,7 +245,8 @@ public class CodeBlockLayout internal constructor(
             color: Color,
             highlighter: CodeHighlighter?,
             paperColor: Int,
-            textFont: FontFamily = FontFamily.Default
+            textFont: FontFamily = FontFamily.Default,
+            symbols: FontFamily? = null
         ): CodeBlockLayout {
             val code = source.code
             val language = source.language
@@ -263,6 +265,12 @@ public class CodeBlockLayout internal constructor(
                 text = buildAnnotatedString {
                     append(shown)
                     addStyle(SpanStyle(fontFamily = monospace, fontSize = fontPx.sp), 0, length)
+                    // The symbols the monospace font lacks (`✔`), from the symbols font of the notes rather than the system
+                    if (symbols != null) {
+                        for (i in code.indices) {
+                            if (TextSymbols.isAt(code, i)) addStyle(SpanStyle(fontFamily = symbols), shownCode.shownOffsets[i], shownCode.shownOffsets[i] + 1)
+                        }
+                    }
                 },
                 style = style.copy(fontFamily = textFont, fontSize = textFontPx.sp),
                 softWrap = true,

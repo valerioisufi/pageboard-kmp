@@ -593,7 +593,7 @@ public class ComposeTextTileAdapter(
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
             highlighter = code,
-            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor, fonts.text) },
+            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor, fonts.text, fonts.symbols) },
             measurePrefix = { prefix ->
                 measurer.measure(AnnotatedString(prefix), baseStyle.copy(textAlign = TextAlign.Start), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)

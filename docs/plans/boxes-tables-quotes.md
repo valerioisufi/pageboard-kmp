@@ -75,7 +75,7 @@ The responsibilities are assigned following the GRASP principles.
 | 3 | Nested quotes, headings in quotes; tests | Done (blocks of code and tables in quotes, quotes in list items: left for later, decision 7) |
 | 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Done |
 | 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Pending |
-| 6 | `\text{}` in the font of the text, the symbols of the code, scrolling while selecting; tests | Pending |
+| 6 | `\text{}` in the font of the text, the symbols of the code, scrolling while selecting; tests | Done (`\text{}` already one font, decision 9) |
 
 ## Decisions
 
@@ -115,7 +115,18 @@ Taken alone, revertible:
    the heading goes on with the whole paragraph, as before. A line ending with `:` goes on with the
    block after it (a list, a table, a block of code, a formula), never with a line of text.
 
+9. **`\text{}` was already in the same font on the page and in the PDF**: Noto Sans on both since
+   `docs/plans/export.md` (the engine of the formulas takes the files of the notes, `LatexEngine.prepare`),
+   which `docs/plans/text-blocks.md` did not know yet. A formula in a text of another font (stage A)
+   keeps Noto Sans for its `\text{}`: the engine has one set of fonts for all the formulas.
+10. **The symbols of a block of code from the symbols font of the notes**, on the page, in the editor
+    and in the PDF (which reads the font of each character), rather than the system font.
+11. **A selection dragged by a mouse near or past an edge of the canvas scrolls it at each frame**,
+    faster the farther (32 dp from the edge, 24 px a frame at most), and the selection follows the text
+    moving under the mouse. A finger selects with the handles, which the canvas already follows.
+
 ## Left for later
 
+- `\text{}` in the font chosen for its text (decision 9).
 - Blocks of code and tables in a quote; a quote in a list item (decision 7).
 - Real-device checks (soft keyboards, the handle by touch), left to the maintainer.

@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -70,14 +71,16 @@ private fun TextEditorSession(controller: PageboardController, commands: EditorC
         onDispose { keyboardController?.hide() }
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    // Where the canvas is in the window: a selection dragged past its edges scrolls it
+    var canvasBounds by remember { mutableStateOf<Rect?>(null) }
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().onGloballyPositioned { canvasBounds = it.boundsInWindow() }) {
         val containerWidthPx = constraints.maxWidth.toFloat()
         val containerHeightPx = constraints.maxHeight.toFloat()
 
         // A field for each text written, with its own steps to undo; what is around it stays, the
         // keyboard with it, when a text goes on into another box
         key(editor.sessionId) {
-            TextBoxEditor(controller, onCaret = { caret = it }, barBounds = { barBounds })
+            TextBoxEditor(controller, onCaret = { caret = it }, barBounds = { barBounds }, canvasBounds = { canvasBounds })
         }
 
         // On a phone the bar lies on the keyboard, the whole width

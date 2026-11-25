@@ -1,5 +1,7 @@
 package io.github.valerioisufi.pageboard.export
 
+import kotlin.test.assertNotNull
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas as ComposeCanvas
 import androidx.compose.ui.graphics.Color
@@ -235,6 +237,15 @@ class PdfExporterTest {
         for (range in TextSymbols.RANGES) for (c in range) assertTrue(font.covers(c.code), "U+" + c.code.toString(16))
         val text = TrueTypeFont(NOTES_FILES.getValue(TextFace.REGULAR))
         assertTrue(!text.covers('→'.code), "the text font has no arrows: if it does, the symbols must be looked at again")
+    }
+
+    @Test
+    fun aSymbolInABlockOfCodeIsInTheSymbolsFontNotTheSystemOne() {
+        val adapter = ComposeTextTileAdapter(createFontFamilyResolver(), NOTES_FONTS)
+        val text = TextElement().apply { this.text = "```\nok ✔ done\n```"; width = 120f; height = 20f; fontSize = 16f }
+        val words = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words
+        assertEquals(TextFace.SYMBOLS, words.first { "✔" in it.text }.face)
+        assertEquals(TextFace.MONO, words.first { it.text.trim() == "ok" }.face)
     }
 
     @Test

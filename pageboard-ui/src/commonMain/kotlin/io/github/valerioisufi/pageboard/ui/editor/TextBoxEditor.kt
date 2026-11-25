@@ -9,6 +9,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -130,7 +134,12 @@ import org.jetbrains.compose.resources.stringResource
  * @param barBounds where the formatting bar is on the canvas, which the strip of a hidden source avoids.
  */
 @Composable
-internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace) -> Unit, barBounds: () -> Rect? = { null }) {
+internal fun TextBoxEditor(
+    controller: PageboardController,
+    onCaret: (CaretPlace) -> Unit,
+    barBounds: () -> Rect? = { null },
+    canvasBounds: () -> Rect? = { null }
+) {
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
@@ -227,7 +236,7 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             highlighter = highlighter,
             layoutCodeBlock = { source ->
                 codeLayouts.getOrPut(CodeKey(source, fontSizePx, editor.color, paper)) {
-                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper, notesFonts.text)
+                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper, notesFonts.text, notesFonts.symbols)
                 }
             },
             // The list items and their blocks where the page draws them
@@ -282,6 +291,9 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     // Whether a button of a mouse is down on the field: what the field selects then is where the pointer is
     val mouseDown = remember { booleanArrayOf(false) }
+    // A mouse selecting past the edge of the canvas: where it is in the window, and the field laid out
+    var selectingAt by remember { mutableStateOf<Offset?>(null) }
+    val fieldCoordinates = remember { arrayOfNulls<LayoutCoordinates>(1) }
     /**
      * Gives the editor what the user did: a move of the caret off what is not shown (see
      * [CaretStops]), as the text is shown now. [pointed] tells that a pointer gave the selection.
@@ -325,6 +337,27 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     val uriHandler = LocalUriHandler.current
     fun openLink(url: String) {
         RichTextParser.openableUrl(url)?.let { safe -> runCatching { uriHandler.openUri(safe) } }
+    }
+
+    // Selecting past the edge of the canvas scrolls it at each frame, faster the farther the mouse
+    // is, the selection following the text that moves under the mouse
+    val edgePx = with(unscaledDensity) { SELECTING_EDGE.toPx() }
+    LaunchedEffect(controller) {
+        snapshotFlow { selectingAt != null }.collectLatest { selecting ->
+            if (!selecting) return@collectLatest
+            while (true) {
+                withFrameNanos { }
+                val point = selectingAt ?: break
+                val bounds = canvasBounds() ?: break
+                val dx = edgeScroll(point.x - bounds.left, bounds.right - point.x, edgePx)
+                val dy = edgeScroll(point.y - bounds.top, bounds.bottom - point.y, edgePx)
+                if (dx == 0f && dy == 0f) continue
+                controller.viewport.panBy(dx, dy)
+                val local = fieldCoordinates[0]?.takeIf { it.isAttached }?.windowToLocal(point) ?: continue
+                val end = offsetAt(local) ?: continue
+                editor.updateValue(editor.value.copy(selection = TextRange(editor.value.selection.start, end)))
+            }
+        }
     }
 
     CompositionLocalProvider(LocalDensity provides unscaledDensity, LocalClipboard provides fieldClipboard) {
@@ -373,6 +406,17 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
                 .canvasGesturesOverField(controller)
                 // Laid out as the page lays it out, drawn at the zoom; what follows is in the pixels of the layout
                 .pageScale(widthPx, screenPerLayout)
+                // In the pixels of the layout, as the pointer events after it
+                .onGloballyPositioned { fieldCoordinates[0] = it }
+                // A mouse dragging a selection: where it is, for the canvas to scroll past its edges
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val change = awaitPointerEvent(PointerEventPass.Final).changes.firstOrNull { it.type == PointerType.Mouse } ?: continue
+                            selectingAt = if (change.pressed && change.previousPressed) fieldCoordinates[0]?.takeIf { it.isAttached }?.localToWindow(change.position) else null
+                        }
+                    }
+                }
                 .onFocusChanged { focused = it.hasFocus }
                 .focusRequester(focusRequester)
                 // A tap on the suggestion takes it
@@ -965,3 +1009,20 @@ private val PASTE_PLAIN = Shortcut(Key.V, primary = true, shift = true)
 
 /** Ratio between the sizes the formulas of the editor are rendered at. */
 private const val SIZE_STEP = 1.08f
+
+/** Where the canvas scrolls while a selection is dragged near its edge: this far from it. */
+private val SELECTING_EDGE = 32.dp
+
+/** The most pixels the canvas scrolls in a frame while a selection is dragged past its edge. */
+private const val SELECTING_MOST_PX = 24f
+
+/**
+ * The pixels the canvas scrolls in a frame for a pointer [fromStart] and [fromEnd] pixels from the
+ * edges of the canvas along an axis (negative past them): toward the nearer edge within [edge] of
+ * it, faster the farther in, nothing elsewhere.
+ */
+internal fun edgeScroll(fromStart: Float, fromEnd: Float, edge: Float): Float = when {
+    fromStart < edge -> ((edge - fromStart) / edge).coerceAtMost(2f) * SELECTING_MOST_PX / 2f
+    fromEnd < edge -> -((edge - fromEnd) / edge).coerceAtMost(2f) * SELECTING_MOST_PX / 2f
+    else -> 0f
+}
