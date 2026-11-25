@@ -1,10 +1,12 @@
 package io.github.valerioisufi.pageboard.model.geometry
 
 import kotlin.math.sqrt
+import kotlinx.serialization.Serializable
 
 /**
  * A point of a plane ([x] to the right, [y] down), in page millimeters unless said otherwise.
  */
+@Serializable
 public data class Point(val x: Float, val y: Float) {
     public operator fun plus(other: Point): Point = Point(x + other.x, y + other.y)
 

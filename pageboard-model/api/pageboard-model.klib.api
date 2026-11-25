@@ -68,11 +68,17 @@ final enum class io.github.valerioisufi.pageboard.model.shape/ShapeHead : kotlin
 }
 
 final enum class io.github.valerioisufi.pageboard.model.shape/ShapeKind : kotlin/Enum<io.github.valerioisufi.pageboard.model.shape/ShapeKind> { // io.github.valerioisufi.pageboard.model.shape/ShapeKind|null[0]
+    enum entry ANGLE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.ANGLE|null[0]
+    enum entry ARC // io.github.valerioisufi.pageboard.model.shape/ShapeKind.ARC|null[0]
+    enum entry AXES // io.github.valerioisufi.pageboard.model.shape/ShapeKind.AXES|null[0]
     enum entry DIAMOND // io.github.valerioisufi.pageboard.model.shape/ShapeKind.DIAMOND|null[0]
     enum entry ELLIPSE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.ELLIPSE|null[0]
+    enum entry FREE_POLYGON // io.github.valerioisufi.pageboard.model.shape/ShapeKind.FREE_POLYGON|null[0]
+    enum entry GRID // io.github.valerioisufi.pageboard.model.shape/ShapeKind.GRID|null[0]
     enum entry HEXAGON // io.github.valerioisufi.pageboard.model.shape/ShapeKind.HEXAGON|null[0]
     enum entry LINE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.LINE|null[0]
     enum entry PENTAGON // io.github.valerioisufi.pageboard.model.shape/ShapeKind.PENTAGON|null[0]
+    enum entry POLYLINE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.POLYLINE|null[0]
     enum entry RECTANGLE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.RECTANGLE|null[0]
     enum entry RIGHT_TRIANGLE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.RIGHT_TRIANGLE|null[0]
     enum entry ROUNDED_RECTANGLE // io.github.valerioisufi.pageboard.model.shape/ShapeKind.ROUNDED_RECTANGLE|null[0]
@@ -80,8 +86,18 @@ final enum class io.github.valerioisufi.pageboard.model.shape/ShapeKind : kotlin
 
     final val entries // io.github.valerioisufi.pageboard.model.shape/ShapeKind.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.model.shape/ShapeKind> // io.github.valerioisufi.pageboard.model.shape/ShapeKind.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val isGeometryTool // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isGeometryTool|{}isGeometryTool[0]
+        final fun <get-isGeometryTool>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isGeometryTool.<get-isGeometryTool>|<get-isGeometryTool>(){}[0]
     final val isLine // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isLine|{}isLine[0]
         final fun <get-isLine>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isLine.<get-isLine>|<get-isLine>(){}[0]
+    final val isOpen // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isOpen|{}isOpen[0]
+        final fun <get-isOpen>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isOpen.<get-isOpen>|<get-isOpen>(){}[0]
+    final val isVertexEditable // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isVertexEditable|{}isVertexEditable[0]
+        final fun <get-isVertexEditable>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.isVertexEditable.<get-isVertexEditable>|<get-isVertexEditable>(){}[0]
+    final val supportsFill // io.github.valerioisufi.pageboard.model.shape/ShapeKind.supportsFill|{}supportsFill[0]
+        final fun <get-supportsFill>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.supportsFill.<get-supportsFill>|<get-supportsFill>(){}[0]
+    final val supportsHeads // io.github.valerioisufi.pageboard.model.shape/ShapeKind.supportsHeads|{}supportsHeads[0]
+        final fun <get-supportsHeads>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeKind.supportsHeads.<get-supportsHeads>|<get-supportsHeads>(){}[0]
 
     final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.model.shape/ShapeKind // io.github.valerioisufi.pageboard.model.shape/ShapeKind.valueOf|valueOf#static(kotlin.String){}[0]
     final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.model.shape/ShapeKind> // io.github.valerioisufi.pageboard.model.shape/ShapeKind.values|values#static(){}[0]
@@ -2047,9 +2063,20 @@ final class io.github.valerioisufi.pageboard.model.geometry/Point { // io.github
     final fun times(kotlin/Float): io.github.valerioisufi.pageboard.model.geometry/Point // io.github.valerioisufi.pageboard.model.geometry/Point.times|times(kotlin.Float){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.geometry/Point.toString|toString(){}[0]
 
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.geometry/Point> { // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.geometry/Point // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.geometry/Point) // io.github.valerioisufi.pageboard.model.geometry/Point.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.geometry.Point){}[0]
+    }
+
     final object Companion { // io.github.valerioisufi.pageboard.model.geometry/Point.Companion|null[0]
         final val Zero // io.github.valerioisufi.pageboard.model.geometry/Point.Companion.Zero|{}Zero[0]
             final fun <get-Zero>(): io.github.valerioisufi.pageboard.model.geometry/Point // io.github.valerioisufi.pageboard.model.geometry/Point.Companion.Zero.<get-Zero>|<get-Zero>(){}[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.geometry/Point.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -2475,6 +2502,40 @@ final class io.github.valerioisufi.pageboard.model.shape/Polyline : io.github.va
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/Polyline.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef { // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef|null[0]
+    constructor <init>(kotlin/String, kotlin/Int) // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+    final val anchorIndex // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.anchorIndex|{}anchorIndex[0]
+        final fun <get-anchorIndex>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.anchorIndex.<get-anchorIndex>|<get-anchorIndex>(){}[0]
+    final val elementId // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.elementId|{}elementId[0]
+        final fun <get-elementId>(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.elementId.<get-elementId>|<get-elementId>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Int = ...): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.copy|copy(kotlin.String;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef> { // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef) // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion|null[0]
+        final const val MAX_ANCHOR_INDEX // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion.MAX_ANCHOR_INDEX|{}MAX_ANCHOR_INDEX[0]
+            final fun <get-MAX_ANCHOR_INDEX>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion.MAX_ANCHOR_INDEX.<get-MAX_ANCHOR_INDEX>|<get-MAX_ANCHOR_INDEX>(){}[0]
+        final const val MAX_ELEMENT_ID_LENGTH // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion.MAX_ELEMENT_ID_LENGTH|{}MAX_ELEMENT_ID_LENGTH[0]
+            final fun <get-MAX_ELEMENT_ID_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion.MAX_ELEMENT_ID_LENGTH.<get-MAX_ELEMENT_ID_LENGTH>|<get-MAX_ELEMENT_ID_LENGTH>(){}[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef> // io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.model.shape/ShapeBox { // io.github.valerioisufi.pageboard.model.shape/ShapeBox|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeBox.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 
@@ -2505,31 +2566,52 @@ final class io.github.valerioisufi.pageboard.model.shape/ShapeBox { // io.github
 }
 
 final class io.github.valerioisufi.pageboard.model.shape/ShapeElement { // io.github.valerioisufi.pageboard.model.shape/ShapeElement|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.model.shape/ShapeKind, kotlin/Int, kotlin/Float, io.github.valerioisufi.pageboard.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeElement.<init>|<init>(io.github.valerioisufi.pageboard.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.pageboard.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.pageboard.model.shape.ShapeHead;io.github.valerioisufi.pageboard.model.shape.ShapeHead){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.model.shape/ShapeKind, kotlin/Int, kotlin/Float, io.github.valerioisufi.pageboard.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., kotlin/String? = ..., kotlin/Int? = ..., kotlin/Float = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeElement.<init>|<init>(io.github.valerioisufi.pageboard.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.pageboard.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.pageboard.model.shape.ShapeHead;io.github.valerioisufi.pageboard.model.shape.ShapeHead;kotlin.String?;kotlin.Int?;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Point>?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams?){}[0]
 
     final val dash // io.github.valerioisufi.pageboard.model.shape/ShapeElement.dash|{}dash[0]
         final fun <get-dash>(): io.github.valerioisufi.pageboard.model.shape/ShapeDash // io.github.valerioisufi.pageboard.model.shape/ShapeElement.dash.<get-dash>|<get-dash>(){}[0]
+    final val endAnchor // io.github.valerioisufi.pageboard.model.shape/ShapeElement.endAnchor|{}endAnchor[0]
+        final fun <get-endAnchor>(): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.endAnchor.<get-endAnchor>|<get-endAnchor>(){}[0]
     final val endHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.endHead|{}endHead[0]
         final fun <get-endHead>(): io.github.valerioisufi.pageboard.model.shape/ShapeHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.endHead.<get-endHead>|<get-endHead>(){}[0]
     final val fill // io.github.valerioisufi.pageboard.model.shape/ShapeElement.fill|{}fill[0]
         final fun <get-fill>(): kotlin/Int? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.fill.<get-fill>|<get-fill>(){}[0]
+    final val geometry // io.github.valerioisufi.pageboard.model.shape/ShapeElement.geometry|{}geometry[0]
+        final fun <get-geometry>(): io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.geometry.<get-geometry>|<get-geometry>(){}[0]
     final val kind // io.github.valerioisufi.pageboard.model.shape/ShapeElement.kind|{}kind[0]
         final fun <get-kind>(): io.github.valerioisufi.pageboard.model.shape/ShapeKind // io.github.valerioisufi.pageboard.model.shape/ShapeElement.kind.<get-kind>|<get-kind>(){}[0]
+    final val label // io.github.valerioisufi.pageboard.model.shape/ShapeElement.label|{}label[0]
+        final fun <get-label>(): kotlin/String? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.label.<get-label>|<get-label>(){}[0]
+    final val labelColor // io.github.valerioisufi.pageboard.model.shape/ShapeElement.labelColor|{}labelColor[0]
+        final fun <get-labelColor>(): kotlin/Int? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.labelColor.<get-labelColor>|<get-labelColor>(){}[0]
+    final val labelFontSizePt // io.github.valerioisufi.pageboard.model.shape/ShapeElement.labelFontSizePt|{}labelFontSizePt[0]
+        final fun <get-labelFontSizePt>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.labelFontSizePt.<get-labelFontSizePt>|<get-labelFontSizePt>(){}[0]
+    final val startAnchor // io.github.valerioisufi.pageboard.model.shape/ShapeElement.startAnchor|{}startAnchor[0]
+        final fun <get-startAnchor>(): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.startAnchor.<get-startAnchor>|<get-startAnchor>(){}[0]
     final val startHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.startHead|{}startHead[0]
         final fun <get-startHead>(): io.github.valerioisufi.pageboard.model.shape/ShapeHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.startHead.<get-startHead>|<get-startHead>(){}[0]
     final val stroke // io.github.valerioisufi.pageboard.model.shape/ShapeElement.stroke|{}stroke[0]
         final fun <get-stroke>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElement.stroke.<get-stroke>|<get-stroke>(){}[0]
+    final val vertices // io.github.valerioisufi.pageboard.model.shape/ShapeElement.vertices|{}vertices[0]
+        final fun <get-vertices>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.vertices.<get-vertices>|<get-vertices>(){}[0]
     final val widthMm // io.github.valerioisufi.pageboard.model.shape/ShapeElement.widthMm|{}widthMm[0]
         final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
 
     final fun component1(): io.github.valerioisufi.pageboard.model.shape/ShapeKind // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component1|component1(){}[0]
+    final fun component10(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component10|component10(){}[0]
+    final fun component11(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component11|component11(){}[0]
+    final fun component12(): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component12|component12(){}[0]
+    final fun component13(): io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component13|component13(){}[0]
+    final fun component14(): io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component14|component14(){}[0]
     final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component2|component2(){}[0]
     final fun component3(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component3|component3(){}[0]
     final fun component4(): io.github.valerioisufi.pageboard.model.shape/ShapeDash // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component4|component4(){}[0]
     final fun component5(): kotlin/Int? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component5|component5(){}[0]
     final fun component6(): io.github.valerioisufi.pageboard.model.shape/ShapeHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component6|component6(){}[0]
     final fun component7(): io.github.valerioisufi.pageboard.model.shape/ShapeHead // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component7|component7(){}[0]
-    final fun copy(io.github.valerioisufi.pageboard.model.shape/ShapeKind = ..., kotlin/Int = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ...): io.github.valerioisufi.pageboard.model.shape/ShapeElement // io.github.valerioisufi.pageboard.model.shape/ShapeElement.copy|copy(io.github.valerioisufi.pageboard.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.pageboard.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.pageboard.model.shape.ShapeHead;io.github.valerioisufi.pageboard.model.shape.ShapeHead){}[0]
+    final fun component8(): kotlin/String? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component8|component8(){}[0]
+    final fun component9(): kotlin/Int? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.component9|component9(){}[0]
+    final fun copy(io.github.valerioisufi.pageboard.model.shape/ShapeKind = ..., kotlin/Int = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., kotlin/String? = ..., kotlin/Int? = ..., kotlin/Float = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? = ...): io.github.valerioisufi.pageboard.model.shape/ShapeElement // io.github.valerioisufi.pageboard.model.shape/ShapeElement.copy|copy(io.github.valerioisufi.pageboard.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.pageboard.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.pageboard.model.shape.ShapeHead;io.github.valerioisufi.pageboard.model.shape.ShapeHead;kotlin.String?;kotlin.Int?;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Point>?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeElement.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElement.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeElement.toString|toString(){}[0]
@@ -2546,14 +2628,76 @@ final class io.github.valerioisufi.pageboard.model.shape/ShapeElement { // io.gi
     }
 
     final object Companion { // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion|null[0]
+        final const val DEFAULT_LABEL_FONT_SIZE_PT // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_LABEL_FONT_SIZE_PT|{}DEFAULT_LABEL_FONT_SIZE_PT[0]
+            final fun <get-DEFAULT_LABEL_FONT_SIZE_PT>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_LABEL_FONT_SIZE_PT.<get-DEFAULT_LABEL_FONT_SIZE_PT>|<get-DEFAULT_LABEL_FONT_SIZE_PT>(){}[0]
+        final const val MAX_FREE_VERTICES // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_FREE_VERTICES|{}MAX_FREE_VERTICES[0]
+            final fun <get-MAX_FREE_VERTICES>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_FREE_VERTICES.<get-MAX_FREE_VERTICES>|<get-MAX_FREE_VERTICES>(){}[0]
+        final const val MAX_LABEL_FONT_SIZE_PT // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_LABEL_FONT_SIZE_PT|{}MAX_LABEL_FONT_SIZE_PT[0]
+            final fun <get-MAX_LABEL_FONT_SIZE_PT>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_LABEL_FONT_SIZE_PT.<get-MAX_LABEL_FONT_SIZE_PT>|<get-MAX_LABEL_FONT_SIZE_PT>(){}[0]
+        final const val MAX_LABEL_LENGTH // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_LABEL_LENGTH|{}MAX_LABEL_LENGTH[0]
+            final fun <get-MAX_LABEL_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_LABEL_LENGTH.<get-MAX_LABEL_LENGTH>|<get-MAX_LABEL_LENGTH>(){}[0]
         final const val MAX_WIDTH_MM // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_WIDTH_MM|{}MAX_WIDTH_MM[0]
             final fun <get-MAX_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MAX_WIDTH_MM.<get-MAX_WIDTH_MM>|<get-MAX_WIDTH_MM>(){}[0]
+        final const val MIN_LABEL_FONT_SIZE_PT // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MIN_LABEL_FONT_SIZE_PT|{}MIN_LABEL_FONT_SIZE_PT[0]
+            final fun <get-MIN_LABEL_FONT_SIZE_PT>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MIN_LABEL_FONT_SIZE_PT.<get-MIN_LABEL_FONT_SIZE_PT>|<get-MIN_LABEL_FONT_SIZE_PT>(){}[0]
         final const val MIN_WIDTH_MM // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MIN_WIDTH_MM|{}MIN_WIDTH_MM[0]
             final fun <get-MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.MIN_WIDTH_MM.<get-MIN_WIDTH_MM>|<get-MIN_WIDTH_MM>(){}[0]
 
         final val $childSerializers // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.$childSerializers|{}$childSerializers[0]
+        final val DEFAULT_POLYGON_VERTICES // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_POLYGON_VERTICES|{}DEFAULT_POLYGON_VERTICES[0]
+            final fun <get-DEFAULT_POLYGON_VERTICES>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_POLYGON_VERTICES.<get-DEFAULT_POLYGON_VERTICES>|<get-DEFAULT_POLYGON_VERTICES>(){}[0]
+        final val DEFAULT_POLYLINE_VERTICES // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_POLYLINE_VERTICES|{}DEFAULT_POLYLINE_VERTICES[0]
+            final fun <get-DEFAULT_POLYLINE_VERTICES>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.DEFAULT_POLYLINE_VERTICES.<get-DEFAULT_POLYLINE_VERTICES>|<get-DEFAULT_POLYLINE_VERTICES>(){}[0]
 
+        final fun defaultGeometryParams(io.github.valerioisufi.pageboard.model.shape/ShapeKind): io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.defaultGeometryParams|defaultGeometryParams(io.github.valerioisufi.pageboard.model.shape.ShapeKind){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeElement> // io.github.valerioisufi.pageboard.model.shape/ShapeElement.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams { // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+
+    final val gridCols // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.gridCols|{}gridCols[0]
+        final fun <get-gridCols>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.gridCols.<get-gridCols>|<get-gridCols>(){}[0]
+    final val gridRows // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.gridRows|{}gridRows[0]
+        final fun <get-gridRows>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.gridRows.<get-gridRows>|<get-gridRows>(){}[0]
+    final val showAngleLabel // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.showAngleLabel|{}showAngleLabel[0]
+        final fun <get-showAngleLabel>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.showAngleLabel.<get-showAngleLabel>|<get-showAngleLabel>(){}[0]
+    final val startAngleDeg // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.startAngleDeg|{}startAngleDeg[0]
+        final fun <get-startAngleDeg>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.startAngleDeg.<get-startAngleDeg>|<get-startAngleDeg>(){}[0]
+    final val sweepAngleDeg // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.sweepAngleDeg|{}sweepAngleDeg[0]
+        final fun <get-sweepAngleDeg>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.sweepAngleDeg.<get-sweepAngleDeg>|<get-sweepAngleDeg>(){}[0]
+    final val ticksX // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.ticksX|{}ticksX[0]
+        final fun <get-ticksX>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.ticksX.<get-ticksX>|<get-ticksX>(){}[0]
+    final val ticksY // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.ticksY|{}ticksY[0]
+        final fun <get-ticksY>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.ticksY.<get-ticksY>|<get-ticksY>(){}[0]
+
+    final fun component1(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component4|component4(){}[0]
+    final fun component5(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component5|component5(){}[0]
+    final fun component6(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component6|component6(){}[0]
+    final fun component7(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.component7|component7(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Boolean = ...): io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams> { // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams) // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.Companion|null[0]
+        final const val MAX_DIVISIONS // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.Companion.MAX_DIVISIONS|{}MAX_DIVISIONS[0]
+            final fun <get-MAX_DIVISIONS>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.Companion.MAX_DIVISIONS.<get-MAX_DIVISIONS>|<get-MAX_DIVISIONS>(){}[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -3786,6 +3930,10 @@ final object io.github.valerioisufi.pageboard.model.shape/ShapeConstraints { // 
     }
 }
 
+final object io.github.valerioisufi.pageboard.model.shape/ShapeConverter { // io.github.valerioisufi.pageboard.model.shape/ShapeConverter|null[0]
+    final fun toShapeElement(io.github.valerioisufi.pageboard.model.shape/Shape, io.github.valerioisufi.pageboard.model/BrushConfig): kotlin/Pair<io.github.valerioisufi.pageboard.model.shape/ShapeElement, io.github.valerioisufi.pageboard.model.shape/ShapeBox> // io.github.valerioisufi.pageboard.model.shape/ShapeConverter.toShapeElement|toShapeElement(io.github.valerioisufi.pageboard.model.shape.Shape;io.github.valerioisufi.pageboard.model.BrushConfig){}[0]
+}
+
 final object io.github.valerioisufi.pageboard.model.shape/ShapeElementType : io.github.valerioisufi.pageboard.model/ElementType<io.github.valerioisufi.pageboard.model.shape/ShapeElement> { // io.github.valerioisufi.pageboard.model.shape/ShapeElementType|null[0]
     final val id // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.id.<get-id>|<get-id>(){}[0]
@@ -3793,6 +3941,9 @@ final object io.github.valerioisufi.pageboard.model.shape/ShapeElementType : io.
         final fun <get-serializer>(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeElement> // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.serializer.<get-serializer>|<get-serializer>(){}[0]
     final val version // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.version|{}version[0]
         final fun <get-version>(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.version.<get-version>|<get-version>(){}[0]
+
+    final fun migrate(kotlin/ByteArray, kotlin/Int): io.github.valerioisufi.pageboard.model.shape/ShapeElement? // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.migrate|migrate(kotlin.ByteArray;kotlin.Int){}[0]
+    final fun searchText(io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin/String? // io.github.valerioisufi.pageboard.model.shape/ShapeElementType.searchText|searchText(io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.model.shape/ShapeGeometry { // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry|null[0]
@@ -3802,14 +3953,19 @@ final object io.github.valerioisufi.pageboard.model.shape/ShapeGeometry { // io.
         final fun <get-MITER_LIMIT>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.MITER_LIMIT.<get-MITER_LIMIT>|<get-MITER_LIMIT>(){}[0]
 
     final fun anchors(io.github.valerioisufi.pageboard.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.anchors|anchors(io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun boxAndVerticesFromPage(kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>, kotlin/Float, kotlin/Float = ...): kotlin/Pair<io.github.valerioisufi.pageboard.model.shape/ShapeBox, kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.boxAndVerticesFromPage|boxAndVerticesFromPage(kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Point>;kotlin.Float;kotlin.Float){}[0]
     final fun drawing(io.github.valerioisufi.pageboard.model.shape/ShapeElement, kotlin/Float, kotlin/Float): io.github.valerioisufi.pageboard.model.geometry/VectorDrawing // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.drawing|drawing(io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun effectiveLabel(io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin/String? // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.effectiveLabel|effectiveLabel(io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
     final fun headLength(io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.headLength|headLength(io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
     final fun hits(io.github.valerioisufi.pageboard.model.shape/ShapeElement, io.github.valerioisufi.pageboard.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.hits|hits(io.github.valerioisufi.pageboard.model.shape.ShapeElement;io.github.valerioisufi.pageboard.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun labelFontSizeMm(io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.labelFontSizeMm|labelFontSizeMm(io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
     final fun lineBox(io.github.valerioisufi.pageboard.model.geometry/Point, io.github.valerioisufi.pageboard.model.geometry/Point, io.github.valerioisufi.pageboard.model.shape/ShapeElement): io.github.valerioisufi.pageboard.model.shape/ShapeBox // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.lineBox|lineBox(io.github.valerioisufi.pageboard.model.geometry.Point;io.github.valerioisufi.pageboard.model.geometry.Point;io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
     final fun lineEnds(io.github.valerioisufi.pageboard.model.shape/ShapeBox): kotlin/Pair<io.github.valerioisufi.pageboard.model.geometry/Point, io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.lineEnds|lineEnds(io.github.valerioisufi.pageboard.model.shape.ShapeBox){}[0]
     final fun lineHeight(io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.lineHeight|lineHeight(io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
     final fun paths(io.github.valerioisufi.pageboard.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.pageboard.model.shape/ShapePath> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.paths|paths(io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
     final fun touchesSegment(io.github.valerioisufi.pageboard.model.shape/ShapeElement, io.github.valerioisufi.pageboard.model.geometry/Point, io.github.valerioisufi.pageboard.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.touchesSegment|touchesSegment(io.github.valerioisufi.pageboard.model.shape.ShapeElement;io.github.valerioisufi.pageboard.model.geometry.Point;io.github.valerioisufi.pageboard.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun verticesInBox(io.github.valerioisufi.pageboard.model.shape/ShapeElement, kotlin/Float, kotlin/Float): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.verticesInBox|verticesInBox(io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float){}[0]
+    final fun verticesInPage(io.github.valerioisufi.pageboard.model.shape/ShapeBox, io.github.valerioisufi.pageboard.model.shape/ShapeElement): kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point> // io.github.valerioisufi.pageboard.model.shape/ShapeGeometry.verticesInPage|verticesInPage(io.github.valerioisufi.pageboard.model.shape.ShapeBox;io.github.valerioisufi.pageboard.model.shape.ShapeElement){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.model.shape/ShapeRecognizer { // io.github.valerioisufi.pageboard.model.shape/ShapeRecognizer|null[0]

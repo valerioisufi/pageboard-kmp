@@ -2732,8 +2732,20 @@ public final class io/github/valerioisufi/pageboard/model/geometry/Point {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final synthetic class io/github/valerioisufi/pageboard/model/geometry/Point$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/geometry/Point$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/model/geometry/Point;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/model/geometry/Point;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/pageboard/model/geometry/Point$Companion {
 	public final fun getZero ()Lio/github/valerioisufi/pageboard/model/geometry/Point;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class io/github/valerioisufi/pageboard/model/geometry/Px {
@@ -3102,6 +3114,37 @@ public final class io/github/valerioisufi/pageboard/model/shape/Shape$DefaultImp
 	public static fun getHasCorners (Lio/github/valerioisufi/pageboard/model/shape/Shape;)Z
 }
 
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef {
+	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef$Companion;
+	public static final field MAX_ANCHOR_INDEX I
+	public static final field MAX_ELEMENT_ID_LENGTH I
+	public fun <init> (Ljava/lang/String;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun copy (Ljava/lang/String;I)Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Ljava/lang/String;IILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAnchorIndex ()I
+	public final fun getElementId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeBox {
 	public fun <init> (FFFFF)V
 	public synthetic fun <init> (FFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -3148,6 +3191,11 @@ public final class io/github/valerioisufi/pageboard/model/shape/ShapeConstraints
 	public final fun length (Lio/github/valerioisufi/pageboard/model/geometry/Point;)F
 }
 
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeConverter {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/shape/ShapeConverter;
+	public final fun toShapeElement (Lio/github/valerioisufi/pageboard/model/shape/Shape;Lio/github/valerioisufi/pageboard/model/BrushConfig;)Lkotlin/Pair;
+}
+
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeDash : java/lang/Enum {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeDash$Companion;
 	public static final field DASHED Lio/github/valerioisufi/pageboard/model/shape/ShapeDash;
@@ -3164,26 +3212,45 @@ public final class io/github/valerioisufi/pageboard/model/shape/ShapeDash$Compan
 
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeElement {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeElement$Companion;
+	public static final field DEFAULT_LABEL_FONT_SIZE_PT F
+	public static final field MAX_FREE_VERTICES I
+	public static final field MAX_LABEL_FONT_SIZE_PT F
+	public static final field MAX_LABEL_LENGTH I
 	public static final field MAX_WIDTH_MM F
+	public static final field MIN_LABEL_FONT_SIZE_PT F
 	public static final field MIN_WIDTH_MM F
-	public fun <init> (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Ljava/lang/String;Ljava/lang/Integer;FLjava/util/List;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Ljava/lang/String;Ljava/lang/Integer;FLjava/util/List;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public final fun component10 ()F
+	public final fun component11 ()Ljava/util/List;
+	public final fun component12 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
+	public final fun component13 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
+	public final fun component14 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
 	public final fun component2 ()I
 	public final fun component3 ()F
 	public final fun component4 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeDash;
 	public final fun component5 ()Ljava/lang/Integer;
 	public final fun component6 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;
 	public final fun component7 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;
-	public final fun copy (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;)Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Ljava/lang/Integer;
+	public final fun copy (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Ljava/lang/String;Ljava/lang/Integer;FLjava/util/List;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;)Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IFLio/github/valerioisufi/pageboard/model/shape/ShapeDash;Ljava/lang/Integer;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;Ljava/lang/String;Ljava/lang/Integer;FLjava/util/List;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDash ()Lio/github/valerioisufi/pageboard/model/shape/ShapeDash;
+	public final fun getEndAnchor ()Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
 	public final fun getEndHead ()Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;
 	public final fun getFill ()Ljava/lang/Integer;
+	public final fun getGeometry ()Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
 	public final fun getKind ()Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getLabelColor ()Ljava/lang/Integer;
+	public final fun getLabelFontSizePt ()F
+	public final fun getStartAnchor ()Lio/github/valerioisufi/pageboard/model/shape/ShapeAnchorRef;
 	public final fun getStartHead ()Lio/github/valerioisufi/pageboard/model/shape/ShapeHead;
 	public final fun getStroke ()I
+	public final fun getVertices ()Ljava/util/List;
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -3203,6 +3270,9 @@ public final synthetic class io/github/valerioisufi/pageboard/model/shape/ShapeE
 }
 
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeElement$Companion {
+	public final fun defaultGeometryParams (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;)Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
+	public final fun getDEFAULT_POLYGON_VERTICES ()Ljava/util/List;
+	public final fun getDEFAULT_POLYLINE_VERTICES ()Ljava/util/List;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -3222,14 +3292,62 @@ public final class io/github/valerioisufi/pageboard/model/shape/ShapeGeometry {
 	public static final field MAX_DASHES I
 	public static final field MITER_LIMIT F
 	public final fun anchors (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FF)Ljava/util/List;
+	public final fun boxAndVerticesFromPage (Ljava/util/List;FF)Lkotlin/Pair;
+	public static synthetic fun boxAndVerticesFromPage$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometry;Ljava/util/List;FFILjava/lang/Object;)Lkotlin/Pair;
 	public final fun drawing (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FF)Lio/github/valerioisufi/pageboard/model/geometry/VectorDrawing;
+	public final fun effectiveLabel (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)Ljava/lang/String;
 	public final fun headLength (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)F
 	public final fun hits (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;Lio/github/valerioisufi/pageboard/model/geometry/Point;FFF)Z
+	public final fun labelFontSizeMm (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)F
 	public final fun lineBox (Lio/github/valerioisufi/pageboard/model/geometry/Point;Lio/github/valerioisufi/pageboard/model/geometry/Point;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)Lio/github/valerioisufi/pageboard/model/shape/ShapeBox;
 	public final fun lineEnds (Lio/github/valerioisufi/pageboard/model/shape/ShapeBox;)Lkotlin/Pair;
 	public final fun lineHeight (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)F
 	public final fun paths (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FF)Ljava/util/List;
 	public final fun touchesSegment (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;Lio/github/valerioisufi/pageboard/model/geometry/Point;Lio/github/valerioisufi/pageboard/model/geometry/Point;FFF)Z
+	public final fun verticesInBox (Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FF)Ljava/util/List;
+	public final fun verticesInPage (Lio/github/valerioisufi/pageboard/model/shape/ShapeBox;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams {
+	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams$Companion;
+	public static final field MAX_DIVISIONS I
+	public fun <init> ()V
+	public fun <init> (IIIIFFZ)V
+	public synthetic fun <init> (IIIIFFZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun component7 ()Z
+	public final fun copy (IIIIFFZ)Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;IIIIFFZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGridCols ()I
+	public final fun getGridRows ()I
+	public final fun getShowAngleLabel ()Z
+	public final fun getStartAngleDeg ()F
+	public final fun getSweepAngleDeg ()F
+	public final fun getTicksX ()I
+	public final fun getTicksY ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeGeometryParams$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeHead : java/lang/Enum {
@@ -3247,18 +3365,29 @@ public final class io/github/valerioisufi/pageboard/model/shape/ShapeHead$Compan
 }
 
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeKind : java/lang/Enum {
+	public static final field ANGLE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public static final field ARC Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public static final field AXES Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeKind$Companion;
 	public static final field DIAMOND Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field ELLIPSE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public static final field FREE_POLYGON Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public static final field GRID Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field HEXAGON Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field LINE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field PENTAGON Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
+	public static final field POLYLINE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field RECTANGLE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field RIGHT_TRIANGLE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field ROUNDED_RECTANGLE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static final field TRIANGLE Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getSupportsFill ()Z
+	public final fun getSupportsHeads ()Z
+	public final fun isGeometryTool ()Z
 	public final fun isLine ()Z
+	public final fun isOpen ()Z
+	public final fun isVertexEditable ()Z
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 	public static fun values ()[Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;
 }

@@ -8,7 +8,9 @@ import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.store.DocumentSummary
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
+import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
 import io.github.valerioisufi.pageboard.model.shape.ShapeHead
+import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -380,9 +382,21 @@ internal data class CustomEntry(
     val shape: ShapeEntry? = null
 )
 
+@Serializable
+internal data class ShapeGeometryEntry(
+    @SerialName("ticks_x") val ticksX: Int? = null,
+    @SerialName("ticks_y") val ticksY: Int? = null,
+    @SerialName("grid_cols") val gridCols: Int? = null,
+    @SerialName("grid_rows") val gridRows: Int? = null,
+    @SerialName("start_angle_deg") val startAngleDeg: Float? = null,
+    @SerialName("sweep_angle_deg") val sweepAngleDeg: Float? = null,
+    @SerialName("show_angle_label") val showAngleLabel: Boolean? = null
+)
+
 /**
  * A shape of the shapes tool as a model reads it: its kind (`line`, `arrow`, `double_arrow`,
- * `rectangle`, ...), its outline, its fill; the ends of a line ([from], [to], page millimeters).
+ * `rectangle`, ...), its outline, its fill; the ends of a line ([from], [to], page millimeters),
+ * optional [label], free [vertices], persisted anchor references, and [geometry] params.
  */
 @Serializable
 internal data class ShapeEntry(
@@ -395,7 +409,13 @@ internal data class ShapeEntry(
     val to: List<Float>? = null,
     val rotation: Float? = null,
     @SerialName("start_head") val startHead: String? = null,
-    @SerialName("end_head") val endHead: String? = null
+    @SerialName("end_head") val endHead: String? = null,
+    val label: String? = null,
+    @SerialName("label_color") val labelColor: String? = null,
+    val vertices: List<List<Float>>? = null,
+    @SerialName("start_anchor") val startAnchor: String? = null,
+    @SerialName("end_anchor") val endAnchor: String? = null,
+    val geometry: ShapeGeometryEntry? = null
 )
 
 /** [value], the value of [element], as [ShapeEntry]. */
@@ -407,8 +427,24 @@ internal fun shapeEntryOf(element: CustomElement, value: ShapeElement): ShapeEnt
         heads == 1 -> "arrow"
         else -> "line"
     }
+    val box = ShapeItems.boxOf(element)
     // An arrow is read from its tail to its head
-    val ends = if (value.kind.isLine) ShapeItems.endsOf(ShapeItems.boxOf(element), value) else null
+    val ends = if (value.kind.isLine) ShapeItems.endsOf(box, value) else null
+    val reversedEnds = value.kind.isLine && value.startHead != ShapeHead.NONE && value.endHead == ShapeHead.NONE
+    val vertices = if (value.kind.isVertexEditable) {
+        ShapeGeometry.verticesInPage(box, value).map { listOf(it.x.tenths(), it.y.tenths()) }
+    } else null
+    val startAnchor = (if (reversedEnds) value.endAnchor else value.startAnchor)?.elementId
+    val endAnchor = (if (reversedEnds) value.startAnchor else value.endAnchor)?.elementId
+    val geom = value.geometry?.let { g ->
+        when (value.kind) {
+            ShapeKind.AXES -> ShapeGeometryEntry(ticksX = g.ticksX, ticksY = g.ticksY)
+            ShapeKind.GRID -> ShapeGeometryEntry(gridCols = g.gridCols, gridRows = g.gridRows)
+            ShapeKind.ARC -> ShapeGeometryEntry(startAngleDeg = g.startAngleDeg.tenths(), sweepAngleDeg = g.sweepAngleDeg.tenths())
+            ShapeKind.ANGLE -> ShapeGeometryEntry(startAngleDeg = g.startAngleDeg.tenths(), sweepAngleDeg = g.sweepAngleDeg.tenths(), showAngleLabel = g.showAngleLabel)
+            else -> null
+        }
+    }
     return ShapeEntry(
         kind = kind,
         color = colorHex(value.stroke),
@@ -419,7 +455,13 @@ internal fun shapeEntryOf(element: CustomElement, value: ShapeElement): ShapeEnt
         to = ends?.to?.let { listOf(it.x.tenths(), it.y.tenths()) },
         rotation = element.rotation.takeIf { !value.kind.isLine && it != 0f }?.tenths(),
         startHead = ends?.headFrom?.takeIf { it != ShapeHead.NONE }?.name?.lowercase(),
-        endHead = ends?.headTo?.takeIf { it != ShapeHead.NONE }?.name?.lowercase()
+        endHead = ends?.headTo?.takeIf { it != ShapeHead.NONE }?.name?.lowercase(),
+        label = value.label?.takeIf { it.isNotBlank() },
+        labelColor = value.labelColor?.let(::colorHex),
+        vertices = vertices,
+        startAnchor = startAnchor,
+        endAnchor = endAnchor,
+        geometry = geom
     )
 }
 

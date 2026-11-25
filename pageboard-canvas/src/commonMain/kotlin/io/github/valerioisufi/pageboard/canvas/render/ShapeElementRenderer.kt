@@ -26,6 +26,18 @@ public object ShapeElementRenderer : ElementRenderer<ShapeElement> {
 
     override fun draw(canvas: Canvas, value: ShapeElement, widthMm: Float, heightMm: Float) {
         canvas.drawVectors(ShapeGeometry.drawing(value, widthMm, heightMm))
+        val label = ShapeGeometry.effectiveLabel(value)
+        if (label != null) {
+            drawShapeLabel(
+                canvas = canvas,
+                text = label,
+                colorArgb = value.labelColor ?: value.stroke,
+                fontSizeMm = ShapeGeometry.labelFontSizeMm(value),
+                widthMm = widthMm,
+                heightMm = heightMm,
+                isLine = value.kind.isLine
+            )
+        }
     }
 
     override fun hits(value: ShapeElement, xMm: Float, yMm: Float, widthMm: Float, heightMm: Float): Boolean =

@@ -6,6 +6,7 @@ import io.github.valerioisufi.pageboard.model.geometry.VectorDrawing
 import io.github.valerioisufi.pageboard.model.geometry.VectorFill
 import io.github.valerioisufi.pageboard.model.geometry.VectorLine
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.atan2
 import kotlin.math.ceil
@@ -105,12 +106,50 @@ public object ShapeGeometry {
     public fun lineEnds(box: ShapeBox): Pair<Point, Point> =
         box.toPage(Point(0f, box.height / 2f)) to box.toPage(Point(box.width, box.height / 2f))
 
+    /** The vertex coordinates of [value] in box millimeters `[0..width] x [0..height]`. */
+    public fun verticesInBox(value: ShapeElement, width: Float, height: Float): List<Point> {
+        val raw = value.vertices ?: return emptyList()
+        val inset = min(value.widthMm / 2f, min(width, height) / 2f)
+        val innerW = max(width - 2f * inset, 0f)
+        val innerH = max(height - 2f * inset, 0f)
+        return raw.map { Point(inset + it.x * innerW, inset + it.y * innerH) }
+    }
+
+    /** The vertex coordinates of [value] in page millimeters for [box]. */
+    public fun verticesInPage(box: ShapeBox, value: ShapeElement): List<Point> =
+        verticesInBox(value, box.width, box.height).map(box::toPage)
+
+    /**
+     * Computes a tight axis-aligned [ShapeBox] and normalized `[0..1]` vertices for [pagePoints]
+     * with outline width [widthMm], matching [verticesInBox].
+     */
+    public fun boxAndVerticesFromPage(pagePoints: List<Point>, widthMm: Float, minSizeMm: Float = 1f): Pair<ShapeBox, List<Point>> {
+        val pad = widthMm / 2f
+        val minX = pagePoints.minOf { it.x } - pad
+        val minY = pagePoints.minOf { it.y } - pad
+        val maxX = pagePoints.maxOf { it.x } + pad
+        val maxY = pagePoints.maxOf { it.y } + pad
+        val width = max(maxX - minX, minSizeMm)
+        val height = max(maxY - minY, minSizeMm)
+        val box = ShapeBox(minX, minY, width, height, 0f)
+        val inset = min(pad, min(width, height) / 2f)
+        val innerW = max(width - 2f * inset, 1e-4f)
+        val innerH = max(height - 2f * inset, 1e-4f)
+        val normalized = pagePoints.map { p ->
+            Point(((p.x - box.x - inset) / innerW).coerceIn(0f, 1f), ((p.y - box.y - inset) / innerH).coerceIn(0f, 1f))
+        }
+        return box to normalized
+    }
+
     /**
      * The paths that draw [value] in a box of [width] x [height] millimeters, everything they draw
      * (their width and the miters of their corners, see [MITER_LIMIT]) inside the box.
      */
     public fun paths(value: ShapeElement, width: Float, height: Float): List<ShapePath> {
         if (value.kind.isLine) return linePaths(value, width, height)
+        if (value.kind == ShapeKind.POLYLINE) return polylinePaths(value, width, height)
+        if (value.kind == ShapeKind.FREE_POLYGON) return freePolygonPaths(value, width, height)
+        if (value.kind.isGeometryTool) return geometryToolPaths(value, width, height)
         val half = value.widthMm / 2f
         val filled = value.fill != null
         val curved = value.kind == ShapeKind.ELLIPSE || value.kind == ShapeKind.ROUNDED_RECTANGLE
@@ -159,7 +198,13 @@ public object ShapeGeometry {
             )
             ShapeKind.PENTAGON -> regular(5, -PI / 2, left, top, right, bottom)
             ShapeKind.HEXAGON -> regular(6, 0.0, left, top, right, bottom)
-            ShapeKind.LINE -> error("a line")
+            ShapeKind.LINE,
+            ShapeKind.POLYLINE,
+            ShapeKind.FREE_POLYGON,
+            ShapeKind.AXES,
+            ShapeKind.GRID,
+            ShapeKind.ARC,
+            ShapeKind.ANGLE -> error("handled separately: $kind")
         }
     }
 
@@ -221,6 +266,160 @@ public object ShapeGeometry {
             headPath(value.endHead, endTip, Point(-1f, 0f), head)?.let(paths::add)
         }
         return paths
+    }
+
+    private fun polylinePaths(value: ShapeElement, width: Float, height: Float): List<ShapePath> {
+        val points = verticesInBox(value, width, height).toMutableList()
+        if (points.size < 2) return emptyList()
+        val paths = ArrayList<ShapePath>(3)
+        val firstDir = (points[1] - points[0]).let { d -> if (d.distance > 1e-4f) d * (1f / d.distance) else Point(1f, 0f) }
+        val lastIdx = points.lastIndex
+        val lastDir = (points[lastIdx - 1] - points[lastIdx]).let { d -> if (d.distance > 1e-4f) d * (1f / d.distance) else Point(-1f, 0f) }
+        val firstLen = (points[1] - points[0]).distance
+        val lastLen = (points[lastIdx] - points[lastIdx - 1]).distance
+        val startHeadLen = min(headLength(value), firstLen * MAX_HEAD_PART)
+        val endHeadLen = min(headLength(value), lastLen * MAX_HEAD_PART)
+        val miter = value.widthMm / 2f / sin(HEAD_ANGLE)
+        val startTip = if (value.startHead == ShapeHead.OPEN) points[0] + firstDir * min(miter, firstLen / 2f) else points[0]
+        val endTip = if (value.endHead == ShapeHead.OPEN) points[lastIdx] + lastDir * min(miter, lastLen / 2f) else points[lastIdx]
+        if (value.startHead == ShapeHead.FILLED) points[0] = points[0] + firstDir * (startHeadLen * cos(HEAD_ANGLE))
+        else if (value.startHead == ShapeHead.OPEN) points[0] = startTip
+        if (value.endHead == ShapeHead.FILLED) points[lastIdx] = points[lastIdx] + lastDir * (endHeadLen * cos(HEAD_ANGLE))
+        else if (value.endHead == ShapeHead.OPEN) points[lastIdx] = endTip
+        paths += ShapePath(points, closed = false)
+        if (startHeadLen > 0f) headPath(value.startHead, startTip, firstDir, startHeadLen)?.let(paths::add)
+        if (endHeadLen > 0f) headPath(value.endHead, endTip, lastDir, endHeadLen)?.let(paths::add)
+        return paths
+    }
+
+    private fun freePolygonPaths(value: ShapeElement, width: Float, height: Float): List<ShapePath> {
+        val points = verticesInBox(value, width, height)
+        if (points.size < 3) return emptyList()
+        return listOf(ShapePath(points, closed = true, filled = value.fill != null, cornered = true))
+    }
+
+    private fun geometryToolPaths(value: ShapeElement, width: Float, height: Float): List<ShapePath> {
+        val params = value.geometry ?: ShapeElement.defaultGeometryParams(value.kind) ?: ShapeGeometryParams()
+        val inset = min(value.widthMm / 2f, min(width, height) / 2f)
+        val left = inset
+        val top = inset
+        val right = max(width - inset, left)
+        val bottom = max(height - inset, top)
+        val innerW = right - left
+        val innerH = bottom - top
+        return when (value.kind) {
+            ShapeKind.AXES -> axesPaths(value, params, left, top, right, bottom)
+            ShapeKind.GRID -> gridPaths(value, params, left, top, right, bottom)
+            ShapeKind.ARC -> arcPaths(params, left, top, innerW, innerH)
+            ShapeKind.ANGLE -> anglePaths(params, left, top, right, bottom)
+            else -> emptyList()
+        }
+    }
+
+    private fun axesPaths(value: ShapeElement, params: ShapeGeometryParams, left: Float, top: Float, right: Float, bottom: Float): List<ShapePath> {
+        val cx = (left + right) / 2f
+        val cy = (top + bottom) / 2f
+        val w = right - left
+        val h = bottom - top
+        val head = min(headLength(value), min(w, h) * 0.15f)
+        val paths = ArrayList<ShapePath>(4 + params.ticksX * 2 + params.ticksY * 2)
+        // X axis (left to right) + arrowhead
+        paths += ShapePath(listOf(Point(left, cy), Point(right - head * cos(HEAD_ANGLE), cy)), closed = false)
+        headPath(ShapeHead.FILLED, Point(right, cy), Point(-1f, 0f), head)?.let(paths::add)
+        // Y axis (bottom to top) + arrowhead
+        paths += ShapePath(listOf(Point(cx, bottom), Point(cx, top + head * cos(HEAD_ANGLE))), closed = false)
+        headPath(ShapeHead.FILLED, Point(cx, top), Point(0f, 1f), head)?.let(paths::add)
+        val tickHalf = min(min(w, h) * 0.03f, 2.5f).coerceAtLeast(0.8f)
+        val halfSpanX = (right - cx - head * 1.3f).coerceAtLeast(0f)
+        if (halfSpanX > 0f && params.ticksX > 0) {
+            val stepX = halfSpanX / params.ticksX
+            for (k in 1..params.ticksX) {
+                val dx = k * stepX
+                paths += ShapePath(listOf(Point(cx + dx, cy - tickHalf), Point(cx + dx, cy + tickHalf)), closed = false)
+                if (cx - dx >= left + tickHalf) {
+                    paths += ShapePath(listOf(Point(cx - dx, cy - tickHalf), Point(cx - dx, cy + tickHalf)), closed = false)
+                }
+            }
+        }
+        val halfSpanY = (cy - top - head * 1.3f).coerceAtLeast(0f)
+        if (halfSpanY > 0f && params.ticksY > 0) {
+            val stepY = halfSpanY / params.ticksY
+            for (k in 1..params.ticksY) {
+                val dy = k * stepY
+                paths += ShapePath(listOf(Point(cx - tickHalf, cy - dy), Point(cx + tickHalf, cy - dy)), closed = false)
+                if (cy + dy <= bottom - tickHalf) {
+                    paths += ShapePath(listOf(Point(cx - tickHalf, cy + dy), Point(cx + tickHalf, cy + dy)), closed = false)
+                }
+            }
+        }
+        return paths
+    }
+
+    private fun gridPaths(value: ShapeElement, params: ShapeGeometryParams, left: Float, top: Float, right: Float, bottom: Float): List<ShapePath> {
+        val paths = ArrayList<ShapePath>(1 + params.gridCols + params.gridRows)
+        paths += ShapePath(listOf(Point(left, top), Point(right, top), Point(right, bottom), Point(left, bottom)), closed = true, filled = value.fill != null, cornered = true)
+        val w = right - left
+        val h = bottom - top
+        for (c in 1 until params.gridCols) {
+            val x = left + w * c / params.gridCols
+            paths += ShapePath(listOf(Point(x, top), Point(x, bottom)), closed = false)
+        }
+        for (r in 1 until params.gridRows) {
+            val y = top + h * r / params.gridRows
+            paths += ShapePath(listOf(Point(left, y), Point(right, y)), closed = false)
+        }
+        return paths
+    }
+
+    private fun arcPaths(params: ShapeGeometryParams, left: Float, top: Float, width: Float, height: Float): List<ShapePath> {
+        val rx = width / 2f
+        val ry = height / 2f
+        val cx = left + rx
+        val cy = top + ry
+        val sweepRad = abs(params.sweepAngleDeg) * PI / 180.0
+        val steps = arcSteps(max(rx, ry), sweepRad.coerceAtLeast(0.1))
+        val points = (0..steps).map { i ->
+            val deg = params.startAngleDeg + params.sweepAngleDeg * i / steps
+            // Counterclockwise from +X in Y-down coordinates
+            val rad = -deg * PI / 180.0
+            Point(cx + (cos(rad) * rx).toFloat(), cy + (sin(rad) * ry).toFloat())
+        }
+        return listOf(ShapePath(points, closed = false, cornered = false))
+    }
+
+    private fun anglePaths(params: ShapeGeometryParams, left: Float, top: Float, right: Float, bottom: Float): List<ShapePath> {
+        val w = right - left
+        val h = bottom - top
+        val a1 = -params.startAngleDeg * PI / 180.0
+        val a2 = -(params.startAngleDeg + params.sweepAngleDeg) * PI / 180.0
+        val u1 = Point(cos(a1).toFloat(), sin(a1).toFloat())
+        val u2 = Point(cos(a2).toFloat(), sin(a2).toFloat())
+        // Fit vertex and unit rays neatly inside [left..right] x [top..bottom]
+        val xs = listOf(0f, u1.x, u2.x)
+        val ys = listOf(0f, u1.y, u2.y)
+        val minX = xs.min(); val maxX = xs.max()
+        val minY = ys.min(); val maxY = ys.max()
+        val spanX = (maxX - minX).coerceAtLeast(0.01f)
+        val spanY = (maxY - minY).coerceAtLeast(0.01f)
+        val rayLen = min(w / spanX, h / spanY)
+        val vertex = Point(
+            left + (w - spanX * rayLen) / 2f - minX * rayLen,
+            top + (h - spanY * rayLen) / 2f - minY * rayLen
+        )
+        val p1 = vertex + u1 * rayLen
+        val p2 = vertex + u2 * rayLen
+        val arcRadius = rayLen * 0.35f
+        val sweepRad = abs(params.sweepAngleDeg) * PI / 180.0
+        val steps = arcSteps(arcRadius, sweepRad.coerceAtLeast(0.1))
+        val arcPts = (0..steps).map { i ->
+            val deg = params.startAngleDeg + params.sweepAngleDeg * i / steps
+            val rad = -deg * PI / 180.0
+            vertex + Point(cos(rad).toFloat(), sin(rad).toFloat()) * arcRadius
+        }
+        return listOf(
+            ShapePath(listOf(p1, vertex, p2), closed = false, cornered = true),
+            ShapePath(arcPts, closed = false, cornered = false)
+        )
     }
 
     /** The head [kind] at [tip], its wings going back along [back] (a unit vector). */
@@ -500,9 +699,24 @@ public object ShapeGeometry {
     public fun anchors(value: ShapeElement, width: Float, height: Float): List<Point> {
         val middle = Point(width / 2f, height / 2f)
         if (value.kind.isLine) return listOf(Point(0f, height / 2f), middle, Point(width, height / 2f))
+        if (value.kind == ShapeKind.POLYLINE) return verticesInBox(value, width, height) + middle
+        if (value.kind == ShapeKind.FREE_POLYGON) {
+            val corners = verticesInBox(value, width, height)
+            val middles = corners.indices.map { i -> (corners[i] + corners[(i + 1) % corners.size]) * 0.5f }
+            return corners + middles + middle
+        }
+        if (value.kind == ShapeKind.ARC) {
+            val pts = paths(value, width, height).firstOrNull()?.points.orEmpty()
+            return if (pts.size >= 2) listOf(pts.first(), pts[pts.size / 2], pts.last(), middle) else listOf(middle)
+        }
+        if (value.kind == ShapeKind.ANGLE) {
+            val pts = paths(value, width, height).firstOrNull()?.points.orEmpty()
+            return if (pts.size == 3) listOf(pts[1], pts[0], pts[2]) else listOf(middle)
+        }
         val outline = when (value.kind) {
             // The extremes of the curves: the middles of the sides of the box
-            ShapeKind.ELLIPSE, ShapeKind.ROUNDED_RECTANGLE -> null
+            ShapeKind.ELLIPSE, ShapeKind.ROUNDED_RECTANGLE, ShapeKind.AXES -> null
+            ShapeKind.GRID -> paths(value, width, height).first().points
             else -> paths(value, width, height).first().points
         }
         val sides = listOf(Point(width / 2f, 0f), Point(width, height / 2f), Point(width / 2f, height), Point(0f, height / 2f))
@@ -562,6 +776,24 @@ public object ShapeGeometry {
         }
         return inside
     }
+
+    /** The label text to draw for [value] (explicit [ShapeElement.label] or auto angle readout), or `null`. */
+    public fun effectiveLabel(value: ShapeElement): String? {
+        val explicit = value.label?.takeIf { it.isNotBlank() }
+        if (explicit != null) return explicit
+        if (value.kind == ShapeKind.ANGLE) {
+            val params = value.geometry ?: ShapeElement.defaultGeometryParams(ShapeKind.ANGLE)!!
+            if (params.showAngleLabel) {
+                val deg = kotlin.math.abs(params.sweepAngleDeg)
+                val rounded = kotlin.math.round(deg).toInt()
+                return if (kotlin.math.abs(deg - rounded) < 0.05f) "$rounded°" else "${((deg * 10f).toInt() / 10f)}°"
+            }
+        }
+        return null
+    }
+
+    /** Font size of [value]'s label in millimeters of the page. */
+    public fun labelFontSizeMm(value: ShapeElement): Float = value.labelFontSizePt * 25.4f / 72f
 
     /** The length of [points] (joined back to its start when [closed]). */
     internal fun length(points: List<Point>, closed: Boolean): Float {

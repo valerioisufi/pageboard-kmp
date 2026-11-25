@@ -16,7 +16,7 @@ class ShapeGeometryTest {
 
     @Test
     fun everyShapeOfABoxStaysInsideItsBoxWithItsOutline() {
-        for (kind in ShapeKind.entries.filter { !it.isLine }) {
+        for (kind in ShapeKind.entries.filter { !it.isLine && !it.isVertexEditable && !it.isGeometryTool }) {
             val value = shape(kind, width = 2f)
             val paths = ShapeGeometry.paths(value, 40f, 20f)
             assertEquals(1, paths.size, "$kind")
@@ -219,5 +219,46 @@ class ShapeGeometryTest {
         val filled = shape(ShapeKind.ELLIPSE, fill = 0x33000000)
         assertEquals(null, filled.withKind(ShapeKind.LINE).fill)
         assertEquals(ShapeKind.ELLIPSE, filled.withStyleOf(arrow).kind)
+    }
+
+    @Test
+    fun vertexEditableAndGeometryToolShapesGenerateValidPathsAndLabels() {
+        val poly = ShapeElement(
+            ShapeKind.FREE_POLYGON, 0xFF000000.toInt(), 1f, fill = 0x3300FF00,
+            vertices = listOf(Point(0f, 0f), Point(1f, 0.5f), Point(0.2f, 1f))
+        )
+        val polyPaths = ShapeGeometry.paths(poly, 40f, 20f)
+        assertEquals(1, polyPaths.size)
+        assertTrue(polyPaths.single().closed && polyPaths.single().filled)
+        assertEquals(3, ShapeGeometry.verticesInBox(poly, 40f, 20f).size)
+
+        val polyline = ShapeElement(
+            ShapeKind.POLYLINE, 0xFF000000.toInt(), 1f, endHead = ShapeHead.FILLED,
+            vertices = listOf(Point(0f, 1f), Point(0.5f, 0f), Point(1f, 1f))
+        )
+        val polylinePaths = ShapeGeometry.paths(polyline, 40f, 20f)
+        assertEquals(2, polylinePaths.size)
+        assertFalse(polylinePaths[0].closed)
+        assertTrue(polylinePaths[1].solid)
+
+        val axes = ShapeElement(ShapeKind.AXES, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(ticksX = 3, ticksY = 2))
+        assertTrue(ShapeGeometry.paths(axes, 40f, 40f).size >= 4)
+
+        val grid = ShapeElement(ShapeKind.GRID, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(gridCols = 4, gridRows = 3))
+        assertEquals(1 + 3 + 2, ShapeGeometry.paths(grid, 40f, 30f).size)
+
+        val arc = ShapeElement(ShapeKind.ARC, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(startAngleDeg = 0f, sweepAngleDeg = 90f))
+        assertFalse(ShapeGeometry.paths(arc, 40f, 40f).single().closed)
+
+        val angle = ShapeElement(ShapeKind.ANGLE, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(startAngleDeg = 0f, sweepAngleDeg = 45f, showAngleLabel = true))
+        assertEquals(2, ShapeGeometry.paths(angle, 40f, 40f).size)
+        assertEquals("45°", ShapeGeometry.effectiveLabel(angle))
+
+        assertFailsWith<IllegalArgumentException> {
+            ShapeElement(ShapeKind.FREE_POLYGON, 0, 1f, vertices = listOf(Point(0f, 0f), Point(1f, 1f)))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ShapeElement(ShapeKind.RECTANGLE, 0, 1f, labelFontSizePt = 100f)
+        }
     }
 }

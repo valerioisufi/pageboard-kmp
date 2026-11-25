@@ -71,7 +71,16 @@ internal object ShapeItems {
         val stroke = item.color?.let { ElementItems.parseColor(it) } ?: AGENT_TEXT_COLOR
         val dash = item.outline?.let { OUTLINES.getValue(it) } ?: ShapeDash.SOLID
         if (!kind.isLine) {
-            val value = ShapeElement(kind, stroke, width, dash, fill = item.fill?.let { ElementItems.parseColor(it) })
+            val fill = if (kind.supportsFill) item.fill?.let { ElementItems.parseColor(it) } else null
+            val vertices = when (kind) {
+                ShapeKind.POLYLINE -> ShapeElement.DEFAULT_POLYLINE_VERTICES
+                ShapeKind.FREE_POLYGON -> ShapeElement.DEFAULT_POLYGON_VERTICES
+                else -> null
+            }
+            val value = ShapeElement(
+                kind = kind, stroke = stroke, widthMm = width, dash = dash, fill = fill,
+                vertices = vertices, geometry = ShapeElement.defaultGeometryParams(kind)
+            )
             return value to ShapeBox(item.x!!, item.y!!, item.width!!, item.height!!, ElementItems.normalized(item.rotation ?: 0f))
         }
         val (tail, head) = headsOf(item.kind)
@@ -91,12 +100,13 @@ internal object ShapeItems {
         val box = boxOf(element)
         if (!value.kind.isLine) {
             val kind = item.kind?.let { KINDS.getValue(it) } ?: value.kind
-            val fill = when (item.fill) {
-                null -> value.fill
-                "none" -> null
+            val fill = when {
+                !kind.supportsFill -> null
+                item.fill == null -> value.fill
+                item.fill == "none" -> null
                 else -> ElementItems.parseColor(item.fill)
             }
-            return ShapeElement(kind, stroke, width, dash, fill = fill) to box
+            return value.withKind(kind).copy(stroke = stroke, widthMm = width, dash = dash, fill = fill) to box
         }
         val ends = endsOf(box, value)
         val (tail, head) = item.kind?.let { headsOf(it) } ?: (ends.headFrom to ends.headTo)

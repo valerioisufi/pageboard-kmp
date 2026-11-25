@@ -33,7 +33,11 @@ import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.geometry.VectorDrawing
 import io.github.valerioisufi.pageboard.model.pdfPointsToPageMm
+import io.github.valerioisufi.pageboard.model.shape.ShapeElement
+import io.github.valerioisufi.pageboard.model.shape.ShapeElementType
+import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
 import io.github.valerioisufi.pageboard.model.text.codePoints
+import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.triangleOutline
 import io.github.valerioisufi.pageboard.pdf.PdfFont
 import io.github.valerioisufi.pageboard.pdf.PdfImportedPage
@@ -111,14 +115,20 @@ public class PdfExporter(
         }
         // The texts laid out once, the characters of their words embedded once per face
         val layouts = HashMap<TextElement, TextBlockLayout?>()
+        val shapeLabels = ArrayList<String>()
         for (content in contents) {
-            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text, page.background.backgroundColor)
+            for (page in content.pages) {
+                for (text in page.texts) layouts[text] = textAdapter?.layout(text, page.background.backgroundColor)
+                for (custom in page.customs) {
+                    ShapeElementType.decode(custom)?.let { ShapeGeometry.effectiveLabel(it) }?.let(shapeLabels::add)
+                }
+            }
         }
-        val faces = loadFaces(layouts.values.filterNotNull())
+        val faces = loadFaces(layouts.values.filterNotNull(), shapeLabels.isNotEmpty())
         var skipped = 0
         var pagesWritten = 0
         createWriter().use { writer ->
-            val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull()), faces)
+            val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull(), shapeLabels), faces)
             for (content in contents) {
                 val bases = importBases(writer, content)
                 content.pages.forEachIndexed { index, page ->
@@ -134,9 +144,10 @@ public class PdfExporter(
     }
 
     /** The fonts of the faces the texts use, and of the text of their formulas. */
-    private suspend fun loadFaces(layouts: List<TextBlockLayout>): Map<TextFace, TrueTypeFont> {
+    private suspend fun loadFaces(layouts: List<TextBlockLayout>, hasShapeLabels: Boolean): Map<TextFace, TrueTypeFont> {
         val files = fontFiles ?: return emptyMap()
         val used = layouts.flatMapTo(mutableSetOf()) { layout -> layout.words.map { it.face } }
+        if (hasShapeLabels) used += TextFace.REGULAR
         if (layouts.any { it.formulas.isNotEmpty() }) used += listOf(TextFace.REGULAR, TextFace.BOLD, TextFace.ITALIC, TextFace.BOLD_ITALIC)
         return used.mapNotNull { face ->
             val bytes = files(face) ?: return@mapNotNull null
@@ -179,12 +190,24 @@ public class PdfExporter(
     private class BasePage(val pdf: PdfElement, val page: PdfImportedPage)
 
     /** Embeds in [writer] the subset of each face with the characters of the words it writes. */
-    private fun embed(writer: PdfWriter, faces: Map<TextFace, TrueTypeFont>, layouts: List<TextBlockLayout>): Map<TextFace, PdfFont> {
+    private fun embed(
+        writer: PdfWriter,
+        faces: Map<TextFace, TrueTypeFont>,
+        layouts: List<TextBlockLayout>,
+        shapeLabels: List<String>
+    ): Map<TextFace, PdfFont> {
         val characters = HashMap<TextFace, MutableSet<Int>>()
         for (layout in layouts) for (word in layout.words) {
             val font = faces[word.face] ?: continue
             val points = codePoints(word.printable)
             if (points.all(font::covers)) characters.getOrPut(word.face) { mutableSetOf() } += points
+        }
+        val regularFace = faces[TextFace.REGULAR]
+        if (regularFace != null && shapeLabels.isNotEmpty()) {
+            for (label in shapeLabels) {
+                val points = codePoints(label.filter { it >= ' ' })
+                if (points.all(regularFace::covers)) characters.getOrPut(TextFace.REGULAR) { mutableSetOf() } += points
+            }
         }
         return characters.mapNotNull { (face, points) ->
             writer.loadFont(faces.getValue(face).subset(points))?.let { face to it }
@@ -195,7 +218,7 @@ public class PdfExporter(
     private inner class TextWriter(
         private val writer: PdfWriter,
         private val layouts: Map<TextElement, TextBlockLayout?>,
-        private val fonts: Map<TextFace, PdfFont>,
+        val fonts: Map<TextFace, PdfFont>,
         private val faces: Map<TextFace, TrueTypeFont>
     ) {
         private val formulaFonts = HashMap<String, TrueTypeFont?>()
@@ -478,7 +501,13 @@ public class PdfExporter(
          */
         private fun writeCustomElement(element: CustomElement): Boolean {
             if (element.width <= 0f || element.height <= 0f) return true
-            elements.vectorsOf(element)?.let { return writeVectors(it, element) }
+            val shape = ShapeElementType.decode(element)
+            val label = shape?.let { ShapeGeometry.effectiveLabel(it) }
+            elements.vectorsOf(element)?.let { vectors ->
+                val ok = writeVectors(vectors, element)
+                if (label != null && shape != null) return writeShapeLabel(shape, label, element) && ok
+                return ok
+            }
             val scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(element.width, element.height))
             val width = ceil(element.width * scale).toInt().coerceAtLeast(1)
             val height = ceil(element.height * scale).toInt().coerceAtLeast(1)
@@ -488,6 +517,36 @@ public class PdfExporter(
             val pixels = IntArray(width * height).also { bitmap.readPixels(it) }
             if (pixels.all { it ushr 24 == 0 }) return true
             return writer.drawImage(pixels, width, height, boxToPage(element.x, element.y, element.width, element.height, element.rotation))
+        }
+
+        private fun writeShapeLabel(shape: ShapeElement, label: String, element: CustomElement): Boolean {
+            val font = texts.fonts[TextFace.REGULAR] ?: return true
+            val printableLines = label.split('\n').map { it.filter { c -> c >= ' ' } }.filter { it.isNotEmpty() }
+            if (printableLines.isEmpty()) return true
+            val fontSizeMm = ShapeGeometry.labelFontSizeMm(shape).coerceIn(1.5f, element.height * 0.8f)
+            val lineHeightMm = fontSizeMm * 1.25f
+            val totalHeightMm = printableLines.size * lineHeightMm
+            val boxToPt = Matrix2D()
+                .postRotate(element.rotation, element.width / 2f, element.height / 2f)
+                .postTranslate(element.x, element.y)
+                .postConcat(mmToPt)
+            val centerY = if (shape.kind.isLine) element.height * 0.5f - fontSizeMm * 0.85f else element.height * 0.5f
+            var y = centerY - totalHeightMm * 0.5f + fontSizeMm * 0.85f
+            val argb = shape.labelColor ?: shape.stroke
+            var written = true
+            for (line in printableLines) {
+                val points = codePoints(line)
+                if (!points.all(font.metrics::covers)) {
+                    y += lineHeightMm
+                    continue
+                }
+                val textWidthMm = font.metrics.advance(line) * fontSizeMm / font.metrics.unitsPerEm
+                val x = (element.width - textWidthMm) * 0.5f
+                val toLine = Matrix2D().postTranslate(x, y).postConcat(boxToPt)
+                written = writer.addText(font, line, fontSizeMm, toLine, argb, width = textWidthMm) && written
+                y += lineHeightMm
+            }
+            return written
         }
 
         /** [drawing] in the box of [element] (millimeters of the box), as paths of the PDF. */

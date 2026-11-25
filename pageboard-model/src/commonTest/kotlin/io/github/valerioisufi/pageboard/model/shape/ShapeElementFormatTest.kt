@@ -3,14 +3,16 @@ package io.github.valerioisufi.pageboard.model.shape
 import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.encode
+import io.github.valerioisufi.pageboard.model.geometry.Point
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
- * The stored format of the shapes (version 1 of `pageboard.shape`): the payloads recorded here are
- * in documents and travel between devices; a change of them needs a new version and a migration.
+ * The stored format of the shapes (version 1 and version 2 of `pageboard.shape`): the payloads
+ * recorded here are in documents and travel between devices; v1 payloads migrate cleanly to v2.
  */
 @OptIn(ExperimentalStdlibApi::class)
 class ShapeElementFormatTest {
@@ -32,7 +34,18 @@ class ShapeElementFormatTest {
         RECORDED_5, RECORDED_6, RECORDED_7, RECORDED_8, RECORDED_9,
     )
 
-    private fun element(payload: ByteArray, version: Int = 1) = CustomElement(ShapeElementType.id).also {
+    private val v2Samples = listOf(
+        ShapeElement(ShapeKind.RECTANGLE, 0xFF1E88E5.toInt(), 0.5f, label = "Node A", labelColor = 0xFF000000.toInt(), labelFontSizePt = 14f),
+        ShapeElement(ShapeKind.LINE, 0xFF000000.toInt(), 0.5f, endHead = ShapeHead.FILLED, startAnchor = ShapeAnchorRef("box-1", 2), endAnchor = ShapeAnchorRef("box-2", 0)),
+        ShapeElement(ShapeKind.POLYLINE, 0xFF000000.toInt(), 0.5f, endHead = ShapeHead.OPEN, vertices = listOf(Point(0f, 1f), Point(0.5f, 0f), Point(1f, 1f))),
+        ShapeElement(ShapeKind.FREE_POLYGON, 0xFF43A047.toInt(), 0.5f, fill = 0x3343A047, vertices = listOf(Point(0f, 0f), Point(1f, 0.2f), Point(0.8f, 1f), Point(0.1f, 0.9f))),
+        ShapeElement(ShapeKind.AXES, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(ticksX = 4, ticksY = 3)),
+        ShapeElement(ShapeKind.GRID, 0xFF000000.toInt(), 0.35f, geometry = ShapeGeometryParams(gridCols = 5, gridRows = 3)),
+        ShapeElement(ShapeKind.ARC, 0xFFE53935.toInt(), 0.5f, geometry = ShapeGeometryParams(startAngleDeg = 15f, sweepAngleDeg = 135f)),
+        ShapeElement(ShapeKind.ANGLE, 0xFF000000.toInt(), 0.5f, geometry = ShapeGeometryParams(startAngleDeg = 0f, sweepAngleDeg = 45f, showAngleLabel = true))
+    )
+
+    private fun element(payload: ByteArray, version: Int = ShapeElementType.version) = CustomElement(ShapeElementType.id).also {
         it.payload = payload
         it.version = version
     }
@@ -45,9 +58,14 @@ class ShapeElementFormatTest {
     }
 
     @Test
-    fun thePayloadsRecordedAreRead() {
+    fun thePayloadsRecordedAreReadAndMigratedFromV1() {
         samples.forEachIndexed { i, sample ->
-            assertEquals(sample, ShapeElementType.decode(element(recorded[i].hexToByteArray())), "sample $i")
+            assertEquals(sample, ShapeElementType.decode(element(recorded[i].hexToByteArray(), version = 1)), "v1 migrate $i")
+            assertEquals(sample, ShapeElementType.decode(element(recorded[i].hexToByteArray(), version = 2)), "v2 decode $i")
+        }
+        v2Samples.forEachIndexed { i, sample ->
+            val encoded = ShapeElementType.encode(sample)
+            assertEquals(sample, ShapeElementType.decode(element(encoded, version = 2)), "v2 roundtrip $i")
         }
     }
 
@@ -63,7 +81,11 @@ class ShapeElementFormatTest {
         val unknown = RECORDED_2.replace("RECTANGLE".encodeToByteArray().toHexString(), "RECTANGLX".encodeToByteArray().toHexString())
         assertNull(ShapeElementType.decode(element(unknown.hexToByteArray())))
         // A newer version is not read
-        assertNull(ShapeElementType.decode(element(RECORDED_2.hexToByteArray(), version = 2)))
+        assertNull(ShapeElementType.decode(element(RECORDED_2.hexToByteArray(), version = 3)))
+        // A v2 kind tagged as version 1 is rejected by v1 migration
+        val v2Only = ShapeElementType.encode(ShapeElement(ShapeKind.AXES, 0, 0.5f))
+        assertNotNull(ShapeElementType.decode(element(v2Only, version = 2)))
+        assertNull(ShapeElementType.decode(element(v2Only, version = 1)))
     }
 
     @Test
@@ -79,7 +101,10 @@ class ShapeElementFormatTest {
             val value = ShapeElementType.decode(element(bytes))
             if (value != null) {
                 // What is read holds the checks
-                ShapeElement(value.kind, value.stroke, value.widthMm, value.dash, value.fill, value.startHead, value.endHead)
+                ShapeElement(
+                    value.kind, value.stroke, value.widthMm, value.dash, value.fill, value.startHead, value.endHead,
+                    value.label, value.labelColor, value.labelFontSizePt, value.vertices, value.startAnchor, value.endAnchor, value.geometry
+                )
             }
         }
     }
