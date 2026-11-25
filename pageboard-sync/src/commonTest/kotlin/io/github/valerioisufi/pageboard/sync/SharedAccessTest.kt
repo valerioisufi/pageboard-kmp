@@ -15,6 +15,7 @@ import io.github.valerioisufi.pageboard.sync.protocol.InMemoryNetwork
 import io.github.valerioisufi.pageboard.sync.protocol.OpenFrame
 import io.github.valerioisufi.pageboard.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.pageboard.sync.protocol.SecureChannel
+import io.github.valerioisufi.pageboard.sync.protocol.SyncChannel
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.SpaceRef
@@ -225,31 +226,109 @@ class SharedAccessTest {
         bob.engine.stop()
         advanceUntilIdle()
         val before = DocumentAccess.decode(assertNotNull(SharingState.decode(oldState))).of(spaceId)
-        val oldKey = assertNotNull(before?.key)
-        val (mine, theirs) = InMemoryChannel.pair()
-        ada.engine.accept(theirs)
-        mine.send(OpenFrame(PROTOCOL_VERSION, oldKey.tag).encode())
-        val channel = SecureChannel.of(mine, oldKey)
-        runCurrent()
-        val challenge = assertIs<Challenge>(SyncCodec.decode(assertNotNull(channel.receive())))
-        val replica = bob.store.replicaId()
-        val proof = bob.identity.sign(helloProof(challenge.nonce, oldKey.tag, replica, bob.device))
-        val membership = assertNotNull(before.members)
-        channel.send(SyncCodec.encode(Hello(replica, "bob", emptyMap(), hasDocument = true, device = bob.device, proof = proof, membershipVersion = membership.version, epoch = membership.epoch)))
+        val channel = connectAs(bob, ada, assertNotNull(before?.key), assertNotNull(before.members))
         advanceUntilIdle()
-        val received = buildList {
-            while (true) {
-                val next = backgroundScope.async { channel.receive() }
-                runCurrent()
-                if (!next.isCompleted) {
-                    next.cancel()
-                    break
-                }
-                add(SyncCodec.decode(next.await() ?: break) ?: continue)
-            }
-        }
+        val received = messages(channel)
         assertTrue(received.none { it is KeyUpdate }, "never the new key of the folder: $received")
         assertTrue(ada.engine.peers.value.none { it.device == bob.device && it.documentId == notes }, "not working with Ada through the folder")
+    }
+
+    /**
+     * Bob's device with an application of its own, connected to Ada about the folder and about a
+     * document through it when Ada removes it from the folder: told on both connections, then
+     * closed, never given the new key of the folder nor the one of the document derived from it
+     * (it would keep them and follow the folder), nor the changes made after.
+     */
+    @Test
+    fun removedFromTheFolderWhileConnectedItIsNotGivenTheNewKeys() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        ada.library.start()
+        bob.library.start()
+        assertTrue(ada.store.createFolder("Course", null))
+        val course = ada.store.folders.first().single().id
+        val notes = ada.store.createDocument("Notes", folderId = course).id
+        val spaceId = assertNotNull(ada.engine.shareSpace(course))
+        val invitation = assertNotNull(ada.engine.invite(spaceId, "Course", Role.EDITOR, addresses = mapOf(MEMORY to "ada")))
+        advanceUntilIdle()
+        bob.join(invitation, SpaceRoot.NewFolder)
+        advanceUntilIdle()
+        exchange(ada, bob)
+        assertEquals(ada.snapshot(notes), bob.snapshot(notes))
+        val folderKey = bob.engine.connectionKeys().first { it.first == spaceId }.second
+        val folderMembership = assertNotNull(bob.engine.spaceMemberships.value[spaceId])
+        val throughFolder = assertNotNull(bob.access(notes)?.of(spaceId))
+        bob.engine.stop()
+        advanceUntilIdle()
+        val toFolder = connectAs(bob, ada, folderKey, folderMembership)
+        val toNotes = connectAs(bob, ada, assertNotNull(throughFolder.key), assertNotNull(throughFolder.members))
+        // No time passes: an idle connection through a folder closes after a while
+        runCurrent()
+        messages(toFolder)
+        messages(toNotes)
+        assertTrue(ada.engine.peers.value.any { it.device == bob.device && it.documentId == spaceId }, "Bob works with Ada on the folder")
+        assertTrue(ada.engine.peers.value.any { it.device == bob.device && it.documentId == notes }, "and on the notes through it")
+
+        ada.engine.removeMember(spaceId, bob.device)
+        ada.rename(notes, "Waves")
+        advanceUntilIdle()
+        val newFolderKey = assertNotNull(ada.engine.connectionKeys().firstOrNull { it.first == spaceId }?.second)
+        val newNotesKey = assertNotNull(ada.access(notes)?.of(spaceId)?.key)
+        assertEquals(2, ada.access(notes)?.of(spaceId)?.epoch)
+        val newKeys = setOf(newFolderKey.encode(), newNotesKey.encode())
+        for ((about, channel) in listOf("folder" to toFolder, "notes" to toNotes)) {
+            val received = messages(channel)
+            assertTrue(received.any { it is MembershipMessage }, "told about the $about: $received")
+            assertTrue(received.none { it is KeyUpdate && (it.epoch >= 2 || it.key in newKeys) }, "never a new key about the $about: $received")
+            assertTrue(received.none { it is Operations }, "nor the changes after about the $about: $received")
+            assertTrue(isClosed(channel), "closed about the $about")
+        }
+    }
+
+    /**
+     * A device with an application of its own: [member]'s identity, connected to [target] with
+     * [key] and saying it has [membership]. The channel, once [target] took its hello.
+     */
+    private suspend fun TestScope.connectAs(member: Device, target: Device, key: DocumentKey, membership: Membership): SecureChannel {
+        val (mine, theirs) = InMemoryChannel.pair()
+        target.engine.accept(theirs)
+        mine.send(OpenFrame(PROTOCOL_VERSION, key.tag).encode())
+        val channel = SecureChannel.of(mine, key)
+        runCurrent()
+        val challenge = assertIs<Challenge>(SyncCodec.decode(assertNotNull(channel.receive())))
+        val replica = member.store.replicaId()
+        val proof = member.identity.sign(helloProof(challenge.nonce, key.tag, replica, member.device))
+        val hello = Hello(replica, member.name, emptyMap(), hasDocument = true, device = member.device, proof = proof, membershipVersion = membership.version, epoch = membership.epoch)
+        channel.send(SyncCodec.encode(hello))
+        runCurrent()
+        return channel
+    }
+
+    /** The messages [channel] received so far. */
+    private suspend fun TestScope.messages(channel: SyncChannel): List<SyncMessage> = buildList {
+        while (true) {
+            val next = backgroundScope.async { channel.receive() }
+            runCurrent()
+            if (!next.isCompleted) {
+                next.cancel()
+                break
+            }
+            add(SyncCodec.decode(next.await() ?: break) ?: continue)
+        }
+    }
+
+    /** Whether the other end closed [channel]: what it sent is read, and nothing more comes. */
+    private suspend fun TestScope.isClosed(channel: SyncChannel): Boolean {
+        while (true) {
+            val next = backgroundScope.async { channel.receive() }
+            runCurrent()
+            if (!next.isCompleted) {
+                next.cancel()
+                return false
+            }
+            next.await() ?: return true
+        }
     }
 
     @Test

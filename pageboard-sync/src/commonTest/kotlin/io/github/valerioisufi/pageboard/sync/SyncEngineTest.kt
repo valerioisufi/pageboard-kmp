@@ -1748,6 +1748,46 @@ class SyncEngineTest {
         assertSame(document.id, listOf(ada, bob))
     }
 
+    /**
+     * Bob's device with an application of its own, connected to the owner and to another member
+     * when the owner removes it: told on both connections, then closed, never given the new key
+     * (it would keep it and follow the document) nor the changes made after.
+     */
+    @Test
+    fun aDeviceRemovedWhileConnectedIsNotGivenTheNewKey() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        bob.disconnect()
+        advanceUntilIdle()
+        val toAda = impostor(bob, ada, document.id, key)
+        val toCy = impostor(bob, cy, document.id, key)
+        advanceUntilIdle()
+        messages(toAda)
+        messages(toCy)
+        assertTrue(ada.engine.peers.value.any { it.device == bob.engine.device }, "Bob works with Ada")
+        assertTrue(cy.engine.peers.value.any { it.device == bob.engine.device }, "and with Cy")
+
+        ada.engine.removeMember(document.id, bob.engine.device)
+        ada.change(document.id) { RenameDocument("Waves") }
+        advanceUntilIdle()
+        val newKey = assertNotNull(ada.shared.stateOf(document.id)?.keys?.singleOrNull { it.epoch == 2 }?.key)
+        assertEquals(newKey, cy.shared.stateOf(document.id)?.keys?.firstOrNull { it.epoch == 2 }?.key, "Cy has the new key")
+        assertEquals("Waves", cy.title(document.id))
+        for ((from, channel) in listOf("ada" to toAda, "cy" to toCy)) {
+            val received = messages(channel)
+            assertTrue(received.any { it is MembershipMessage }, "told by $from: $received")
+            assertTrue(received.none { it is KeyUpdate && (it.epoch >= 2 || it.key == newKey) }, "never the new key from $from: $received")
+            assertTrue(received.none { it is Operations }, "nor the changes after from $from: $received")
+            assertTrue(isClosed(channel), "closed by $from")
+        }
+    }
+
     @Test
     fun theOwnerEndsTheSharingAndADeviceLeavesIt() = syncTest { work ->
         val network = InMemoryNetwork()

@@ -1031,12 +1031,28 @@ public class SyncEngine(
         /** What to send, in order. */
         val outbox = Channel<Outgoing>(Channel.UNLIMITED)
 
+        /**
+         * The connection closes soon (see [closeSoon]): what was queued goes, nothing more is queued.
+         * A device removed from the access is told, and given nothing after: not the new key of the
+         * access (an application of its own would keep it and follow the document), nor the changes.
+         */
+        var closing = false
+
         /** Seals and opens the operations with the key of this connection. */
         val seal = OperationSeal(match.key)
 
-        suspend fun send(message: SyncMessage) = outbox.send(OutgoingMessage(message))
+        suspend fun send(message: SyncMessage) {
+            if (!closing) outbox.send(OutgoingMessage(message))
+        }
 
-        fun trySend(message: SyncMessage) = outbox.trySend(OutgoingMessage(message))
+        fun trySend(message: SyncMessage) {
+            if (!closing) outbox.trySend(OutgoingMessage(message))
+        }
+
+        /** Sends [operations] applied here (sealed as they are sent). */
+        fun sendOperations(operations: List<Operation>) {
+            if (!closing) outbox.trySend(OutgoingOperations(operations))
+        }
 
         /** The last operation of every replica the other device has (sent, or it had them). */
         val sent = mutableMapOf<String, Long>()
@@ -1072,7 +1088,7 @@ public class SyncEngine(
 
         /** [operation] was applied to the document (on its thread). */
         fun offer(operation: Operation) {
-            if (caughtUp) outbox.trySend(OutgoingOperations(listOf(operation))) else waiting.add(operation)
+            if (caughtUp) sendOperations(listOf(operation)) else if (!closing) waiting.add(operation)
         }
     }
 
@@ -1409,7 +1425,7 @@ public class SyncEngine(
         if (access === sharing) {
             linksOf(documentId).filter { it.authorized && !it.space && it.via != via }.forEach { it.send(AccessMembership(signed, state.owner)) }
         }
-        // Who no longer works on it through this access
+        // Who no longer works on it through this access: told (above), then given nothing more (not the key below)
         for (link in ofAccess) {
             val device = link.peerHello?.device ?: continue
             if (link.authorized && (membership.memberOf(device) == null || membership.ended)) closeSoon(link)
@@ -1429,7 +1445,8 @@ public class SyncEngine(
             ofAccess.forEach { closeSoon(it) }
             return
         }
-        // The new key to the members still on the older one (this device the owner, or relaying it)
+        // The new key to the members still on the older one (this device the owner, or relaying it):
+        // the connections of the devices removed close (see closeSoon), it is not sent on them
         state.key?.let { key -> targets.forEach { it.send(KeyUpdate(state.epoch, key.encode())) } }
         // A shared folder: its documents follow it, their connections told
         if (access !== sharing) followSpace(documentId)
@@ -1596,8 +1613,9 @@ public class SyncEngine(
     /** What the memberships of every access of [documentId] allow together (for the tests). */
     internal suspend fun unionOf(documentId: String): UnionMembership? = sharing.unionOf(documentId)
 
-    /** Closes [link] once its last messages are sent. */
+    /** Closes [link] once the messages queued on it are sent, nothing more queued meanwhile (see [Link.closing]). */
     private fun closeSoon(link: Link) {
+        link.closing = true
         scope.launch {
             delay(CLOSE_DELAY_MS)
             link.channel.close()
@@ -2111,10 +2129,10 @@ public class SyncEngine(
             link.send(Snapshot(sync.open.edit { it.document.snapshot() }, base))
             base
         }
-        sync.open.operationsAfter(known).chunked(MAX_BATCH).forEach { link.outbox.send(OutgoingOperations(it)) }
+        sync.open.operationsAfter(known).chunked(MAX_BATCH).forEach { link.sendOperations(it) }
         sync.open.edit {
             link.caughtUp = true
-            for (operation in link.waiting) link.outbox.trySend(OutgoingOperations(listOf(operation)))
+            for (operation in link.waiting) link.sendOperations(listOf(operation))
             link.waiting.clear()
         }
         requestResources(link, sync)

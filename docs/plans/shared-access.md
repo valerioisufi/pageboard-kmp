@@ -395,6 +395,11 @@ rules of [untrusted-members.md](untrusted-members.md):
     keys of every epoch. If another access authorized it on a connection of the space, the device
     would send it the new key of the space, and with it every document of the folder. The same
     goes for an inner space and the library around it.
+  * A member removed while connected is told on its connections of that access, which close
+    (`closeSoon`). Nothing more is queued on them (`Link.closing`): not the `KeyUpdate` of the new
+    epoch, sent right after to the members staying (or relayed by them), nor the operations.
+    Fixed on 2026-11-25: before, the new key went to the removed device's connection too, during the
+    500 ms before it closed.
 * Two connections with the same device about the same document (through two accesses) are twins.
   `workWith` keeps one, as it does today (by document and replica). When one of them closes (a
   member removed from that access), the other one, or the next connection, carries on.
