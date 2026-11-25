@@ -300,4 +300,20 @@
     <string name="shape_geometry_angle_label">각도 표시</string>
     <string name="command_ruler">자</string>
     <string name="command_protractor">각도기</string>
+    <string name="command_lock_selection">잠금</string>
+    <string name="context_menu_action_unlock">잠금 해제</string>
+    <string name="command_layers">레이어</string>
+    <string name="layers_default_name">레이어 %1$d</string>
+    <string name="layers_add">레이어 추가</string>
+    <string name="layers_rename">레이어 이름 변경</string>
+    <string name="layers_delete">레이어 삭제</string>
+    <string name="layers_move_up">위로 이동</string>
+    <string name="layers_move_down">아래로 이동</string>
+    <string name="layers_show">레이어 표시</string>
+    <string name="layers_hide">레이어 숨기기</string>
+    <string name="layers_lock">레이어 잠금</string>
+    <string name="layers_unlock">레이어 잠금 해제</string>
+    <string name="layers_assign_selection">선택 항목을 여기로 이동</string>
+    <string name="layers_unlayered">기본값(레이어 없음)</string>
+    <string name="layers_empty_hint">이 페이지에 아직 레이어가 없습니다. 레이어를 만들어 요소를 정리하거나 숨기거나 잠그세요.</string>
 </resources>

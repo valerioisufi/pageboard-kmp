@@ -300,4 +300,20 @@
     <string name="shape_geometry_angle_label">角度を表示</string>
     <string name="command_ruler">定規</string>
     <string name="command_protractor">分度器</string>
+    <string name="command_lock_selection">ロック</string>
+    <string name="context_menu_action_unlock">ロック解除</string>
+    <string name="command_layers">レイヤー</string>
+    <string name="layers_default_name">レイヤー %1$d</string>
+    <string name="layers_add">レイヤーを追加</string>
+    <string name="layers_rename">レイヤー名を変更</string>
+    <string name="layers_delete">レイヤーを削除</string>
+    <string name="layers_move_up">上へ移動</string>
+    <string name="layers_move_down">下へ移動</string>
+    <string name="layers_show">レイヤーを表示</string>
+    <string name="layers_hide">レイヤーを非表示</string>
+    <string name="layers_lock">レイヤーをロック</string>
+    <string name="layers_unlock">レイヤーのロックを解除</string>
+    <string name="layers_assign_selection">選択範囲をここへ移動</string>
+    <string name="layers_unlayered">デフォルト（レイヤーなし）</string>
+    <string name="layers_empty_hint">このページにはまだレイヤーがありません。レイヤーを作成して要素を整理、非表示、またはロックできます。</string>
 </resources>

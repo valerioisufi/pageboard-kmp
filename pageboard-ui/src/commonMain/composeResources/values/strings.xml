@@ -306,4 +306,20 @@
     <string name="shape_geometry_angle_label">Show angle</string>
     <string name="command_ruler">Ruler</string>
     <string name="command_protractor">Protractor</string>
+    <string name="command_lock_selection">Lock</string>
+    <string name="context_menu_action_unlock">Unlock</string>
+    <string name="command_layers">Layers</string>
+    <string name="layers_default_name">Layer %1$d</string>
+    <string name="layers_add">Add layer</string>
+    <string name="layers_rename">Rename layer</string>
+    <string name="layers_delete">Delete layer</string>
+    <string name="layers_move_up">Move up</string>
+    <string name="layers_move_down">Move down</string>
+    <string name="layers_show">Show layer</string>
+    <string name="layers_hide">Hide layer</string>
+    <string name="layers_lock">Lock layer</string>
+    <string name="layers_unlock">Unlock layer</string>
+    <string name="layers_assign_selection">Move selection here</string>
+    <string name="layers_unlayered">Default (Unlayered)</string>
+    <string name="layers_empty_hint">No layers yet on this page. Create layers to organize, hide, or lock elements.</string>
 </resources>

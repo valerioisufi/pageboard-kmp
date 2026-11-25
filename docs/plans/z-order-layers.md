@@ -37,7 +37,7 @@ The responsibilities are assigned following the GRASP principles (Information Ex
 |---|---|---|
 | 1 | Model (`PageLayer`, `PageElement.locked`/`layerId`, `Page.stack` visibility & layer sorting, `DocumentChange` operations, `DocumentSnapshot` / `ElementVersions`), `KeyValueDocumentStore`, Room v26 + `Migration25To26` + `PageboardDatabaseMigrationTest`, `ProtocolFormatTest` & `ConvergenceTest`; iOS simulator sync tests; ABI recorded | Done |
 | 2 | Canvas (`LayerManager`, `SelectionManager` lock/unlock & guards, `EraserManager` lock/visibility guards, `CanvasGestureHandler` repeated long-press stack cycling); `ArrangeTest` & `LayerCanvasTest`; ABI recorded | Done |
-| 3 | UI (`EditorCommands` lock/unlock/layers, `SelectionActionBar`, `CanvasContextMenu` unlock action, adaptive `LayersPanel`, strings in 7 locales); `CommandTest` & `compareRoborazziJvm`; ABI recorded | Pending |
+| 3 | UI (`EditorCommands` lock/unlock/layers, `SelectionActionBar`, `CanvasContextMenu` unlock action, adaptive `LayersPanel`, strings in 7 locales); `CommandTest` & `compareRoborazziJvm`; ABI recorded | Done |
 
 ## Decisions (revertible)
 

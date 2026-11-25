@@ -305,4 +305,20 @@
     <string name="shape_geometry_angle_label">Afficher l’angle</string>
     <string name="command_ruler">Règle</string>
     <string name="command_protractor">Rapporteur</string>
+    <string name="command_lock_selection">Verrouiller</string>
+    <string name="context_menu_action_unlock">Déverrouiller</string>
+    <string name="command_layers">Calques</string>
+    <string name="layers_default_name">Calque %1$d</string>
+    <string name="layers_add">Ajouter un calque</string>
+    <string name="layers_rename">Renommer le calque</string>
+    <string name="layers_delete">Supprimer le calque</string>
+    <string name="layers_move_up">Monter</string>
+    <string name="layers_move_down">Descendre</string>
+    <string name="layers_show">Afficher le calque</string>
+    <string name="layers_hide">Masquer le calque</string>
+    <string name="layers_lock">Verrouiller le calque</string>
+    <string name="layers_unlock">Déverrouiller le calque</string>
+    <string name="layers_assign_selection">Déplacer la sélection ici</string>
+    <string name="layers_unlayered">Par défaut (sans calque)</string>
+    <string name="layers_empty_hint">Aucun calque sur cette page. Créez des calques pour organiser, masquer ou verrouiller les éléments.</string>
 </resources>

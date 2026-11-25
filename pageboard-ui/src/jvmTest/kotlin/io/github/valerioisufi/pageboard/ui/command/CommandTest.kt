@@ -404,4 +404,36 @@ class CommandTest {
         assertFalse(controller.geometryGuides.isRulerVisible)
         assertFalse(controller.geometryGuides.isProtractorVisible)
     }
+
+    @Test
+    fun lockSelectionAndLayersCommandsDriveSelectionAndPanel() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        var layersOpen = false
+        val commands = EditorCommands(
+            controller = controller,
+            clipboard = FakeClipboard(),
+            actions = EditorScreenActions(
+                close = {}, importPdf = {}, importImage = {}, importText = {}, editDocumentBackground = {}, showAbout = {},
+                isLayersOpen = { layersOpen },
+                toggleLayers = { layersOpen = !layersOpen }
+            )
+        )
+        assertFalse(commands.lockSelection.isEnabled())
+        assertFalse(commands.layers.isChecked!!.invoke())
+
+        commands.layers.perform()
+        assertTrue(layersOpen)
+        assertTrue(commands.layers.isChecked!!.invoke())
+
+        val page = controller.document.pages[0]
+        val text = TextElement().apply { text = "bg"; x = 10f; y = 10f; width = 30f; height = 10f }
+        controller.session.submit(AddElements.of(page, listOf(text)))
+        controller.selectionManager.selectText(0, text)
+        assertTrue(commands.lockSelection.isEnabled())
+
+        commands.lockSelection.perform()
+        assertTrue(page.isElementLocked(text))
+        assertEquals(null, controller.selectionManager.currentSelection)
+        assertFalse(commands.lockSelection.isEnabled())
+    }
 }

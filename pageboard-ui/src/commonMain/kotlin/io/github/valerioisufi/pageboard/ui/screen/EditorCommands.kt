@@ -44,6 +44,8 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.command_bring_to_
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_close
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_fit_width
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_insert_shape
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_layers
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_lock_selection
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_next_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_tool
@@ -130,7 +132,9 @@ internal class EditorScreenActions(
     val importText: () -> Unit,
     val editDocumentBackground: () -> Unit,
     val showAbout: () -> Unit,
-    val canRename: () -> Boolean = { false }
+    val canRename: () -> Boolean = { false },
+    val isLayersOpen: () -> Boolean = { false },
+    val toggleLayers: () -> Unit = {}
 )
 
 /**
@@ -409,6 +413,13 @@ internal class EditorCommands internal constructor(
         isChecked = { controller.geometryGuides.isProtractorVisible }
     ) { controller.geometryGuides.toggleProtractor() }
 
+    /** Shows or hides the adaptive per-page Layers panel. */
+    val layers = Command(
+        "layers", label(Res.string.command_layers), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.Layers) },
+        isChecked = { actions.isLayersOpen() }
+    ) { actions.toggleLayers() }
+
     /** Whether the text box suggests what may follow the caret: only with an extension that suggests. */
     val textSuggestions: Command? = if (!hasTextSuggestions) null else Command(
         "text-suggestions", label(Res.string.command_text_suggestions), CommandGroup.VIEW, section = 2,
@@ -488,6 +499,13 @@ internal class EditorCommands internal constructor(
         StackMove.BACK, Res.string.command_send_to_back, PageboardIcons.ArrowDownToLine,
         Shortcut(Key.B, primary = true, shift = true), Shortcut(Key.LeftBracket, primary = true, alt = true)
     )
+
+    /** Locks the currently selected elements so they cannot be accidentally moved, lassoed, or erased. */
+    val lockSelection = Command(
+        "lock-selection", label(Res.string.command_lock_selection), CommandGroup.ARRANGE, section = 1,
+        icon = { rememberVectorPainter(PageboardIcons.Lock) },
+        isEnabled = { hasSelection && writable() && controller.selectionManager.canLockSelection() }
+    ) { controller.selectionManager.lockSelection(true) }
 
     /** The commands of the menu Arrange, of the selection bar and of the context menu of a selection. */
     val arrangements: List<Command> = listOf(bringToFront, bringForward, sendBackward, sendToBack)
@@ -755,10 +773,10 @@ internal class EditorCommands internal constructor(
     val all: List<Command> = listOfNotNull(
         close, rename,
         undo, redo, cut, copy, paste, pastePlain, delete, find,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, ruler, protractor, textSuggestions,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, ruler, protractor, layers, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
-        bringToFront, bringForward, sendBackward, sendToBack,
+        bringToFront, bringForward, sendBackward, sendToBack, lockSelection,
         drawingMode, pen, highlighter, shapeTool, textMarkup, eraser, text, lasso, pan, previousTool,
         about
     ) + formats
@@ -808,7 +826,9 @@ internal fun rememberEditorCommands(
     onImportText: () -> Unit,
     onEditDocumentBackground: () -> Unit,
     onShowAbout: () -> Unit,
-    canRename: Boolean = false
+    canRename: Boolean = false,
+    isLayersOpen: () -> Boolean = { false },
+    onToggleLayers: () -> Unit = {}
 ): EditorCommands {
     val clipboard = LocalClipboardManager.current
     val clipboardText = rememberClipboardText()
@@ -819,6 +839,8 @@ internal fun rememberEditorCommands(
     val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
     val showAbout by rememberUpdatedState(onShowAbout)
     val renamable by rememberUpdatedState(canRename)
+    val layersOpen by rememberUpdatedState(isLayersOpen)
+    val toggleLayers by rememberUpdatedState(onToggleLayers)
     val hasTextSuggestions = LocalTextSuggestions.current != null
     return remember(controller, clipboard, clipboardText, hasTextSuggestions) {
         EditorCommands(
@@ -831,7 +853,9 @@ internal fun rememberEditorCommands(
                 importText = { importText() },
                 editDocumentBackground = { editDocumentBackground() },
                 showAbout = { showAbout() },
-                canRename = { renamable }
+                canRename = { renamable },
+                isLayersOpen = { layersOpen() },
+                toggleLayers = { toggleLayers() }
             ),
             formattedText = clipboardText::markdown,
             hasTextSuggestions = hasTextSuggestions

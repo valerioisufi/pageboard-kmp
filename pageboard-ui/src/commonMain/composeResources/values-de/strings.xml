@@ -305,4 +305,20 @@
     <string name="shape_geometry_angle_label">Winkel anzeigen</string>
     <string name="command_ruler">Lineal</string>
     <string name="command_protractor">Winkelmesser</string>
+    <string name="command_lock_selection">Sperren</string>
+    <string name="context_menu_action_unlock">Entsperren</string>
+    <string name="command_layers">Ebenen</string>
+    <string name="layers_default_name">Ebene %1$d</string>
+    <string name="layers_add">Ebene hinzufügen</string>
+    <string name="layers_rename">Ebene umbenennen</string>
+    <string name="layers_delete">Ebene löschen</string>
+    <string name="layers_move_up">Nach oben</string>
+    <string name="layers_move_down">Nach unten</string>
+    <string name="layers_show">Ebene einblenden</string>
+    <string name="layers_hide">Ebene ausblenden</string>
+    <string name="layers_lock">Ebene sperren</string>
+    <string name="layers_unlock">Ebene entsperren</string>
+    <string name="layers_assign_selection">Auswahl hierher verschieben</string>
+    <string name="layers_unlayered">Standard (ohne Ebene)</string>
+    <string name="layers_empty_hint">Noch keine Ebenen auf dieser Seite. Erstelle Ebenen, um Elemente zu ordnen, auszublenden oder zu sperren.</string>
 </resources>

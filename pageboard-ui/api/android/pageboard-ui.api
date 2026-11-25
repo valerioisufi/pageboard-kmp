@@ -580,6 +580,8 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getCommand_find (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_fit_width (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_insert_shape (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_layers (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_lock_selection (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_next_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -616,6 +618,7 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getContext_menu_action_edit_background (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getContext_menu_action_paste_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getContext_menu_action_reorder_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_unlock (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDialog_override_bg_confirm (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDialog_override_bg_dismiss (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDialog_override_bg_message (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -664,12 +667,12 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getFind_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_as_notes (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_as_notes_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_at_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_clean (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/generated/resources/String1_commonMainKt {
+	public static final fun getImport_text_at_end (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_by_topic (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_clean (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_clean_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_from_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_insert (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -677,6 +680,19 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getImport_text_preview (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_title (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_where (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_add (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_assign_selection (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_default_name (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_delete (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_empty_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_hide (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_lock (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_move_down (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_move_up (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_rename (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_show (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_unlayered (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getLayers_unlock (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_arrange (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_edit (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_file (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -754,6 +770,9 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getShape_ellipse (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_fill (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_fill_none (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/pageboard/ui/generated/resources/String2_commonMainKt {
 	public static final fun getShape_fill_solid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_fill_tinted (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_free_polygon (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -770,9 +789,6 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getShape_hexagon (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_kind (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_label_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/pageboard/ui/generated/resources/String2_commonMainKt {
 	public static final fun getShape_line (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_outline (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getShape_outline_dashed (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

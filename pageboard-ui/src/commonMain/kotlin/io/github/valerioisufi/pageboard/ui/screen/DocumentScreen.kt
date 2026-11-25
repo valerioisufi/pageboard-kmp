@@ -240,6 +240,7 @@ private fun DocumentScreenContent(
     var showDocumentConfigurator by remember { mutableStateOf(false) }
     var pendingDocumentTemplate by remember { mutableStateOf<Pair<Dimension, PageBackground>?>(null) }
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showLayersPanel by remember { mutableStateOf(false) }
 
     // The commands of the editor: the bars below, the menu bar of the window, the shortcuts
     val commands = rememberEditorCommands(
@@ -250,7 +251,14 @@ private fun DocumentScreenContent(
         onImportText = textPicker,
         onEditDocumentBackground = { showDocumentConfigurator = true },
         onShowAbout = { showAboutDialog = true },
-        canRename = renamer != null
+        canRename = renamer != null,
+        isLayersOpen = { showLayersPanel },
+        onToggleLayers = { showLayersPanel = !showLayersPanel }
+    )
+    val layersPanel = rememberLayersPanel(
+        controller = controller,
+        isOpen = { showLayersPanel },
+        onClose = { showLayersPanel = false }
     )
     // "Rename…" only where the document can be renamed
     val renamable = renamer != null
@@ -263,7 +271,7 @@ private fun DocumentScreenContent(
         // BARS, CANVAS AND OVERLAYS (+ PANELS, beside at full height)
         // =========================================================
         EditorScaffold(
-            panels = panels,
+            panels = panels + layersPanel,
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)

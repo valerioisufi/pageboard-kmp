@@ -305,4 +305,20 @@
     <string name="shape_geometry_angle_label">Mostrar ángulo</string>
     <string name="command_ruler">Regla</string>
     <string name="command_protractor">Transportador</string>
+    <string name="command_lock_selection">Bloquear</string>
+    <string name="context_menu_action_unlock">Desbloquear</string>
+    <string name="command_layers">Capas</string>
+    <string name="layers_default_name">Capa %1$d</string>
+    <string name="layers_add">Añadir capa</string>
+    <string name="layers_rename">Renombrar capa</string>
+    <string name="layers_delete">Eliminar capa</string>
+    <string name="layers_move_up">Subir</string>
+    <string name="layers_move_down">Bajar</string>
+    <string name="layers_show">Mostrar capa</string>
+    <string name="layers_hide">Ocultar capa</string>
+    <string name="layers_lock">Bloquear capa</string>
+    <string name="layers_unlock">Desbloquear capa</string>
+    <string name="layers_assign_selection">Mover selección aquí</string>
+    <string name="layers_unlayered">Predeterminada (sin capa)</string>
+    <string name="layers_empty_hint">Aún no hay capas en esta página. Crea capas para organizar, ocultar o bloquear elementos.</string>
 </resources>

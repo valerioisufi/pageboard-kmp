@@ -305,4 +305,20 @@
     <string name="shape_geometry_angle_label">Mostra angolo</string>
     <string name="command_ruler">Righello</string>
     <string name="command_protractor">Goniometro</string>
+    <string name="command_lock_selection">Blocca</string>
+    <string name="context_menu_action_unlock">Sblocca</string>
+    <string name="command_layers">Livelli</string>
+    <string name="layers_default_name">Livello %1$d</string>
+    <string name="layers_add">Aggiungi livello</string>
+    <string name="layers_rename">Rinomina livello</string>
+    <string name="layers_delete">Elimina livello</string>
+    <string name="layers_move_up">Sposta su</string>
+    <string name="layers_move_down">Sposta giù</string>
+    <string name="layers_show">Mostra livello</string>
+    <string name="layers_hide">Nascondi livello</string>
+    <string name="layers_lock">Blocca livello</string>
+    <string name="layers_unlock">Sblocca livello</string>
+    <string name="layers_assign_selection">Sposta selezione qui</string>
+    <string name="layers_unlayered">Predefinito (senza livello)</string>
+    <string name="layers_empty_hint">Nessun livello in questa pagina. Crea dei livelli per organizzare, nascondere o bloccare gli elementi.</string>
 </resources>

@@ -99,6 +99,7 @@ internal fun SelectionActionBar(
             if (commands != null) {
                 BarDivider()
                 ArrangeAction(commands)
+                BarAction(PageboardIcons.Lock, stringResource(Res.string.command_lock_selection), { selectionManager.lockSelection(true) }, command = commands.lockSelection)
             }
             if (selectedShapes.isNotEmpty()) {
                 BarDivider()
@@ -218,6 +219,17 @@ internal fun CanvasContextMenu(
                 .background(MaterialTheme.colorScheme.surfaceContainer, shape)
                 .padding(8.dp)
         ) {
+            val lockedTarget = controller.lockedElementForMenu
+            if (lockedTarget != null) {
+                MenuItem(
+                    text = stringResource(Res.string.context_menu_action_unlock),
+                    icon = rememberVectorPainter(PageboardIcons.LockOpen),
+                    onClick = {
+                        controller.selectionManager.unlockElement(lockedTarget.first, lockedTarget.second)
+                    }
+                )
+                MenuDivider()
+            }
             if (controller.selectionManager.currentSelection != null) {
                 SelectionMenuItems(controller, commands, selectionActions)
                 return@Column
@@ -231,7 +243,7 @@ internal fun CanvasContextMenu(
                     icon = rememberVectorPainter(PageboardIcons.Clipboard),
                     shortcut = commands.paste.shortcutLabel(currentAdaptiveInfo().conventions).takeIf { currentAdaptiveInfo().input.hasKeyboard },
                     onClick = {
-                        controller.contextMenuPosition = null
+                        controller.dismissContextMenu()
                         commands.pasteAt(position)
                     }
                 )
@@ -241,7 +253,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_add_page_after),
                 icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     pageManager.addNewPageAfter(pageManager.contextMenuTargetPageIndex)
                 }
             )
@@ -249,7 +261,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_add_page_before),
                 icon = rememberVectorPainter(PageboardIcons.FilePlus2),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     pageManager.addNewPageBefore(pageManager.contextMenuTargetPageIndex)
                 }
             )
@@ -257,7 +269,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_duplicate_page),
                 icon = rememberVectorPainter(PageboardIcons.CopyPlus),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     controller.document.pages.getOrNull(pageManager.contextMenuTargetPageIndex)?.let { commands.duplicatePages(listOf(it.id)) }
                 }
             )
@@ -265,7 +277,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_copy_page),
                 icon = rememberVectorPainter(PageboardIcons.Copy),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     commands.copyPage(pageManager.contextMenuTargetPageIndex)
                 }
             )
@@ -273,7 +285,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_reorder_page),
                 icon = rememberVectorPainter(PageboardIcons.Grip),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     pageManager.startPageReorderMode()
                 }
             )
@@ -282,7 +294,7 @@ internal fun CanvasContextMenu(
                 icon = rememberVectorPainter(PageboardIcons.Trash),
                 destructive = true,
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     pageManager.deletePage(pageManager.contextMenuTargetPageIndex)
                 }
             )
@@ -291,7 +303,7 @@ internal fun CanvasContextMenu(
                 text = stringResource(Res.string.context_menu_action_edit_background),
                 icon = rememberVectorPainter(PageboardIcons.Grid),
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     onEditPageBackground()
                 }
             )
@@ -304,7 +316,7 @@ internal fun CanvasContextMenu(
 private fun SelectionMenuItems(controller: PageboardController, commands: EditorCommands, selectionActions: List<Command>) {
     val adaptive = currentAdaptiveInfo()
     val conventions = adaptive.conventions.takeIf { adaptive.input.hasKeyboard }
-    val sections = listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements) +
+    val sections = listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements + commands.lockSelection) +
         listOf(selectionActions).filter { it.isNotEmpty() }
     for ((index, section) in sections.withIndex()) {
         if (index > 0) MenuDivider()
@@ -316,7 +328,7 @@ private fun SelectionMenuItems(controller: PageboardController, commands: Editor
                 enabled = command.isEnabled(),
                 destructive = command.destructive,
                 onClick = {
-                    controller.contextMenuPosition = null
+                    controller.dismissContextMenu()
                     command.performIfEnabled()
                 }
             )
