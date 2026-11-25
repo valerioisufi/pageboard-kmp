@@ -55,4 +55,26 @@ class ChainFlowTest {
         assertEquals(listOf(Piece("# a\n# b\n# c"), Piece("d")), flow.flow("# a\n# b\n# c\nd", listOf(room), room), "only headings fit: a box takes something")
         assertEquals(listOf(Piece("```\na\n```\nb"), Piece("c\nd")), flow.flow("```\na\n```\nb\nc\nd", listOf(Room(100f, 20f)), Room(100f, 20f)), "no heading: as before")
     }
+
+    @Test
+    fun aHeadingKeepsTheFirstLinesOfALongParagraphAfterIt() {
+        // Room for 4 lines: a, the heading, two lines of the paragraph (10 characters a line)
+        val paragraph = "one two three four five six seven eight nine ten"
+        val pieces = flow.flow("a\n# H\n$paragraph", listOf(Room(10f, 20f)), Room(10f, 50f))
+        assertEquals("a\n# H\n", pieces[0].text.substring(0, 6))
+        assertEquals(paragraph, (pieces[0].text.removePrefix("a\n# H\n") + pieces[1].text), "the paragraph cut between its words, joined again")
+        assertEquals(true, pieces[1].continuesLine)
+        // Room for one line of it only: the heading goes on with the whole paragraph, as before
+        val few = flow.flow("a\nb\n# H\n$paragraph", listOf(Room(10f, 20f)), Room(10f, 50f))
+        assertEquals("a\nb", few[0].text)
+        assertEquals("# H\n$paragraph", few[1].text)
+    }
+
+    @Test
+    fun aLineEndingWithAColonGoesOnWithItsBlock() {
+        val pieces = flow.flow("a\nb\nThe steps:\n- one\n- two", listOf(room), room)
+        assertEquals(listOf(Piece("a\nb"), Piece("The steps:\n- one\n- two")), pieces)
+        // Before a line of text, as before
+        assertEquals(listOf(Piece("a\nb\nSo:"), Piece("text")), flow.flow("a\nb\nSo:\ntext", listOf(room), room))
+    }
 }

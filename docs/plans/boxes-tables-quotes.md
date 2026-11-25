@@ -73,7 +73,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | The height of a box of a chain by hand: the room of `ChainFlow`, the handle, the gesture, a tap clearing it, the height checked; tests | Done |
 | 2 | The boxes of a chain follow while one is written; the key of a line break in an item; tests | Done |
 | 3 | Nested quotes, headings in quotes; tests | Done (blocks of code and tables in quotes, quotes in list items: left for later, decision 7) |
-| 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Pending |
+| 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Done |
 | 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Pending |
 | 6 | `\text{}` in the font of the text, the symbols of the code, scrolling while selecting; tests | Pending |
 
@@ -109,6 +109,11 @@ Taken alone, revertible:
    a quote needs its lines read without their markers by the code and the tables, which read the
    source as it is: a change of the parser and of the layouts of both, kept for a phase of its own.
    A quote in a list item needs the item to take the marker in its continuation lines.
+
+8. **A heading keeps the first lines of the paragraph after it only when two of them fit**, the
+   paragraph cut between its words (it goes on in the next box on the same line); with room for one,
+   the heading goes on with the whole paragraph, as before. A line ending with `:` goes on with the
+   block after it (a list, a table, a block of code, a formula), never with a line of text.
 
 ## Left for later
 
