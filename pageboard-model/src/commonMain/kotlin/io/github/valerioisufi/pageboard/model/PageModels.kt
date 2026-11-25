@@ -323,6 +323,15 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
      */
     @Volatile public var continuesLine: Boolean = false
 
+    /** Identifier of the custom font family (e.g. `"jakarta"`, `"mono"`, `"serif"`), or `null` for default sans. */
+    @Volatile public var fontFamily: String? = null
+
+    /** Identifier of the text box whose list numbering this box continues, or `null` for none. */
+    @Volatile public var continueNumberingFrom: String? = null
+
+    /** Manual height limit in millimeters for a box in a chain, or `null` to use page margin. */
+    @Volatile public var maxHeight: Float? = null
+
     /** How far its [background] goes out of its box, in millimeters (0 without one). */
     public val backgroundOutset: Float get() = if (background == null) 0f else TextBackground.outsetMm(fontSize)
 
@@ -372,6 +381,9 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
         continuesLine = other.continuesLine
         locked = other.locked
         layerId = other.layerId
+        fontFamily = other.fontFamily
+        continueNumberingFrom = other.continueNumberingFrom
+        maxHeight = other.maxHeight
         markDirty()
     }
 }

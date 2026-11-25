@@ -380,6 +380,9 @@ internal class DocumentRepository(
         background = entity.background
         next = entity.next
         continuesLine = entity.continuesLine
+        fontFamily = entity.fontFamily
+        continueNumberingFrom = entity.continueNumberingFrom
+        maxHeight = entity.maxHeight
         // Until it is laid out
         height = TextSizes.estimatedHeightMm(entity.text, entity.fontSize)
         contentVersions = entity.contentVersions
@@ -651,6 +654,9 @@ internal class DocumentRepository(
                 background = text.background,
                 next = text.next,
                 continuesLine = text.continuesLine,
+                fontFamily = text.fontFamily,
+                continueNumberingFrom = text.continueNumberingFrom,
+                maxHeight = text.maxHeight,
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,

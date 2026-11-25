@@ -113,6 +113,12 @@ public data class TextData(
     val next: String? = null,
     /** Whether its first line goes on the last line of the text before it (see `TextElement.continuesLine`). */
     val continuesLine: Boolean = false,
+    /** Identifier of its custom font family, or `null` for default sans (see `TextElement.fontFamily`). */
+    val fontFamily: String? = null,
+    /** Identifier of the text box whose list numbering this box continues, or `null` (see `TextElement.continueNumberingFrom`). */
+    val continueNumberingFrom: String? = null,
+    /** Manual height limit in millimeters for a box in a chain, or `null` (see `TextElement.maxHeight`). */
+    val maxHeight: Float? = null,
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE,
     override val locked: Boolean = false,
@@ -127,7 +133,9 @@ public data class TextData(
     /** Whether its content (the text and its format) is the one of [other]. */
     internal fun hasContentOf(other: TextData): Boolean =
         text == other.text && alignment == other.alignment && color == other.color && background == other.background &&
-            next == other.next && continuesLine == other.continuesLine
+            next == other.next && continuesLine == other.continuesLine &&
+            fontFamily == other.fontFamily && continueNumberingFrom == other.continueNumberingFrom &&
+            maxHeight == other.maxHeight
 
     /** Writes this content into [text] (its identifier and its order excepted). */
     public fun applyTo(text: TextElement) {
@@ -144,6 +152,9 @@ public data class TextData(
         text.background = background
         text.next = next
         text.continuesLine = continuesLine
+        text.fontFamily = fontFamily
+        text.continueNumberingFrom = continueNumberingFrom
+        text.maxHeight = maxHeight
         text.markDirty()
     }
 }
@@ -355,6 +366,9 @@ public fun TextElement.toData(): TextData = TextData(
     background = background,
     next = next,
     continuesLine = continuesLine,
+    fontFamily = fontFamily,
+    continueNumberingFrom = continueNumberingFrom,
+    maxHeight = maxHeight,
     order = dataOrder,
     versions = contentVersions,
     locked = locked,
@@ -434,6 +448,9 @@ internal fun writeContent(element: PageElement, data: ElementData) {
             element.background = data.background
             element.next = data.next
             element.continuesLine = data.continuesLine
+            element.fontFamily = data.fontFamily
+            element.continueNumberingFrom = data.continueNumberingFrom
+            element.maxHeight = data.maxHeight
             element.markDirty()
         }
         element is TextMarkupElement && data is TextMarkupData -> {

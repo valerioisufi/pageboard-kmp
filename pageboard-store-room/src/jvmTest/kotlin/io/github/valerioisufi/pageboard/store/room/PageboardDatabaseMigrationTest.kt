@@ -28,6 +28,7 @@ import io.github.valerioisufi.pageboard.store.room.db.Migration22To23
 import io.github.valerioisufi.pageboard.store.room.db.Migration23To24
 import io.github.valerioisufi.pageboard.store.room.db.Migration24To25
 import io.github.valerioisufi.pageboard.store.room.db.Migration25To26
+import io.github.valerioisufi.pageboard.store.room.db.Migration26To27
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
@@ -511,6 +512,50 @@ class PageboardDatabaseMigrationTest {
             val reloadedText = assertNotNull(reloadedPage.find("t1"))
             assertTrue(reloadedText.locked)
             assertEquals("layer-bg", reloadedText.layerId)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theTextsOfVersion26KeepDefaultsAndSaveTheirFontContinuationAndHeight() = runTest {
+        helper.createDatabase(26).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion, trashedAt) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, rotation, color, fontSize, alignment, " +
+                    "autoWidth, background, next, continuesLine, added, removed, placed, ordered, updated, contentVersions, " +
+                    "locked, lockVersion, layerId, layerVersion) VALUES ('note', '$PAGE', '$STAMP/00000000', 'notes', 10.0, 20.0, " +
+                    "40.0, 0.0, -16777216, 16.0, 'START', 0, NULL, NULL, 0, '$STAMP', NULL, '$STAMP', '$STAMP', '$STAMP', '', " +
+                    "1, '$STAMP', NULL, '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(27, listOf(Migration26To27)).close()
+
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database, InkStrokeModeller)
+            val document = assertNotNull(store.loadDocument(DOCUMENT))
+            val text = document.pages.single().texts.single()
+            assertEquals(Triple(null, null, null), Triple(text.fontFamily, text.continueNumberingFrom, text.maxHeight))
+            assertEquals("notes", text.text)
+            assertTrue(text.locked, "what version 26 kept stays")
+
+            text.fontFamily = "jakarta"
+            text.continueNumberingFrom = "prev-box"
+            text.maxHeight = 120f
+            DocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
+            val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
+            assertEquals(Triple("jakarta", "prev-box", 120f), Triple(again.fontFamily, again.continueNumberingFrom, again.maxHeight))
         } finally {
             database.close()
         }

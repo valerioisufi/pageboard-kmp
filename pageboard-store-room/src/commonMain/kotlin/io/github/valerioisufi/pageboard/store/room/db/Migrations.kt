@@ -36,7 +36,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [PageboardDatabase]'s version. */
 internal val PAGEBOARD_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25, Migration25To26)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25, Migration25To26, Migration26To27)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -376,5 +376,18 @@ internal object Migration25To26 : Migration(25, 26) {
             connection.execSQL("ALTER TABLE `$table` ADD COLUMN `layerId` TEXT")
             connection.execSQL("ALTER TABLE `$table` ADD COLUMN `layerVersion` TEXT NOT NULL DEFAULT ''")
         }
+    }
+}
+
+/**
+ * 27: the font of a text, the list it continues from another text, and the height of a box of a
+ * chain set by hand (`docs/plans/text-editor-enhancements.md`); the texts written before keep
+ * `NULL`, the defaults.
+ */
+internal object Migration26To27 : Migration(26, 27) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `texts` ADD COLUMN `fontFamily` TEXT")
+        connection.execSQL("ALTER TABLE `texts` ADD COLUMN `continueNumberingFrom` TEXT")
+        connection.execSQL("ALTER TABLE `texts` ADD COLUMN `maxHeight` REAL")
     }
 }

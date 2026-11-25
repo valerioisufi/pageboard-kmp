@@ -31,7 +31,7 @@ import androidx.room.TypeConverters
         CatalogProofEntity::class
     ],
     // Every new version comes with its migration (see PAGEBOARD_DATABASE_MIGRATIONS)
-    version = 26
+    version = 27
 )
 @TypeConverters(
     PageBackgroundConverter::class,

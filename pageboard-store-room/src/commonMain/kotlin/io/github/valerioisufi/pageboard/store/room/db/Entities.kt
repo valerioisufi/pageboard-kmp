@@ -221,6 +221,12 @@ internal data class TextEntity(
     val next: String? = null,
     /** Whether its first line goes on the last line of the text before it. */
     val continuesLine: Boolean = false,
+    /** Identifier of its custom font family, or `null` for default sans. */
+    val fontFamily: String? = null,
+    /** Identifier of the text box whose list numbering this box continues, or `null`. */
+    val continueNumberingFrom: String? = null,
+    /** Manual height limit in millimeters for a box in a chain, or `null`. */
+    val maxHeight: Float? = null,
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
