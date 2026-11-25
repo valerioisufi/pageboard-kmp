@@ -89,6 +89,8 @@ public class TileManager internal constructor(
 
     /** Tiles drawn on screen in the last frame, by page (UI thread only). */
     private val pageTiles = mutableMapOf<Long, PageTiles>()
+    private var lastCameraScale: Float = 0f
+    private var zoomOutFrames: Int = 0
 
     /**
      * A tile drawn on screen.
@@ -149,6 +151,7 @@ public class TileManager internal constructor(
         blankCells.clear()
         if (pageRects.isEmpty()) return
         tileCache.beginFrame()
+        tileCache.updateViewportBudget(viewportBounds.width.toInt(), viewportBounds.height.toInt())
 
         // 1. Calculate World Space viewport
         val screenToWorld = Matrix2D()
@@ -158,7 +161,18 @@ public class TileManager internal constructor(
         // 2. Determine current scale and LOD
         tileQueue.beginFrame()
         val currentScale = cameraMatrix.a
+        if (lastCameraScale > 0f && currentScale < lastCameraScale * 0.96f) {
+            zoomOutFrames++
+        } else if (currentScale >= lastCameraScale) {
+            zoomOutFrames = 0
+        }
+        lastCameraScale = currentScale
         val targetLod = TilePyramid.calculateLod(currentScale)
+        val prefetchCoarserLod = if (zoomOutFrames >= 2 && targetLod > TilePyramid.OVERVIEW_LOD) {
+            (targetLod - 1).coerceAtLeast(TilePyramid.OVERVIEW_LOD)
+        } else {
+            null
+        }
         val tileSize = TilePyramid.getTileWorldSize(targetLod)
 
         val pages = document.pages
@@ -310,6 +324,24 @@ public class TileManager internal constructor(
                 val cached = tileCache.get(key)
                 if (cached == null || cached.state == TileState.STALE) {
                     enqueueTile(key, TilePriority.Margin, document, page, pageWorldRect)
+                }
+            }
+            if (isPageVisible && prefetchCoarserLod != null) {
+                TilePyramid.getPageIntersectingTileRange(
+                    localLeft = prefetchLocalLeft,
+                    localTop = prefetchLocalTop,
+                    localRight = prefetchLocalRight,
+                    localBottom = prefetchLocalBottom,
+                    pageWidth = pageWidth,
+                    pageHeight = pageHeight,
+                    lod = prefetchCoarserLod,
+                    overscanMargin = 0
+                ).forEach { col, row ->
+                    val key = TileKey(page.renderKey, prefetchCoarserLod, col, row)
+                    val cached = tileCache.get(key)
+                    if (cached == null || cached.state == TileState.STALE) {
+                        enqueueTile(key, TilePriority.Margin, document, page, pageWorldRect)
+                    }
                 }
             }
             onScreen.endFrame()

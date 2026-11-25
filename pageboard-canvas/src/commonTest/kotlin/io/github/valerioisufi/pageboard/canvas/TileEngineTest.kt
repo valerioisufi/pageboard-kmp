@@ -307,4 +307,59 @@ class TileEngineTest {
         cache.put(Tile(overview, cache.obtainBitmap(), TileState.STALE))
         assertEquals(overview, cache.findNearestAncestor(TileKey(0L, 2, 1, 1))?.key)
     }
+
+    @Test
+    fun dynamicViewportBudgetScalesAndClampsBetween64And192Mb() {
+        val cache = TileCache()
+        // Small window clamps at 64 MB
+        cache.updateViewportBudget(800, 600)
+        assertEquals(64 * 1024 * 1024, cache.memoryBudgetBytes)
+
+        // Tablet viewport (2000 x 1200) scales between 64 and 192 MB
+        cache.updateViewportBudget(2000, 1200)
+        assertEquals(2000 * 1200 * 4 * 12, cache.memoryBudgetBytes)
+
+        // Large Retina desktop clamps at 192 MB
+        cache.updateViewportBudget(3840, 2160)
+        assertEquals(192 * 1024 * 1024, cache.memoryBudgetBytes)
+
+        // Explicit custom budget is preserved across viewport updates
+        val custom = TileCache(maxMemoryBytes = 2 * 1024 * 1024)
+        custom.updateViewportBudget(2880, 1800)
+        assertEquals(2 * 1024 * 1024, custom.memoryBudgetBytes)
+    }
+
+    @Test
+    fun findReadyDescendantsSearchesThreeGenerations() {
+        val cache = TileCache()
+        val parentKey = TileKey(0L, 0, 0, 0)
+        val greatGrandChild = TileKey(0L, 3, 2, 1)
+        cache.put(Tile(greatGrandChild, cache.obtainBitmap(), TileState.READY))
+
+        val descendants = cache.findReadyDescendants(parentKey)
+        assertEquals(listOf(greatGrandChild), descendants.map { it.key })
+    }
+
+    @Test
+    fun rapidZoomOutPreschedulesCoarserLodTiles() = kotlinx.coroutines.test.runTest {
+        val manager = TileManager()
+        val doc = Document("doc", "Zoom Out")
+        val viewport = Rect(0f, 0f, 400f, 400f)
+        val pageRect = listOf(Rect(0f, 0f, 400f, 600f))
+
+        // Consecutive frames zooming out rapidly (4.0 -> 3.5 -> 3.0; targetLod = 2, coarser = 1)
+        for (scale in listOf(4.0f, 3.5f, 3.0f)) {
+            val canvas = androidx.compose.ui.graphics.Canvas(ImageBitmap(400, 400))
+            manager.drawTiles(canvas, io.github.valerioisufi.pageboard.model.geometry.Matrix2D().postScale(scale, scale), viewport, doc, pageRect)
+        }
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            var waitedMs = 0
+            while (manager.isRasterizing && waitedMs < 5000) {
+                kotlinx.coroutines.delay(10)
+                waitedMs += 10
+            }
+        }
+        assertTrue(manager.tileCache.contains(TileKey(doc.pages[0].renderKey, 1, 0, 0)))
+        manager.cleanup()
+    }
 }

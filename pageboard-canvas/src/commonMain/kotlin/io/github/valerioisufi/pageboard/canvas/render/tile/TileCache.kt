@@ -18,13 +18,36 @@ import io.github.valerioisufi.pageboard.platform.syncLock
  * overviews excluded.
  */
 public class TileCache(
-    private val maxMemoryBytes: Int = 64 * 1024 * 1024
+    private var maxMemoryBytes: Int = DEFAULT_MEMORY_BYTES
 ) {
+    private val customBudget: Boolean = maxMemoryBytes != DEFAULT_MEMORY_BYTES
     private val lock = SyncLock()
     private val map = LinkedHashMap<TileKey, Tile>(32, 0.75f)
     private var currentMemoryBytes: Int = 0
     private var overviewMemoryBytes: Int = 0
     private var frame = 0L
+
+    internal val memoryBudgetBytes: Int
+        get() = syncLock(lock) { maxMemoryBytes }
+
+    /**
+     * Scales the cache budget to the current viewport pixel area (`64..192 MB`) when the cache uses
+     * the default budget, keeping intermediate LODs resident on large screens without overriding
+     * explicit custom budgets in tests.
+     */
+    internal fun updateViewportBudget(viewportWidthPx: Int, viewportHeightPx: Int) {
+        if (customBudget || viewportWidthPx <= 0 || viewportHeightPx <= 0) return
+        val screenBytes = viewportWidthPx.toLong() * viewportHeightPx.toLong() * 4L
+        val target = (screenBytes * VIEWPORT_BUDGET_MULTIPLIER)
+            .coerceIn(MIN_DYNAMIC_MEMORY_BYTES.toLong(), MAX_DYNAMIC_MEMORY_BYTES.toLong())
+            .toInt()
+        syncLock(lock) {
+            if (target != maxMemoryBytes) {
+                maxMemoryBytes = target
+                trimToSize()
+            }
+        }
+    }
 
     /**
      * Starts a new frame: the tiles used from now on are kept until the end of the next frame.
@@ -151,7 +174,7 @@ public class TileCache(
     /**
      * Finds ready descendant tiles (higher LOD) in pyramid hierarchy.
      */
-    internal fun findReadyDescendants(key: TileKey, maxGenerations: Int = 2): List<Tile> {
+    internal fun findReadyDescendants(key: TileKey, maxGenerations: Int = 3): List<Tile> {
         val readyDescendants = mutableListOf<Tile>()
         fun collect(currentKey: TileKey, gen: Int) {
             if (gen > maxGenerations || currentKey.lod >= TilePyramid.MAX_LOD) return
@@ -236,6 +259,11 @@ public class TileCache(
     }
 
     private companion object {
+        const val DEFAULT_MEMORY_BYTES = 64 * 1024 * 1024
+        const val MIN_DYNAMIC_MEMORY_BYTES = 64 * 1024 * 1024
+        const val MAX_DYNAMIC_MEMORY_BYTES = 192 * 1024 * 1024
+        const val VIEWPORT_BUDGET_MULTIPLIER = 12L
+
         /** The overviews of the last 16 pages seen, at a tile a page. */
         const val MAX_OVERVIEW_MEMORY_BYTES = 16 * 1024 * 1024
     }
