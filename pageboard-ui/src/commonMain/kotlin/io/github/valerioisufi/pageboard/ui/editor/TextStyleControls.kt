@@ -3,15 +3,19 @@ package io.github.valerioisufi.pageboard.ui.editor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,10 +31,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.text.TextBackground
+import io.github.valerioisufi.pageboard.model.text.TextFont
+import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.ui.command.Command
 import io.github.valerioisufi.pageboard.ui.command.CommandTooltip
 import io.github.valerioisufi.pageboard.ui.components.ColorSwatches
@@ -44,6 +51,11 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_background_n
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_center
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_end
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_align_start
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_family
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_jakarta
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_mono
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_sans
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_font_serif
 import io.github.valerioisufi.pageboard.ui.screen.EditorCommands
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import io.github.valerioisufi.pageboard.ui.theme.InkPalette
@@ -61,10 +73,85 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun RowScope.TextStyleControls(target: TextFormatTarget, commands: EditorCommands?) {
     FontSizeControl(fontSizePt = target.fontSize, onFontSizeChange = target::changeFontSize)
+    FontFamilyButton(target)
     TextColorButton(target)
     if (target.takesBackground) TextBackgroundButton(target)
     TextAlignmentButtons(target, commands)
 }
+
+/** Picks the font family of [target] without moving focus away from the text field. */
+@Composable
+internal fun FontFamilyButton(target: TextFormatTarget) {
+    var open by remember { mutableStateOf(false) }
+    val selected = TextFonts.byId(target.fontFamily)
+    val label = stringResource(Res.string.text_font_family)
+    val colors = MaterialTheme.colorScheme
+    Box {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .heightAndWidthCircle()
+                .clip(RoundedCornerShape(10.dp))
+                .keepsTextFocus()
+                .clickable(onClickLabel = label) { open = true }
+                .semantics { contentDescription = label }
+        ) {
+            Text(
+                text = when (selected) {
+                    TextFont.SANS -> "Aa"
+                    TextFont.JAKARTA -> "Ja"
+                    TextFont.MONO -> "M"
+                    TextFont.SERIF -> "Se"
+                },
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontFamily = when (selected) {
+                        TextFont.MONO -> FontFamily.Monospace
+                        TextFont.SERIF -> FontFamily.Serif
+                        else -> FontFamily.SansSerif
+                    }
+                ),
+                color = colors.onSurfaceVariant
+            )
+        }
+        ToolPopover(expanded = open, onDismissRequest = { open = false }) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                for (font in TextFont.entries) {
+                    val isSelected = font == selected
+                    val name = stringResource(
+                        when (font) {
+                            TextFont.SANS -> Res.string.text_font_sans
+                            TextFont.JAKARTA -> Res.string.text_font_jakarta
+                            TextFont.MONO -> Res.string.text_font_mono
+                            TextFont.SERIF -> Res.string.text_font_serif
+                        }
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isSelected) colors.primaryContainer else Color.Transparent)
+                            .keepsTextFocus()
+                            .clickable(role = Role.RadioButton) {
+                                target.changeFontFamily(font.id)
+                                open = false
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (isSelected) colors.onPrimaryContainer else colors.onSurface
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun Modifier.heightAndWidthCircle(): Modifier = size(36.dp)
 
 /**
  * The fill of the boxes of [target] (see [TextBackground]): a box showing it, opening the tints,

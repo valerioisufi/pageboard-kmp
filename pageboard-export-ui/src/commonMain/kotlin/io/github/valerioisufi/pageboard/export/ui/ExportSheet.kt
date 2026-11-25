@@ -182,7 +182,7 @@ internal fun ExportSheet(
                 format = state.format,
                 options = state.options(),
                 writers = ExportWriters(
-                    pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName, elements = engines.elements, formulas = engines.formulas),
+                    pdf = PdfExporter(textAdapter, NotesFontFiles::bytesOrNull, creator = appName, elements = engines.elements, formulas = engines.formulas),
                     image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images),
                     markdown = MarkdownExporter(markdownAppendix),
                     recordings = recordings

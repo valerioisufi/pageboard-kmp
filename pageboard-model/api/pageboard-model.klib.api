@@ -126,6 +126,21 @@ final enum class io.github.valerioisufi.pageboard.model.text.code/CodeTokenKind 
     final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.model.text.code/CodeTokenKind> // io.github.valerioisufi.pageboard.model.text.code/CodeTokenKind.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.pageboard.model.text/TextFont : kotlin/Enum<io.github.valerioisufi.pageboard.model.text/TextFont> { // io.github.valerioisufi.pageboard.model.text/TextFont|null[0]
+    enum entry JAKARTA // io.github.valerioisufi.pageboard.model.text/TextFont.JAKARTA|null[0]
+    enum entry MONO // io.github.valerioisufi.pageboard.model.text/TextFont.MONO|null[0]
+    enum entry SANS // io.github.valerioisufi.pageboard.model.text/TextFont.SANS|null[0]
+    enum entry SERIF // io.github.valerioisufi.pageboard.model.text/TextFont.SERIF|null[0]
+
+    final val entries // io.github.valerioisufi.pageboard.model.text/TextFont.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.model.text/TextFont> // io.github.valerioisufi.pageboard.model.text/TextFont.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val id // io.github.valerioisufi.pageboard.model.text/TextFont.id|{}id[0]
+        final fun <get-id>(): kotlin/String? // io.github.valerioisufi.pageboard.model.text/TextFont.id.<get-id>|<get-id>(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.model.text/TextFont // io.github.valerioisufi.pageboard.model.text/TextFont.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.model.text/TextFont> // io.github.valerioisufi.pageboard.model.text/TextFont.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.pageboard.model/InputToolType : kotlin/Enum<io.github.valerioisufi.pageboard.model/InputToolType> { // io.github.valerioisufi.pageboard.model/InputToolType|null[0]
     enum entry MOUSE // io.github.valerioisufi.pageboard.model/InputToolType.MOUSE|null[0]
     enum entry STYLUS // io.github.valerioisufi.pageboard.model/InputToolType.STYLUS|null[0]
@@ -3080,19 +3095,22 @@ final class io.github.valerioisufi.pageboard.model.text/TextChains { // io.githu
 }
 
 final class io.github.valerioisufi.pageboard.model.text/TextDefaults { // io.github.valerioisufi.pageboard.model.text/TextDefaults|null[0]
-    constructor <init>(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ...) // io.github.valerioisufi.pageboard.model.text/TextDefaults.<init>|<init>(kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.TextAlignment){}[0]
+    constructor <init>(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.text/TextDefaults.<init>|<init>(kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.String?){}[0]
 
     final val alignment // io.github.valerioisufi.pageboard.model.text/TextDefaults.alignment|{}alignment[0]
         final fun <get-alignment>(): io.github.valerioisufi.pageboard.model/TextAlignment // io.github.valerioisufi.pageboard.model.text/TextDefaults.alignment.<get-alignment>|<get-alignment>(){}[0]
     final val color // io.github.valerioisufi.pageboard.model.text/TextDefaults.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TextDefaults.color.<get-color>|<get-color>(){}[0]
+    final val fontFamily // io.github.valerioisufi.pageboard.model.text/TextDefaults.fontFamily|{}fontFamily[0]
+        final fun <get-fontFamily>(): kotlin/String? // io.github.valerioisufi.pageboard.model.text/TextDefaults.fontFamily.<get-fontFamily>|<get-fontFamily>(){}[0]
     final val fontSize // io.github.valerioisufi.pageboard.model.text/TextDefaults.fontSize|{}fontSize[0]
         final fun <get-fontSize>(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextDefaults.fontSize.<get-fontSize>|<get-fontSize>(){}[0]
 
     final fun component1(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextDefaults.component1|component1(){}[0]
     final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TextDefaults.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.pageboard.model/TextAlignment // io.github.valerioisufi.pageboard.model.text/TextDefaults.component3|component3(){}[0]
-    final fun copy(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ...): io.github.valerioisufi.pageboard.model.text/TextDefaults // io.github.valerioisufi.pageboard.model.text/TextDefaults.copy|copy(kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.TextAlignment){}[0]
+    final fun component4(): kotlin/String? // io.github.valerioisufi.pageboard.model.text/TextDefaults.component4|component4(){}[0]
+    final fun copy(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.text/TextDefaults // io.github.valerioisufi.pageboard.model.text/TextDefaults.copy|copy(kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/TextDefaults.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TextDefaults.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/TextDefaults.toString|toString(){}[0]
@@ -4651,6 +4669,10 @@ final object io.github.valerioisufi.pageboard.model.text/TextCleanup { // io.git
 
     final fun looksLikeMarkdown(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/TextCleanup.looksLikeMarkdown|looksLikeMarkdown(kotlin.String){}[0]
     final fun toMarkdown(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.model.text/TextCleanup.toMarkdown|toMarkdown(kotlin.String){}[0]
+}
+
+final object io.github.valerioisufi.pageboard.model.text/TextFonts { // io.github.valerioisufi.pageboard.model.text/TextFonts|null[0]
+    final fun byId(kotlin/String?): io.github.valerioisufi.pageboard.model.text/TextFont // io.github.valerioisufi.pageboard.model.text/TextFonts.byId|byId(kotlin.String?){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.model.text/TextRoom { // io.github.valerioisufi.pageboard.model.text/TextRoom|null[0]

@@ -867,6 +867,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun changeAlignment (Lio/github/valerioisufi/pageboard/model/TextAlignment;)V
 	public fun changeBackground (Ljava/lang/Integer;)V
 	public fun changeColor (I)V
+	public fun changeFontFamily (Ljava/lang/String;)V
 	public fun changeFontSize (F)V
 	public final fun finishEditing ()V
 	public final fun getActiveTextId ()Ljava/lang/String;
@@ -882,6 +883,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getChainGoesOn ()Z
 	public fun getCodeLineNumbers ()Z
 	public fun getColor ()I
+	public fun getFontFamily ()Ljava/lang/String;
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
 	public final fun getFormattedPaste ()Ljava/lang/String;
@@ -952,11 +954,13 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public abstract fun changeAlignment (Lio/github/valerioisufi/pageboard/model/TextAlignment;)V
 	public fun changeBackground (Ljava/lang/Integer;)V
 	public abstract fun changeColor (I)V
+	public fun changeFontFamily (Ljava/lang/String;)V
 	public abstract fun changeFontSize (F)V
 	public abstract fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public fun getBackground ()Ljava/lang/Integer;
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
+	public fun getFontFamily ()Ljava/lang/String;
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
 	public fun getHeadingLevel ()I
@@ -990,8 +994,10 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget$DefaultImpls {
 	public static fun applyTableAction (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;)V
 	public static fun changeBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/Integer;)V
+	public static fun changeFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/String;)V
 	public static fun getBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
+	public static fun getFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/String;
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getHeadingLevel (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)I
 	public static fun getInBulletList (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
@@ -1557,9 +1563,17 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextFace 
 	public static final field BOLD Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field BOLD_ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field JAKARTA_BOLD Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field JAKARTA_BOLD_ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field JAKARTA_ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field JAKARTA_REGULAR Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field MONO Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field MONO_BOLD Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field REGULAR Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field SERIF_BOLD Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field SERIF_BOLD_ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field SERIF_ITALIC Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
+	public static final field SERIF_REGULAR Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static final field SYMBOLS Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;

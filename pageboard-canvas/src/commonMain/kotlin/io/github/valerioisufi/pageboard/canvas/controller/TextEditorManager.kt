@@ -41,6 +41,7 @@ import io.github.valerioisufi.pageboard.model.text.PastedText
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextCleanup
 import io.github.valerioisufi.pageboard.model.text.TextDefaults
+import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import kotlin.math.abs
@@ -107,6 +108,9 @@ public class TextEditorManager internal constructor(private val controller: Page
         private set
 
     override var alignment: TextAlignment by mutableStateOf(TextAlignment.START)
+        private set
+
+    override var fontFamily: String? by mutableStateOf(null)
         private set
 
     override val takesBackground: Boolean get() = true
@@ -322,6 +326,7 @@ public class TextEditorManager internal constructor(private val controller: Page
         chainComesFrom = item != null && TextChains.of(controller.document).previous(item.id) != null
         goesOnInChain = item != null && TextChains.of(controller.document).next(item.id) != null
         alignment = item?.alignment ?: defaults.alignment
+        fontFamily = TextFonts.byId(item?.fontFamily ?: defaults.fontFamily).id
         caretRequest = caretAt
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
@@ -521,7 +526,7 @@ public class TextEditorManager internal constructor(private val controller: Page
             val addedElement = data.toElement().apply { layerId = controller.layers.writableActiveLayerId(page) }
             submit(AddElements.of(page, listOf(addedElement)))
         }
-        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
+        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment, fontFamily))
         resetSession()
         return true
     }
@@ -871,6 +876,14 @@ public class TextEditorManager internal constructor(private val controller: Page
         reportDraft()
     }
 
+    override fun changeFontFamily(fontFamily: String?) {
+        val normalized = TextFonts.byId(fontFamily).id
+        if (!isEditing || normalized == this.fontFamily) return
+        this.fontFamily = normalized
+        fitWidth()
+        reportDraft()
+    }
+
     /** The height (page millimeters) the editor lays the text out. */
     public fun reportLayoutHeight(heightMm: Float) {
         if (!isEditing || abs(heightMm - boxHeight) < HEIGHT_EPSILON_MM) return
@@ -1168,7 +1181,7 @@ public class TextEditorManager internal constructor(private val controller: Page
             controller.invalidatePageContent(page, it.getRotatedBounds())
         }
         if (changes.isNotEmpty()) submit(CompositeChange(changes))
-        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
+        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment, fontFamily))
         resetSession()
         if (caret != null) {
             // The box of the caret: its piece of the whole text
@@ -1257,6 +1270,7 @@ public class TextEditorManager internal constructor(private val controller: Page
         background = background,
         next = chainNext,
         continuesLine = chainContinuesLine,
+        fontFamily = fontFamily,
         versions = versions
     )
 

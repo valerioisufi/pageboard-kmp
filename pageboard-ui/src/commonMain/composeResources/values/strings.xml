@@ -326,4 +326,9 @@
     <string name="command_quick_pan">Quick Pan</string>
     <string name="quick_pan_active_hint">Quick Pan · Tap to exit</string>
     <string name="text_open_link">Open link</string>
+    <string name="text_font_family">Font</string>
+    <string name="text_font_sans">Sans</string>
+    <string name="text_font_jakarta">Jakarta</string>
+    <string name="text_font_mono">Mono</string>
+    <string name="text_font_serif">Serif</string>
 </resources>

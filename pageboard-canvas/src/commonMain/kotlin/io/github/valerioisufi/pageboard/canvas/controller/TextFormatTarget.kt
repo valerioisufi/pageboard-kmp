@@ -16,9 +16,13 @@ public interface TextFormatTarget {
     public val color: Int
     public val alignment: TextAlignment
 
+    /** The custom font family identifier (`null` for default sans). */
+    public val fontFamily: String? get() = null
+
     public fun changeFontSize(size: Float)
     public fun changeColor(argb: Int)
     public fun changeAlignment(newAlignment: TextAlignment)
+    public fun changeFontFamily(fontFamily: String?) {}
 
     /** Whether the caret of the text being written is in a table (see [TableEditing]). */
     public val inTable: Boolean get() = false

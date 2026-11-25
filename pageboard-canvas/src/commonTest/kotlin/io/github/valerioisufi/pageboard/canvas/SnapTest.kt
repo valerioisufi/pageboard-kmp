@@ -179,7 +179,8 @@ class SnapTest {
         assertEquals(30.3f, placement.spots.single()!!.box.left, 0.001f)
         assertTrue(controller.snapManager.guides.isEmpty())
 
-        assertTrue(placement.placeAt(Offset(nearAnchor.x, nearAnchor.y)))
+        val tapAway = controller.viewport.pageMmToScreen(0)!!.mapPoint(30.3f, 100f)
+        assertTrue(placement.placeAt(Offset(tapAway.x, tapAway.y)))
         assertEquals(30f, placed!!.box.left, 0.001f)
         assertTrue(controller.snapManager.guides.isEmpty())
     }

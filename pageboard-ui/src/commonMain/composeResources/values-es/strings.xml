@@ -325,4 +325,9 @@
     <string name="command_quick_pan">Desplazamiento rápido</string>
     <string name="quick_pan_active_hint">Desplazamiento rápido · Toca para salir</string>
     <string name="text_open_link">Abrir enlace</string>
+    <string name="text_font_family">Fuente</string>
+    <string name="text_font_sans">Sans</string>
+    <string name="text_font_jakarta">Jakarta</string>
+    <string name="text_font_mono">Mono</string>
+    <string name="text_font_serif">Serif</string>
 </resources>

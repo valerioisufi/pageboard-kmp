@@ -422,7 +422,8 @@ class TextEditingTest {
         editor.finishEditing()
         val page = controller.document.pages[0]
         val texts = page.texts
-        controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, page.widthMm, 0f, page.widthMm, page.heightMm, 0f, page.heightMm))
+        val lasso = floatArrayOf(0f, 0f, page.widthMm, 0f, page.widthMm, page.heightMm, 0f, page.heightMm)
+        controller.selectionManager.selectWithLasso(0, lasso)
         val group = assertNotNull(controller.textFormatTarget)
         assertFalse(group.isActive(RichTextEditing.Format.BOLD))
         group.toggle(RichTextEditing.Format.BOLD)
@@ -431,14 +432,31 @@ class TextEditingTest {
         controller.undo()
         assertEquals(listOf("One", "**Second**"), texts.map { it.text })
 
-        group.toggleHeading()
+        controller.selectionManager.selectWithLasso(0, lasso)
+        val group2 = assertNotNull(controller.textFormatTarget)
+        group2.toggleHeading()
         assertEquals(listOf("# One", "# **Second**"), texts.map { it.text })
-        assertTrue(group.inHeading)
-        group.toggleBulletList()
+        assertTrue(group2.inHeading)
+        group2.toggleBulletList()
         assertEquals(listOf("- One", "- **Second**"), texts.map { it.text })
-        assertTrue(group.inBulletList)
+        assertTrue(group2.inBulletList)
         controller.undo()
         assertEquals(listOf("# One", "# **Second**"), texts.map { it.text })
+
+        controller.selectionManager.selectWithLasso(0, lasso)
+        val group3 = assertNotNull(controller.textFormatTarget)
+        group3.changeFontFamily("jakarta")
+        assertEquals(listOf("jakarta", "jakarta"), texts.map { it.fontFamily })
+        assertEquals("jakarta", group3.fontFamily)
+        controller.undo()
+        assertEquals(listOf(null, null), texts.map { it.fontFamily })
+
+        editor.startNewText(0, 10f, 130f)
+        editor.changeFontFamily("serif")
+        editor.type("Serif note")
+        editor.finishEditing()
+        assertEquals("serif", controller.textDefaults.fontFamily)
+        assertEquals("serif", controller.document.pages[0].texts.last().fontFamily)
     }
 
     @Test

@@ -289,7 +289,7 @@ private fun AgentPages(agents: PencilNotesAgents?, engines: PageboardEngines) {
     // The exports of the models are drawn as the export sheet draws them
     val writers = remember(textAdapter, engines) {
         ExportWriters(
-            pdf = PdfExporter(textAdapter, NotesFontFiles::bytes, creator = "PencilNotes", elements = engines.elements, formulas = engines.formulas),
+            pdf = PdfExporter(textAdapter, NotesFontFiles::bytesOrNull, creator = "PencilNotes", elements = engines.elements, formulas = engines.formulas),
             image = PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements, images = engines.images)
         )
     }

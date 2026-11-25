@@ -61,6 +61,7 @@ import io.github.valerioisufi.pageboard.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.pageboard.ui.components.TextMarkupPresetButton
 import io.github.valerioisufi.pageboard.ui.components.TextMarkupSample
 import io.github.valerioisufi.pageboard.ui.components.textMarkupKindLabel
+import io.github.valerioisufi.pageboard.ui.editor.FontFamilyButton
 import io.github.valerioisufi.pageboard.ui.editor.TextAlignmentButtons
 import io.github.valerioisufi.pageboard.ui.generated.resources.*
 import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
@@ -226,6 +227,10 @@ internal fun ColumnScope.TextToolSettings(controller: PageboardController) {
             SettingLabel(stringResource(Res.string.draw_toolbar_label_font_size), modifier = Modifier.weight(1f))
             FontSizeControl(fontSizePt = defaults.fontSize, onFontSizeChange = defaults::changeFontSize)
         }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SettingLabel(stringResource(Res.string.text_font_family), modifier = Modifier.weight(1f))
+            FontFamilyButton(defaults)
+        }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SettingLabel(stringResource(Res.string.draw_toolbar_label_text_color))
             ColorSwatches(
@@ -255,9 +260,11 @@ private class TextDefaultsTarget(private val controller: PageboardController) : 
     override val fontSize: Float get() = controller.textDefaults.fontSize
     override val color: Int get() = controller.textDefaults.color
     override val alignment: TextAlignment get() = controller.textDefaults.alignment
+    override val fontFamily: String? get() = controller.textDefaults.fontFamily
     override fun changeFontSize(size: Float) = controller.updateTextDefaults(controller.textDefaults.copy(fontSize = size))
     override fun changeColor(argb: Int) = controller.updateTextDefaults(controller.textDefaults.copy(color = argb))
     override fun changeAlignment(newAlignment: TextAlignment) = controller.updateTextDefaults(controller.textDefaults.copy(alignment = newAlignment))
+    override fun changeFontFamily(fontFamily: String?) = controller.updateTextDefaults(controller.textDefaults.copy(fontFamily = fontFamily))
 }
 
 /**

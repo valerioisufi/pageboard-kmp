@@ -47,6 +47,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
+import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
@@ -887,9 +888,12 @@ public class SelectionManager internal constructor(private val controller: Pageb
         override val fontSize: Float get() = first.fontSize
         override val color: Int get() = first.color
         override val alignment: TextAlignment get() = first.alignment
+        override val fontFamily: String?
+            get() = texts.map { TextFonts.byId(it.fontFamily).id }.distinct().singleOrNull()
         override fun changeFontSize(size: Float) = updateSelectedTextsFontSize(size)
         override fun changeColor(argb: Int) = updateSelectedTextsColor(argb)
         override fun changeAlignment(newAlignment: TextAlignment) = updateSelectedTextsAlignment(newAlignment)
+        override fun changeFontFamily(fontFamily: String?) = updateSelectedTextsFontFamily(fontFamily)
         override val takesBackground: Boolean get() = true
         override val background: Int? get() = first.background
         override fun changeBackground(argb: Int?) = updateSelectedTextsBackground(argb)
@@ -1058,6 +1062,18 @@ public class SelectionManager internal constructor(private val controller: Pageb
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         controller.session.submit(UpdateTexts(page.id, selection.texts.map { it.toData().copy(alignment = alignment) }))
+        notifyChanged()
+    }
+
+    internal fun updateSelectedTextsFontFamily(fontFamily: String?) {
+        val selection = currentSelection ?: return
+        if (selection.texts.isEmpty()) return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        val normalized = TextFonts.byId(fontFamily).id
+        controller.session.submit(UpdateTexts(page.id, selection.texts.map { it.toData().copy(fontFamily = normalized) }))
+        if (selection.isSingleText) {
+            selection.boundingBox = selection.texts[0].frame()
+        }
         notifyChanged()
     }
 }

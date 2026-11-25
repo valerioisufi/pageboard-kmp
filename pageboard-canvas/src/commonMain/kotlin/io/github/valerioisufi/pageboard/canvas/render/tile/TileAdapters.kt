@@ -170,7 +170,7 @@ public class TextWord(
  */
 public class TextFormula(public val latex: String, public val color: Int, public val left: Float, public val top: Float, public val width: Float, public val height: Float)
 
-/** A face of the fonts of the notes: the text and its code (monospace), regular or bold, upright or italic, and its symbols. */
+/** A face of the fonts of the notes: sans, jakarta, serif, monospace (regular/bold/italic), and symbols. */
 public enum class TextFace {
     REGULAR,
     ITALIC,
@@ -178,7 +178,15 @@ public enum class TextFace {
     BOLD_ITALIC,
     MONO,
     MONO_BOLD,
-    SYMBOLS
+    SYMBOLS,
+    JAKARTA_REGULAR,
+    JAKARTA_ITALIC,
+    JAKARTA_BOLD,
+    JAKARTA_BOLD_ITALIC,
+    SERIF_REGULAR,
+    SERIF_ITALIC,
+    SERIF_BOLD,
+    SERIF_BOLD_ITALIC
 }
 
 /**

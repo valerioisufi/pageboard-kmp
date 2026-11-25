@@ -255,4 +255,21 @@ class ComposeTextTileAdapterTest {
         }
         assertEquals(null, adapter.linkAt(element, TextTileAdapter.NO_PAPER, Point(0.1f, 0.1f)))
     }
+
+    @Test
+    fun customFontFamiliesProduceExpectedFaces() {
+        val jakarta = TextElement().apply { text = "Hello **world**"; width = 100f; fontSize = 16f; fontFamily = "jakarta" }
+        val jakartaLayout = assertNotNull(adapter.layout(jakarta, TextTileAdapter.NO_PAPER))
+        assertEquals(TextFace.JAKARTA_REGULAR, jakartaLayout.words.first { it.text.trim() == "Hello" }.face)
+        assertEquals(TextFace.JAKARTA_BOLD, jakartaLayout.words.first { it.text.trim() == "world" }.face)
+
+        val mono = TextElement().apply { text = "Mono **bold**"; width = 100f; fontSize = 16f; fontFamily = "mono" }
+        val monoLayout = assertNotNull(adapter.layout(mono, TextTileAdapter.NO_PAPER))
+        assertEquals(TextFace.MONO, monoLayout.words.first { it.text.trim() == "Mono" }.face)
+        assertEquals(TextFace.MONO_BOLD, monoLayout.words.first { it.text.trim() == "bold" }.face)
+
+        val serif = TextElement().apply { text = "Serif"; width = 100f; fontSize = 16f; fontFamily = "serif" }
+        val serifLayout = assertNotNull(adapter.layout(serif, TextTileAdapter.NO_PAPER))
+        assertEquals(TextFace.SERIF_REGULAR, serifLayout.words.single().face)
+    }
 }

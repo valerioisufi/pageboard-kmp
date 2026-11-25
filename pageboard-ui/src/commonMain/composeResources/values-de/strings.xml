@@ -325,4 +325,9 @@
     <string name="command_quick_pan">Schnelles Schwenken</string>
     <string name="quick_pan_active_hint">Schnelles Schwenken · Zum Beenden tippen</string>
     <string name="text_open_link">Link öffnen</string>
+    <string name="text_font_family">Schriftart</string>
+    <string name="text_font_sans">Sans</string>
+    <string name="text_font_jakarta">Jakarta</string>
+    <string name="text_font_mono">Mono</string>
+    <string name="text_font_serif">Serif</string>
 </resources>

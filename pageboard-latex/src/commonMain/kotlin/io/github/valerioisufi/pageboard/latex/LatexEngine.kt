@@ -125,7 +125,7 @@ public class LatexEngine : FormulaRenderer {
         TextFace.BOLD -> FormulaFont.BOLD
         TextFace.ITALIC -> FormulaFont.ITALIC
         TextFace.BOLD_ITALIC -> FormulaFont.BOLD or FormulaFont.ITALIC
-        TextFace.MONO, TextFace.MONO_BOLD, TextFace.SYMBOLS -> null
+        else -> null
     }
 }
 

@@ -48,5 +48,6 @@ public data class TextDefaults(
     val fontSize: Float = 16f,
     // The black ink of the design
     val color: Int = 0xFF1A1C18.toInt(),
-    val alignment: TextAlignment = TextAlignment.START
+    val alignment: TextAlignment = TextAlignment.START,
+    val fontFamily: String? = null
 )

@@ -844,6 +844,11 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_table (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_family (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_jakarta (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_mono (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_sans (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_serif (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_size_points (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_highlight (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -1041,13 +1046,16 @@ public final class io/github/valerioisufi/pageboard/ui/theme/NotesFontFiles {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/ui/theme/NotesFontFiles;
 	public final fun bytes (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun bytesOrNull (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/theme/NotesFonts {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun familyFor (Ljava/lang/String;)Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getJakarta ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getStrutAbove ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getStrutBelow ()Landroidx/compose/ui/text/font/FontFamily;

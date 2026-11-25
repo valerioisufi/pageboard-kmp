@@ -42,6 +42,8 @@ import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.text.TextBackground
+import io.github.valerioisufi.pageboard.model.text.TextFont
+import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.model.text.TextRoom
 import io.github.valerioisufi.pageboard.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.pageboard.model.text.code.BuiltInCodeHighlighter
@@ -117,11 +119,12 @@ public class ComposeTextTileAdapter(
         val widthPx: Int,
         val color: Int,
         val alignment: TextAlignment,
-        val paper: Int
+        val paper: Int,
+        val fontFamily: String? = null
     )
 
     /** What the size of a text depends on (see [measure]). */
-    private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment)
+    private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment, val fontFamily: String? = null)
 
     /**
      * A text laid out: its [layout], its [formulas] and [codeBlocks] over their characters, the
@@ -168,7 +171,7 @@ public class ComposeTextTileAdapter(
     }
 
     private fun sizeOf(text: TextElement): TextBlockSize =
-        sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment)) { measureLayout(text) }
+        sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment, TextFonts.byId(text.fontFamily).id)) { measureLayout(text) }
 
     /**
      * [text] as it is laid out and drawn, with where its box is along its lines: a text following
@@ -254,7 +257,8 @@ public class ComposeTextTileAdapter(
         }
         for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
         for (bar in prepared.bars) boxes += bar.rect.translate(left, 0f).toBox(bar.radius, prepared.barColor, scale)
-        addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
+        val baseFont = TextFonts.byId(text.fontFamily)
+        addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false, baseFont = baseFont), scale, left, 0f, words)
         val formulas = prepared.allFormulas.map { (formula, rect) ->
             val box = rect.translate(left, 0f)
             TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
@@ -263,7 +267,7 @@ public class ComposeTextTileAdapter(
             val origin = layout.tableOrigin(table) + Offset(left, 0f)
             for ((rect, color) in table.layout.backgrounds()) boxes += rect.translate(origin).toBox(0f, color, scale)
             for (cell in table.layout.cells) {
-                addWords(cell.layout, CharStyles(cell.layout.layoutInput.text, text.color, fontPx, mono = false), scale, origin.x + cell.left, origin.y + cell.top, words)
+                addWords(cell.layout, CharStyles(cell.layout.layoutInput.text, text.color, fontPx, mono = false, baseFont = baseFont), scale, origin.x + cell.left, origin.y + cell.top, words)
             }
         }
         for (codeBlock in prepared.codeBlocks) {
@@ -392,7 +396,13 @@ public class ComposeTextTileAdapter(
      * [baseSizePx], in the monospace when [mono]), a later span over an earlier one. The spans are
      * applied once each: the spans of a text nest only a few deep, so the work is linear.
      */
-    private inner class CharStyles(shown: AnnotatedString, baseColor: Int, baseSizePx: Float, mono: Boolean) {
+    private inner class CharStyles(
+        shown: AnnotatedString,
+        baseColor: Int,
+        baseSizePx: Float,
+        mono: Boolean,
+        private val baseFont: TextFont = TextFont.SANS
+    ) {
         private val bold = BooleanArray(shown.length)
         private val italic = BooleanArray(shown.length)
         private val monospace = BooleanArray(shown.length) { mono }
@@ -430,8 +440,27 @@ public class ComposeTextTileAdapter(
             val face = when {
                 symbol[index] -> TextFace.SYMBOLS
                 monospace[index] -> if (bold[index]) TextFace.MONO_BOLD else TextFace.MONO
-                bold[index] -> if (italic[index]) TextFace.BOLD_ITALIC else TextFace.BOLD
-                else -> if (italic[index]) TextFace.ITALIC else TextFace.REGULAR
+                else -> when (baseFont) {
+                    TextFont.JAKARTA -> when {
+                        bold[index] && italic[index] -> TextFace.JAKARTA_BOLD_ITALIC
+                        bold[index] -> TextFace.JAKARTA_BOLD
+                        italic[index] -> TextFace.JAKARTA_ITALIC
+                        else -> TextFace.JAKARTA_REGULAR
+                    }
+                    TextFont.MONO -> if (bold[index]) TextFace.MONO_BOLD else TextFace.MONO
+                    TextFont.SERIF -> when {
+                        bold[index] && italic[index] -> TextFace.SERIF_BOLD_ITALIC
+                        bold[index] -> TextFace.SERIF_BOLD
+                        italic[index] -> TextFace.SERIF_ITALIC
+                        else -> TextFace.SERIF_REGULAR
+                    }
+                    TextFont.SANS -> when {
+                        bold[index] && italic[index] -> TextFace.BOLD_ITALIC
+                        bold[index] -> TextFace.BOLD
+                        italic[index] -> TextFace.ITALIC
+                        else -> TextFace.REGULAR
+                    }
+                }
             }
             return WordStyle(face, sizePx[index], color[index], strikethrough[index], underline[index])
         }
@@ -462,7 +491,8 @@ public class ComposeTextTileAdapter(
             widthPx = widthPx,
             color = text.color,
             alignment = text.alignment,
-            paper = paperColor
+            paper = paperColor,
+            fontFamily = TextFonts.byId(text.fontFamily).id
         )
         val prepared = layouts.getOrPut(key) { prepare(text, fontPx, widthPx, paperColor) }
 
@@ -517,17 +547,18 @@ public class ComposeTextTileAdapter(
         canvas.restore()
     }
 
-    private fun baseStyle(color: Color, fontPx: Float, align: TextAlign) = TextStyle(
+    private fun baseStyle(color: Color, fontPx: Float, align: TextAlign, fontFamily: FontFamily = fonts.text) = TextStyle(
         color = color,
         fontSize = fontPx.sp,
-        fontFamily = fonts.text,
+        fontFamily = fontFamily,
         letterSpacing = 0.sp,
         textAlign = align
     )
 
     private fun prepare(text: TextElement, fontPx: Float, widthPx: Int, paperColor: Int): PreparedText {
         val color = Color(text.color)
-        val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign())
+        val family = fonts.familyFor(text.fontFamily)
+        val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign(), family)
         val formulaSizes = HashMap<ImageBitmap, Float>()
         val presentation = Presentation(
             fontSizePx = fontPx,

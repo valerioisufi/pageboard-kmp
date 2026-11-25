@@ -636,8 +636,10 @@ final class io.github.valerioisufi.pageboard.ui.theme/CanvasColors { // io.githu
 }
 
 final class io.github.valerioisufi.pageboard.ui.theme/NotesFonts { // io.github.valerioisufi.pageboard.ui.theme/NotesFonts|null[0]
-    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ...) // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?){}[0]
+    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily = ...) // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily){}[0]
 
+    final val jakarta // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.jakarta|{}jakarta[0]
+        final fun <get-jakarta>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.jakarta.<get-jakarta>|<get-jakarta>(){}[0]
     final val monospace // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.monospace|{}monospace[0]
         final fun <get-monospace>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.monospace.<get-monospace>|<get-monospace>(){}[0]
     final val strutAbove // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.strutAbove|{}strutAbove[0]
@@ -648,6 +650,8 @@ final class io.github.valerioisufi.pageboard.ui.theme/NotesFonts { // io.github.
         final fun <get-symbols>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.symbols.<get-symbols>|<get-symbols>(){}[0]
     final val text // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.text|{}text[0]
         final fun <get-text>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.text.<get-text>|<get-text>(){}[0]
+
+    final fun familyFor(kotlin/String?): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.familyFor|familyFor(kotlin.String?){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.Companion|null[0]
         final val System // io.github.valerioisufi.pageboard.ui.theme/NotesFonts.Companion.System|{}System[0]
@@ -725,6 +729,7 @@ final object io.github.valerioisufi.pageboard.ui.theme/InkPalette { // io.github
 
 final object io.github.valerioisufi.pageboard.ui.theme/NotesFontFiles { // io.github.valerioisufi.pageboard.ui.theme/NotesFontFiles|null[0]
     final suspend fun bytes(io.github.valerioisufi.pageboard.canvas.render.tile/TextFace): kotlin/ByteArray // io.github.valerioisufi.pageboard.ui.theme/NotesFontFiles.bytes|bytes(io.github.valerioisufi.pageboard.canvas.render.tile.TextFace){}[0]
+    final suspend fun bytesOrNull(io.github.valerioisufi.pageboard.canvas.render.tile/TextFace): kotlin/ByteArray? // io.github.valerioisufi.pageboard.ui.theme/NotesFontFiles.bytesOrNull|bytesOrNull(io.github.valerioisufi.pageboard.canvas.render.tile.TextFace){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.ui.theme/PageboardIcons { // io.github.valerioisufi.pageboard.ui.theme/PageboardIcons|null[0]
@@ -1519,6 +1524,16 @@ final val io.github.valerioisufi.pageboard.ui.generated.resources/text_editor_ac
     final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_editor_action_table>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_editor_action_table.<get-text_editor_action_table>|<get-text_editor_action_table>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
 final val io.github.valerioisufi.pageboard.ui.generated.resources/text_editor_formula_invalid // io.github.valerioisufi.pageboard.ui.generated.resources/text_editor_formula_invalid|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_editor_formula_invalid[0]
     final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_editor_formula_invalid>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_editor_formula_invalid.<get-text_editor_formula_invalid>|<get-text_editor_formula_invalid>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_family // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_family|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_family[0]
+    final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_family>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_family.<get-text_font_family>|<get-text_font_family>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_jakarta // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_jakarta|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_jakarta[0]
+    final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_jakarta>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_jakarta.<get-text_font_jakarta>|<get-text_font_jakarta>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_mono // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_mono|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_mono[0]
+    final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_mono>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_mono.<get-text_font_mono>|<get-text_font_mono>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_sans // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_sans|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_sans[0]
+    final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_sans>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_sans.<get-text_font_sans>|<get-text_font_sans>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
+final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_serif // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_serif|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_serif[0]
+    final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_serif>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_serif.<get-text_font_serif>|<get-text_font_serif>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
 final val io.github.valerioisufi.pageboard.ui.generated.resources/text_font_size_points // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_size_points|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_font_size_points[0]
     final fun (io.github.valerioisufi.pageboard.ui.generated.resources/Res.string).<get-text_font_size_points>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.pageboard.ui.generated.resources/text_font_size_points.<get-text_font_size_points>|<get-text_font_size_points>@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string(){}[0]
 final val io.github.valerioisufi.pageboard.ui.generated.resources/text_markup_highlight // io.github.valerioisufi.pageboard.ui.generated.resources/text_markup_highlight|@io.github.valerioisufi.pageboard.ui.generated.resources.Res.string{}text_markup_highlight[0]

@@ -253,6 +253,30 @@ class PdfExporterTest {
     }
 
     @Test
+    fun customFontsExportReadablePdfText() = runBlocking {
+        val document = Document(title = "Fonts")
+        document.pages[0].add(TextElement().apply {
+            text = "Jakarta **Strong**"
+            x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 18f; fontFamily = "jakarta"
+        })
+        document.pages[0].add(TextElement().apply {
+            text = "MonoText"
+            x = 15f; y = 45f; width = 170f; height = 20f; fontSize = 18f; fontFamily = "mono"
+        })
+        document.pages[0].add(TextElement().apply {
+            text = "SerifRaster"
+            x = 15f; y = 70f; width = 170f; height = 20f; fontSize = 18f; fontFamily = "serif"
+        })
+        val pdf = tempFile("custom-fonts", ".pdf")
+        PdfExporter(textAdapter, fontFiles = { face -> NOTES_FILES[face] }, formulas = LATEX)
+            .export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
+            assertTrue("Jakarta Strong" in read && "MonoText" in read, read)
+        }
+    }
+
+    @Test
     fun theCharactersOutOfTheFontAreImagesOfTheirWords() = runBlocking {
         val document = Document(title = "Emoji")
         document.pages[0].add(TextElement().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
@@ -598,7 +622,9 @@ class PdfExporterTest {
             TextFace.BOLD_ITALIC to "noto_sans_bold_italic",
             TextFace.MONO to "noto_sans_mono_regular",
             TextFace.MONO_BOLD to "noto_sans_mono_bold",
-            TextFace.SYMBOLS to "notes_symbols"
+            TextFace.SYMBOLS to "notes_symbols",
+            TextFace.JAKARTA_REGULAR to "plus_jakarta_sans_regular",
+            TextFace.JAKARTA_BOLD to "plus_jakarta_sans_bold"
         ).mapValues { (_, name) -> File("../pageboard-ui/src/commonMain/composeResources/font/$name.ttf").readBytes() }
 
         /** The fonts of the notes, as the editor draws them. */
@@ -613,7 +639,11 @@ class PdfExporterTest {
                 PlatformFont("noto-mono", NOTES_FILES.getValue(TextFace.MONO), FontWeight.Normal),
                 PlatformFont("noto-mono-bold", NOTES_FILES.getValue(TextFace.MONO_BOLD), FontWeight.Bold)
             ),
-            symbols = FontFamily(PlatformFont("notes-symbols", NOTES_FILES.getValue(TextFace.SYMBOLS)))
+            symbols = FontFamily(PlatformFont("notes-symbols", NOTES_FILES.getValue(TextFace.SYMBOLS))),
+            jakarta = FontFamily(
+                PlatformFont("jakarta-regular", NOTES_FILES.getValue(TextFace.JAKARTA_REGULAR), FontWeight.Normal, FontStyle.Normal),
+                PlatformFont("jakarta-bold", NOTES_FILES.getValue(TextFace.JAKARTA_BOLD), FontWeight.Bold, FontStyle.Normal)
+            )
         )
 
         /** The formulas of the texts, written as vectors. */

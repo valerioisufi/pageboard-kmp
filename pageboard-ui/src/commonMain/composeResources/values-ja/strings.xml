@@ -320,4 +320,9 @@
     <string name="command_quick_pan">クイックパン</string>
     <string name="quick_pan_active_hint">クイックパン · タップして終了</string>
     <string name="text_open_link">リンクを開く</string>
+    <string name="text_font_family">フォント</string>
+    <string name="text_font_sans">Sans</string>
+    <string name="text_font_jakarta">Jakarta</string>
+    <string name="text_font_mono">Mono</string>
+    <string name="text_font_serif">Serif</string>
 </resources>

@@ -192,7 +192,8 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     // The formula the caret is in: drawn in its place while its source is written, its last image
     // kept while what is typed cannot be rendered
     val writing = remember { FormulaBeingWritten() }
-    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
+    val bodyFont = remember(notesFonts, editor.fontFamily) { notesFonts.familyFor(editor.fontFamily) }
+    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont) {
         formulaSizes.clear()
         val selection = value.selection
         val atCaret = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.FORMULA && selection.min > it.start && selection.max < it.end }
@@ -226,12 +227,12 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             },
             // The list items and their blocks where the page draws them
             measurePrefix = { prefix ->
-                codeMeasurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
+                codeMeasurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = bodyFont, letterSpacing = 0.sp), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             },
             // The tables laid out as the page lays them out
             measureText = { cell, cellWidth, alignment ->
-                TableLayout.measureCell(codeMeasurer, cell, TextStyle(color = textColor, fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), cellWidth, alignment)
+                TableLayout.measureCell(codeMeasurer, cell, TextStyle(color = textColor, fontSize = fontSizePx.sp, fontFamily = bodyFont, letterSpacing = 0.sp), cellWidth, alignment)
             },
             paperColor = paper
         ) { latex, sizePx -> room(latex, sizePx) }
@@ -643,7 +644,7 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             textStyle = TextStyle(
                 color = textColor,
                 fontSize = fontSizeSp,
-                fontFamily = notesFonts.text,
+                fontFamily = bodyFont,
                 letterSpacing = 0.sp,
                 lineHeight = TextUnit.Unspecified,
                 textAlign = editor.alignment.toTextAlign()

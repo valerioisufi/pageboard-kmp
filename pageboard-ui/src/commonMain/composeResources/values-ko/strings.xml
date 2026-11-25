@@ -320,4 +320,9 @@
     <string name="command_quick_pan">빠른 이동</string>
     <string name="quick_pan_active_hint">빠른 이동 · 탭하여 종료</string>
     <string name="text_open_link">링크 열기</string>
+    <string name="text_font_family">글꼴</string>
+    <string name="text_font_sans">Sans</string>
+    <string name="text_font_jakarta">Jakarta</string>
+    <string name="text_font_mono">Mono</string>
+    <string name="text_font_serif">Serif</string>
 </resources>

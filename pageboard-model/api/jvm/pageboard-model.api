@@ -4085,16 +4085,18 @@ public final class io/github/valerioisufi/pageboard/model/text/TextCleanup {
 public final class io/github/valerioisufi/pageboard/model/text/TextDefaults {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/text/TextDefaults$Companion;
 	public fun <init> ()V
-	public fun <init> (FILio/github/valerioisufi/pageboard/model/TextAlignment;)V
-	public synthetic fun <init> (FILio/github/valerioisufi/pageboard/model/TextAlignment;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (FILio/github/valerioisufi/pageboard/model/TextAlignment;Ljava/lang/String;)V
+	public synthetic fun <init> (FILio/github/valerioisufi/pageboard/model/TextAlignment;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()F
 	public final fun component2 ()I
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
-	public final fun copy (FILio/github/valerioisufi/pageboard/model/TextAlignment;)Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/text/TextDefaults;FILio/github/valerioisufi/pageboard/model/TextAlignment;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (FILio/github/valerioisufi/pageboard/model/TextAlignment;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/text/TextDefaults;FILio/github/valerioisufi/pageboard/model/TextAlignment;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public final fun getColor ()I
+	public final fun getFontFamily ()Ljava/lang/String;
 	public final fun getFontSize ()F
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -4113,6 +4115,22 @@ public final synthetic class io/github/valerioisufi/pageboard/model/text/TextDef
 
 public final class io/github/valerioisufi/pageboard/model/text/TextDefaults$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/TextFont : java/lang/Enum {
+	public static final field JAKARTA Lio/github/valerioisufi/pageboard/model/text/TextFont;
+	public static final field MONO Lio/github/valerioisufi/pageboard/model/text/TextFont;
+	public static final field SANS Lio/github/valerioisufi/pageboard/model/text/TextFont;
+	public static final field SERIF Lio/github/valerioisufi/pageboard/model/text/TextFont;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getId ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/text/TextFont;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/model/text/TextFont;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/TextFonts {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/TextFonts;
+	public final fun byId (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/text/TextFont;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/TextRoom {
