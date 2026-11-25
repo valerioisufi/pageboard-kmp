@@ -384,7 +384,9 @@ public class TextEditorManager internal constructor(private val controller: Page
             y = (middle.y - height / 2f).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f)),
             width = width
         )
-        val text = inItsRoom(box, page).toElement()
+        val text = inItsRoom(box, page).toElement().apply {
+            layerId = controller.layers.writableActiveLayerId(page)
+        }
         controller.session.submit(AddElements.of(page, listOf(text)))
         controller.selectionManager.selectText(pageIndex, text)
     }
@@ -436,7 +438,8 @@ public class TextEditorManager internal constructor(private val controller: Page
         if (existing == null) {
             // Kept out of the tiles while written, as a text changed is
             controller.hiddenElements.setDragged(listOf(data.id), true)
-            submit(AddElements.of(page, listOf(data.toElement())))
+            val addedElement = data.toElement().apply { layerId = controller.layers.writableActiveLayerId(page) }
+            submit(AddElements.of(page, listOf(addedElement)))
             val added = page.texts.firstOrNull { it.id == data.id }
             if (added == null) {
                 controller.hiddenElements.setDragged(listOf(data.id), false)
@@ -515,7 +518,8 @@ public class TextEditorManager internal constructor(private val controller: Page
                 submit(UpdateTexts(page.id, listOf(data)))
             }
         } else {
-            submit(AddElements.of(page, listOf(data.toElement())))
+            val addedElement = data.toElement().apply { layerId = controller.layers.writableActiveLayerId(page) }
+            submit(AddElements.of(page, listOf(addedElement)))
         }
         controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
         resetSession()

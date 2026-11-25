@@ -23,6 +23,7 @@ import io.github.valerioisufi.pageboard.model.change.TextPlacement
 import io.github.valerioisufi.pageboard.model.change.ChangeEffects
 import io.github.valerioisufi.pageboard.model.change.CompositeChange
 import io.github.valerioisufi.pageboard.model.change.CopiedElements
+import io.github.valerioisufi.pageboard.model.change.LockElements
 import io.github.valerioisufi.pageboard.model.change.PlaceElements
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.change.Placement
@@ -31,6 +32,7 @@ import io.github.valerioisufi.pageboard.model.change.ReorderElements
 import io.github.valerioisufi.pageboard.model.change.StackMove
 import io.github.valerioisufi.pageboard.model.change.StrokePlacement
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
+import io.github.valerioisufi.pageboard.model.change.UpsertPageLayer
 import io.github.valerioisufi.pageboard.model.change.copyElements
 import io.github.valerioisufi.pageboard.model.change.pasteInto
 import io.github.valerioisufi.pageboard.model.change.placementOf
@@ -178,6 +180,7 @@ public class SelectionManager internal constructor(private val controller: Pageb
 
         if (lassoMode != LassoMode.IMAGES_ONLY) {
             for (stroke in page.strokes) {
+                if (!page.isElementVisible(stroke) || page.isElementLocked(stroke)) continue
                 val b = stroke.bounds
                 if (b.left >= lassoBox.right || lassoBox.left >= b.right || b.top >= lassoBox.bottom || lassoBox.top >= b.bottom) continue
                 if (HitTesting.meshIntersectsPolygon(stroke.mesh, lasso, lassoBox)) {
@@ -186,6 +189,7 @@ public class SelectionManager internal constructor(private val controller: Pageb
                 }
             }
             for (text in page.texts) {
+                if (!page.isElementVisible(text) || page.isElementLocked(text)) continue
                 if (isItemInsideLasso(text.centerX, text.centerY, text.getRotatedBounds(), lasso, lassoBox)) {
                     controller.presence.writerOf(text)?.let { writer ->
                         controller.presence.refuseEdit(writer)
@@ -197,12 +201,14 @@ public class SelectionManager internal constructor(private val controller: Pageb
             }
         }
         for (image in page.images) {
+            if (!page.isElementVisible(image) || page.isElementLocked(image)) continue
             if (isItemInsideLasso(image.centerX, image.centerY, image.getRotatedBounds(), lasso, lassoBox)) {
                 selection.images.add(image)
                 include(image.getRotatedBounds())
             }
         }
         for (element in page.customElements) {
+            if (!page.isElementVisible(element) || page.isElementLocked(element)) continue
             if (isItemInsideLasso(element.centerX, element.centerY, element.getRotatedBounds(), lasso, lassoBox)) {
                 selection.customs.add(element)
                 include(element.getRotatedBounds())
@@ -241,8 +247,9 @@ public class SelectionManager internal constructor(private val controller: Pageb
      * Selects a single image (long press on an image).
      */
     internal fun selectImage(pageIndex: Int, image: ImageElement) {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        if (!page.isElementVisible(image) || page.isElementLocked(image)) return
         clearSelection()
-        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             images = mutableListOf(image),
             boundingBox = Rect(image.x, image.y, image.x + image.width, image.y + image.height),
@@ -255,8 +262,9 @@ public class SelectionManager internal constructor(private val controller: Pageb
      * Selects a single element of a type of the application (a tap on it).
      */
     internal fun selectCustomElement(pageIndex: Int, element: CustomElement) {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        if (!page.isElementVisible(element) || page.isElementLocked(element)) return
         clearSelection()
-        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             customs = mutableListOf(element),
             boundingBox = Rect(element.x, element.y, element.x + element.width, element.y + element.height),
@@ -282,18 +290,114 @@ public class SelectionManager internal constructor(private val controller: Pageb
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
     public fun selectText(pageIndex: Int, text: TextElement) {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        if (!page.isElementVisible(text) || page.isElementLocked(text)) return
         controller.presence.writerOf(text)?.let { writer ->
             controller.presence.refuseEdit(writer)
             return
         }
         clearSelection()
-        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             texts = mutableListOf(text),
             boundingBox = text.frame(),
             pageIndex = pageIndex
         ).apply { baseRotation = text.rotation }
         setSelection(selection)
+    }
+
+    /** Selects a single stroke on [pageIndex] unless locked or hidden. */
+    internal fun selectStroke(pageIndex: Int, stroke: StrokeElement) {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        if (!page.isElementVisible(stroke) || page.isElementLocked(stroke)) return
+        clearSelection()
+        setSelection(SelectionGroup(strokes = mutableListOf(stroke), boundingBox = stroke.bounds, pageIndex = pageIndex))
+    }
+
+    /** Selects [element] on [pageIndex] when unlocked and visible. */
+    internal fun selectElement(pageIndex: Int, element: PageElement) {
+        when (element) {
+            is CustomElement -> selectCustomElement(pageIndex, element)
+            is ImageElement -> selectImage(pageIndex, element)
+            is TextElement -> selectText(pageIndex, element)
+            is StrokeElement -> selectStroke(pageIndex, element)
+            else -> Unit
+        }
+    }
+
+    /**
+     * All visible elements at [pageMm] on [pageIndex] ordered top-to-bottom along [Page.stack].
+     */
+    internal fun hitTestStack(pageIndex: Int, pageMm: Offset, strokeToleranceMm: Float): List<PageElement> {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return emptyList()
+        val elements = controller.engines.elements
+        return page.stack.asReversed().filter { element ->
+            if (!page.isElementVisible(element)) return@filter false
+            when (element) {
+                is CustomElement -> elements.hits(element, pageMm.x, pageMm.y)
+                is ImageElement -> element.containsPoint(pageMm.x, pageMm.y)
+                is TextElement -> element.containsPoint(pageMm.x, pageMm.y)
+                is StrokeElement -> {
+                    val b = element.bounds
+                    pageMm.x in (b.left - strokeToleranceMm)..(b.right + strokeToleranceMm) &&
+                        pageMm.y in (b.top - strokeToleranceMm)..(b.bottom + strokeToleranceMm) &&
+                        HitTesting.meshIntersectsCapsule(element.mesh, pageMm.x, pageMm.y, pageMm.x, pageMm.y, strokeToleranceMm)
+                }
+                else -> false
+            }
+        }
+    }
+
+    /** Whether at least one unlocked element is selected and can be locked. */
+    public fun canLockSelection(): Boolean {
+        selectionVersion
+        val selection = currentSelection ?: return false
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return false
+        return selection.elements().any { !page.isElementLocked(it) }
+    }
+
+    /**
+     * Locks or unlocks all elements in the current selection; when locking, clears the active
+     * selection because locked elements cannot remain interactive.
+     */
+    public fun lockSelection(locked: Boolean = true): Boolean {
+        val selection = currentSelection ?: return false
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return false
+        val ids = selection.elements().map { it.id }
+        if (ids.isEmpty()) return false
+        controller.session.submit(LockElements(page.id, ids, locked)) ?: return false
+        if (locked) clearSelection() else notifyChanged()
+        return true
+    }
+
+    /**
+     * Unlocks [element] (clearing direct lock and/or a locking layer on [page]) and dismisses any
+     * open context menu.
+     */
+    public fun unlockElement(page: Page, element: PageElement): Boolean {
+        val changes = mutableListOf<io.github.valerioisufi.pageboard.model.change.DocumentChange>()
+        if (element.locked) changes += LockElements(page.id, listOf(element.id), false)
+        val layer = element.layerId?.let { page.findLayer(it) }
+        if (layer != null && layer.locked) {
+            changes += UpsertPageLayer(page.id, layer.toData().copy(locked = false))
+        }
+        if (changes.isEmpty()) return false
+        val combined = changes.singleOrNull() ?: CompositeChange(changes)
+        controller.session.submit(combined) ?: return false
+        controller.lockedElementForMenu = null
+        controller.contextMenuPosition = null
+        return true
+    }
+
+    /** Drops the selection if any of its elements was removed, hidden by a layer, or locked. */
+    internal fun pruneUnavailable() {
+        val selection = currentSelection ?: return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: run {
+            clearSelection()
+            return
+        }
+        if (selection.elements().any { page.find(it.id) == null || !page.isElementVisible(it) || page.isElementLocked(it) }) {
+            clearSelection()
+        }
     }
 
     /** Drops a selection that changes made on another device made stale. */
@@ -423,6 +527,8 @@ public class SelectionManager internal constructor(private val controller: Pageb
 
     public fun beginTransformation() {
         val selection = currentSelection ?: return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        if (selection.elements().any { page.isElementLocked(it) }) return
         lift(selection)
         selection.captureOriginalStates()
         moveStart = Matrix2D(selection.transform)
@@ -551,6 +657,12 @@ public class SelectionManager internal constructor(private val controller: Pageb
     private fun transform(selection: SelectionGroup) {
         val doc = controller.document
         val oldPage = doc.pages.getOrNull(selection.pageIndex) ?: return
+        if (selection.elements().any { oldPage.isElementLocked(it) }) {
+            selection.transform.reset()
+            selection.originalPlacements = null
+            moveStart = null
+            return
+        }
         val original = selection.originalPlacements ?: return
         selection.originalPlacements = null
         moveStart = null
@@ -663,10 +775,11 @@ public class SelectionManager internal constructor(private val controller: Pageb
     public fun deleteSelection() {
         val selection = currentSelection ?: return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        val deletable = selection.elements().filterNot { page.isElementLocked(it) }
         currentSelection = null
         selection.isLifted = false
         selection.setDragging(controller.hiddenElements, false)
-        controller.session.submit(RemoveElements.of(page, selection.elements()))
+        if (deletable.isNotEmpty()) controller.session.submit(RemoveElements.of(page, deletable))
         notifyChanged()
     }
 

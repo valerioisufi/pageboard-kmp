@@ -193,6 +193,9 @@ internal class CanvasGestureHandler(
     private var lastVertexTapTime = 0L
     private var lastVertexTapIndex = -1
     private var activeGuideHit: GeometryGuidesManager.GuideHit? = null
+    private var lastLongPressPageId: String? = null
+    private var lastLongPressScreenPos: Offset? = null
+    private var lastLongPressElementId: String? = null
 
     /** The gesture dropped a selection: a tap of the shapes tool only drops it. */
     private var droppedSelection = false
@@ -399,7 +402,7 @@ internal class CanvasGestureHandler(
         velocityTracker.addPosition(change.uptimeMillis, position)
         change.consume()
 
-        controller.contextMenuPosition = null
+        controller.dismissContextMenu()
         controller.viewport.camera.stopAllAnimations()
 
         val isStylus = change.type == PointerType.Stylus || change.type == PointerType.Eraser
@@ -455,7 +458,7 @@ internal class CanvasGestureHandler(
 
         if (isMouse && event.buttons.isSecondaryPressed) {
             mode = Mode.IGNORED
-            showContextMenu(position)
+            showContextMenu(position, fromLongPress = false)
             return
         }
         if (isMouse && event.buttons.isTertiaryPressed) {
@@ -1175,7 +1178,7 @@ internal class CanvasGestureHandler(
         val elements = controller.engines.elements
         val shape = page.stack.lastOrNull { element ->
             element is CustomElement && element.type == ShapeElementType.id &&
-                !controller.hiddenElements.isHidden(element.id) && elements.hits(element, at.x, at.y)
+                !page.isElementLocked(element) && !controller.hiddenElements.isHidden(element.id) && elements.hits(element, at.x, at.y)
         } as? CustomElement ?: return null
         return pageIndex to shape
     }
@@ -1236,35 +1239,65 @@ internal class CanvasGestureHandler(
             controller.viewport.camera.stopAllAnimations()
             return
         }
-        if (controller.isDrawingMode && !controller.toolManager.isPanTool) showContextMenu(downPosition)
+        if (controller.isDrawingMode && !controller.toolManager.isPanTool) showContextMenu(downPosition, fromLongPress = true)
     }
 
     /**
-     * Opens the context menu at [position]: the menu of the selection over it, or of the element
-     * under it (the topmost image, element of an application or text, selected), else of the page.
+     * Opens the context menu at [position]: on repeated long-press at the same spot ([fromLongPress]),
+     * cycles downward through overlapping unlocked elements in stack order (`top -> middle -> bottom
+     * -> wrap`); exposes a locked element target for Unlock when present under the pointer.
      */
-    private fun showContextMenu(position: Offset) {
+    private fun showContextMenu(position: Offset, fromLongPress: Boolean) {
         val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return
         controller.pageManager.contextMenuTargetPageIndex = pageIndex
         val page = controller.document.pages.getOrNull(pageIndex)
         val mm = controller.viewport.screenToPageMm(pageIndex, position)
+        controller.lockedElementForMenu = null
         val selection = controller.selectionManager.currentSelection
         val onSelection = selection != null && SelectionFrame.compute(controller, selection)?.contains(position) == true
-        if (!onSelection && page != null && mm != null) {
-            val elements = controller.engines.elements
-            val hit = page.stack.lastOrNull { element ->
-                when (element) {
-                    is CustomElement -> elements.hits(element, mm.x, mm.y)
-                    is ImageElement -> element.containsPoint(mm.x, mm.y)
-                    is TextElement -> element.containsPoint(mm.x, mm.y)
-                    else -> false
+        if (page != null && mm != null) {
+            val density = controller.viewport.density
+            val pxPerMm = controller.viewport.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
+            val strokeToleranceMm = STACK_CYCLE_STROKE_DP * density / pxPerMm
+            val hits = controller.selectionManager.hitTestStack(pageIndex, mm, strokeToleranceMm)
+            val prevPos = lastLongPressScreenPos
+            val isRepeatedSameSpot = fromLongPress &&
+                lastLongPressPageId == page.id &&
+                prevPos != null &&
+                (position - prevPos).getDistance() <= STACK_CYCLE_RADIUS_DP * density
+            val topLocked = hits.firstOrNull()?.takeIf { page.isElementLocked(it) }
+            val unlockedHits = hits.filterNot { page.isElementLocked(it) }
+            if (topLocked != null) controller.lockedElementForMenu = page to topLocked
+            when {
+                isRepeatedSameSpot && unlockedHits.isNotEmpty() -> {
+                    val currentIdx = unlockedHits.indexOfFirst { it.id == lastLongPressElementId }
+                    val nextIdx = if (currentIdx >= 0) (currentIdx + 1) % unlockedHits.size else 0
+                    val picked = unlockedHits[nextIdx]
+                    lastLongPressPageId = page.id
+                    lastLongPressScreenPos = position
+                    lastLongPressElementId = picked.id
+                    controller.selectionManager.selectElement(pageIndex, picked)
                 }
-            }
-            when (hit) {
-                is CustomElement -> controller.selectionManager.selectCustomElement(pageIndex, hit)
-                is ImageElement -> controller.selectionManager.selectImage(pageIndex, hit)
-                is TextElement -> controller.selectionManager.selectText(pageIndex, hit)
-                else -> controller.selectionManager.clearSelection()
+                onSelection && selection.elements().any { !page.isElementLocked(it) } -> {
+                    if (fromLongPress) {
+                        lastLongPressPageId = page.id
+                        lastLongPressScreenPos = position
+                        lastLongPressElementId = selection.elements().firstOrNull()?.id
+                    }
+                }
+                unlockedHits.isNotEmpty() -> {
+                    val picked = unlockedHits.first()
+                    lastLongPressPageId = page.id
+                    lastLongPressScreenPos = position
+                    lastLongPressElementId = picked.id
+                    controller.selectionManager.selectElement(pageIndex, picked)
+                }
+                else -> {
+                    lastLongPressPageId = page.id
+                    lastLongPressScreenPos = position
+                    lastLongPressElementId = null
+                    controller.selectionManager.clearSelection()
+                }
             }
         }
         controller.contextMenuPosition = position
@@ -1314,7 +1347,9 @@ internal class CanvasGestureHandler(
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return false
         val edited = controller.textEditorManager.activeTextItem
-        val text = page.texts.lastOrNull { it !== edited && it.containsPoint(mm.x, mm.y) } ?: return false
+        val text = page.texts.lastOrNull {
+            it !== edited && page.isElementVisible(it) && !page.isElementLocked(it) && it.containsPoint(mm.x, mm.y)
+        } ?: return false
         controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y).toCompose())
         return true
     }
@@ -1606,3 +1641,6 @@ private const val PREDICTION_MS = 16L
 
 /** How far past the edge of a text being written a tap adds a line by its block of code: a finger's width. */
 private const val BLOCK_LINE_REACH_DP = 40f
+
+private const val STACK_CYCLE_RADIUS_DP = 18f
+private const val STACK_CYCLE_STROKE_DP = 12f

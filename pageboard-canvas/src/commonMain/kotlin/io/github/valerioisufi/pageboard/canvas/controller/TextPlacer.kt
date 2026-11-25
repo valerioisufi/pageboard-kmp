@@ -160,6 +160,7 @@ public class TextPlacer internal constructor(private val controller: PageboardCo
         text.height = heightOf(text.text, text.width, text.fontSize, text.color, measure)
         text.x = spot.box.left.coerceIn(0f, max(0f, page.widthMm - text.width))
         text.y = spot.box.top.coerceIn(0f, max(0f, page.heightMm - text.height))
+        text.layerId = controller.layers.writableActiveLayerId(page)
         text.markDirty()
         controller.session.submit(AddElements.of(page, listOf(text)))
     }

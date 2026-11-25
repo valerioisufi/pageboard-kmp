@@ -394,6 +394,21 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/InkLatency
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/canvas/controller/LayerManager {
+	public static final field $stable I
+	public final fun activeLayerIdOf (Lio/github/valerioisufi/pageboard/model/Page;)Ljava/lang/String;
+	public final fun assignSelectionToLayer (Ljava/lang/String;)Z
+	public final fun createLayer (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;)Lio/github/valerioisufi/pageboard/model/PageLayer;
+	public final fun deleteLayer (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;)Z
+	public final fun getVersion ()I
+	public final fun layersOf (Lio/github/valerioisufi/pageboard/model/Page;)Ljava/util/List;
+	public final fun moveLayer (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;I)Z
+	public final fun renameLayer (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun setActiveLayer (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;)V
+	public final fun setLayerLocked (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;Z)Z
+	public final fun setLayerVisible (Lio/github/valerioisufi/pageboard/model/Page;Ljava/lang/String;Z)Z
+}
+
 public final class io/github/valerioisufi/pageboard/canvas/controller/MediaManager {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/controller/MediaManager$Companion;
@@ -471,6 +486,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public synthetic fun <init> (Lio/github/valerioisufi/pageboard/model/Document;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/pageboard/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/pageboard/model/change/DocumentSession;Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;Lio/github/valerioisufi/pageboard/canvas/controller/EditorClipboard;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun applyPreferences (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;)V
 	public final fun clearSelection ()V
+	public final fun dismissContextMenu ()V
 	public final fun dispose ()V
 	public final fun flushPersistence (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getAreTextSuggestionsEnabled ()Z
@@ -487,6 +503,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun getHistoryManager ()Lio/github/valerioisufi/pageboard/canvas/history/HistoryManager;
 	public final fun getInkLatency ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getLassoMode ()Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;
+	public final fun getLayers ()Lio/github/valerioisufi/pageboard/canvas/controller/LayerManager;
+	public final fun getLockedElementForMenu ()Lkotlin/Pair;
 	public final fun getMediaManager ()Lio/github/valerioisufi/pageboard/canvas/controller/MediaManager;
 	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun getPageManager ()Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;
@@ -674,6 +692,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/SelectionM
 	public final fun arrange (Lio/github/valerioisufi/pageboard/model/change/StackMove;)V
 	public final fun beginTransformation ()V
 	public final fun canArrange (Lio/github/valerioisufi/pageboard/model/change/StackMove;)Z
+	public final fun canLockSelection ()Z
 	public final fun canPaste ()Z
 	public final fun clearSelection ()V
 	public final fun copySelection ()V
@@ -684,6 +703,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/SelectionM
 	public final fun getSelectedPlainText ()Ljava/lang/String;
 	public final fun getSelectedTexts ()Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;
 	public final fun getSelectionVersion ()I
+	public final fun lockSelection (Z)Z
+	public static synthetic fun lockSelection$default (Lio/github/valerioisufi/pageboard/canvas/controller/SelectionManager;ZILjava/lang/Object;)Z
 	public final fun moveBy (FFZ)V
 	public static synthetic fun moveBy$default (Lio/github/valerioisufi/pageboard/canvas/controller/SelectionManager;FFZILjava/lang/Object;)V
 	public final fun pasteSelection-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
@@ -691,6 +712,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/SelectionM
 	public final fun rotateBy (F)V
 	public final fun selectText (ILio/github/valerioisufi/pageboard/model/TextElement;)V
 	public final fun setLassoMode (Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;)V
+	public final fun unlockElement (Lio/github/valerioisufi/pageboard/model/Page;Lio/github/valerioisufi/pageboard/model/PageElement;)Z
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeDraft {

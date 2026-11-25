@@ -51,6 +51,7 @@ internal class EraserManager(private val controller: PageboardController) {
             val toRemove = mutableListOf<PageElement>()
             for (stroke in page.strokes) {
                 if (controller.hiddenElements.isHidden(stroke.id)) continue
+                if (!page.isElementVisible(stroke) || page.isElementLocked(stroke)) continue
                 val sb = stroke.bounds
                 if (sb.left >= capsule.right || capsule.left >= sb.right || sb.top >= capsule.bottom || capsule.top >= sb.bottom) continue
                 if (HitTesting.meshIntersectsCapsule(stroke.mesh, a.x, a.y, b.x, b.y, radiusMm)) {
@@ -60,11 +61,13 @@ internal class EraserManager(private val controller: PageboardController) {
             val elements = controller.engines.elements
             for (custom in page.customElements) {
                 if (controller.hiddenElements.isHidden(custom.id)) continue
+                if (!page.isElementVisible(custom) || page.isElementLocked(custom)) continue
                 val cb = custom.getRotatedBounds()
                 if (cb.left >= capsule.right || capsule.left >= cb.right || cb.top >= capsule.bottom || capsule.top >= cb.bottom) continue
                 if (elements.erasedBy(custom, Point(a.x, a.y), Point(b.x, b.y), radiusMm)) toRemove.add(custom)
             }
             val markupsToRemove = page.markups.filter { markup ->
+                if (!page.isElementVisible(markup) || page.isElementLocked(markup)) return@filter false
                 val pointsToMm = markup.pointsToPageMm(page)
                 markup.rects.any { HitTesting.rectIntersectsCapsule(pointsToMm.mapRect(it), a.x, a.y, b.x, b.y, radiusMm) }
             }

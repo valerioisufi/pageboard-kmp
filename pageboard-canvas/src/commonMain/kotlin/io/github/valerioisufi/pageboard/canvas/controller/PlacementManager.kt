@@ -110,7 +110,7 @@ public class PlacementManager internal constructor(private val controller: Pageb
         cancel()
         controller.selectionManager.clearSelection()
         if (controller.textEditorManager.isEditing) controller.textEditorManager.finishEditing()
-        controller.contextMenuPosition = null
+        controller.dismissContextMenu()
         controller.isPageGridVisible = false
         request = newRequest
         spots = newRequest.items.map { it.spots.firstOrNull() }

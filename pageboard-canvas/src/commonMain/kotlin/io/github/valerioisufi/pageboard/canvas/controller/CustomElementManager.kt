@@ -40,6 +40,7 @@ public class CustomElementManager internal constructor(private val controller: P
             width = box.width
             height = box.height
             this.rotation = rotation
+            layerId = controller.layers.writableActiveLayerId(page)
         }
         controller.session.submit(AddElements.of(page, listOf(element))) ?: return null
         if (select) controller.selectionManager.selectCustomElement(pageIndex, element)

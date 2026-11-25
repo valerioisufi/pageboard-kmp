@@ -160,6 +160,9 @@ public class PageboardController(
     /** The elements of the types added by the application. */
     public val customElementManager: CustomElementManager = CustomElementManager(this)
 
+    /** Organizational per-page layers and element layer assignment. */
+    public val layers: LayerManager = LayerManager(this)
+
     // ==========================================================
     // Observable state
     // ==========================================================
@@ -190,6 +193,16 @@ public class PageboardController(
 
     /** Screen position of the long-press context menu, or `null` when hidden. */
     public var contextMenuPosition: Offset? by mutableStateOf<Offset?>(null)
+
+    /** Locked element targeted by the current context menu so the UI can offer Unlock, or `null`. */
+    public var lockedElementForMenu: Pair<Page, PageElement>? by mutableStateOf(null)
+        internal set
+
+    /** Dismisses the open canvas context menu and clears any locked-element menu target. */
+    public fun dismissContextMenu() {
+        contextMenuPosition = null
+        lockedElementForMenu = null
+    }
 
     /** The style of a new text: the one of the text written last. */
     public var textDefaults: TextDefaults by mutableStateOf(TextDefaults())
@@ -295,6 +308,7 @@ public class PageboardController(
             selectionManager.clearSelection()
             textEditorManager.finishEditing()
             contextMenuPosition = null
+            lockedElementForMenu = null
         }
         requestRedraw()
     }
@@ -308,6 +322,7 @@ public class PageboardController(
             textMarkupManager.clearSelection()
             textEditorManager.finishEditing()
             contextMenuPosition = null
+            lockedElementForMenu = null
         }
     }
 
@@ -526,6 +541,8 @@ public class PageboardController(
         val effects = committed.effects
         // Before the frames and the snapping read the boxes of the texts
         textBoxes.onChange(effects)
+        layers.onChange(effects)
+        if (committed.origin != ChangeOrigin.LOCAL) selectionManager.pruneUnavailable()
         if (committed.origin == ChangeOrigin.REMOTE) {
             textEditorManager.onChange(effects)
             selectionManager.onChange(effects)
@@ -583,7 +600,9 @@ public class PageboardController(
             } else {
                 AffineTransform.IDENTITY
             }
-            val stroke = StrokeElement(mesh = mesh, brushConfig = brush, transform = transform)
+            val stroke = StrokeElement(mesh = mesh, brushConfig = brush, transform = transform).apply {
+                layerId = layers.writableActiveLayerId(page)
+            }
             strokesByPage.getOrPut(index) { mutableListOf() }.add(stroke)
         }
         if (strokesByPage.isEmpty()) return

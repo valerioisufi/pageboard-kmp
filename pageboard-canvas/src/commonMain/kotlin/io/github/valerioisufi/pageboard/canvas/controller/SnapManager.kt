@@ -84,6 +84,7 @@ public class SnapManager internal constructor(private val controller: PageboardC
         val hits = ArrayList<AnchorHit>()
         for (element in page.customElements) {
             if (element.id == except || element.type != ShapeElementType.id) continue
+            if (!page.isElementVisible(element)) continue
             if (controller.hiddenElements.isHidden(element.id)) continue
             if (!element.getRotatedBounds().inflate(reach).let { point.x in it.left..it.right && point.y in it.top..it.bottom }) continue
             val value = controller.engines.elements.valueOf(element) as? ShapeElement ?: continue
@@ -157,10 +158,10 @@ public class SnapManager internal constructor(private val controller: PageboardC
     private fun targetsOf(page: Page, moved: Collection<PageElement>): SnapTargets {
         val xs = mutableListOf(SnapLine(page.widthMm / 2f, 0f, page.heightMm))
         val ys = mutableListOf(SnapLine(page.heightMm / 2f, 0f, page.widthMm))
-        val boxes = page.strokes.filter { it !in moved }.map { it.bounds } +
-            page.texts.filter { it !in moved && !controller.hiddenElements.isShownByCollaborator(it.id) }.map { it.getRotatedBounds() } +
-            page.images.filter { it !in moved }.map { it.getRotatedBounds() } +
-            page.customElements.filter { it !in moved }.map { it.getRotatedBounds() }
+        val boxes = page.strokes.filter { it !in moved && page.isElementVisible(it) }.map { it.bounds } +
+            page.texts.filter { it !in moved && page.isElementVisible(it) && !controller.hiddenElements.isShownByCollaborator(it.id) }.map { it.getRotatedBounds() } +
+            page.images.filter { it !in moved && page.isElementVisible(it) }.map { it.getRotatedBounds() } +
+            page.customElements.filter { it !in moved && page.isElementVisible(it) }.map { it.getRotatedBounds() }
         for (other in boxes) {
             for (x in listOf(other.left, other.center.x, other.right)) xs += SnapLine(x, other.top, other.bottom)
             for (y in listOf(other.top, other.center.y, other.bottom)) ys += SnapLine(y, other.left, other.right)

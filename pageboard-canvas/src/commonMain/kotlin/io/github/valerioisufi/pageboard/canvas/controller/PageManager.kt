@@ -269,7 +269,7 @@ public class PageManager internal constructor(private val controller: PageboardC
     public fun startPageReorderMode() {
         controller.selectionManager.clearSelection()
         controller.textEditorManager.finishEditing()
-        controller.contextMenuPosition = null
+        controller.dismissContextMenu()
         originalPageOrder = document.pages.toList()
         isReorderingPages = true
         controller.requestRedraw()

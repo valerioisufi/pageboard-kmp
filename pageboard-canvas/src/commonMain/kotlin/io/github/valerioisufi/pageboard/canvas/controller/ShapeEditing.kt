@@ -111,6 +111,7 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
         var last: ShapeElement? = null
         val placements = ArrayList<BoxPlacement>()
         for ((element, value) in shapes) {
+            if (page.isElementLocked(element)) continue
             val changed = try {
                 transform(value)
             } catch (_: IllegalArgumentException) {
@@ -205,7 +206,8 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
             width = box.width.coerceAtLeast(ShapeInserter.MIN_SIZE_MM),
             height = box.height.coerceAtLeast(ShapeInserter.MIN_SIZE_MM),
             rotation = box.rotation,
-            order = stroke.order
+            order = stroke.order,
+            layerId = stroke.layerId ?: controller.layers.writableActiveLayerId(page)
         )
         controller.selectionManager.clearSelection()
         val change = CompositeChange(listOf(RemoveElements(page.id, listOf(stroke.id)), AddElements(page.id, listOf(data))))
