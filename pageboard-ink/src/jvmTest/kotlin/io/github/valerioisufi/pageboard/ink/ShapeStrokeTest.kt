@@ -40,8 +40,8 @@ class ShapeStrokeTest {
             for (corner in corners) {
                 val outward = (corner - center).let { it * (1f / it.distance) }
                 var reach = Float.NEGATIVE_INFINITY
-                for (partition in mesh.partitions) {
-                    val p = partition.positions
+                val vertexArrays = mesh.outline?.polygons ?: mesh.partitions.map { it.positions }
+                for (p in vertexArrays) {
                     for (i in 0 until p.size / 2) {
                         val dx = p[i * 2] - corner.x
                         val dy = p[i * 2 + 1] - corner.y

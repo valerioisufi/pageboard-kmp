@@ -895,7 +895,9 @@ public final class io/github/valerioisufi/pageboard/model/StrokeModellerKt {
 
 public final class io/github/valerioisufi/pageboard/model/StrokeOutline {
 	public fun <init> (Ljava/util/List;)V
+	public final fun computeBounds ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 	public final fun getPolygons ()Ljava/util/List;
+	public final fun getVertexCount ()I
 	public final fun isEmpty ()Z
 	public final fun transformed (Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;)Lio/github/valerioisufi/pageboard/model/StrokeOutline;
 }

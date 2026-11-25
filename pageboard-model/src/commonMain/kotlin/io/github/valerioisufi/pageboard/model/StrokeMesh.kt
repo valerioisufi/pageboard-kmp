@@ -44,10 +44,12 @@ public class StrokeMesh(
     public val vertexCount: Int get() = partitions.sumOf { it.vertexCount }
     public val triangleCount: Int get() = partitions.sumOf { it.triangleCount }
 
-    public val isEmpty: Boolean get() = partitions.all { it.positions.isEmpty() || it.indices.isEmpty() }
+    public val isEmpty: Boolean
+        get() = partitions.all { it.positions.isEmpty() || it.indices.isEmpty() } &&
+            (outline == null || outline.isEmpty)
 
     /**
-     * Axis-aligned bounds of every vertex of the mesh, or [Rect.Zero] for an empty mesh.
+     * Axis-aligned bounds of every vertex of the mesh (triangles or outline), or [Rect.Zero] for an empty mesh.
      */
     public fun computeBounds(): Rect {
         var minX = Float.POSITIVE_INFINITY
@@ -67,7 +69,7 @@ public class StrokeMesh(
                 i += 2
             }
         }
-        return if (minX <= maxX && minY <= maxY) Rect(minX, minY, maxX, maxY) else Rect.Zero
+        return if (minX <= maxX && minY <= maxY) Rect(minX, minY, maxX, maxY) else outline?.computeBounds() ?: Rect.Zero
     }
 
     /** This mesh with the recorded inputs [points]. */
@@ -91,9 +93,12 @@ public class StrokeMesh(
     public fun transformed(transform: Matrix2D): StrokeMesh {
         val scale = transform.scaleFactor
         val mapped = partitions.map { partition ->
-            val positions = partition.positions.copyOf()
-            transform.mapPoints(positions)
-            MeshPartition(positions, partition.indices)
+            if (partition.positions.isEmpty()) partition
+            else {
+                val positions = partition.positions.copyOf()
+                transform.mapPoints(positions)
+                MeshPartition(positions, partition.indices)
+            }
         }
         return StrokeMesh(
             positions = mapped.first().positions,

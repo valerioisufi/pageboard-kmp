@@ -3892,7 +3892,10 @@ final class io.github.valerioisufi.pageboard.model/StrokeOutline { // io.github.
         final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeOutline.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
     final val polygons // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons|{}polygons[0]
         final fun <get-polygons>(): kotlin.collections/List<kotlin/FloatArray> // io.github.valerioisufi.pageboard.model/StrokeOutline.polygons.<get-polygons>|<get-polygons>(){}[0]
+    final val vertexCount // io.github.valerioisufi.pageboard.model/StrokeOutline.vertexCount|{}vertexCount[0]
+        final fun <get-vertexCount>(): kotlin/Int // io.github.valerioisufi.pageboard.model/StrokeOutline.vertexCount.<get-vertexCount>|<get-vertexCount>(){}[0]
 
+    final fun computeBounds(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/StrokeOutline.computeBounds|computeBounds(){}[0]
     final fun transformed(io.github.valerioisufi.pageboard.model.geometry/Matrix2D): io.github.valerioisufi.pageboard.model/StrokeOutline // io.github.valerioisufi.pageboard.model/StrokeOutline.transformed|transformed(io.github.valerioisufi.pageboard.model.geometry.Matrix2D){}[0]
 }
 

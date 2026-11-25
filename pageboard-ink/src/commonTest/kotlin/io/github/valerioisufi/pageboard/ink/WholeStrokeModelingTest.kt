@@ -132,9 +132,72 @@ class WholeStrokeModelingTest {
         return deepest * CELL
     }
 
-    /** The cells whose centers the triangles of [mesh] cover. */
+    /** The cells whose centers the outline or triangles of [mesh] cover. */
     private fun cover(mesh: StrokeMesh, left: Float, top: Float, width: Int, height: Int): BooleanArray {
         val covered = BooleanArray(width * height)
+        val outline = mesh.outline
+        if (outline != null && !outline.isEmpty) {
+            for (polygon in outline.polygons) {
+                val n = polygon.size / 2
+                if (n < 3) continue
+                var pMinY = Float.POSITIVE_INFINITY
+                var pMaxY = Float.NEGATIVE_INFINITY
+                for (i in 0 until n) {
+                    val y = (polygon[2 * i + 1] - top) / CELL
+                    pMinY = min(pMinY, y); pMaxY = max(pMaxY, y)
+                }
+                val minY = max(0, floor(pMinY).toInt())
+                val maxY = min(height - 1, ceil(pMaxY).toInt())
+                val crossingsX = FloatArray(n)
+                val crossingsDir = IntArray(n)
+                for (y in minY..maxY) {
+                    val cy = top + (y + 0.5f) * CELL
+                    var count = 0
+                    var x1 = polygon[(n - 1) * 2]
+                    var y1 = polygon[(n - 1) * 2 + 1]
+                    for (i in 0 until n) {
+                        val x2 = polygon[i * 2]
+                        val y2 = polygon[i * 2 + 1]
+                        if (y1 <= cy && y2 > cy) {
+                            crossingsX[count] = x1 + (cy - y1) * (x2 - x1) / (y2 - y1)
+                            crossingsDir[count] = 1
+                            count++
+                        } else if (y2 <= cy && y1 > cy) {
+                            crossingsX[count] = x1 + (cy - y1) * (x2 - x1) / (y2 - y1)
+                            crossingsDir[count] = -1
+                            count++
+                        }
+                        x1 = x2
+                        y1 = y2
+                    }
+                    if (count == 0) continue
+                    // Insertion sort crossings by X (usually tiny: 2-8 crossings per scanline)
+                    for (a in 1 until count) {
+                        val kx = crossingsX[a]
+                        val kd = crossingsDir[a]
+                        var b = a - 1
+                        while (b >= 0 && crossingsX[b] > kx) {
+                            crossingsX[b + 1] = crossingsX[b]
+                            crossingsDir[b + 1] = crossingsDir[b]
+                            b--
+                        }
+                        crossingsX[b + 1] = kx
+                        crossingsDir[b + 1] = kd
+                    }
+                    var winding = 0
+                    val rowOffset = y * width
+                    for (c in 0 until count - 1) {
+                        winding += crossingsDir[c]
+                        if (winding != 0) {
+                            val startX = max(0, ceil((crossingsX[c] - left) / CELL - 0.5f).toInt())
+                            val endX = min(width - 1, floor((crossingsX[c + 1] - left) / CELL - 0.5f).toInt())
+                            for (x in startX..endX) covered[rowOffset + x] = true
+                        }
+                    }
+                }
+            }
+            return covered
+        }
         for (partition in mesh.partitions) {
             val p = partition.positions
             val indices = partition.indices

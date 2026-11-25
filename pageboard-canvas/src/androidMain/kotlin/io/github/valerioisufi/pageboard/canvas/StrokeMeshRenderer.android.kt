@@ -13,6 +13,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
     private val path = Path()
+    private val pathCache = LinkedHashMap<StrokeOutline, Path>(32, 0.75f)
     private val androidMatrix = android.graphics.Matrix()
     private val matrixValues = FloatArray(9)
 
@@ -25,7 +26,8 @@ internal actual class StrokeMeshPainter actual constructor() {
         concat(androidCanvas, transform)
         val outline = mesh.outline
         if (outline != null && !outline.isEmpty) {
-            drawOutline(androidCanvas, outline, color)
+            paint.color = color.toArgb()
+            androidCanvas.drawPath(getOrCreatePath(outline), paint)
         } else {
             drawTriangles(androidCanvas, mesh, color)
         }
@@ -45,6 +47,24 @@ internal actual class StrokeMeshPainter actual constructor() {
         androidCanvas.restoreToCount(saveCount)
     }
 
+    private fun getOrCreatePath(outline: StrokeOutline): Path {
+        val existing = pathCache.remove(outline)
+        if (existing != null) {
+            pathCache[outline] = existing
+            return existing
+        }
+        val built = Path().also { populatePath(it, outline) }
+        if (pathCache.size >= MAX_CACHED_PATHS) {
+            val iterator = pathCache.entries.iterator()
+            if (iterator.hasNext()) {
+                iterator.next()
+                iterator.remove()
+            }
+        }
+        pathCache[outline] = built
+        return built
+    }
+
     private fun concat(androidCanvas: android.graphics.Canvas, transform: Matrix2D?) {
         if (transform == null) return
         matrixValues[0] = transform.a; matrixValues[1] = transform.c; matrixValues[2] = transform.tx
@@ -54,25 +74,33 @@ internal actual class StrokeMeshPainter actual constructor() {
         androidCanvas.concat(androidMatrix)
     }
 
+    private fun populatePath(target: Path, outline: StrokeOutline) {
+        target.rewind()
+        target.fillType = Path.FillType.WINDING
+        for (polygon in outline.polygons) {
+            if (polygon.size < 6) continue
+            target.moveTo(polygon[0], polygon[1])
+            var i = 2
+            while (i + 1 < polygon.size) {
+                target.lineTo(polygon[i], polygon[i + 1])
+                i += 2
+            }
+            target.close()
+        }
+    }
+
     /**
      * Fills [outline] antialiased with the non-zero rule: where the stroke overlaps itself it is
      * painted once, translucent too.
      */
     private fun drawOutline(androidCanvas: android.graphics.Canvas, outline: StrokeOutline, color: Color) {
-        path.rewind()
-        path.fillType = Path.FillType.WINDING
-        for (polygon in outline.polygons) {
-            if (polygon.size < 6) continue
-            path.moveTo(polygon[0], polygon[1])
-            var i = 2
-            while (i + 1 < polygon.size) {
-                path.lineTo(polygon[i], polygon[i + 1])
-                i += 2
-            }
-            path.close()
-        }
+        populatePath(path, outline)
         paint.color = color.toArgb()
         androidCanvas.drawPath(path, paint)
+    }
+
+    private companion object {
+        const val MAX_CACHED_PATHS = 256
     }
 
     /**

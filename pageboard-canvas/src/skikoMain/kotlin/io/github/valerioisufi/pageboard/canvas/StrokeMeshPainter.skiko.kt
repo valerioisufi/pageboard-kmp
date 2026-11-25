@@ -10,6 +10,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import org.jetbrains.skia.BlendMode
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Paint
+import org.jetbrains.skia.Path
 import org.jetbrains.skia.PathBuilder
 import org.jetbrains.skia.PathFillMode
 import org.jetbrains.skia.Rect
@@ -19,6 +20,7 @@ internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
     private val layerPaint = Paint()
     private val pathBuilder = PathBuilder(PathFillMode.WINDING)
+    private val pathCache = LinkedHashMap<StrokeOutline, Path>(32, 0.75f)
 
     actual fun draw(canvas: Canvas, mesh: StrokeMesh, transform: Matrix2D?, colorOverride: Color?) {
         if (mesh.isEmpty) return
@@ -29,7 +31,9 @@ internal actual class StrokeMeshPainter actual constructor() {
         concat(skiaCanvas, transform)
         val outline = mesh.outline
         if (outline != null && !outline.isEmpty) {
-            drawOutline(skiaCanvas, outline, color)
+            val cached = getOrCreatePath(outline)
+            paint.color = color.toArgb()
+            skiaCanvas.drawPath(cached, paint)
         } else {
             drawTriangles(skiaCanvas, mesh, color)
         }
@@ -43,6 +47,33 @@ internal actual class StrokeMeshPainter actual constructor() {
         concat(skiaCanvas, transform)
         drawOutline(skiaCanvas, outline, color)
         skiaCanvas.restore()
+    }
+
+    private fun getOrCreatePath(outline: StrokeOutline): Path {
+        val existing = pathCache.remove(outline)
+        if (existing != null) {
+            pathCache[outline] = existing
+            return existing
+        }
+        val built = buildPath(outline)
+        if (pathCache.size >= MAX_CACHED_PATHS) {
+            val iterator = pathCache.entries.iterator()
+            if (iterator.hasNext()) {
+                val eldest = iterator.next().value
+                iterator.remove()
+                eldest.close()
+            }
+        }
+        pathCache[outline] = built
+        return built
+    }
+
+    private fun buildPath(outline: StrokeOutline): Path {
+        pathBuilder.setFillType(PathFillMode.WINDING)
+        for (polygon in outline.polygons) {
+            if (polygon.size >= 6) pathBuilder.addPoly(polygon, true)
+        }
+        return pathBuilder.detach()
     }
 
     private fun concat(skiaCanvas: org.jetbrains.skia.Canvas, transform: Matrix2D?) {
@@ -61,14 +92,17 @@ internal actual class StrokeMeshPainter actual constructor() {
      * painted once, translucent too.
      */
     private fun drawOutline(skiaCanvas: org.jetbrains.skia.Canvas, outline: StrokeOutline, color: Color) {
-        pathBuilder.setFillType(PathFillMode.WINDING)
-        for (polygon in outline.polygons) {
-            if (polygon.size >= 6) pathBuilder.addPoly(polygon, true)
-        }
-        val path = pathBuilder.detach()
+        val path = buildPath(outline)
         paint.color = color.toArgb()
-        skiaCanvas.drawPath(path, paint)
-        path.close()
+        try {
+            skiaCanvas.drawPath(path, paint)
+        } finally {
+            path.close()
+        }
+    }
+
+    private companion object {
+        const val MAX_CACHED_PATHS = 256
     }
 
     /**

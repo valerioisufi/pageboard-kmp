@@ -106,7 +106,7 @@ class KeyValueDocumentStoreTest {
         val firstPage = loaded.pages[0]
         assertEquals(2, firstPage.strokes.size)
         assertEquals(strokes[0].mesh.points, firstPage.strokes[0].mesh.points)
-        assertTrue(firstPage.strokes[0].mesh.positions.isNotEmpty(), "the mesh is rebuilt on load")
+        assertFalse(firstPage.strokes[0].mesh.isEmpty, "the mesh is rebuilt on load")
         assertEquals(0xFF0000FF.toInt(), firstPage.strokes[1].brushConfig.color)
         assertEquals(strokes[1].transform, firstPage.strokes[1].transform)
         assertEquals(strokes[1].mesh.points, firstPage.strokes[1].mesh.points)

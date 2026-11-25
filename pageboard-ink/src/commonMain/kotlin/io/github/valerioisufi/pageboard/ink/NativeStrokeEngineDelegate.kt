@@ -128,6 +128,21 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
 
     override fun currentMesh(brush: BrushConfig, points: List<StrokePoint>, toolType: InputToolType): StrokeMesh? {
         if (!started) return null
+        val outline = currentOutline()?.takeUnless { it.isEmpty }
+        if (outline != null) {
+            // Outline-only mesh: avoids copying duplicate triangle position and index buffers
+            return StrokeMesh(
+                positions = FloatArray(0),
+                indices = ShortArray(0),
+                color = brush.color,
+                tool = brush.tool,
+                size = brush.size,
+                points = points,
+                inputToolType = toolType,
+                outline = outline
+            )
+        }
+
         val vCount = api.getVertexCount(builderHandle)
         val tCount = api.getTriangleCount(builderHandle)
         if (vCount <= 0 || tCount <= 0) return null
@@ -144,7 +159,7 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
             size = brush.size,
             points = points,
             inputToolType = toolType,
-            outline = currentOutline()?.takeUnless { it.isEmpty }
+            outline = null
         )
     }
 

@@ -5,6 +5,7 @@ import io.github.valerioisufi.pageboard.model.BrushConfig
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokeTool
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -19,7 +20,10 @@ class IosInkEngineTest {
             engine.addInput(10f + i * 1.5f, 20f + (i * i) * 0.05f, 0.4f + i * 0.01f, 1000L + i * 8L, InputToolType.STYLUS)
         }
         val mesh = assertNotNull(engine.finishStroke())
-        assertTrue(mesh.vertexCount > 0 && mesh.triangleCount > 0)
+        assertFalse(mesh.isEmpty)
+        assertTrue(mesh.positions.isEmpty())
+        val outline = assertNotNull(mesh.outline)
+        assertTrue(outline.vertexCount > 0)
         assertTrue(mesh.points.size == 31)
         engine.release()
     }

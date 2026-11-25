@@ -1,9 +1,9 @@
 package io.github.valerioisufi.pageboard.model.geometry
 
 import io.github.valerioisufi.pageboard.model.StrokeMesh
+import io.github.valerioisufi.pageboard.model.StrokeOutline
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
 /**
  * Exact geometric hit-testing of stroke meshes (and of the lines of the marks of the text of the
@@ -13,7 +13,7 @@ import kotlin.math.sqrt
 public object HitTesting {
 
     /**
-     * Whether any triangle of [mesh] lies within [radius] of the segment ([x1], [y1]) - ([x2], [y2]).
+     * Whether [mesh] (its outline polygons or triangles) lies within [radius] of the segment ([x1], [y1]) - ([x2], [y2]).
      */
     public fun meshIntersectsCapsule(
         mesh: StrokeMesh,
@@ -21,6 +21,10 @@ public object HitTesting {
         x2: Float, y2: Float,
         radius: Float
     ): Boolean {
+        val outline = mesh.outline
+        if (outline != null && !outline.isEmpty) {
+            return outlineIntersectsCapsule(outline, x1, y1, x2, y2, radius)
+        }
         val capsuleLeft = min(x1, x2) - radius
         val capsuleTop = min(y1, y2) - radius
         val capsuleRight = max(x1, x2) + radius
@@ -56,10 +60,14 @@ public object HitTesting {
     }
 
     /**
-     * Whether any triangle of [mesh] overlaps the closed [polygon] (interleaved x, y coordinates).
+     * Whether [mesh] (its outline polygons or triangles) overlaps the closed [polygon] (interleaved x, y coordinates).
      */
     public fun meshIntersectsPolygon(mesh: StrokeMesh, polygon: FloatArray, polygonBounds: Rect): Boolean {
         if (polygon.size < 6) return false
+        val outline = mesh.outline
+        if (outline != null && !outline.isEmpty) {
+            return outlineIntersectsPolygon(outline, polygon, polygonBounds)
+        }
         for (partition in mesh.partitions) {
             val p = partition.positions
             val idx = partition.indices
@@ -83,6 +91,105 @@ public object HitTesting {
             }
         }
         return false
+    }
+
+    private fun outlineIntersectsCapsule(
+        outline: StrokeOutline,
+        x1: Float, y1: Float,
+        x2: Float, y2: Float,
+        radius: Float
+    ): Boolean {
+        val capsuleLeft = min(x1, x2) - radius
+        val capsuleTop = min(y1, y2) - radius
+        val capsuleRight = max(x1, x2) + radius
+        val capsuleBottom = max(y1, y2) + radius
+        val radiusSq = radius * radius
+
+        for (poly in outline.polygons) {
+            if (poly.size < 6) continue
+            val bounds = polygonBounds(poly)
+            if (bounds.right < capsuleLeft || bounds.left > capsuleRight ||
+                bounds.bottom < capsuleTop || bounds.top > capsuleBottom
+            ) continue
+            if (pointInPolygonWinding(x1, y1, poly) || pointInPolygonWinding(x2, y2, poly)) {
+                return true
+            }
+            val n = poly.size / 2
+            var prevX = poly[(n - 1) * 2]
+            var prevY = poly[(n - 1) * 2 + 1]
+            for (i in 0 until n) {
+                val curX = poly[i * 2]
+                val curY = poly[i * 2 + 1]
+                if (segmentSegmentDistanceSq(x1, y1, x2, y2, prevX, prevY, curX, curY) <= radiusSq) {
+                    return true
+                }
+                prevX = curX
+                prevY = curY
+            }
+        }
+        return false
+    }
+
+    private fun outlineIntersectsPolygon(
+        outline: StrokeOutline,
+        polygon: FloatArray,
+        polygonBounds: Rect
+    ): Boolean {
+        val lassoCount = polygon.size / 2
+        for (poly in outline.polygons) {
+            if (poly.size < 6) continue
+            val bounds = polygonBounds(poly)
+            if (bounds.right < polygonBounds.left || bounds.left > polygonBounds.right ||
+                bounds.bottom < polygonBounds.top || bounds.top > polygonBounds.bottom
+            ) continue
+            val n = poly.size / 2
+            for (i in 0 until n) {
+                if (pointInPolygon(poly[i * 2], poly[i * 2 + 1], polygon)) return true
+            }
+            for (k in 0 until lassoCount) {
+                if (pointInPolygonWinding(polygon[k * 2], polygon[k * 2 + 1], poly)) return true
+            }
+            var prevAx = poly[(n - 1) * 2]
+            var prevAy = poly[(n - 1) * 2 + 1]
+            for (i in 0 until n) {
+                val curAx = poly[i * 2]
+                val curAy = poly[i * 2 + 1]
+                var prevLx = polygon[(lassoCount - 1) * 2]
+                var prevLy = polygon[(lassoCount - 1) * 2 + 1]
+                for (k in 0 until lassoCount) {
+                    val curLx = polygon[k * 2]
+                    val curLy = polygon[k * 2 + 1]
+                    if (segmentsIntersect(prevAx, prevAy, curAx, curAy, prevLx, prevLy, curLx, curLy)) {
+                        return true
+                    }
+                    prevLx = curLx
+                    prevLy = curLy
+                }
+                prevAx = curAx
+                prevAy = curAy
+            }
+        }
+        return false
+    }
+
+    /** Non-zero winding rule point-in-polygon test matching filled stroke outlines. */
+    private fun pointInPolygonWinding(px: Float, py: Float, polygon: FloatArray): Boolean {
+        var winding = 0
+        val n = polygon.size / 2
+        var x1 = polygon[(n - 1) * 2]
+        var y1 = polygon[(n - 1) * 2 + 1]
+        for (i in 0 until n) {
+            val x2 = polygon[i * 2]
+            val y2 = polygon[i * 2 + 1]
+            if (y1 <= py) {
+                if (y2 > py && cross(x1, y1, x2, y2, px, py) > 0f) winding++
+            } else {
+                if (y2 <= py && cross(x1, y1, x2, y2, px, py) < 0f) winding--
+            }
+            x1 = x2
+            y1 = y2
+        }
+        return winding != 0
     }
 
     /**

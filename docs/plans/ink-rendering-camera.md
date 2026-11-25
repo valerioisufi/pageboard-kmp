@@ -38,7 +38,7 @@ The responsibilities are assigned following the GRASP principles (Information Ex
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Memory reduction (`StrokeMesh` outline-only support, `HitTesting` outline capsule/polygon, `NativeStrokeEngineDelegate` dropping duplicate triangles) & LRU `Path` cache in `StrokeMeshPainter` (Skiko & Android); tests & benchmark; ABI recorded | Pending |
+| 1 | Memory reduction (`StrokeMesh` outline-only support, `HitTesting` outline capsule/polygon, `NativeStrokeEngineDelegate` dropping duplicate triangles) & LRU `Path` cache in `StrokeMeshPainter` (Skiko & Android); tests & benchmark; ABI recorded | Done |
 | 2 | Dynamic viewport `TileCache` budget and sharper zoom-out (3-gen descendants + coarser LOD pre-scheduling); tests | Pending |
 | 3 | Adaptive camera bounds for mixed-width pages (`CalcPage`, `CameraPhysicsEngine`), dp vertical margins, `isScrollAxisLockEnabled` preference + command, and Quick Pan mode (`PageboardController`, `CanvasGestureHandler`, phone floating pill, 7 locales); tests; ABI recorded | Pending |
 | 4 | Native ink prediction (`MotionEventInkPredictor` on Android, `IosPencilInkPredictor` on iOS), historical pressure lookup, unbuffered finger dispatch on Android, >60 Hz `Surface.setFrameRate` / ProMotion / desktop refresh horizon, `MetalLiveInkLayer` on iOS & low-latency desktop support; JVM/Android/iOS build & tests | Pending |

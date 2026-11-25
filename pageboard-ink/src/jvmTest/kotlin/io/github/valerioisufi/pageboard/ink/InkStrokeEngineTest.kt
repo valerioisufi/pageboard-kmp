@@ -7,6 +7,7 @@ import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -37,18 +38,20 @@ class InkStrokeEngineTest {
         }
 
         assertNotNull(latestMesh, "Active stroke mesh should be generated during drag")
-        assertTrue(latestMesh.vertexCount > 0, "Mesh should have vertices, got: ${latestMesh.vertexCount}")
-        assertTrue(latestMesh.triangleCount > 0, "Mesh should have triangles, got: ${latestMesh.triangleCount}")
-        assertTrue(latestMesh.positions.size == latestMesh.vertexCount * 2)
-        assertTrue(latestMesh.indices.size == latestMesh.triangleCount * 3)
+        assertFalse(latestMesh.isEmpty, "Active stroke mesh should not be empty")
+        val latestOutline = assertNotNull(latestMesh.outline, "Native mesh carries stroke outline")
+        assertTrue(latestOutline.vertexCount >= 3, "Outline should have vertices, got: ${latestOutline.vertexCount}")
+        assertTrue(latestMesh.positions.isEmpty(), "Outline-only mesh skips duplicate triangle positions")
+        assertTrue(latestMesh.indices.isEmpty(), "Outline-only mesh skips duplicate triangle indices")
 
         val completedStroke = engine.finishStroke()
         assertNotNull(completedStroke, "Completed stroke should not be null")
-        assertTrue(completedStroke.vertexCount > 0, "Completed stroke should have vertices")
-        assertTrue(completedStroke.triangleCount > 0, "Completed stroke should have triangles")
+        assertFalse(completedStroke.isEmpty, "Completed stroke should not be empty")
+        assertNotNull(completedStroke.outline, "Completed stroke should carry outline")
+        assertTrue(completedStroke.positions.isEmpty())
         assertTrue(completedStroke.color == BLUE)
 
-        println("Unit Test Verified: Google Ink generated ${completedStroke.vertexCount} vertices and ${completedStroke.triangleCount} triangles for stroke!")
+        println("Unit Test Verified: Google Ink generated ${completedStroke.outline?.vertexCount} outline vertices for stroke!")
         engine.release()
     }
 
@@ -59,9 +62,10 @@ class InkStrokeEngineTest {
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush))
         val outline = assertNotNull(mesh.outline, "Ink gives the outline of the stroke with its mesh")
 
-        // Through the vertices of the mesh, around the same shape
-        val vertices = outline.polygons.sumOf { it.size / 2 }
-        assertTrue(vertices in 3..mesh.vertexCount, "outline of $vertices vertices for ${mesh.vertexCount} vertices")
+        // Outline carries vertices and bounds without duplicate triangle arrays
+        val vertices = outline.vertexCount
+        assertTrue(vertices >= 3, "outline of $vertices vertices")
+        assertTrue(mesh.positions.isEmpty() && mesh.indices.isEmpty())
         val meshBounds = mesh.computeBounds()
         val xs = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 0 } }
         val ys = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 1 } }

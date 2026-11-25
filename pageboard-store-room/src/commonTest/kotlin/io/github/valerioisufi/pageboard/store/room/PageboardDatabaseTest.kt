@@ -172,7 +172,7 @@ class PageboardDatabaseTest {
         assertEquals(StrokeTool.PRESSURE_PEN, loadedStroke.brushConfig.tool)
         assertEquals(3.5f, loadedStroke.brushConfig.size)
         assertEquals(points.size, loadedStroke.mesh.points.size)
-        assertTrue(loadedStroke.mesh.vertexCount > 0, "the mesh is rebuilt from the stored inputs")
+        assertFalse(loadedStroke.mesh.isEmpty, "the mesh is rebuilt from the stored inputs")
 
         for (i in points.indices) {
             assertEquals(points[i].x, loadedStroke.mesh.points[i].x)
