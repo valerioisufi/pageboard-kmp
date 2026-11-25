@@ -331,4 +331,32 @@ class TextChainEditingTest {
         editor.setMaxHeightTo(null)
         assertNull(editor.maxHeight)
     }
+
+    @Test
+    fun atAPauseTheBoxesAfterFollowTheTextWritten() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        controller.startLow()
+        editor.type(lines(1, 5))
+        editor.finishEditing()
+        val first = controller.document.pages[0].texts.single()
+        assertEquals(lines(1, 4), first.text)
+        assertEquals("line 5", controller.document.pages[1].texts.single().text)
+
+        // A line deleted in the first box: at the pause the fifth comes back into it
+        editor.startEditing(first, 0)
+        editor.type("line 1\nline 3\nline 4")
+        editor.saveWriting()
+        val saved = controller.document.pages[0].texts.single()
+        assertEquals("line 1\nline 3\nline 4\nline 5", saved.text)
+        assertNull(saved.next, "the box after it emptied, the chain ends")
+        assertTrue(controller.document.pages.drop(1).all { it.texts.isEmpty() })
+        assertTrue(editor.isEditing, "still written, the caret where it was")
+        assertEquals(TextRange(20), editor.value.selection)
+
+        // Nothing to move: a pause only saves
+        editor.type("line 1\nline 3\nline 4\nline 5!")
+        editor.saveWriting()
+        assertEquals("line 1\nline 3\nline 4\nline 5!", controller.document.pages[0].texts.single().text)
+    }
 }

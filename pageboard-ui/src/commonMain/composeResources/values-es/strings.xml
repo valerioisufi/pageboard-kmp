@@ -344,4 +344,5 @@
     <string name="bullet_dash">Guion</string>
     <string name="numbering_continue">Continuar la lista anterior</string>
     <string name="numbering_continue_hint">Los números siguen desde el texto anterior</string>
+    <string name="text_editor_action_line_in_item">Línea en el elemento</string>
 </resources>

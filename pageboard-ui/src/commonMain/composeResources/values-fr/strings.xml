@@ -344,4 +344,5 @@
     <string name="bullet_dash">Tiret</string>
     <string name="numbering_continue">Continuer la liste précédente</string>
     <string name="numbering_continue_hint">Les numéros suivent le texte d’avant</string>
+    <string name="text_editor_action_line_in_item">Ligne dans l’élément</string>
 </resources>

@@ -71,7 +71,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The height of a box of a chain by hand: the room of `ChainFlow`, the handle, the gesture, a tap clearing it, the height checked; tests | Done |
-| 2 | The boxes of a chain follow while one is written; the key of a line break in an item; tests | Pending |
+| 2 | The boxes of a chain follow while one is written; the key of a line break in an item; tests | Done |
 | 3 | Nested quotes, blocks in quotes, quotes in list items; tests, screenshots | Pending |
 | 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Pending |
 | 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Pending |
@@ -94,6 +94,13 @@ Taken alone, revertible:
    grabbed to be moved; zooming in shows it.
 4. **A new box of a chain has no height of its own and continues no list**: it took the ones of the
    box written before.
+
+5. **The boxes of a chain follow at each pause of the writing** (when the text is saved, see
+   `WritingSaver`), not at each key: flowing the chain may open the editor again in another box,
+   which in the middle of a word would get in the way of the input methods. It flows only when the
+   text would move between the boxes; otherwise the pause only saves, as before.
+6. **The key of a line in an item is in the docked bar only** (a phone, a soft keyboard), and only
+   with the caret in a list item: a hardware keyboard has Shift+Enter.
 
 ## Left for later
 

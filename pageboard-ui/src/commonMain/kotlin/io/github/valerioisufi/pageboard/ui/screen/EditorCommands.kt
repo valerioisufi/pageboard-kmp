@@ -116,6 +116,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_actio
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbering
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_bullets
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_line_in_item
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_checklist
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_move_completed
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_checklist_options
@@ -727,6 +728,16 @@ internal class EditorCommands internal constructor(
         isEnabled = { formatsText && textTarget?.inTable == false }
     ) { numberingOpen = true }
 
+    /**
+     * A line break inside the list item of the caret, its next line at its text, as Shift+Enter: a
+     * key of the docked bar for the soft keyboards, which have no Shift+Enter.
+     */
+    val lineInItem = Command(
+        "format-line-in-item", label(Res.string.text_editor_action_line_in_item), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(PageboardIcons.CornerDownLeft) },
+        isEnabled = { formatsText && textTarget === controller.textEditorManager && textTarget.let { it != null && (it.inBulletList || it.inNumberedList || it.inChecklist) } }
+    ) { controller.textEditorManager.lineBreakInItem() }
+
     /** Whether the picker of the bullets is open, in the formatting bar. */
     var bulletsOpen: Boolean by mutableStateOf(false)
 
@@ -782,7 +793,7 @@ internal class EditorCommands internal constructor(
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
         bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, heading2, heading3, normalText, headingLevels,
-        bulletList, bullets, numberedList, numbering, checklist, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
+        bulletList, bullets, numberedList, numbering, checklist, lineInItem, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 

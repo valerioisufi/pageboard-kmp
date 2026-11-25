@@ -344,4 +344,5 @@
     <string name="bullet_dash">Strich</string>
     <string name="numbering_continue">Vorherige Liste fortsetzen</string>
     <string name="numbering_continue_hint">Die Nummern setzen den Text davor fort</string>
+    <string name="text_editor_action_line_in_item">Zeile im Eintrag</string>
 </resources>

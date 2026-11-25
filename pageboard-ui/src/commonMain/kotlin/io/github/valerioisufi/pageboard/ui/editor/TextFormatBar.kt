@@ -53,6 +53,8 @@ internal fun TextFormatBar(
             BulletListButton(target, commands)
             NumberedListButton(target, commands)
             ChecklistButton(target, commands)
+            // A soft keyboard has no Shift+Enter: a line in the item from the bar
+            if (docked && commands.lineInItem.isEnabled()) FormatButton(commands.lineInItem, PageboardIcons.CornerDownLeft)
             FormatButton(commands.quote, PageboardIcons.Quote)
             TableButton(target, commands)
             FormatButton(commands.formula, PageboardIcons.Sigma)

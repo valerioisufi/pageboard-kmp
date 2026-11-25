@@ -339,4 +339,5 @@
     <string name="bullet_dash">대시</string>
     <string name="numbering_continue">이전 목록에서 계속</string>
     <string name="numbering_continue_hint">앞 텍스트의 번호에 이어서 매깁니다</string>
+    <string name="text_editor_action_line_in_item">항목 안에서 줄 바꿈</string>
 </resources>

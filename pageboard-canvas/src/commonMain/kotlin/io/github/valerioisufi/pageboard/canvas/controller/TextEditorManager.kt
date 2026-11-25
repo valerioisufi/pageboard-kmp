@@ -457,6 +457,12 @@ public class TextEditorManager internal constructor(private val controller: Page
      */
     public fun saveWriting() {
         saver.stop()
+        // A box of a chain: at this pause the boxes after it follow the text as it is now (a
+        // deletion brings their text back), when it would move between them
+        if (chainWouldMove()) {
+            flowChain(caret = value.selection.start)
+            return
+        }
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0 || value.text.isBlank() || controller.session.isReadOnly) return
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
@@ -1217,6 +1223,28 @@ public class TextEditorManager internal constructor(private val controller: Page
     private fun chainRoom(width: Float, y: Float, maxHeight: Float?, page: Page): ChainFlow.Room {
         val room = roomBottom(page) - y
         return ChainFlow.Room(width, TextRoom.maxHeightOf(maxHeight, page.heightMm)?.coerceAtMost(room) ?: room)
+    }
+
+    /**
+     * Whether the text of the chain of the box being written would move between its boxes, flowed
+     * as it is now (see [flowChain]): `false` for a text with no box after it.
+     */
+    private fun chainWouldMove(): Boolean {
+        val existing = activeTextItem ?: return false
+        if (!isEditing || rotation != 0f || itemPageIndex != activeTextPageIndex || value.text.isBlank()) return false
+        val following = followingInChain(existing)
+        if (following.isEmpty()) return false
+        val pages = controller.document.pages
+        val page = pages.getOrNull(activeTextPageIndex) ?: return false
+        val chains = TextChains.of(controller.document)
+        val base = inItsRoom(draft(), page)
+        val tail = value.text + following.joinToString("") { (if (it.continuesLine) "" else "\n") + it.text }
+        val pageOf = { text: TextElement -> pages[chains.pageOf(text.id)] }
+        val rooms = listOf(chainRoom(base.width, base.y, base.maxHeight, page)) + following.map { chainRoom(it.width, it.y, it.maxHeight, pageOf(it)) }
+        val extra = ChainFlow.Room(base.width, roomBottom(pageOf(following.last())) - CHAIN_MARGIN_MM)
+        val pieces = ChainFlow { text, width -> heightOf(text, width) }.flow(tail, rooms, extra).dropLastWhile { it.text.isBlank() }
+        if (pieces.size != following.size + 1 || pieces[0].text != value.text) return true
+        return following.indices.any { following[it].text != pieces[it + 1].text || following[it].continuesLine != pieces[it + 1].continuesLine }
     }
 
     private fun flowChain(caret: Int?): Boolean {
