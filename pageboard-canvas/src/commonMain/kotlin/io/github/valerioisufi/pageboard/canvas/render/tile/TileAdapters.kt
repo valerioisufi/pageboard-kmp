@@ -94,6 +94,13 @@ public interface TextTileAdapter {
     /** The box in local millimeters of any link at [localPointMm] in [text], or `null` when none. */
     public fun linkAt(text: TextElement, paperColor: Int, localPointMm: io.github.valerioisufi.pageboard.model.geometry.Point): String? = null
 
+    /**
+     * The start in the source of [text] of the item of a checklist whose box is at [localPointMm]
+     * (millimeters of the text, before its rotation), or `null` when no box is there: a tap on it
+     * checks the item from the page (`docs/plans/checklists-and-lists.md`).
+     */
+    public fun checkBoxAt(text: TextElement, paperColor: Int, localPointMm: io.github.valerioisufi.pageboard.model.geometry.Point): Int? = null
+
     /** Drops what the adapter keeps of the texts it laid out (e.g. its formulas became renderable). */
     public fun clearCaches() {}
 
@@ -116,14 +123,26 @@ public class TextLineMetrics(public val height: Float, public val baseline: Floa
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
  * corner, before its rotation, which turns it around that corner, [height] being the height its
  * lines take): its [words], its [formulas], the [boxes] drawn under them (the backgrounds of its
- * code), and its clickable [links].
+ * code), its clickable [links] and the boxes of its checklists ([checkBoxes]).
  */
 public class TextBlockLayout(
     public val words: List<TextWord>,
     public val formulas: List<TextFormula>,
     public val height: Float,
     public val boxes: List<TextBox> = emptyList(),
-    public val links: List<TextLink> = emptyList()
+    public val links: List<TextLink> = emptyList(),
+    public val checkBoxes: List<TextCheckBox> = emptyList()
+)
+
+/**
+ * The box of an item of a checklist laid out in a text block: the start of its item in the source
+ * of the text ([itemStart]), whether it is [checked], and the [rect] a tap on it takes, in
+ * millimeters of the block (a little larger than its glyph, a target for a finger).
+ */
+public class TextCheckBox(
+    public val itemStart: Int,
+    public val checked: Boolean,
+    public val rect: io.github.valerioisufi.pageboard.model.geometry.Rect
 )
 
 /** A link laid out inside a text block: the [url] it opens and the line [rects] it covers in millimeters. */

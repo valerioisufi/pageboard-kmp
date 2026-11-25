@@ -1,5 +1,10 @@
 package io.github.valerioisufi.pageboard.canvas
 
+import io.github.valerioisufi.pageboard.model.change.LockElements
+import io.github.valerioisufi.pageboard.model.geometry.Point
+import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.geometry.Offset
@@ -141,5 +146,62 @@ class TextGesturesTest {
         editor.finishEditing()
         assertEquals("Moved", controller.document.pages[1].texts.single().text)
         assertTrue(first.texts.isEmpty())
+    }
+
+    /** Lays out a box of a checklist at the start of the first line of every text, [BOX_MM] wide. */
+    private class FirstBoxAdapter : TextTileAdapter {
+        override fun drawText(canvas: Canvas, text: TextElement, mmToCanvas: Matrix2D, paperColor: Int) = Unit
+
+        override fun checkBoxAt(text: TextElement, paperColor: Int, localPointMm: Point): Int? =
+            if (localPointMm.x in 0f..BOX_MM && localPointMm.y in 0f..BOX_MM) 0 else null
+    }
+
+    @Test
+    fun aTapOnABoxOfTheChecklistChecksItWithoutOpeningTheText() = withCanvas { scene, controller ->
+        controller.textAdapter = FirstBoxAdapter()
+        val page = controller.document.pages[0]
+        val list = TextElement().apply { text = "- [ ] milk"; x = 20f; y = 40f; width = 60f; height = 10f }
+        controller.session.submit(AddElements.of(page, listOf(list)))
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
+        val box = mmToScreen.mapPoint(22f, 42f).toCompose()
+
+        // The hand tool
+        controller.selectTool(Tool.PAN)
+        scene.click(box)
+        assertEquals("- [x] milk", page.texts.single().text)
+        assertFalse(controller.textEditorManager.isEditing)
+        // A second tap right after is no double tap: the box back as it was, the text not opened
+        scene.click(box)
+        assertEquals("- [ ] milk", page.texts.single().text)
+        assertFalse(controller.textEditorManager.isEditing)
+        controller.undo()
+        assertEquals("- [x] milk", page.texts.single().text, "each tap one step of undo")
+
+        // The text tool: the box, not the text opened
+        controller.selectTool(Tool.TEXT)
+        time += 1_000
+        scene.click(box)
+        assertEquals("- [ ] milk", page.texts.single().text)
+        assertFalse(controller.textEditorManager.isEditing)
+        // Beside the box, the text tool opens the text as before
+        time += 1_000
+        scene.click(mmToScreen.mapPoint(50f, 45f).toCompose())
+        assertTrue(controller.textEditorManager.isEditing)
+    }
+
+    @Test
+    fun theBoxOfALockedTextStaysAsItIs() = withCanvas { scene, controller ->
+        controller.textAdapter = FirstBoxAdapter()
+        val page = controller.document.pages[0]
+        val list = TextElement().apply { text = "- [ ] milk"; x = 20f; y = 40f; width = 60f; height = 10f }
+        controller.session.submit(AddElements.of(page, listOf(list)))
+        controller.session.submit(LockElements(page.id, listOf(list.id), true))
+        controller.selectTool(Tool.PAN)
+        scene.click(assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(22f, 42f).toCompose())
+        assertEquals("- [ ] milk", page.texts.single().text)
+    }
+
+    private companion object {
+        const val BOX_MM = 5f
     }
 }

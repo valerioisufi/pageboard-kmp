@@ -61,7 +61,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Numbered checklists, the count in the bar and its options (numbered, the items done below, the preference), the boxes of other applications pasted; tests; ABI recorded | Done |
-| 2 | A box checked from the page: `checkBoxAt` on the adapters, `toggleCheckBoxAt`, the tap in `CanvasGestureHandler`; tests | Pending |
+| 2 | A box checked from the page: `checkBoxAt` on the adapters, `toggleCheckBoxAt`, the tap in `CanvasGestureHandler`; tests | Done |
 | 3 | Numbers by level (`1.1`), `(a)` `(1)` `(i)`, the bullets chosen; the picker; the notation kept readable; tests | Pending |
 | 4 | A list going on in another box (`continueNumberingFrom`): `ListContinuation`, the page, the editor, the PDF, the toggle in the picker; tests | Pending |
 
@@ -79,6 +79,13 @@ Taken alone, revertible:
    checked from the bar, from the keyboard (⌘↩) and by a tap in the editor.
 4. **The count is of the checklist of the caret**, the whole text when the caret is out of a list;
    for texts selected with the lasso, the sum of their checklists.
+5. **A box on the page is checked by a tap of the hand tool (a finger in stylus-only mode), or of
+   the text tool**, which then does not open the text; a pen tool draws over it as before. A box
+   of a text hidden by its layer, locked, or of a document only read stays as it is. Two taps on a
+   box are no double tap: the box goes back, the text is not opened.
+6. **A tap that opens a link lets the camera go** and ends the gesture like any other: before, it
+   left the gesture early (its mode and its pointer kept, the camera held), and a link of a text
+   hidden by its layer opened.
 
 ## Left for later
 

@@ -30,6 +30,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextBox
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextCheckBox
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFormula
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
@@ -41,6 +42,7 @@ import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
+import io.github.valerioisufi.pageboard.ui.editor.PresentedBox
 import io.github.valerioisufi.pageboard.model.text.TextBackground
 import io.github.valerioisufi.pageboard.model.text.TextFont
 import io.github.valerioisufi.pageboard.model.text.TextFonts
@@ -142,7 +144,8 @@ public class ComposeTextTileAdapter(
         val tables: List<PresentedTable<ImageBitmap>>,
         val bars: List<CodeChip>,
         val barColor: Color,
-        val links: List<PresentedLink> = emptyList()
+        val links: List<PresentedLink> = emptyList(),
+        val checkBoxes: List<PresentedBox> = emptyList()
     ) {
         /** The formulas of the text and of the cells of its tables, where they are drawn in its layout. */
         val allFormulas: List<Pair<PresentedFormula<ImageBitmap>, Rect>>
@@ -232,6 +235,13 @@ public class ComposeTextTileAdapter(
         return onTextLayoutThread { layoutOf(text, paperColor) }
     }
 
+    override fun checkBoxAt(text: TextElement, paperColor: Int, localPointMm: Point): Int? {
+        val laid = layout(text, paperColor) ?: return null
+        return laid.checkBoxes.firstOrNull { box ->
+            localPointMm.x in box.rect.left..box.rect.right && localPointMm.y in box.rect.top..box.rect.bottom
+        }?.itemStart
+    }
+
     override fun linkAt(text: TextElement, paperColor: Int, localPointMm: Point): String? {
         val laid = layout(text, paperColor) ?: return null
         return laid.links.firstOrNull { link ->
@@ -299,7 +309,21 @@ public class ComposeTextTileAdapter(
                 }
             }
         }
-        TextBlockLayout(words, formulas, layout.size.height / scale, boxes, textLinks)
+        val checkBoxes = prepared.checkBoxes.mapNotNull { box -> checkBoxRect(layout, box, left, scale)?.let { TextCheckBox(box.itemStart, box.checked, it) } }
+        TextBlockLayout(words, formulas, layout.size.height / scale, boxes, textLinks, checkBoxes)
+    }
+
+    /**
+     * Where a tap checks [box] of [layout], in millimeters of the block: its glyph and a quarter of a
+     * line around it (as in the editor, see `boxAt`); `null` for a glyph not laid out.
+     */
+    private fun checkBoxRect(layout: TextLayoutResult, box: PresentedBox, left: Float, scale: Float): MmRect? {
+        val chars = layout.layoutInput.text.text
+        if (box.range.first !in chars.indices || box.range.last !in chars.indices) return null
+        val first = layout.getBoundingBox(box.range.first)
+        val last = layout.getBoundingBox(box.range.last)
+        val slack = first.height * 0.25f
+        return MmRect((first.left - slack + left) / scale, (first.top - slack) / scale, (last.right + slack + left) / scale, (first.bottom + slack) / scale)
     }
 
     private fun linkRects(layout: TextLayoutResult, shownStart: Int, shownEnd: Int, left: Float, top: Float, scale: Float): List<MmRect> {
@@ -588,7 +612,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables, layout.quoteBars(shown.quotes, fontPx), color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA), shown.links)
+        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables, layout.quoteBars(shown.quotes, fontPx), color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA), shown.links, shown.boxes)
     }
 
     public companion object {

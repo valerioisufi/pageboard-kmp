@@ -9,6 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.pageboard.canvas.CanvasGestureHandler
 import io.github.valerioisufi.pageboard.canvas.platform.encodePng
 import io.github.valerioisufi.pageboard.canvas.PageboardColors
@@ -25,6 +27,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileManager
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
+import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
 import io.github.valerioisufi.pageboard.canvas.tool.LassoMode
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.BrushConfig
@@ -38,6 +41,8 @@ import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.change.AddElements
+import io.github.valerioisufi.pageboard.model.change.UpdateTexts
+import io.github.valerioisufi.pageboard.model.change.toData
 import io.github.valerioisufi.pageboard.model.change.ChangeObserver
 import io.github.valerioisufi.pageboard.model.change.ChangeOrigin
 import io.github.valerioisufi.pageboard.model.change.ChangePersister
@@ -518,11 +523,38 @@ public class PageboardController(
         val edited = textEditorManager.activeTextItem
         val paper = page.background.backgroundColor
         for (text in page.texts.asReversed()) {
-            if (text === edited || !text.containsPoint(mmX, mmY)) continue
+            if (text === edited || !page.isElementVisible(text) || !text.containsPoint(mmX, mmY)) continue
             val raw = adapter.linkAt(text, paper, text.toLocal(mmX, mmY)) ?: continue
             RichTextParser.openableUrl(raw)?.let { return it }
         }
         return null
+    }
+
+    /**
+     * Checks or unchecks the box of a checklist under ([mmX], [mmY]) on [pageIndex], without opening
+     * the editor, as one step of undo (`docs/plans/checklists-and-lists.md`); the items done move
+     * below the others when [moveCompletedChecklistsToBottom]. Whether a box was there: none of a
+     * text being written, hidden, locked, or of a document that is only read.
+     */
+    internal fun toggleCheckBoxAt(pageIndex: Int, mmX: Float, mmY: Float): Boolean {
+        if (isReadOnly) return false
+        val adapter = tileManager.tileRenderer.textAdapter ?: return false
+        val page = document.pages.getOrNull(pageIndex) ?: return false
+        val edited = textEditorManager.activeTextItem
+        val paper = page.background.backgroundColor
+        for (text in page.texts.asReversed()) {
+            if (text === edited || !page.isElementVisible(text) || !text.containsPoint(mmX, mmY)) continue
+            val itemStart = adapter.checkBoxAt(text, paper, text.toLocal(mmX, mmY)) ?: continue
+            if (page.isElementLocked(text)) return false
+            val value = TextFieldValue(text.text, TextRange(itemStart))
+            val toggled = RichTextEditing.toggleCheckedAt(value, itemStart)
+            val next = if (moveCompletedChecklistsToBottom) RichTextEditing.moveCompletedToEnd(toggled, onlyItemStart = itemStart) else toggled
+            if (next.text == text.text) return false
+            session.submit(UpdateTexts(page.id, listOf(text.toData().copy(text = next.text))))
+            requestRedraw()
+            return true
+        }
+        return false
     }
 
     /**

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -185,6 +186,9 @@ internal class CanvasGestureHandler(
 
     /** The stroke being drawn became its shape: the pen moving on leaves it as it is. */
     private var strokeSnapped = false
+
+    /** Whether the tap being ended did something of its own (a box checked, a link opened). */
+    private var tapTaken = false
     private var inkInputType = InputToolType.UNKNOWN
     private var lastTapTime = 0L
     private var lastTapPosition = Offset.Zero
@@ -1041,8 +1045,9 @@ internal class CanvasGestureHandler(
             }
 
             Mode.PAN -> {
-                if (wasTap && openLinkAt(position)) return
-                val velocity = velocityTracker.calculateVelocity()
+                // A tap on a box of a checklist checks it, one on a link opens it: the camera is let go all the same
+                tapTaken = wasTap && (toggleCheckBoxAt(position) || openLinkAt(position))
+                val velocity = if (tapTaken) Velocity.Zero else velocityTracker.calculateVelocity()
                 controller.viewport.camera.onRelease(velocity.x, velocity.y)
                 controller.requestRedraw()
             }
@@ -1078,8 +1083,9 @@ internal class CanvasGestureHandler(
             }
 
             Mode.TEXT_TAP -> {
-                if (wasTap && primaryHeld && openLinkAt(position)) return
-                if (wasTap) onTextToolTap(position)
+                // A box of a checklist is checked rather than its text opened; a link opens with the primary key held
+                tapTaken = wasTap && (toggleCheckBoxAt(position) || (primaryHeld && openLinkAt(position)))
+                if (wasTap && !tapTaken) onTextToolTap(position)
             }
 
             Mode.EDITOR_MOVE, Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
@@ -1173,9 +1179,12 @@ internal class CanvasGestureHandler(
             else -> {}
         }
 
-        // Double tap on a text block: edit it (whatever the active tool)
+        // Double tap on a text block: edit it (whatever the active tool). A tap that checked a box or
+        // opened a link is not the first of a double tap: a box checked twice stays a box
         val editorMode = mode == Mode.EDITOR_TAP || mode == Mode.EDITOR_MOVE || mode == Mode.EDITOR_RESIZE_LEFT || mode == Mode.EDITOR_RESIZE_RIGHT
-        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && !editorMode) {
+        if (tapTaken) {
+            lastTapTime = 0L
+        } else if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && !editorMode) {
             val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
                     (position - lastTapPosition).getDistance() <= touchSlop * 2f
             if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP && mode != Mode.PLACE_ITEM) {
@@ -1187,6 +1196,7 @@ internal class CanvasGestureHandler(
 
         mode = Mode.NONE
         activePointer = null
+        tapTaken = false
     }
 
     /** The shape under [position] (screen pixels), on top, with the index of its page: hit by its outline, or its inside when filled. */
@@ -1326,6 +1336,13 @@ internal class CanvasGestureHandler(
     // ==========================================================
     // Text tool
     // ==========================================================
+
+    /** Checks or unchecks the box of a checklist under [position], if any (see [PageboardController.toggleCheckBoxAt]). */
+    private fun toggleCheckBoxAt(position: Offset): Boolean {
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return false
+        val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return false
+        return controller.toggleCheckBoxAt(pageIndex, mm.x, mm.y)
+    }
 
     private fun openLinkAt(position: Offset): Boolean {
         val open = controller.onOpenLink ?: return false

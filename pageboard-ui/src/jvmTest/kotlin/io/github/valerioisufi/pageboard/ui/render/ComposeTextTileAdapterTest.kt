@@ -272,4 +272,21 @@ class ComposeTextTileAdapterTest {
         val serifLayout = assertNotNull(adapter.layout(serif, TextTileAdapter.NO_PAPER))
         assertEquals(TextFace.SERIF_REGULAR, serifLayout.words.single().face)
     }
+
+    @Test
+    fun theBoxesOfAChecklistAreFoundWhereTheyAreDrawn() {
+        val element = text("- [ ] milk\n- [x] eggs\n\n1. [ ] numbered")
+        val boxes = assertNotNull(adapter.layout(element, TextTileAdapter.NO_PAPER)).checkBoxes
+        assertEquals(listOf(0, 11, 23), boxes.map { it.itemStart })
+        assertEquals(listOf(false, true, false), boxes.map { it.checked })
+        // Each box on its own line, one under the other
+        assertTrue(boxes[0].rect.top < boxes[1].rect.top && boxes[1].rect.top < boxes[2].rect.top, "${boxes.map { it.rect }}")
+        for (box in boxes) {
+            val center = Point((box.rect.left + box.rect.right) / 2f, (box.rect.top + box.rect.bottom) / 2f)
+            assertEquals(box.itemStart, adapter.checkBoxAt(element, TextTileAdapter.NO_PAPER, center))
+        }
+        // The words of an item are not its box
+        val word = assertNotNull(adapter.layout(element, TextTileAdapter.NO_PAPER)).words.first { it.text.startsWith("milk") }
+        assertEquals(null, adapter.checkBoxAt(element, TextTileAdapter.NO_PAPER, Point(word.left + word.width / 2f, (word.lineTop + word.lineBottom) / 2f)))
+    }
 }

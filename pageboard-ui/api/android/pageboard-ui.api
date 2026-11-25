@@ -975,6 +975,7 @@ public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAda
 	public static final field Companion Lio/github/valerioisufi/pageboard/ui/render/ComposeTextTileAdapter$Companion;
 	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;)V
 	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/pageboard/ui/theme/NotesFonts;Lio/github/valerioisufi/pageboard/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun checkBoxAt (Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/Integer;
 	public fun clearCaches ()V
 	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
 	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;

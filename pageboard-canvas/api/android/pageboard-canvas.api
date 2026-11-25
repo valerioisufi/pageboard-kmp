@@ -1551,9 +1551,10 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/PdfTileAd
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout {
 	public static final field $stable I
-	public fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;)V
-	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBoxes ()Ljava/util/List;
+	public final fun getCheckBoxes ()Ljava/util/List;
 	public final fun getFormulas ()Ljava/util/List;
 	public final fun getHeight ()F
 	public final fun getLinks ()Ljava/util/List;
@@ -1576,6 +1577,14 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextBox {
 	public final fun getRadius ()F
 	public final fun getTop ()F
 	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextCheckBox {
+	public static final field $stable I
+	public fun <init> (IZLio/github/valerioisufi/pageboard/model/geometry/Rect;)V
+	public final fun getChecked ()Z
+	public final fun getItemStart ()I
+	public final fun getRect ()Lio/github/valerioisufi/pageboard/model/geometry/Rect;
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextFace : java/lang/Enum {
@@ -1627,6 +1636,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextLink 
 public abstract interface class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter {
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$Companion;
 	public static final field NO_PAPER I
+	public fun checkBoxAt (Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/Integer;
 	public fun clearCaches ()V
 	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
 	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
@@ -1640,6 +1650,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileA
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$DefaultImpls {
+	public static fun checkBoxAt (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/Integer;
 	public static fun clearCaches (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;)V
 	public static fun layout (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public static fun lineMetrics (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
