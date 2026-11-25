@@ -336,4 +336,10 @@
     <string name="checklist_keep_completed_below">Garder les terminées en bas</string>
     <string name="checklist_keep_completed_below_hint">Un élément coché passe sous ceux qui restent à faire</string>
     <string name="checklist_progress">%1$d sur %2$d terminées</string>
+    <string name="text_editor_action_bullets">Puces…</string>
+    <string name="numbering_outline">Par niveau</string>
+    <string name="bullet_disc">Disque</string>
+    <string name="bullet_circle">Cercle</string>
+    <string name="bullet_square">Carré</string>
+    <string name="bullet_dash">Tiret</string>
 </resources>

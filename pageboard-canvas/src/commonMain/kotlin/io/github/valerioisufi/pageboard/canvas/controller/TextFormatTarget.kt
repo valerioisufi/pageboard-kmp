@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.canvas.controller
 import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
 import io.github.valerioisufi.pageboard.canvas.text.TableEditing
 import io.github.valerioisufi.pageboard.model.TextAlignment
+import io.github.valerioisufi.pageboard.model.text.ListNumbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 
 /**
@@ -87,6 +88,9 @@ public interface TextFormatTarget {
     /** The number the numbered list of the selection starts from. */
     public val numberingStart: Int get() = 1
 
+    /** The bullet chosen for the bulleted list of the selection (`null` for none, or the bullet of its level). */
+    public val bulletStyle: ListNumbering.Bullet? get() = null
+
     /** Adds or removes [format] around the selection of the text being written. */
     public fun toggle(format: RichTextEditing.Format) {}
 
@@ -128,6 +132,9 @@ public interface TextFormatTarget {
 
     /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
     public fun setNumbering(style: NumberingStyle?, start: Int) {}
+
+    /** The bulleted list of the selection with [bullet] (`null`: the bullet of its level), made a bulleted list if it is not one. */
+    public fun setBullet(bullet: ListNumbering.Bullet?) {}
 
     /** Adds 2 spaces of indentation to the lines of the selection. */
     public fun indent() {}

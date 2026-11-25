@@ -84,6 +84,17 @@ public object ListRenumbering {
         }
 
         val replacements = ArrayList<Replacement>()
+        // The numbers written by this edit, for the markers by level nested in them
+        val numbers = HashMap<Int, Int>()
+        fun parentsOf(index: Int): List<Int> {
+            val parents = ArrayList<Int>()
+            var parent = items[index].parent
+            while (parent >= 0) {
+                if (items[parent].span.ordered) parents += numbers[parent] ?: items[parent].ordinal
+                parent = items[parent].parent
+            }
+            return parents.asReversed()
+        }
         for (list in items.indices.filter { items[it].span.ordered }.groupBy { items[it].list }.values) {
             val first = items[list[0]]
             val origin = origins[list[0]]
@@ -102,8 +113,15 @@ public object ListRenumbering {
             // An item moved to a new level takes the numbering of that level, not the style it had
             val style = if (moved) null else first.style
             for ((position, index) in list.withIndex()) {
-                write(new, items[index].span, style, start + position, spans, replacements)
+                numbers[index] = start + position
+                val parents = if (style?.outline == true) parentsOf(index) else emptyList()
+                write(new, items[index].span, style, start + position, spans, replacements, parents)
             }
+        }
+        // The numbers of the parents written in a marker by level follow them
+        for ((index, item) in items.withIndex()) {
+            if (item.style?.outline != true || index in numbers) continue
+            write(new, item.span, item.style, item.span.number, spans, replacements, parentsOf(index))
         }
         if (replacements.isEmpty()) return null
         return Renumbered(applied(new, replacements), replacements)
@@ -116,8 +134,11 @@ public object ListRenumbering {
     internal fun asShown(text: String): String {
         val spans = RichTextParser.parse(text)
         val replacements = ArrayList<Replacement>()
-        for (item in ListNumbering.items(text, spans)) {
-            if (item.span.ordered) write(text, item.span, item.style, item.ordinal, spans, replacements)
+        val items = ListNumbering.items(text, spans)
+        for ((index, item) in items.withIndex()) {
+            if (!item.span.ordered) continue
+            val parents = if (item.style?.outline == true) ListNumbering.outlineParents(items, index) else emptyList()
+            write(text, item.span, item.style, item.ordinal, spans, replacements, parents)
         }
         return if (replacements.isEmpty()) text else applied(text, replacements)
     }
@@ -163,6 +184,10 @@ public object ListRenumbering {
         return true
     }
 
+    /** The numbers of the parents written in the marker of [item] (a marker by level). */
+    private fun writtenParents(text: String, item: Span): List<Int> =
+        ListMarker.at(text, ListNumbering.markerStart(text, item))?.parents.orEmpty()
+
     /** Whether the markers of two items are written the same, their indentation apart. */
     private fun sameMarker(old: String, oldSpan: Span, new: String, span: Span): Boolean {
         val oldMarker = ListNumbering.markerStart(old, oldSpan)
@@ -187,12 +212,16 @@ public object ListRenumbering {
         return (if (start < 0) oldItems[origin].ordinal else start) + before
     }
 
-    /** Adds to [replacements] the marker of [number] in [style] for [item], and its lines moved to follow its text. */
-    private fun write(text: String, item: Span, style: NumberingStyle?, number: Int, spans: List<Span>, replacements: MutableList<Replacement>) {
-        if (item.number == number && item.style == style) return
+    /**
+     * Adds to [replacements] the marker of [number] in [style] for [item] (after the numbers of its
+     * [parents] for a marker by level), and its lines moved to follow its text; nothing when it is
+     * written so.
+     */
+    private fun write(text: String, item: Span, style: NumberingStyle?, number: Int, spans: List<Span>, replacements: MutableList<Replacement>, parents: List<Int> = emptyList()) {
+        if (item.number == number && item.style == style && (style?.outline != true || writtenParents(text, item) == parents)) return
         val marker = ListNumbering.markerStart(text, item)
         val box = if (item.checked != null) TaskBox.write(item.checked) + " " else ""
-        val written = ListMarker.write(style, number) + box
+        val written = ListMarker.write(style, number, parents) + box
         val length = item.contentStart - marker
         replacements += Replacement(marker, length, written)
         if (written.length != length) moveLines(text, item, written.length - length, spans, replacements)

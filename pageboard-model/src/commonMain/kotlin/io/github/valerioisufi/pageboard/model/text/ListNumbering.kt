@@ -19,8 +19,8 @@ import io.github.valerioisufi.pageboard.model.text.RichTextParser.Span
  */
 public object ListNumbering {
 
-    /** The bullet of a bulleted item. */
-    public enum class Bullet { DISC, CIRCLE, SQUARE }
+    /** The bullet of a bulleted item: the three of the levels, and a dash a list may choose. */
+    public enum class Bullet { DISC, CIRCLE, SQUARE, DASH }
 
     /** The numbering of a numbered item. */
     public enum class Numbering { DECIMAL, LOWER_ALPHA, LOWER_ROMAN, UPPER_ALPHA, UPPER_ROMAN }
@@ -32,7 +32,8 @@ public object ListNumbering {
      * number of a numbered item (0 for a bulleted one); [run] is shared by the items not parted by
      * a line of other text; [style] is the one its list chose (`null` for a number by level);
      * [checked] says whether an item of a checklist is checked (`null` for any other item), its
-     * label then the glyph of its box ([boxGlyphOf]) and [bullet] `null`.
+     * label then the glyph of its box ([boxGlyphOf]) and [bullet] `null`; [chosenBullet] is the bullet
+     * its bulleted list chose (`null` for the bullet of its level).
      */
     public class Item(
         public val span: Span,
@@ -45,7 +46,8 @@ public object ListNumbering {
         public val ordinal: Int = 0,
         public val run: Int = 0,
         public val style: NumberingStyle? = null,
-        public val checked: Boolean? = null
+        public val checked: Boolean? = null,
+        public val chosenBullet: Bullet? = null
     )
 
     /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
@@ -59,7 +61,7 @@ public object ListNumbering {
         // The items open, the innermost last (indices in the result)
         val open = ArrayList<Int>()
         // The siblings counted: by the index of their parent (-1 for the top), the last list and its count
-        class Siblings(val list: Int, val ordered: Boolean, val first: Int, val style: NumberingStyle?, var count: Int)
+        class Siblings(val list: Int, val ordered: Boolean, val first: Int, val style: NumberingStyle?, val bullet: Bullet?, var count: Int)
         val siblings = HashMap<Int, Siblings>()
         var lists = 0
         var previousEnd = -1
@@ -77,13 +79,15 @@ public object ListNumbering {
             }
             val parent = open.lastOrNull() ?: -1
             val previous = siblings[parent]
-            // A marker of no style goes on any list; one of a style it cannot write starts another
-            val fits = span.style == null || previous?.style?.admits(span.style) == true
+            // A marker of no style goes on any list; one of a style it cannot write starts another,
+            // and so does a bullet chosen other than the one of the list
+            val fits = (span.style == null || previous?.style?.admits(span.style) == true) &&
+                (span.bullet == null || previous?.bullet == span.bullet)
             val group = if (previous != null && previous.ordered == span.ordered && fits) {
                 previous.count++
                 previous
             } else {
-                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, span.style, 0).also { siblings[parent] = it }
+                Siblings(lists++, span.ordered, if (span.ordered) span.number else 0, span.style, span.bullet, 0).also { siblings[parent] = it }
             }
             val depth = open.size
             val label: String
@@ -93,15 +97,21 @@ public object ListNumbering {
             if (span.ordered) {
                 val numberedAbove = open.count { result[it].span.ordered }
                 numbering = group.style?.numbering ?: BY_LEVEL[numberedAbove % BY_LEVEL.size]
-                val ordinalLabel = format(ordinal, numbering) + (group.style?.delimiter ?: '.')
+                val style = group.style
+                val ordinalLabel = when {
+                    style?.enclosed == true -> "(" + format(ordinal, numbering) + ")"
+                    // The numbers of the numbered items it is nested in, then its own
+                    style?.outline == true -> open.filter { result[it].span.ordered }.joinToString("") { "${result[it].ordinal}." } + "$ordinal."
+                    else -> format(ordinal, numbering) + (style?.delimiter ?: '.')
+                }
                 label = if (span.checked != null) "$ordinalLabel ${boxGlyphOf(span.checked)}" else ordinalLabel
             } else if (span.checked != null) {
                 label = boxGlyphOf(span.checked)
             } else {
-                bullet = Bullet.entries[depth % Bullet.entries.size]
+                bullet = group.bullet ?: BY_DEPTH[depth % BY_DEPTH.size]
                 label = glyphOf(bullet)
             }
-            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run, group.style, span.checked)
+            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal, run, group.style, span.checked, if (span.ordered) null else group.bullet)
             open += index
             previousEnd = span.end
         }
@@ -138,6 +148,21 @@ public object ListNumbering {
         Bullet.DISC -> "•"
         Bullet.CIRCLE -> "◦"
         Bullet.SQUARE -> "▪"
+        Bullet.DASH -> "–"
+    }
+
+    /**
+     * The numbers of the numbered items [index] of [items] is nested in, from the outermost: what a
+     * marker by level writes before its own number (`1.2.`).
+     */
+    public fun outlineParents(items: List<Item>, index: Int): List<Int> {
+        val parents = ArrayList<Int>()
+        var parent = items[index].parent
+        while (parent >= 0) {
+            if (items[parent].span.ordered) parents += items[parent].ordinal
+            parent = items[parent].parent
+        }
+        return parents.asReversed()
     }
 
     /**
@@ -210,6 +235,9 @@ public object ListNumbering {
         }
         return out.toString()
     }
+
+    /** The bullets of a list that chose none, by its depth: the dash only when chosen. */
+    private val BY_DEPTH = listOf(Bullet.DISC, Bullet.CIRCLE, Bullet.SQUARE)
 
     /** The numbering of a list with no style, by the numbered items it is nested in. */
     private val BY_LEVEL = listOf(Numbering.DECIMAL, Numbering.LOWER_ALPHA, Numbering.LOWER_ROMAN)

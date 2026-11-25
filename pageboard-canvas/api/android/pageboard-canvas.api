@@ -883,6 +883,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getBoxWidth ()F
 	public final fun getBoxX ()F
 	public final fun getBoxY ()F
+	public fun getBulletStyle ()Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public final fun getChainComesFrom ()Z
 	public final fun getChainGoesOn ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
@@ -928,6 +929,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/pageboard/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V
 	public final fun saveWriting ()V
+	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setHeading (I)V
 	public fun setMoveCompletedToBottom (Z)V
@@ -967,6 +969,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public abstract fun changeFontSize (F)V
 	public abstract fun getAlignment ()Lio/github/valerioisufi/pageboard/model/TextAlignment;
 	public fun getBackground ()Ljava/lang/Integer;
+	public fun getBulletStyle ()Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
@@ -990,6 +993,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun isActive (Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Z
 	public fun moveCompletedChecklistsToBottom ()V
 	public fun outdent ()V
+	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
 	public fun setHeading (I)V
 	public fun setMoveCompletedToBottom (Z)V
 	public fun setNumbering (Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
@@ -1010,6 +1014,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun changeBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/Integer;)V
 	public static fun changeFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Ljava/lang/String;)V
 	public static fun getBackground (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
+	public static fun getBulletStyle (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public static fun getChecklistProgress (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lkotlin/Pair;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/String;
@@ -1031,6 +1036,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun isActive (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Z
 	public static fun moveCompletedChecklistsToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun outdent (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
+	public static fun setBullet (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
 	public static fun setHeading (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;I)V
 	public static fun setMoveCompletedToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
 	public static fun setNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)V
@@ -1781,6 +1787,7 @@ public final class io/github/valerioisufi/pageboard/canvas/snap/SnapGuide {
 public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing;
+	public final fun bulletOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public final fun checklistProgressOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lkotlin/Pair;
 	public final fun codeBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;
 	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
@@ -1802,6 +1809,7 @@ public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing 
 	public final fun numberingStartOf (Landroidx/compose/ui/text/input/TextFieldValue;)I
 	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun setBullet (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setHeading (Landroidx/compose/ui/text/input/TextFieldValue;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setNumbering (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;

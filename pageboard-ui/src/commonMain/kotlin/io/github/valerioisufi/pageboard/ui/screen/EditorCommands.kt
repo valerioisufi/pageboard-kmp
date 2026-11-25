@@ -115,6 +115,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_actio
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbering
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_bullets
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_checklist
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_move_completed
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_checklist_options
@@ -726,6 +727,15 @@ internal class EditorCommands internal constructor(
         isEnabled = { formatsText && textTarget?.inTable == false }
     ) { numberingOpen = true }
 
+    /** Whether the picker of the bullets is open, in the formatting bar. */
+    var bulletsOpen: Boolean by mutableStateOf(false)
+
+    /** Opens the picker of the bullets of the bulleted lists. */
+    val bullets = Command(
+        "format-bullets", label(Res.string.text_editor_action_bullets), CommandGroup.FORMAT,
+        isEnabled = { formatsText && textTarget?.inTable == false }
+    ) { bulletsOpen = true }
+
     /** Inserts a table of three rows and three columns (the bar offers its size, see `TableButton`). */
     val table = Command(
         "format-table", label(Res.string.text_editor_action_table), CommandGroup.FORMAT,
@@ -772,7 +782,7 @@ internal class EditorCommands internal constructor(
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
         bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, heading2, heading3, normalText, headingLevels,
-        bulletList, numberedList, numbering, checklist, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
+        bulletList, bullets, numberedList, numbering, checklist, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()
 

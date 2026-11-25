@@ -336,4 +336,10 @@
     <string name="checklist_keep_completed_below">Erledigte unten halten</string>
     <string name="checklist_keep_completed_below_hint">Ein abgehakter Eintrag rückt unter die noch offenen</string>
     <string name="checklist_progress">%1$d von %2$d erledigt</string>
+    <string name="text_editor_action_bullets">Aufzählungszeichen…</string>
+    <string name="numbering_outline">Nach Ebene</string>
+    <string name="bullet_disc">Punkt</string>
+    <string name="bullet_circle">Kreis</string>
+    <string name="bullet_square">Quadrat</string>
+    <string name="bullet_dash">Strich</string>
 </resources>

@@ -67,7 +67,8 @@ public object RichTextParser {
         val numbered: Boolean = false,
         val listItem: Span? = null,
         val style: NumberingStyle? = null,
-        val checked: Boolean? = null
+        val checked: Boolean? = null,
+        val bullet: ListNumbering.Bullet? = null
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -108,6 +109,7 @@ public object RichTextParser {
             val start = lineStart + quoteMarkerOf(text, lineStart, quotes)
             val indent = match.groupValues[1]
             val marker = match.groupValues[2]
+            val bullet = ListMarker.bulletAt(unquoted, lineStart + indent.length)
             var contentStart = lineStart + indent.length + marker.length
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             val level = indentLevel(indent.substring(start - lineStart))
@@ -117,7 +119,7 @@ public object RichTextParser {
                 contentStart += TaskBox.LENGTH
                 while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             }
-            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false, checked = checked)
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false, checked = checked, bullet = bullet)
         }
         for (match in NUMBERED_LIST.findAll(unquoted)) {
             val lineStart = match.range.first
@@ -404,8 +406,9 @@ public object RichTextParser {
                 columns.removeAt(columns.lastIndex)
                 items.removeAt(items.lastIndex)
             }
-            // A marker: "-", "*" or "+" then a space or a tab, or a number (see ListMarker)
-            val numbered = if (text[i] == '-' || text[i] == '*' || text[i] == '+') null else ListMarker.at(text, i) ?: return
+            // A marker: "-", "*" or "+" then a space or a tab, a bullet chosen, or a number (see ListMarker)
+            val bullet = ListMarker.bulletAt(text, i)
+            val numbered = if (text[i] == '-' || text[i] == '*' || text[i] == '+' || bullet != null) null else ListMarker.at(text, i) ?: return
             var marker = i + (numbered?.length ?: 1)
             if (numbered == null) {
                 if (text.getOrNull(marker) != ' ' && text.getOrNull(marker) != '\t') return
@@ -420,7 +423,7 @@ public object RichTextParser {
             val contentStart = marker
             val column = indent + RichTextParser.columnOf(text, i, contentStart)
             columns += column
-            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = numbered != null, number = numbered?.number ?: 0, style = numbered?.style, checked = checked)
+            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = numbered != null, number = numbered?.number ?: 0, style = numbered?.style, checked = checked, bullet = bullet)
         }
     }
 
@@ -1010,8 +1013,8 @@ public object RichTextParser {
 
     // Inline flags such as (?m) are not supported everywhere
     private val HEADING = Regex("""^#{1,6}[ \t]+\S.*$""", RegexOption.MULTILINE)
-    private val BULLET_LIST = Regex("""^([ \t]*)([-*+])[ \t]+(.*)$""", RegexOption.MULTILINE)
-    private val NUMBERED_LIST = Regex("""^([ \t]*)[0-9A-Za-z]+[.)][ \t]+(.*)$""", RegexOption.MULTILINE)
+    private val BULLET_LIST = Regex("""^([ \t]*)([-*+]|[•◦▪–](?=  ))[ \t]+(.*)$""", RegexOption.MULTILINE)
+    private val NUMBERED_LIST = Regex("""^([ \t]*)(?:\([0-9A-Za-z]+\)|[0-9A-Za-z]+[.)](?:[0-9]+\.)*)[ \t]+(.*)$""", RegexOption.MULTILINE)
     private val TABLE_DELIMITER = Regex("""^ {0,3}\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$""")
 
     private fun indentLevel(indent: String): Int {

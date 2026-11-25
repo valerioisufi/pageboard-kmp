@@ -33,15 +33,21 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.pageboard.model.text.ListMarker
 import io.github.valerioisufi.pageboard.model.text.ListNumbering
+import io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet
 import io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import io.github.valerioisufi.pageboard.ui.components.ToolPopover
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
+import io.github.valerioisufi.pageboard.ui.generated.resources.bullet_circle
+import io.github.valerioisufi.pageboard.ui.generated.resources.bullet_dash
+import io.github.valerioisufi.pageboard.ui.generated.resources.bullet_disc
+import io.github.valerioisufi.pageboard.ui.generated.resources.bullet_square
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_automatic
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_decimal
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_delimiter
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_lower_alpha
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_lower_roman
+import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_outline
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start_earlier
 import io.github.valerioisufi.pageboard.ui.generated.resources.numbering_start_later
@@ -95,19 +101,26 @@ private fun NumberingPicker(target: TextFormatTarget) {
     val start = target.numberingStart
     val delimiter = style?.delimiter ?: '.'
     Column(modifier = Modifier.padding(6.dp).width(PICKER_WIDTH), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        AutomaticRow(selected = target.inNumberedList && style == null) { target.setNumbering(null, startFor(null, start)) }
+        AutomaticRow(stringResource(Res.string.numbering_automatic), "1. a. i.", selected = target.inNumberedList && style == null) { target.setNumbering(null, startFor(null, start)) }
+        AutomaticRow(stringResource(Res.string.numbering_outline), "1. 1.1. 1.1.1.", selected = style?.outline == true) {
+            target.setNumbering(NumberingStyle.OUTLINE, startFor(NumberingStyle.OUTLINE, start))
+        }
+        val enclosed = style?.enclosed == true
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for ((numbering, name) in STYLES) {
-                val tile = NumberingStyle(numbering, delimiter)
+                val tile = NumberingStyle(numbering, delimiter, enclosed = enclosed)
                 StyleTile(tile, name, selected = style == tile) { target.setNumbering(tile, startFor(tile, start)) }
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.numbering_delimiter), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+            val numbering = style?.numbering ?: Numbering.DECIMAL
             for (choice in NumberingStyle.DELIMITERS) {
-                val chosen = NumberingStyle(style?.numbering ?: Numbering.DECIMAL, choice)
-                Chip("1$choice", selected = style != null && delimiter == choice) { target.setNumbering(chosen, startFor(chosen, start)) }
+                val chosen = NumberingStyle(numbering, choice)
+                Chip("1$choice", selected = style != null && !enclosed && !style.outline && delimiter == choice) { target.setNumbering(chosen, startFor(chosen, start)) }
             }
+            val between = NumberingStyle(numbering, ')', enclosed = true)
+            Chip("(1)", selected = enclosed) { target.setNumbering(between, startFor(between, start)) }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.numbering_start), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
@@ -125,9 +138,12 @@ private fun NumberingPicker(target: TextFormatTarget) {
     }
 }
 
-/** The list counting by its level: `1.`, `a.`, `i.`, as a list with no style is. */
+/**
+ * A choice of the picker on a row of its own, its [name] and a [preview]: the list counting by its
+ * level (`1.`, `a.`, `i.`, as a list with no style is), or the numbers by level (`1.1.`).
+ */
 @Composable
-private fun AutomaticRow(selected: Boolean, onClick: () -> Unit) {
+private fun AutomaticRow(name: String, preview: String, selected: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -138,8 +154,8 @@ private fun AutomaticRow(selected: Boolean, onClick: () -> Unit) {
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 12.dp)
     ) {
-        Text(stringResource(Res.string.numbering_automatic), style = MaterialTheme.typography.bodyMedium, color = if (selected) colors.onPrimaryContainer else colors.onSurface, modifier = Modifier.weight(1f))
-        Text("1. a. i.", style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant)
+        Text(name, style = MaterialTheme.typography.bodyMedium, color = if (selected) colors.onPrimaryContainer else colors.onSurface, modifier = Modifier.weight(1f))
+        Text(preview, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant)
     }
 }
 
@@ -162,7 +178,7 @@ private fun RowScope.StyleTile(style: NumberingStyle, name: StringResource, sele
     ) {
         for (number in 1..3) {
             Text(
-                ListNumbering.format(number, style.numbering) + style.delimiter,
+                if (style.enclosed) "(" + ListNumbering.format(number, style.numbering) + ")" else ListNumbering.format(number, style.numbering) + style.delimiter,
                 style = MaterialTheme.typography.labelSmall,
                 fontFamily = FontFamily.Monospace,
                 color = if (selected) colors.onPrimaryContainer else colors.onSurface
@@ -195,6 +211,66 @@ private fun Chip(text: String, selected: Boolean, enabled: Boolean = true, descr
         )
     }
 }
+
+/**
+ * The bulleted list of the bar: the icon makes the lines a list or takes them out of it, the
+ * chevron beside it opens the bullets (the same state as the command "Bullets…" of the menu).
+ */
+@Composable
+internal fun BulletListButton(target: TextFormatTarget, commands: EditorCommands) {
+    val colors = MaterialTheme.colorScheme
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        FormatButton(commands.bulletList, PageboardIcons.List)
+        Box {
+            CommandTooltip(commands.bullets) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .size(width = 22.dp, height = 36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (commands.bulletsOpen) colors.primaryContainer else Color.Transparent)
+                        .keepsTextFocus()
+                        .clickable(enabled = commands.bullets.isEnabled(), role = Role.Button, onClickLabel = commands.bullets.label()) { commands.bulletsOpen = true }
+                ) {
+                    Icon(PageboardIcons.ChevronDown, contentDescription = commands.bullets.label(), tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                }
+            }
+            ToolPopover(expanded = commands.bulletsOpen, onDismissRequest = { commands.bulletsOpen = false }) {
+                BulletPicker(target)
+            }
+        }
+    }
+}
+
+/**
+ * The bullets of the list at the caret: those of its levels (`•`, `◦`, `▪`, as a list that chose
+ * none) or one for the whole list, applied at once with the picker left open. A choice with no list
+ * at the caret makes one.
+ */
+@Composable
+private fun BulletPicker(target: TextFormatTarget) {
+    val chosen = target.bulletStyle
+    Column(modifier = Modifier.padding(6.dp).width(BULLET_PICKER_WIDTH), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        AutomaticRow(stringResource(Res.string.numbering_automatic), "• ◦ ▪", selected = target.inBulletList && chosen == null) { target.setBullet(null) }
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            for ((bullet, name) in BULLETS) {
+                Chip(ListNumbering.glyphOf(bullet), selected = chosen == bullet, description = stringResource(name)) { target.setBullet(bullet) }
+            }
+        }
+    }
+}
+
+/** The bullets a list may choose, with their names. */
+private val BULLETS = listOf(
+    Bullet.DISC to Res.string.bullet_disc,
+    Bullet.CIRCLE to Res.string.bullet_circle,
+    Bullet.SQUARE to Res.string.bullet_square,
+    Bullet.DASH to Res.string.bullet_dash
+)
+
+/** The width of the picker of the bullets: four chips and their names. */
+private val BULLET_PICKER_WIDTH = 220.dp
 
 /** The start [style] takes from a list starting from [start]: the same when it can be written, else 1. */
 private fun startFor(style: NumberingStyle?, start: Int): Int = if (ListMarker.canStart(style, start)) start else 1

@@ -27,8 +27,17 @@ internal object AgentGuide {
         Example("A numbered list", "1. first\n2. second", RichTextParser.Kind.LIST_ITEM, "The numbers follow the items when they are edited."),
         Example(
             "A numbered list in a style of its own", "a.  first\nb.  second", RichTextParser.Kind.LIST_ITEM,
-            "Two spaces after the marker: `a.  text`, `A.  text`, `i.  text`, `I.  text`, `1)  text`."
+            "Two spaces after the marker: `a.  text`, `A.  text`, `i.  text`, `I.  text`, `1)  text`, `(a)  text`."
         ),
+        Example(
+            "Numbers by level", "1.  first\n  1.1.  under first\n  1.2.  again", RichTextParser.Kind.LIST_ITEM,
+            "The numbers of the items it is nested in, then its own, and two spaces after the marker."
+        ),
+        Example(
+            "A list with a bullet of its own", "–  first\n–  second", RichTextParser.Kind.LIST_ITEM,
+            "`•`, `◦`, `▪` or `–` and two spaces: the bullet of the whole list."
+        ),
+        Example("A checklist", "- [ ] to do\n- [x] done\n1. [ ] numbered", RichTextParser.Kind.LIST_ITEM, "A box after the marker of a bulleted or numbered item."),
         Example("A quote", "> what was said", RichTextParser.Kind.QUOTE),
         Example("A formula in a line", "The energy is \$E = mc^2\$.", RichTextParser.Kind.FORMULA, "LaTeX between single dollar signs."),
         Example(

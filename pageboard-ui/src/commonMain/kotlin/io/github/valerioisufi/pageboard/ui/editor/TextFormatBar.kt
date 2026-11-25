@@ -50,7 +50,7 @@ internal fun TextFormatBar(
             FormatButton(commands.codeBlock, PageboardIcons.SquareCode)
             if (target.inCodeBlock) FormatButton(commands.lineNumbers, PageboardIcons.Hash)
             HeadingButton(commands)
-            FormatButton(commands.bulletList, PageboardIcons.List)
+            BulletListButton(target, commands)
             NumberedListButton(target, commands)
             ChecklistButton(target, commands)
             FormatButton(commands.quote, PageboardIcons.Quote)

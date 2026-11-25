@@ -3063,16 +3063,22 @@ final class io.github.valerioisufi.pageboard.model.text/LatexCommand { // io.git
 }
 
 final class io.github.valerioisufi.pageboard.model.text/NumberingStyle { // io.github.valerioisufi.pageboard.model.text/NumberingStyle|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering, kotlin/Char = ...) // io.github.valerioisufi.pageboard.model.text/NumberingStyle.<init>|<init>(io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering;kotlin.Char){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering, kotlin/Char = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.model.text/NumberingStyle.<init>|<init>(io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering;kotlin.Char;kotlin.Boolean;kotlin.Boolean){}[0]
 
     final val delimiter // io.github.valerioisufi.pageboard.model.text/NumberingStyle.delimiter|{}delimiter[0]
         final fun <get-delimiter>(): kotlin/Char // io.github.valerioisufi.pageboard.model.text/NumberingStyle.delimiter.<get-delimiter>|<get-delimiter>(){}[0]
+    final val enclosed // io.github.valerioisufi.pageboard.model.text/NumberingStyle.enclosed|{}enclosed[0]
+        final fun <get-enclosed>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/NumberingStyle.enclosed.<get-enclosed>|<get-enclosed>(){}[0]
     final val numbering // io.github.valerioisufi.pageboard.model.text/NumberingStyle.numbering|{}numbering[0]
         final fun <get-numbering>(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering // io.github.valerioisufi.pageboard.model.text/NumberingStyle.numbering.<get-numbering>|<get-numbering>(){}[0]
+    final val outline // io.github.valerioisufi.pageboard.model.text/NumberingStyle.outline|{}outline[0]
+        final fun <get-outline>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/NumberingStyle.outline.<get-outline>|<get-outline>(){}[0]
 
     final fun component1(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering // io.github.valerioisufi.pageboard.model.text/NumberingStyle.component1|component1(){}[0]
     final fun component2(): kotlin/Char // io.github.valerioisufi.pageboard.model.text/NumberingStyle.component2|component2(){}[0]
-    final fun copy(io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering = ..., kotlin/Char = ...): io.github.valerioisufi.pageboard.model.text/NumberingStyle // io.github.valerioisufi.pageboard.model.text/NumberingStyle.copy|copy(io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering;kotlin.Char){}[0]
+    final fun component3(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/NumberingStyle.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/NumberingStyle.component4|component4(){}[0]
+    final fun copy(io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering = ..., kotlin/Char = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): io.github.valerioisufi.pageboard.model.text/NumberingStyle // io.github.valerioisufi.pageboard.model.text/NumberingStyle.copy|copy(io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering;kotlin.Char;kotlin.Boolean;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/NumberingStyle.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/NumberingStyle.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/NumberingStyle.toString|toString(){}[0]
@@ -3080,6 +3086,9 @@ final class io.github.valerioisufi.pageboard.model.text/NumberingStyle { // io.g
     final object Companion { // io.github.valerioisufi.pageboard.model.text/NumberingStyle.Companion|null[0]
         final const val DELIMITERS // io.github.valerioisufi.pageboard.model.text/NumberingStyle.Companion.DELIMITERS|{}DELIMITERS[0]
             final fun <get-DELIMITERS>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/NumberingStyle.Companion.DELIMITERS.<get-DELIMITERS>|<get-DELIMITERS>(){}[0]
+
+        final val OUTLINE // io.github.valerioisufi.pageboard.model.text/NumberingStyle.Companion.OUTLINE|{}OUTLINE[0]
+            final fun <get-OUTLINE>(): io.github.valerioisufi.pageboard.model.text/NumberingStyle // io.github.valerioisufi.pageboard.model.text/NumberingStyle.Companion.OUTLINE.<get-OUTLINE>|<get-OUTLINE>(){}[0]
     }
 }
 
@@ -4496,23 +4505,28 @@ final object io.github.valerioisufi.pageboard.model.text/LatexCommands { // io.g
 
 final object io.github.valerioisufi.pageboard.model.text/ListMarker { // io.github.valerioisufi.pageboard.model.text/ListMarker|null[0]
     final fun at(kotlin/CharSequence, kotlin/Int = ...): io.github.valerioisufi.pageboard.model.text/ListMarker.Read? // io.github.valerioisufi.pageboard.model.text/ListMarker.at|at(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun bulletAt(kotlin/CharSequence, kotlin/Int = ...): io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? // io.github.valerioisufi.pageboard.model.text/ListMarker.bulletAt|bulletAt(kotlin.CharSequence;kotlin.Int){}[0]
     final fun canStart(io.github.valerioisufi.pageboard.model.text/NumberingStyle?, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/ListMarker.canStart|canStart(io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int){}[0]
-    final fun write(io.github.valerioisufi.pageboard.model.text/NumberingStyle?, kotlin/Int): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListMarker.write|write(io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int){}[0]
+    final fun write(io.github.valerioisufi.pageboard.model.text/NumberingStyle?, kotlin/Int, kotlin.collections/List<kotlin/Int> = ...): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListMarker.write|write(io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int;kotlin.collections.List<kotlin.Int>){}[0]
+    final fun writeBullet(io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet?): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListMarker.writeBullet|writeBullet(io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?){}[0]
 
     final class Read { // io.github.valerioisufi.pageboard.model.text/ListMarker.Read|null[0]
-        constructor <init>(kotlin/Int, io.github.valerioisufi.pageboard.model.text/NumberingStyle?, kotlin/Int) // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.<init>|<init>(kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int){}[0]
+        constructor <init>(kotlin/Int, io.github.valerioisufi.pageboard.model.text/NumberingStyle?, kotlin/Int, kotlin.collections/List<kotlin/Int> = ...) // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.<init>|<init>(kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int;kotlin.collections.List<kotlin.Int>){}[0]
 
         final val length // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.length|{}length[0]
             final fun <get-length>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.length.<get-length>|<get-length>(){}[0]
         final val number // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.number|{}number[0]
             final fun <get-number>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.number.<get-number>|<get-number>(){}[0]
+        final val parents // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.parents|{}parents[0]
+            final fun <get-parents>(): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.parents.<get-parents>|<get-parents>(){}[0]
         final val style // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.style|{}style[0]
             final fun <get-style>(): io.github.valerioisufi.pageboard.model.text/NumberingStyle? // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.style.<get-style>|<get-style>(){}[0]
 
         final fun component1(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.component1|component1(){}[0]
         final fun component2(): io.github.valerioisufi.pageboard.model.text/NumberingStyle? // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.component2|component2(){}[0]
         final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.component3|component3(){}[0]
-        final fun copy(kotlin/Int = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Int = ...): io.github.valerioisufi.pageboard.model.text/ListMarker.Read // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.copy|copy(kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int){}[0]
+        final fun component4(): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.component4|component4(){}[0]
+        final fun copy(kotlin/Int = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Int = ..., kotlin.collections/List<kotlin/Int> = ...): io.github.valerioisufi.pageboard.model.text/ListMarker.Read // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.copy|copy(kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Int;kotlin.collections.List<kotlin.Int>){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListMarker.Read.toString|toString(){}[0]
@@ -4528,10 +4542,12 @@ final object io.github.valerioisufi.pageboard.model.text/ListNumbering { // io.g
     final fun glyphOf(io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet): kotlin/String // io.github.valerioisufi.pageboard.model.text/ListNumbering.glyphOf|glyphOf(io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet){}[0]
     final fun items(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/RichTextParser.Span>): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/ListNumbering.Item> // io.github.valerioisufi.pageboard.model.text/ListNumbering.items|items(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.RichTextParser.Span>){}[0]
     final fun markerColumnOf(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListNumbering.markerColumnOf|markerColumnOf(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
+    final fun outlineParents(kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/ListNumbering.Item>, kotlin/Int): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.pageboard.model.text/ListNumbering.outlineParents|outlineParents(kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.ListNumbering.Item>;kotlin.Int){}[0]
     final fun textColumnOf(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListNumbering.textColumnOf|textColumnOf(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
 
     final enum class Bullet : kotlin/Enum<io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet> { // io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet|null[0]
         enum entry CIRCLE // io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet.CIRCLE|null[0]
+        enum entry DASH // io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet.DASH|null[0]
         enum entry DISC // io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet.DISC|null[0]
         enum entry SQUARE // io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet.SQUARE|null[0]
 
@@ -4557,12 +4573,14 @@ final object io.github.valerioisufi.pageboard.model.text/ListNumbering { // io.g
     }
 
     final class Item { // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item|null[0]
-        constructor <init>(io.github.valerioisufi.pageboard.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet?, io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering?, kotlin/Int = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ...) // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.pageboard.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?;io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering?;kotlin.Int;kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?){}[0]
+        constructor <init>(io.github.valerioisufi.pageboard.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet?, io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering?, kotlin/Int = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ..., io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? = ...) // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.pageboard.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?;io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering?;kotlin.Int;kotlin.Int;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?;io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?){}[0]
 
         final val bullet // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.bullet|{}bullet[0]
             final fun <get-bullet>(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.bullet.<get-bullet>|<get-bullet>(){}[0]
         final val checked // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.checked|{}checked[0]
             final fun <get-checked>(): kotlin/Boolean? // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.checked.<get-checked>|<get-checked>(){}[0]
+        final val chosenBullet // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.chosenBullet|{}chosenBullet[0]
+            final fun <get-chosenBullet>(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.chosenBullet.<get-chosenBullet>|<get-chosenBullet>(){}[0]
         final val depth // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.depth|{}depth[0]
             final fun <get-depth>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.depth.<get-depth>|<get-depth>(){}[0]
         final val label // io.github.valerioisufi.pageboard.model.text/ListNumbering.Item.label|{}label[0]
@@ -4635,10 +4653,12 @@ final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.
     }
 
     final class Span { // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span|null[0]
-        constructor <init>(io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ...) // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.pageboard.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span?;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?){}[0]
+        constructor <init>(io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ..., io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? = ...) // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.pageboard.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span?;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?;io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?){}[0]
 
         final val block // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.block|{}block[0]
             final fun <get-block>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.block.<get-block>|<get-block>(){}[0]
+        final val bullet // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.bullet|{}bullet[0]
+            final fun <get-bullet>(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.bullet.<get-bullet>|<get-bullet>(){}[0]
         final val checked // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.checked|{}checked[0]
             final fun <get-checked>(): kotlin/Boolean? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.checked.<get-checked>|<get-checked>(){}[0]
         final val contentEnd // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.contentEnd|{}contentEnd[0]
@@ -4677,6 +4697,7 @@ final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.
         final fun component13(): io.github.valerioisufi.pageboard.model.text/RichTextParser.Span? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component13|component13(){}[0]
         final fun component14(): io.github.valerioisufi.pageboard.model.text/NumberingStyle? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component14|component14(){}[0]
         final fun component15(): kotlin/Boolean? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component15|component15(){}[0]
+        final fun component16(): io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component16|component16(){}[0]
         final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component2|component2(){}[0]
         final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component3|component3(){}[0]
         final fun component4(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component4|component4(){}[0]
@@ -4685,7 +4706,7 @@ final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.
         final fun component7(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component7|component7(){}[0]
         final fun component8(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component8|component8(){}[0]
         final fun component9(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.component9|component9(){}[0]
-        final fun copy(io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ...): io.github.valerioisufi.pageboard.model.text/RichTextParser.Span // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.pageboard.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span?;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?){}[0]
+        final fun copy(io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model.text/RichTextParser.Span? = ..., io.github.valerioisufi.pageboard.model.text/NumberingStyle? = ..., kotlin/Boolean? = ..., io.github.valerioisufi.pageboard.model.text/ListNumbering.Bullet? = ...): io.github.valerioisufi.pageboard.model.text/RichTextParser.Span // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.pageboard.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String;kotlin.Boolean;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span?;io.github.valerioisufi.pageboard.model.text.NumberingStyle?;kotlin.Boolean?;io.github.valerioisufi.pageboard.model.text.ListNumbering.Bullet?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/RichTextParser.Span.toString|toString(){}[0]

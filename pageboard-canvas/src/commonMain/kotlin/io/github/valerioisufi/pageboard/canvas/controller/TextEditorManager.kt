@@ -43,6 +43,7 @@ import io.github.valerioisufi.pageboard.model.text.TextCleanup
 import io.github.valerioisufi.pageboard.model.text.TextDefaults
 import io.github.valerioisufi.pageboard.model.text.TextFonts
 import io.github.valerioisufi.pageboard.model.text.TextSizes
+import io.github.valerioisufi.pageboard.model.text.ListNumbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import kotlin.math.abs
 
@@ -208,6 +209,8 @@ public class TextEditorManager internal constructor(private val controller: Page
     override val numberingStyle: NumberingStyle? get() = if (isEditing) RichTextEditing.numberingStyleOf(value) else null
 
     override val numberingStart: Int get() = if (isEditing) RichTextEditing.numberingStartOf(value) else 1
+
+    override val bulletStyle: ListNumbering.Bullet? get() = if (isEditing) RichTextEditing.bulletOf(value) else null
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     public val rotation: Float get() = activeTextItem?.rotation ?: 0f
@@ -865,6 +868,11 @@ public class TextEditorManager internal constructor(private val controller: Page
     /** The list of the selection in [style] from [start], made a numbered list if it is not one. */
     override fun setNumbering(style: NumberingStyle?, start: Int) {
         if (!inTable) updateValue(RichTextEditing.setNumbering(value, style, start), smartNewline = false)
+    }
+
+    /** The bulleted list of the selection with [bullet] (`null`: the bullet of its level), made one if it is not. */
+    override fun setBullet(bullet: ListNumbering.Bullet?) {
+        if (!inTable) updateValue(RichTextEditing.setBullet(value, bullet), smartNewline = false)
     }
 
     /** Adds 2 spaces of indentation to the lines of the selection. */

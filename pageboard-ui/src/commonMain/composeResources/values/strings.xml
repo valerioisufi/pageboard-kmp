@@ -337,4 +337,10 @@
     <string name="checklist_keep_completed_below">Keep completed at the bottom</string>
     <string name="checklist_keep_completed_below_hint">An item checked goes below the ones still to do</string>
     <string name="checklist_progress">%1$d of %2$d done</string>
+    <string name="text_editor_action_bullets">Bullets…</string>
+    <string name="numbering_outline">By level</string>
+    <string name="bullet_disc">Disc</string>
+    <string name="bullet_circle">Circle</string>
+    <string name="bullet_square">Square</string>
+    <string name="bullet_dash">Dash</string>
 </resources>

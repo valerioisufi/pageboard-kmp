@@ -336,4 +336,10 @@
     <string name="checklist_keep_completed_below">Mantener completadas al final</string>
     <string name="checklist_keep_completed_below_hint">Un elemento marcado pasa debajo de los pendientes</string>
     <string name="checklist_progress">%1$d de %2$d hechas</string>
+    <string name="text_editor_action_bullets">Viñetas…</string>
+    <string name="numbering_outline">Por nivel</string>
+    <string name="bullet_disc">Círculo relleno</string>
+    <string name="bullet_circle">Círculo</string>
+    <string name="bullet_square">Cuadrado</string>
+    <string name="bullet_dash">Guion</string>
 </resources>

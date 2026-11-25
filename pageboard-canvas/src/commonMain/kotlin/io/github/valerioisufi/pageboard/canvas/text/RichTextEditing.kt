@@ -676,10 +676,64 @@ public object RichTextEditing {
         val madeCaret = min(made.selection.start, made.selection.end)
         val item = items.firstOrNull { madeCaret >= it.span.start && madeCaret <= it.span.end } ?: return value
         val level = items.filter { it.list == item.list }.map { it.span }
-        return withMarkersOf(made, level) { position ->
+        val styled = withMarkersOf(made, level) { position ->
             val box = level[position].checked?.let { TaskBox.write(it) + " " }.orEmpty()
             ListMarker.write(style, start + position) + box
         }
+        return if (style?.outline == true) outlinedUnder(styled, item.span.start) else styled
+    }
+
+    /**
+     * [value] with the numbered lists nested in the list of the item starting at [itemStart]
+     * counting by level too (`1.1.`, `1.1.1.`): the numbers by level are chosen for a list and all
+     * the numbered lists in it.
+     */
+    private fun outlinedUnder(value: TextFieldValue, itemStart: Int): TextFieldValue {
+        val text = value.text
+        val items = ListNumbering.items(text, RichTextParser.parse(text))
+        val top = items.firstOrNull { it.span.start == itemStart }?.list ?: return value
+        fun under(index: Int): Boolean {
+            var parent = items[index].parent
+            while (parent >= 0) {
+                if (items[parent].list == top) return true
+                parent = items[parent].parent
+            }
+            return false
+        }
+        val nested = items.indices.filter { items[it].span.ordered && under(it) }
+        if (nested.isEmpty()) return value
+        return withMarkersOf(value, nested.map { items[it].span }) { position ->
+            val index = nested[position]
+            val box = items[index].checked?.let { TaskBox.write(it) + " " }.orEmpty()
+            ListMarker.write(NumberingStyle.OUTLINE, items[index].ordinal, ListNumbering.outlineParents(items, index)) + box
+        }
+    }
+
+    /**
+     * Chooses the [bullet] of the bulleted list of the caret (`null`: the bullet of its level),
+     * making one of the lines there if there is none.
+     */
+    public fun setBullet(value: TextFieldValue, bullet: ListNumbering.Bullet?): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val caret = min(value.selection.start, value.selection.end)
+        val current = ListNumbering.items(value.text, RichTextParser.parse(value.text))
+            .firstOrNull { caret >= it.span.start && caret <= it.span.end && !it.span.ordered }
+        val made = if (current != null) value else toggleBulletList(value)
+        val items = ListNumbering.items(made.text, RichTextParser.parse(made.text))
+        val madeCaret = min(made.selection.start, made.selection.end)
+        val item = items.firstOrNull { madeCaret >= it.span.start && madeCaret <= it.span.end && !it.span.ordered } ?: return value
+        val level = items.filter { it.list == item.list }.map { it.span }
+        return withMarkersOf(made, level) { position ->
+            val box = level[position].checked?.let { TaskBox.write(it) + " " }.orEmpty()
+            ListMarker.writeBullet(bullet) + box
+        }
+    }
+
+    /** The bullet chosen for the bulleted list of the caret of [value], `null` for the bullet of its level or out of such a list. */
+    public fun bulletOf(value: TextFieldValue): ListNumbering.Bullet? {
+        val caret = min(value.selection.start, value.selection.end)
+        return ListNumbering.items(value.text, RichTextParser.parse(value.text))
+            .firstOrNull { caret >= it.span.start && caret <= it.span.end && !it.span.ordered }?.chosenBullet
     }
 
     /**
@@ -776,7 +830,11 @@ public object RichTextEditing {
             var markerStart = continued.start
             while (text[markerStart] == ' ' || text[markerStart] == '\t') markerStart++
             val box = if (continued.checked != null) TaskBox.UNCHECKED + " " else ""
-            val marker = if (continued.ordered) ListMarker.write(continued.style, continued.number + 1) + box else text[markerStart] + " " + box
+            val marker = if (continued.ordered) {
+                ListMarker.write(continued.style, continued.number + 1, ListMarker.at(text, markerStart)?.parents.orEmpty()) + box
+            } else {
+                (ListMarker.bulletAt(text, markerStart)?.let { ListMarker.writeBullet(it) } ?: (text[markerStart] + " ")) + box
+            }
             var after = cursor
             while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
             // At the start of the line: the next item takes the whole line
@@ -788,8 +846,12 @@ public object RichTextEditing {
         val indent = line.takeWhile { it == ' ' || it == '\t' }
         val rest = line.substring(indent.length)
         val numbered = ListMarker.at(rest)
+        // A bullet chosen: its glyph and the spaces after it
+        val chosenBullet = ListMarker.bulletAt(rest)
+        val chosenLength = if (chosenBullet == null) 0 else 1 + rest.drop(1).takeWhile { it == ' ' || it == '\t' }.length
 
         var (markerType, markerLen, numValue, bulletMarker) = when {
+            chosenBullet != null -> MarkerInfo(MarkerType.BULLET, chosenLength, 0, ListMarker.writeBullet(chosenBullet))
             rest.startsWith("- ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "- ")
             rest.startsWith("* ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "* ")
             rest.startsWith("+ ") -> MarkerInfo(MarkerType.BULLET, 2, 0, "+ ")
@@ -831,7 +893,7 @@ public object RichTextEditing {
         val beforeCursor = line.substring(0, cursorInLine)
         val afterCursor = line.substring(cursorInLine).trimStart()
         val nextPrefix = if (markerType == MarkerType.NUMBERED) {
-            indent + ListMarker.write(numbered?.style, numValue + 1) + boxSuffix
+            indent + ListMarker.write(numbered?.style, numValue + 1, numbered?.parents.orEmpty()) + boxSuffix
         } else {
             "$indent$bulletMarker$boxSuffix"
         }
@@ -1257,7 +1319,7 @@ public object RichTextEditing {
     private const val BULLET_PREFIX = "- "
 
     /** What typed at the start of a line and followed by a space starts a list in a style. */
-    private val TYPED_MARKERS = setOf("a. ", "i. ", "a) ", "i) ", "1) ")
+    private val TYPED_MARKERS = setOf("a. ", "i. ", "a) ", "i) ", "1) ", "(a) ", "(i) ", "(1) ")
     private const val HEADING_PREFIX = "# "
 
     /** The spaces of a level of a list, and of a column of the code. */

@@ -62,7 +62,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | 1 | Numbered checklists, the count in the bar and its options (numbered, the items done below, the preference), the boxes of other applications pasted; tests; ABI recorded | Done |
 | 2 | A box checked from the page: `checkBoxAt` on the adapters, `toggleCheckBoxAt`, the tap in `CanvasGestureHandler`; tests | Done |
-| 3 | Numbers by level (`1.1`), `(a)` `(1)` `(i)`, the bullets chosen; the picker; the notation kept readable; tests | Pending |
+| 3 | Numbers by level (`1.1`), `(a)` `(1)` `(i)`, the bullets chosen; the picker; the notation kept readable; tests | Done |
 | 4 | A list going on in another box (`continueNumberingFrom`): `ListContinuation`, the page, the editor, the PDF, the toggle in the picker; tests | Pending |
 
 ## Decisions
@@ -86,6 +86,19 @@ Taken alone, revertible:
 6. **A tap that opens a link lets the camera go** and ends the gesture like any other: before, it
    left the gesture early (its mode and its pointer kept, the camera held), and a link of a text
    hidden by its layer opened.
+7. **The notation of the new styles, in the marker of the first item, with two spaces after it**,
+   as the styles of `docs/plans/list-numbering.md`, so that the notes written before do not change
+   (`(a) x`, `1.2. Title` and `• x` with one space stay text):
+   * `(a)  text`, `(1)  text`, `(i)  text`: between parentheses (`NumberingStyle.enclosed`);
+   * `1.2.  text`: the numbers by level (`NumberingStyle.OUTLINE`), the marker written with the
+     numbers of the numbered items it is nested in, so that it reads the same anywhere. Chosen for a
+     list, they go to the numbered lists nested in it; a list of the first level is written in
+     decimal. When an edit renumbers a list, the numbers of the parents written in the markers under
+     it follow (`ListRenumbering.after`);
+   * `•  text`, `◦  text`, `▪  text`, `–  text`: a bullet chosen for the whole list (`ListMarker.bulletAt`);
+     `-`, `*` and `+` keep the bullet of their level. The automatic bullets stay the three of the
+     levels; the dash is only chosen. In another Markdown viewer these lines are text, readable.
+8. **`(a) `, `(i) ` and `(1) ` typed at the start of a line start such a list**, as `a. ` does.
 
 ## Left for later
 

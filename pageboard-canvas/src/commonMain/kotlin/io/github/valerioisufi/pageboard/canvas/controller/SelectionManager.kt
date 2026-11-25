@@ -45,6 +45,7 @@ import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.HitTesting
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.model.text.ListNumbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextFonts
@@ -1036,6 +1037,13 @@ public class SelectionManager internal constructor(private val controller: Pageb
 
         override fun setNumbering(style: NumberingStyle?, start: Int) {
             updateSelectedTextsContent { RichTextEditing.setNumbering(it, style, start) }
+        }
+
+        override val bulletStyle: ListNumbering.Bullet?
+            get() = texts.map { RichTextEditing.bulletOf(fullValue(it)) }.distinct().singleOrNull()
+
+        override fun setBullet(bullet: ListNumbering.Bullet?) {
+            updateSelectedTextsContent { RichTextEditing.setBullet(it, bullet) }
         }
 
         override fun indent() {

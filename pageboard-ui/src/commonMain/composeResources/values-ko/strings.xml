@@ -331,4 +331,10 @@
     <string name="checklist_keep_completed_below">완료된 항목을 항상 아래에</string>
     <string name="checklist_keep_completed_below_hint">체크한 항목은 아직 할 항목 아래로 이동합니다</string>
     <string name="checklist_progress">%2$d개 중 %1$d개 완료</string>
+    <string name="text_editor_action_bullets">글머리 기호…</string>
+    <string name="numbering_outline">단계별</string>
+    <string name="bullet_disc">원</string>
+    <string name="bullet_circle">빈 원</string>
+    <string name="bullet_square">사각형</string>
+    <string name="bullet_dash">대시</string>
 </resources>
