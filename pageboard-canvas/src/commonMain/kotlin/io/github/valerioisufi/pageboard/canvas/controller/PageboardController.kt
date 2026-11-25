@@ -385,7 +385,8 @@ public class PageboardController(
         presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() },
         isShapeRecognitionEnabled = shapeSnapper.isEnabled,
         shapeTool = ShapeToolPreferences.of(shapeInserter.style),
-        areTextSuggestionsEnabled = areTextSuggestionsEnabled
+        areTextSuggestionsEnabled = areTextSuggestionsEnabled,
+        snapToEditableShape = shapeSnapper.snapToEditableShape
     )
 
     // ==========================================================

@@ -13,6 +13,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.tool.Tool
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.StrokeElement
+import io.github.valerioisufi.pageboard.model.decode
 import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -106,6 +107,20 @@ class ShapeGesturesTest {
         assertTrue(off < 0.5f, "a straight line, ${off} mm off it")
         controller.undo()
         assertEquals(0, strokes(controller).size, "undone in one step")
+    }
+
+    @Test
+    fun holdWithSnapToEditableShapeCommitsAShapeElement() = withCanvas { scene, controller ->
+        controller.shapeSnapper.updateSnapToEditableShape(true)
+        val time = scene.draw(wavyLine(), holdMs = 600L)
+        scene.release(wavyLine().last(), time)
+        assertEquals(0, strokes(controller).size)
+        val shape = controller.document.pages[0].customElements.single()
+        val decoded = io.github.valerioisufi.pageboard.model.shape.ShapeElementType.decode(shape)
+        assertEquals(io.github.valerioisufi.pageboard.model.shape.ShapeKind.LINE, decoded?.kind)
+        assertEquals(listOf(shape), controller.selectionManager.currentSelection?.customs?.toList())
+        controller.undo()
+        assertEquals(0, controller.document.pages[0].customElements.size)
     }
 
     /** A line across the page drawn by a hand that wavers a little. */

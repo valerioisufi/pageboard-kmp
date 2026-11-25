@@ -39,6 +39,7 @@ import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
+import io.github.valerioisufi.pageboard.model.shape.ShapeConverter
 import io.github.valerioisufi.pageboard.model.shape.ShapeElementType
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -912,11 +913,34 @@ internal class CanvasGestureHandler(
 
         when (mode) {
             Mode.INK -> {
-                if (activePointer == up.id && !strokeSnapped) addInkInput(up, position, up.uptimeMillis, up.pressure)
-                val mesh = engine.finishStroke()
+                val snappedShape = if (strokeSnapped && controller.shapeSnapper.snapToEditableShape) {
+                    controller.shapeSnapper.currentSnappedShape
+                } else null
                 val brush = inkBrush
-                ink.strokeEnded(mesh)
-                if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
+                if (snappedShape != null && brush != null) {
+                    engine.cancelStroke()
+                    ink.strokeEnded()
+                    val (shapeValue, box) = ShapeConverter.toShapeElement(snappedShape, brush)
+                    controller.customElementManager.add(
+                        ShapeElementType,
+                        shapeValue,
+                        inkPageIndex,
+                        io.github.valerioisufi.pageboard.model.geometry.Rect(
+                            box.x,
+                            box.y,
+                            box.x + box.width.coerceAtLeast(0.5f),
+                            box.y + box.height.coerceAtLeast(0.5f)
+                        ),
+                        box.rotation,
+                        select = true
+                    )
+                } else {
+                    if (activePointer == up.id && !strokeSnapped) addInkInput(up, position, up.uptimeMillis, up.pressure)
+                    val mesh = engine.finishStroke()
+                    ink.strokeEnded(mesh)
+                    if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
+                }
+                controller.shapeSnapper.release()
                 controller.inkStrokeEnded()
                 reportActivity(position, inking = false)
             }

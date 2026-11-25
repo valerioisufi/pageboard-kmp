@@ -68,36 +68,49 @@ public class SnapManager internal constructor(private val controller: PageboardC
         return Point(point.x + snapped.dx, point.y + snapped.dy)
     }
 
+    /** A snapped anchor on [elementId] at [anchorIndex] with page coordinates [point]. */
+    internal data class AnchorHit(val elementId: String, val anchorIndex: Int, val point: Point)
+
     /**
      * The anchors of the shapes of the page [pageIndex] (their corners, the middles of their sides,
      * their centers, see [ShapeGeometry.anchors]) within [reach] millimeters of [point], but the
      * ones of [except]; nearest first.
      */
-    internal fun anchorsNear(pageIndex: Int, point: Point, reach: Float, except: String? = null): List<Point> {
+    internal fun anchorsNear(pageIndex: Int, point: Point, reach: Float, except: String? = null): List<Point> =
+        anchorHitsNear(pageIndex, point, reach, except).map { it.point }
+
+    private fun anchorHitsNear(pageIndex: Int, point: Point, reach: Float, except: String? = null): List<AnchorHit> {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return emptyList()
-        val anchors = ArrayList<Point>()
+        val hits = ArrayList<AnchorHit>()
         for (element in page.customElements) {
             if (element.id == except || element.type != ShapeElementType.id) continue
             if (controller.hiddenElements.isHidden(element.id)) continue
             if (!element.getRotatedBounds().inflate(reach).let { point.x in it.left..it.right && point.y in it.top..it.bottom }) continue
             val value = controller.engines.elements.valueOf(element) as? ShapeElement ?: continue
             val box = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
-            for (anchor in ShapeGeometry.anchors(value, element.width, element.height)) {
+            ShapeGeometry.anchors(value, element.width, element.height).forEachIndexed { index, anchor ->
                 val onPage = box.toPage(anchor)
-                if ((onPage - point).distance <= reach) anchors += onPage
+                if ((onPage - point).distance <= reach) hits += AnchorHit(element.id, index, onPage)
             }
         }
-        return anchors.sortedBy { (it - point).distance }
+        return hits.sortedBy { (it.point - point).distance }
     }
 
     /**
      * The anchor of a shape of the page [pageIndex] [point] snaps to (within a few dp on the
      * screen), or `null`; none when snapping is off or the gesture is [free].
      */
-    internal fun anchorFor(pageIndex: Int, point: Point, except: String? = null, free: Boolean = false): Point? {
+    internal fun anchorHitFor(pageIndex: Int, point: Point, except: String? = null, free: Boolean = false): AnchorHit? {
         if (!isEnabled || free) return null
-        return anchorsNear(pageIndex, point, toMm(pageIndex, ANCHOR_DP), except).firstOrNull()
+        return anchorHitsNear(pageIndex, point, toMm(pageIndex, ANCHOR_DP), except).firstOrNull()
     }
+
+    /**
+     * The anchor point of a shape of the page [pageIndex] [point] snaps to (within a few dp on the
+     * screen), or `null`; none when snapping is off or the gesture is [free].
+     */
+    internal fun anchorFor(pageIndex: Int, point: Point, except: String? = null, free: Boolean = false): Point? =
+        anchorHitFor(pageIndex, point, except, free)?.point
 
     /** [dp] on the screen in millimeters of the page [pageIndex]. */
     internal fun toMm(pageIndex: Int, dp: Float): Float =

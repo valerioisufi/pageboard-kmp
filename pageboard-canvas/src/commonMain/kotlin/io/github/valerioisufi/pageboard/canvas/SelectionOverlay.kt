@@ -280,7 +280,24 @@ internal object SelectionOverlay {
         // A shape dragged by a handle: its draft is drawn instead (see `ShapeEditing`)
         if (controller.shapeEditing.handleDraft != null) return
         val frame = SelectionFrame.compute(controller, selection) ?: return
-        if (selection.isLifted) drawElements(scope, controller, selection.elements(), selection.pageIndex, frame.mmToScreen)
+        if (selection.isLifted) {
+            drawElements(scope, controller, selection.elements(), selection.pageIndex, frame.mmToScreen)
+            val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex)
+            if (pageToScreen != null) {
+                val previews = controller.selectionManager.liveConnectorPreviews(selection)
+                if (previews.isNotEmpty()) {
+                    scope.drawIntoCanvas { canvas ->
+                        for (followed in previews) {
+                            val box = followed.box
+                            val previewEl = followed.element.copy().apply {
+                                x = box.x; y = box.y; width = box.width; height = box.height; rotation = box.rotation
+                            }
+                            controller.tileManager.tileRenderer.elements.draw(canvas, previewEl, pageToScreen)
+                        }
+                    }
+                }
+            }
+        }
         drawFrame(scope, frame, primary, controller.viewport.density)
     }
 

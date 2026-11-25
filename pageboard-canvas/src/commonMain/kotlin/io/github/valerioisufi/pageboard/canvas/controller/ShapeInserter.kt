@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
 import io.github.valerioisufi.pageboard.model.shape.ShapeConstraints
 import io.github.valerioisufi.pageboard.model.shape.ShapeDash
@@ -159,6 +160,8 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
 
     private var pageIndex = -1
     private var start = Point.Zero
+    private var startAnchorHit: SnapManager.AnchorHit? = null
+    private var endAnchorHit: SnapManager.AnchorHit? = null
 
     public fun updateStyle(style: ShapeToolStyle) {
         if (this.style == style) return
@@ -174,7 +177,9 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
     internal fun begin(pageIndex: Int, at: Point, free: Boolean) {
         this.pageIndex = pageIndex
         val snaps = controller.snapManager
-        start = if (style.kind.isLine) snaps.anchorFor(pageIndex, at, free = free) ?: at else at
+        startAnchorHit = if (style.kind.isLine) snaps.anchorHitFor(pageIndex, at, free = free) else null
+        endAnchorHit = null
+        start = startAnchorHit?.point ?: at
         draft = null
     }
 
@@ -188,7 +193,9 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
         val value = style.element()
         val snaps = controller.snapManager
         draft = if (value.kind.isLine) {
-            val anchor = if (forced) null else snaps.anchorFor(pageIndex, pointer, free = free)
+            val hit = if (forced) null else snaps.anchorHitFor(pageIndex, pointer, free = free)
+            endAnchorHit = hit
+            val anchor = hit?.point
             val line = when {
                 anchor != null -> null
                 forced || !free -> ShapeConstraints.line(start, pointer, forced)
@@ -198,8 +205,13 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
             val angle = line?.angleDegrees ?: readAngle(start, end)
             val box = ShapeGeometry.lineBox(start, end, value)
             val nearby = if (free) emptyList() else snaps.anchorsNear(pageIndex, pointer, snaps.toMm(pageIndex, ANCHORS_SHOWN_DP))
-            ShapeDraft(pageIndex, value, box, start, end, (end - start).distance, 0f, angle, false, line?.snapped == true, anchor, nearby)
+            val linked = value.copy(
+                startAnchor = startAnchorHit?.let { ShapeAnchorRef(it.elementId, it.anchorIndex) },
+                endAnchor = hit?.let { ShapeAnchorRef(it.elementId, it.anchorIndex) }
+            )
+            ShapeDraft(pageIndex, linked, box, start, end, (end - start).distance, 0f, angle, false, line?.snapped == true, anchor, nearby)
         } else {
+            endAnchorHit = null
             val corner = if (forced || free) pointer else snaps.snapPoint(pageIndex, pointer, emptyList(), free)
             val constrained = if (free && !forced) {
                 ShapeConstraints.ConstrainedBox(boxBetween(start, pointer, fromCenter), false)
@@ -238,6 +250,8 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
     internal fun cancel() {
         draft = null
         pageIndex = -1
+        startAnchorHit = null
+        endAnchorHit = null
         controller.snapManager.clearGuides()
     }
 

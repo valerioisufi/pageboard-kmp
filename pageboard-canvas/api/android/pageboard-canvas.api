@@ -319,8 +319,8 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPref
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;Z)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZ)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
 	public final fun component3 ()Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
@@ -329,14 +329,16 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPref
 	public final fun component6 ()Z
 	public final fun component7 ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;
 	public final fun component8 ()Z
-	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;Z)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
+	public final fun component9 ()Z
+	public final fun copy (ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZ)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;ZLio/github/valerioisufi/pageboard/canvas/tool/Tool;Lio/github/valerioisufi/pageboard/model/text/TextDefaults;ZLjava/util/Map;ZLio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;ZZILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/EditorPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAreTextSuggestionsEnabled ()Z
 	public final fun getLastSelectedTool ()Lio/github/valerioisufi/pageboard/canvas/tool/Tool;
 	public final fun getPresets ()Ljava/util/Map;
 	public final fun getShapeTool ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences;
+	public final fun getSnapToEditableShape ()Z
 	public final fun getTextDefaults ()Lio/github/valerioisufi/pageboard/model/text/TextDefaults;
 	public fun hashCode ()I
 	public final fun isShapeRecognitionEnabled ()Z
@@ -654,9 +656,12 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeEditi
 	public static final field $stable I
 	public final fun changeKind (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;I)V
 	public static synthetic fun changeKind$default (Lio/github/valerioisufi/pageboard/canvas/controller/ShapeEditing;Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IILjava/lang/Object;)V
+	public final fun convertSelectedStrokeToShape ()Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun getCanConvertSelectedStroke ()Z
 	public final fun getHandleDraft ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeDraft;
 	public final fun getSelectedShapes ()Ljava/util/List;
 	public final fun restyle (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateLabel (Ljava/lang/String;)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeInserter {
@@ -670,8 +675,10 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeInser
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeSnapper {
 	public static final field $stable I
+	public final fun getSnapToEditableShape ()Z
 	public final fun isEnabled ()Z
 	public final fun updateEnabled (Z)V
+	public final fun updateSnapToEditableShape (Z)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeToolPreferences {

@@ -319,7 +319,26 @@ private fun DrawScope.drawLive(controller: PageboardController, live: CanvasLive
     }
 
     controller.shapeInserter.draft?.let { drawShapeDraft(controller, it, labels) }
-    controller.shapeEditing.handleDraft?.let { drawShapeDraft(controller, it, labels) }
+    controller.shapeEditing.handleDraft?.let { draft ->
+        drawShapeDraft(controller, draft, labels)
+        val mmToScreen = controller.viewport.pageMmToScreen(draft.pageIndex)
+        val connectors = controller.shapeEditing.connectorDrafts
+        if (mmToScreen != null && connectors.isNotEmpty()) {
+            drawIntoCanvas { canvas ->
+                for ((shapeValue, box) in connectors) {
+                    if (box.width <= 0f || box.height <= 0f) continue
+                    val boxToScreen = Matrix2D()
+                        .postRotate(box.rotation, box.width / 2f, box.height / 2f)
+                        .postTranslate(box.x, box.y)
+                        .postConcat(mmToScreen)
+                    canvas.save()
+                    canvas.concat(boxToScreen.toComposeMatrix())
+                    canvas.drawVectors(ShapeGeometry.drawing(shapeValue, box.width, box.height))
+                    canvas.restore()
+                }
+            }
+        }
+    }
 }
 
 /**

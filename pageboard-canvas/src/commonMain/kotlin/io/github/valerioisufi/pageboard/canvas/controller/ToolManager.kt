@@ -47,7 +47,9 @@ public data class EditorPreferences(
     /** What the shapes tool draws (see `ShapeInserter`). */
     val shapeTool: ShapeToolPreferences = ShapeToolPreferences(),
     /** Whether the text box asks the extensions what may follow the caret (`docs/plans/writing-suggestions.md`). */
-    val areTextSuggestionsEnabled: Boolean = true
+    val areTextSuggestionsEnabled: Boolean = true,
+    /** Whether holding a stroke still converts it directly into an editable shape element instead of a stroke. */
+    val snapToEditableShape: Boolean = false
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
     public fun encode(): String = json.encodeToString(serializer(), this)

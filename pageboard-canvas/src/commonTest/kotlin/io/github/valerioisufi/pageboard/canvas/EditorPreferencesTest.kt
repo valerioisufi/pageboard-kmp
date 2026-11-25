@@ -130,4 +130,16 @@ class EditorPreferencesTest {
         reopened.applyPreferences(controller.preferences.value)
         assertEquals(false, reopened.areTextSuggestionsEnabled)
     }
+
+    @Test
+    fun snapToEditableShapeDefaultsFalseAndRoundTrips() = runTest {
+        val older = EditorPreferences.decode("""{"isShapeRecognitionEnabled":true}""")!!
+        assertEquals(false, older.snapToEditableShape)
+        val controller = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        controller.shapeSnapper.updateSnapToEditableShape(true)
+        val encoded = controller.preferences.value.encode()
+        val restored = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        restored.applyPreferences(EditorPreferences.decode(encoded)!!)
+        assertTrue(restored.shapeSnapper.snapToEditableShape)
+    }
 }

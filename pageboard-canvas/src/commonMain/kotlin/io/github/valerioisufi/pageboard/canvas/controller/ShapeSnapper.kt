@@ -30,14 +30,25 @@ public class ShapeSnapper internal constructor(private val controller: Pageboard
     public var isEnabled: Boolean by mutableStateOf(true)
         private set
 
+    /** Whether a snapped stroke becomes an editable shape element instead of an ink stroke. */
+    public var snapToEditableShape: Boolean by mutableStateOf(false)
+        private set
+
     public fun updateEnabled(enabled: Boolean) {
         if (isEnabled == enabled) return
         isEnabled = enabled
         controller.preferencesChanged()
     }
 
+    public fun updateSnapToEditableShape(enabled: Boolean) {
+        if (snapToEditableShape == enabled) return
+        snapToEditableShape = enabled
+        controller.preferencesChanged()
+    }
+
     internal fun applyPreferences(preferences: EditorPreferences) {
         isEnabled = preferences.isShapeRecognitionEnabled
+        snapToEditableShape = preferences.snapToEditableShape
     }
 
     /**
@@ -47,6 +58,7 @@ public class ShapeSnapper internal constructor(private val controller: Pageboard
      */
     internal fun snap(engine: InkStrokeEngine, pageIndex: Int, brush: BrushConfig, inputType: InputToolType): Boolean {
         snapped = null
+        adjusted = null
         if (!isEnabled) return false
         val drawn = engine.inputs.toList()
         if (drawn.isEmpty()) return false
@@ -69,6 +81,13 @@ public class ShapeSnapper internal constructor(private val controller: Pageboard
     )
 
     private var snapped: Snapped? = null
+    private var adjusted: Shape? = null
+
+    /** The shape that snapped (as last adjusted while the pen is down), or `null`. */
+    internal val currentSnappedShape: Shape? get() = adjusted ?: snapped?.shape
+
+    /** The brush of the snapped stroke while the pen is still down, or `null`. */
+    internal val currentSnappedBrush: BrushConfig? get() = snapped?.brush
 
     /**
      * The pen still down after the shape snapped is at [pen] (page millimeters): the shape drawn
@@ -77,13 +96,16 @@ public class ShapeSnapper internal constructor(private val controller: Pageboard
      */
     internal fun adjust(engine: InkStrokeEngine, pen: Point): Boolean {
         val current = snapped ?: return false
-        draw(engine, current.shape.followed(current.pivot, current.heldAt, pen), current.drawn, current.brush, current.inputType)
+        val next = current.shape.followed(current.pivot, current.heldAt, pen)
+        adjusted = next
+        draw(engine, next, current.drawn, current.brush, current.inputType)
         return true
     }
 
     /** The pen that drew the shape was lifted (or the stroke cancelled): the shape stays as it is. */
     internal fun release() {
         snapped = null
+        adjusted = null
     }
 
     private fun draw(engine: InkStrokeEngine, shape: Shape, drawn: List<StrokePoint>, brush: BrushConfig, inputType: InputToolType) {

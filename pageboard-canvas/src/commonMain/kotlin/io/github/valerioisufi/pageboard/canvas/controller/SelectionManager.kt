@@ -101,6 +101,9 @@ public class SelectionGroup(
     internal fun setDragging(hidden: HiddenElements, dragging: Boolean) {
         hidden.setDragged(elements().map { it.id }, dragging)
     }
+
+    /** Connected lines hidden from the tiles while this selection is lifted for live preview. */
+    internal var liftedConnectors: List<CustomElement> = emptyList()
 }
 
 /**
@@ -317,13 +320,25 @@ public class SelectionManager internal constructor(private val controller: Pageb
 
     /**
      * Lifts the elements of [selection] over the page for a gesture: left out of the tiles (drawn
-     * again without them) and drawn live on top.
+     * again without them) and drawn live on top. Connected lines are lifted too for live preview.
      */
     private fun lift(selection: SelectionGroup) {
         if (selection.isLifted) return
         selection.isLifted = true
-        selection.setDragging(controller.hiddenElements, true)
-        controller.document.pages.getOrNull(selection.pageIndex)?.let { controller.invalidatePageContent(it, selection.getEnclosingBoundingBoxMm()) }
+        val page = controller.document.pages.getOrNull(selection.pageIndex)
+        val connectors = if (page != null && selection.customs.isNotEmpty()) {
+            val values = controller.engines.elements::valueOf
+            ShapeConnectors.previewFollow(page, selection.customs, { values(it) as? ShapeElement }, Matrix2D())
+                .map { it.element }
+        } else emptyList()
+        selection.liftedConnectors = connectors
+        val ids = selection.elements().map { it.id } + connectors.map { it.id }
+        controller.hiddenElements.setDragged(ids, true)
+        if (page != null) {
+            var bounds = selection.getEnclosingBoundingBoxMm()
+            for (c in connectors) bounds = bounds.union(c.getRotatedBounds())
+            controller.invalidatePageContent(page, bounds)
+        }
     }
 
     /**
@@ -333,11 +348,25 @@ public class SelectionManager internal constructor(private val controller: Pageb
     private fun settle(selection: SelectionGroup) {
         if (!selection.isLifted) return
         selection.isLifted = false
-        selection.setDragging(controller.hiddenElements, false)
+        val connectors = selection.liftedConnectors
+        selection.liftedConnectors = emptyList()
+        val ids = selection.elements().map { it.id } + connectors.map { it.id }
+        controller.hiddenElements.setDragged(ids, false)
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
-        val bounds = selection.getEnclosingBoundingBoxMm()
-        settling = SettlingElements(selection.pageIndex, selection.elements(), bounds)
+        var bounds = selection.getEnclosingBoundingBoxMm()
+        for (c in connectors) bounds = bounds.union(c.getRotatedBounds())
+        settling = SettlingElements(selection.pageIndex, selection.elements() + connectors, bounds)
         controller.invalidatePageContent(page, bounds)
+    }
+
+    /**
+     * Connected lines and their live updated boxes while [selection] is lifted and transformed.
+     */
+    internal fun liveConnectorPreviews(selection: SelectionGroup): List<ShapeConnectors.Followed> {
+        if (!selection.isLifted || selection.customs.isEmpty()) return emptyList()
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return emptyList()
+        val values = controller.engines.elements::valueOf
+        return ShapeConnectors.previewFollow(page, selection.customs, { values(it) as? ShapeElement }, selection.transform)
     }
 
     /**

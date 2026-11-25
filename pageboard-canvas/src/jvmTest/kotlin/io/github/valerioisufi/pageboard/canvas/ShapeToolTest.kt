@@ -283,6 +283,63 @@ class ShapeToolTest {
         assertEquals(2, shapes(controller).size)
     }
 
+    @Test
+    fun persistedConnectorFollowsBoxDuringLivePreviewAndAcrossMoves() = withCanvas { scene, controller ->
+        val box = controller.customElementManager.add(ShapeElementType, ShapeElement(ShapeKind.RECTANGLE, BLACK, 0.5f), 0, Rect(100f, 100f, 140f, 130f), select = false)!!
+        controller.selectTool(Tool.SHAPES)
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.LINE, heads = 1))
+        // Draw arrow starting at (40, 115) and snapping to the top-left corner anchor of the box (index 0)
+        scene.drag(controller.screen(40f, 115f), controller.screen(100.5f, 100.5f))
+        val line = shapes(controller).last()
+        val lineVal = ShapeElementType.decode(line)!!
+        assertEquals(box.id, lineVal.endAnchor?.elementId)
+
+        // Live preview during drag updates the connected line before drop
+        controller.selectionManager.selectCustomElements(0, listOf(box))
+        controller.selectionManager.beginTransformation()
+        controller.selectionManager.moveBy(15f, 10f, free = true)
+        val previews = controller.selectionManager.liveConnectorPreviews(controller.selectionManager.currentSelection!!)
+        assertEquals(1, previews.size)
+        val (_, previewEnd) = ShapeGeometry.lineEnds(previews.single().box)
+        near(115.25f, previewEnd.x, 0.2f); near(110.25f, previewEnd.y, 0.2f)
+        controller.selectionManager.applyTransformation()
+
+        val movedLine = shapes(controller).single { it.id == line.id }
+        val (_, committedEnd) = ShapeGeometry.lineEnds(ShapeBox(movedLine.x, movedLine.y, movedLine.width, movedLine.height, movedLine.rotation))
+        near(115.25f, committedEnd.x, 0.2f); near(110.25f, committedEnd.y, 0.2f)
+    }
+
+    @Test
+    fun aSelectedHandDrawnStrokeConvertsToAnEditableShapeAndUndoesInOneStep() = withCanvas { scene, controller ->
+        controller.selectTool(Tool.INK_PEN)
+        val from = controller.screen(30f, 80f)
+        val to = controller.screen(120f, 80f)
+        var time = 1_000L
+        scene.send(PointerEventType.Press, from, time)
+        for (i in 1..15) {
+            time += 16L
+            scene.send(PointerEventType.Move, from + (to - from) * (i / 15f), time)
+        }
+        scene.send(PointerEventType.Release, to, time + 16L)
+        scene.render()
+
+        val stroke = controller.document.pages[0].strokes.single()
+        controller.selectionManager.selectWithLasso(0, floatArrayOf(20f, 70f, 130f, 70f, 130f, 90f, 20f, 90f))
+        assertTrue(controller.shapeEditing.canConvertSelectedStroke)
+        val converted = controller.shapeEditing.convertSelectedStrokeToShape()!!
+        assertEquals(0, controller.document.pages[0].strokes.count { it.id == stroke.id })
+        assertEquals(ShapeKind.LINE, ShapeElementType.decode(converted)?.kind)
+
+        controller.shapeEditing.updateLabel("vector")
+        assertEquals("vector", ShapeElementType.decode(shapes(controller).single())?.label)
+
+        controller.undo()
+        assertNull(ShapeElementType.decode(shapes(controller).single())?.label)
+        controller.undo()
+        assertEquals(0, shapes(controller).size)
+        assertEquals(1, controller.document.pages[0].strokes.size)
+    }
+
     private fun near(expected: Float, actual: Float, tolerance: Float = 0.3f) =
         assertTrue(abs(expected - actual) <= tolerance, "expected $expected, was $actual")
 
