@@ -337,7 +337,7 @@
     <string name="checklist_keep_completed_below_hint">Un elemento spuntato va sotto quelli ancora da fare</string>
     <string name="checklist_progress">%1$d di %2$d completati</string>
     <string name="text_editor_action_bullets">Punti elenco…</string>
-    <string name="numbering_outline">Per livello</string>
+    <string name="numbering_outline">Multilivello</string>
     <string name="bullet_disc">Pallino</string>
     <string name="bullet_circle">Cerchio</string>
     <string name="bullet_square">Quadrato</string>
