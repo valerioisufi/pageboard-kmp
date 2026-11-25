@@ -37,7 +37,9 @@ public class Viewport internal constructor(
     public val camera: CameraPhysicsEngine = CameraPhysicsEngine(
         density = density,
         getContentRect = { layout.contentRect }
-    )
+    ).apply {
+        visibleHorizontalBounds = { worldTop, worldBottom -> layout.visibleHorizontalBounds(worldTop, worldBottom) }
+    }
 
     /** Pixels per density-independent pixel of the screen showing the canvas. */
     public var density: Float = density
@@ -348,12 +350,12 @@ public class Viewport internal constructor(
 
     /**
      * Pans the camera by ([dx], [dy]) screen pixels (e.g. to keep the edited text above the
-     * software keyboard).
+     * software keyboard): what is drawn moves by as much, past the bounds of the pages too.
      */
     public fun panBy(dx: Float, dy: Float) {
         if (dx == 0f && dy == 0f) return
         camera.stopAllAnimations()
-        camera.onDrag(dx, dy, 1f, width / 2f, height / 2f)
+        camera.panDrawnBy(dx, dy)
         requestRedraw()
     }
 }

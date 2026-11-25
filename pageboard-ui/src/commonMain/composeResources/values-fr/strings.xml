@@ -321,4 +321,7 @@
     <string name="layers_assign_selection">Déplacer la sélection ici</string>
     <string name="layers_unlayered">Par défaut (sans calque)</string>
     <string name="layers_empty_hint">Aucun calque sur cette page. Créez des calques pour organiser, masquer ou verrouiller les éléments.</string>
+    <string name="command_scroll_axis_lock">Verrouillage d’axe</string>
+    <string name="command_quick_pan">Déplacement rapide</string>
+    <string name="quick_pan_active_hint">Déplacement rapide · Toucher pour quitter</string>
 </resources>

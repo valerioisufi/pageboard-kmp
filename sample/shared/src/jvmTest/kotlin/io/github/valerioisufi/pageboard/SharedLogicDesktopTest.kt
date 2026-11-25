@@ -42,13 +42,11 @@ class SharedLogicDesktopTest {
 
             val stroke = engine.finishStroke()
             assertNotNull(stroke, "Tool $tool should produce a completed stroke")
+            // The native modeller gives the outline alone, the Kotlin one its triangles
+            val outlineVertices = stroke.outline?.vertexCount ?: 0
             assertTrue(
-                stroke.vertexCount > 0,
-                "Tool $tool should produce vertices, got: ${stroke.vertexCount}"
-            )
-            assertTrue(
-                stroke.triangleCount > 0,
-                "Tool $tool should produce triangles, got: ${stroke.triangleCount}"
+                stroke.triangleCount > 0 || outlineVertices > 0,
+                "Tool $tool should produce triangles or an outline, got: ${stroke.triangleCount} triangles, $outlineVertices outline vertices"
             )
             assertTrue(
                 stroke.positions.size == stroke.vertexCount * 2,
@@ -59,7 +57,7 @@ class SharedLogicDesktopTest {
                 "Indices size must be 3 * triangleCount"
             )
 
-            println("Tool $tool PASSED: ${stroke.vertexCount} vertices, ${stroke.triangleCount} triangles")
+            println("Tool $tool PASSED: ${stroke.triangleCount} triangles, $outlineVertices outline vertices")
         }
 
         engine.release()

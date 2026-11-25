@@ -54,11 +54,22 @@ public class CameraPhysicsEngine(
     internal val maxScale: Float
         get() = maxDpPerMm * density
 
+    /** Top padding around document content in dp. */
+    internal var topPaddingDp: Float = 20f
+
+    /** Bottom padding around document content in dp. */
+    internal var bottomPaddingDp: Float = 20f
+
     /** Top padding around document content in pixels. */
-    internal var topPaddingPx: Float = 40f
+    internal val topPaddingPx: Float
+        get() = topPaddingDp * density
 
     /** Bottom padding around document content in pixels. */
-    internal var bottomPaddingPx: Float = 40f
+    internal val bottomPaddingPx: Float
+        get() = bottomPaddingDp * density
+
+    /** Optional lookup of horizontal world bounds `(left, right)` for the visible vertical span. */
+    internal var visibleHorizontalBounds: ((worldTop: Float, worldBottom: Float) -> Pair<Float, Float>?)? = null
 
     private val axisX = AxisPhysics1D()
     private val axisY = AxisPhysics1D()
@@ -178,6 +189,18 @@ public class CameraPhysicsEngine(
     }
 
     /**
+     * Moves what is drawn by ([dx], [dy]) pixels, beyond the bounds too, where a drag resists: a
+     * movement measured on the screen (a caret to bring into sight) lands where it was measured.
+     */
+    internal fun panDrawnBy(dx: Float, dy: Float) {
+        updateDynamicBoundaries()
+        axisX.moveDrawnBy(dx, viewportRect.width.coerceAtLeast(1f), rubberBandTension)
+        axisY.moveDrawnBy(dy, viewportRect.height.coerceAtLeast(1f), rubberBandTension)
+        updateDynamicBoundaries()
+        moveCount++
+    }
+
+    /**
      * Initiates fling or bounce animation based on release velocity.
      *
      * @param velocityX Velocity along X in pixels per second.
@@ -248,6 +271,12 @@ public class CameraPhysicsEngine(
         }
         axisX.update(dt)
         axisY.update(dt)
+        if (axisY.state != PhysicsState.IDLE) {
+            updateDynamicBoundaries()
+            if (axisX.state == PhysicsState.IDLE && axisX.calculateExcess() != 0f) {
+                axisX.startBounce()
+            }
+        }
         moveCount++
     }
 
@@ -305,18 +334,7 @@ public class CameraPhysicsEngine(
         if (content.isEmpty) return
 
         val currentScale = scaleAxis.position
-        val scaledWidth = content.width * currentScale
         val scaledHeight = content.height * currentScale
-
-        // Within a pixel: the layout rounds the pages, and on a phone they fill the width
-        if (scaledWidth <= viewportRect.width + 1f) {
-            val centeredX = (viewportRect.width - scaledWidth) / 2f - content.left * currentScale
-            axisX.minValue = centeredX
-            axisX.maxValue = centeredX
-        } else {
-            axisX.minValue = viewportRect.width - content.right * currentScale
-            axisX.maxValue = -content.left * currentScale
-        }
 
         if (scaledHeight <= viewportRect.height - (topPaddingPx + bottomPaddingPx)) {
             axisY.minValue = topPaddingPx
@@ -324,6 +342,23 @@ public class CameraPhysicsEngine(
         } else {
             axisY.minValue = viewportRect.height - scaledHeight - bottomPaddingPx
             axisY.maxValue = topPaddingPx
+        }
+
+        val worldTop = -axisY.position / currentScale
+        val worldBottom = (viewportRect.height - axisY.position) / currentScale
+        val visibleHorizontal = visibleHorizontalBounds?.invoke(worldTop, worldBottom)
+        val contentLeft = visibleHorizontal?.first ?: content.left
+        val contentRight = visibleHorizontal?.second ?: content.right
+        val scaledWidth = (contentRight - contentLeft) * currentScale
+
+        // Within a pixel: the layout rounds the pages, and on a phone they fill the width
+        if (scaledWidth <= viewportRect.width + 1f) {
+            val centeredX = (viewportRect.width - scaledWidth) / 2f - contentLeft * currentScale
+            axisX.minValue = centeredX
+            axisX.maxValue = centeredX
+        } else {
+            axisX.minValue = viewportRect.width - contentRight * currentScale
+            axisX.maxValue = -contentLeft * currentScale
         }
     }
 
@@ -414,6 +449,26 @@ public class CameraPhysicsEngine(
             val rubberBandedExcess = (absExcess * dimension * tension) / (dimension + tension * absExcess)
 
             return validPosition + (rubberBandedExcess * sign(excess))
+        }
+
+        /**
+         * Moves the position drawn by [getRubberBandPosition] by [delta] pixels: beyond the bounds,
+         * the position whose resisted excess is drawn there. A drawn excess reaches [dimension] only
+         * at an infinite excess, so it is held just short of it.
+         */
+        fun moveDrawnBy(delta: Float, dimension: Float, tension: Float) {
+            val drawn = getRubberBandPosition(dimension, tension) + delta
+            position = when {
+                drawn < minValue -> minValue - unbanded(minValue - drawn, dimension, tension)
+                drawn > maxValue -> maxValue + unbanded(drawn - maxValue, dimension, tension)
+                else -> drawn
+            }
+        }
+
+        /** The excess drawn as [drawnExcess]: the inverse of the resistance of [getRubberBandPosition]. */
+        private fun unbanded(drawnExcess: Float, dimension: Float, tension: Float): Float {
+            val drawnAtMost = drawnExcess.coerceAtMost(dimension * 0.99f)
+            return drawnAtMost * dimension / (tension * (dimension - drawnAtMost))
         }
     }
 

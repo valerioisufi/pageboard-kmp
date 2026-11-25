@@ -50,8 +50,10 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.command_next_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_tool
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_protractor
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_quick_pan
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_rename
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_ruler
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_scroll_axis_lock
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_send_backward
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_send_to_back
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_shapes
@@ -420,6 +422,20 @@ internal class EditorCommands internal constructor(
         isChecked = { actions.isLayersOpen() }
     ) { actions.toggleLayers() }
 
+    /** Locks or unlocks predominant-axis filtering on trackpad and wheel scrolling. */
+    val scrollAxisLock = Command(
+        "scroll-axis-lock", label(Res.string.command_scroll_axis_lock), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.Lock) },
+        isChecked = { controller.isScrollAxisLockEnabled }
+    ) { controller.updateScrollAxisLockEnabled(!controller.isScrollAxisLockEnabled) }
+
+    /** Toggles session-scoped one-finger Quick Pan mode (touch pans while stylus still draws). */
+    val quickPan = Command(
+        "quick-pan", label(Res.string.command_quick_pan), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.Pan) },
+        isChecked = { controller.isQuickPanEnabled }
+    ) { controller.toggleQuickPan() }
+
     /** Whether the text box suggests what may follow the caret: only with an extension that suggests. */
     val textSuggestions: Command? = if (!hasTextSuggestions) null else Command(
         "text-suggestions", label(Res.string.command_text_suggestions), CommandGroup.VIEW, section = 2,
@@ -773,7 +789,7 @@ internal class EditorCommands internal constructor(
     val all: List<Command> = listOfNotNull(
         close, rename,
         undo, redo, cut, copy, paste, pastePlain, delete, find,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, ruler, protractor, layers, textSuggestions,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, quickPan, scrollAxisLock, snapping, shapes, ruler, protractor, layers, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack, lockSelection,

@@ -436,4 +436,20 @@ class CommandTest {
         assertEquals(null, controller.selectionManager.currentSelection)
         assertFalse(commands.lockSelection.isEnabled())
     }
+
+    @Test
+    fun quickPanAndScrollAxisLockCommandsToggleControllerState() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        assertFalse(commands.quickPan.isChecked!!.invoke())
+        assertTrue(commands.scrollAxisLock.isChecked!!.invoke())
+
+        commands.quickPan.perform()
+        assertTrue(controller.isQuickPanEnabled)
+        assertTrue(commands.quickPan.isChecked!!.invoke())
+
+        commands.scrollAxisLock.perform()
+        assertFalse(controller.isScrollAxisLockEnabled)
+        assertFalse(commands.scrollAxisLock.isChecked!!.invoke())
+    }
 }

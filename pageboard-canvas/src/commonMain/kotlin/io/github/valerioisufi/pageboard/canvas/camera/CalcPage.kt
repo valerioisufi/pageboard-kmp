@@ -34,6 +34,10 @@ public class CalcPage(
      */
     internal var contentRect: Rect = Rect.Zero
 
+    /** Horizontal margin beside each page in world pixels, at the opening zoom. */
+    internal var horizontalPaddingPx: Float = 8f
+        private set
+
     /**
      * Spacing configuration for document layout.
      */
@@ -68,6 +72,7 @@ public class CalcPage(
         }
 
         val horizontalPadding = options.horizontalPadding * density
+        horizontalPaddingPx = horizontalPadding
         val topPadding = options.topPadding * density
         val betweenPadding = options.betweenPadding * density
         val bottomPadding = options.bottomPadding * density
@@ -163,5 +168,32 @@ public class CalcPage(
 
         visiblePages.sortBy { it.index }
         return visiblePages
+    }
+
+    /**
+     * Horizontal bounds `(left, right)` in world space encompassing the pages intersecting
+     * `[worldTop, worldBottom]` plus [horizontalPaddingPx] on each side. When no page intersects
+     * the vertical span (e.g. scrolled past the first or last page), uses the nearest page.
+     */
+    internal fun visibleHorizontalBounds(worldTop: Float, worldBottom: Float): Pair<Float, Float>? {
+        if (pagesRectOnWindow.isEmpty()) return null
+        var minLeft = Float.POSITIVE_INFINITY
+        var maxRight = Float.NEGATIVE_INFINITY
+        for (rect in pagesRectOnWindow) {
+            if (rect.bottom > worldTop && rect.top < worldBottom) {
+                if (rect.left < minLeft) minLeft = rect.left
+                if (rect.right > maxRight) maxRight = rect.right
+            }
+        }
+        if (minLeft > maxRight) {
+            val nearest = if (worldBottom <= pagesRectOnWindow.first().top) {
+                pagesRectOnWindow.first()
+            } else {
+                pagesRectOnWindow.last()
+            }
+            minLeft = nearest.left
+            maxRight = nearest.right
+        }
+        return (minLeft - horizontalPaddingPx) to (maxRight + horizontalPaddingPx)
     }
 }

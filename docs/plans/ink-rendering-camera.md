@@ -40,7 +40,7 @@ The responsibilities are assigned following the GRASP principles (Information Ex
 |---|---|---|
 | 1 | Memory reduction (`StrokeMesh` outline-only support, `HitTesting` outline capsule/polygon, `NativeStrokeEngineDelegate` dropping duplicate triangles) & LRU `Path` cache in `StrokeMeshPainter` (Skiko & Android); tests & benchmark; ABI recorded | Done |
 | 2 | Dynamic viewport `TileCache` budget and sharper zoom-out (3-gen descendants + coarser LOD pre-scheduling); tests | Done |
-| 3 | Adaptive camera bounds for mixed-width pages (`CalcPage`, `CameraPhysicsEngine`), dp vertical margins, `isScrollAxisLockEnabled` preference + command, and Quick Pan mode (`PageboardController`, `CanvasGestureHandler`, phone floating pill, 7 locales); tests; ABI recorded | Pending |
+| 3 | Adaptive camera bounds for mixed-width pages (`CalcPage`, `CameraPhysicsEngine`), dp vertical margins, `isScrollAxisLockEnabled` preference + command, and Quick Pan mode (`PageboardController`, `CanvasGestureHandler`, phone floating pill, 7 locales); tests; ABI recorded | Done |
 | 4 | Native ink prediction (`MotionEventInkPredictor` on Android, `IosPencilInkPredictor` on iOS), historical pressure lookup, unbuffered finger dispatch on Android, >60 Hz `Surface.setFrameRate` / ProMotion / desktop refresh horizon, `MetalLiveInkLayer` on iOS & low-latency desktop support; JVM/Android/iOS build & tests | Pending |
 
 ## Decisions (revertible)
@@ -48,6 +48,8 @@ The responsibilities are assigned following the GRASP principles (Information Ex
 1. **Outline-only meshes on native strokes**: keeps triangles only for the Kotlin fallback modeller; all native strokes drop `positions`/`indices` after modeling, saving ~60% of geometry memory.
 2. **Bounded LRU path cache (256 entries) inside `StrokeMeshPainter`**: avoids global mutable state and ensures Skia native `Path` instances are deterministically closed on eviction.
 3. **Quick Pan is session state, not persisted**: toggled quickly from the phone floating pill when navigating, leaving tool selection untouched.
+4. **`Viewport.panBy` moves what is drawn by as much, past the bounds too** (`CameraPhysicsEngine.panDrawnBy`): beyond the bounds the camera draws its excess with the resistance of a drag, so a pan measured on the screen (the caret brought into sight above the keyboard, `TextPlacer`) used to land short by that resistance. With the margins in dp the bottom bound came 20 px closer at density 1, and `TextBoxLargeTest.aPanByHandIsNotUndoneBeforeTheNextKey` showed it: the caret came back 22 px short. `panBy` now inverts the resistance; a drag by hand still resists.
+5. **Outline-only native strokes in the sample test**: `SharedLogicDesktopTest` asked the native modeller for triangles, which phase 1 dropped on purpose; it now asks for triangles or an outline.
 
 ## Left for later
 

@@ -321,4 +321,7 @@
     <string name="layers_assign_selection">Mover selección aquí</string>
     <string name="layers_unlayered">Predeterminada (sin capa)</string>
     <string name="layers_empty_hint">Aún no hay capas en esta página. Crea capas para organizar, ocultar o bloquear elementos.</string>
+    <string name="command_scroll_axis_lock">Bloqueo de eje al desplazar</string>
+    <string name="command_quick_pan">Desplazamiento rápido</string>
+    <string name="quick_pan_active_hint">Desplazamiento rápido · Toca para salir</string>
 </resources>

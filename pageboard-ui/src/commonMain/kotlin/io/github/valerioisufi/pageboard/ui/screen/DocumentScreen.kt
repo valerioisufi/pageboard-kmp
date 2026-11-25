@@ -19,14 +19,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -37,6 +41,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -417,6 +422,9 @@ private fun DocumentScreenContent(
                             if (!isLoading && bottomInset == 0.dp && !controller.textEditorManager.isEditing) {
                                 PageIndicator(controller, withZoom = arrangement != ToolbarArrangement.FLOATING_TOOLS)
                             }
+                            if (controller.isQuickPanEnabled && !isLoading && !controller.textEditorManager.isEditing) {
+                                QuickPanActivePill(onExit = { controller.updateQuickPanEnabled(false) })
+                            }
                             // Where the tools would be, why there are none
                             if (arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isReadOnly && !isLoading) {
                                 ReadOnlyBadge(readOnlyNote(), floating = true)
@@ -562,5 +570,34 @@ private fun DocumentScreenContent(
 
     if (showAboutDialog) {
         AboutLicensesDialog(onDismiss = { showAboutDialog = false })
+    }
+}
+
+@Composable
+private fun QuickPanActivePill(onExit: () -> Unit) {
+    val shape = RoundedCornerShape(20.dp)
+    Surface(
+        onClick = onExit,
+        shape = shape,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.height(36.dp).padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = PageboardIcons.Pan,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = stringResource(Res.string.quick_pan_active_hint),
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1
+            )
+        }
     }
 }

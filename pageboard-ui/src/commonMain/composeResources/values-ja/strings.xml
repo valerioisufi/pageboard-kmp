@@ -316,4 +316,7 @@
     <string name="layers_assign_selection">選択範囲をここへ移動</string>
     <string name="layers_unlayered">デフォルト（レイヤーなし）</string>
     <string name="layers_empty_hint">このページにはまだレイヤーがありません。レイヤーを作成して要素を整理、非表示、またはロックできます。</string>
+    <string name="command_scroll_axis_lock">スクロール軸ロック</string>
+    <string name="command_quick_pan">クイックパン</string>
+    <string name="quick_pan_active_hint">クイックパン · タップして終了</string>
 </resources>

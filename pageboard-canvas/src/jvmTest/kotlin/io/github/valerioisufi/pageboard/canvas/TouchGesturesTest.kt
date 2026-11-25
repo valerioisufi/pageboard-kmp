@@ -363,4 +363,48 @@ class TouchGesturesTest {
 
         assertTrue(page.strokes.isEmpty(), "No stroke must be committed when two-finger scrolling with pen active")
     }
+
+    @Test
+    fun quickPanRoutesSingleFingerToPanWhileStylusStillDraws() = withCanvas { scene, controller ->
+        val page = controller.document.pages[0]
+        val camera = controller.viewport.camera
+        controller.selectTool(Tool.INK_PEN)
+        controller.updateQuickPanEnabled(true)
+        assertTrue(controller.isQuickPanEnabled)
+
+        val beforeCam = camera.getCurrentTranslation()
+        var time = 1_000L
+        val fingerStart = Offset(400f, 400f)
+        scene.touch(PointerEventType.Press, listOf(0L to fingerStart), time)
+        time += 16L
+        scene.touch(PointerEventType.Move, listOf(0L to fingerStart + Offset(0f, -80f)), time)
+        assertTrue(camera.getCurrentTranslation().y < beforeCam.y - 40f, "Single finger should pan when Quick Pan is active")
+        time += 16L
+        scene.touch(PointerEventType.Release, listOf(0L to fingerStart + Offset(0f, -80f)), time)
+        assertTrue(page.strokes.isEmpty(), "Touch drag in Quick Pan mode must not create a stroke")
+
+        // Stylus still draws normally while Quick Pan is enabled
+        val mmToScreen = controller.viewport.pageMmToScreen(0)!!
+        val s0 = mmToScreen.mapPoint(40f, 40f).toCompose()
+        val s1 = mmToScreen.mapPoint(80f, 40f).toCompose()
+        time += 32L
+        scene.sendPointerEvent(
+            eventType = PointerEventType.Press,
+            pointers = listOf(ComposeScenePointer(id = PointerId(2L), position = s0, pressed = true, type = PointerType.Stylus)),
+            timeMillis = time
+        )
+        time += 16L
+        scene.sendPointerEvent(
+            eventType = PointerEventType.Move,
+            pointers = listOf(ComposeScenePointer(id = PointerId(2L), position = s1, pressed = true, type = PointerType.Stylus)),
+            timeMillis = time
+        )
+        time += 16L
+        scene.sendPointerEvent(
+            eventType = PointerEventType.Release,
+            pointers = listOf(ComposeScenePointer(id = PointerId(2L), position = s1, pressed = false, type = PointerType.Stylus)),
+            timeMillis = time
+        )
+        assertEquals(1, page.strokes.size, "Stylus must still draw while Quick Pan is active")
+    }
 }

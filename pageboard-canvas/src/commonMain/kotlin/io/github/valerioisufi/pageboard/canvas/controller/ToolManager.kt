@@ -49,7 +49,9 @@ public data class EditorPreferences(
     /** Whether the text box asks the extensions what may follow the caret (`docs/plans/writing-suggestions.md`). */
     val areTextSuggestionsEnabled: Boolean = true,
     /** Whether holding a stroke still converts it directly into an editable shape element instead of a stroke. */
-    val snapToEditableShape: Boolean = false
+    val snapToEditableShape: Boolean = false,
+    /** Whether wheel and trackpad scrolling locks onto the predominant axis at the start of a gesture. */
+    val isScrollAxisLockEnabled: Boolean = true
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
     public fun encode(): String = json.encodeToString(serializer(), this)

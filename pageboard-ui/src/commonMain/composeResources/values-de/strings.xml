@@ -321,4 +321,7 @@
     <string name="layers_assign_selection">Auswahl hierher verschieben</string>
     <string name="layers_unlayered">Standard (ohne Ebene)</string>
     <string name="layers_empty_hint">Noch keine Ebenen auf dieser Seite. Erstelle Ebenen, um Elemente zu ordnen, auszublenden oder zu sperren.</string>
+    <string name="command_scroll_axis_lock">Scroll-Achse sperren</string>
+    <string name="command_quick_pan">Schnelles Schwenken</string>
+    <string name="quick_pan_active_hint">Schnelles Schwenken · Zum Beenden tippen</string>
 </resources>

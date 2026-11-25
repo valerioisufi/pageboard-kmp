@@ -122,7 +122,7 @@ class TrackpadGesturesTest {
     }
 
     @Test
-    fun twoFingerScrollOfAMacTrackpadOverscrollsAndBouncesBack() = withCanvas(pages = 1) { scene, controller ->
+    fun twoFingerScrollOfAMacTrackpadOverscrollsAndBouncesBack() = withCanvas(pages = 2) { scene, controller ->
         val camera = controller.viewport.camera
         // At the top of the page
         camera.onDrag(0f, 10_000f)
@@ -324,5 +324,22 @@ class TrackpadGesturesTest {
         assertFalse(camera.isAnimating())
         assertTrue(camera.getCurrentScale() <= camera.maxScale && camera.getCurrentScale() > camera.maxScale * 0.9f)
         assertPointUnderThePointer()
+    }
+
+    @Test
+    fun disablingScrollAxisLockAllowsFreeTwoAxisTrackpadScrolling() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        controller.updateScrollAxisLockEnabled(false)
+        val before = camera.getCurrentTranslation()
+        val unit = scrollUnitPx(1f)
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
+        scene.scroll(Offset(0f, 1f), timeMillis = 1_000L)
+        scene.scroll(Offset(0.2f, 0f), timeMillis = 1_005L)
+        val after = camera.getCurrentTranslation()
+        assertEquals(before.x - 0.2f * unit, after.x, 1e-3f)
+        assertEquals(before.y - unit, after.y, 1e-3f)
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
     }
 }

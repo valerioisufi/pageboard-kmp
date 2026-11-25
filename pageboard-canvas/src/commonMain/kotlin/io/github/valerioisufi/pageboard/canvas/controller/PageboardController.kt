@@ -189,6 +189,14 @@ public class PageboardController(
     public var isStylusOnlyMode: Boolean by mutableStateOf(false)
         private set
 
+    /** Session-scoped one-finger Quick Pan mode: touch pans the canvas while stylus still draws. */
+    public var isQuickPanEnabled: Boolean by mutableStateOf(false)
+        private set
+
+    /** Whether wheel and trackpad scrolling locks onto the predominant axis at the start of a gesture. */
+    public var isScrollAxisLockEnabled: Boolean by mutableStateOf(true)
+        private set
+
     public var isPageGridVisible: Boolean by mutableStateOf(false)
 
     /** Screen position of the long-press context menu, or `null` when hidden. */
@@ -345,6 +353,25 @@ public class PageboardController(
         preferencesChanged()
     }
 
+    /** Enables or disables session-scoped one-finger Quick Pan mode (not persisted). */
+    public fun updateQuickPanEnabled(enabled: Boolean) {
+        if (isQuickPanEnabled == enabled) return
+        isQuickPanEnabled = enabled
+        requestRedraw()
+    }
+
+    /** Toggles session-scoped one-finger Quick Pan mode. */
+    public fun toggleQuickPan() {
+        updateQuickPanEnabled(!isQuickPanEnabled)
+    }
+
+    /** Enables or disables locking wheel and trackpad scrolling onto its starting predominant axis. */
+    public fun updateScrollAxisLockEnabled(enabled: Boolean) {
+        if (isScrollAxisLockEnabled == enabled) return
+        isScrollAxisLockEnabled = enabled
+        preferencesChanged()
+    }
+
     /**
      * Called the first time a stylus touches the canvas: like the original app, the editor
      * switches to stylus-only mode (fingers pan and zoom).
@@ -382,6 +409,7 @@ public class PageboardController(
     /** Applies the preferences of the user kept (e.g. when the editor opens). */
     public fun applyPreferences(preferences: EditorPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
+        isScrollAxisLockEnabled = preferences.isScrollAxisLockEnabled
         areTextSuggestionsEnabled = preferences.areTextSuggestionsEnabled
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
@@ -405,7 +433,8 @@ public class PageboardController(
         isShapeRecognitionEnabled = shapeSnapper.isEnabled,
         shapeTool = ShapeToolPreferences.of(shapeInserter.style),
         areTextSuggestionsEnabled = areTextSuggestionsEnabled,
-        snapToEditableShape = shapeSnapper.snapToEditableShape
+        snapToEditableShape = shapeSnapper.snapToEditableShape,
+        isScrollAxisLockEnabled = isScrollAxisLockEnabled
     )
 
     // ==========================================================

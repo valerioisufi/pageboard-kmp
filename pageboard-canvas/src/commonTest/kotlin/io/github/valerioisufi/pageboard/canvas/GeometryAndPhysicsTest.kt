@@ -124,10 +124,10 @@ class GeometryAndPhysicsTest {
             engine.update(16L) // ~60 FPS steps
         }
 
-        // After settling, it should spring back to boundary (top padding = 40px)
+        // After settling, it should spring back to boundary (top padding = 20 dp at density 1 = 20 px)
         assertFalse(engine.isAnimating())
         val finalPos = engine.getCurrentTranslation()
-        assertEquals(40f, finalPos.y, 1e-3f)
+        assertEquals(engine.topPaddingPx, finalPos.y, 1e-3f)
     }
 
     @Test

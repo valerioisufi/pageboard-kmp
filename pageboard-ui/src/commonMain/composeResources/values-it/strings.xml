@@ -321,4 +321,7 @@
     <string name="layers_assign_selection">Sposta selezione qui</string>
     <string name="layers_unlayered">Predefinito (senza livello)</string>
     <string name="layers_empty_hint">Nessun livello in questa pagina. Crea dei livelli per organizzare, nascondere o bloccare gli elementi.</string>
+    <string name="command_scroll_axis_lock">Blocco asse scorrimento</string>
+    <string name="command_quick_pan">Panoramica rapida</string>
+    <string name="quick_pan_active_hint">Panoramica rapida · Tocca per uscire</string>
 </resources>

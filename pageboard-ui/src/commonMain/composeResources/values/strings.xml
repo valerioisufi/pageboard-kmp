@@ -322,4 +322,7 @@
     <string name="layers_assign_selection">Move selection here</string>
     <string name="layers_unlayered">Default (Unlayered)</string>
     <string name="layers_empty_hint">No layers yet on this page. Create layers to organize, hide, or lock elements.</string>
+    <string name="command_scroll_axis_lock">Scroll axis lock</string>
+    <string name="command_quick_pan">Quick Pan</string>
+    <string name="quick_pan_active_hint">Quick Pan · Tap to exit</string>
 </resources>

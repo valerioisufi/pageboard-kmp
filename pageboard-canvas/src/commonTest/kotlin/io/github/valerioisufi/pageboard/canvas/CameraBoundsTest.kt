@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.pageboard.canvas.camera.CalcPage
 import io.github.valerioisufi.pageboard.canvas.camera.CameraPhysicsEngine
 import io.github.valerioisufi.pageboard.model.Page
+import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -149,5 +150,59 @@ class CameraBoundsTest {
         canvas.settle()
 
         assertEquals(canvas.width / 2f, canvas.pageOnScreen().center.x, 0.5f)
+    }
+
+    @Test
+    fun visibleHorizontalBoundsTrackPortraitAndLandscapePagesSeparately() {
+        val portrait = Page(widthMm = 210f, heightMm = 297f)
+        val landscape = Page(widthMm = 297f, heightMm = 210f)
+        val layout = CalcPage(density = 2f).apply {
+            calcPagesRectOnWindow(listOf(portrait, landscape), Rect(0f, 0f, 2880f, 1800f))
+        }
+        val portraitRect = layout.pagesRectOnWindow[0]
+        val landscapeRect = layout.pagesRectOnWindow[1]
+
+        val topOnly = layout.visibleHorizontalBounds(portraitRect.top, portraitRect.bottom)
+        assertEquals((portraitRect.left - layout.horizontalPaddingPx) to (portraitRect.right + layout.horizontalPaddingPx), topOnly)
+
+        val bottomOnly = layout.visibleHorizontalBounds(landscapeRect.top, landscapeRect.bottom)
+        assertEquals((landscapeRect.left - layout.horizontalPaddingPx) to (landscapeRect.right + layout.horizontalPaddingPx), bottomOnly)
+
+        val camera = CameraPhysicsEngine(density = 2f, getContentRect = { layout.contentRect }).apply {
+            visibleHorizontalBounds = { wt, wb -> layout.visibleHorizontalBounds(wt, wb) }
+            setViewport(2880f, 900f)
+            centerOnWorldPoint(portraitRect.center.x, portraitRect.center.y, 2f, 2880f, 900f)
+            restoreToBounds(animated = false)
+        }
+        // Portrait at 2x fits within 2880 px viewport, so camera centers horizontally instead of panning to landscape edges
+        camera.onDrag(100_000f, 0f)
+        camera.restoreToBounds(animated = false)
+        assertFalse(camera.canMoveX)
+    }
+
+    @Test
+    fun verticalCameraMarginsScaleWithScreenDensityInDp() {
+        for (density in listOf(1f, 2f, 3f)) {
+            val canvas = Canvas(width = 1200f, density = density)
+            assertEquals(20f * density, canvas.camera.topPaddingPx, 0.01f)
+            assertEquals(20f * density, canvas.camera.bottomPaddingPx, 0.01f)
+        }
+    }
+
+    @Test
+    fun aPanMeasuredOnTheScreenLandsThereBeyondTheBounds() {
+        val canvas = Canvas(width = 1200f, density = 1f, height = 836f)
+        fun drawnTop() = canvas.camera.getRenderMatrix(Matrix2D()).mapPoint(0f, 0f).y
+        val before = drawnTop()
+        // Past the bottom of the page by half the canvas, where a drag resists
+        val pan = -(canvas.layout.contentRect.height - canvas.height / 2f)
+        canvas.camera.panDrawnBy(0f, pan)
+        assertEquals(before + pan, drawnTop(), 1f)
+        canvas.camera.panDrawnBy(0f, -pan)
+        assertEquals(before, drawnTop(), 1f)
+
+        canvas.camera.panDrawnBy(0f, pan)
+        canvas.camera.restoreToBounds(animated = false)
+        assertTrue(drawnTop() > before + pan + 100f, "the pan went past the bounds: ${drawnTop()}")
     }
 }

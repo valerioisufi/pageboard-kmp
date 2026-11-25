@@ -142,4 +142,17 @@ class EditorPreferencesTest {
         restored.applyPreferences(EditorPreferences.decode(encoded)!!)
         assertTrue(restored.shapeSnapper.snapToEditableShape)
     }
+
+    @Test
+    fun scrollAxisLockDefaultsTrueAndRoundTrips() = runTest {
+        val older = EditorPreferences.decode("""{"isStylusOnlyMode":false}""")!!
+        assertTrue(older.isScrollAxisLockEnabled)
+        val controller = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        assertTrue(controller.isScrollAxisLockEnabled)
+        controller.updateScrollAxisLockEnabled(false)
+        val encoded = controller.preferences.value.encode()
+        val restored = PageboardController(document = Document(), coroutineScope = backgroundScope)
+        restored.applyPreferences(EditorPreferences.decode(encoded)!!)
+        assertEquals(false, restored.isScrollAxisLockEnabled)
+    }
 }

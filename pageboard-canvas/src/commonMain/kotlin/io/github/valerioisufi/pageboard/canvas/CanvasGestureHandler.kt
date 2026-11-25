@@ -468,7 +468,7 @@ internal class CanvasGestureHandler(
 
         // Pending placement: a tap places the element, a drag moves the canvas (whatever the tool)
         if (controller.placementManager.isActive) {
-            if (controller.isStylusOnlyMode && change.type == PointerType.Touch) {
+            if ((controller.isStylusOnlyMode || controller.isQuickPanEnabled) && change.type == PointerType.Touch) {
                 startPan()
             } else {
                 val placement = controller.placementManager
@@ -544,13 +544,13 @@ internal class CanvasGestureHandler(
             droppedSelection = true
         }
 
-        val stylusOnly = controller.isStylusOnlyMode
+        val touchPans = controller.isStylusOnlyMode || controller.isQuickPanEnabled
         val isFinger = change.type == PointerType.Touch
         val tool = controller.toolManager.selectedTool
 
         // Interactive ruler & protractor: ink near an edge locks & traces it; touching body/knobs moves or rotates the guide
         val density = controller.viewport.density
-        val inkNearGuide = controller.toolManager.isInkTool && !(stylusOnly && isFinger) &&
+        val inkNearGuide = controller.toolManager.isInkTool && !(touchPans && isFinger) &&
             controller.geometryGuides.beginInkStroke(position, density)
         if (!inkNearGuide) {
             val guideHit = controller.geometryGuides.hitTest(position, density)
@@ -561,7 +561,7 @@ internal class CanvasGestureHandler(
             }
         }
 
-        if (tool == Tool.PAN || (stylusOnly && isFinger)) {
+        if (tool == Tool.PAN || (touchPans && isFinger)) {
             startPan()
             // With the hand tool, a long press only selects the text of the PDFs
             longPressCandidate = isFinger || tool == Tool.PAN
@@ -1387,7 +1387,11 @@ internal class CanvasGestureHandler(
                     if (change.uptimeMillis - lastWheelTime !in 0L..ScrollAxisLock.WHEEL_GESTURE_PAUSE_MS) wheelAxis.begin()
                     lastWheelTime = change.uptimeMillis
                     val camera = controller.viewport.camera
-                    val locked = wheelAxis.filter(pan, camera.canMoveX, camera.canMoveY)
+                    val locked = if (controller.isScrollAxisLockEnabled) {
+                        wheelAxis.filter(pan, camera.canMoveX, camera.canMoveY)
+                    } else {
+                        Offset(if (camera.canMoveX) pan.x else 0f, if (camera.canMoveY) pan.y else 0f)
+                    }
                     camera.onDrag(locked.x, locked.y, 1f, change.position.x, change.position.y)
                     camera.restoreToBounds(animated = false)
                     controller.requestRedraw()
@@ -1457,7 +1461,11 @@ internal class CanvasGestureHandler(
      */
     private fun trackpadPanBy(delta: Offset, change: PointerInputChange) {
         val camera = controller.viewport.camera
-        val locked = trackpadAxis.filter(delta, camera.canMoveX, camera.canMoveY)
+        val locked = if (controller.isScrollAxisLockEnabled) {
+            trackpadAxis.filter(delta, camera.canMoveX, camera.canMoveY)
+        } else {
+            Offset(if (camera.canMoveX) delta.x else 0f, if (camera.canMoveY) delta.y else 0f)
+        }
         if (locked == Offset.Zero) return
         camera.onDrag(locked.x, locked.y, 1f, change.position.x, change.position.y)
         trackpadPanPosition += locked
