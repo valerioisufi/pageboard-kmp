@@ -4214,10 +4214,12 @@ public final class io/github/valerioisufi/pageboard/model/text/TextRoom {
 	public static final field CARET_MM F
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/TextRoom;
 	public static final field MIN_BOX_WIDTH_MM F
+	public static final field MIN_HEIGHT_MM F
 	public static final field MIN_WIDTH_MM F
 	public static final field PAGE_MARGIN_MM F
 	public final fun boxLeft (FFLio/github/valerioisufi/pageboard/model/TextAlignment;)F
 	public final fun boxWidth (FF)F
+	public final fun maxHeightOf (Ljava/lang/Float;F)Ljava/lang/Float;
 	public final fun of (FFLio/github/valerioisufi/pageboard/model/TextAlignment;F)Lkotlin/Pair;
 }
 

@@ -40,8 +40,8 @@ public final class io/github/valerioisufi/pageboard/canvas/PageboardColors {
 public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Companion;
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/geometry/Offset;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/geometry/Offset;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun contains-3MmeM6k (JF)Z
 	public static synthetic fun contains-3MmeM6k$default (Lio/github/valerioisufi/pageboard/canvas/SelectionFrame;JFILjava/lang/Object;)Z
 	public final fun getCenter-F1C5BW0 ()J
@@ -905,6 +905,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun getInNumberedList ()Z
 	public fun getInQuote ()Z
 	public fun getInTable ()Z
+	public final fun getMaxHeight ()Ljava/lang/Float;
 	public fun getMoveCompletedToBottom ()Z
 	public fun getNumberingStart ()I
 	public fun getNumberingStyle ()Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;

@@ -47,6 +47,7 @@ import io.github.valerioisufi.pageboard.model.text.ListNumbering
 import io.github.valerioisufi.pageboard.model.text.ListContinuation
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import kotlin.math.abs
+import kotlin.math.min
 
 /**
  * The use case "write a text": the text being written (its content, its style and its box), its
@@ -238,6 +239,13 @@ public class TextEditorManager internal constructor(private val controller: Page
     private var continueNumberingFrom: String? by mutableStateOf(null)
 
     /**
+     * The height set by hand of the box being written, in millimeters from its top: its text stops
+     * there and goes on in the next box of its chain when the editor closes; `null` for none.
+     */
+    public var maxHeight: Float? by mutableStateOf(null)
+        private set
+
+    /**
      * Whether the writing began on a new text: saved meanwhile (see [saveWriting]) and emptied, it
      * leaves nothing to undo.
      */
@@ -344,6 +352,7 @@ public class TextEditorManager internal constructor(private val controller: Page
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
         continueNumberingFrom = item?.continueNumberingFrom
+        maxHeight = item?.maxHeight?.let { TextRoom.maxHeightOf(it, controller.document.pages.getOrNull(pageIndex)?.heightMm ?: Float.MAX_VALUE) }
         sessionId++
 
         if (item != null) {
@@ -945,6 +954,20 @@ public class TextEditorManager internal constructor(private val controller: Page
         return ListContinuation.previousListText(controller.document, page, activeTextItem?.id ?: newTextId, boxY)
     }
 
+    /**
+     * Sets the height of the box being written to stop at [bottomMm] (page millimeters, its bottom
+     * edge dragged), at least a line; `null` clears it, the box as tall as its text.
+     */
+    internal fun setMaxHeightTo(bottomMm: Float?) {
+        if (!isEditing) return
+        val pageHeight = controller.document.pages.getOrNull(activeTextPageIndex)?.heightMm ?: return
+        val height = bottomMm?.let { TextRoom.maxHeightOf(it - boxY, pageHeight - boxY) }
+        if (height == maxHeight) return
+        maxHeight = height
+        reportDraft()
+        flowIfOverflowing()
+    }
+
     override fun changeFontFamily(fontFamily: String?) {
         val normalized = TextFonts.byId(fontFamily).id
         if (!isEditing || normalized == this.fontFamily) return
@@ -1155,8 +1178,9 @@ public class TextEditorManager internal constructor(private val controller: Page
         if (!isEditing || rotation != 0f || value.text.isBlank()) return
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         val box = inItsRoom(draft(), page)
-        // Blank lines at the end start no box: the next character does
-        if (box.y + heightOf(value.text.trimEnd('\n'), box.width) <= roomBottom(page) + OVERFLOW_TOLERANCE_MM) return
+        // Blank lines at the end start no box: the next character does. A box stops at its height set by hand
+        val room = TextRoom.maxHeightOf(maxHeight, page.heightMm)?.let { min(box.y + it, roomBottom(page)) } ?: roomBottom(page)
+        if (box.y + heightOf(value.text.trimEnd('\n'), box.width) <= room + OVERFLOW_TOLERANCE_MM) return
         flowChain(caret = value.selection.start)
     }
 
@@ -1189,6 +1213,12 @@ public class TextEditorManager internal constructor(private val controller: Page
      * @return `false` when the text needs no chain (it fits on its page and goes on into none),
      *   nothing done.
      */
+    /** The room of a box of a chain: its page under it, stopped at its height set by hand, if any. */
+    private fun chainRoom(width: Float, y: Float, maxHeight: Float?, page: Page): ChainFlow.Room {
+        val room = roomBottom(page) - y
+        return ChainFlow.Room(width, TextRoom.maxHeightOf(maxHeight, page.heightMm)?.coerceAtMost(room) ?: room)
+    }
+
     private fun flowChain(caret: Int?): Boolean {
         val pageIndex = activeTextPageIndex
         val pages = controller.document.pages
@@ -1204,8 +1234,8 @@ public class TextEditorManager internal constructor(private val controller: Page
             .let { if (value.text.isBlank()) it.substring(value.text.length).removePrefix("\n") else it }
         val pageOf = { text: TextElement -> pages[chains.pageOf(text.id)] }
         val lastPageIndex = following.lastOrNull()?.let { chains.pageOf(it.id) } ?: pageIndex
-        val rooms = listOf(ChainFlow.Room(base.width, roomBottom(page) - base.y)) +
-            following.map { ChainFlow.Room(it.width, roomBottom(pageOf(it)) - it.y) }
+        val rooms = listOf(chainRoom(base.width, base.y, base.maxHeight, page)) +
+            following.map { chainRoom(it.width, it.y, it.maxHeight, pageOf(it)) }
         val extra = ChainFlow.Room(base.width, roomBottom(pages[lastPageIndex]) - CHAIN_MARGIN_MM)
         val flowed = ChainFlow { text, width -> heightOf(text, width) }.flow(tail, rooms, extra)
         // Saved with no caret to hold on them, blank lines at the end start no box
@@ -1237,7 +1267,8 @@ public class TextEditorManager internal constructor(private val controller: Page
                 if (data != before) changes += UpdateTexts(pageOf(box).id, listOf(data))
             } else {
                 val newPage = newPages[index - 1 - following.size]
-                val data = styled(base.copy(id = ids[index], y = CHAIN_MARGIN_MM, versions = Versions.NONE, order = null), index)
+                // A new box of the chain has no height of its own, nor a list going on from elsewhere
+                val data = styled(base.copy(id = ids[index], y = CHAIN_MARGIN_MM, versions = Versions.NONE, order = null, maxHeight = null, continueNumberingFrom = null), index)
                 changes += AddElements.of(newPage, listOf(data.toElement()))
             }
         }
@@ -1342,7 +1373,7 @@ public class TextEditorManager internal constructor(private val controller: Page
         fontFamily = fontFamily,
         // What the editor does not change is kept as it was
         continueNumberingFrom = continueNumberingFrom,
-        maxHeight = editedFrom?.maxHeight,
+        maxHeight = maxHeight,
         versions = versions
     )
 

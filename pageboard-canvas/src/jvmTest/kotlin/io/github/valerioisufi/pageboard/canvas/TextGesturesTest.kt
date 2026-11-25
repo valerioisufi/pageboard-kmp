@@ -1,5 +1,6 @@
 package io.github.valerioisufi.pageboard.canvas
 
+import kotlin.test.assertNull
 import io.github.valerioisufi.pageboard.model.change.LockElements
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -199,6 +200,27 @@ class TextGesturesTest {
         controller.selectTool(Tool.PAN)
         scene.click(assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(22f, 42f).toCompose())
         assertEquals("- [ ] milk", page.texts.single().text)
+    }
+
+    @Test
+    fun theBottomHandleOfTheTextBeingWrittenSetsItsHeightAndATapClearsIt() = withCanvas { scene, controller ->
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 20f, 40f)
+        editor.updateValue(TextFieldValue("one\ntwo\nthree", TextRange(13)))
+        // As the field lays it out (no field in this scene)
+        editor.reportLayoutHeight(30f)
+        scene.render()
+        val handle = assertNotNull(SelectionFrame.ofEditedText(controller)?.heightHandle)
+        scene.drag(handle, handle - Offset(0f, 20f))
+        val height = assertNotNull(editor.maxHeight)
+        assertTrue(height < editor.boxHeight, "the box stops above its last line: $height of ${editor.boxHeight}")
+        // The handle now at the line where it stops: a tap on it clears the height
+        scene.render()
+        val moved = assertNotNull(SelectionFrame.ofEditedText(controller)?.heightHandle)
+        time += 1_000
+        scene.click(moved)
+        assertNull(editor.maxHeight)
+        assertTrue(editor.isEditing)
     }
 
     private companion object {

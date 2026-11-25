@@ -22,6 +22,19 @@ public object TextRoom {
     /** The least width of a room (of a box set by hand too). */
     public const val MIN_WIDTH_MM: Float = 20f
 
+    /** The least height of a box of a chain set by hand: about a line of the smallest text. */
+    public const val MIN_HEIGHT_MM: Float = 5f
+
+    /**
+     * The height set by hand of a box ([maxHeight], see `TextElement.maxHeight`) as the room of its
+     * text takes it, on a page [pageHeight] high: `null` for none, or for one that is not a number;
+     * at least [MIN_HEIGHT_MM], at most the page. It comes from any device.
+     */
+    public fun maxHeightOf(maxHeight: Float?, pageHeight: Float): Float? {
+        if (maxHeight == null || !maxHeight.isFinite()) return null
+        return maxHeight.coerceIn(MIN_HEIGHT_MM, max(MIN_HEIGHT_MM, pageHeight))
+    }
+
     /**
      * The room of a box from [left] to [right], aligned at [alignment], on a page [pageWidth] wide,
      * as its left edge and its width: from the left edge to the margin for a text aligned at the

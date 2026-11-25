@@ -141,6 +141,9 @@ internal class CanvasGestureHandler(
         /** Moving the text being written by its frame, or one of its sides. */
         EDITOR_MOVE, EDITOR_RESIZE_LEFT, EDITOR_RESIZE_RIGHT,
 
+        /** Dragging the height of the text being written; a tap on its handle clears it. */
+        EDITOR_HEIGHT,
+
         /** Drawing the box of a new text with a pen or a mouse (the text tool). */
         TEXT_BOX,
 
@@ -465,6 +468,7 @@ internal class CanvasGestureHandler(
                 else -> when (frame.handleAt(position, radius)) {
                     SelectionFrame.Handle.LEFT -> Mode.EDITOR_RESIZE_LEFT
                     SelectionFrame.Handle.RIGHT -> Mode.EDITOR_RESIZE_RIGHT
+                    SelectionFrame.Handle.BOTTOM -> Mode.EDITOR_HEIGHT
                     else -> if (frame.contains(position, radius)) Mode.EDITOR_MOVE else Mode.EDITOR_TAP
                 }
             }
@@ -794,6 +798,13 @@ internal class CanvasGestureHandler(
                 updateAutoScroll(position)
             }
 
+            Mode.EDITOR_HEIGHT -> {
+                if (movedBeyondSlop) {
+                    val editor = controller.textEditorManager
+                    controller.viewport.screenToPageMm(editor.activeTextPageIndex, position)?.let { editor.setMaxHeightTo(it.y) }
+                }
+            }
+
             Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
                 val editor = controller.textEditorManager
                 val left = mode == Mode.EDITOR_RESIZE_LEFT
@@ -1088,6 +1099,15 @@ internal class CanvasGestureHandler(
                 if (wasTap && !tapTaken) onTextToolTap(position)
             }
 
+            Mode.EDITOR_HEIGHT -> {
+                // A tap on the handle: the box as tall as its text again; with no height to clear, a
+                // tap on the frame as before (past a block of code ending the text: a line by it)
+                if (wasTap) {
+                    val editor = controller.textEditorManager
+                    if (editor.maxHeight != null) editor.setMaxHeightTo(null) else lineBesideEditedBlock(position)
+                }
+            }
+
             Mode.EDITOR_MOVE, Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
                 controller.snapManager.clearGuides()
                 // A tap on the frame, past a block of code ending (or starting) the text: a line by it
@@ -1181,7 +1201,7 @@ internal class CanvasGestureHandler(
 
         // Double tap on a text block: edit it (whatever the active tool). A tap that checked a box or
         // opened a link is not the first of a double tap: a box checked twice stays a box
-        val editorMode = mode == Mode.EDITOR_TAP || mode == Mode.EDITOR_MOVE || mode == Mode.EDITOR_RESIZE_LEFT || mode == Mode.EDITOR_RESIZE_RIGHT
+        val editorMode = mode == Mode.EDITOR_TAP || mode == Mode.EDITOR_MOVE || mode == Mode.EDITOR_RESIZE_LEFT || mode == Mode.EDITOR_RESIZE_RIGHT || mode == Mode.EDITOR_HEIGHT
         if (tapTaken) {
             lastTapTime = 0L
         } else if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && !editorMode) {

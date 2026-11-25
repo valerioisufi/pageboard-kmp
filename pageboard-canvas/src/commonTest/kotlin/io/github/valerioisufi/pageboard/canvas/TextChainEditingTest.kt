@@ -298,4 +298,37 @@ class TextChainEditingTest {
         assertEquals(lines(1, 4), controller.document.pages[0].texts.single().text)
         assertNull(controller.document.pages[0].texts.single().next)
     }
+
+    @Test
+    fun aBoxStopsAtItsHeightSetByHandAndTheTextGoesOnInTheNextOne() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startDrawnText(0, Rect(20f, 40f, 120f, 50f))
+        editor.type(lines(1, 2))
+        // Its bottom edge dragged 25 mm under its top: room for two lines
+        editor.setMaxHeightTo(65f)
+        assertEquals(25f, editor.maxHeight)
+        editor.type(lines(1, 3))
+        val first = controller.document.pages[0].texts.single()
+        assertEquals(lines(1, 2), first.text)
+        assertEquals(25f, first.maxHeight)
+        val second = controller.document.pages.flatMap { it.texts }.single { it.id == first.next }
+        assertEquals("line 3", second.text)
+        assertNull(second.maxHeight, "a new box of the chain has no height of its own")
+    }
+
+    @Test
+    fun aHeightByHandIsAtLeastALineAndAtMostThePage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startDrawnText(0, Rect(20f, 40f, 120f, 50f))
+        // One line: a box takes it whole, however low its height
+        editor.type(lines(1, 1))
+        editor.setMaxHeightTo(41f)
+        assertEquals(5f, editor.maxHeight)
+        editor.setMaxHeightTo(10_000f)
+        assertEquals(297f - 40f, editor.maxHeight)
+        editor.setMaxHeightTo(null)
+        assertNull(editor.maxHeight)
+    }
 }

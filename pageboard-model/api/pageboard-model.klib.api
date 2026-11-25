@@ -4767,6 +4767,8 @@ final object io.github.valerioisufi.pageboard.model.text/TextRoom { // io.github
         final fun <get-CARET_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.CARET_MM.<get-CARET_MM>|<get-CARET_MM>(){}[0]
     final const val MIN_BOX_WIDTH_MM // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_BOX_WIDTH_MM|{}MIN_BOX_WIDTH_MM[0]
         final fun <get-MIN_BOX_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_BOX_WIDTH_MM.<get-MIN_BOX_WIDTH_MM>|<get-MIN_BOX_WIDTH_MM>(){}[0]
+    final const val MIN_HEIGHT_MM // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_HEIGHT_MM|{}MIN_HEIGHT_MM[0]
+        final fun <get-MIN_HEIGHT_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_HEIGHT_MM.<get-MIN_HEIGHT_MM>|<get-MIN_HEIGHT_MM>(){}[0]
     final const val MIN_WIDTH_MM // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_WIDTH_MM|{}MIN_WIDTH_MM[0]
         final fun <get-MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.MIN_WIDTH_MM.<get-MIN_WIDTH_MM>|<get-MIN_WIDTH_MM>(){}[0]
     final const val PAGE_MARGIN_MM // io.github.valerioisufi.pageboard.model.text/TextRoom.PAGE_MARGIN_MM|{}PAGE_MARGIN_MM[0]
@@ -4774,6 +4776,7 @@ final object io.github.valerioisufi.pageboard.model.text/TextRoom { // io.github
 
     final fun boxLeft(kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/TextAlignment): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.boxLeft|boxLeft(kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.TextAlignment){}[0]
     final fun boxWidth(kotlin/Float, kotlin/Float): kotlin/Float // io.github.valerioisufi.pageboard.model.text/TextRoom.boxWidth|boxWidth(kotlin.Float;kotlin.Float){}[0]
+    final fun maxHeightOf(kotlin/Float?, kotlin/Float): kotlin/Float? // io.github.valerioisufi.pageboard.model.text/TextRoom.maxHeightOf|maxHeightOf(kotlin.Float?;kotlin.Float){}[0]
     final fun of(kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/TextAlignment, kotlin/Float): kotlin/Pair<kotlin/Float, kotlin/Float> // io.github.valerioisufi.pageboard.model.text/TextRoom.of|of(kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.Float){}[0]
 }
 

@@ -105,7 +105,13 @@ public class SelectionFrame(
     /** Vertices of a single selected polyline or free polygon, in screen pixels. */
     internal val vertexHandles: List<Offset> = emptyList(),
     /** Midpoints of edges of a single selected polyline or free polygon, which insert a new vertex. */
-    internal val edgeMidpoints: List<Offset> = emptyList()
+    internal val edgeMidpoints: List<Offset> = emptyList(),
+    /**
+     * The handle of the height of the text being written, at the middle of the line where it stops
+     * ([heightLine], its two ends; the bottom of the frame when it has no height set by hand).
+     */
+    internal val heightHandle: Offset? = null,
+    internal val heightLine: List<Offset> = emptyList()
 ) {
     public val center: Offset
         get() = Offset(corners.sumOf { it.x.toDouble() }.toFloat() / 4f, corners.sumOf { it.y.toDouble() }.toFloat() / 4f)
@@ -153,6 +159,7 @@ public class SelectionFrame(
             }
         }
         return when {
+            heightHandle != null && near(heightHandle) -> Handle.BOTTOM
             rotationHandle != null && near(rotationHandle) -> Handle.ROTATION
             scalesFromCorners && corners.any(::near) -> Handle.CORNER
             sideHandles.size == 2 && near(sideHandles[0]) -> Handle.LEFT
@@ -205,6 +212,25 @@ public class SelectionFrame(
             return of(mmToScreen, box, editor.rotation, controller.viewport.density, sideHandles = true, transformable = false)
                 ?.handlesWithin(controller.viewport.height, editor.rotation)
                 ?.chained(editor.chainComesFrom, editor.chainGoesOn)
+                ?.withHeight(editor, mmToScreen, controller.viewport.density)
+        }
+
+        /**
+         * This frame with the handle of the height of the text being written: at the line where
+         * its height set by hand stops it, at its bottom edge otherwise; none for a turned text.
+         */
+        private fun SelectionFrame.withHeight(editor: io.github.valerioisufi.pageboard.canvas.controller.TextEditorManager, mmToScreen: Matrix2D, density: Float): SelectionFrame {
+            if (editor.rotation != 0f) return this
+            // On a box too small on the screen the handle would be where it is grabbed to be moved
+            if (corners[3].y - corners[0].y < MIN_HEIGHT_HANDLE_FRAME_DP * density) return this
+            val y = editor.boxY + (editor.maxHeight ?: editor.boxHeight)
+            val left = mmToScreen.mapPoint(editor.boxX, y).let { Offset(it.x, it.y) }
+            val right = mmToScreen.mapPoint(editor.boxX + editor.boxWidth, y).let { Offset(it.x, it.y) }
+            val line = if (editor.maxHeight != null) listOf(left, right) else emptyList()
+            return SelectionFrame(
+                corners, rotationHandle, rotationStemBase, sideHandles, scalesFromCorners, mmToScreen, chainedAbove, chainedBelow,
+                heightHandle = (left + right) / 2f, heightLine = line
+            )
         }
 
         /**
@@ -434,6 +460,20 @@ internal object SelectionOverlay {
             }
         }
 
+        // The height of the text being written: where it stops, dashed, and its handle
+        if (frame.heightLine.size == 2) {
+            val dash = FrameStyle.CHAIN_MARK_DP * density
+            drawLine(primary, frame.heightLine[0], frame.heightLine[1], strokeWidth = stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash / 2f)))
+        }
+        frame.heightHandle?.let { handle ->
+            val width = FrameStyle.SIDE_HANDLE_WIDTH_DP * density
+            val length = FrameStyle.SHAPE_SIDE_LENGTH_DP * density
+            val topLeft = Offset(handle.x - length / 2f, handle.y - width / 2f)
+            val corner = CornerRadius(width / 2f, width / 2f)
+            drawRoundRect(color = Color.White, topLeft = topLeft, size = Size(length, width), cornerRadius = corner)
+            drawRoundRect(color = primary, topLeft = topLeft, size = Size(length, width), cornerRadius = corner, style = Stroke(width = stroke * 1.5f))
+        }
+
         // Side (word-wrap) handles of a single text
         if (frame.sideHandles.isNotEmpty()) {
             val edge = frame.corners[3] - frame.corners[0]
@@ -476,3 +516,6 @@ internal object SelectionOverlay {
     /** Where the chevrons of a chain are along their edge. */
     private const val CHAIN_MARK_AT = 0.85f
 }
+
+/** The least height on the screen of the frame of a text being written with the handle of its height. */
+private const val MIN_HEIGHT_HANDLE_FRAME_DP = 48f
