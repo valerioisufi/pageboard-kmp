@@ -102,4 +102,17 @@ Taken alone, revertible:
 ## Left for later
 
 - Real-device manual verification of Android/iOS IME, handles, and Apple Pencil Scribble.
-- Subsequent feature stages B–G in their respective plan documents.
+- The stages after this one, each in a plan of its own:
+  - **B, checklists and lists** (`docs/plans/checklists-and-lists.md`): done.
+  - **C, boxes, chains, tables and quotes** (`docs/plans/boxes-tables-quotes.md`): done but its
+    phase 5, the tables (merged cells, widths of the columns, tables in the notes of the assistant).
+  - **D, blocks of code**: the language detected and completed, copying the code alone,
+    indentation that knows the language, a number to start the lines from.
+  - **E, fidelity, autosave and conflicts**: a format chosen at the caret before typing, the whole
+    source on demand, the strip of the source on small screens, selecting into and across blocks
+    of code, conflicts of copies converging, a text deleted elsewhere while written kept as new.
+  - **F, import, clipboard and assistant**: `.html`, `.docx` and the text of a PDF imported as
+    text, RTF and `<sup>`/`<sub>` pasted, images pasted as images, copying as HTML, a task of the
+    assistant for notes from a text.
+  - **G, writing suggestions**: the next words from a local model, the lecture being transcribed,
+    suggestions over lines, in handwriting.
