@@ -72,7 +72,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | 1 | The height of a box of a chain by hand: the room of `ChainFlow`, the handle, the gesture, a tap clearing it, the height checked; tests | Done |
 | 2 | The boxes of a chain follow while one is written; the key of a line break in an item; tests | Done |
-| 3 | Nested quotes, blocks in quotes, quotes in list items; tests, screenshots | Pending |
+| 3 | Nested quotes, headings in quotes; tests | Done (blocks of code and tables in quotes, quotes in list items: left for later, decision 7) |
 | 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Pending |
 | 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Pending |
 | 6 | `\text{}` in the font of the text, the symbols of the code, scrolling while selecting; tests | Pending |
@@ -102,6 +102,15 @@ Taken alone, revertible:
 6. **The key of a line in an item is in the docked bar only** (a phone, a soft keyboard), and only
    with the caret in a list item: a hardware keyboard has Shift+Enter.
 
+7. **Quotes: nested ones and headings in them now; blocks of code, tables and quotes in list items
+   later.** A level is `> ` once more (`> > text`), `>>` staying text as in the notes written before;
+   each level is a span of its own (`Span.level`), its bar where the text of the quote around it
+   starts, Enter going on at its level and an empty line one level out. A block of code or a table in
+   a quote needs its lines read without their markers by the code and the tables, which read the
+   source as it is: a change of the parser and of the layouts of both, kept for a phase of its own.
+   A quote in a list item needs the item to take the marker in its continuation lines.
+
 ## Left for later
 
+- Blocks of code and tables in a quote; a quote in a list item (decision 7).
 - Real-device checks (soft keyboards, the handle by touch), left to the maintainer.

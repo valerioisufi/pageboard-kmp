@@ -50,7 +50,7 @@ class RichTextPresenterTest {
         val text = "before\n> **one**\n> two\nafter"
         val presented = present(text)
         assertEquals("before\u200Bone\u200Btwo\u200Bafter", presented.shown)
-        assertEquals("one\u200Btwo", presented.quotes.single().let { presented.shown.substring(it.first, it.last + 1) })
+        assertEquals("one\u200Btwo", presented.quotes.single().range.let { presented.shown.substring(it.first, it.last + 1) })
         val indents = presented.text.paragraphStyles.map { it.item.textIndent?.restLine?.value ?: 0f }
         assertEquals(listOf(0f, 18f, 18f, 0f), indents, "0.9 of a size of 20")
         assertEquals("> two".length, text.substring(text.indexOf("> two")).substringBefore('\n').length)

@@ -4473,7 +4473,11 @@ final object io.github.valerioisufi.pageboard.model.text/BlockQuote { // io.gith
         final fun <get-MARKER>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/BlockQuote.MARKER.<get-MARKER>|<get-MARKER>(){}[0]
 
     final fun isQuotedAt(kotlin/CharSequence, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/BlockQuote.isQuotedAt|isQuotedAt(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun levelAt(kotlin/CharSequence, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/BlockQuote.levelAt|levelAt(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun lineStartOf(kotlin/CharSequence, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/BlockQuote.lineStartOf|lineStartOf(kotlin.CharSequence;kotlin.Int){}[0]
     final fun markerLength(kotlin/CharSequence, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/BlockQuote.markerLength|markerLength(kotlin.CharSequence;kotlin.Int){}[0]
+    final fun markerLength(kotlin/CharSequence, kotlin/Int, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/BlockQuote.markerLength|markerLength(kotlin.CharSequence;kotlin.Int;kotlin.Int){}[0]
+    final fun markerOf(kotlin/Int): kotlin/String // io.github.valerioisufi.pageboard.model.text/BlockQuote.markerOf|markerOf(kotlin.Int){}[0]
 }
 
 final object io.github.valerioisufi.pageboard.model.text/LatexCommands { // io.github.valerioisufi.pageboard.model.text/LatexCommands|null[0]

@@ -91,6 +91,7 @@ public object RichTextParser {
         val candidates = (verbatim + links).toMutableList()
         val quotes = quotes(text, verbatim)
         candidates += quotes
+        candidates += nestedQuotes(text, quotes)
         // The patterns of the items read the markers of the quotes as indentation: the offsets stay those of the source
         val unquoted = blanked(masked, quotes)
         candidates += emphasisBetween(verbatim.filter { it.kind == Kind.CODE_BLOCK }, masked, text)
@@ -103,6 +104,8 @@ public object RichTextParser {
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             if (contentStart < end) candidates += Span(Kind.HEADING, start, end, contentStart, end, level = level)
         }
+        // A heading in a quote: after the marker of its line
+        for (quote in quotes) headingsInQuote(text, masked, quote, candidates)
         for (match in BULLET_LIST.findAll(unquoted)) {
             val lineStart = match.range.first
             val end = match.range.last + 1
@@ -153,7 +156,7 @@ public object RichTextParser {
         var lineStart = 0
         while (lineStart <= text.length) {
             val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
-            val length = if (isIn(verbatim, lineStart)) 0 else BlockQuote.markerLength(text, lineStart)
+            val length = if (isIn(verbatim, lineStart)) 0 else BlockQuote.markerLength(text, lineStart, 1)
             if (length > 0) {
                 if (first < 0) {
                     first = lineStart
@@ -161,13 +164,70 @@ public object RichTextParser {
                 }
                 lastEnd = lineEnd
             } else if (first >= 0) {
-                quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd)
+                quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd, level = 1)
                 first = -1
             }
             lineStart = lineEnd + 1
         }
-        if (first >= 0) quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd)
+        if (first >= 0) quotes += Span(Kind.QUOTE, first, lastEnd, first + firstLength, lastEnd, level = 1)
         return quotes
+    }
+
+    /**
+     * The quotes in the [quotes] of [text] (`> > text`), each level a span of its own in the one of
+     * the level before ([Span.level]); the content of a line of a quote of a level starts after the
+     * markers of the levels up to it. The [quotes] themselves are of the first level.
+     */
+    private fun nestedQuotes(text: String, quotes: List<Span>): List<Span> {
+        val nested = mutableListOf<Span>()
+        for (quote in quotes) {
+            // The lines of the quote with their levels
+            val lines = ArrayList<Pair<Int, Int>>()
+            var lineStart = quote.start
+            var deepest = 1
+            while (lineStart <= quote.end) {
+                val level = BlockQuote.levelAt(text, lineStart)
+                lines += lineStart to level
+                if (level > deepest) deepest = level
+                val next = text.indexOf('\n', lineStart)
+                if (next < 0 || next >= quote.end) break
+                lineStart = next + 1
+            }
+            for (level in 2..deepest) {
+                var first = -1
+                var lastEnd = 0
+                for ((start, lineLevel) in lines) {
+                    val lineEnd = text.indexOf('\n', start).let { if (it < 0 || it > quote.end) quote.end else it }
+                    if (lineLevel >= level) {
+                        if (first < 0) first = start
+                        lastEnd = lineEnd
+                    } else if (first >= 0) {
+                        nested += Span(Kind.QUOTE, first, lastEnd, first + BlockQuote.markerLength(text, first, level), lastEnd, level = level)
+                        first = -1
+                    }
+                }
+                if (first >= 0) nested += Span(Kind.QUOTE, first, lastEnd, first + BlockQuote.markerLength(text, first, level), lastEnd, level = level)
+            }
+        }
+        return nested
+    }
+
+    /** Adds to [candidates] the headings of the lines of [quote] in [text] ([masked]: its code and formulas hidden). */
+    private fun headingsInQuote(text: String, masked: String, quote: Span, candidates: MutableList<Span>) {
+        var lineStart = quote.start
+        while (lineStart <= quote.end) {
+            val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+            val start = lineStart + BlockQuote.markerLength(text, lineStart)
+            var hashes = start
+            while (hashes < lineEnd && masked[hashes] == '#' && hashes - start < 6) hashes++
+            var contentStart = hashes
+            if (hashes > start && hashes < lineEnd && (masked[hashes] == ' ' || masked[hashes] == '\t')) {
+                while (contentStart < lineEnd && text[contentStart].isWhitespace()) contentStart++
+                if (contentStart < lineEnd) candidates += Span(Kind.HEADING, start, lineEnd, contentStart, lineEnd, level = hashes - start)
+            }
+            if (lineEnd >= quote.end) break
+            lineStart = lineEnd + 1
+        }
     }
 
     /** [masked] with the markers of the lines of [quotes] replaced by spaces, the offsets kept. */

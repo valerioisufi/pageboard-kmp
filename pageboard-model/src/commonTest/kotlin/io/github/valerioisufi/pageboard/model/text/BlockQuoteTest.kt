@@ -68,8 +68,8 @@ class BlockQuoteTest {
     }
 
     @Test
-    fun aHeadingAndATableInAQuoteAreItsTextForNow() {
-        assertTrue(spans("> # text", Kind.HEADING).isEmpty())
+    fun aTableAndABlockOfCodeInAQuoteAreItsTextForNow() {
+        // A heading in a quote is one since docs/plans/boxes-tables-quotes.md (aHeadingInAQuoteIsAHeading)
         assertTrue(spans("> | a |\n> | - |\n> | b |", Kind.TABLE).isEmpty())
         assertTrue(spans("> ```\n> a\n> ```", Kind.CODE_BLOCK).isEmpty())
     }
@@ -99,5 +99,30 @@ class BlockQuoteTest {
         val text = (1..20_000).joinToString("\n") { "> * line **$it**" }
         val spans = RichTextParser.parse(text)
         assertEquals(20_000, spans.count { it.kind == Kind.LIST_ITEM })
+    }
+
+    @Test
+    fun aQuoteInAQuoteHasALevelOfItsOwn() {
+        val text = "> one\n> > two\n> > three\n> four"
+        val found = spans(text, Kind.QUOTE)
+        assertEquals(listOf(1 to text, 2 to "> > two\n> > three"), found.map { it.level to text.substring(it.start, it.end) })
+        val inner = found.single { it.level == 2 }
+        assertEquals("two\n> > three", text.substring(inner.contentStart, inner.contentEnd))
+        assertEquals(2, BlockQuote.levelAt(text, 6))
+        assertEquals(4, BlockQuote.markerLength(text, 6))
+        assertEquals(2, BlockQuote.markerLength(text, 6, 1))
+        // `>>` stays text, as in the notes written before the levels; `> >x` is a quote of `>x`
+        assertEquals(emptyList(), quotes(">> x"))
+        assertEquals(listOf(1), spans("> >x", Kind.QUOTE).map { it.level })
+        assertEquals("> > ", BlockQuote.markerOf(2))
+    }
+
+    @Test
+    fun aHeadingInAQuoteIsAHeading() {
+        val text = "> # Title\n> > ## Inner\n> text"
+        val headings = spans(text, Kind.HEADING)
+        assertEquals(listOf("Title" to 1, "Inner" to 2), headings.map { text.substring(it.contentStart, it.contentEnd) to it.level })
+        // Out of a quote, `> #` in a line stays text
+        assertEquals(emptyList(), spans("a > # not", Kind.HEADING))
     }
 }

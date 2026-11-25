@@ -789,7 +789,7 @@ public object RichTextEditing {
         val item = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && start >= it.contentStart && start <= it.end } ?: return null
         var after = start
         while (after < text.length && (text[after] == ' ' || text[after] == '\t')) after++
-        val quote = if (BlockQuote.isQuotedAt(text, item.start)) BlockQuote.MARKER else ""
+        val quote = BlockQuote.markerOf(BlockQuote.levelAt(text, BlockQuote.lineStartOf(text, item.start)))
         val inserted = "\n" + quote + " ".repeat(ListNumbering.textColumnOf(text, item))
         return TextFieldValue(text.substring(0, start) + inserted + text.substring(after), TextRange(start + inserted.length))
     }
@@ -819,7 +819,8 @@ public object RichTextEditing {
         val lineEnd = if (nextNewline < 0) text.length else nextNewline
         // The text of a line of a quote starts after its marker, which a new line takes too
         val quoteLength = BlockQuote.markerLength(text, lineStart)
-        val quote = if (quoteLength > 0) BlockQuote.MARKER else ""
+        // At the levels of quotes of its line
+        val quote = BlockQuote.markerOf(BlockQuote.levelAt(text, lineStart))
         val textStart = lineStart + quoteLength
         val line = text.substring(textStart, lineEnd)
         val cursorInLine = (cursor - textStart).coerceAtLeast(0)
@@ -869,8 +870,11 @@ public object RichTextEditing {
 
         if (markerType == MarkerType.NONE) {
             if (quoteLength == 0) return null
-            // A line of a quote: an empty one leaves it, another goes on in it
-            if (line.isBlank()) return TextFieldValue(text.substring(0, lineStart) + text.substring(lineEnd), TextRange(lineStart))
+            // A line of a quote: an empty one goes one level out (out of it at the first), another goes on in it
+            if (line.isBlank()) {
+                val outer = BlockQuote.markerOf(BlockQuote.levelAt(text, lineStart) - 1)
+                return TextFieldValue(text.substring(0, lineStart) + outer + text.substring(lineEnd), TextRange(lineStart + outer.length))
+            }
             val after = text.substring(cursor.coerceAtLeast(textStart)).trimStartSpaces()
             val head = text.substring(0, cursor.coerceAtLeast(textStart)) + "\n" + quote
             return TextFieldValue(head + after, TextRange(head.length))

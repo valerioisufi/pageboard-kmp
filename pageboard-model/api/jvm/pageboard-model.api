@@ -3811,7 +3811,11 @@ public final class io/github/valerioisufi/pageboard/model/text/BlockQuote {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/BlockQuote;
 	public static final field MARKER Ljava/lang/String;
 	public final fun isQuotedAt (Ljava/lang/CharSequence;I)Z
+	public final fun levelAt (Ljava/lang/CharSequence;I)I
+	public final fun lineStartOf (Ljava/lang/CharSequence;I)I
 	public final fun markerLength (Ljava/lang/CharSequence;I)I
+	public final fun markerLength (Ljava/lang/CharSequence;II)I
+	public final fun markerOf (I)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/ChainFlow {

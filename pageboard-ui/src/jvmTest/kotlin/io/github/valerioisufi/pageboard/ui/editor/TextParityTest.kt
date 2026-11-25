@@ -198,6 +198,9 @@ class TextParityTest {
     fun blockQuotes() = assertSame("Before\n> **A quote** long enough to wrap over the width of its box, twice or more, with `code`.\n> * an item long enough to wrap onto a second line of its box\n>   its line\n>   * nested\n>\n> 1. one\n\nAfter")
 
     @Test
+    fun nestedQuotesAndHeadingsInThem() = assertSame("Before\n> outer line long enough to wrap over the width of its box, twice or more\n> > inner **bold** quote\n> > # Heading in it\n> back out\n\nAfter")
+
+    @Test
     fun theLevelsOfTheHeadings() = assertSame("# 1\n## 2\n### 3\n#### 4\n##### 5\n###### 6\nText")
 
     @Test

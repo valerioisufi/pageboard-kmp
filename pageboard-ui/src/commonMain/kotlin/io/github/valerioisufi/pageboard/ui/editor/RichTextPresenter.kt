@@ -64,16 +64,21 @@ internal const val QUOTE_BAR_ALPHA: Float = 0.3f
  * the left of the box, from the top of the first line of each one to the bottom of its last. They
  * take no room; the canvas, the editor and the export draw them the same way.
  */
-internal fun TextLayoutResult.quoteBars(quotes: List<IntRange>, fontSizePx: Float): List<CodeChip> {
+internal fun TextLayoutResult.quoteBars(quotes: List<PresentedQuote>, fontSizePx: Float): List<CodeChip> {
     if (quotes.isEmpty()) return emptyList()
     val length = layoutInput.text.length
     val width = fontSizePx * QUOTE_BAR_WIDTH
     return quotes.map { quote ->
-        val top = getLineTop(getLineForOffset(quote.first.coerceIn(0, length)))
-        val bottom = getLineBottom(getLineForOffset(quote.last.coerceIn(0, length)))
-        CodeChip(Rect(0f, top, width, bottom), width / 2f)
+        val top = getLineTop(getLineForOffset(quote.range.first.coerceIn(0, length)))
+        val bottom = getLineBottom(getLineForOffset(quote.range.last.coerceIn(0, length)))
+        // A quote in a quote: its bar where the text of the quote around it starts
+        val left = (quote.level - 1) * QUOTE_INDENT * fontSizePx
+        CodeChip(Rect(left, top, left + width, bottom), width / 2f)
     }
 }
+
+/** A block quote of a presented text: the characters it shows ([range]) and its [level] (1, 2 for a quote in a quote). */
+internal class PresentedQuote(val range: IntRange, val level: Int)
 
 /**
  * The room of the objects of a text in its lines (its formulas, its blocks of code): three
@@ -238,7 +243,7 @@ internal class PresentedText<T>(
     val inlineCode: List<MarkdownTextUtil.InlineCode>,
     val hiddenAtCaret: HiddenSource?,
     val tables: List<PresentedTable<T>> = emptyList(),
-    val quotes: List<IntRange> = emptyList(),
+    val quotes: List<PresentedQuote> = emptyList(),
     val boxes: List<PresentedBox> = emptyList(),
     val links: List<PresentedLink> = emptyList(),
     val linkAtCaret: String? = null
@@ -431,8 +436,9 @@ internal object RichTextPresenter {
                 val marker = quoteLines[i]
                 if (marker != null) {
                     for (k in i until i + marker) shown.hideMarker(k)
+                    val levels = BlockQuote.levelAt(text, i).coerceAtLeast(1)
                     i += marker
-                    val left = (quoteLeft / p.density).sp
+                    val left = (quoteLeft * levels / p.density).sp
                     shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = left, restLine = left))
                     // An empty line of a quote: its paragraph, so that the caret stands at its text
                     if (i >= text.length || text[i] == '\n') rooms += Room(shown.insert(OBJECT_CHARS, i), 0f, 0f, 0f)
@@ -585,7 +591,7 @@ internal object RichTextPresenter {
             }
         }
         val quotes = if (!p.quotes) emptyList() else spans.filter { it.kind == Kind.QUOTE && !beingTyped(it) }.map { quote ->
-            mapping.originalToTransformed(quote.start) until max(mapping.originalToTransformed(quote.end), mapping.originalToTransformed(quote.start) + 1)
+            PresentedQuote(mapping.originalToTransformed(quote.start) until max(mapping.originalToTransformed(quote.end), mapping.originalToTransformed(quote.start) + 1), quote.level.coerceAtLeast(1))
         }
         val hiddenAtCaret = atCaret?.let { span ->
             when (span.kind) {
@@ -723,7 +729,11 @@ internal object RichTextPresenter {
         val gap = LABEL_GAP * p.fontSizePx
         val laidOut = ArrayList<ListItemLayout>(items.size)
         for ((index, item) in items.withIndex()) {
-            val outer = if (p.quotes && BlockQuote.isQuotedAt(text, item.span.start)) QUOTE_INDENT * p.fontSizePx else 0f
+            val outer = if (p.quotes && BlockQuote.isQuotedAt(text, item.span.start)) {
+                QUOTE_INDENT * p.fontSizePx * BlockQuote.levelAt(text, BlockQuote.lineStartOf(text, item.span.start)).coerceAtLeast(1)
+            } else {
+                0f
+            }
             val left = if (item.parent >= 0) laidOut[item.parent].textLeftPx else outer
             val column = columns.getValue(item.list)
             // At most half the line to the text, so that the text keeps room
