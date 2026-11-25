@@ -1,0 +1,6 @@
+language = Objective-C
+package = io.github.valerioisufi.pageboard.canvas.cinterop
+headers = touch_observer.h
+headerFilter = touch_observer.h
+staticLibraries = libtouch_observer.a
+linkerOpts = -framework UIKit

@@ -112,8 +112,23 @@ internal class CanvasGestureHandler(
     private val engine: InkStrokeEngine,
     private val live: CanvasLiveState,
     private val ink: LiveInkLayer,
-    private val predictor: InkPredictor
+    private val platform: InkPlatform
 ) {
+    private val predictor: InkPredictor get() = platform.predictor
+
+    /** The pressure of the last input of the stroke in progress: the one of its prediction. */
+    private var lastInkPressure = 1f
+
+    init {
+        // A prediction of the platform after the gesture read its event: the stroke predicted again
+        platform.setPredictionListener {
+            if (mode == Mode.INK && !strokeSnapped && engine.inputs.isNotEmpty()) {
+                predictInk(lastInkPressure)
+                inkBrush?.let { ink.strokeChanged(engine, it.color, inkPageIndex) }
+            }
+        }
+    }
+
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
@@ -720,7 +735,9 @@ internal class CanvasGestureHandler(
             Mode.INK, Mode.LASSO -> {
                 if (!strokeSnapped) {
                     for (h in change.historical) {
-                        addInkInput(change, h.position, h.uptimeMillis, change.pressure)
+                        // Compose gives the samples of an event without their pressure: the platform may have it
+                        val pressure = platform.pressures.pressureAt(h.uptimeMillis, h.position) ?: change.pressure
+                        addInkInput(change, h.position, h.uptimeMillis, pressure)
                         predictor.record(h.position, h.uptimeMillis)
                     }
                     addInkInput(change, position, change.uptimeMillis, change.pressure)
@@ -1571,7 +1588,8 @@ internal class CanvasGestureHandler(
      * of that input (see [InkPredictor]): replaced at the next event, never an input of the stroke.
      */
     private fun predictInk(pressure: Float) {
-        val points = predictor.predict(PREDICTION_MS).mapNotNull { predicted ->
+        lastInkPressure = pressure
+        val points = predictor.predict(platform.frameMillis).mapNotNull { predicted ->
             controller.viewport.screenToPageMm(inkPageIndex, predicted.position)?.let { StrokePoint(it.x, it.y, pressure, predicted.timeMs) }
         }
         // Also when nothing is predicted: an event without new inputs keeps the prediction before
@@ -1645,7 +1663,6 @@ private fun boxBetween(a: Offset, b: Offset) = Rect(minOf(a.x, b.x), minOf(a.y, 
 private const val ACTIVITY_INTERVAL_MS = 16L
 
 /** How far ahead of its last input the stroke in progress is predicted: a frame of a 60 Hz display. */
-private const val PREDICTION_MS = 16L
 
 /** How far past the edge of a text being written a tap adds a line by its block of code: a finger's width. */
 private const val BLOCK_LINE_REACH_DP = 40f

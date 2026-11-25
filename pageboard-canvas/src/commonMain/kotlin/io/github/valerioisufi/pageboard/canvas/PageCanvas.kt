@@ -72,6 +72,17 @@ public fun PageCanvas(
     modifier: Modifier = Modifier,
     engine: InkStrokeEngine = remember { InkStrokeEngine() }
 ) {
+    PageCanvas(controller, modifier, engine, rememberInkPlatform(controller))
+}
+
+/** [PageCanvas] with the ink [platform] given: the one of this platform, or one of the tests. */
+@Composable
+internal fun PageCanvas(
+    controller: PageboardController,
+    modifier: Modifier,
+    engine: InkStrokeEngine,
+    platform: InkPlatform
+) {
     // Set before the canvas is laid out, so that the first layout is at the density of the screen
     val density = LocalDensity.current.density
     if (controller.viewport.density != density) {
@@ -80,8 +91,7 @@ public fun PageCanvas(
 
     val live = remember { CanvasLiveState() }
     val ink = rememberLiveInkLayer(controller)
-    val predictor = remember(controller) { KalmanInkPredictor { controller.viewport.density } }
-    val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live, ink, predictor) }
+    val gestures = remember(controller, engine, platform) { CanvasGestureHandler(controller, engine, live, ink, platform) }
     val labels = rememberTextMeasurer()
     val collaboratorsOverlay = remember { CollaboratorsOverlay() }
 
@@ -143,7 +153,7 @@ public fun PageCanvas(
                     controller.viewport.setSize(size.width.toFloat(), size.height.toFloat())
                 }
             }
-            .unbufferedStylusInput()
+            .inkInput(platform) { fingerDraws(controller) }
             .trackpadInput(gestures::onTrackpadPinch, gestures::onTrackpadScrollPhase)
             .canvasGestureExclusion()
             .pointerInput(controller, engine) {
@@ -574,3 +584,10 @@ private fun DrawScope.drawPaperSheet(rect: Rect, paper: Color, elevated: Boolean
     }
     drawRect(color = paper, topLeft = rect.topLeft, size = rect.size)
 }
+
+/**
+ * Whether a finger touching the canvas of [controller] now draws a stroke: a pen chosen, the
+ * fingers not left to pan (stylus-only mode, Quick Pan).
+ */
+private fun fingerDraws(controller: PageboardController): Boolean =
+    controller.isDrawingMode && controller.toolManager.isInkTool && !controller.isStylusOnlyMode && !controller.isQuickPanEnabled

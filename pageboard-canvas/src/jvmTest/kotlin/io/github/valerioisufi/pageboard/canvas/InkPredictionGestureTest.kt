@@ -3,7 +3,9 @@ package io.github.valerioisufi.pageboard.canvas
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.HistoricalChange
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
@@ -65,6 +67,34 @@ class InkPredictionGestureTest {
         val report = assertNotNull(controller.inkLatency.value)
         assertTrue(report.predictionMedianMs > 0f, "$report")
     }
+
+    @Test
+    fun theSamplesOfAnEventTakeThePressuresThePlatformReported() {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val controller = PageboardController(document = Document(), coroutineScope = scope)
+        controller.selectTool(Tool.INK_PEN)
+        val engine = InkStrokeEngine()
+        val platform = CommonInkPlatform(controller)
+        val scene = ImageComposeScene(width = 800, height = 1200, density = Density(1f)) { PageCanvas(controller, Modifier, engine, platform) }
+        try {
+            scene.render()
+            scene.sendPointerEvent(PointerEventType.Press, listOf(stylus(at(0), 0.5f)), timeMillis = 1_000L)
+            // A sample between two events: Compose gives it without its pressure, the platform has it
+            platform.pressures.record(1_004L, at(1).x, at(1).y, 0.2f)
+            scene.sendPointerEvent(
+                PointerEventType.Move,
+                listOf(stylus(at(2), 0.5f, historical = listOf(HistoricalChange(1_004L, at(1)), HistoricalChange(1_006L, at(1) + Offset(6f, 0f))))),
+                timeMillis = 1_008L
+            )
+            assertEquals(listOf(0.5f, 0.2f, 0.5f, 0.5f), engine.inputs.map { it.pressure }, "the sample with no pressure reported takes the one of its event")
+        } finally {
+            scene.close()
+            scope.cancel()
+        }
+    }
+
+    private fun stylus(position: Offset, pressure: Float, historical: List<HistoricalChange> = emptyList()) =
+        ComposeScenePointer(PointerId(0), position, pressed = true, type = PointerType.Stylus, pressure = pressure, historical = historical)
 
     /** Presses and draws a fast line, an event every 8 ms; the time reached. */
     private fun drawTo(scene: ImageComposeScene, steps: Int): Long {

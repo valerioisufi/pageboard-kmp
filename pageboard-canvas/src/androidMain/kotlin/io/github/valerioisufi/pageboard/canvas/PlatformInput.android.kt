@@ -12,19 +12,6 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalView
 
 @OptIn(ExperimentalComposeUiApi::class)
-internal actual fun Modifier.unbufferedStylusInput(): Modifier = composed {
-    val view = LocalView.current
-    motionEventSpy { event ->
-        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-            val tool = event.getToolType(0)
-            if (tool == MotionEvent.TOOL_TYPE_STYLUS || tool == MotionEvent.TOOL_TYPE_ERASER) {
-                view.requestUnbufferedDispatch(event)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
 internal actual fun Modifier.canvasGestureExclusion(): Modifier = composed {
     val view = LocalView.current
     val density = androidx.compose.ui.platform.LocalDensity.current.density

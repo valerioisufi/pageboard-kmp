@@ -5,13 +5,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 
 /**
- * Requests the platform to deliver stylus input without batching it to the display refresh
- * rate (Android `View.requestUnbufferedDispatch`), lowering the inking latency.
- * No-op on the other platforms.
- */
-internal expect fun Modifier.unbufferedStylusInput(): Modifier
-
-/**
  * Protects drawing gestures near the display edges from triggering system back navigation gestures
  * on platforms that support system gesture exclusion (Android 10+).
  */

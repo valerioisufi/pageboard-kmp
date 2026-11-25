@@ -14,6 +14,27 @@ jvmNatives {
     platforms.set(listOf("darwin-aarch64", "darwin-x86_64"))
 }
 
+val nativeDir = rootProject.layout.projectDirectory.dir("native")
+
+// The static libraries of the observer of the touches (Objective-C) for the iOS targets
+val buildTouchObserverIos = listOf("iphoneos", "iphonesimulator").associateWith { sdk ->
+    tasks.register<Exec>("buildTouchObserver-$sdk") {
+        group = "native"
+        description = "Builds the static library of the observer of the touches for $sdk"
+        onlyIf { System.getProperty("os.name").lowercase().contains("mac") }
+        inputs.files(
+            nativeDir.file("bridge/touch_observer.m"),
+            nativeDir.file("bridge/touch_observer.h"),
+            nativeDir.file("scripts/build_touch_observer.sh")
+        ).withPropertyName("bridge").withPathSensitivity(PathSensitivity.RELATIVE)
+        inputs.property("appleToolchain", appleToolchainVersion())
+        val output = layout.buildDirectory.dir("touchobserver/$sdk")
+        outputs.dir(output)
+        outputs.cacheIf { true }
+        commandLine("bash", nativeDir.file("scripts/build_touch_observer.sh").asFile.absolutePath, sdk, output.get().asFile.absolutePath)
+    }
+}
+
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
@@ -23,6 +44,19 @@ kotlin {
                 withJvm()
                 withIos()
             }
+        }
+    }
+
+    // The observer of the touches of iOS, for the predicted and coalesced touches of the ink (an
+    // Objective-C class: Kotlin/Native cannot override the methods UIGestureRecognizer leaves to subclasses)
+    listOf(iosArm64() to "iphoneos", iosSimulatorArm64() to "iphonesimulator").forEach { (iosTarget, sdk) ->
+        val interop = iosTarget.compilations.getByName("main").cinterops.create("touchobserver") {
+            definitionFile.set(project.file("src/nativeInterop/cinterop/touchobserver.def"))
+            includeDirs(nativeDir.dir("bridge"))
+            extraOpts("-libraryPath", layout.buildDirectory.dir("touchobserver/$sdk").get().asFile.absolutePath)
+        }
+        tasks.named(interop.interopProcessingTaskName) {
+            dependsOn(buildTouchObserverIos.getValue(sdk))
         }
     }
 

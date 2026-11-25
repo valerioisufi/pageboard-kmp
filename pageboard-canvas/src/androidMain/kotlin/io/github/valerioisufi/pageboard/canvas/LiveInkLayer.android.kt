@@ -4,7 +4,9 @@ import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Color as AndroidColor
 import android.graphics.PixelFormat
+import android.os.Build
 import android.view.Choreographer
+import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.compose.foundation.layout.fillMaxSize
@@ -72,6 +74,9 @@ internal class FrontBufferedLiveInkLayer(private val controller: PageboardContro
     /** Frames left before the buffer is hidden: to reach the screen, or to give up waiting. */
     private var handOffFrames = 0
 
+    /** Whether the surface asked the display for its fastest refresh, for the stroke in the buffer. */
+    private var fastRefreshAsked = false
+
     private val handOff = Choreographer.FrameCallback {
         if (handOffStep == HandOffStep.NONE) return@FrameCallback
         handOffFrames--
@@ -123,6 +128,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: PageboardContro
                 cancelHandOff()
                 this.color = color
                 strokeBounds = null
+                askFastRefresh(true)
             }
         }
         if (mode == Mode.COMPOSE) {
@@ -213,6 +219,7 @@ internal class FrontBufferedLiveInkLayer(private val controller: PageboardContro
 
     private fun detach() {
         cancelHandOff()
+        fastRefreshAsked = false
         surfaceReady = false
         renderer?.release(true)
         renderer = null
@@ -243,6 +250,31 @@ internal class FrontBufferedLiveInkLayer(private val controller: PageboardContro
         syncLock(lock) { pending = null }
         strokeBounds = null
         renderer?.cancel()
+        askFastRefresh(false)
+    }
+
+    /**
+     * While a stroke is in the buffer, the fastest refresh of the display (Android 11): the stroke at
+     * 90 or 120 Hz where the display has them, the display left to choose at rest. Nothing on a
+     * display of 60 Hz only.
+     */
+    private fun askFastRefresh(drawing: Boolean) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || drawing == fastRefreshAsked) return
+        val view = surfaceView ?: return
+        val surface = view.holder.surface?.takeIf { it.isValid } ?: return
+        val rate = if (drawing) fastestRefreshRate(view) else 0f
+        if (drawing && rate <= FAST_REFRESH_HZ) return
+        // A surface going away meanwhile refuses the vote: the display keeps its rate
+        if (runCatching { surface.setFrameRate(rate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT) }.isSuccess) fastRefreshAsked = drawing
+    }
+
+    /** The fastest refresh of the display of [view] at its resolution, in Hz; 0 when it is not known. */
+    private fun fastestRefreshRate(view: android.view.View): Float {
+        val display = view.display ?: return 0f
+        val current = display.mode
+        return display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .maxOfOrNull { it.refreshRate } ?: 0f
     }
 
     private companion object {
@@ -258,5 +290,8 @@ internal class FrontBufferedLiveInkLayer(private val controller: PageboardContro
 
         /** Frames from the pen up after which the buffer is hidden anyway, to never stay over the canvas. */
         const val MAX_HAND_OFF_FRAMES = 30
+
+        /** Displays up to this refresh (and a little more, the rounding of 60 Hz) are left as they are. */
+        const val FAST_REFRESH_HZ = 61f
     }
 }
