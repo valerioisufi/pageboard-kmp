@@ -286,4 +286,23 @@
     <string name="find_none">Sin resultados</string>
     <string name="find_previous">Anterior</string>
     <string name="find_next">Siguiente</string>
+    <string name="shape_polyline">Polilínea</string>
+    <string name="shape_free_polygon">Polígono</string>
+    <string name="shape_axes">Ejes</string>
+    <string name="shape_grid">Cuadrícula</string>
+    <string name="shape_arc">Arco</string>
+    <string name="shape_angle">Ángulo</string>
+    <string name="shape_action_convert">Convertir en forma</string>
+    <string name="shape_action_label">Etiqueta</string>
+    <string name="shape_label_hint">Texto dentro de la forma</string>
+    <string name="shape_snap_to_editable">Convertir trazo al instante</string>
+    <string name="shape_snap_to_editable_hint">Reemplazar trazos ajustados con formas editables</string>
+    <string name="shape_geometry_rows">Filas</string>
+    <string name="shape_geometry_cols">Columnas</string>
+    <string name="shape_geometry_ticks">Marcas en ejes</string>
+    <string name="shape_geometry_start_angle">Ángulo inicial</string>
+    <string name="shape_geometry_sweep_angle">Ángulo de barrido</string>
+    <string name="shape_geometry_angle_label">Mostrar ángulo</string>
+    <string name="command_ruler">Regla</string>
+    <string name="command_protractor">Transportador</string>
 </resources>

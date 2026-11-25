@@ -40,7 +40,7 @@ The responsibilities are assigned following the GRASP principles (Information Ex
 |---|---|---|
 | 1 | `ShapeElement` v2 (labels, `POLYLINE`, `FREE_POLYGON`, `AXES`, `GRID`, `ARC`, `ANGLE`, `ShapeAnchorRef`, `ShapeGeometryParams`, v1→v2 migration), `ShapeGeometry`, `ShapeConverter`, label rendering in canvas & PDF, agent reading, `ShapeElementFormatTest`; ABI recorded | Done |
 | 2 | Persisted connector links (`SnapManager.anchorHitFor`, `ShapeInserter`, `ShapeConnectors`), live connector preview during drag & resize (`SelectionManager`, `ShapeEditing`, `SelectionOverlay`, `PageCanvas`), stroke-to-shape conversion (`ShapeEditing`, `ShapeSnapper`, `EditorPreferences.snapToEditableShape`); tests; ABI recorded | Done |
-| 3 | Vertex creation & editing (`ShapeInserter`, `SelectionFrame`, `ShapeEditing`), `GeometryGuidesManager` (ruler & protractor), UI (`ShapeSettings`, `SelectionActionBar`, `InkSettings`, `EditorCommands`, 7 locales); tests; ABI recorded | Pending |
+| 3 | Vertex creation & editing (`ShapeInserter`, `SelectionFrame`, `ShapeEditing`), `GeometryGuidesManager` (ruler & protractor), UI (`ShapeSettings`, `SelectionActionBar`, `InkSettings`, `EditorCommands`, 7 locales); tests; ABI recorded | Done |
 | 4 | Real-time collaborator presence for shape drafts (`ShapeDraftActivity`, `Presence`, `SyncEngine`, `CollaboratorPresence`, `CollaboratorsOverlay`), `ProtocolFormatTest` re-recorded under v4; JVM & iOS simulator sync tests; ABI recorded | Pending |
 
 ## Decisions (revertible)

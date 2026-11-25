@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,20 +45,37 @@ import io.github.valerioisufi.pageboard.model.geometry.pt
 import io.github.valerioisufi.pageboard.model.shape.ShapeDash
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
+import io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams
 import io.github.valerioisufi.pageboard.model.shape.ShapeHead
 import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import io.github.valerioisufi.pageboard.ui.components.ColorSwatches
+import io.github.valerioisufi.pageboard.ui.components.DesignIconButton
 import io.github.valerioisufi.pageboard.ui.components.HybridScale
 import io.github.valerioisufi.pageboard.ui.components.PopoverTitle
 import io.github.valerioisufi.pageboard.ui.components.SettingHint
 import io.github.valerioisufi.pageboard.ui.components.SettingLabel
 import io.github.valerioisufi.pageboard.ui.components.SizeSetting
+import io.github.valerioisufi.pageboard.ui.components.SwitchSetting
 import io.github.valerioisufi.pageboard.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_angle
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_arc
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_arrow
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_axes
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_diamond
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_double_arrow
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_ellipse
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_free_polygon
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_angle_label
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_cols
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_rows
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_start_angle
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_sweep_angle
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_geometry_ticks
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_grid
+import io.github.valerioisufi.pageboard.ui.generated.resources.shape_polyline
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import kotlin.math.roundToInt
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_fill
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_fill_none
 import io.github.valerioisufi.pageboard.ui.generated.resources.shape_fill_solid
@@ -90,6 +108,8 @@ internal enum class ShapeChoice(val kind: ShapeKind, val heads: Int, val label: 
     LINE(ShapeKind.LINE, 0, Res.string.shape_line),
     ARROW(ShapeKind.LINE, 1, Res.string.shape_arrow),
     DOUBLE_ARROW(ShapeKind.LINE, 2, Res.string.shape_double_arrow),
+    POLYLINE(ShapeKind.POLYLINE, 0, Res.string.shape_polyline),
+    FREE_POLYGON(ShapeKind.FREE_POLYGON, 0, Res.string.shape_free_polygon),
     RECTANGLE(ShapeKind.RECTANGLE, 0, Res.string.shape_rectangle),
     ROUNDED_RECTANGLE(ShapeKind.ROUNDED_RECTANGLE, 0, Res.string.shape_rounded_rectangle),
     ELLIPSE(ShapeKind.ELLIPSE, 0, Res.string.shape_ellipse),
@@ -97,7 +117,11 @@ internal enum class ShapeChoice(val kind: ShapeKind, val heads: Int, val label: 
     RIGHT_TRIANGLE(ShapeKind.RIGHT_TRIANGLE, 0, Res.string.shape_right_triangle),
     DIAMOND(ShapeKind.DIAMOND, 0, Res.string.shape_diamond),
     PENTAGON(ShapeKind.PENTAGON, 0, Res.string.shape_pentagon),
-    HEXAGON(ShapeKind.HEXAGON, 0, Res.string.shape_hexagon);
+    HEXAGON(ShapeKind.HEXAGON, 0, Res.string.shape_hexagon),
+    AXES(ShapeKind.AXES, 0, Res.string.shape_axes),
+    GRID(ShapeKind.GRID, 0, Res.string.shape_grid),
+    ARC(ShapeKind.ARC, 0, Res.string.shape_arc),
+    ANGLE(ShapeKind.ANGLE, 0, Res.string.shape_angle);
 
     /** Whether [style] draws this shape. */
     fun isChosen(style: ShapeToolStyle): Boolean = style.kind == kind && (!kind.isLine || style.heads == heads)
@@ -141,11 +165,17 @@ internal interface ShapeStyleTarget {
     /** The style shown. */
     val style: ShapeToolStyle
 
+    /** Geometry parameters of the currently selected geometry shape, if any. */
+    val geometryParams: ShapeGeometryParams? get() = null
+
     /** Chooses the shape [choice]. */
     fun choose(choice: ShapeChoice)
 
     /** Changes the style by [transform] (its kind kept). */
     fun change(transform: (ShapeToolStyle) -> ShapeToolStyle)
+
+    /** Updates geometry tool parameters on the target shapes. */
+    fun updateGeometry(transform: (ShapeGeometryParams) -> ShapeGeometryParams) {}
 }
 
 /** The style of the shapes tool: what it draws next. */
@@ -166,11 +196,33 @@ internal class SelectedShapesTarget(private val controller: PageboardController)
             return if (first != null) tool.takingStyleOf(first) else tool
         }
 
+    override val geometryParams: ShapeGeometryParams?
+        get() {
+            val first = controller.shapeEditing.selectedShapes.firstOrNull()?.second ?: return null
+            if (!first.kind.isGeometryTool) return null
+            return first.geometry ?: ShapeElement.defaultGeometryParams(first.kind)
+        }
+
     override fun choose(choice: ShapeChoice) = controller.shapeEditing.changeKind(choice.kind, choice.heads)
 
     override fun change(transform: (ShapeToolStyle) -> ShapeToolStyle) {
         val tool = controller.shapeInserter.style
-        controller.shapeEditing.restyle { value -> transform(tool.takingStyleOf(value)).element() }
+        controller.shapeEditing.restyle { value ->
+            val updated = transform(tool.takingStyleOf(value)).element()
+            updated.copy(
+                label = value.label,
+                labelColor = value.labelColor,
+                labelFontSizePt = value.labelFontSizePt,
+                vertices = value.vertices,
+                startAnchor = value.startAnchor,
+                endAnchor = value.endAnchor,
+                geometry = value.geometry
+            )
+        }
+    }
+
+    override fun updateGeometry(transform: (ShapeGeometryParams) -> ShapeGeometryParams) {
+        controller.shapeEditing.updateGeometry(transform)
     }
 }
 
@@ -244,7 +296,7 @@ internal fun ColumnScope.ShapeSettings(target: ShapeStyleTarget, title: String, 
             }
         }
 
-        if (style.kind.isLine) {
+        if (style.kind.supportsHeads) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 SettingLabel(stringResource(Res.string.shape_heads))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -256,7 +308,8 @@ internal fun ColumnScope.ShapeSettings(target: ShapeStyleTarget, title: String, 
                     }
                 }
             }
-        } else {
+        }
+        if (style.kind.supportsFill) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 SettingLabel(stringResource(Res.string.shape_fill))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -269,6 +322,11 @@ internal fun ColumnScope.ShapeSettings(target: ShapeStyleTarget, title: String, 
                     }
                 }
             }
+        }
+
+        val geom = target.geometryParams
+        if (geom != null) {
+            GeometryParamControls(style.kind, geom, target::updateGeometry)
         }
 
         if (withHint) SettingHint(stringResource(Res.string.tool_settings_shapes_tool_hint))
@@ -355,8 +413,8 @@ private fun DrawScope.drawShape(value: ShapeElement, level: Boolean) {
     }
     // The usual proportions of the kind, as large as the canvas holds
     val ratio = when (value.kind) {
-        ShapeKind.RECTANGLE, ShapeKind.ROUNDED_RECTANGLE -> 1.45f
-        ShapeKind.ELLIPSE -> 1.3f
+        ShapeKind.RECTANGLE, ShapeKind.ROUNDED_RECTANGLE, ShapeKind.GRID -> 1.45f
+        ShapeKind.ELLIPSE, ShapeKind.AXES -> 1.3f
         ShapeKind.TRIANGLE, ShapeKind.PENTAGON -> 1.08f
         ShapeKind.HEXAGON -> 1.15f
         else -> 1f
@@ -385,6 +443,90 @@ private const val GRID_COLUMNS = 6
 
 /** How many pixels a millimeter of the page is in the previews (per dp). */
 private const val PREVIEW_PX_PER_MM = 3f
+
+@Composable
+private fun GeometryParamControls(
+    kind: ShapeKind,
+    params: ShapeGeometryParams,
+    onUpdate: ((ShapeGeometryParams) -> ShapeGeometryParams) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        when (kind) {
+            ShapeKind.GRID -> {
+                StepperRow(
+                    label = stringResource(Res.string.shape_geometry_rows),
+                    valueText = params.gridRows.toString(),
+                    canDecrease = params.gridRows > 1,
+                    canIncrease = params.gridRows < ShapeGeometryParams.MAX_DIVISIONS,
+                    onDecrease = { onUpdate { it.copy(gridRows = (it.gridRows - 1).coerceAtLeast(1)) } },
+                    onIncrease = { onUpdate { it.copy(gridRows = (it.gridRows + 1).coerceAtMost(ShapeGeometryParams.MAX_DIVISIONS)) } }
+                )
+                StepperRow(
+                    label = stringResource(Res.string.shape_geometry_cols),
+                    valueText = params.gridCols.toString(),
+                    canDecrease = params.gridCols > 1,
+                    canIncrease = params.gridCols < ShapeGeometryParams.MAX_DIVISIONS,
+                    onDecrease = { onUpdate { it.copy(gridCols = (it.gridCols - 1).coerceAtLeast(1)) } },
+                    onIncrease = { onUpdate { it.copy(gridCols = (it.gridCols + 1).coerceAtMost(ShapeGeometryParams.MAX_DIVISIONS)) } }
+                )
+            }
+            ShapeKind.AXES -> {
+                StepperRow(
+                    label = stringResource(Res.string.shape_geometry_ticks),
+                    valueText = "${params.ticksX}×${params.ticksY}",
+                    canDecrease = params.ticksX > 1 || params.ticksY > 1,
+                    canIncrease = params.ticksX < ShapeGeometryParams.MAX_DIVISIONS,
+                    onDecrease = { onUpdate { it.copy(ticksX = (it.ticksX - 1).coerceAtLeast(1), ticksY = (it.ticksY - 1).coerceAtLeast(1)) } },
+                    onIncrease = { onUpdate { it.copy(ticksX = (it.ticksX + 1).coerceAtMost(ShapeGeometryParams.MAX_DIVISIONS), ticksY = (it.ticksY + 1).coerceAtMost(ShapeGeometryParams.MAX_DIVISIONS)) } }
+                )
+            }
+            ShapeKind.ARC, ShapeKind.ANGLE -> {
+                StepperRow(
+                    label = stringResource(Res.string.shape_geometry_start_angle),
+                    valueText = "${params.startAngleDeg.roundToInt()}°",
+                    canDecrease = true,
+                    canIncrease = true,
+                    onDecrease = { onUpdate { it.copy(startAngleDeg = ((it.startAngleDeg - 15f) % 360f + 360f) % 360f) } },
+                    onIncrease = { onUpdate { it.copy(startAngleDeg = (it.startAngleDeg + 15f) % 360f) } }
+                )
+                StepperRow(
+                    label = stringResource(Res.string.shape_geometry_sweep_angle),
+                    valueText = "${params.sweepAngleDeg.roundToInt()}°",
+                    canDecrease = params.sweepAngleDeg > 15f,
+                    canIncrease = params.sweepAngleDeg < 345f,
+                    onDecrease = { onUpdate { it.copy(sweepAngleDeg = (it.sweepAngleDeg - 15f).coerceAtLeast(15f)) } },
+                    onIncrease = { onUpdate { it.copy(sweepAngleDeg = (it.sweepAngleDeg + 15f).coerceAtMost(345f)) } }
+                )
+                if (kind == ShapeKind.ANGLE) {
+                    SwitchSetting(
+                        title = stringResource(Res.string.shape_geometry_angle_label),
+                        description = "",
+                        checked = params.showAngleLabel,
+                        onCheckedChange = { checked -> onUpdate { it.copy(showAngleLabel = checked) } }
+                    )
+                }
+            }
+            else -> Unit
+        }
+    }
+}
+
+@Composable
+private fun StepperRow(
+    label: String,
+    valueText: String,
+    canDecrease: Boolean,
+    canIncrease: Boolean,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        DesignIconButton(icon = PageboardIcons.Minus, label = label, enabled = canDecrease, onClick = onDecrease)
+        Text(valueText, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 6.dp))
+        DesignIconButton(icon = PageboardIcons.Plus, label = label, enabled = canIncrease, onClick = onIncrease)
+    }
+}
 
 /** The title of the settings of the shapes tool. */
 @Composable

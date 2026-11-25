@@ -47,14 +47,21 @@ public data class ShapeToolStyle(
         stroke = stroke,
         widthMm = widthMm.coerceIn(ShapeElement.MIN_WIDTH_MM, ShapeElement.MAX_WIDTH_MM).takeIf { it.isFinite() } ?: DEFAULT_WIDTH_MM,
         dash = dash,
-        fill = if (kind.isLine) null else fill,
-        startHead = if (kind.isLine && heads == 2) head else ShapeHead.NONE,
-        endHead = if (kind.isLine && heads >= 1) head else ShapeHead.NONE
+        fill = if (kind.supportsFill) fill else null,
+        startHead = if (kind.supportsHeads && heads == 2) head else ShapeHead.NONE,
+        endHead = if (kind.supportsHeads && heads >= 1) head else ShapeHead.NONE,
+        vertices = when (kind) {
+            ShapeKind.POLYLINE -> ShapeElement.DEFAULT_POLYLINE_VERTICES
+            ShapeKind.FREE_POLYGON -> ShapeElement.DEFAULT_POLYGON_VERTICES
+            else -> null
+        },
+        geometry = ShapeElement.defaultGeometryParams(kind)
     )
 
-    /** This style taking the style of [shape] (its kind, its colors, its outline, its heads when a line). */
+    /** This style taking the style of [shape] (its kind, its colors, its outline, its heads when supported). */
     public fun takingStyleOf(shape: ShapeElement): ShapeToolStyle {
-        val line = shape.kind.isLine
+        val supportsHeads = shape.kind.supportsHeads
+        val supportsFill = shape.kind.supportsFill
         val shapeHeads = listOf(shape.startHead, shape.endHead).count { it != ShapeHead.NONE }
         val shapeHead = listOf(shape.endHead, shape.startHead).firstOrNull { it != ShapeHead.NONE } ?: head
         return copy(
@@ -62,9 +69,9 @@ public data class ShapeToolStyle(
             stroke = shape.stroke,
             widthMm = shape.widthMm,
             dash = shape.dash,
-            fill = if (line) fill else shape.fill,
-            heads = if (line) shapeHeads else heads,
-            head = if (line) shapeHead else head
+            fill = if (supportsFill) shape.fill else fill,
+            heads = if (supportsHeads) shapeHeads else heads,
+            head = if (supportsHeads) shapeHead else head
         )
     }
 
@@ -162,6 +169,11 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
     private var start = Point.Zero
     private var startAnchorHit: SnapManager.AnchorHit? = null
     private var endAnchorHit: SnapManager.AnchorHit? = null
+    private val pendingVertices = mutableListOf<Point>()
+
+    /** Whether a multi-tap [ShapeKind.POLYLINE] or [ShapeKind.FREE_POLYGON] is currently being placed vertex by vertex. */
+    public val isDrawingVertices: Boolean
+        get() = pendingVertices.isNotEmpty()
 
     public fun updateStyle(style: ShapeToolStyle) {
         if (this.style == style) return
@@ -246,12 +258,91 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
         )
     }
 
+    /**
+     * Appends a vertex at [at] (page millimeters) on [pageIndex] for vertex-editable shapes.
+     * For [ShapeKind.FREE_POLYGON], tapping back near the first vertex with at least 3 vertices
+     * closes and commits the polygon, returning `true`.
+     */
+    internal fun addVertex(pageIndex: Int, at: Point, free: Boolean): Boolean {
+        if (!style.kind.isVertexEditable) return false
+        if (this.pageIndex != pageIndex) {
+            pendingVertices.clear()
+            this.pageIndex = pageIndex
+        }
+        val snapped = if (free) at else controller.snapManager.snapPoint(pageIndex, at, emptyList(), free)
+        if (style.kind == ShapeKind.FREE_POLYGON && pendingVertices.size >= 3) {
+            val closeRadiusMm = controller.snapManager.toMm(pageIndex, VERTEX_CLOSE_DP)
+            if ((snapped - pendingVertices[0]).distance <= closeRadiusMm) {
+                finishVertices()
+                return true
+            }
+        }
+        pendingVertices += snapped
+        draft = vertexDraft(pageIndex, pendingVertices, snapped)
+        return false
+    }
+
+    /** Updates the live preview with a hover/drag [pointer] while multi-tap vertex insertion is active. */
+    internal fun previewVertex(pointer: Point, free: Boolean) {
+        if (pageIndex < 0 || pendingVertices.isEmpty() || !style.kind.isVertexEditable) return
+        val snapped = if (free) pointer else controller.snapManager.snapPoint(pageIndex, pointer, emptyList(), free)
+        draft = vertexDraft(pageIndex, pendingVertices + snapped, snapped)
+    }
+
+    /**
+     * Finishes and commits the vertices gathered so far (`>= 2` for polylines, `>= 3` for free
+     * polygons), selecting the newly created shape, or cancels if too few vertices exist.
+     */
+    public fun finishVertices(): CustomElement? {
+        val verts = pendingVertices.toList()
+        val targetPage = pageIndex
+        cancel()
+        val minCount = if (style.kind == ShapeKind.FREE_POLYGON) 3 else 2
+        if (targetPage < 0 || verts.size < minCount) return null
+        val value = style.element()
+        val (box, normalized) = ShapeGeometry.boxAndVerticesFromPage(verts, value.widthMm, MIN_SIZE_MM)
+        val finalValue = value.copy(vertices = normalized)
+        return controller.customElementManager.add(
+            ShapeElementType, finalValue, targetPage, Rect(box.x, box.y, box.x + box.width, box.y + box.height), box.rotation
+        )
+    }
+
+    private fun vertexDraft(targetPage: Int, points: List<Point>, pointer: Point): ShapeDraft {
+        val base = style.element()
+        val previewPoints = when (points.size) {
+            0 -> listOf(pointer, pointer + Point(MIN_SIZE_MM, 0f))
+            1 -> listOf(points[0], points[0] + Point(MIN_SIZE_MM, 0f))
+            else -> points
+        }
+        val (box, normalized) = ShapeGeometry.boxAndVerticesFromPage(previewPoints, base.widthMm, MIN_SIZE_MM)
+        val previewValue = if (base.kind == ShapeKind.FREE_POLYGON && previewPoints.size < 3) {
+            base.copy(kind = ShapeKind.POLYLINE, fill = null, startHead = ShapeHead.NONE, endHead = ShapeHead.NONE, vertices = normalized)
+        } else {
+            base.copy(vertices = normalized)
+        }
+        return ShapeDraft(
+            pageIndex = targetPage,
+            value = previewValue,
+            box = box,
+            start = previewPoints.first(),
+            end = pointer,
+            widthMm = box.width,
+            heightMm = box.height,
+            angleDegrees = 0f,
+            isRegular = false,
+            isAngleSnapped = false,
+            anchor = null,
+            anchors = emptyList()
+        )
+    }
+
     /** Drops the shape being drawn. */
     internal fun cancel() {
         draft = null
         pageIndex = -1
         startAnchorHit = null
         endAnchorHit = null
+        pendingVertices.clear()
         controller.snapManager.clearGuides()
     }
 
@@ -268,8 +359,9 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
             val box = ShapeGeometry.lineBox(Point(at.x - half, at.y), Point(at.x + half, at.y), value)
             controller.customElementManager.add(ShapeElementType, value, pageIndex, Rect(box.x, box.y, box.x + box.width, box.y + box.height), 0f)
         } else {
-            val width = (if (value.kind == ShapeKind.RECTANGLE || value.kind == ShapeKind.ROUNDED_RECTANGLE) STANDARD_WIDE_MM else STANDARD_SIDE_MM)
-                .coerceAtMost(page.widthMm)
+            val wide = value.kind == ShapeKind.RECTANGLE || value.kind == ShapeKind.ROUNDED_RECTANGLE ||
+                value.kind == ShapeKind.AXES || value.kind == ShapeKind.GRID
+            val width = (if (wide) STANDARD_WIDE_MM else STANDARD_SIDE_MM).coerceAtMost(page.widthMm)
             val height = STANDARD_SIDE_MM.coerceAtMost(page.heightMm)
             val left = (at.x - width / 2f).coerceIn(0f, (page.widthMm - width).coerceAtLeast(0f))
             val top = (at.y - height / 2f).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f))
@@ -319,5 +411,8 @@ public class ShapeInserter internal constructor(private val controller: Pageboar
 
         /** How near the pointer the anchors of the other shapes are shown while a line is drawn. */
         const val ANCHORS_SHOWN_DP = 48f
+
+        /** Tap radius around the start vertex that closes a free polygon. */
+        const val VERTEX_CLOSE_DP = 18f
     }
 }

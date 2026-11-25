@@ -286,4 +286,23 @@
     <string name="find_none">Nessun risultato</string>
     <string name="find_previous">Precedente</string>
     <string name="find_next">Successivo</string>
+    <string name="shape_polyline">Polilinea</string>
+    <string name="shape_free_polygon">Poligono</string>
+    <string name="shape_axes">Assi</string>
+    <string name="shape_grid">Griglia</string>
+    <string name="shape_arc">Arco</string>
+    <string name="shape_angle">Angolo</string>
+    <string name="shape_action_convert">Converti in forma</string>
+    <string name="shape_action_label">Etichetta forma</string>
+    <string name="shape_label_hint">Testo nella forma</string>
+    <string name="shape_snap_to_editable">Converti allo snap in forma</string>
+    <string name="shape_snap_to_editable_hint">Sostituisci i tratti riconosciuti con forme modificabili</string>
+    <string name="shape_geometry_rows">Righe</string>
+    <string name="shape_geometry_cols">Colonne</string>
+    <string name="shape_geometry_ticks">Tacche sugli assi</string>
+    <string name="shape_geometry_start_angle">Angolo iniziale</string>
+    <string name="shape_geometry_sweep_angle">Ampiezza angolo</string>
+    <string name="shape_geometry_angle_label">Mostra angolo</string>
+    <string name="command_ruler">Righello</string>
+    <string name="command_protractor">Goniometro</string>
 </resources>

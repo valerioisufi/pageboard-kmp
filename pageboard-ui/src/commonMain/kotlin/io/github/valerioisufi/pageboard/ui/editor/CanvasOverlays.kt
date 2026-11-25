@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +35,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.shape.ShapeElement
+import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.pageboard.ui.command.CommandMenu
 import io.github.valerioisufi.pageboard.ui.command.MenuDivider
@@ -74,10 +80,17 @@ internal fun SelectionActionBar(
         val current = selection
         val hasTexts = current?.texts?.isNotEmpty() == true
         val isSingleText = current?.isSingleText == true
+        val selectedShapes = controller.shapeEditing.selectedShapes
+        val singleShape = if (selectedShapes.size == 1) selectedShapes[0] else null
+        var editingLabel by remember(singleShape?.first?.id) { mutableStateOf(false) }
 
         ActionBar(modifier = Modifier.padding(top = 16.dp)) {
             if (hasTexts && isSingleText) {
                 BarAction(PageboardIcons.Pencil, stringResource(Res.string.draw_toolbar_action_edit_text), { controller.textEditorManager.startEditingSelectedText() })
+                BarDivider()
+            }
+            if (controller.shapeEditing.canConvertSelectedStroke) {
+                BarAction(PageboardIcons.Shapes, stringResource(Res.string.shape_action_convert), { controller.shapeEditing.convertSelectedStrokeToShape() })
                 BarDivider()
             }
             BarAction(PageboardIcons.Scissors, stringResource(Res.string.common_action_cut), { selectionManager.cutSelection() }, command = commands?.cut)
@@ -87,9 +100,12 @@ internal fun SelectionActionBar(
                 BarDivider()
                 ArrangeAction(commands)
             }
-            if (controller.shapeEditing.selectedShapes.isNotEmpty()) {
+            if (selectedShapes.isNotEmpty()) {
                 BarDivider()
                 ShapeStyleAction(controller)
+                if (singleShape != null) {
+                    BarAction(PageboardIcons.Text, stringResource(Res.string.shape_action_label), { editingLabel = true })
+                }
             }
             if (hasTexts) {
                 BarDivider()
@@ -98,6 +114,30 @@ internal fun SelectionActionBar(
                     TextStyleControls(texts, commands)
                 }
             }
+        }
+        if (editingLabel && singleShape != null) {
+            var labelText by remember(singleShape.first.id) { mutableStateOf(singleShape.second.label.orEmpty()) }
+            AdaptiveDialog(
+                onDismissRequest = { editingLabel = false },
+                title = { Text(stringResource(Res.string.shape_action_label)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        controller.shapeEditing.updateLabel(labelText)
+                        editingLabel = false
+                    }) { Text(stringResource(Res.string.text_editor_action_save)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { editingLabel = false }) { Text(stringResource(Res.string.common_button_cancel)) }
+                },
+                text = {
+                    OutlinedTextField(
+                        value = labelText,
+                        onValueChange = { if (it.length <= ShapeElement.MAX_LABEL_LENGTH) labelText = it },
+                        placeholder = { Text(stringResource(Res.string.shape_label_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            )
         }
     }
 }

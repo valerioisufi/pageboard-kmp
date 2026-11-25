@@ -142,6 +142,9 @@ public class PageboardController(
     public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
     public val snapManager: SnapManager = SnapManager(this)
 
+    /** Interactive on-canvas straightedge ruler and protractor guides for precision inking. */
+    public val geometryGuides: GeometryGuidesManager = GeometryGuidesManager(this)
+
     /** Finding a text in the document (see [DocumentFind]). */
     public val find: DocumentFind = DocumentFind(this)
 
@@ -275,6 +278,7 @@ public class PageboardController(
     // ==========================================================
 
     public fun selectTool(tool: Tool, presetIndex: Int? = null) {
+        if (tool != Tool.SHAPES) shapeInserter.cancel()
         if (tool != Tool.LAZO) selectionManager.clearSelection()
         if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.finishEditing()
         textMarkupManager.clearSelection()

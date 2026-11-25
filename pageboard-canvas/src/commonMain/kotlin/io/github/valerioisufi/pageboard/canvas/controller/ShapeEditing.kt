@@ -24,6 +24,7 @@ import io.github.valerioisufi.pageboard.model.shape.ShapeConverter
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeElementType
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
+import io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams
 import io.github.valerioisufi.pageboard.model.shape.ShapeHead
 import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import io.github.valerioisufi.pageboard.model.shape.ShapeRecognizer
@@ -42,6 +43,12 @@ internal sealed interface ShapeHandle {
 
     /** A side of the box of a shape: 0 top, 1 right, 2 bottom, 3 left (before its rotation). */
     data class Side(val index: Int) : ShapeHandle
+
+    /** An existing vertex of a [ShapeKind.POLYLINE] or [ShapeKind.FREE_POLYGON]. */
+    data class Vertex(val index: Int) : ShapeHandle
+
+    /** An edge midpoint handle that inserts a new vertex after [afterIndex]. */
+    data class AddVertex(val afterIndex: Int) : ShapeHandle
 }
 
 /**
@@ -66,6 +73,8 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
     private var original: ShapeBox? = null
     private var pageIndex = -1
     private var draggedAnchorHit: SnapManager.AnchorHit? = null
+    private var workingVertices: MutableList<Point>? = null
+    private var activeVertexIndex: Int = -1
 
     /**
      * The shapes selected, with their values, when the selection holds shapes only (and readable
@@ -211,6 +220,38 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
         restyle { it.copy(label = normalized) }
     }
 
+    /** Updates the geometry parameters of selected geometry shapes (`AXES`, `GRID`, `ARC`, `ANGLE`) in one undo step. */
+    public fun updateGeometry(transform: (ShapeGeometryParams) -> ShapeGeometryParams) {
+        restyle { value ->
+            if (!value.kind.isGeometryTool) value
+            else value.copy(geometry = transform(value.geometry ?: ShapeElement.defaultGeometryParams(value.kind) ?: ShapeGeometryParams()))
+        }
+    }
+
+    /** Deletes the vertex at [index] from the single selected polyline/free polygon if above its minimum vertex count. */
+    public fun deleteVertex(index: Int): Boolean {
+        val (element, value) = single() ?: return false
+        if (!value.kind.isVertexEditable) return false
+        val selection = controller.selectionManager.currentSelection ?: return false
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return false
+        val before = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
+        val verts = ShapeGeometry.verticesInPage(before, value).toMutableList()
+        val minCount = if (value.kind == ShapeKind.FREE_POLYGON) 3 else 2
+        if (verts.size <= minCount || index !in verts.indices) return false
+        verts.removeAt(index)
+        val (newBox, normVerts) = ShapeGeometry.boxAndVerticesFromPage(verts, value.widthMm, ShapeInserter.MIN_SIZE_MM)
+        val updated = value.copy(vertices = normVerts)
+        val values = controller.engines.elements::valueOf
+        val joined = ShapeConnectors.follow(page, element, { values(it) as? ShapeElement }, before, newBox)
+        val changes = listOf(
+            UpdateElementContent(page.id, element.id, ShapeElementType.version, ShapeElementType.encode(updated)),
+            PlaceElements(page.id, listOf(BoxPlacement(element.id, newBox.x, newBox.y, newBox.width, newBox.height, newBox.rotation)) + joined)
+        )
+        controller.session.submit(CompositeChange(changes)) ?: return false
+        controller.selectionManager.selectCustomElement(selection.pageIndex, element)
+        return true
+    }
+
     /** Starts dragging [handle] of the shape alone in the selection. */
     internal fun beginHandle(handle: ShapeHandle) {
         val (element, value) = single() ?: return
@@ -220,8 +261,27 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
         this.value = value
         this.pageIndex = selection.pageIndex
         this.draggedAnchorHit = null
+        this.workingVertices = null
+        this.activeVertexIndex = -1
         val box = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
         original = box
+        when (handle) {
+            is ShapeHandle.Vertex -> {
+                val verts = ShapeGeometry.verticesInPage(box, value).toMutableList()
+                workingVertices = verts
+                activeVertexIndex = handle.index.coerceIn(0, (verts.size - 1).coerceAtLeast(0))
+            }
+            is ShapeHandle.AddVertex -> {
+                val verts = ShapeGeometry.verticesInPage(box, value).toMutableList()
+                if (verts.size < ShapeElement.MAX_FREE_VERTICES && handle.afterIndex in verts.indices) {
+                    val mid = (verts[handle.afterIndex] + verts[(handle.afterIndex + 1) % verts.size]) * 0.5f
+                    verts.add(handle.afterIndex + 1, mid)
+                    workingVertices = verts
+                    activeVertexIndex = handle.afterIndex + 1
+                }
+            }
+            else -> {}
+        }
         // Out of the tiles while it is dragged: its draft is drawn instead
         controller.selectionManager.beginTransformation()
         if (!value.kind.isLine) {
@@ -261,6 +321,27 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
                 val ref = hit?.let { ShapeAnchorRef(it.elementId, it.anchorIndex) }
                 val updatedValue = if (handle.start) value.copy(startAnchor = ref) else value.copy(endAnchor = ref)
                 ShapeDraft(pageIndex, updatedValue, newBox, fixed, moved, (to - from).distance, 0f, readAngle(from, to), false, line?.snapped == true, anchor, nearby)
+            }
+            is ShapeHandle.Vertex, is ShapeHandle.AddVertex -> {
+                val verts = workingVertices
+                val idx = activeVertexIndex
+                if (verts != null && idx in verts.indices) {
+                    val snapped = if (!free && !forced) {
+                        snaps.snapPoint(pageIndex, pointer, listOf(element), free)
+                    } else {
+                        pointer
+                    }
+                    verts[idx] = snapped
+                    val (newBox, normVerts) = ShapeGeometry.boxAndVerticesFromPage(verts, value.widthMm, ShapeInserter.MIN_SIZE_MM)
+                    val updatedValue = value.copy(vertices = normVerts)
+                    val page = controller.document.pages.getOrNull(pageIndex)
+                    if (page != null) {
+                        val values = controller.engines.elements::valueOf
+                        connectorDrafts = ShapeConnectors.previewFollowResize(page, element, { values(it) as? ShapeElement }, box, newBox)
+                            .map { it.value to it.box }
+                    }
+                    ShapeDraft(pageIndex, updatedValue, newBox, box.center, snapped, newBox.width, newBox.height, 0f, false, false, null, emptyList())
+                } else null
             }
             is ShapeHandle.Corner, is ShapeHandle.Side -> {
                 val (newBox, regular) = resized(box, handle, pointer, forced, fromCenter, free, element)
@@ -309,7 +390,7 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
                 2 -> bottom = local.y
                 else -> left = local.x
             }
-            is ShapeHandle.End -> Unit
+            is ShapeHandle.End, is ShapeHandle.Vertex, is ShapeHandle.AddVertex -> Unit
         }
         if (fromCenter) {
             // The opposite side moves the other way
@@ -406,6 +487,8 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
         value = null
         original = null
         draggedAnchorHit = null
+        workingVertices = null
+        activeVertexIndex = -1
         controller.snapManager.clearGuides()
     }
 

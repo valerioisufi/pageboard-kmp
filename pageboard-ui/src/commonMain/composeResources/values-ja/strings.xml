@@ -281,4 +281,23 @@
     <string name="find_none">結果なし</string>
     <string name="find_previous">前へ</string>
     <string name="find_next">次へ</string>
+    <string name="shape_polyline">折れ線</string>
+    <string name="shape_free_polygon">多角形</string>
+    <string name="shape_axes">座標軸</string>
+    <string name="shape_grid">グリッド</string>
+    <string name="shape_arc">円弧</string>
+    <string name="shape_angle">角度</string>
+    <string name="shape_action_convert">図形に変換</string>
+    <string name="shape_action_label">図形ラベル</string>
+    <string name="shape_label_hint">図形内のテキスト</string>
+    <string name="shape_snap_to_editable">スナップ時に図形へ変換</string>
+    <string name="shape_snap_to_editable_hint">長押しで補正した線を編集可能な図形に置換</string>
+    <string name="shape_geometry_rows">行</string>
+    <string name="shape_geometry_cols">列</string>
+    <string name="shape_geometry_ticks">目盛り</string>
+    <string name="shape_geometry_start_angle">開始角</string>
+    <string name="shape_geometry_sweep_angle">中心角</string>
+    <string name="shape_geometry_angle_label">角度を表示</string>
+    <string name="command_ruler">定規</string>
+    <string name="command_protractor">分度器</string>
 </resources>

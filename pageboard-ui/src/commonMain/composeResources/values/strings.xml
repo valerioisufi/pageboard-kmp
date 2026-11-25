@@ -287,4 +287,23 @@
     <string name="find_none">No results</string>
     <string name="find_previous">Previous</string>
     <string name="find_next">Next</string>
+    <string name="shape_polyline">Polyline</string>
+    <string name="shape_free_polygon">Polygon</string>
+    <string name="shape_axes">Axes</string>
+    <string name="shape_grid">Grid</string>
+    <string name="shape_arc">Arc</string>
+    <string name="shape_angle">Angle</string>
+    <string name="shape_action_convert">Convert to shape</string>
+    <string name="shape_action_label">Shape label</string>
+    <string name="shape_label_hint">Text inside shape</string>
+    <string name="shape_snap_to_editable">Snap directly to shape</string>
+    <string name="shape_snap_to_editable_hint">Replace held-to-snap strokes with editable shapes</string>
+    <string name="shape_geometry_rows">Rows</string>
+    <string name="shape_geometry_cols">Columns</string>
+    <string name="shape_geometry_ticks">Axis ticks</string>
+    <string name="shape_geometry_start_angle">Start angle</string>
+    <string name="shape_geometry_sweep_angle">Sweep angle</string>
+    <string name="shape_geometry_angle_label">Show angle</string>
+    <string name="command_ruler">Ruler</string>
+    <string name="command_protractor">Protractor</string>
 </resources>

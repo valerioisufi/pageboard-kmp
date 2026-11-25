@@ -281,4 +281,23 @@
     <string name="find_none">결과 없음</string>
     <string name="find_previous">이전</string>
     <string name="find_next">다음</string>
+    <string name="shape_polyline">다중선</string>
+    <string name="shape_free_polygon">다각형</string>
+    <string name="shape_axes">좌표축</string>
+    <string name="shape_grid">격자</string>
+    <string name="shape_arc">호</string>
+    <string name="shape_angle">각도</string>
+    <string name="shape_action_convert">도형으로 변환</string>
+    <string name="shape_action_label">도형 라벨</string>
+    <string name="shape_label_hint">도형 안 텍스트</string>
+    <string name="shape_snap_to_editable">스냅 시 바로 도형 변환</string>
+    <string name="shape_snap_to_editable_hint">길게 눌러 보정된 선을 편집 가능한 도형으로 바꿈</string>
+    <string name="shape_geometry_rows">행</string>
+    <string name="shape_geometry_cols">열</string>
+    <string name="shape_geometry_ticks">눈금</string>
+    <string name="shape_geometry_start_angle">시작 각도</string>
+    <string name="shape_geometry_sweep_angle">각도 범위</string>
+    <string name="shape_geometry_angle_label">각도 표시</string>
+    <string name="command_ruler">자</string>
+    <string name="command_protractor">각도기</string>
 </resources>

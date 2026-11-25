@@ -47,7 +47,9 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.command_insert_sh
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_next_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_previous_tool
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_protractor
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_rename
+import io.github.valerioisufi.pageboard.ui.generated.resources.command_ruler
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_send_backward
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_send_to_back
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_shapes
@@ -392,6 +394,20 @@ internal class EditorCommands internal constructor(
         icon = { rememberVectorPainter(PageboardIcons.Shapes) },
         isChecked = { controller.shapeSnapper.isEnabled }
     ) { controller.shapeSnapper.updateEnabled(!controller.shapeSnapper.isEnabled) }
+
+    /** Shows or hides the interactive on-canvas straightedge ruler. */
+    val ruler = Command(
+        "ruler", label(Res.string.command_ruler), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.Ruler) },
+        isChecked = { controller.geometryGuides.isRulerVisible }
+    ) { controller.geometryGuides.toggleRuler() }
+
+    /** Shows or hides the interactive on-canvas protractor. */
+    val protractor = Command(
+        "protractor", label(Res.string.command_protractor), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.DraftingCompass) },
+        isChecked = { controller.geometryGuides.isProtractorVisible }
+    ) { controller.geometryGuides.toggleProtractor() }
 
     /** Whether the text box suggests what may follow the caret: only with an extension that suggests. */
     val textSuggestions: Command? = if (!hasTextSuggestions) null else Command(
@@ -739,7 +755,7 @@ internal class EditorCommands internal constructor(
     val all: List<Command> = listOfNotNull(
         close, rename,
         undo, redo, cut, copy, paste, pastePlain, delete, find,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, textSuggestions,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes, ruler, protractor, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack,

@@ -150,6 +150,14 @@ internal fun ColumnScope.InkSettings(controller: PageboardController, tool: Tool
             checked = controller.shapeSnapper.isEnabled,
             onCheckedChange = controller.shapeSnapper::updateEnabled
         )
+        if (controller.shapeSnapper.isEnabled) {
+            SwitchSetting(
+                title = stringResource(Res.string.shape_snap_to_editable),
+                description = stringResource(Res.string.shape_snap_to_editable_hint),
+                checked = controller.shapeSnapper.snapToEditableShape,
+                onCheckedChange = controller.shapeSnapper::updateSnapToEditableShape
+            )
+        }
     }
     if (wheelOpen) {
         TextColorPickerDialog(

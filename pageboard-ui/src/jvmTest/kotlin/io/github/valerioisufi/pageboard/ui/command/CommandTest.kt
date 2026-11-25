@@ -383,4 +383,25 @@ class CommandTest {
         assertEquals("```py showLineNumbers\nx = 1\n```", editor.value.text)
         assertTrue(commands.lineNumbers.isChecked!!.invoke())
     }
+
+    @Test
+    fun rulerAndProtractorCommandsToggleGeometryGuides() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        assertFalse(commands.ruler.isChecked!!.invoke())
+        assertFalse(commands.protractor.isChecked!!.invoke())
+
+        commands.ruler.perform()
+        assertTrue(commands.ruler.isChecked!!.invoke())
+        assertTrue(controller.geometryGuides.isRulerVisible)
+
+        commands.protractor.perform()
+        assertTrue(commands.protractor.isChecked!!.invoke())
+        assertTrue(controller.geometryGuides.isProtractorVisible)
+
+        commands.ruler.perform()
+        commands.protractor.perform()
+        assertFalse(controller.geometryGuides.isRulerVisible)
+        assertFalse(controller.geometryGuides.isProtractorVisible)
+    }
 }

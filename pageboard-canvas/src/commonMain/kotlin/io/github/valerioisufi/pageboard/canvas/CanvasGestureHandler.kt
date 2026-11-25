@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorActivity
+import io.github.valerioisufi.pageboard.canvas.controller.GeometryGuidesManager
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeHandle
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeSnapper
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
@@ -138,6 +139,9 @@ internal class CanvasGestureHandler(
 
         /** Dragging a handle of a shape alone in the selection (see `ShapeEditing`). */
         SHAPE_HANDLE,
+
+        /** Dragging or rotating the on-canvas ruler or protractor guide. */
+        GUIDE_DRAG,
         IGNORED
     }
 
@@ -183,6 +187,12 @@ internal class CanvasGestureHandler(
 
     /** A second finger held while a finger draws a shape: it forces its constraints, as Shift. */
     private var shapeForcedByFinger = false
+
+    /** The handle dragged when entering [Mode.SHAPE_HANDLE], and recent vertex tap state for double-tap delete. */
+    private var activeShapeHandle: ShapeHandle? = null
+    private var lastVertexTapTime = 0L
+    private var lastVertexTapIndex = -1
+    private var activeGuideHit: GeometryGuidesManager.GuideHit? = null
 
     /** The gesture dropped a selection: a tap of the shapes tool only drops it. */
     private var droppedSelection = false
@@ -321,6 +331,11 @@ internal class CanvasGestureHandler(
                 controller.placementManager.pointer = hover.position
             } else if (hover != null && controller.isDrawingMode && mode == Mode.NONE) {
                 val tools = controller.toolManager
+                if (tools.selectedTool == Tool.SHAPES && controller.shapeInserter.isDrawingVertices) {
+                    controller.viewport.screenToPageMm(inkPageIndex, hover.position)?.let { mm ->
+                        controller.shapeInserter.previewVertex(Point(mm.x, mm.y), free = primaryHeld)
+                    }
+                }
                 if (tools.isEraserTool) live.setEraserCursor(hover.position, eraserRadiusPx(hover.position)) else live.setEraserCursor(null, 0f)
                 val ink = tools.activePreset()?.takeIf { tools.isInkTool }
                 if (ink != null) live.setInkCursor(hover.position, inkRadiusPx(hover.position, ink.sizeMm), ink.color) else live.setInkCursor(null)
@@ -487,6 +502,8 @@ internal class CanvasGestureHandler(
                 val shapeHandle = if (controller.shapeEditing.single() == null) null else when (handle) {
                     SelectionFrame.Handle.START -> ShapeHandle.End(start = true)
                     SelectionFrame.Handle.END -> ShapeHandle.End(start = false)
+                    SelectionFrame.Handle.VERTEX -> frame.vertexAt(position, radius)?.let { ShapeHandle.Vertex(it) }
+                    SelectionFrame.Handle.ADD_VERTEX -> frame.edgeMidpointAt(position, radius)?.let { ShapeHandle.AddVertex(it) }
                     SelectionFrame.Handle.CORNER -> frame.cornerAt(position, radius)?.let { ShapeHandle.Corner(it) }
                     SelectionFrame.Handle.TOP -> ShapeHandle.Side(0)
                     SelectionFrame.Handle.RIGHT -> ShapeHandle.Side(1)
@@ -496,6 +513,7 @@ internal class CanvasGestureHandler(
                 }
                 if (shapeHandle != null) {
                     mode = Mode.SHAPE_HANDLE
+                    activeShapeHandle = shapeHandle
                     inkPageIndex = selection.pageIndex
                     shapeForcedByFinger = false
                     controller.shapeEditing.beginHandle(shapeHandle)
@@ -507,6 +525,7 @@ internal class CanvasGestureHandler(
                     SelectionFrame.Handle.LEFT -> Mode.TEXT_RESIZE_LEFT
                     SelectionFrame.Handle.RIGHT -> Mode.TEXT_RESIZE_RIGHT
                     SelectionFrame.Handle.TOP, SelectionFrame.Handle.BOTTOM, SelectionFrame.Handle.START, SelectionFrame.Handle.END,
+                    SelectionFrame.Handle.VERTEX, SelectionFrame.Handle.ADD_VERTEX,
                     null -> if (frame.contains(position)) Mode.SELECTION_MOVE else null
                 }
                 if (hitMode != null) {
@@ -525,6 +544,19 @@ internal class CanvasGestureHandler(
         val stylusOnly = controller.isStylusOnlyMode
         val isFinger = change.type == PointerType.Touch
         val tool = controller.toolManager.selectedTool
+
+        // Interactive ruler & protractor: ink near an edge locks & traces it; touching body/knobs moves or rotates the guide
+        val density = controller.viewport.density
+        val inkNearGuide = controller.toolManager.isInkTool && !(stylusOnly && isFinger) &&
+            controller.geometryGuides.beginInkStroke(position, density)
+        if (!inkNearGuide) {
+            val guideHit = controller.geometryGuides.hitTest(position, density)
+            if (guideHit != null) {
+                activeGuideHit = guideHit
+                mode = Mode.GUIDE_DRAG
+                return
+            }
+        }
 
         if (tool == Tool.PAN || (stylusOnly && isFinger)) {
             startPan()
@@ -545,7 +577,9 @@ internal class CanvasGestureHandler(
             mode = Mode.SHAPE
             inkPageIndex = pageIndex
             shapeForcedByFinger = false
-            controller.shapeInserter.begin(pageIndex, Point(at.x, at.y), free = primaryHeld)
+            if (!controller.shapeInserter.isDrawingVertices) {
+                controller.shapeInserter.begin(pageIndex, Point(at.x, at.y), free = primaryHeld)
+            }
             return
         }
 
@@ -622,6 +656,7 @@ internal class CanvasGestureHandler(
 
         when (mode) {
             Mode.INK, Mode.LASSO -> {
+                controller.geometryGuides.endInkStroke()
                 engine.cancelStroke()
                 ink.strokeEnded()
                 // Given up for the gesture: gone at once on the other devices too
@@ -642,7 +677,11 @@ internal class CanvasGestureHandler(
             }
             Mode.TEXT_BOX -> live.textBoxDraft = null
             Mode.SHAPE -> controller.shapeInserter.cancel()
-            Mode.SHAPE_HANDLE -> controller.shapeEditing.cancelHandle()
+            Mode.SHAPE_HANDLE -> {
+                activeShapeHandle = null
+                controller.shapeEditing.cancelHandle()
+            }
+            Mode.GUIDE_DRAG -> activeGuideHit = null
             Mode.PAGE_REORDER -> return
             else -> {}
         }
@@ -750,6 +789,11 @@ internal class CanvasGestureHandler(
                 }
             }
 
+            Mode.GUIDE_DRAG -> {
+                activeGuideHit?.let { controller.geometryGuides.drag(it, lastPosition, position, free = freeGesture || shiftHeld) }
+                controller.requestRedraw()
+            }
+
             Mode.TEXT_BOX -> live.textBoxDraft = boxBetween(downPosition, position)
 
             Mode.SHAPE_HANDLE -> {
@@ -760,7 +804,19 @@ internal class CanvasGestureHandler(
             }
 
             Mode.SHAPE -> {
-                if (movedBeyondSlop) {
+                val inserter = controller.shapeInserter
+                if (inserter.style.kind.isVertexEditable) {
+                    if (inserter.isDrawingVertices) {
+                        controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
+                            inserter.previewVertex(Point(it.x, it.y), free = primaryHeld)
+                        }
+                    } else if (movedBeyondSlop) {
+                        controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
+                            inserter.update(Point(it.x, it.y), forced = shiftHeld || shapeForcedByFinger, fromCenter = freeGesture, free = primaryHeld)
+                        }
+                        updateAutoScroll(position)
+                    }
+                } else if (movedBeyondSlop) {
                     controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
                         controller.shapeInserter.update(Point(it.x, it.y), forced = shiftHeld || shapeForcedByFinger, fromCenter = freeGesture, free = primaryHeld)
                     }
@@ -941,11 +997,13 @@ internal class CanvasGestureHandler(
                     if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
                 }
                 controller.shapeSnapper.release()
+                controller.geometryGuides.endInkStroke()
                 controller.inkStrokeEnded()
                 reportActivity(position, inking = false)
             }
 
             Mode.LASSO -> {
+                controller.geometryGuides.endInkStroke()
                 val points = engine.inputs.toList()
                 engine.cancelStroke()
                 ink.strokeEnded()
@@ -1015,7 +1073,32 @@ internal class CanvasGestureHandler(
 
             Mode.SHAPE -> {
                 val inserter = controller.shapeInserter
-                if (wasTap) {
+                if (inserter.style.kind.isVertexEditable) {
+                    if (wasTap) {
+                        val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
+                            (position - lastTapPosition).getDistance() <= touchSlop * 2f
+                        if (inserter.isDrawingVertices) {
+                            if (isDouble) {
+                                inserter.finishVertices()
+                            } else {
+                                controller.viewport.screenToPageMm(inkPageIndex, position)?.let {
+                                    inserter.addVertex(inkPageIndex, Point(it.x, it.y), free = primaryHeld)
+                                }
+                            }
+                        } else {
+                            val shape = shapeAt(position)
+                            when {
+                                shape != null -> controller.selectionManager.selectCustomElement(shape.first, shape.second)
+                                droppedSelection -> Unit
+                                else -> controller.viewport.screenToPageMm(inkPageIndex, downPosition)?.let {
+                                    inserter.addVertex(inkPageIndex, Point(it.x, it.y), free = primaryHeld)
+                                }
+                            }
+                        }
+                    } else if (!inserter.isDrawingVertices) {
+                        inserter.commit()
+                    }
+                } else if (wasTap) {
                     inserter.cancel()
                     // A tap on a shape selects it; one dropping a selection only drops it
                     val shape = shapeAt(position)
@@ -1031,9 +1114,25 @@ internal class CanvasGestureHandler(
             }
 
             Mode.SHAPE_HANDLE -> {
+                val handle = activeShapeHandle
+                activeShapeHandle = null
                 controller.shapeEditing.endHandle()
+                if (wasTap && handle is ShapeHandle.Vertex) {
+                    val isDoubleVertexTap = up.uptimeMillis - lastVertexTapTime <= doubleTapTimeout &&
+                        lastVertexTapIndex == handle.index
+                    if (isDoubleVertexTap) {
+                        controller.shapeEditing.deleteVertex(handle.index)
+                        lastVertexTapIndex = -1
+                        lastVertexTapTime = 0L
+                    } else {
+                        lastVertexTapIndex = handle.index
+                        lastVertexTapTime = up.uptimeMillis
+                    }
+                }
                 shapeForcedByFinger = false
             }
+
+            Mode.GUIDE_DRAG -> activeGuideHit = null
 
             Mode.PLACE_TAP -> {
                 if (wasTap) controller.placementManager.placeAt(position)
@@ -1118,6 +1217,7 @@ internal class CanvasGestureHandler(
         val onSelection = mode == Mode.SELECTION_MOVE
         when (mode) {
             Mode.INK, Mode.LASSO -> {
+                controller.geometryGuides.endInkStroke()
                 engine.cancelStroke()
                 ink.strokeEnded()
                 if (mode == Mode.INK) reportActivity(downPosition, inking = false, strokeCancelled = true)
@@ -1406,7 +1506,12 @@ internal class CanvasGestureHandler(
     }
 
     private fun addInkInput(change: PointerInputChange, screen: Offset, timeMs: Long, pressure: Float) {
-        val mm = controller.viewport.screenToPageMm(inkPageIndex, screen) ?: return
+        val projected = if (mode == Mode.INK) {
+            controller.geometryGuides.snapInkPoint(screen, controller.viewport.density)
+        } else {
+            screen
+        }
+        val mm = controller.viewport.screenToPageMm(inkPageIndex, projected) ?: return
         val toolType = when (change.type) {
             PointerType.Stylus, PointerType.Eraser -> InputToolType.STYLUS
             PointerType.Touch -> InputToolType.TOUCH

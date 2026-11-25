@@ -31,6 +31,7 @@ import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
+import io.github.valerioisufi.pageboard.model.shape.ShapeKind
 import io.github.valerioisufi.pageboard.model.text.TextChains
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -100,7 +101,11 @@ public class SelectionFrame(
     /** The ends of a line alone in the selection (start, end): its only handles, no frame drawn. */
     internal val lineEnds: List<Offset> = emptyList(),
     /** The middles of the sides of a shape alone in the selection (top, right, bottom, left), which resize it. */
-    internal val boxSides: List<Offset> = emptyList()
+    internal val boxSides: List<Offset> = emptyList(),
+    /** Vertices of a single selected polyline or free polygon, in screen pixels. */
+    internal val vertexHandles: List<Offset> = emptyList(),
+    /** Midpoints of edges of a single selected polyline or free polygon, which insert a new vertex. */
+    internal val edgeMidpoints: List<Offset> = emptyList()
 ) {
     public val center: Offset
         get() = Offset(corners.sumOf { it.x.toDouble() }.toFloat() / 4f, corners.sumOf { it.y.toDouble() }.toFloat() / 4f)
@@ -136,6 +141,8 @@ public class SelectionFrame(
                 else -> null
             }
         }
+        if (vertexHandles.isNotEmpty() && vertexAt(point, radius) != null) return Handle.VERTEX
+        if (edgeMidpoints.isNotEmpty() && edgeMidpointAt(point, radius) != null) return Handle.ADD_VERTEX
         if (boxSides.size == 4) {
             val side = boxSides.indices.firstOrNull { near(boxSides[it]) && !corners.any(::near) }
             when (side) {
@@ -158,11 +165,19 @@ public class SelectionFrame(
     internal fun cornerAt(point: Offset, radius: Float): Int? =
         corners.indices.firstOrNull { hypot(point.x - corners[it].x, point.y - corners[it].y) <= radius }
 
+    /** Index of the vertex handle under [point] within [radius] pixels, if any. */
+    internal fun vertexAt(point: Offset, radius: Float): Int? =
+        vertexHandles.indices.firstOrNull { hypot(point.x - vertexHandles[it].x, point.y - vertexHandles[it].y) <= radius }
+
+    /** Index of the edge midpoint handle under [point] within [radius] pixels, if any. */
+    internal fun edgeMidpointAt(point: Offset, radius: Float): Int? =
+        edgeMidpoints.indices.firstOrNull { hypot(point.x - edgeMidpoints[it].x, point.y - edgeMidpoints[it].y) <= radius }
+
     /**
      * A handle of the frame: the knob turning it, a corner, a side; the ends of a line alone
-     * ([START], [END]).
+     * ([START], [END]); or vertices and edge midpoints ([VERTEX], [ADD_VERTEX]).
      */
-    public enum class Handle { ROTATION, CORNER, LEFT, RIGHT, TOP, BOTTOM, START, END }
+    public enum class Handle { ROTATION, CORNER, LEFT, RIGHT, TOP, BOTTOM, START, END, VERTEX, ADD_VERTEX }
 
     public companion object {
         /**
@@ -217,13 +232,24 @@ public class SelectionFrame(
         private fun ofShape(mmToScreen: Matrix2D, element: CustomElement, value: ShapeElement, density: Float): SelectionFrame? {
             val box = Rect(element.x, element.y, element.x + element.width, element.y + element.height)
             val frame = of(mmToScreen, box, element.rotation, density, sideHandles = false, transformable = true) ?: return null
+            val shapeBox = ShapeBox(element.x, element.y, element.width, element.height, element.rotation)
             if (value.kind.isLine) {
-                val (start, end) = ShapeGeometry.lineEnds(ShapeBox(element.x, element.y, element.width, element.height, element.rotation))
+                val (start, end) = ShapeGeometry.lineEnds(shapeBox)
                 val ends = listOf(start, end).map { mmToScreen.mapPoint(it.x, it.y).let { p -> Offset(p.x, p.y) } }
                 return SelectionFrame(frame.corners, null, frame.rotationStemBase, emptyList(), false, mmToScreen, lineEnds = ends)
             }
             val c = frame.corners
             val sides = listOf((c[0] + c[1]) / 2f, (c[1] + c[2]) / 2f, (c[2] + c[3]) / 2f, (c[3] + c[0]) / 2f)
+            if (value.kind.isVertexEditable) {
+                val pts = ShapeGeometry.verticesInPage(shapeBox, value)
+                    .map { mmToScreen.mapPoint(it.x, it.y).let { p -> Offset(p.x, p.y) } }
+                val edgeCount = if (value.kind == ShapeKind.FREE_POLYGON) pts.size else (pts.size - 1).coerceAtLeast(0)
+                val midpoints = (0 until edgeCount).map { i -> (pts[i] + pts[(i + 1) % pts.size]) / 2f }
+                return SelectionFrame(
+                    c, frame.rotationHandle, frame.rotationStemBase, emptyList(), true, mmToScreen,
+                    boxSides = sides, vertexHandles = pts, edgeMidpoints = midpoints
+                )
+            }
             return SelectionFrame(c, frame.rotationHandle, frame.rotationStemBase, emptyList(), true, mmToScreen, boxSides = sides)
         }
 
@@ -424,6 +450,25 @@ internal object SelectionOverlay {
                         drawRoundRect(color = Color.White, topLeft = topLeft, size = size, cornerRadius = corner, style = Stroke(width = stroke))
                     }
                 }
+            }
+        }
+
+        // Edge midpoint handles (insert vertex) and vertex handles of polylines / free polygons
+        if (frame.edgeMidpoints.isNotEmpty()) {
+            val radius = 4.5f * density
+            val plusHalf = radius * 0.45f
+            for (mid in frame.edgeMidpoints) {
+                drawCircle(Color.White, radius = radius, center = mid)
+                drawCircle(primary.copy(alpha = 0.75f), radius = radius, center = mid, style = Stroke(width = stroke))
+                drawLine(primary, Offset(mid.x - plusHalf, mid.y), Offset(mid.x + plusHalf, mid.y), strokeWidth = stroke * 0.9f)
+                drawLine(primary, Offset(mid.x, mid.y - plusHalf), Offset(mid.x, mid.y + plusHalf), strokeWidth = stroke * 0.9f)
+            }
+        }
+        if (frame.vertexHandles.isNotEmpty()) {
+            val radius = FrameStyle.CORNER_HANDLE_DP * density
+            for (v in frame.vertexHandles) {
+                drawCircle(primary, radius = radius, center = v)
+                drawCircle(Color.White, radius = radius * 0.6f, center = v, style = Stroke(width = stroke * 1.2f))
             }
         }
     }

@@ -40,8 +40,8 @@ public final class io/github/valerioisufi/pageboard/canvas/PageboardColors {
 public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Companion;
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;ZZLjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun contains-3MmeM6k (JF)Z
 	public static synthetic fun contains-3MmeM6k$default (Lio/github/valerioisufi/pageboard/canvas/SelectionFrame;JFILjava/lang/Object;)Z
 	public final fun getCenter-F1C5BW0 ()J
@@ -54,6 +54,7 @@ public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame$Compan
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle : java/lang/Enum {
+	public static final field ADD_VERTEX Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static final field BOTTOM Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static final field CORNER Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static final field END Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
@@ -62,6 +63,7 @@ public final class io/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle
 	public static final field ROTATION Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static final field START Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static final field TOP Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
+	public static final field VERTEX Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
 	public static fun values ()[Lio/github/valerioisufi/pageboard/canvas/SelectionFrame$Handle;
@@ -364,6 +366,17 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/EditorPref
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/pageboard/canvas/controller/GeometryGuidesManager {
+	public static final field $stable I
+	public final fun getProtractor ()Lio/github/valerioisufi/pageboard/canvas/controller/ProtractorGuide;
+	public final fun getRuler ()Lio/github/valerioisufi/pageboard/canvas/controller/RulerGuide;
+	public final fun hideAll ()V
+	public final fun isProtractorVisible ()Z
+	public final fun isRulerVisible ()Z
+	public final fun toggleProtractor ()V
+	public final fun toggleRuler ()V
+}
+
 public final class io/github/valerioisufi/pageboard/canvas/controller/InkLatencyReport {
 	public static final field $stable I
 	public fun <init> (IIFFFFF)V
@@ -466,6 +479,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun getDocument ()Lio/github/valerioisufi/pageboard/model/Document;
 	public final fun getEngines ()Lio/github/valerioisufi/pageboard/canvas/render/PageboardEngines;
 	public final fun getFind ()Lio/github/valerioisufi/pageboard/canvas/controller/DocumentFind;
+	public final fun getGeometryGuides ()Lio/github/valerioisufi/pageboard/canvas/controller/GeometryGuidesManager;
 	public final fun getHistoryManager ()Lio/github/valerioisufi/pageboard/canvas/history/HistoryManager;
 	public final fun getInkLatency ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getLassoMode ()Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;
@@ -592,6 +606,46 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PlacementS
 	public final fun getPageIndex ()I
 }
 
+public final class io/github/valerioisufi/pageboard/canvas/controller/ProtractorGuide {
+	public static final field $stable I
+	public fun <init> (FFFF)V
+	public synthetic fun <init> (FFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (FFFF)Lio/github/valerioisufi/pageboard/canvas/controller/ProtractorGuide;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/ProtractorGuide;FFFFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/ProtractorGuide;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAngleDeg ()F
+	public final fun getCenterX ()F
+	public final fun getCenterY ()F
+	public final fun getRadiusPx ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/canvas/controller/RulerGuide {
+	public static final field $stable I
+	public fun <init> (FFFFF)V
+	public synthetic fun <init> (FFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun copy (FFFFF)Lio/github/valerioisufi/pageboard/canvas/controller/RulerGuide;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/canvas/controller/RulerGuide;FFFFFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/canvas/controller/RulerGuide;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAngleDeg ()F
+	public final fun getCenterX ()F
+	public final fun getCenterY ()F
+	public final fun getLengthPx ()F
+	public final fun getThicknessPx ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/canvas/controller/SelectionGroup {
 	public static final field $stable I
 	public fun <init> ()V
@@ -657,19 +711,23 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeEditi
 	public final fun changeKind (Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;I)V
 	public static synthetic fun changeKind$default (Lio/github/valerioisufi/pageboard/canvas/controller/ShapeEditing;Lio/github/valerioisufi/pageboard/model/shape/ShapeKind;IILjava/lang/Object;)V
 	public final fun convertSelectedStrokeToShape ()Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun deleteVertex (I)Z
 	public final fun getCanConvertSelectedStroke ()Z
 	public final fun getHandleDraft ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeDraft;
 	public final fun getSelectedShapes ()Ljava/util/List;
 	public final fun restyle (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateGeometry (Lkotlin/jvm/functions/Function1;)V
 	public final fun updateLabel (Ljava/lang/String;)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/ShapeInserter {
 	public static final field $stable I
+	public final fun finishVertices ()Lio/github/valerioisufi/pageboard/model/CustomElement;
 	public final fun getDraft ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeDraft;
 	public final fun getStyle ()Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolStyle;
 	public final fun insertAt (ILio/github/valerioisufi/pageboard/model/geometry/Point;)Lio/github/valerioisufi/pageboard/model/CustomElement;
 	public final fun insertInView ()Lio/github/valerioisufi/pageboard/model/CustomElement;
+	public final fun isDrawingVertices ()Z
 	public final fun updateStyle (Lio/github/valerioisufi/pageboard/canvas/controller/ShapeToolStyle;)V
 }
 

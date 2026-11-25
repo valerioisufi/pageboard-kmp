@@ -354,6 +354,57 @@ class ShapeToolTest {
         )
     }
 
+    @Test
+    fun multiTapCreatesPolylineAndFreePolygonWithVertexEditingAndDeletion() = withCanvas { scene, controller ->
+        controller.shapeInserter.updateStyle(ShapeToolStyle(kind = ShapeKind.FREE_POLYGON))
+        controller.selectTool(Tool.SHAPES)
+        val inserter = controller.shapeInserter
+        assertEquals(false, inserter.addVertex(0, Point(20f, 20f), free = true))
+        assertEquals(false, inserter.addVertex(0, Point(80f, 20f), free = true))
+        assertEquals(false, inserter.addVertex(0, Point(50f, 70f), free = true))
+        assertTrue(inserter.isDrawingVertices)
+        // Tapping near the first vertex closes the free polygon
+        assertEquals(true, inserter.addVertex(0, Point(20.5f, 20.5f), free = true))
+        assertEquals(false, inserter.isDrawingVertices)
+
+        val added = shapes(controller).single()
+        val initialValue = ShapeElementType.decode(added)!!
+        assertEquals(ShapeKind.FREE_POLYGON, initialValue.kind)
+        assertEquals(3, initialValue.vertices!!.size)
+
+        // Add a 4th vertex via midpoint handle and drag it
+        controller.selectionManager.selectCustomElement(0, added)
+        controller.shapeEditing.beginHandle(io.github.valerioisufi.pageboard.canvas.controller.ShapeHandle.AddVertex(0))
+        controller.shapeEditing.dragHandle(Point(50f, 10f), forced = false, fromCenter = false, free = true)
+        controller.shapeEditing.endHandle()
+        val withFour = ShapeElementType.decode(shapes(controller).single())!!
+        assertEquals(4, withFour.vertices!!.size)
+
+        // Delete the added vertex
+        assertTrue(controller.shapeEditing.deleteVertex(1))
+        val backToThree = ShapeElementType.decode(shapes(controller).single())!!
+        assertEquals(3, backToThree.vertices!!.size)
+        scene.render()
+    }
+
+    @Test
+    fun geometryParamsAndLabelUpdateSelectedShapes() = withCanvas { _, controller ->
+        val gridEl = controller.customElementManager.add(
+            ShapeElementType,
+            ShapeElement(ShapeKind.GRID, BLACK, 0.5f, geometry = io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams(gridCols = 3, gridRows = 3)),
+            0,
+            Rect(20f, 20f, 80f, 80f),
+            select = true
+        )!!
+        controller.selectionManager.selectCustomElement(0, gridEl)
+        controller.shapeEditing.updateGeometry { it.copy(gridCols = 5, gridRows = 4) }
+        controller.shapeEditing.updateLabel("Table A")
+        val updated = ShapeElementType.decode(shapes(controller).single())!!
+        assertEquals(5, updated.geometry!!.gridCols)
+        assertEquals(4, updated.geometry!!.gridRows)
+        assertEquals("Table A", updated.label)
+    }
+
     private fun PageboardController.screen(xMm: Float, yMm: Float): Offset =
         viewport.pageMmToScreen(0)!!.mapPoint(xMm, yMm).let { Offset(it.x, it.y) }
 

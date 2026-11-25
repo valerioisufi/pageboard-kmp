@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -37,6 +39,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.canvas.controller.ProtractorGuide
+import io.github.valerioisufi.pageboard.canvas.controller.RulerGuide
 import io.github.valerioisufi.pageboard.canvas.controller.ShapeDraft
 import io.github.valerioisufi.pageboard.canvas.geometry.mapRect
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
@@ -48,7 +52,10 @@ import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlinx.coroutines.flow.first
 
 /**
@@ -339,6 +346,120 @@ private fun DrawScope.drawLive(controller: PageboardController, live: CanvasLive
             }
         }
     }
+
+    controller.geometryGuides.ruler?.let { drawRulerGuide(controller, it, labels) }
+    controller.geometryGuides.protractor?.let { drawProtractorGuide(controller, it, labels) }
+}
+
+private fun DrawScope.drawRulerGuide(controller: PageboardController, ruler: RulerGuide, labels: TextMeasurer) {
+    val density = controller.viewport.density
+    val primary = Color(controller.themeColors.primaryColor)
+    val stroke = 1.5f * density
+    val pageIndex = controller.viewport.mostVisiblePageIndex() ?: 0
+    val pxPerMm = controller.viewport.pixelsPerMm(pageIndex).coerceAtLeast(1f)
+    translate(ruler.centerX, ruler.centerY) {
+        rotate(ruler.angleDeg, pivot = Offset.Zero) {
+            val halfW = ruler.lengthPx / 2f
+            val halfH = ruler.thicknessPx / 2f
+            drawRoundRect(
+                color = Color(0xCCFFFFFF),
+                topLeft = Offset(-halfW, -halfH),
+                size = Size(ruler.lengthPx, ruler.thicknessPx),
+                cornerRadius = CornerRadius(4f * density)
+            )
+            drawRoundRect(
+                color = primary.copy(alpha = 0.85f),
+                topLeft = Offset(-halfW, -halfH),
+                size = Size(ruler.lengthPx, ruler.thicknessPx),
+                cornerRadius = CornerRadius(4f * density),
+                style = Stroke(width = stroke)
+            )
+            var mm = 0
+            while (mm * pxPerMm <= ruler.lengthPx - 12f * density) {
+                val x = -halfW + 6f * density + mm * pxPerMm
+                val tickH = when {
+                    mm % 10 == 0 -> 14f * density
+                    mm % 5 == 0 -> 9f * density
+                    else -> 5f * density
+                }
+                drawLine(Color(0xFF444444), Offset(x, -halfH), Offset(x, -halfH + tickH), strokeWidth = 1f * density)
+                drawLine(Color(0xFF444444), Offset(x, halfH), Offset(x, halfH - tickH), strokeWidth = 1f * density)
+                mm++
+            }
+            // Rotation handles at both ends
+            val handleOffset = halfW - 18f * density
+            for (hx in listOf(-handleOffset, handleOffset)) {
+                drawCircle(Color.White, radius = 7f * density, center = Offset(hx, 0f))
+                drawCircle(primary, radius = 7f * density, center = Offset(hx, 0f), style = Stroke(width = stroke))
+            }
+        }
+    }
+    val degText = "${ruler.angleDeg.roundToInt()}°"
+    val badge = labels.measure(degText, TextStyle(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium))
+    val pad = 4f * density
+    drawRoundRect(
+        color = Color(0xD9303030),
+        topLeft = Offset(ruler.centerX - badge.size.width / 2f - pad, ruler.centerY - badge.size.height / 2f - pad / 2f),
+        size = Size(badge.size.width + pad * 2f, badge.size.height + pad),
+        cornerRadius = CornerRadius(4f * density)
+    )
+    drawText(badge, topLeft = Offset(ruler.centerX - badge.size.width / 2f, ruler.centerY - badge.size.height / 2f))
+}
+
+private fun DrawScope.drawProtractorGuide(controller: PageboardController, protractor: ProtractorGuide, labels: TextMeasurer) {
+    val density = controller.viewport.density
+    val primary = Color(controller.themeColors.primaryColor)
+    val stroke = 1.5f * density
+    val r = protractor.radiusPx
+    translate(protractor.centerX, protractor.centerY) {
+        rotate(protractor.angleDeg, pivot = Offset.Zero) {
+            drawArc(
+                color = Color(0xCCFFFFFF),
+                startAngle = 180f,
+                sweepAngle = 180f,
+                useCenter = true,
+                topLeft = Offset(-r, -r),
+                size = Size(r * 2f, r * 2f)
+            )
+            drawArc(
+                color = primary.copy(alpha = 0.85f),
+                startAngle = 180f,
+                sweepAngle = 180f,
+                useCenter = true,
+                topLeft = Offset(-r, -r),
+                size = Size(r * 2f, r * 2f),
+                style = Stroke(width = stroke)
+            )
+            for (deg in 0..180 step 5) {
+                val rad = deg * PI.toFloat() / 180f
+                val cosA = cos(rad)
+                val sinA = sin(rad)
+                val tickLen = when {
+                    deg % 45 == 0 -> 14f * density
+                    deg % 15 == 0 -> 10f * density
+                    else -> 5f * density
+                }
+                val outer = Offset(r * cosA, -r * sinA)
+                val inner = Offset((r - tickLen) * cosA, -(r - tickLen) * sinA)
+                drawLine(Color(0xFF444444), outer, inner, strokeWidth = 1f * density)
+            }
+            // Center crosshair and top rotation knob
+            drawLine(primary, Offset(-8f * density, 0f), Offset(8f * density, 0f), strokeWidth = stroke)
+            drawLine(primary, Offset(0f, -8f * density), Offset(0f, 4f * density), strokeWidth = stroke)
+            drawCircle(Color.White, radius = 7f * density, center = Offset(0f, -r))
+            drawCircle(primary, radius = 7f * density, center = Offset(0f, -r), style = Stroke(width = stroke))
+        }
+    }
+    val degText = "${protractor.angleDeg.roundToInt()}°"
+    val badge = labels.measure(degText, TextStyle(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium))
+    val pad = 4f * density
+    drawRoundRect(
+        color = Color(0xD9303030),
+        topLeft = Offset(protractor.centerX - badge.size.width / 2f - pad, protractor.centerY - protractor.radiusPx * 0.45f - badge.size.height / 2f),
+        size = Size(badge.size.width + pad * 2f, badge.size.height + pad),
+        cornerRadius = CornerRadius(4f * density)
+    )
+    drawText(badge, topLeft = Offset(protractor.centerX - badge.size.width / 2f, protractor.centerY - protractor.radiusPx * 0.45f - badge.size.height / 2f + pad / 2f))
 }
 
 /**

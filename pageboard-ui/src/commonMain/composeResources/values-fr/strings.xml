@@ -286,4 +286,23 @@
     <string name="find_none">Aucun résultat</string>
     <string name="find_previous">Précédent</string>
     <string name="find_next">Suivant</string>
+    <string name="shape_polyline">Polyligne</string>
+    <string name="shape_free_polygon">Polygone</string>
+    <string name="shape_axes">Axes</string>
+    <string name="shape_grid">Grille</string>
+    <string name="shape_arc">Arc</string>
+    <string name="shape_angle">Angle</string>
+    <string name="shape_action_convert">Convertir en forme</string>
+    <string name="shape_action_label">Étiquette</string>
+    <string name="shape_label_hint">Texte dans la forme</string>
+    <string name="shape_snap_to_editable">Convertir directement en forme</string>
+    <string name="shape_snap_to_editable_hint">Remplacer les traits ajustés par des formes modifiables</string>
+    <string name="shape_geometry_rows">Lignes</string>
+    <string name="shape_geometry_cols">Colonnes</string>
+    <string name="shape_geometry_ticks">Graduations</string>
+    <string name="shape_geometry_start_angle">Angle de départ</string>
+    <string name="shape_geometry_sweep_angle">Amplitude</string>
+    <string name="shape_geometry_angle_label">Afficher l’angle</string>
+    <string name="command_ruler">Règle</string>
+    <string name="command_protractor">Rapporteur</string>
 </resources>

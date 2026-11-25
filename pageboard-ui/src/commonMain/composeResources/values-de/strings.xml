@@ -286,4 +286,23 @@
     <string name="find_none">Keine Treffer</string>
     <string name="find_previous">Vorheriger</string>
     <string name="find_next">Nächster</string>
+    <string name="shape_polyline">Polylinie</string>
+    <string name="shape_free_polygon">Polygon</string>
+    <string name="shape_axes">Achsen</string>
+    <string name="shape_grid">Raster</string>
+    <string name="shape_arc">Bogen</string>
+    <string name="shape_angle">Winkel</string>
+    <string name="shape_action_convert">In Form umwandeln</string>
+    <string name="shape_action_label">Formbeschriftung</string>
+    <string name="shape_label_hint">Text in Form</string>
+    <string name="shape_snap_to_editable">Direkt in Form einrasten</string>
+    <string name="shape_snap_to_editable_hint">Erkannte Striche durch bearbeitbare Formen ersetzen</string>
+    <string name="shape_geometry_rows">Zeilen</string>
+    <string name="shape_geometry_cols">Spalten</string>
+    <string name="shape_geometry_ticks">Achsenteilstriche</string>
+    <string name="shape_geometry_start_angle">Startwinkel</string>
+    <string name="shape_geometry_sweep_angle">Öffnungswinkel</string>
+    <string name="shape_geometry_angle_label">Winkel anzeigen</string>
+    <string name="command_ruler">Lineal</string>
+    <string name="command_protractor">Winkelmesser</string>
 </resources>
