@@ -19,6 +19,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -119,9 +120,16 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
     val problems by collaboration.problems.collectAsState(emptyList())
     var check by remember { mutableStateOf<Pair<LanCheck?, Boolean>?>(null) }
     val parsed = remember(text) { Invitation.parse(text) }
+    // A folder already in the library, inside another shared folder: it stays where it is
+    var inPlace by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(parsed) { inPlace = parsed?.let { collaboration.placeOf(it) } }
     val join: () -> Unit = {
         scope.launch {
-            val root = if (parsed?.kind == InvitationKind.LIBRARY && intoLibrary) SpaceRoot.Library else SpaceRoot.NewFolder
+            val root = when {
+                parsed?.kind == InvitationKind.LIBRARY && intoLibrary -> SpaceRoot.Library
+                inPlace != null -> SpaceRoot.InPlace
+                else -> SpaceRoot.NewFolder
+            }
             val invitation = collaboration.join(text, root)
             invalid = invitation == null
             joined = invitation
@@ -166,6 +174,7 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
                         modifier = Modifier.fillMaxWidth()
                     )
                     if (parsed?.kind == InvitationKind.LIBRARY) LibraryRootChoice(parsed.title, intoLibrary) { intoLibrary = it }
+                    inPlace?.let { Notice(PageboardIcons.Info, stringResource(Res.string.sync_join_in_place, it)) }
                 }
             }
         },

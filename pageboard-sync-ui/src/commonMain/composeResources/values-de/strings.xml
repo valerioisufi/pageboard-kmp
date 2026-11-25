@@ -115,4 +115,12 @@
     <string name="sync_only_me">Nur ich</string>
     <string name="sync_editors_too">Auch Bearbeiter</string>
     <string name="sync_keeps_access">%1$s behält den Zugriff über %2$s: Die Person wird nur hier entfernt.</string>
+    <string name="sync_open">Öffnen</string>
+    <string name="sync_stays_through">Es bleibt über %1$s geteilt.</string>
+    <string name="sync_keep_through">Du behältst es über %1$s.</string>
+    <string name="sync_keep_own_sharing">Diese bleiben für sich geteilt: %1$s.</string>
+    <string name="sync_join_in_place">%1$s ist schon in deiner Bibliothek: Er bleibt, wo er ist.</string>
+    <string name="sync_waiting_unknown">Einige Änderungen warten hier: Sie kommen von einem Gerät, das hier noch nicht bekannt ist, und werden übernommen, sobald sein Zugriff ankommt.</string>
+    <string name="sync_waiting_disagree">Einige Änderungen warten hier: Dieses Element und ein Ordner darum nennen das Gerät, das sie gemacht hat, verschieden, daher werden sie von keinem übernommen.</string>
+    <string name="sync_waiting_earlier">Einige Änderungen von %1$s warten hier auf frühere, die noch nicht angekommen sind.</string>
 </resources>

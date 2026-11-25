@@ -115,4 +115,12 @@
     <string name="sync_only_me">Solo io</string>
     <string name="sync_editors_too">Anche gli editor</string>
     <string name="sync_keeps_access">%1$s mantiene l’accesso tramite %2$s: viene rimosso solo da qui.</string>
+    <string name="sync_open">Apri</string>
+    <string name="sync_stays_through">Resta condiviso tramite %1$s.</string>
+    <string name="sync_keep_through">Lo tieni tramite %1$s.</string>
+    <string name="sync_keep_own_sharing">Questi restano condivisi per conto loro: %1$s.</string>
+    <string name="sync_join_in_place">%1$s è già nella tua libreria: resta dov’è.</string>
+    <string name="sync_waiting_unknown">Alcune modifiche aspettano qui: vengono da un dispositivo non ancora noto qui, e sono prese appena arriva il suo accesso.</string>
+    <string name="sync_waiting_disagree">Alcune modifiche aspettano qui: questo elemento e una cartella che lo contiene indicano in modo diverso il dispositivo che le ha fatte, quindi non sono prese da nessuno dei due.</string>
+    <string name="sync_waiting_earlier">Alcune modifiche di %1$s aspettano qui quelle precedenti, non ancora arrivate.</string>
 </resources>

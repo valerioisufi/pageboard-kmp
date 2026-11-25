@@ -18,6 +18,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.JoinStatus
 import io.github.valerioisufi.pageboard.sync.lan.LanDevice
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
@@ -159,7 +160,8 @@ class SharingScreenshotTest {
 
     /**
      * A note shared on its own and in a shared folder (docs/plans/shared-access.md): its own people,
-     * one of them also through the folder, and the people of the folder, read only here.
+     * one of them also through the folder, and the people of the folder, read only here, with the
+     * folder's own dialog to open; changes of a device not known here yet waiting.
      */
     @Test
     fun twoSources() = capture("share-two-sources", width = 608, height = 900) {
@@ -174,7 +176,8 @@ class SharingScreenshotTest {
                     members = listOf(members[0], members[1].copy(me = true, alsoThrough = listOf("Physics"))),
                     offline = false,
                     otherVersion = false,
-                    sources = listOf(SharingSource("Physics", listOf(members[0], members[1].copy(me = true), members[2])))
+                    sources = listOf(SharingSource("Physics", listOf(members[0], members[1].copy(me = true), members[2]), target = ShareTarget.Folder("physics", "Physics"))),
+                    waiting = listOf(SharingWaiting(WaitingChanges.Reason.UNKNOWN_DEVICE))
                 ),
                 actions = noActions,
                 name = "Marta’s iPad",
@@ -203,7 +206,7 @@ class SharingScreenshotTest {
                     offline = false,
                     otherVersion = false,
                     kind = InvitationKind.FOLDER,
-                    sources = listOf(SharingSource(null, listOf(members[0].copy(me = true), SharingPerson("phone2", "Valerio’s phone", Role.EDITOR, InkPalette.Orange)))),
+                    sources = listOf(SharingSource(null, listOf(members[0].copy(me = true), SharingPerson("phone2", "Valerio’s phone", Role.EDITOR, InkPalette.Orange)), target = ShareTarget.Folder(null, "Library"))),
                     editorsShareInside = false
                 ),
                 actions = noActions,

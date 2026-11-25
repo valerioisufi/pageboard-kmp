@@ -115,4 +115,12 @@
     <string name="sync_only_me">自分だけ</string>
     <string name="sync_editors_too">編集者も</string>
     <string name="sync_keeps_access">%1$s は %2$s 経由でアクセスできます：ここからのみ削除されます。</string>
+    <string name="sync_open">開く</string>
+    <string name="sync_stays_through">%1$s 経由で共有されたままです。</string>
+    <string name="sync_keep_through">%1$s 経由で引き続き利用できます。</string>
+    <string name="sync_keep_own_sharing">次の項目は個別に共有されたままです：%1$s。</string>
+    <string name="sync_join_in_place">%1$s はすでにライブラリにあります：今の場所にそのまま残ります。</string>
+    <string name="sync_waiting_unknown">一部の変更がここで待機しています：まだこのデバイスが知らないデバイスからの変更で、そのアクセスが届くと反映されます。</string>
+    <string name="sync_waiting_disagree">一部の変更がここで待機しています：この項目とそれを含むフォルダが、変更したデバイスを異なるものとして示しているため、どちらからも反映されません。</string>
+    <string name="sync_waiting_earlier">%1$s の一部の変更が、まだ届いていない以前の変更をここで待っています。</string>
 </resources>

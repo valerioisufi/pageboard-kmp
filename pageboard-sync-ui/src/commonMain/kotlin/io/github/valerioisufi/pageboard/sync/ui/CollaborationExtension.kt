@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +40,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
 import io.github.valerioisufi.pageboard.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.pageboard.platform.DeviceProfile
 import io.github.valerioisufi.pageboard.sync.InvitationGrant
+import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
 import io.github.valerioisufi.pageboard.sync.protocol.Role
@@ -189,9 +191,18 @@ private const val ROUTES_MS = 1_000L
  * Shares the document, or shows its sharing (see [ShareContent]): gathers what it shows from
  * [collaboration] and does there what the user chooses; ending the sharing or leaving the
  * document is asked first. A new role or approval of the invitation gives a new one in its place.
+ * A folder around the item, opened from its sharing, takes its place (each source is managed and
+ * left in its own dialog, see `docs/plans/shared-access.md`).
  */
 @Composable
 internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDismiss: () -> Unit) {
+    var shown by remember(target) { mutableStateOf(target) }
+    key(shown) { ShareTargetDialog(collaboration, shown, onOpen = { shown = it }, onDismiss = onDismiss) }
+}
+
+/** The sharing dialog of [target] (see [ShareDialog]); [onOpen] shows another source of its access instead. */
+@Composable
+private fun ShareTargetDialog(collaboration: Collaboration, target: ShareTarget, onOpen: (ShareTarget) -> Unit, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     val title = target.title
     // A folder has its identifier of shared folder once shared (see Collaboration.shareFolder)
@@ -216,6 +227,12 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     // Who has the item through what (its own sharing, the folders around it), and their names
     var access by remember { mutableStateOf<ItemAccess?>(null) }
     var titles by remember { mutableStateOf<Map<String, String?>>(emptyMap()) }
+    // Where each folder of the access is in this library (to open its dialog), `null` when it is not
+    var roots by remember { mutableStateOf<Map<String, Result<String?>?>>(emptyMap()) }
+    // The changes of the others waiting here, and why
+    var waiting by remember { mutableStateOf<List<WaitingChanges>>(emptyList()) }
+    // For a folder: what keeps a sharing of its own inside it, said before ending or leaving it
+    var sharedInside by remember { mutableStateOf<List<String>>(emptyList()) }
     // A member to remove who keeps an access through another source: asked first
     var confirmRemove by remember { mutableStateOf<Pair<SharingPerson, List<String>>?>(null) }
     var refusedBy by remember(target) { mutableStateOf<Result<String?>?>(null) }
@@ -232,6 +249,7 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
             routes = membership?.members.orEmpty().mapNotNull { member ->
                 collaboration.routeOf(documentId, member.device)?.let { member.device to it }
             }.toMap()
+            waiting = if (documentId.isEmpty()) emptyList() else collaboration.waitingOf(documentId)
             delay(ROUTES_MS)
         }
     }
@@ -239,13 +257,19 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     LaunchedEffect(documentId, membership, version) {
         val found = if (documentId.isEmpty()) null else collaboration.accessOf(documentId)
         access = found
-        titles = found?.sources.orEmpty().filterIsInstance<AccessSource.Space>().associate { it.spaceId to collaboration.titleOfSpace(it.spaceId) }
+        val spaces = found?.sources.orEmpty().filterIsInstance<AccessSource.Space>()
+        titles = spaces.associate { it.spaceId to collaboration.titleOfSpace(it.spaceId) }
+        roots = spaces.associate { it.spaceId to collaboration.rootOfSpace(it.spaceId) }
+    }
+    LaunchedEffect(confirmStop) {
+        sharedInside = if (confirmStop && folder != null && documentId.isNotEmpty()) collaboration.sharedInside(documentId) else emptyList()
     }
     // The source the dialog manages: the item's own sharing, else its innermost folder; the others read only
     val sources = access?.sources.orEmpty()
     val managed = sources.firstOrNull()
     fun titleOf(source: AccessSource): String? = (source as? AccessSource.Space)?.let { titles[it.spaceId] }
     val libraryName = stringResource(Res.string.sync_the_library)
+    val libraryTitle = stringResource(Res.string.sync_library_title)
     fun nameOf(source: AccessSource): String = titleOf(source) ?: libraryName
 
     val state = SharingState(
@@ -260,10 +284,17 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
             SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me, route = routes[member.device], alsoThrough = also)
         },
         sources = sources.drop(1).filter { managed != null }.map { source ->
+            val root = (source as? AccessSource.Space)?.let { roots[it.spaceId] }
             SharingSource(titleOf(source), source.membership.members.map { member ->
                 val me = member.device == collaboration.device
                 SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me)
-            })
+            }, target = root?.let { ShareTarget.Folder(it.getOrNull(), titleOf(source) ?: libraryTitle) })
+        },
+        // Ending: the people of the other sources keep it; leaving: this device keeps it through the ones it is in
+        stays = sources.drop(1).filter { managed != null && (isOwner || it.membership.memberOf(collaboration.device) != null) }.map(::nameOf),
+        sharedInside = sharedInside,
+        waiting = waiting.map { changes ->
+            SharingWaiting(changes.reason, changes.device?.let { device -> access?.members?.firstOrNull { it.device == device }?.name })
         },
         editorsShareInside = if (folder != null && isOwner && shareId != null) collaboration.editorsShareInside(documentId) else null,
         refusedBy = refusedBy?.getOrNull(),
@@ -321,6 +352,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
                 }
                 scope.launch { collaboration.removeMember(documentId, device) }
             }
+
+            override fun open(target: ShareTarget) = onOpen(target)
 
             override fun setEditorsShareInside(editors: Boolean) {
                 scope.launch {
@@ -383,6 +416,8 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     if (confirmStop) {
         StopSharingDialog(
             isOwner = isOwner,
+            stays = state.stays,
+            sharedInside = sharedInside,
             onConfirm = {
                 confirmStop = false
                 scope.launch { collaboration.stopSharing(documentId) }
@@ -392,17 +427,25 @@ internal fun ShareDialog(collaboration: Collaboration, target: ShareTarget, onDi
     }
 }
 
-/** Ending the sharing (the owner) or leaving the document (the others), asked first: each keeps a copy. */
+/**
+ * Ending the sharing (the owner) or leaving the document (the others), asked first: each keeps a
+ * copy. What stays is said: the other sources the item stays shared through ([stays]), for a
+ * folder the items inside it with a sharing of their own ([sharedInside]).
+ */
 @Composable
-private fun StopSharingDialog(isOwner: Boolean, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+private fun StopSharingDialog(isOwner: Boolean, stays: List<String>, sharedInside: List<String>, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     val label = stringResource(if (isOwner) Res.string.sync_end_sharing else Res.string.sync_leave)
     AdaptiveDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(PageboardIcons.LogOut, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(label, textAlign = TextAlign.Center) },
         text = {
+            val through = stays.takeIf { it.isNotEmpty() }?.joinToString()?.let {
+                stringResource(if (isOwner) Res.string.sync_stays_through else Res.string.sync_keep_through, it)
+            }
+            val inside = sharedInside.takeIf { it.isNotEmpty() }?.let { stringResource(Res.string.sync_keep_own_sharing, it.joinToString()) }
             Text(
-                stringResource(if (isOwner) Res.string.sync_end_confirm else Res.string.sync_leave_confirm),
+                listOfNotNull(stringResource(if (isOwner) Res.string.sync_end_confirm else Res.string.sync_leave_confirm), through, inside).joinToString(" "),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )

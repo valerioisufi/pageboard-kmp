@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
 import io.github.valerioisufi.pageboard.sync.protocol.Route
@@ -82,7 +83,18 @@ internal data class SharingPerson(
  * `docs/plans/shared-access.md`): a shared folder around it ([title], `null` for the library), or,
  * for the dialog of a folder, the folders around it; its [people], read only here.
  */
-internal data class SharingSource(val title: String?, val people: List<SharingPerson>)
+internal data class SharingSource(
+    val title: String?,
+    val people: List<SharingPerson>,
+    /** Its own sharing dialog, where it is managed and left; `null` when it is not in this library. */
+    val target: ShareTarget.Folder? = null
+)
+
+/**
+ * Changes of another device waiting on this one, and why (see `SyncEngine.waitingOf`): [name] is
+ * the device that made them, when known.
+ */
+internal data class SharingWaiting(val reason: WaitingChanges.Reason, val name: String? = null)
 
 /** The invitation of a document: its [link] (and its QR code), the [role] of who joins with it, whether the owner approves them first. */
 internal data class SharingInvitation(val link: String, val role: Role, val approval: Boolean)
@@ -123,7 +135,13 @@ internal class SharingState(
     /** Sharing was refused because the folder around it does not allow it: the name of that folder (`null` for the library). */
     val refusedBy: String? = null,
     /** Whether [refusedBy] is said (a refusal by the folder around it). */
-    val refusedByOwner: Boolean = false
+    val refusedByOwner: Boolean = false,
+    /** The other sources the item stays shared through when the one managed here ends or is left, named. */
+    val stays: List<String> = emptyList(),
+    /** For a folder or the library: the notes and folders inside it with a sharing of their own, which stay shared. */
+    val sharedInside: List<String> = emptyList(),
+    /** The changes of other devices waiting here, and why. */
+    val waiting: List<SharingWaiting> = emptyList()
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -155,6 +173,9 @@ internal interface SharingActions {
 
     /** The owner of a shared folder lets its editors share what is inside it too, or not. */
     fun setEditorsShareInside(editors: Boolean) = Unit
+
+    /** Shows the sharing of another source of the access instead (a folder around the item). */
+    fun open(target: ShareTarget) = Unit
 
     fun close()
 }
@@ -283,6 +304,14 @@ private fun Notices(state: SharingState, actions: SharingActions) {
         Notice(PageboardIcons.TriangleAlert, stringResource(Res.string.sync_other_version), error = true)
     }
     ProblemNotices(state.problems)
+    for (waiting in state.waiting.distinct()) {
+        val text = when (waiting.reason) {
+            WaitingChanges.Reason.DEVICES_DISAGREE -> stringResource(Res.string.sync_waiting_disagree)
+            WaitingChanges.Reason.EARLIER_MISSING -> stringResource(Res.string.sync_waiting_earlier, waiting.name ?: stringResource(Res.string.sync_device_unnamed))
+            WaitingChanges.Reason.UNKNOWN_DEVICE -> stringResource(Res.string.sync_waiting_unknown)
+        }
+        Notice(PageboardIcons.Info, text)
+    }
     if (state.shared && !state.offline) {
         TextButton(onClick = actions::check) { Text(stringResource(Res.string.sync_check)) }
     }
@@ -449,13 +478,17 @@ private fun People(
         if (state.members.size <= 1 && state.sources.all { it.people.isEmpty() }) {
             Text(stringResource(Res.string.sync_nobody), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        // The other sources of the access, read only here: managed in their own dialogs
+        // The other sources of the access, read only here: managed (and left) in their own dialogs
         for (source in state.sources) {
-            Text(
-                source.title?.let { stringResource(Res.string.sync_through_folder, it) } ?: stringResource(Res.string.sync_through_library),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    source.title?.let { stringResource(Res.string.sync_through_folder, it) } ?: stringResource(Res.string.sync_through_library),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                source.target?.let { target -> TextButton(onClick = { actions.open(target) }) { Text(stringResource(Res.string.sync_open)) } }
+            }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 for (person in source.people) MemberRow(person, ownerView = false, actions = actions)
             }

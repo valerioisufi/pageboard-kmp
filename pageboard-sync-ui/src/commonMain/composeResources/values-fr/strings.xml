@@ -115,4 +115,12 @@
     <string name="sync_only_me">Moi seul</string>
     <string name="sync_editors_too">Aussi les éditeurs</string>
     <string name="sync_keeps_access">%1$s garde l’accès par %2$s : la personne n’est retirée que d’ici.</string>
+    <string name="sync_open">Ouvrir</string>
+    <string name="sync_stays_through">Il reste partagé par %1$s.</string>
+    <string name="sync_keep_through">Vous le gardez par %1$s.</string>
+    <string name="sync_keep_own_sharing">Ceux-ci restent partagés à part : %1$s.</string>
+    <string name="sync_join_in_place">%1$s est déjà dans votre bibliothèque : il reste où il est.</string>
+    <string name="sync_waiting_unknown">Des modifications attendent ici : elles viennent d’un appareil pas encore connu ici, et sont prises dès que son accès arrive.</string>
+    <string name="sync_waiting_disagree">Des modifications attendent ici : cet élément et un dossier qui le contient nomment différemment l’appareil qui les a faites, elles ne sont donc prises d’aucun.</string>
+    <string name="sync_waiting_earlier">Des modifications de %1$s attendent ici des modifications précédentes pas encore arrivées.</string>
 </resources>

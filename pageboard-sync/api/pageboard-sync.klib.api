@@ -493,4 +493,30 @@ final class io.github.valerioisufi.pageboard.sync/SyncEngine { // io.github.vale
     final suspend fun stop() // io.github.valerioisufi.pageboard.sync/SyncEngine.stop|stop(){}[0]
     final suspend fun unshare(kotlin/String) // io.github.valerioisufi.pageboard.sync/SyncEngine.unshare|unshare(kotlin.String){}[0]
     final suspend fun updatePresence(io.github.valerioisufi.pageboard.sync/Presence) // io.github.valerioisufi.pageboard.sync/SyncEngine.updatePresence|updatePresence(io.github.valerioisufi.pageboard.sync.Presence){}[0]
+    final suspend fun waitingOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.sync/WaitingChanges> // io.github.valerioisufi.pageboard.sync/SyncEngine.waitingOf|waitingOf(kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.pageboard.sync/WaitingChanges { // io.github.valerioisufi.pageboard.sync/WaitingChanges|null[0]
+    final val count // io.github.valerioisufi.pageboard.sync/WaitingChanges.count|{}count[0]
+        final fun <get-count>(): kotlin/Int // io.github.valerioisufi.pageboard.sync/WaitingChanges.count.<get-count>|<get-count>(){}[0]
+    final val device // io.github.valerioisufi.pageboard.sync/WaitingChanges.device|{}device[0]
+        final fun <get-device>(): kotlin/String? // io.github.valerioisufi.pageboard.sync/WaitingChanges.device.<get-device>|<get-device>(){}[0]
+    final val itemId // io.github.valerioisufi.pageboard.sync/WaitingChanges.itemId|{}itemId[0]
+        final fun <get-itemId>(): kotlin/String // io.github.valerioisufi.pageboard.sync/WaitingChanges.itemId.<get-itemId>|<get-itemId>(){}[0]
+    final val reason // io.github.valerioisufi.pageboard.sync/WaitingChanges.reason|{}reason[0]
+        final fun <get-reason>(): io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason // io.github.valerioisufi.pageboard.sync/WaitingChanges.reason.<get-reason>|<get-reason>(){}[0]
+    final val replica // io.github.valerioisufi.pageboard.sync/WaitingChanges.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.pageboard.sync/WaitingChanges.replica.<get-replica>|<get-replica>(){}[0]
+
+    final enum class Reason : kotlin/Enum<io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason> { // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason|null[0]
+        enum entry DEVICES_DISAGREE // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.DEVICES_DISAGREE|null[0]
+        enum entry EARLIER_MISSING // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.EARLIER_MISSING|null[0]
+        enum entry UNKNOWN_DEVICE // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.UNKNOWN_DEVICE|null[0]
+
+        final val entries // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason> // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason> // io.github.valerioisufi.pageboard.sync/WaitingChanges.Reason.values|values#static(){}[0]
+    }
 }

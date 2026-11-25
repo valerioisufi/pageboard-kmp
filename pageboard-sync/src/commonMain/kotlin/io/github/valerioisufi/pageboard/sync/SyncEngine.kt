@@ -449,6 +449,32 @@ public class SyncEngine(
     }
 
     /**
+     * The changes of other devices to the document or the shared folder [itemId] that wait here,
+     * by replica, and why (see [WaitingChanges]): empty when none does. What waits is on the
+     * connections open now; a connection closed takes its changes with it, and they come again.
+     */
+    public suspend fun waitingOf(itemId: String): List<WaitingChanges> {
+        val held = mutex.withLock { links.filter { it.documentId == itemId && !it.closed }.map { it.space to it.waitingCount } }
+        // The same change may wait on two connections: counted once, where the most wait
+        val counts = HashMap<Pair<Boolean, String>, Int>()
+        for ((space, waiting) in held) for ((replica, count) in waiting) counts[space to replica] = maxOf(counts[space to replica] ?: 0, count)
+        if (counts.isEmpty()) return emptyList()
+        val union = sharing.unionOf(itemId)
+        val folder = spaceSharing?.spaces?.membershipOf(itemId)
+        return counts.map { (key, count) ->
+            val (space, replica) = key
+            when {
+                space -> {
+                    val known = folder?.knows(replica) == true
+                    WaitingChanges(itemId, replica, folder?.deviceOf(replica), count, if (known) WaitingChanges.Reason.EARLIER_MISSING else WaitingChanges.Reason.UNKNOWN_DEVICE)
+                }
+                union?.disagreesOn(replica) == true -> WaitingChanges(itemId, replica, null, count, WaitingChanges.Reason.DEVICES_DISAGREE)
+                else -> WaitingChanges(itemId, replica, union?.deviceOf(replica), count, WaitingChanges.Reason.UNKNOWN_DEVICE)
+            }
+        }.sortedWith(compareBy<WaitingChanges> { it.reason }.thenBy { it.replica })
+    }
+
+    /**
      * Whether the document [documentId], shared on its own, stays out of the shared folder
      * [spaceId] when it would be brought in (see `SpaceLibrary` and `docs/plans/shared-access.md`):
      * the folder does not let this device bring it in (its owner, or a member it granted
@@ -921,6 +947,16 @@ public class SyncEngine(
         /** The changes of the catalog received and not applied yet (waiting for the ones before, or for the membership). */
         val catalogPending = mutableListOf<Pair<CatalogOperation, OperationProof>>()
 
+        /**
+         * How many operations of each replica wait on this connection ([deferred], [catalogPending]),
+         * counted on the receiving coroutine as they change: read by [waitingOf] from any other.
+         */
+        var waitingCount: Map<String, Int> = emptyMap()
+
+        fun recountWaiting() {
+            waitingCount = (deferred.map { it.operation.id.replica } + catalogPending.map { it.first.id.replica }).groupingBy { it }.eachCount()
+        }
+
         /** The last change of every replica of the catalog the other device has (sent, or it had them). */
         val catalogSent = mutableMapOf<String, Long>()
 
@@ -1312,7 +1348,7 @@ public class SyncEngine(
         // The operations of the devices admitted meanwhile
         val deferred = link.deferred.toList()
         link.deferred.clear()
-        if (deferred.isNotEmpty()) onOperations(link, deferred)
+        if (deferred.isNotEmpty()) onOperations(link, deferred) else link.recountWaiting()
     }
 
     /** The other device has an older membership than this one: the more recent one. */
@@ -1471,7 +1507,7 @@ public class SyncEngine(
         linksOf(documentId).filter { it !== link && it.authorized && !it.space }.forEach { it.send(message) }
         val deferred = link.deferred.toList()
         link.deferred.clear()
-        if (deferred.isNotEmpty()) onOperations(link, deferred)
+        if (deferred.isNotEmpty()) onOperations(link, deferred) else link.recountWaiting()
     }
 
     /**
@@ -1990,6 +2026,7 @@ public class SyncEngine(
                 }
             }
         }
+        link.recountWaiting()
         if (batch.isEmpty()) return
         library.saveProofs(spaceId, batch.associate { it.first.id to it.second.encode() })
         val operations = batch.map { it.first }
@@ -2084,7 +2121,7 @@ public class SyncEngine(
         val sync = link.sync ?: return
         // The operations of the devices that may change the document only: the members of any of
         // its accesses (its own sharing, the shared folders it is in, see UnionMembership)
-        val membership = sharing.unionOf(link.documentId) ?: return
+        val membership = sharing.unionOf(link.documentId) ?: return link.recountWaiting()
         // Of a device this one does not know yet (admitted meanwhile): kept until the membership
         // comes. Of a replica the accesses name for different devices: kept, never taken as either
         val (known, waiting) = operations.partition { membership.knows(it.operation.id.replica) && !membership.disagreesOn(it.operation.id.replica) }
@@ -2095,6 +2132,7 @@ public class SyncEngine(
                 link.access.membershipOf(link.documentId, link.via)?.let { link.send(MembershipQuery(it.version)) }
             }
         }
+        link.recountWaiting()
         // Signed by the device of its replica, wherever it comes from: the connection carrying one
         // that is not is closed
         for (received in known) {

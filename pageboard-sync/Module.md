@@ -21,7 +21,10 @@ their union:
   taken only when anchored in what they trust (the folder names the item's own sharing and its
   owner, the item's sharing names the folder);
 * `accessOf` gives an application what to show: the sources of an item (`AccessSource`), their
-  members, the grants of their owners, and what removing someone from one leaves them.
+  members, the grants of their owners, and what removing someone from one leaves them;
+* `waitingOf` tells which changes of other devices wait here, and why (`WaitingChanges`): a
+  device not known yet, accesses naming a replica for different devices, earlier changes of a
+  folder missing. A change waits until it can be taken, and is never applied before.
 
 The owner of a sharing decides who besides itself may do more than its role (`Grant` of
 `pageboard-sync-protocol`, `setGrants`): share an item of its folder on its own

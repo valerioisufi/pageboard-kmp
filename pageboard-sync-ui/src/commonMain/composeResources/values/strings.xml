@@ -115,4 +115,12 @@
     <string name="sync_only_me">Only me</string>
     <string name="sync_editors_too">Editors too</string>
     <string name="sync_keeps_access">%1$s keeps access through %2$s: they are removed from here only.</string>
+    <string name="sync_open">Open</string>
+    <string name="sync_stays_through">It stays shared through %1$s.</string>
+    <string name="sync_keep_through">You keep it through %1$s.</string>
+    <string name="sync_keep_own_sharing">These stay shared on their own: %1$s.</string>
+    <string name="sync_join_in_place">%1$s is in your library already: it stays where it is.</string>
+    <string name="sync_waiting_unknown">Some changes wait here: they come from a device not known here yet, and are taken once its access arrives.</string>
+    <string name="sync_waiting_disagree">Some changes wait here: this item and a folder around it name the device that made them differently, so they are taken from neither.</string>
+    <string name="sync_waiting_earlier">Some changes of %1$s wait here for earlier ones that have not arrived yet.</string>
 </resources>

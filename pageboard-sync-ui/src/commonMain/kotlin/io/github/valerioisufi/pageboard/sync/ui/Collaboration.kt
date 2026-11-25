@@ -10,6 +10,7 @@ import io.github.valerioisufi.pageboard.platform.DeviceProfile
 import io.github.valerioisufi.pageboard.store.DocumentStore
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.PreferenceStore
+import io.github.valerioisufi.pageboard.store.space.CatalogItemKind
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.space.SpaceStore
 import io.github.valerioisufi.pageboard.sync.InMemoryAddressBook
@@ -23,6 +24,7 @@ import io.github.valerioisufi.pageboard.sync.Presence
 import io.github.valerioisufi.pageboard.sync.SpaceRoot
 import io.github.valerioisufi.pageboard.sync.StoreSharedDocuments
 import io.github.valerioisufi.pageboard.sync.SyncEngine
+import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.protocol.Grant
 import io.github.valerioisufi.pageboard.sync.protocol.Capability
 import io.github.valerioisufi.pageboard.sync.ItemAccess
@@ -157,6 +159,41 @@ public class Collaboration(
         val root = library?.spaces()?.firstOrNull { it.id == spaceId }?.rootFolderId ?: return null
         return store.folders.first().firstOrNull { it.id == root }?.name
     }
+
+    /** The root of the shared folder [spaceId] in this library (`Result.success(null)`: the library itself); `null` when it is not here. */
+    internal suspend fun rootOfSpace(spaceId: String): Result<String?>? =
+        library?.spaces()?.firstOrNull { it.id == spaceId }?.let { Result.success(it.rootFolderId) }
+
+    /**
+     * The names of the notes and folders inside the shared folder [spaceId] that have a sharing of
+     * their own: they stay shared with their people when it ends or is left.
+     */
+    internal suspend fun sharedInside(spaceId: String): List<String> {
+        val library = library ?: return emptyList()
+        val secrets = store.sharingSecrets().keys
+        val names = store.documents.first().associate { it.id to it.name }
+        return library.view(spaceId).mapNotNull { entry ->
+            when {
+                entry.kind == CatalogItemKind.FOLDER && entry.sharedAs != null -> entry.name
+                entry.kind == CatalogItemKind.DOCUMENT && entry.id in secrets -> names[entry.id]
+                else -> null
+            }
+        }.sorted()
+    }
+
+    /**
+     * Where the shared folder of [invitation] already is in this library, inside another shared
+     * folder this device is in (see [SpaceRoot.InPlace]): the name of the folder; `null` when it is
+     * not here.
+     */
+    internal suspend fun placeOf(invitation: Invitation): String? {
+        if (invitation.kind != InvitationKind.FOLDER) return null
+        val folder = library?.namedRootOf(invitation.documentId) ?: return null
+        return store.folders.first().firstOrNull { it.id == folder }?.name
+    }
+
+    /** The changes of other devices to the document or shared folder [itemId] waiting here, and why (see [SyncEngine.waitingOf]). */
+    internal suspend fun waitingOf(itemId: String): List<WaitingChanges> = engine.waitingOf(itemId)
 
     /** Whether the editors of the shared folder [spaceId] may share what is inside it too (see [Capability.SHARE_INSIDE]). */
     public fun editorsShareInside(spaceId: String): Boolean =

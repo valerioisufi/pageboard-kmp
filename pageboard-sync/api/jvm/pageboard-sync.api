@@ -416,6 +416,7 @@ public final class io/github/valerioisufi/pageboard/sync/SyncEngine {
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun unshare (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun updatePresence (Lio/github/valerioisufi/pageboard/sync/Presence;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun waitingOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/sync/SyncNetwork {
@@ -428,5 +429,22 @@ public abstract interface class io/github/valerioisufi/pageboard/sync/SyncNetwor
 
 public final class io/github/valerioisufi/pageboard/sync/SyncNetwork$DefaultImpls {
 	public static synthetic fun refresh$default (Lio/github/valerioisufi/pageboard/sync/SyncNetwork;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/WaitingChanges {
+	public final fun getCount ()I
+	public final fun getDevice ()Ljava/lang/String;
+	public final fun getItemId ()Ljava/lang/String;
+	public final fun getReason ()Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
+	public final fun getReplica ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/sync/WaitingChanges$Reason : java/lang/Enum {
+	public static final field DEVICES_DISAGREE Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
+	public static final field EARLIER_MISSING Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
+	public static final field UNKNOWN_DEVICE Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
+	public static fun values ()[Lio/github/valerioisufi/pageboard/sync/WaitingChanges$Reason;
 }
 

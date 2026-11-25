@@ -1058,6 +1058,36 @@ class SyncEngineTest {
     }
 
     @Test
+    fun theOperationsOfADeviceNotKnownWaitAndSayWhy() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val cyReplica = cy.store.replicaId()
+        assertTrue(ada.engine.waitingOf(document.id).isEmpty())
+
+        // Two operations of Cy, whom Ada has not admitted, given on by Bob: kept, not taken, and told why
+        val channel = impostor(bob, ada, document.id)
+        channel.send(SyncCodec.encode(Operations((1L..2L).map { forged(document.id, key, cyReplica, it, RenameDocument("By Cy $it"), cy.identity) })))
+        advanceUntilIdle()
+        assertEquals("Physics", ada.title(document.id))
+        val waiting = ada.engine.waitingOf(document.id).single()
+        assertEquals(cyReplica, waiting.replica)
+        assertEquals(WaitingChanges.Reason.UNKNOWN_DEVICE, waiting.reason)
+        assertNull(waiting.device, "no membership names it")
+        assertEquals(2, waiting.count)
+        assertTrue(ada.engine.waitingOf("other").isEmpty())
+
+        // The connection closed: they go with it (they come again with the next one)
+        channel.close()
+        advanceUntilIdle()
+        assertTrue(ada.engine.waitingOf(document.id).isEmpty())
+    }
+
+    @Test
     fun anOperationStampedFarAheadIsRefused() = syncTest { work ->
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }

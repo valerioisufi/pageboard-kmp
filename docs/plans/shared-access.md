@@ -699,9 +699,10 @@ From then on the grants let the protocol grow:
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | done |
 | 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | done (the trash through two spaces at random, and cycles across catalogs at a larger scale: fixed in phase 9) |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | done (`share` with grants and `leave` per access: `setGrants` after `shareSpace` or `invite`, and `unshare` of the document or of the folder, cover them) |
-| 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | done ("Leave" per access, and the join in place offered in the join dialog: left for later) |
+| 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | done ("Leave" per access, and the join in place offered in the join dialog: done in phase 10) |
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
 | 9. What a folder in the trash holds | Found left for later by the random test of phase 5: the spaces compare the whole library, what a folder in the trash holds included (`SpaceStore.library`); the other spaces take a change received at once; the changes of the library made here taken in before a change received is written; an item shown again by a change of this device written into the library. Tests: the random test with the trash, the lab and the documents in it too; a document moved into a folder in the trash through both spaces; a folder made in a folder while it was out of the lab, back with it; `library` on both stores | done |
+| 10. Telling the user | Left for later by phases 3 and 7: why changes of another device wait here (`SyncEngine.waitingOf`, `WaitingChanges`), told in the sharing dialog; each folder of the access opened from the dialog of the item, where it is managed and left ("Leave" per access); ending or leaving says what stays (the other sources, the items inside with a sharing of their own); the join dialog says a folder already in the library stays where it is (`SpaceRoot.InPlace`). Strings in the 7 languages, screenshots recorded in the Docker image | done |
 
 ### Phase 1 results
 
@@ -1060,7 +1061,7 @@ From then on the grants let the protocol grow:
   printed no error. Its dialogs were not driven from here: the screenshots show them.
 * The ABI of `pageboard-sync-ui` is recorded again: additions only (`Collaboration.accessOf`,
   `titleOfSpace`, `editorsShareInside`, `setEditorsShareInside`, `refusedInside`).
-* Left for later:
+* Left for later, and done in phase 10:
   * "Leave" per access in the dialog (leaving the folder is in the folder's dialog, and a note's
     own sharing in the note's);
   * the join dialog offering "where it already is" for a folder of the library
@@ -1105,6 +1106,47 @@ From then on the grants let the protocol grow:
 * The ABI of `pageboard-store` (`SpaceStore.library`, `LibraryTrash.documents` and `folders`) and
   `pageboard-store-room` (`library` of the Room store) is recorded again. A store of another
   application implementing `SpaceStore` must add `library`.
+
+### Phase 10 results
+
+* `SyncEngine.waitingOf(itemId)` (public): the changes of other devices to a document or a shared
+  folder that wait here, by replica, each with how many and why (`WaitingChanges.Reason`):
+  * `UNKNOWN_DEVICE`: no membership known here names the replica yet (a device admitted
+    meanwhile, or one of an access this device is not in, whose membership has not come or is not
+    anchored);
+  * `DEVICES_DISAGREE`: the accesses name the replica for different devices;
+  * `EARLIER_MISSING`: changes of a shared folder following ones of the same replica not received
+    yet.
+
+  Each connection counts what waits on it as it changes, on its receiving coroutine, and the
+  engine reads the counts of the connections open now. A change waiting on two connections is
+  counted once. What waits on a connection closed goes with it, and comes again with the next.
+  `WaitingChanges` is not a data class and its constructor is internal; its reasons are an enum
+  that may grow, which an interface tells as waiting when it does not know one.
+* The sharing dialog:
+  * tells why changes wait, one notice per reason (`SharingWaiting`), looked at again every
+    second with the routes;
+  * each folder around the item ("Through the folder Physics", "Through the library") has
+    "Open", which shows that folder's own dialog in place of the item's, when the folder is in
+    this library. That is where the folder is managed and left: "Leave" leaves the access chosen;
+  * ending or leaving says what stays: "It stays shared through Physics" (the owner ending its
+    own sharing), "You keep it through Physics" (a member leaving it). For a folder or the
+    library, the notes and folders inside with a sharing of their own: "These stay shared on
+    their own: Lab, Measures".
+* The join dialog of a folder already in the library, inside another shared folder this device
+  is in (`Collaboration.placeOf`): "Lab is in your library already: it stays where it is", and the
+  join is made with `SpaceRoot.InPlace` rather than into a new folder.
+* Strings in the 7 languages.
+* Tests:
+  * `SyncEngineTest.theOperationsOfADeviceNotKnownWaitAndSayWhy`: two operations of a device not
+    admitted, given on by a member, wait on the owner with `UNKNOWN_DEVICE`, no device and a count
+    of 2, nothing for another item, and nothing once the connection is closed;
+  * the screenshots `share-two-sources` (with "Open" and a notice of changes waiting) and
+    `share-folder-inside` (with "Open" on the library) recorded again in the Docker image of
+    `tools/screenshots`.
+* PencilNotes desktop ran on a scratch data directory: it started, made its database there, and
+  printed no error. Its dialogs were not driven from here: the screenshots show them.
+* The ABI of `pageboard-sync` is recorded again: additions only (`waitingOf`, `WaitingChanges`).
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
@@ -1223,6 +1265,12 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
 * Phase 9: the spaces compare the whole library read from the store (`SpaceStore.library`), rather
   than what the flows of the library show: a read of the documents and folders at each
   comparison, which the store's own operations on the trash already make.
+* Phase 10: what waits counted on each connection and read when asked, rather than a flow of the
+  engine: the dialog asks every second, as it does for the routes, and nothing is kept for an item
+  whose dialog is closed.
+* Phase 10: "Leave" per access as a link from each source to its own dialog, rather than a
+  "Leave" button on each source in the item's dialog: leaving a folder is a bigger step than
+  leaving a note (every item of it), and its dialog says what stays.
 * Phase 9: the other spaces reconciled after every change received, and the space itself before,
   rather than following what a folder in the trash holds with a flow of its own: the comparison
   runs a little more often, and nothing depends on the library settling.
@@ -1237,10 +1285,9 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
 * The store-and-forward relay holding several tags for one document (its own plan).
 * A replica bound to its device by construction (derived from the device's key), which would make
   `deviceOf` conflicts impossible: a change of every replica and of what travels.
-* Telling a member why an operation or a catalog change waits (a replica in conflict, a membership
-  not anchored, a grant missing, a reader that cannot relay) in the interface.
+* Telling a member that a change was refused rather than kept waiting (a grant missing: the
+  connection carrying it closes), and which access a membership not anchored comes from: phase 10
+  tells what waits only.
 * A member of an inner space told that parts of the outer space disagree with it, when no device
   in both relays their changes (a reader of the outer space only).
-* In the interface: "Leave" per access, and the join dialog offering a folder of the library
-  where it already is.
 * The test on real devices (phase 8), by the maintainer.
