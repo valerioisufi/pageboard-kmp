@@ -31,6 +31,7 @@ abstract interface io.github.valerioisufi.pageboard.store.space/SpaceStore { // 
     abstract suspend fun catalogOperationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.pageboard.store.space/CatalogOperation> // io.github.valerioisufi.pageboard.store.space/SpaceStore.catalogOperationsAfter|catalogOperationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     abstract suspend fun catalogProofs(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.pageboard.model.change/OperationId>): kotlin.collections/Map<io.github.valerioisufi.pageboard.model.change/OperationId, kotlin/ByteArray> // io.github.valerioisufi.pageboard.store.space/SpaceStore.catalogProofs|catalogProofs(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.change.OperationId>){}[0]
     abstract suspend fun catalogVersionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.pageboard.store.space/SpaceStore.catalogVersionVector|catalogVersionVector(kotlin.String){}[0]
+    abstract suspend fun library(): io.github.valerioisufi.pageboard.store/LibraryTrash // io.github.valerioisufi.pageboard.store.space/SpaceStore.library|library(){}[0]
     abstract suspend fun putDocumentFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.store.space/SpaceStore.putDocumentFolder|putDocumentFolder(kotlin.String;kotlin.String?){}[0]
     abstract suspend fun putFolder(kotlin/String, kotlin/String, kotlin/String?) // io.github.valerioisufi.pageboard.store.space/SpaceStore.putFolder|putFolder(kotlin.String;kotlin.String;kotlin.String?){}[0]
     abstract suspend fun putTrashed(kotlin/String, kotlin/Boolean) // io.github.valerioisufi.pageboard.store.space/SpaceStore.putTrashed|putTrashed(kotlin.String;kotlin.Boolean){}[0]
@@ -929,6 +930,7 @@ final class io.github.valerioisufi.pageboard.store/KeyValueDocumentStore : io.gi
     final suspend fun insertDocument(io.github.valerioisufi.pageboard.model/Document, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.pageboard.model.Document;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
+    final suspend fun library(): io.github.valerioisufi.pageboard.store/LibraryTrash // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.library|library(){}[0]
     final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.pageboard.model/Document? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     final suspend fun loadInk(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentInk? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadInk|loadInk(kotlin.String){}[0]
     final suspend fun loadOutline(kotlin/String): io.github.valerioisufi.pageboard.store/DocumentOutline? // io.github.valerioisufi.pageboard.store/KeyValueDocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
@@ -978,6 +980,10 @@ final class io.github.valerioisufi.pageboard.store/KeyValueDocumentStore : io.gi
 final class io.github.valerioisufi.pageboard.store/LibraryTrash { // io.github.valerioisufi.pageboard.store/LibraryTrash|null[0]
     constructor <init>(kotlin.collections/Collection<io.github.valerioisufi.pageboard.store/LibraryTrash.Entry>, kotlin.collections/Collection<io.github.valerioisufi.pageboard.store/LibraryTrash.Entry>) // io.github.valerioisufi.pageboard.store/LibraryTrash.<init>|<init>(kotlin.collections.Collection<io.github.valerioisufi.pageboard.store.LibraryTrash.Entry>;kotlin.collections.Collection<io.github.valerioisufi.pageboard.store.LibraryTrash.Entry>){}[0]
 
+    final val documents // io.github.valerioisufi.pageboard.store/LibraryTrash.documents|{}documents[0]
+        final fun <get-documents>(): kotlin.collections/Collection<io.github.valerioisufi.pageboard.store/LibraryTrash.Entry> // io.github.valerioisufi.pageboard.store/LibraryTrash.documents.<get-documents>|<get-documents>(){}[0]
+    final val folders // io.github.valerioisufi.pageboard.store/LibraryTrash.folders|{}folders[0]
+        final fun <get-folders>(): kotlin.collections/Collection<io.github.valerioisufi.pageboard.store/LibraryTrash.Entry> // io.github.valerioisufi.pageboard.store/LibraryTrash.folders.<get-folders>|<get-folders>(){}[0]
     final val items // io.github.valerioisufi.pageboard.store/LibraryTrash.items|{}items[0]
         final fun <get-items>(): kotlin.collections/List<io.github.valerioisufi.pageboard.store/TrashedItem> // io.github.valerioisufi.pageboard.store/LibraryTrash.items.<get-items>|<get-items>(){}[0]
 

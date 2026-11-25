@@ -4,6 +4,7 @@ import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
+import io.github.valerioisufi.pageboard.store.LibraryTrash
 import io.github.valerioisufi.pageboard.store.space.CatalogChange
 import io.github.valerioisufi.pageboard.store.space.CatalogItem
 import io.github.valerioisufi.pageboard.store.space.CatalogOperation
@@ -96,6 +97,11 @@ internal class SpaceRepository(private val database: PageboardDatabase) : SpaceS
             if (folder.name != name) folderDao.renameFolder(folderId, name)
             if (folder.parentId != parentId) folderDao.moveFolder(folderId, parentId)
         }
+    }
+
+    override suspend fun library(): LibraryTrash = withContext(Dispatchers.IO) {
+        val shared = database.sharedDocumentDao().getAll().mapTo(mutableSetOf()) { it.documentId }
+        FileRepository.trashOf(documentDao.getAllDocuments(), folderDao.getAllFolders(), shared)
     }
 
     override suspend fun putDocumentFolder(documentId: String, folderId: String?): Boolean = withContext(Dispatchers.IO) {

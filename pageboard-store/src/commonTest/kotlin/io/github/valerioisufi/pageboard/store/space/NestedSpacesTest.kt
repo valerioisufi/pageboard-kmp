@@ -32,29 +32,25 @@ class NestedSpacesTest {
         suspend fun folders(): Map<String, Pair<String, String?>> = store.folders.first().associate { it.id to (it.name to it.parentId) }
 
         /**
-         * The tree under [root] as the library shows it: names and places relative to it, and what is
-         * in the trash itself (what a folder in the trash holds is not shown, whether it was put there
-         * before the folder or with it).
+         * The tree under [root] as the library has it: names and places relative to it, and whether
+         * each item is in the trash itself, what a folder in the trash holds included (it is in the
+         * spaces still, and goes on changing there).
          */
         suspend fun tree(root: String): Map<String, Triple<String, String?, Boolean>> {
-            val folders = store.folders.first().associateBy { it.id }
-            val trash = store.trash.first()
-            val trashedFolders = trash.filter { it.kind == io.github.valerioisufi.pageboard.store.TrashedItem.Kind.FOLDER }.associateBy { it.id }
-            val parents = folders.mapValues { it.value.parentId } + trashedFolders.mapValues { it.value.folderId }
+            val library = store.library()
+            val parents = library.folders.associate { it.id to it.parentId }
             fun under(parent: String?): Boolean {
                 var current = parent
                 var steps = 0
                 while (current != null && steps++ < 100) {
                     if (current == root) return true
-                    if (current in trashedFolders) return false
                     current = parents[current]
                 }
                 return false
             }
             val items = mutableMapOf<String, Triple<String, String?, Boolean>>()
-            for (folder in folders.values) if (under(folder.parentId)) items[folder.id] = Triple(folder.name, folder.parentId.takeIf { it != root }, false)
-            for (item in trash) if (under(item.folderId)) items[item.id] = Triple(if (item.kind == io.github.valerioisufi.pageboard.store.TrashedItem.Kind.FOLDER) item.name else "", item.folderId.takeIf { it != root }, true)
-            for (document in store.documents.first()) if (under(document.folderId)) items[document.id] = Triple("", document.folderId.takeIf { it != root }, false)
+            for (folder in library.folders) if (under(folder.parentId)) items[folder.id] = Triple(folder.name, folder.parentId.takeIf { it != root }, folder.trashedAt != null)
+            for (document in library.documents) if (under(document.parentId)) items[document.id] = Triple("", document.parentId.takeIf { it != root }, document.trashedAt != null)
             return items
         }
     }
@@ -219,15 +215,80 @@ class NestedSpacesTest {
     }
 
     @Test
-    fun randomChangesThroughNestedSpacesConverge() = runTest {
-        repeat(40) { seed -> converge(Random(seed), seed) }
+    fun aMoveIntoAFolderInTheTrashGoesThroughBothFolders() = runTest {
+        val n = nested()
+        settle(n)
+        val measures = n.ada.store.documents.first().single { it.folderId == n.lab }.id
+        assertTrue(n.carl.store.createFolder("Old", n.carlRoot))
+        settle(n)
+        val old = n.carl.folders().entries.single { it.value.first == "Old" }.key
+        // Ada puts it in the trash while Carl, who has not heard of it yet, moves a document into it
+        assertTrue(n.ada.store.trashFolder(old))
+        carry(n.ada, n.bob, n.outer)
+        assertTrue(n.carl.store.moveDocument(measures, old))
+        carry(n.carl, n.ada, n.inner)
+        assertEquals(old, n.ada.store.library().documents.single { it.id == measures }.parentId, "in the folder in the trash on Ada")
+        carry(n.ada, n.bob, n.outer)
+        assertEquals(old, n.bob.store.library().documents.single { it.id == measures }.parentId, "and on Bob, through the course")
+        assertTrue(n.bob.store.documents.first().none { it.id == measures }, "in the trash with its folder")
+        settle(n)
+        assertSame(n)
     }
 
-    private suspend fun TestScope.converge(random: Random, seed: Int) {
+    @Test
+    fun whatWasMadeInAFolderOutOfTheLabComesBackWithIt() = runTest {
+        val n = nested()
+        assertTrue(n.ada.store.createFolder("Week 1", n.lab))
+        settle(n)
+        val week = n.ada.folders().entries.single { it.value.first == "Week 1" }.key
+        // Out of the lab on Ada (into the course), while Carl makes a folder in it
+        assertTrue(n.ada.store.moveFolder(week, n.course))
+        now += 10
+        n.ada.library.reconcile()
+        assertTrue(n.carl.store.createFolder("Exercises", week))
+        val exercises = n.carl.folders().entries.single { it.value.first == "Exercises" }.key
+        carry(n.carl, n.ada, n.inner)
+        assertTrue(n.ada.library.view(n.inner).none { it.id == exercises }, "in a folder out of the lab here")
+        // Back in the lab: what Carl made in it with it
+        assertTrue(n.ada.store.moveFolder(week, n.lab))
+        now += 10
+        n.ada.library.reconcile()
+        assertEquals(week, n.ada.folders()[exercises]?.second)
+        settle(n)
+        assertSame(n)
+    }
+
+    /** What each device and each catalog holds of the items the trees differ on (to find why). */
+    private suspend fun describe(n: Nested): String = buildString {
+        val trees = listOf("ada course" to n.ada.tree(n.course), "bob" to n.bob.tree(n.bobRoot), "ada lab" to n.ada.tree(n.lab), "carl" to n.carl.tree(n.carlRoot))
+        val ids = (trees[0].second.keys + trees[1].second.keys).filter { trees[0].second[it] != trees[1].second[it] } +
+            (trees[2].second.keys + trees[3].second.keys).filter { trees[2].second[it] != trees[3].second[it] }
+        for (id in ids.distinct()) {
+            appendLine("item ${id.take(4)}")
+            for ((who, device) in listOf("ada" to n.ada, "bob" to n.bob, "carl" to n.carl)) {
+                val folder = device.store.folders.first().firstOrNull { it.id == id }
+                val document = device.store.documents.first().firstOrNull { it.id == id }
+                val trashed = device.store.trash.first().firstOrNull { it.id == id }
+                appendLine("  $who library: folder ${folder?.let { it.name + " in " + it.parentId?.take(4) }} document ${document?.folderId?.take(4)} trash ${trashed?.folderId?.take(4)}")
+            }
+            for ((who, device, space) in listOf(Triple("ada", n.ada, n.outer), Triple("bob", n.bob, n.outer), Triple("ada", n.ada, n.inner), Triple("carl", n.carl, n.inner))) {
+                val item = device.store.catalogItems(space).firstOrNull { it.id == id }
+                val shown = device.library.view(space).firstOrNull { it.id == id }
+                appendLine("  $who ${if (space == n.outer) "outer" else "inner"}: in=${item?.inSpace} parent=${item?.parent?.take(4)}@${item?.placed} trashed=${item?.trashed}@${item?.trashedVersion} shown=${shown != null}")
+            }
+        }
+    }
+
+    @Test
+    fun randomChangesThroughNestedSpacesConverge() = runTest {
+        repeat(100) { seed -> converge(Random(seed), seed) }
+    }
+
+    private suspend fun TestScope.converge(random: Random, seed: Int, length: Int = 150) {
         val steps = mutableListOf<String>()
         val n = nested()
         settle(n)
-        repeat(60) { step ->
+        repeat(length) { step ->
             now += random.nextLong(1, 20)
             val device = listOf(n.ada, n.bob, n.carl).random(random)
             val root = when (device) {
@@ -235,7 +296,9 @@ class NestedSpacesTest {
                 n.bob -> n.bobRoot
                 else -> n.carlRoot
             }
-            val folders = device.tree(root).filterValues { it.first.isNotEmpty() && !it.third }.keys.toList()
+            // The folders the user sees (out of the trash), as it would choose
+            val live = device.store.folders.first().mapTo(HashSet()) { it.id }
+            val folders = device.tree(root).keys.filter { it in live }
             val inRoot = listOf(root) + folders + (if (device === n.ada) listOf(n.lab) else emptyList())
             val documents = device.store.documents.first().map { it.id }
             val who = when (device) {
@@ -244,14 +307,21 @@ class NestedSpacesTest {
                 else -> "carl"
             }
             fun short(id: String?) = id?.take(4)
-            // Made, renamed and moved, in and out of the lab (the trash through two spaces: see the
-            // plan, phase 5, and the test above)
-            when (random.nextInt(5)) {
+            // Made, renamed, moved in and out of the lab, put in the trash and taken out of it (see
+            // the plan, phases 5 and 9)
+            when (random.nextInt(7)) {
+                5 -> if (random.nextBoolean()) {
+                    // The lab too, itself or through a folder above it: the devices of the lab keep it
+                    inRoot.drop(1).distinct().randomOrNull(random)?.let { device.store.trashFolder(it); steps += "$who trashes ${short(it)}" }
+                } else {
+                    documents.randomOrNull(random)?.let { device.store.trashDocument(it); steps += "$who trashes document ${short(it)}" }
+                }
+                6 -> device.store.trash.first().randomOrNull(random)?.let { device.store.restore(it.id); steps += "$who restores ${short(it.id)}" }
                 0 -> inRoot.random(random).let { device.store.createFolder("f$step", it); steps += "$who makes f$step in ${short(it)}" }
                 1 -> folders.randomOrNull(random)?.let { val name = "n${random.nextInt(5)}"; device.store.renameFolder(it, name); steps += "$who renames ${short(it)} $name" }
                 2 -> folders.randomOrNull(random)?.let { val to = inRoot.random(random); steps += "$who moves ${short(it)} to ${short(to)}: ${device.store.moveFolder(it, to)}" }
                 3 -> documents.randomOrNull(random)?.let { val to = inRoot.random(random); steps += "$who moves document ${short(it)} to ${short(to)}: ${device.store.moveDocument(it, to)}" }
-                else -> repeat(random.nextInt(1, 4)) {
+                4 -> repeat(random.nextInt(1, 4)) {
                     when (random.nextInt(4)) {
                         0 -> steps += "ada to bob ${carry(n.ada, n.bob, n.outer)}"
                         1 -> steps += "bob to ada ${carry(n.bob, n.ada, n.outer)}"
@@ -267,7 +337,7 @@ class NestedSpacesTest {
         } catch (e: IllegalStateException) {
             throw AssertionError("seed $seed (lab ${n.lab.take(4)}, course ${n.course.take(4)}): ${e.message}\n" + steps.joinToString("\n"), e)
         } catch (e: AssertionError) {
-            throw AssertionError("seed $seed (lab ${n.lab.take(4)}, course ${n.course.take(4)}): ${e.message}\n" + steps.joinToString("\n"), e)
+            throw AssertionError("seed $seed (lab ${n.lab.take(4)}, course ${n.course.take(4)}): ${e.message}\n" + describe(n) + "\n" + steps.joinToString("\n"), e)
         }
         listOf(n.ada, n.bob, n.carl).forEach { it.library.stop() }
     }

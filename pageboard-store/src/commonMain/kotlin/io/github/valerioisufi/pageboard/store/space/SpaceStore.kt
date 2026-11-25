@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pageboard.store.space
 
 import io.github.valerioisufi.pageboard.model.change.OperationId
+import io.github.valerioisufi.pageboard.store.LibraryTrash
 
 /**
  * A shared folder (a space, see `docs/plans/shared-folders.md`) as this device keeps it: its root in
@@ -59,6 +60,14 @@ public interface SpaceStore {
 
     /** Keeps the proofs of operations of [spaceId], to give them on (see `OperationLog.saveProofs`). */
     public suspend fun saveCatalogProofs(spaceId: String, proofs: Map<OperationId, ByteArray>)
+
+    /**
+     * Every document and folder of the library, out of the trash or in it, what a folder in the
+     * trash holds included, each where it is and with the time it went to the trash itself: the
+     * library as the spaces compare it with their catalogs (what a folder in the trash holds is in
+     * its spaces still, and goes on changing there).
+     */
+    public suspend fun library(): LibraryTrash
 
     /**
      * Makes the folder [folderId] named [name] in [parentId], or names and places it so: a write

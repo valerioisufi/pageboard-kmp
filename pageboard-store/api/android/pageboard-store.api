@@ -167,6 +167,7 @@ public final class io/github/valerioisufi/pageboard/store/KeyValueDocumentStore 
 	public fun insertDocument (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun library (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadInk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -226,6 +227,8 @@ public final class io/github/valerioisufi/pageboard/store/LibraryTrash {
 	public fun <init> (Ljava/util/Collection;Ljava/util/Collection;)V
 	public final fun availableDocumentName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public final fun availableFolderName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getDocuments ()Ljava/util/Collection;
+	public final fun getFolders ()Ljava/util/Collection;
 	public final fun getItems ()Ljava/util/List;
 	public final fun isDocumentLive (Ljava/lang/String;)Z
 	public final fun isFolderLive (Ljava/lang/String;)Z
@@ -937,6 +940,7 @@ public abstract interface class io/github/valerioisufi/pageboard/store/space/Spa
 	public abstract fun catalogOperationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun catalogProofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun catalogVersionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun library (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun putDocumentFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun putFolder (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun putTrashed (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;

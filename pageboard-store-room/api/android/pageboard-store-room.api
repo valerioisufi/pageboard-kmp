@@ -20,6 +20,7 @@ public final class io/github/valerioisufi/pageboard/store/room/RoomDocumentStore
 	public fun insertDocument (Lio/github/valerioisufi/pageboard/model/Document;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun library (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadInk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

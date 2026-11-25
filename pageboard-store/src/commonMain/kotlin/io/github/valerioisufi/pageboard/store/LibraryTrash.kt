@@ -32,7 +32,12 @@ public data class TrashedItem(
  * of it, and goes back with it. A document or a folder that went to the trash on its own, before
  * its folder, stays an item of its own with its own date.
  */
-public class LibraryTrash(documents: Collection<Entry>, folders: Collection<Entry>) {
+public class LibraryTrash(
+    /** Every document of the store, out of the trash or in it. */
+    public val documents: Collection<Entry>,
+    /** Every folder of the store, out of the trash or in it. */
+    public val folders: Collection<Entry>
+) {
 
     /**
      * A document or a folder of the library: [parentId] is its folder (`null`: the root),

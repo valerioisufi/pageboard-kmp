@@ -642,6 +642,8 @@ public class KeyValueDocumentStore(
         spaceValues.write(spaceId, value.copy(proofs = spaceValues.storedProofs(spaceValues.proofsOf(value) + proofs)))
     }
 
+    override suspend fun library(): LibraryTrash = syncLock(lock) { index.trash() }
+
     override suspend fun putFolder(folderId: String, name: String, parentId: String?) {
         syncLock(lock) {
             val now = clock()

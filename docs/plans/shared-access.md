@@ -697,10 +697,11 @@ From then on the grants let the protocol grow:
 | 2. The union in the engine | `DocumentSharing` over `DocumentAccess` (`follow` per space next to the own access, `forget` per access), `TagMatch` with its access, `authorize` per access, `UnionMembership` in `onOperations`, the role, read only, `mayGive` and compaction by the union. Tests (`SharedAccessTest`, two devices in both accesses): a document in a folder and shared on its own, synced by either connection; removed from the folder, still synced directly and never given the new key of the space; removed directly, still synced through the folder; the own sharing ended; the document moved out | done |
 | 3. Grants and the other memberships | `Grant`, `Capability`, `Membership.grants` and `holds` (with `upTo`), `setGrants`; `Membership.spaces` / `SpaceRef`, `Placement`, `ShareItem` / `UnshareItem` admitted by the grants; `AccessMembership` and its query, `Hello.otherMemberships`, the anchors on both sides; `PROTOCOL_VERSION` as decided, `ProtocolFormatTest` re-recorded. Tests with three devices (Ada in both, Bob in the folder, Carol direct): Carol's operations reaching Bob through Ada and the reverse; a space reader making a membership of its own for the document, refused; a `ShareItem` from an editor without the grant, refused, and with it, taken; the grant taken back, what it allowed before kept on every device whatever the order; a `Placement` by a member without the grant, refused; an item taken out and added back by another member (its `broughtBy` changed) anchoring nothing; a replica named for two devices, its operations not taken; Bob removed from the folder, his later operations refused by Carol; a grant of an application carried and read back, and a grant unknown allowing nothing; random `AccessMembership` bytes and catalog changes to the decoder; the sync modules on the iOS simulator | done |
 | 4. Documents in the library | `keptApart` in `SpaceLibrary`, PencilNotes's rule in `Collaboration`; the catalog's place written the first time a document arrives through a space. Tests: `checkSharedFolders` with a document shared on its own in the folder (both stores), one owned by another device kept apart by PencilNotes's rule and taken with consent when the rule is not given, a document first had directly then through the library | done |
-| 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | done (the trash through two spaces at random, and cycles across catalogs at a larger scale: left for later) |
+| 5. Folders inside shared folders | `SpaceLibrary` without the refusal (up to `maxNesting`), `spacesOf`, changes submitted to every space around, `NestedPieces` (the latest stamp across catalogs), `ShareItem` submitted when a folder is shared inside, the move out of F by an inner member, `SpaceRoot.InPlace`; `SyncEngine` with the heads of the inner documents on every space. Tests: convergence with random changes through two nested spaces and three devices (one in each, one in both), no item moving back and forth; a folder of the shared library shared with a third device and synced both ways through the device in both; an editor sharing inside with and without `share-inside`; a reader of the outer space not relaying; the inner sharing ended, the outer one left, the inner folder moved out; a device of the library joining the inner folder in place; both stores | done (the trash through two spaces at random, and cycles across catalogs at a larger scale: fixed in phase 9) |
 | 6. The public API | `SyncEngine.accessOf`, `share` with grants, `setGrants`, `place`, `unshare` / `leave` per access, in shapes that grow without breaking (factories, sealed interfaces); the `Module.md` of `-sync` and `-sync-protocol`; a consumer in `consumer-checks`; the ABI recorded | done (`share` with grants and `leave` per access: `setGrants` after `shareSpace` or `invite`, and `unshare` of the document or of the folder, cover them) |
 | 7. Interface | The sharing dialogs with the sources of access, the choice of the owner ("Who can share what is inside"), sharing a folder inside a shared folder or the library (allowed or who decides), the confirmations of removal and ending, "Leave" per access, the join in place; strings in the 7 languages; Roborazzi recorded in the Docker image; the desktop on a scratch directory | done ("Leave" per access, and the join in place offered in the join dialog: left for later) |
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
+| 9. What a folder in the trash holds | Found left for later by the random test of phase 5: the spaces compare the whole library, what a folder in the trash holds included (`SpaceStore.library`); the other spaces take a change received at once; the changes of the library made here taken in before a change received is written; an item shown again by a change of this device written into the library. Tests: the random test with the trash, the lab and the documents in it too; a document moved into a folder in the trash through both spaces; a folder made in a folder while it was out of the lab, back with it; `library` on both stores | done |
 
 ### Phase 1 results
 
@@ -984,8 +985,9 @@ From then on the grants let the protocol grow:
   * a cycle across the two catalogs.
 
   All three are fixed above.
-* Left for later, found by the random test at a larger scale (400 seeds of 120 steps: one or two
-  seeds per run, each run exploring other cases since the identifiers of the items break ties):
+* Found by the random test at a larger scale (400 seeds of 120 steps: one or two seeds per run,
+  each run exploring other cases since the identifiers of the items break ties), left for later
+  here and fixed in phase 9:
   * folders placed differently across devices after cycles across the two catalogs. Nothing is
     lost, and every item stays in every library. A placement decided by the stamps alone, the
     same on every device, would close it.
@@ -1063,6 +1065,46 @@ From then on the grants let the protocol grow:
     own sharing in the note's);
   * the join dialog offering "where it already is" for a folder of the library
     (`SpaceRoot.InPlace` is in the engine).
+
+### Phase 9 results
+
+* The cause of both divergences of phase 5: `SpaceLibrary` compared its catalogs with what the
+  library shows, the documents and folders out of the trash and the items of the trash, not what
+  they hold. What a folder in the trash holds is still in its spaces, and other devices go on
+  changing it. A device in both spaces wrote such a change into the library, received in one
+  space, and never saw it to give it to the other one.
+* `SpaceStore.library()`: every document and folder, out of the trash or in it, each where it is
+  and with the time it went to the trash itself (a `LibraryTrash`, whose `documents` and
+  `folders` are now public). Both stores give the one they already build. `SpaceLibrary`
+  compares its catalogs with it, and writes into it: an item inside a folder in the trash is
+  compared and written as any other, its own trash apart.
+* A change received in one space is taken at once by the other spaces of the device (they are
+  reconciled after it). The library does not show a change inside a folder in the trash, so
+  following it would never see it.
+* Before writing a change received, the changes of the library made here and not taken in yet
+  are taken in (the space is reconciled first). Writing the catalog over them would otherwise
+  put them back, within the moment the library settles (`settleMs`).
+* After a change of this device (taken in from the library, or relayed from another space), the
+  items it shows again in the catalog and that the library does not have are written into it:
+  what another device made in a folder while that folder was out of the space here.
+* The root of a space inside a folder in the trash is no longer a reason to leave the space
+  alone: its items are compared and written as they are. What the devices of that space see does
+  not change (their root is not in the trash).
+* Tests:
+  * `NestedSpacesTest`:
+    * the random test now puts folders (the lab and the folders above it too) and documents in
+      the trash and takes them out, and compares the whole trees, what the folders in the trash
+      hold included. In the build: 100 seeds of 150 steps. Before the commit: 3000 seeds of 250
+      steps with the trash, and 3000 without it (the case of the cycles across the catalogs),
+      all passing;
+    * a document Carl moves into a folder Ada has just put in the trash reaches Bob, through
+      Ada, in that folder, in the trash with it;
+    * a folder Carl makes in a folder Ada has just taken out of the lab comes back with it.
+  * `checkSpaceStore` (both stores): `library` holds what a folder in the trash holds, where it
+    is, and a document placed there as another device did.
+* The ABI of `pageboard-store` (`SpaceStore.library`, `LibraryTrash.documents` and `folders`) and
+  `pageboard-store-room` (`library` of the Room store) is recorded again. A store of another
+  application implementing `SpaceStore` must add `library`.
 
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
@@ -1178,6 +1220,12 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
   document waiting in "Shared" must not take itself out of the space for everyone.
 * Joining an inner space in place when its root is already here, rather than into a new folder:
   the same identifiers would otherwise be in two places.
+* Phase 9: the spaces compare the whole library read from the store (`SpaceStore.library`), rather
+  than what the flows of the library show: a read of the documents and folders at each
+  comparison, which the store's own operations on the trash already make.
+* Phase 9: the other spaces reconciled after every change received, and the space itself before,
+  rather than following what a folder in the trash holds with a flow of its own: the comparison
+  runs a little more often, and nothing depends on the library settling.
 
 ## Left for later
 
@@ -1193,11 +1241,6 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
   not anchored, a grant missing, a reader that cannot relay) in the interface.
 * A member of an inner space told that parts of the outer space disagree with it, when no device
   in both relays their changes (a reader of the outer space only).
-* Found by the random test of phase 5 at a larger scale:
-  * folders placed differently across devices after cycles across two nested catalogs (nothing
-    lost);
-  * the library's trash after a folder is put in the trash in one catalog and restored in the
-    other.
 * In the interface: "Leave" per access, and the join dialog offering a folder of the library
   where it already is.
 * The test on real devices (phase 8), by the maintainer.

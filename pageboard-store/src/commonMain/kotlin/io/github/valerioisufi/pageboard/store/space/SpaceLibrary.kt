@@ -4,7 +4,6 @@ import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.store.DocumentStore
-import io.github.valerioisufi.pageboard.store.TrashedItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -246,6 +245,8 @@ public class SpaceLibrary(
      */
     public suspend fun receive(spaceId: String, operations: List<CatalogOperation>): Int = mutex.withLock {
         val space = sessions[spaceId] ?: return@withLock 0
+        // The changes of the library made here first: writing what the others did would put them back
+        reconcileLocked(space)
         val before = space.session.catalog.view()
         var applied = 0
         try {
@@ -255,7 +256,12 @@ public class SpaceLibrary(
                 spaces.saveCatalogChange(spaceId, changedItems(space, operation.change), operation)
             }
         } finally {
-            if (applied > 0) writeLibraryLocked(space, before)
+            if (applied > 0) {
+                writeLibraryLocked(space, before)
+                // The other spaces holding what changed take it at once: what a folder in the trash
+                // holds changes without the library showing it, which following it would not see
+                for (other in sessions.values) if (other !== space) reconcileLocked(other)
+            }
         }
         applied
     }
@@ -332,15 +338,16 @@ public class SpaceLibrary(
     /** An item of the library as a space compares it: where it is, its name (a folder), whether it is in the trash itself. */
     private data class LocalItem(val id: String, val kind: CatalogItemKind, val name: String, val parent: String?, val trashed: Boolean)
 
-    /** What the library shows: the documents and folders out of the trash, and the items in it (not what they hold). */
+    /**
+     * Every document and folder of the library, what a folder in the trash holds included (it is
+     * in the spaces still, and other devices go on changing it): each where it is, and whether it
+     * is in the trash itself.
+     */
     private suspend fun libraryItems(): Map<String, LocalItem> {
+        val library = spaces.library()
         val items = LinkedHashMap<String, LocalItem>()
-        for (folder in store.folders.first()) items[folder.id] = LocalItem(folder.id, CatalogItemKind.FOLDER, folder.name, folder.parentId, false)
-        for (document in store.documents.first()) items[document.id] = LocalItem(document.id, CatalogItemKind.DOCUMENT, "", document.folderId, false)
-        for (item in store.trash.first()) {
-            val kind = if (item.kind == TrashedItem.Kind.FOLDER) CatalogItemKind.FOLDER else CatalogItemKind.DOCUMENT
-            items[item.id] = LocalItem(item.id, kind, if (kind == CatalogItemKind.FOLDER) item.name else "", item.folderId, true)
-        }
+        for (folder in library.folders) items[folder.id] = LocalItem(folder.id, CatalogItemKind.FOLDER, folder.name, folder.parentId, folder.trashedAt != null)
+        for (document in library.documents) items[document.id] = LocalItem(document.id, CatalogItemKind.DOCUMENT, "", document.parentId, document.trashedAt != null)
         return items
     }
 
@@ -422,6 +429,10 @@ public class SpaceLibrary(
         submitLocked(space, changes)
         // Taken in from another space: each with the stamp it has there
         for ((change, at) in relayed.sortedBy { it.second }) submitLocked(space, listOf(change), at)
+        // Shown again by these changes, and not in the library: what other devices made in a folder
+        // while it was out of the space here (written as a change received, nothing taken out)
+        val shown = catalog.view()
+        if (shown.any { it.id !in view && it.id !in local }) writeLibraryLocked(space, shown)
     }
 
     private suspend fun submitLocked(space: Space, changes: List<CatalogChange>, at: Stamp? = null) {
@@ -441,9 +452,9 @@ public class SpaceLibrary(
      */
     private suspend fun writeLibraryLocked(space: Space, before: List<CatalogEntry>) {
         val root = space.stored.rootFolderId
-        if (root != null && store.folders.first().none { it.id == root } && store.trash.first().none { it.id == root }) return
-        val view = space.session.catalog.view()
         val local = libraryItems()
+        if (root != null && root !in local) return
+        val view = space.session.catalog.view()
         fun local(parent: String?) = parent ?: root
         // Each piece of an item held by other spaces too: the latest of their catalogs
         val nested = NestedPieces((listOf(space) + sessions.values.filter { it !== space }).map { NestedPieces.Held(it.stored.rootFolderId, it.session.catalog) })
@@ -485,8 +496,7 @@ public class SpaceLibrary(
         // Out of the space: kept, out of its root (the items above first, what they hold follows)
         val shown = view.mapTo(HashSet()) { it.id }
         val gone = before.filter { it.id !in shown }.associateBy { it.id }
-        val outside = store.folders.first().firstOrNull { it.id == root }?.parentId
-            ?: store.trash.first().firstOrNull { it.id == root }?.folderId
+        val outside = local[root]?.parent
         for (entry in gone.values) {
             if (entry.parent != null && entry.parent in gone) continue
             val item = trashed[entry.id] ?: continue

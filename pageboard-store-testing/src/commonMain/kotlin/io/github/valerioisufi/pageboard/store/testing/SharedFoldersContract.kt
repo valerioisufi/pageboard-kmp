@@ -82,6 +82,17 @@ public suspend fun <S> checkSpaceStore(store: S, reopened: suspend () -> S) wher
     store.putTrashed("g", true)
     assertEquals("g", store.trash.first().single().id)
     assertTrue(store.documents.first().none { it.id == document.id }, "in the trash with its folder")
+    // The library as the spaces compare it: what a folder in the trash holds too, where it is, out of the trash itself
+    val library = store.library()
+    assertEquals(setOf(course.id, "f", "g"), library.folders.map { it.id }.toSet())
+    assertNotNull(library.folders.single { it.id == "g" }.trashedAt)
+    assertEquals("f", library.folders.single { it.id == "g" }.parentId)
+    val held = library.documents.single { it.id == document.id }
+    assertEquals("g", held.parentId)
+    assertNull(held.trashedAt, "in the trash through its folder only")
+    store.putDocumentFolder(document.id, "f")
+    store.putDocumentFolder(document.id, "g")
+    assertEquals("g", store.library().documents.single { it.id == document.id }.parentId, "placed inside a folder in the trash, as another device did")
     store.putTrashed("g", false)
     assertTrue(store.trash.first().isEmpty())
     assertEquals("g", store.documents.first().single { it.id == document.id }.folderId)
