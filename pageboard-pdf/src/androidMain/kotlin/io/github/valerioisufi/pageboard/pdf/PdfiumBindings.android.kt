@@ -82,6 +82,9 @@ internal actual object PdfiumBindings {
     actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean =
         PdfiumNative.nPageAddMarkup(page, kind, quads, argb, appearance)
 
+    actual fun pageAddLink(page: Long, quads: FloatArray, uri: String): Boolean =
+        PdfiumNative.nPageAddLink(page, quads, uri)
+
     actual fun loadFont(document: Long, data: ByteArray): Long = PdfiumNative.nLoadFont(document, data)
 
     actual fun closeFont(font: Long) = PdfiumNative.nCloseFont(font)

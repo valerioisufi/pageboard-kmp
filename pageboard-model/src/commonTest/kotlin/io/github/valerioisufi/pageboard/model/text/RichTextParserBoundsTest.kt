@@ -37,6 +37,7 @@ class RichTextParserBoundsTest {
             // Formulas never closed on one line, display formulas on one line and on lines of their own
             "\$a ", "\$\$a\$\$", "\$\$a\$\$\n",
             "- **a** *b* ~~c~~ `d` \$e\$ \\* \$f\n## g \$\$h\$\$\n",
+            "See https://example.com/a_b www.example.org ![img](https://example.com/x.png) ",
             // Items with their continuation lines
             "- a\n  b\n", "1. a\n   b\n   c\n", "- a\n  b\n  - c\n    d\n",
             // Tables, and lines with pipes that are not

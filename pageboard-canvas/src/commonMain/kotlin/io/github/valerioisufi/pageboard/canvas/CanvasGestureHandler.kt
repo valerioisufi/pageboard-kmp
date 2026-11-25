@@ -1041,6 +1041,7 @@ internal class CanvasGestureHandler(
             }
 
             Mode.PAN -> {
+                if (wasTap && openLinkAt(position)) return
                 val velocity = velocityTracker.calculateVelocity()
                 controller.viewport.camera.onRelease(velocity.x, velocity.y)
                 controller.requestRedraw()
@@ -1077,6 +1078,7 @@ internal class CanvasGestureHandler(
             }
 
             Mode.TEXT_TAP -> {
+                if (wasTap && primaryHeld && openLinkAt(position)) return
                 if (wasTap) onTextToolTap(position)
             }
 
@@ -1324,6 +1326,15 @@ internal class CanvasGestureHandler(
     // ==========================================================
     // Text tool
     // ==========================================================
+
+    private fun openLinkAt(position: Offset): Boolean {
+        val open = controller.onOpenLink ?: return false
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return false
+        val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return false
+        val url = controller.linkAt(pageIndex, mm.x, mm.y) ?: return false
+        open(url)
+        return true
+    }
 
     private fun onTextToolTap(position: Offset) {
         if (editTextAt(position)) return

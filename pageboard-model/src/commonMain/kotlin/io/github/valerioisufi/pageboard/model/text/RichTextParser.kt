@@ -17,7 +17,7 @@ import kotlin.math.min
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK, TABLE, QUOTE }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK, IMAGE, TABLE, QUOTE }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
@@ -81,10 +81,12 @@ public object RichTextParser {
     public fun parse(text: String): List<Span> {
         val verbatim = scanVerbatim(text)
         // The other delimiters are looked for outside the code and the formulas, and the emphasis
-        // outside the addresses of the links
+        // outside the addresses of the links and the whole of bare autolinks
         val withoutVerbatim = mask(text, verbatim)
-        val links = scanLinks(withoutVerbatim, text)
-        val masked = maskDelimiters(withoutVerbatim, links)
+        val bracketLinks = scanLinks(withoutVerbatim, text)
+        val autolinks = scanAutolinks(withoutVerbatim, text, bracketLinks)
+        val links = bracketLinks + autolinks
+        val masked = mask(maskDelimiters(withoutVerbatim, bracketLinks), autolinks)
         val candidates = (verbatim + links).toMutableList()
         val quotes = quotes(text, verbatim)
         candidates += quotes
@@ -605,37 +607,175 @@ public object RichTextParser {
         return chars.concatToString()
     }
 
-    /** The address of a [Kind.LINK] [span] of [text]. */
-    public fun linkUrl(text: String, span: Span): String = text.substring(span.contentEnd + 2, span.end - 1)
+    /** The address of a [Kind.LINK] [span] of [text] (its own range when an autolink). */
+    public fun linkUrl(text: String, span: Span): String =
+        if (span.contentEnd == span.end) text.substring(span.start, span.end)
+        else text.substring(span.contentEnd + 2, span.end - 1)
+
+    /** The address of a [Kind.IMAGE] [span] of [text]. */
+    public fun imageUrl(text: String, span: Span): String = text.substring(span.contentEnd + 2, span.end - 1)
 
     /**
-     * The `[text](url)` links in [masked] (code, formulas and escapes masked): on a single line,
-     * neither the text nor the address empty, the address without spaces and with balanced
-     * parentheses; `![image](url)` is left out.
+     * [raw] normalized if it is an openable web or mail address (`http`, `https`, `mailto`, or
+     * `www.` normalized to `https://`), or `null` otherwise.
+     */
+    public fun openableUrl(raw: String): String? {
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty() || trimmed.any { it.isSpace() }) return null
+        val normalized = if (trimmed.startsWith("www.", ignoreCase = true)) "https://$trimmed" else trimmed
+        return when {
+            normalized.startsWith("https://", ignoreCase = true) && normalized.length > 8 ->
+                "https://" + normalized.substring(8)
+            normalized.startsWith("http://", ignoreCase = true) && normalized.length > 7 ->
+                "http://" + normalized.substring(7)
+            normalized.startsWith("mailto:", ignoreCase = true) && normalized.indexOf('@', 7) > 7 ->
+                "mailto:" + normalized.substring(7)
+            else -> null
+        }
+    }
+
+    /** The openable address of a [Kind.LINK] or [Kind.IMAGE] [span] of [text], or `null`. */
+    public fun openableLinkUrl(text: String, span: Span): String? = when (span.kind) {
+        Kind.LINK -> openableUrl(linkUrl(text, span))
+        Kind.IMAGE -> openableUrl(imageUrl(text, span))
+        else -> null
+    }
+
+    /**
+     * The `[text](url)` links and `![alt](url)` images in [masked] (code, formulas and escapes
+     * masked): on a single line, the address without spaces and with balanced parentheses; a link's
+     * text is non-empty, an image's alt text may be empty.
      */
     private fun scanLinks(masked: String, text: String): List<Span> {
         val spans = mutableListOf<Span>()
         var i = 0
         var open = -1
+        var isImage = false
         while (i < masked.length) {
             val c = masked[i]
             when {
-                text[i] == '\n' -> open = -1
-                c == '[' && masked.getOrNull(i - 1) != '!' -> open = i
-                c == ']' && open >= 0 && i > open + 1 && masked.getOrNull(i + 1) == '(' -> {
-                    val end = closingLinkUrl(masked, text, i + 2)
-                    if (end > 0) {
-                        spans += Span(Kind.LINK, open, end, open + 1, i)
-                        open = -1
-                        i = end
-                        continue
+                text[i] == '\n' -> {
+                    open = -1
+                    isImage = false
+                }
+                c == '[' -> {
+                    if (masked.getOrNull(i - 1) == '!') {
+                        open = i - 1
+                        isImage = true
+                    } else {
+                        open = i
+                        isImage = false
+                    }
+                }
+                c == ']' && open >= 0 && masked.getOrNull(i + 1) == '(' -> {
+                    val contentStart = open + if (isImage) 2 else 1
+                    if (isImage || i > contentStart) {
+                        val end = closingLinkUrl(masked, text, i + 2)
+                        if (end > 0) {
+                            spans += Span(if (isImage) Kind.IMAGE else Kind.LINK, open, end, contentStart, i)
+                            open = -1
+                            isImage = false
+                            i = end
+                            continue
+                        }
                     }
                     open = -1
+                    isImage = false
                 }
             }
             i++
         }
         return spans
+    }
+
+    /**
+     * Bare web and mail URLs (`https://`, `http://`, `mailto:`, `www.`) in [masked], outside
+     * verbatim spans and [existingLinks], with trailing sentence punctuation and unmatched closing
+     * delimiters trimmed.
+     */
+    private fun scanAutolinks(masked: String, text: String, existingLinks: List<Span>): List<Span> {
+        val spans = mutableListOf<Span>()
+        var linkIndex = 0
+        var i = 0
+        while (i < masked.length) {
+            while (linkIndex < existingLinks.size && existingLinks[linkIndex].end <= i) linkIndex++
+            val currentLink = existingLinks.getOrNull(linkIndex)
+            if (currentLink != null && i >= currentLink.start) {
+                i = currentLink.end
+                continue
+            }
+            val prev = masked.getOrNull(i - 1)
+            val atBoundary = prev == null || prev == MASK || prev.isSpace() || prev in AUTOLINK_BEFORE
+            if (!atBoundary) {
+                i++
+                continue
+            }
+            val prefix = when {
+                masked.startsWith("https://", i, ignoreCase = true) -> "https://"
+                masked.startsWith("http://", i, ignoreCase = true) -> "http://"
+                masked.startsWith("mailto:", i, ignoreCase = true) -> "mailto:"
+                masked.startsWith("www.", i, ignoreCase = true) -> "www."
+                else -> null
+            }
+            if (prefix == null) {
+                i++
+                continue
+            }
+            val nextExistingStart = currentLink?.start ?: masked.length
+            var end = i + prefix.length
+            while (end < nextExistingStart && masked[end] != MASK && !text[end].isSpace() && masked[end] != '<') end++
+            end = trimAutolinkEnd(masked, i, i + prefix.length, end)
+            if (isValidAutolink(text, i, prefix, end)) {
+                spans += Span(Kind.LINK, i, end, i, end)
+                i = end
+            } else {
+                i += prefix.length
+            }
+        }
+        return spans
+    }
+
+    private fun trimAutolinkEnd(masked: String, start: Int, minEnd: Int, rawEnd: Int): Int {
+        var end = rawEnd
+        while (end > minEnd) {
+            val last = masked[end - 1]
+            when (last) {
+                in AUTOLINK_TRAILING -> end--
+                ')', ']', '}' -> {
+                    val opener = when (last) {
+                        ')' -> '('
+                        ']' -> '['
+                        else -> '{'
+                    }
+                    var balance = 0
+                    for (k in start until end) {
+                        when (masked[k]) {
+                            opener -> balance++
+                            last -> balance--
+                        }
+                    }
+                    if (balance < 0) end-- else break
+                }
+                else -> break
+            }
+        }
+        return end
+    }
+
+    private fun isValidAutolink(text: String, start: Int, prefix: String, end: Int): Boolean {
+        val bodyStart = start + prefix.length
+        if (end <= bodyStart) return false
+        return when {
+            prefix.equals("mailto:", ignoreCase = true) -> {
+                val at = text.indexOf('@', bodyStart)
+                at > bodyStart && at + 1 < end && text.indexOf('.', at + 1).let { it in (at + 2) until (end - 1) }
+            }
+            prefix.equals("www.", ignoreCase = true) -> {
+                val dot = text.indexOf('.', bodyStart)
+                dot > bodyStart && dot + 1 < end
+            }
+            else -> text[bodyStart].let { it.isLetterOrDigit() }
+        }
     }
 
     /** The offset after the `)` closing a link address starting at [urlStart], or -1. */
@@ -883,6 +1023,9 @@ public object RichTextParser {
     /** The fewest backticks or tildes of a fence, and the most spaces before it. */
     private const val MIN_FENCE = 3
     private const val MAX_FENCE_INDENT = 3
+
+    private const val AUTOLINK_BEFORE = "(<[{\"'*_~"
+    private const val AUTOLINK_TRAILING = ".,;:!?'\"*_~>"
 
     private const val MASK = ''
 }

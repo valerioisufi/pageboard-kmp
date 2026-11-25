@@ -111,7 +111,7 @@ public class WordCounts {
             val ranges = RichTextParser.parse(text).mapNotNull { span ->
                 when (span.kind) {
                     Kind.FORMULA, Kind.CODE, Kind.CODE_BLOCK -> span.start until span.end
-                    Kind.LINK -> span.contentEnd until span.end
+                    Kind.LINK, Kind.IMAGE -> span.contentEnd until span.end
                     else -> null
                 }
             }.sortedBy { it.first }

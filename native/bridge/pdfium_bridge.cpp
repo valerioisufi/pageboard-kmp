@@ -561,6 +561,28 @@ int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* q
     return ok ? 1 : 0;
 }
 
+int32_t pdfium_page_add_link(int64_t page_handle, const float* quads, int32_t quad_count, const char* uri) {
+    if (!page_handle || !quads || quad_count <= 0 || !uri || !uri[0]) return 0;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    WebLink link;
+    link.uri = uri;
+    float left = quads[0], right = quads[0], bottom = quads[1], top = quads[1];
+    link.quads.reserve(static_cast<size_t>(quad_count));
+    for (int32_t i = 0; i < quad_count; i++) {
+        const float* q = quads + i * 8;
+        FS_QUADPOINTSF points = {q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7]};
+        link.quads.push_back(points);
+        for (int c = 0; c < 4; c++) {
+            left = std::min(left, q[c * 2]);
+            right = std::max(right, q[c * 2]);
+            bottom = std::min(bottom, q[c * 2 + 1]);
+            top = std::max(top, q[c * 2 + 1]);
+        }
+    }
+    link.rect = {left, top, right, bottom};
+    return add_web_link(reinterpret_cast<FPDF_PAGE>(page_handle), link) ? 1 : 0;
+}
+
 int64_t pdfium_load_font(int64_t doc_handle, const uint8_t* data, int32_t size) {
     if (!doc_handle || !data || size <= 0) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);

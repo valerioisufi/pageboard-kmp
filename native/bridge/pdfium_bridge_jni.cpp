@@ -180,6 +180,19 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNativ
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nPageAddLink(
+    JNIEnv* env, jclass, jlong page, jfloatArray jquads, jstring juri) {
+    if (!jquads || !juri) return JNI_FALSE;
+    jsize count = env->GetArrayLength(jquads) / 8;
+    const char* uri = env->GetStringUTFChars(juri, nullptr);
+    if (!uri) return JNI_FALSE;
+    jfloat* quads = env->GetFloatArrayElements(jquads, nullptr);
+    int32_t res = quads ? pdfium_page_add_link(page, quads, count, uri) : 0;
+    if (quads) env->ReleaseFloatArrayElements(jquads, quads, JNI_ABORT);
+    env->ReleaseStringUTFChars(juri, uri);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
 JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_pageboard_pdf_PdfiumNative_nLoadFont(
     JNIEnv* env, jclass, jlong doc, jbyteArray jdata) {
     if (!jdata) return 0;

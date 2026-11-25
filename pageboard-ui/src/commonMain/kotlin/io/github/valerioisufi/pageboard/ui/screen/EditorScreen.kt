@@ -2,13 +2,16 @@ package io.github.valerioisufi.pageboard.ui.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
+import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.pageboard.ui.command.CommandRoot
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
@@ -38,6 +41,17 @@ public fun EditorScreen(
     renamer: DocumentRenamer? = null
 ) {
     val controller = context.controller
+    val uriHandler = LocalUriHandler.current
+    DisposableEffect(controller, uriHandler) {
+        val open: (String) -> Unit = { url ->
+            RichTextParser.openableUrl(url)?.let { safe -> runCatching { uriHandler.openUri(safe) } }
+        }
+        val previous = controller.onOpenLink
+        if (previous == null) controller.onOpenLink = open
+        onDispose {
+            if (controller.onOpenLink === open) controller.onOpenLink = previous
+        }
+    }
     // The editor adapts to the window, the input and the platform, and its commands reach the
     // shortcuts and the menu bar (also outside of a library)
     AdaptiveRoot(modifier = modifier) {

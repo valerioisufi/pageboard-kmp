@@ -848,6 +848,7 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getText_markup_highlight (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_underline (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_open_link (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_eraser (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_highlighter (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getTool_pen (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -954,6 +955,7 @@ public final class io/github/valerioisufi/pageboard/ui/render/ComposeTextTileAda
 	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
 	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
+	public fun linkAt (Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/String;
 	public fun measure (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 

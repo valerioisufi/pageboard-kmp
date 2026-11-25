@@ -324,4 +324,5 @@
     <string name="command_scroll_axis_lock">Verrouillage d’axe</string>
     <string name="command_quick_pan">Déplacement rapide</string>
     <string name="quick_pan_active_hint">Déplacement rapide · Toucher pour quitter</string>
+    <string name="text_open_link">Ouvrir le lien</string>
 </resources>

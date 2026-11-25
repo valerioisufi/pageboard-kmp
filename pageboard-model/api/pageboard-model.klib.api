@@ -4534,7 +4534,10 @@ final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.
     final val LINE_NUMBERS // io.github.valerioisufi.pageboard.model.text/RichTextParser.LINE_NUMBERS|{}LINE_NUMBERS[0]
         final fun <get-LINE_NUMBERS>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.model.text/RichTextParser.LINE_NUMBERS.<get-LINE_NUMBERS>|<get-LINE_NUMBERS>(){}[0]
 
+    final fun imageUrl(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): kotlin/String // io.github.valerioisufi.pageboard.model.text/RichTextParser.imageUrl|imageUrl(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
     final fun linkUrl(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): kotlin/String // io.github.valerioisufi.pageboard.model.text/RichTextParser.linkUrl|linkUrl(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
+    final fun openableLinkUrl(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): kotlin/String? // io.github.valerioisufi.pageboard.model.text/RichTextParser.openableLinkUrl|openableLinkUrl(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
+    final fun openableUrl(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.model.text/RichTextParser.openableUrl|openableUrl(kotlin.String){}[0]
     final fun parse(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/RichTextParser.Span> // io.github.valerioisufi.pageboard.model.text/RichTextParser.parse|parse(kotlin.String){}[0]
 
     final enum class Kind : kotlin/Enum<io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind> { // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind|null[0]
@@ -4544,6 +4547,7 @@ final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.
         enum entry ESCAPE // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.ESCAPE|null[0]
         enum entry FORMULA // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.FORMULA|null[0]
         enum entry HEADING // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.HEADING|null[0]
+        enum entry IMAGE // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.IMAGE|null[0]
         enum entry ITALIC // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.ITALIC|null[0]
         enum entry LINK // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.LINK|null[0]
         enum entry LIST_ITEM // io.github.valerioisufi.pageboard.model.text/RichTextParser.Kind.LIST_ITEM|null[0]

@@ -36,6 +36,7 @@ import io.github.valerioisufi.pageboard.model.pdfPointsToPageMm
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeElementType
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
+import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.codePoints
 import io.github.valerioisufi.pageboard.model.decode
 import io.github.valerioisufi.pageboard.model.triangleOutline
@@ -275,6 +276,17 @@ public class PdfExporter(
                 for (shape in formulaPaths.shapes(drawing, toPage)) {
                     if (shape.strokeWidth > 0f) writer.strokePath(shape.path, shape.argb, shape.strokeWidth) else writer.fillPath(shape.path, shape.argb)
                 }
+            }
+            for (link in layout.links) {
+                val safe = RichTextParser.openableUrl(link.url) ?: continue
+                val rects = link.rects.map { r ->
+                    val corners = floatArrayOf(r.left, r.top, r.right, r.top, r.right, r.bottom, r.left, r.bottom)
+                    toBlock.mapPoints(corners)
+                    val xs = floatArrayOf(corners[0], corners[2], corners[4], corners[6])
+                    val ys = floatArrayOf(corners[1], corners[3], corners[5], corners[7])
+                    Rect(xs.min(), ys.min(), xs.max(), ys.max())
+                }
+                if (rects.isNotEmpty()) writer.addLink(rects, safe)
             }
             return true
         }

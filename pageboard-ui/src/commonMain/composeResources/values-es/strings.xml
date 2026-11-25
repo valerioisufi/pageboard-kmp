@@ -324,4 +324,5 @@
     <string name="command_scroll_axis_lock">Bloqueo de eje al desplazar</string>
     <string name="command_quick_pan">Desplazamiento rápido</string>
     <string name="quick_pan_active_hint">Desplazamiento rápido · Toca para salir</string>
+    <string name="text_open_link">Abrir enlace</string>
 </resources>

@@ -509,6 +509,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun getLockedElementForMenu ()Lkotlin/Pair;
 	public final fun getMediaManager ()Lio/github/valerioisufi/pageboard/canvas/controller/MediaManager;
 	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun getOnOpenLink ()Lkotlin/jvm/functions/Function1;
 	public final fun getPageManager ()Lio/github/valerioisufi/pageboard/canvas/controller/PageManager;
 	public final fun getPendingTextImport ()Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;
 	public final fun getPersistence ()Lio/github/valerioisufi/pageboard/model/change/DocumentPersistence;
@@ -552,6 +553,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public final fun setContextMenuPosition-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
 	public final fun setInkLatencyMeasured (Z)V
 	public final fun setLassoMode (Lio/github/valerioisufi/pageboard/canvas/tool/LassoMode;)V
+	public final fun setOnOpenLink (Lkotlin/jvm/functions/Function1;)V
 	public final fun setPageGridVisible (Z)V
 	public final fun setPendingTextImport (Lio/github/valerioisufi/pageboard/canvas/controller/TextImport;)V
 	public final fun setTextAdapter (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;)V
@@ -1524,11 +1526,12 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/PdfTileAd
 
 public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout {
 	public static final field $stable I
-	public fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;)V
-	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;FLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBoxes ()Ljava/util/List;
 	public final fun getFormulas ()Ljava/util/List;
 	public final fun getHeight ()F
+	public final fun getLinks ()Ljava/util/List;
 	public final fun getWords ()Ljava/util/List;
 }
 
@@ -1581,6 +1584,13 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextLineM
 	public final fun getHeight ()F
 }
 
+public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextLink {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getRects ()Ljava/util/List;
+	public final fun getUrl ()Ljava/lang/String;
+}
+
 public abstract interface class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter {
 	public static final field Companion Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter$Companion;
 	public static final field NO_PAPER I
@@ -1588,6 +1598,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/render/t
 	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/pageboard/model/TextElement;Lio/github/valerioisufi/pageboard/model/geometry/Matrix2D;I)V
 	public fun layout (Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
+	public fun linkAt (Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/String;
 	public fun measure (Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 
@@ -1599,6 +1610,7 @@ public final class io/github/valerioisufi/pageboard/canvas/render/tile/TextTileA
 	public static fun clearCaches (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;)V
 	public static fun layout (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;I)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockLayout;
 	public static fun lineMetrics (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;F)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextLineMetrics;
+	public static fun linkAt (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;ILio/github/valerioisufi/pageboard/model/geometry/Point;)Ljava/lang/String;
 	public static fun measure (Lio/github/valerioisufi/pageboard/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/pageboard/model/TextElement;)Lio/github/valerioisufi/pageboard/canvas/render/tile/TextBlockSize;
 }
 

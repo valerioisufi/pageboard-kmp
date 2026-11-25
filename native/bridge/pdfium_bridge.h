@@ -173,6 +173,13 @@ int32_t pdfium_page_add_pdf_page(int64_t doc_handle, int64_t page_handle, int64_
 int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb, const char* appearance);
 
 /**
+ * Adds a link annotation opening [uri] over [quad_count] rectangles: [quads] has eight floats
+ * per rectangle, its upper-left, upper-right, lower-left and lower-right corners in user space.
+ * Returns 1 on success, 0 on failure.
+ */
+int32_t pdfium_page_add_link(int64_t page_handle, const float* quads, int32_t quad_count, const char* uri);
+
+/**
  * Loads the TrueType font [data] into the document (embedded, its characters mapped to Unicode).
  * Returns its handle, closed by pdfium_close_font, or 0 on failure.
  */

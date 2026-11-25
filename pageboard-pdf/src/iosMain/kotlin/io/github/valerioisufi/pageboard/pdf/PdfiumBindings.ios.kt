@@ -17,6 +17,7 @@ import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_new_page
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_open_document
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_bitmap
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_jpeg
+import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_link
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_markup
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_path
 import io.github.valerioisufi.pageboard.pdf.cinterop.pdfium_page_add_pdf_page
@@ -176,6 +177,11 @@ internal actual object PdfiumBindings {
     actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean {
         if (quads.size < 8) return false
         return quads.usePinned { pinned -> pdfium_page_add_markup(page, kind, pinned.addressOf(0), quads.size / 8, argb.toUInt(), appearance) != 0 }
+    }
+
+    actual fun pageAddLink(page: Long, quads: FloatArray, uri: String): Boolean {
+        if (quads.size < 8 || uri.isEmpty()) return false
+        return quads.usePinned { pinned -> pdfium_page_add_link(page, pinned.addressOf(0), quads.size / 8, uri) != 0 }
     }
 
     actual fun loadFont(document: Long, data: ByteArray): Long {

@@ -48,6 +48,9 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isMetaPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -58,6 +61,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.TextToolbarStatus
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
@@ -298,6 +302,10 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     @Suppress("DEPRECATION")
     val plainClipboard = LocalClipboardManager.current
     val conventions = currentAdaptiveInfo().conventions
+    val uriHandler = LocalUriHandler.current
+    fun openLink(url: String) {
+        RichTextParser.openableUrl(url)?.let { safe -> runCatching { uriHandler.openUri(safe) } }
+    }
 
     CompositionLocalProvider(LocalDensity provides unscaledDensity, LocalClipboard provides fieldClipboard) {
         // The session this field was made for
@@ -372,6 +380,29 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
                         val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
                         up.consume()
                         if (current.boxAt(currentShown, up.position) === box) editor.toggleCheckedAt(box.itemStart)
+                    }
+                }
+                // Cmd/Ctrl+click on a link opens it without altering selection
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val down = event.changes.firstOrNull { it.changedToDownIgnoreConsumed() } ?: continue
+                            val modifiers = event.keyboardModifiers
+                            if (!modifiers.isCtrlPressed && !modifiers.isMetaPressed) continue
+                            val current = layout ?: continue
+                            val text = currentShown
+                            if (current.layoutInput.text.text != text.text.text) continue
+                            val offset = current.getOffsetForPosition(down.position)
+                            val link = text.links.firstOrNull { offset in it.shownStart until it.shownEnd } ?: continue
+                            down.consume()
+                            val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: continue
+                            up.consume()
+                            val upOffset = layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }?.getOffsetForPosition(up.position)
+                            if (upOffset != null && upOffset in link.shownStart until link.shownEnd) {
+                                openLink(link.url)
+                            }
+                        }
                     }
                 }
                 // A finger and a pen select as the page shows the text, the handles where it is
@@ -656,6 +687,7 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }
         }
         val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
+        val linkAtCaret = shown.linkAtCaret ?: cellAtCaret?.presented?.linkAtCaret
         if (hidden != null && layout?.layoutInput?.text?.text == shown.text.text) {
             // In a cell, its offsets are those of the cell
             val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
@@ -670,7 +702,8 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
                 avoid = barBounds,
                 error = if (hidden.kind == RichTextParser.Kind.FORMULA && writing.invalid) stringResource(Res.string.text_editor_formula_invalid) else null,
                 onCaret = { change(editor.value.copy(selection = TextRange(from + it))) },
-                monospace = notesFonts.monospace
+                monospace = notesFonts.monospace,
+                onOpenLink = linkAtCaret?.let { url -> { openLink(url) } }
             )
         }
         // No handle on the text while the caret is in the strip: it would stand at the start of the formula

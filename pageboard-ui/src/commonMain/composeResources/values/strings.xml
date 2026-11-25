@@ -325,4 +325,5 @@
     <string name="command_scroll_axis_lock">Scroll axis lock</string>
     <string name="command_quick_pan">Quick Pan</string>
     <string name="quick_pan_active_hint">Quick Pan · Tap to exit</string>
+    <string name="text_open_link">Open link</string>
 </resources>

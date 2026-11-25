@@ -87,6 +87,7 @@ public final class io/github/valerioisufi/pageboard/pdf/PdfSize {
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/pdf/PdfWriter : java/lang/AutoCloseable {
+	public fun addLink (Ljava/util/List;Ljava/lang/String;)Z
 	public abstract fun addMarkup (Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;)Z
 	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
 	public abstract fun addText (Lio/github/valerioisufi/pageboard/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;IFZ)Z
@@ -107,6 +108,7 @@ public abstract interface class io/github/valerioisufi/pageboard/pdf/PdfWriter :
 }
 
 public final class io/github/valerioisufi/pageboard/pdf/PdfWriter$DefaultImpls {
+	public static fun addLink (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Ljava/util/List;Ljava/lang/String;)Z
 	public static synthetic fun addMarkup$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfMarkupKind;Ljava/util/List;ILjava/util/List;ILjava/lang/Object;)Z
 	public static synthetic fun addText$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Lio/github/valerioisufi/pageboard/pdf/PdfFont;Ljava/lang/String;FLio/github/valerioisufi/pageboard/model/geometry/Matrix2D;IFZILjava/lang/Object;)Z
 	public static synthetic fun save$default (Lio/github/valerioisufi/pageboard/pdf/PdfWriter;Ljava/lang/String;Lio/github/valerioisufi/pageboard/pdf/PdfInfo;ILjava/lang/Object;)V

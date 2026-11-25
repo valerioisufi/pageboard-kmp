@@ -238,6 +238,21 @@ class PdfExporterTest {
     }
 
     @Test
+    fun linksInTextExportAsPdfLinkAnnotations() = runBlocking {
+        val document = Document(title = "Links")
+        document.pages[0].add(TextElement().apply {
+            text = "Visit [Example](https://example.com/guide) or www.kotlinlang.org"
+            x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 18f
+        })
+        val pdf = tempFile("text-links", ".pdf")
+        PdfExporter(textAdapter, fontFiles, formulas = LATEX).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        val raw = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/Subtype /Link" in raw || "/Subtype/Link" in raw, "PDF should contain link annotation")
+        assertTrue("https://example.com/guide" in raw, "PDF should contain bracket link URI")
+        assertTrue("https://www.kotlinlang.org" in raw, "PDF should contain normalized autolink URI")
+    }
+
+    @Test
     fun theCharactersOutOfTheFontAreImagesOfTheirWords() = runBlocking {
         val document = Document(title = "Emoji")
         document.pages[0].add(TextElement().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })

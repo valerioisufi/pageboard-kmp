@@ -186,8 +186,40 @@ class RichTextParserTest {
             listOf(Kind.BOLD to "[link](https://example.com)", Kind.LINK to "link"),
             spans("**[link](https://example.com)**")
         )
-        assertTrue(spans("![image](https://example.com)").isEmpty(), "an image is not a link")
-        assertTrue(spans("[](https://example.com)").isEmpty(), "a link has text")
+        val img = RichTextParser.parse("![image](https://example.com)").single()
+        assertEquals(Kind.IMAGE, img.kind)
+        assertEquals("image", "![image](https://example.com)".substring(img.contentStart, img.contentEnd))
+        assertEquals("https://example.com", RichTextParser.imageUrl("![image](https://example.com)", img))
+        val emptyLinkText = RichTextParser.parse("[](https://example.com)").single()
+        assertTrue(emptyLinkText.delimiters.isEmpty(), "an empty bracket link is not a bracketed link")
         assertTrue(spans("[text]()").isEmpty(), "a link has an address")
+    }
+
+    @Test
+    fun imagesAllowEmptyAltAndBareAutolinksAreLinks() {
+        val emptyAlt = RichTextParser.parse("![](https://example.com/a.png)").single()
+        assertEquals(Kind.IMAGE, emptyAlt.kind)
+        assertEquals("https://example.com/a.png", RichTextParser.imageUrl("![](https://example.com/a.png)", emptyAlt))
+
+        val sentence = "See https://example.com/a_(b), www.kotlinlang.org and mailto:team@example.org!"
+        val found = RichTextParser.parse(sentence)
+        assertEquals(listOf(Kind.LINK, Kind.LINK, Kind.LINK), found.map { it.kind })
+        assertEquals(
+            listOf("https://example.com/a_(b)", "www.kotlinlang.org", "mailto:team@example.org"),
+            found.map { RichTextParser.linkUrl(sentence, it) }
+        )
+        assertEquals(
+            listOf("https://example.com/a_(b)", "https://www.kotlinlang.org", "mailto:team@example.org"),
+            found.map { RichTextParser.openableLinkUrl(sentence, it) }
+        )
+
+        val boldLink = "**https://example.com/a_b**"
+        assertEquals(
+            listOf(Kind.BOLD to "https://example.com/a_b", Kind.LINK to "https://example.com/a_b"),
+            spans(boldLink).sortedBy { it.first.ordinal }
+        )
+        assertEquals(null, RichTextParser.openableUrl("javascript:alert(1)"))
+        assertEquals(null, RichTextParser.openableUrl("file:///etc/passwd"))
+        assertEquals("http://example.com", RichTextParser.openableUrl("http://example.com"))
     }
 }

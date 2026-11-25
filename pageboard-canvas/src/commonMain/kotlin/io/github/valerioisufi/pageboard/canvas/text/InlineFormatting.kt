@@ -103,7 +103,7 @@ internal object InlineFormatting {
         }
         if (spans.any {
                 (it.isVerbatim && it.kind != format.kind && at > it.contentStart && at < it.contentEnd) ||
-                    (it.kind == Kind.LINK && at > it.contentEnd && at < it.end)
+                    (it.kind == Kind.LINK && it.contentEnd < it.end && at > it.contentEnd && at < it.end)
             }
         ) return value
         val delimiter = delimiterFor(text, format, at, at)
@@ -170,7 +170,7 @@ internal object InlineFormatting {
     private fun inOtherVerbatim(spans: List<Span>, kind: Kind, part: IntRange): Boolean =
         spans.any {
             (it.isVerbatim && it.kind != kind && it.contentStart <= part.first && part.last + 1 <= it.contentEnd) ||
-                (it.kind == Kind.LINK && part.last + 1 > it.contentEnd && part.first < it.end)
+                (it.kind == Kind.LINK && it.contentEnd < it.end && part.last + 1 > it.contentEnd && part.first < it.end)
         }
 
     private val Span.isVerbatim get() = kind == Kind.CODE || kind == Kind.FORMULA || kind == Kind.CODE_BLOCK

@@ -319,4 +319,5 @@
     <string name="command_scroll_axis_lock">스크롤 축 잠금</string>
     <string name="command_quick_pan">빠른 이동</string>
     <string name="quick_pan_active_hint">빠른 이동 · 탭하여 종료</string>
+    <string name="text_open_link">링크 열기</string>
 </resources>

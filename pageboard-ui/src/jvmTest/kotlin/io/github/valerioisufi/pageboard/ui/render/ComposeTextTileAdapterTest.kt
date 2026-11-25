@@ -15,6 +15,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
+import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import io.github.valerioisufi.pageboard.model.text.code.CodeHighlighter
 import io.github.valerioisufi.pageboard.model.text.code.CodeToken
@@ -240,5 +241,18 @@ class ComposeTextTileAdapterTest {
         assertTrue(layout.words.first { it.text.trim() == "int" }.left > box.left)
         val top = assertNotNull(adapter.layout(text("Compile:\n```c\nint x;\n```"), TextTileAdapter.NO_PAPER)).boxes.single()
         assertEquals(0f, top.left, 0.01f, "out of a list, at the left of the box")
+    }
+
+    @Test
+    fun linksExposeBoundsAndHitTestInMillimeters() {
+        val element = text("Open [guide](https://example.com) or www.kotlinlang.org")
+        val laid = assertNotNull(adapter.layout(element, TextTileAdapter.NO_PAPER))
+        assertEquals(listOf("https://example.com", "https://www.kotlinlang.org"), laid.links.map { it.url })
+        for (link in laid.links) {
+            val r = link.rects.first()
+            val center = Point((r.left + r.right) / 2f, (r.top + r.bottom) / 2f)
+            assertEquals(link.url, adapter.linkAt(element, TextTileAdapter.NO_PAPER, center))
+        }
+        assertEquals(null, adapter.linkAt(element, TextTileAdapter.NO_PAPER, Point(0.1f, 0.1f)))
     }
 }

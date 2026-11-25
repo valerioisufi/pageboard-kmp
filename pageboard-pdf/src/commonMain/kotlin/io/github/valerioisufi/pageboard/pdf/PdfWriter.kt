@@ -2,6 +2,7 @@ package io.github.valerioisufi.pageboard.pdf
 
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
@@ -64,6 +65,12 @@ public interface PdfWriter : AutoCloseable {
      * drawn by filling [appearance] (or as PDFium draws it when `null`).
      */
     public fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int, appearance: List<Rect>? = null): Boolean
+
+    /**
+     * Adds a link annotation opening [uri] (web or mail) over [lines] (in points from the page's
+     * top-left corner).
+     */
+    public fun addLink(lines: List<Rect>, uri: String): Boolean = false
 
     /**
      * Embeds the TrueType font [data] (typically a subset, see [TrueTypeFont.subset]): the text
@@ -275,6 +282,17 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         }
         toUser.mapPoints(quads)
         return PdfiumBindings.pageAddMarkup(currentPage(), kind.ordinal, quads, argb, appearance?.let { filling(it, argb) })
+    }
+
+    override fun addLink(lines: List<Rect>, uri: String): Boolean {
+        if (lines.isEmpty()) return true
+        val safe = RichTextParser.openableUrl(uri) ?: return false
+        val quads = FloatArray(lines.size * 8)
+        lines.forEachIndexed { i, line ->
+            floatArrayOf(line.left, line.top, line.right, line.top, line.left, line.bottom, line.right, line.bottom).copyInto(quads, i * 8)
+        }
+        toUser.mapPoints(quads)
+        return PdfiumBindings.pageAddLink(currentPage(), quads, safe)
     }
 
     /** The content stream filling [areas] in [argb], in the user space of the page. */

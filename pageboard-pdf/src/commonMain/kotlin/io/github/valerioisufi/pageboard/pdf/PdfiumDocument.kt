@@ -75,6 +75,9 @@ internal expect object PdfiumBindings {
     /** [appearance] is the content stream drawing the annotation, or `null` for the one PDFium generates. */
     fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean
 
+    /** Adds a link annotation opening [uri] over [quads] (8 floats per quad in user space). */
+    fun pageAddLink(page: Long, quads: FloatArray, uri: String): Boolean
+
     /** Loads a TrueType font into [document]: returns its handle, or 0 on failure. */
     fun loadFont(document: Long, data: ByteArray): Long
 

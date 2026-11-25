@@ -97,6 +97,9 @@ internal object PdfiumNative {
     external fun nPageAddMarkup(pageHandle: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean
 
     @JvmStatic
+    external fun nPageAddLink(pageHandle: Long, quads: FloatArray, uri: String): Boolean
+
+    @JvmStatic
     external fun nLoadFont(docHandle: Long, data: ByteArray): Long
 
     @JvmStatic

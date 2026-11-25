@@ -4,11 +4,15 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +34,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
+import org.jetbrains.compose.resources.stringResource
+import io.github.valerioisufi.pageboard.ui.generated.resources.Res
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_open_link
 import kotlin.math.roundToInt
 
 /**
@@ -55,7 +63,8 @@ internal fun SourceStrip(
     avoid: () -> Rect?,
     error: String?,
     onCaret: (Int) -> Unit,
-    monospace: FontFamily
+    monospace: FontFamily,
+    onOpenLink: (() -> Unit)? = null
 ) {
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val colors = MaterialTheme.colorScheme
@@ -84,43 +93,54 @@ internal fun SourceStrip(
         color = colors.surface
     ) {
         Column(Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
-            BasicText(
-                text = source.ifEmpty { " " },
-                style = TextStyle(color = colors.onSurface, fontFamily = monospace, fontSize = 14.sp),
-                onTextLayout = { layout = it },
-                modifier = Modifier
-                    .pointerInput(source) {
-                        awaitEachGesture {
-                            val down = awaitFirstDown()
-                            down.consume()
-                            val up = waitForUpOrCancellation() ?: return@awaitEachGesture
-                            up.consume()
-                            val current = layout ?: return@awaitEachGesture
-                            onCaret(current.getOffsetForPosition(up.position).coerceIn(0, source.length))
-                        }
-                    }
-                    .drawWithContent {
-                        val current = layout
-                        val range = selection?.let { TextRange(it.start.coerceIn(0, source.length), it.end.coerceIn(0, source.length)) }
-                        if (current != null && range != null && !range.collapsed) {
-                            drawPath(current.getPathForRange(range.min, range.max), selectionColor)
-                        }
-                        drawContent()
-                        if (current == null) return@drawWithContent
-                        composition?.let { c ->
-                            val from = c.min.coerceIn(0, source.length)
-                            val to = c.max.coerceIn(0, source.length)
-                            if (to > from) {
-                                val start = current.getCursorRect(from)
-                                val end = current.getCursorRect(to)
-                                drawLine(colors.onSurface, Offset(start.left, start.bottom), Offset(end.left, end.bottom), strokeWidth = 1.dp.toPx())
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                BasicText(
+                    text = source.ifEmpty { " " },
+                    style = TextStyle(color = colors.onSurface, fontFamily = monospace, fontSize = 14.sp),
+                    onTextLayout = { layout = it },
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .pointerInput(source) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                down.consume()
+                                val up = waitForUpOrCancellation() ?: return@awaitEachGesture
+                                up.consume()
+                                val current = layout ?: return@awaitEachGesture
+                                onCaret(current.getOffsetForPosition(up.position).coerceIn(0, source.length))
                             }
                         }
-                        if (range != null && range.collapsed && caretShown) {
-                            with(TextCaret) { drawCaret(current.getCursorRect(range.start), TextCaret.CARET_WIDTH.toPx(), colors.primary) }
+                        .drawWithContent {
+                            val current = layout
+                            val range = selection?.let { TextRange(it.start.coerceIn(0, source.length), it.end.coerceIn(0, source.length)) }
+                            if (current != null && range != null && !range.collapsed) {
+                                drawPath(current.getPathForRange(range.min, range.max), selectionColor)
+                            }
+                            drawContent()
+                            if (current == null) return@drawWithContent
+                            composition?.let { c ->
+                                val from = c.min.coerceIn(0, source.length)
+                                val to = c.max.coerceIn(0, source.length)
+                                if (to > from) {
+                                    val start = current.getCursorRect(from)
+                                    val end = current.getCursorRect(to)
+                                    drawLine(colors.onSurface, Offset(start.left, start.bottom), Offset(end.left, end.bottom), strokeWidth = 1.dp.toPx())
+                                }
+                            }
+                            if (range != null && range.collapsed && caretShown) {
+                                with(TextCaret) { drawCaret(current.getCursorRect(range.start), TextCaret.CARET_WIDTH.toPx(), colors.primary) }
+                            }
                         }
+                )
+                if (onOpenLink != null) {
+                    IconButton(
+                        onClick = onOpenLink,
+                        modifier = Modifier.padding(start = 4.dp).size(28.dp).keepsTextFocus()
+                    ) {
+                        Icon(PageboardIcons.ExternalLink, contentDescription = stringResource(Res.string.text_open_link), modifier = Modifier.size(16.dp))
                     }
-            )
+                }
+            }
             if (error != null) {
                 Text(error, style = MaterialTheme.typography.labelMedium, color = colors.error)
             }

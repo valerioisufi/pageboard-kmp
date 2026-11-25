@@ -33,11 +33,14 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextBox
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFace
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextFormula
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextLineMetrics
+import io.github.valerioisufi.pageboard.canvas.render.tile.TextLink
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.render.tile.TextWord
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
+import io.github.valerioisufi.pageboard.model.geometry.Point
+import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
 import io.github.valerioisufi.pageboard.model.text.TextBackground
 import io.github.valerioisufi.pageboard.model.text.TextRoom
 import io.github.valerioisufi.pageboard.model.text.TextSizes.PT_TO_MM
@@ -49,6 +52,7 @@ import io.github.valerioisufi.pageboard.ui.editor.QUOTE_BAR_ALPHA
 import io.github.valerioisufi.pageboard.ui.editor.quoteBars
 import io.github.valerioisufi.pageboard.ui.editor.PresentedCodeBlock
 import io.github.valerioisufi.pageboard.ui.editor.PresentedFormula
+import io.github.valerioisufi.pageboard.ui.editor.PresentedLink
 import io.github.valerioisufi.pageboard.ui.editor.PresentedTable
 import io.github.valerioisufi.pageboard.ui.editor.Presentation
 import io.github.valerioisufi.pageboard.ui.editor.RichTextPresenter
@@ -134,7 +138,8 @@ public class ComposeTextTileAdapter(
         val formulaSizes: Map<ImageBitmap, Float>,
         val tables: List<PresentedTable<ImageBitmap>>,
         val bars: List<CodeChip>,
-        val barColor: Color
+        val barColor: Color,
+        val links: List<PresentedLink> = emptyList()
     ) {
         /** The formulas of the text and of the cells of its tables, where they are drawn in its layout. */
         val allFormulas: List<Pair<PresentedFormula<ImageBitmap>, Rect>>
@@ -224,6 +229,13 @@ public class ComposeTextTileAdapter(
         return onTextLayoutThread { layoutOf(text, paperColor) }
     }
 
+    override fun linkAt(text: TextElement, paperColor: Int, localPointMm: Point): String? {
+        val laid = layout(text, paperColor) ?: return null
+        return laid.links.firstOrNull { link ->
+            link.rects.any { r -> localPointMm.x in r.left..r.right && localPointMm.y in r.top..r.bottom }
+        }?.url
+    }
+
     private fun layoutOf(text: TextElement, paperColor: Int): TextBlockLayout = syncLock(lock) {
         // At a resolution where the rounding of the width is negligible
         val scale = LAYOUT_PX_PER_MM
@@ -269,7 +281,51 @@ public class ComposeTextTileAdapter(
             val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
             addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
         }
-        TextBlockLayout(words, formulas, layout.size.height / scale, boxes)
+        val textLinks = ArrayList<TextLink>()
+        for (link in prepared.links) {
+            val rects = linkRects(layout, link.shownStart, link.shownEnd, left, 0f, scale)
+            if (rects.isNotEmpty()) textLinks += TextLink(link.url, rects)
+        }
+        for (table in prepared.tables) {
+            val origin = layout.tableOrigin(table) + Offset(left, 0f)
+            for (cell in table.layout.cells) {
+                for (link in cell.presented.links) {
+                    val rects = linkRects(cell.layout, link.shownStart, link.shownEnd, origin.x + cell.left, origin.y + cell.top, scale)
+                    if (rects.isNotEmpty()) textLinks += TextLink(link.url, rects)
+                }
+            }
+        }
+        TextBlockLayout(words, formulas, layout.size.height / scale, boxes, textLinks)
+    }
+
+    private fun linkRects(layout: TextLayoutResult, shownStart: Int, shownEnd: Int, left: Float, top: Float, scale: Float): List<MmRect> {
+        val chars = layout.layoutInput.text.text
+        val start = shownStart.coerceIn(0, chars.length)
+        val end = shownEnd.coerceIn(0, chars.length)
+        if (end <= start || layout.lineCount == 0) return emptyList()
+        val firstLine = layout.getLineForOffset(start)
+        val lastLine = layout.getLineForOffset(end - 1)
+        val rects = ArrayList<MmRect>(lastLine - firstLine + 1)
+        for (line in firstLine..lastLine) {
+            var lineStart = maxOf(start, layout.getLineStart(line))
+            var lineEnd = minOf(end, layout.getLineEnd(line))
+            while (lineStart < lineEnd && (chars[lineStart] == '\n' || chars[lineStart].isPlaceholder())) lineStart++
+            while (lineEnd > lineStart && (chars[lineEnd - 1] == '\n' || chars[lineEnd - 1].isPlaceholder())) lineEnd--
+            if (lineEnd <= lineStart) continue
+            val firstBox = layout.getBoundingBox(lineStart)
+            val lastBox = layout.getBoundingBox(lineEnd - 1)
+            val boxLeft = minOf(firstBox.left, lastBox.left)
+            val boxRight = maxOf(firstBox.right, lastBox.right)
+            if (boxRight > boxLeft) {
+                rects += MmRect(
+                    left = (left + boxLeft) / scale,
+                    top = (top + layout.getLineTop(line)) / scale,
+                    right = (left + boxRight) / scale,
+                    bottom = (top + layout.getLineBottom(line)) / scale
+                )
+            }
+        }
+        return rects
     }
 
     /**
@@ -501,7 +557,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables, layout.quoteBars(shown.quotes, fontPx), color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA))
+        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables, layout.quoteBars(shown.quotes, fontPx), color.copy(alpha = color.alpha * QUOTE_BAR_ALPHA), shown.links)
     }
 
     public companion object {

@@ -91,6 +91,9 @@ public interface TextTileAdapter {
     /** A line of a text of [fontSize] points; `null` when the adapter cannot tell it. */
     public fun lineMetrics(fontSize: Float): TextLineMetrics? = null
 
+    /** The box in local millimeters of any link at [localPointMm] in [text], or `null` when none. */
+    public fun linkAt(text: TextElement, paperColor: Int, localPointMm: io.github.valerioisufi.pageboard.model.geometry.Point): String? = null
+
     /** Drops what the adapter keeps of the texts it laid out (e.g. its formulas became renderable). */
     public fun clearCaches() {}
 
@@ -112,14 +115,21 @@ public class TextLineMetrics(public val height: Float, public val baseline: Floa
 /**
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
  * corner, before its rotation, which turns it around that corner, [height] being the height its
- * lines take): its [words], its [formulas] and the [boxes] drawn under them (the backgrounds of its
- * code).
+ * lines take): its [words], its [formulas], the [boxes] drawn under them (the backgrounds of its
+ * code), and its clickable [links].
  */
 public class TextBlockLayout(
     public val words: List<TextWord>,
     public val formulas: List<TextFormula>,
     public val height: Float,
-    public val boxes: List<TextBox> = emptyList()
+    public val boxes: List<TextBox> = emptyList(),
+    public val links: List<TextLink> = emptyList()
+)
+
+/** A link laid out inside a text block: the [url] it opens and the line [rects] it covers in millimeters. */
+public class TextLink(
+    public val url: String,
+    public val rects: List<io.github.valerioisufi.pageboard.model.geometry.Rect>
 )
 
 /**

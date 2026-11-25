@@ -45,6 +45,7 @@ abstract interface io.github.valerioisufi.pageboard.pdf/PdfWriter : kotlin/AutoC
     abstract fun pdfPageSize(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.pdf/PdfSize? // io.github.valerioisufi.pageboard.pdf/PdfWriter.pdfPageSize|pdfPageSize(kotlin.String;kotlin.Int){}[0]
     abstract fun save(kotlin/String, io.github.valerioisufi.pageboard.pdf/PdfInfo = ...) // io.github.valerioisufi.pageboard.pdf/PdfWriter.save|save(kotlin.String;io.github.valerioisufi.pageboard.pdf.PdfInfo){}[0]
     abstract fun strokePath(io.github.valerioisufi.pageboard.pdf/PdfPath, kotlin/Int, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.pageboard.pdf/PdfWriter.strokePath|strokePath(io.github.valerioisufi.pageboard.pdf.PdfPath;kotlin.Int;kotlin.Float){}[0]
+    open fun addLink(kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Rect>, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.pdf/PdfWriter.addLink|addLink(kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Rect>;kotlin.String){}[0]
 }
 
 final class io.github.valerioisufi.pageboard.pdf/GlyphContour { // io.github.valerioisufi.pageboard.pdf/GlyphContour|null[0]

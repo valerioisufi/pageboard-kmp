@@ -20,7 +20,7 @@ import io.github.valerioisufi.pageboard.model.text.RichTextParser.Kind
  */
 internal object SeenDeletion {
 
-    private val KINDS = setOf(Kind.BOLD, Kind.ITALIC, Kind.STRIKE, Kind.CODE, Kind.ESCAPE, Kind.FORMULA, Kind.LINK)
+    private val KINDS = setOf(Kind.BOLD, Kind.ITALIC, Kind.STRIKE, Kind.CODE, Kind.ESCAPE, Kind.FORMULA, Kind.LINK, Kind.IMAGE)
 
     /**
      * [newValue], a deletion or a replacement made in [oldValue], as it takes what is seen; `null`
@@ -62,8 +62,8 @@ internal object SeenDeletion {
         // Inner spans first: a span emptied leaves its outer span emptied too
         val spans = RichTextParser.parse(old).filter { it.kind in KINDS }.sortedBy { it.end - it.start }
         if (spans.isEmpty()) return null
-        // In the address of a link (between `](` and `)`), what is deleted is what is written
-        if (spans.any { it.kind == Kind.LINK && from >= it.contentEnd + 2 && to <= it.end - 1 }) return null
+        // In the address of a link or image (between `](` and `)`), what is deleted is what is written
+        if (spans.any { (it.kind == Kind.LINK || it.kind == Kind.IMAGE) && it.contentEnd < it.end && from >= it.contentEnd + 2 && to <= it.end - 1 }) return null
         val delimiter = BooleanArray(old.length)
         for (span in spans) for (range in span.delimiters) for (i in range) delimiter[i] = true
 

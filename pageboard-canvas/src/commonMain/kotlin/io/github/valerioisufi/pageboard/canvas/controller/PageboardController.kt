@@ -51,6 +51,7 @@ import io.github.valerioisufi.pageboard.model.change.PersistenceQueue
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect as MmRect
+import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextDefaults
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import kotlin.math.ceil
@@ -211,6 +212,9 @@ public class PageboardController(
         contextMenuPosition = null
         lockedElementForMenu = null
     }
+
+    /** Opens an external web or mail link tapped in a text block. */
+    public var onOpenLink: ((String) -> Unit)? = null
 
     /** The style of a new text: the one of the text written last. */
     public var textDefaults: TextDefaults by mutableStateOf(TextDefaults())
@@ -491,6 +495,20 @@ public class PageboardController(
 
     /** A line of a text of [fontSize] points as the renderer lays it out, or `null` without a text adapter. */
     internal fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
+
+    /** The openable URL of a link under ([mmX], [mmY]) on [pageIndex], or `null` when none. */
+    internal fun linkAt(pageIndex: Int, mmX: Float, mmY: Float): String? {
+        val adapter = tileManager.tileRenderer.textAdapter ?: return null
+        val page = document.pages.getOrNull(pageIndex) ?: return null
+        val edited = textEditorManager.activeTextItem
+        val paper = page.background.backgroundColor
+        for (text in page.texts.asReversed()) {
+            if (text === edited || !text.containsPoint(mmX, mmY)) continue
+            val raw = adapter.linkAt(text, paper, text.toLocal(mmX, mmY)) ?: continue
+            RichTextParser.openableUrl(raw)?.let { return it }
+        }
+        return null
+    }
 
     /**
      * What draws the texts (Markdown and formulas) in the tiles, the thumbnails and the overlays:

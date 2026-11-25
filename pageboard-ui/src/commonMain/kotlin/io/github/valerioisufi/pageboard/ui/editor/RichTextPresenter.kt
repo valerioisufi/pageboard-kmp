@@ -210,11 +210,23 @@ internal class PresentedCodeBlock(
 }
 
 /**
+ * A link of a presented text, from [shownStart] to [shownEnd] in the shown text and [sourceStart]
+ * to [sourceEnd] in the source, opening [url].
+ */
+internal class PresentedLink(
+    val url: String,
+    val shownStart: Int,
+    val shownEnd: Int,
+    val sourceStart: Int,
+    val sourceEnd: Int
+)
+
+/**
  * A text as it is shown (see [RichTextPresenter]): the [text] laid out, the [mapping] of its
  * offsets and those of the source, its [formulas] and [codeBlocks] to draw over their characters,
  * its code in the line ([inlineCode]) to draw on a background, the hidden source of what the caret
  * is in ([hiddenAtCaret]), the block quotes ([quotes]: the part of the text shown of each one) to
- * draw a bar at their left.
+ * draw a bar at their left, its clickable [links], and [linkAtCaret] if the caret is in an openable link.
  */
 internal class PresentedText<T>(
     val text: AnnotatedString,
@@ -225,7 +237,9 @@ internal class PresentedText<T>(
     val hiddenAtCaret: HiddenSource?,
     val tables: List<PresentedTable<T>> = emptyList(),
     val quotes: List<IntRange> = emptyList(),
-    val boxes: List<PresentedBox> = emptyList()
+    val boxes: List<PresentedBox> = emptyList(),
+    val links: List<PresentedLink> = emptyList(),
+    val linkAtCaret: String? = null
 )
 
 /**
@@ -385,16 +399,16 @@ internal object RichTextPresenter {
                     when (span.kind) {
                         Kind.HEADING -> for (i in span.start until span.contentStart) noCaret[i] = true
                         Kind.ESCAPE -> for (delimiter in span.delimiters) for (i in delimiter) if (i + 1 <= text.length) noCaret[i + 1] = true
-                        // Its address goes in the strip, with the caret in its text or in it
-                        Kind.LINK -> if (atCaret == null && touched && selMin!! >= span.contentStart && selMax!! < span.end) atCaret = span
+                        // Its address goes in the strip, with the caret in its text or in it (not for autolinks)
+                        Kind.LINK, Kind.IMAGE -> if (atCaret == null && span.delimiters.isNotEmpty() && touched && selMin!! >= span.contentStart && selMax!! < span.end) atCaret = span
                         else -> Unit
                     }
                 }
             }
         }
         val shown = Shown(text.length, noCaret)
-        // The address of a link is edited in the strip: the caret in it keeps its own moves
-        for (span in spans) if (span.kind == Kind.LINK) shown.markObject(span.contentEnd + 1, span.end)
+        // The address of a bracketed link or image is edited in the strip: the caret in it keeps its own moves
+        for (span in spans) if ((span.kind == Kind.LINK || span.kind == Kind.IMAGE) && span.delimiters.isNotEmpty()) shown.markObject(span.contentEnd + 1, span.end)
         val formulas = mutableListOf<PresentedFormula<T>>()
         val codeBlocks = mutableListOf<PresentedCodeBlock>()
         val tables = mutableListOf<PresentedTable<T>>()
@@ -580,14 +594,31 @@ internal object RichTextPresenter {
                     HiddenSource(Kind.CODE_BLOCK, span.start until lineEnd, mapping.originalToTransformed(span.start), caretIn = true)
                 }
                 else -> {
-                    // The address of a link: between `](` and `)`
+                    // The address of a link or image: between `](` and `)`
                     val address = (span.contentEnd + 2).coerceAtMost(span.end - 1) until (span.end - 1)
-                    HiddenSource(Kind.LINK, address, mapping.originalToTransformed(span.contentStart), caretIn = selMin!! >= address.first && selMax!! <= address.last + 1)
+                    HiddenSource(span.kind, address, mapping.originalToTransformed(span.contentStart), caretIn = selMin!! >= address.first && selMax!! <= address.last + 1)
                 }
             }
         }
         val boxes = labels.mapNotNull { (range, item) -> item.checked?.let { PresentedBox(range, item.span.start, it) } }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, hiddenAtCaret, tables, quotes, boxes)
+        val links = mutableListOf<PresentedLink>()
+        var linkAtCaret: String? = null
+        var nextTableEnd = -1
+        for (span in spans) {
+            if (span.start in tableAt) nextTableEnd = span.end
+            if (span.start < nextTableEnd) continue
+            if (span.kind != Kind.LINK && span.kind != Kind.IMAGE) continue
+            val url = RichTextParser.openableLinkUrl(text, span) ?: continue
+            if (linkAtCaret == null && touched(span)) linkAtCaret = url
+            if (span.kind == Kind.LINK) {
+                val shownFrom = mapping.originalToTransformed(span.contentStart)
+                val shownTo = mapping.originalToTransformed(span.contentEnd)
+                if (shownTo > shownFrom) {
+                    links += PresentedLink(url, shownFrom, shownTo, span.start, span.end)
+                }
+            }
+        }
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, hiddenAtCaret, tables, quotes, boxes, links, linkAtCaret)
     }
 
     /**

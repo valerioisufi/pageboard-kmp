@@ -3959,7 +3959,10 @@ public final class io/github/valerioisufi/pageboard/model/text/PastedText {
 public final class io/github/valerioisufi/pageboard/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/RichTextParser;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;
+	public final fun imageUrl (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)Ljava/lang/String;
 	public final fun linkUrl (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)Ljava/lang/String;
+	public final fun openableLinkUrl (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)Ljava/lang/String;
+	public final fun openableUrl (Ljava/lang/String;)Ljava/lang/String;
 	public final fun parse (Ljava/lang/String;)Ljava/util/List;
 }
 
@@ -3970,6 +3973,7 @@ public final class io/github/valerioisufi/pageboard/model/text/RichTextParser$Ki
 	public static final field ESCAPE Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
 	public static final field FORMULA Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
 	public static final field HEADING Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
+	public static final field IMAGE Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
 	public static final field ITALIC Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
 	public static final field LINK Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
 	public static final field LIST_ITEM Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Kind;
