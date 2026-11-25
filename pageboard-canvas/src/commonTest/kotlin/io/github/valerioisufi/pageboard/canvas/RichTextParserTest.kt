@@ -74,6 +74,44 @@ class RichTextParserTest {
     }
 
     @Test
+    fun commonMarkEmphasisRulesApply() {
+        assertEquals(
+            listOf(Kind.ITALIC to "**x**", Kind.BOLD to "x"),
+            spans("***x***")
+        )
+        assertEquals(
+            listOf(Kind.ITALIC to "__x__", Kind.BOLD to "x"),
+            spans("___x___")
+        )
+        assertEquals(
+            listOf(Kind.BOLD to "*italic* and bold", Kind.ITALIC to "italic"),
+            spans("***italic* and bold**")
+        )
+        assertEquals(
+            listOf(Kind.ITALIC to "**bold** and italic", Kind.BOLD to "bold"),
+            spans("***bold** and italic*")
+        )
+        // Flanking with punctuation (CommonMark §6.2)
+        assertEquals(listOf(Kind.ITALIC to "foo"), spans("\"*foo*\""))
+        assertEquals(listOf(Kind.ITALIC to "foo"), spans("_foo_, bar"))
+        // Rule of 3: foo*bar**baz does not match (1 + 2 = 3, neither is multiple of 3)
+        assertTrue(spans("foo*bar**baz").isEmpty())
+        // Rule of 3: both multiples of 3 DO match
+        assertEquals(
+            listOf(Kind.ITALIC to "**bar**", Kind.BOLD to "bar"),
+            spans("foo***bar***baz")
+        )
+        // Intraword _ stays plain text while intraword * emphasizes
+        assertTrue(spans("foo_bar_baz").isEmpty())
+        assertEquals(listOf(Kind.ITALIC to "bar"), spans("foo*bar*baz"))
+        // Unmatched opener between outer emphasis does not leak; CommonMark matches inner-first
+        assertEquals(
+            listOf(Kind.ITALIC to "*a *b** c", Kind.ITALIC to "a *b*", Kind.ITALIC to "b"),
+            spans("**a *b** c*")
+        )
+    }
+
+    @Test
     fun formattingNests() {
         assertEquals(
             listOf(Kind.BOLD to "bold *and italic* inside", Kind.ITALIC to "and italic"),

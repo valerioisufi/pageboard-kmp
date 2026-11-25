@@ -76,7 +76,7 @@ Variations).
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Consolidated schema & protocol foundation: `fontFamily`, `continueNumberingFrom`, `maxHeight` in `TextElement`/`TextData`/`TextEntity`, Room 26 → 27 (`Migration26To27`), `PROTOCOL_VERSION = 5`, `ProtocolFormatTest` | Done |
-| 2 | Full CommonMark emphasis (`***x***`, flanking, rule of 3) in linear time; parser & bounds tests | Pending |
+| 2 | Full CommonMark emphasis (`***x***`, flanking, rule of 3) in linear time; parser & bounds tests | Done |
 | 3 | Autolinks, `![image](url)`, tap-to-open links (canvas, editor, `SourceStrip`), and PDF `/Link` annotations | Pending |
 | 4 | Lasso character-level formatting (`SelectedTexts`) and `PlacementManager` snapping | Pending |
 | 5 | Custom font selection (`TextFonts`, `NotesFonts`, `ComposeTextTileAdapter`, `TextBoxEditor`, `TextStyleControls`, PDF export) | Pending |

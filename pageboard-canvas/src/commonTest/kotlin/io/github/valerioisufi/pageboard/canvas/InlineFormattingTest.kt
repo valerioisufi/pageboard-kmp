@@ -111,6 +111,10 @@ class InlineFormattingTest {
     @Test
     fun theFormatsOfTheSelection() {
         assertEquals(setOf(Format.BOLD, Format.ITALIC), InlineFormatting.formatsAt(TextFieldValue("**_x_**", TextRange(3))))
+        assertEquals(setOf(Format.BOLD, Format.ITALIC), InlineFormatting.formatsAt(TextFieldValue("***x***", TextRange(3))))
+        assertEquals("**x**", InlineFormatting.toggle(select("***x***", "x"), Format.ITALIC).text)
+        assertEquals("*x*", InlineFormatting.toggle(select("***x***", "x"), Format.BOLD).text)
+        assertEquals("_x_", InlineFormatting.toggle(select("**_x_**", "x"), Format.BOLD).text)
         assertEquals(emptySet(), InlineFormatting.formatsAt(TextFieldValue("**x** y", TextRange(6))))
         assertEquals(setOf(Format.BOLD), InlineFormatting.formatsAt(TextFieldValue("- **a**\n- **b**", TextRange(0, 15))))
         assertEquals(emptySet(), InlineFormatting.formatsAt(TextFieldValue("- **a**\n- b", TextRange(0, 11))))

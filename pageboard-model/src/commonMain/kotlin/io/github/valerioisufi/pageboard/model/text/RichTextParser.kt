@@ -557,12 +557,14 @@ public object RichTextParser {
     }
 
     /**
-     * The emphasis of [text], found in [masked] (its code and formulas masked) rule after rule, each
-     * rule from the start of the text.
+     * The emphasis of [text], found in [masked] (its code and formulas masked): `*` and `_` by the
+     * CommonMark delimiter-run rules (flanking, nesting, `***x***`, rule of 3) in linear time, and
+     * `~~` strikethrough by a linear scan.
      */
     internal fun emphasis(masked: String, text: String): List<Span> {
         val spans = mutableListOf<Span>()
-        for (rule in EMPHASIS) rule.scan(masked, text, spans)
+        CommonMarkEmphasis.scan(masked, text, spans)
+        STRIKE_EMPHASIS.scan(masked, spans)
         return spans
     }
 
@@ -651,8 +653,6 @@ public object RichTextParser {
         return -1
     }
 
-    private fun String.isWordAt(index: Int) = getOrNull(index)?.isLetterOrDigit() == true
-
     /**
      * The spans that nest, sorted: an outer one first; a span overlapping one kept partially, or
      * inside a delimiter, code or formula, is dropped. The [candidates] are not empty.
@@ -683,42 +683,159 @@ public object RichTextParser {
     }
 
     /**
-     * A rule of emphasis: its [delimiter] around a content touching it; a rule bound to words
-     * ([wordBound]) does not work inside a word.
+     * Linear-time CommonMark delimiter-run emphasis (`*` and `_`): handles flanking around spaces
+     * and punctuation, nested runs such as `***x***`, intraword `_`, and the multiple-of-3 rule.
      */
-    private class Emphasis(val kind: Kind, val delimiter: String, val wordBound: Boolean = false) {
-        private val char = delimiter[0]
-        private val single = delimiter.length == 1
+    private object CommonMarkEmphasis {
+        private class DelimiterRun(
+            val char: Char,
+            var start: Int,
+            var length: Int,
+            val origLength: Int,
+            val canOpen: Boolean,
+            val canClose: Boolean,
+            var prev: Int,
+            var next: Int,
+            var alive: Boolean = true
+        )
 
-        /**
-         * Whether a delimiter opening a span is at [i] of [masked]: a character other than a space
-         * follows it; a single one neither follows its character nor is followed by it.
-         */
+        fun scan(masked: String, text: String, spans: MutableList<Span>) {
+            val runs = ArrayList<DelimiterRun>()
+            var i = 0
+            while (i < masked.length) {
+                val c = masked[i]
+                if (c == '*' || c == '_') {
+                    val start = i
+                    while (i < masked.length && masked[i] == c) i++
+                    val length = i - start
+                    val before = text.getOrNull(start - 1)
+                    val after = text.getOrNull(i)
+                    val beforeWs = before == null || before.isWhitespace()
+                    val afterWs = after == null || after.isWhitespace()
+                    val beforePunct = before != null && isPunctuation(before)
+                    val afterPunct = after != null && isPunctuation(after)
+                    val leftFlanking = !afterWs && (!afterPunct || beforeWs || beforePunct)
+                    val rightFlanking = !beforeWs && (!beforePunct || afterWs || afterPunct)
+                    val canOpen = if (c == '*') leftFlanking else leftFlanking && (!rightFlanking || beforePunct)
+                    val canClose = if (c == '*') rightFlanking else rightFlanking && (!leftFlanking || afterPunct)
+                    if (canOpen || canClose) {
+                        val idx = runs.size
+                        runs += DelimiterRun(c, start, length, length, canOpen, canClose, prev = idx - 1, next = idx + 1)
+                    }
+                } else {
+                    i++
+                }
+            }
+            if (runs.isEmpty()) return
+            runs.last().next = -1
+
+            var firstRun = 0
+            fun unlink(idx: Int) {
+                val run = runs[idx]
+                if (!run.alive) return
+                run.alive = false
+                if (run.prev != -1) runs[run.prev].next = run.next else firstRun = run.next
+                if (run.next != -1) runs[run.next].prev = run.prev
+            }
+
+            // Monotonic lower-bound start offset per (char, closerOrigLength % 3, closerCanOpen) so no
+            // unmatched opener is ever re-scanned even if intermediate delimiter runs are unlinked.
+            val openersBottom = IntArray(12) { -1 }
+            var closerIdx = firstRun
+            while (closerIdx != -1) {
+                val closer = runs[closerIdx]
+                if (!closer.alive || !closer.canClose || closer.length == 0) {
+                    closerIdx = closer.next
+                    continue
+                }
+                val key = (if (closer.char == '_') 6 else 0) + (closer.origLength % 3) * 2 + (if (closer.canOpen) 1 else 0)
+                val bottomStart = openersBottom[key]
+                var openerIdx = closer.prev
+                var found = -1
+                while (openerIdx != -1) {
+                    val opener = runs[openerIdx]
+                    if (opener.start <= bottomStart) break
+                    if (opener.alive && opener.length > 0 && opener.canOpen && opener.char == closer.char) {
+                        val ruleOf3Blocked = (opener.canClose || closer.canOpen) &&
+                            (opener.origLength + closer.origLength) % 3 == 0 &&
+                            (opener.origLength % 3 != 0 || closer.origLength % 3 != 0)
+                        if (!ruleOf3Blocked) {
+                            found = openerIdx
+                            break
+                        }
+                    }
+                    openerIdx = opener.prev
+                }
+                if (found == -1) {
+                    openersBottom[key] = if (closer.prev != -1) runs[closer.prev].start else -1
+                    val next = closer.next
+                    if (!closer.canOpen) unlink(closerIdx)
+                    closerIdx = next
+                } else {
+                    val opener = runs[found]
+                    val use = if (opener.length >= 2 && closer.length >= 2) 2 else 1
+                    val kind = if (use == 2) Kind.BOLD else Kind.ITALIC
+                    val spanStart = opener.start + opener.length - use
+                    val spanEnd = closer.start + use
+                    spans += Span(kind, spanStart, spanEnd, spanStart + use, closer.start)
+                    // Drop unmatched runs strictly between opener and closer
+                    var between = opener.next
+                    while (between != -1 && between != closerIdx) {
+                        val nextBetween = runs[between].next
+                        unlink(between)
+                        between = nextBetween
+                    }
+                    opener.length -= use
+                    closer.start += use
+                    closer.length -= use
+                    if (opener.length == 0) unlink(found)
+                    if (closer.length == 0) {
+                        val next = closer.next
+                        unlink(closerIdx)
+                        closerIdx = next
+                    }
+                }
+            }
+        }
+
+        private fun isPunctuation(c: Char): Boolean = c in ASCII_PUNCTUATION || when (c.category) {
+            CharCategory.DASH_PUNCTUATION,
+            CharCategory.START_PUNCTUATION,
+            CharCategory.END_PUNCTUATION,
+            CharCategory.CONNECTOR_PUNCTUATION,
+            CharCategory.OTHER_PUNCTUATION,
+            CharCategory.INITIAL_QUOTE_PUNCTUATION,
+            CharCategory.FINAL_QUOTE_PUNCTUATION,
+            CharCategory.MATH_SYMBOL,
+            CharCategory.CURRENCY_SYMBOL,
+            CharCategory.MODIFIER_SYMBOL,
+            CharCategory.OTHER_SYMBOL -> true
+            else -> false
+        }
+
+        private const val ASCII_PUNCTUATION = "!\"#\$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+    }
+
+    /**
+     * A delimiter pair scanned linearly from the start of the text (`~~` strikethrough): each from
+     * a delimiter that opens to the first one closing after a character of content.
+     */
+    private class Emphasis(val kind: Kind, val delimiter: String) {
+        private val char = delimiter[0]
+
         fun opensAt(masked: String, i: Int): Boolean {
             if (!masked.startsWith(delimiter, i)) return false
             val next = masked.getOrNull(i + delimiter.length) ?: return false
-            return !next.isSpace() && (!single || (next != char && masked.getOrNull(i - 1) != char))
+            return !next.isSpace()
         }
 
-        /**
-         * Whether a delimiter closing a span is at [i] of [masked]: it follows a character other
-         * than a space; a single one neither follows its character nor is followed by it.
-         */
         fun closesAt(masked: String, i: Int): Boolean {
             if (!masked.startsWith(delimiter, i)) return false
             val previous = masked.getOrNull(i - 1) ?: return false
-            return !previous.isSpace() && (!single || (previous != char && masked.getOrNull(i + 1) != char))
+            return !previous.isSpace()
         }
 
-        /**
-         * Adds to [spans] the spans of the rule in [masked], from the start: each from a delimiter
-         * that opens to the first one closing after a character of content, the next one after it.
-         *
-         * Whether a delimiter closes does not depend on where its span opened: when none closes
-         * after a delimiter that opens, none closes after the later ones either. So each character
-         * is read once looking for a delimiter that opens and once for one that closes.
-         */
-        fun scan(masked: String, text: String, spans: MutableList<Span>) {
+        fun scan(masked: String, spans: MutableList<Span>) {
             val length = delimiter.length
             var open = masked.indexOf(char)
             while (open >= 0) {
@@ -730,22 +847,13 @@ public object RichTextParser {
                 while (close >= 0 && !closesAt(masked, close)) close = masked.indexOf(char, close + 1)
                 if (close < 0) return
                 val end = close + length
-                // A span touching a word is dropped, its text taken all the same
-                if (!wordBound || !(text.isWordAt(open - 1) || text.isWordAt(end))) {
-                    spans += Span(kind, open, end, open + length, close)
-                }
+                spans += Span(kind, open, end, open + length, close)
                 open = masked.indexOf(char, end)
             }
         }
     }
 
-    private val EMPHASIS = listOf(
-        Emphasis(Kind.BOLD, "**"),
-        Emphasis(Kind.BOLD, "__", wordBound = true),
-        Emphasis(Kind.STRIKE, "~~"),
-        Emphasis(Kind.ITALIC, "*"),
-        Emphasis(Kind.ITALIC, "_", wordBound = true)
-    )
+    private val STRIKE_EMPHASIS = Emphasis(Kind.STRIKE, "~~")
 
     /** A space around the delimiters of the emphasis: the spaces of ASCII. */
     private fun Char.isSpace() = this == ' ' || this in '\t'..'\r'

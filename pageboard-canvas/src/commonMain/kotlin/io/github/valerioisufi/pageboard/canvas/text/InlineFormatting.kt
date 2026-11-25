@@ -62,7 +62,7 @@ internal object InlineFormatting {
             val bySpan = segments.indices.groupBy { active[it]!! }
             formatted = bySpan.map { (span, indices) ->
                 val part = segments[indices.first()].first until segments[indices.last()].last + 1
-                edits += removal(text, span, part)
+                edits += removal(text, spans, span, part)
                 part
             }
         } else {
@@ -112,17 +112,23 @@ internal object InlineFormatting {
 
     /**
      * The edits taking the format of [span] off its [part]: a delimiter removed where the part
-     * reaches an end of the content (or goes into the delimiter), inserted where it does not (the
-     * rest of the span keeping the format), never after or before a space.
+     * reaches an end of the content (across whitespace or nested span delimiters), inserted where
+     * it does not (the rest of the span keeping the format), never after or before a space.
      */
-    private fun removal(text: String, span: Span, part: IntRange): List<Edit> {
+    private fun removal(text: String, spans: List<Span>, span: Span, part: IntRange): List<Edit> {
         val delimiter = text.substring(span.start, span.contentStart)
+        val innerDelimiter = BooleanArray(text.length)
+        for (other in spans) {
+            if (other !== span && other.start >= span.contentStart && other.end <= span.contentEnd) {
+                for (range in other.delimiters) for (k in range) innerDelimiter[k] = true
+            }
+        }
         val edits = mutableListOf<Edit>()
         var close = part.first
-        while (close > span.contentStart && text[close - 1].isWhitespace()) close--
+        while (close > span.contentStart && (text[close - 1].isWhitespace() || innerDelimiter[close - 1])) close--
         edits += if (close > span.contentStart) Edit(close, close, delimiter) else Edit(span.start, span.contentStart, "")
         var open = part.last + 1
-        while (open < span.contentEnd && text[open].isWhitespace()) open++
+        while (open < span.contentEnd && (text[open].isWhitespace() || innerDelimiter[open])) open++
         edits += if (open < span.contentEnd) Edit(open, open, delimiter) else Edit(span.contentEnd, span.end, "")
         return edits
     }

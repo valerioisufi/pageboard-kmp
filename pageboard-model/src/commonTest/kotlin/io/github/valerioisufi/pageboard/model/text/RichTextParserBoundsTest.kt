@@ -25,7 +25,7 @@ class RichTextParserBoundsTest {
 
     @Test
     fun delimitersNeverClosedTakeLinearTime() {
-        for (pattern in listOf("**a ", "*a ", "__a ", "_a ", "~~a ", "**a *b __c _d ~~e ", "**a\n*b\n__c\n_d\n~~e\n")) {
+        for (pattern in listOf("**a ", "*a ", "***a ", "*a_b", "__a ", "_a ", "~~a ", "**a *b __c _d ~~e ", "**a\n*b\n__c\n_d\n~~e\n")) {
             assertLinear(pattern)
         }
     }
@@ -71,13 +71,16 @@ class RichTextParserBoundsTest {
     }
 
     @Test
-    fun theEmphasisIsWhatTheRegularExpressionsFound() {
+    fun randomEmphasisStaysWellFormedAndMatchesStrikethroughReference() {
         val random = Random(1022)
         repeat(10_000) {
             val text = randomText(random, random.nextInt(0, 40))
             // Some characters masked, as the code and the formulas are
             val masked = text.map { if (random.nextInt(12) == 0) MASK else it }.joinToString("")
-            assertEquals(referenceEmphasis(masked, text), RichTextParser.emphasis(masked, text), "masked: $masked, text: $text")
+            val nested = RichTextParser.nest(RichTextParser.emphasis(masked, text))
+            assertWellFormed(text, nested)
+            val strikeOnly = RichTextParser.emphasis(masked, text).filter { it.kind == Kind.STRIKE }
+            assertEquals(referenceStrike(masked), strikeOnly, "masked: $masked, text: $text")
         }
     }
 
@@ -137,20 +140,11 @@ class RichTextParserBoundsTest {
     /** A text of [length] parts, each a character of the notation, a letter, a space or a line break. */
     private fun randomText(random: Random, length: Int) = buildString { repeat(length) { append(PARTS[random.nextInt(PARTS.size)]) } }
 
-    /** The emphasis as the regular expressions found it before the scan (see [RichTextParser.emphasis]). */
-    private fun referenceEmphasis(masked: String, text: String): List<Span> {
-        fun String.isWordAt(index: Int) = getOrNull(index)?.isLetterOrDigit() == true
-        val spans = mutableListOf<Span>()
-        for ((kind, delimiter, regex, wordBound) in REFERENCE) {
-            for (match in regex.findAll(masked)) {
-                val start = match.range.first
-                val end = match.range.last + 1
-                if (wordBound && (text.isWordAt(start - 1) || text.isWordAt(end))) continue
-                spans += Span(kind, start, end, start + delimiter, end - delimiter)
-            }
-        }
-        return spans
-    }
+    /** The strikethrough emphasis as the regular expression found it before the scan. */
+    private fun referenceStrike(masked: String): List<Span> =
+        STRIKE_REFERENCE.findAll(masked).map { match ->
+            Span(Kind.STRIKE, match.range.first, match.range.last + 1, match.range.first + 2, match.range.last - 1)
+        }.toList()
 
     /** The `$` closing the formula opened at [open], walked from it as before [RichTextParser.InlineClosings]. */
     private fun referenceClosing(text: String, open: Int): Int {
@@ -195,8 +189,6 @@ class RichTextParserBoundsTest {
         return kept
     }
 
-    private data class Rule(val kind: Kind, val delimiter: Int, val regex: Regex, val wordBound: Boolean = false)
-
     private companion object {
         const val MIB = 1 shl 20
         val BOUND = 10.seconds
@@ -209,12 +201,6 @@ class RichTextParserBoundsTest {
         )
 
         // The content touches its delimiters; [\s\S]: any character, the line breaks included
-        val REFERENCE = listOf(
-            Rule(Kind.BOLD, 2, Regex("""\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*""")),
-            Rule(Kind.BOLD, 2, Regex("""__(?=\S)([\s\S]+?)(?<=\S)__"""), wordBound = true),
-            Rule(Kind.STRIKE, 2, Regex("""~~(?=\S)([\s\S]+?)(?<=\S)~~""")),
-            Rule(Kind.ITALIC, 1, Regex("""(?<!\*)\*(?![\s*])([\s\S]+?)(?<![\s*])\*(?!\*)""")),
-            Rule(Kind.ITALIC, 1, Regex("""(?<!_)_(?![\s_])([\s\S]+?)(?<![\s_])_(?!_)"""), wordBound = true)
-        )
+        val STRIKE_REFERENCE = Regex("""~~(?=\S)([\s\S]+?)(?<=\S)~~""")
     }
 }
